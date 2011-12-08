@@ -22,6 +22,7 @@ Maintainer: Christian Cyron
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
@@ -118,14 +119,14 @@ isconverged_(0)
           statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
       }
       else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
-			{
-				//see whether current element needs more random numbers per time step than any other before
-				randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-				//in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-				if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
-					statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
-			}
-			else
+      {
+        //see whether current element needs more random numbers per time step than any other before
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+        //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+          statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
+      }
+      else
 #endif  // #ifdef D_TRUSS3
         continue;
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
@@ -182,49 +183,49 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-  	// Initialization of Output and Beam Contact Manager
+    // Initialization of Output and Beam Contact Manager
     if(i == step)
     {
-			if(i == 0)
-			{
-				statmechmanager_->InitOutput(ndim,dt);
-				// handling gmsh output seperately
-				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
-				{
-					std::ostringstream filename;
-						filename << "./GmshOutput/networkInit.pos";
-					//calling method for writing Gmsh output
-					statmechmanager_->GmshOutput(*dis_,filename,step);
-				}
-			}
+      if(i == 0)
+      {
+        statmechmanager_->InitOutput(ndim,dt);
+        // handling gmsh output seperately
+        if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
+        {
+          std::ostringstream filename;
+            filename << "./GmshOutput/networkInit.pos";
+          //calling method for writing Gmsh output
+          statmechmanager_->GmshOutput(*dis_,filename,step);
+        }
+      }
 
-			// (re)build beamcmanager_ with restored discretization during the very first step after entering the integration loop
-			/* Why here and not within the constructor? If called in the constructur, beamcmanager_ receives the intial discretization @t=0,
-			 * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
-			 * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
-			 * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
-			 * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.
-			 */
-			if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-			{
-				if(!discret_.Comm().MyPID())
-					cout<<"====== employing beam contact ======"<<endl;
-				// store integration parameter alphaf into beamcmanager_ as well
-				double alphaf = params_.get<double>("alpha f",0.459);
-				beamcmanager_ = rcp(new CONTACT::Beam3cmanager(discret_,alphaf));
-				if(!discret_.Comm().MyPID())
-					cout<<"===================================="<<endl;
-				//defining solution strategy for beam contact
-				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-				{
-					soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
-					// decide wether the tangent field should be smoothed or not
-					if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
-					{
-						//cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
-					}
-				}
-			}
+      // (re)build beamcmanager_ with restored discretization during the very first step after entering the integration loop
+      /* Why here and not within the constructor? If called in the constructur, beamcmanager_ receives the intial discretization @t=0,
+       * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
+       * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
+       * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
+       * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.
+       */
+      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+      {
+        if(!discret_.Comm().MyPID())
+          cout<<"====== employing beam contact ======"<<endl;
+        // store integration parameter alphaf into beamcmanager_ as well
+        double alphaf = params_.get<double>("alpha f",0.459);
+        beamcmanager_ = rcp(new CONTACT::Beam3cmanager(discret_,alphaf));
+        if(!discret_.Comm().MyPID())
+          cout<<"===================================="<<endl;
+        //defining solution strategy for beam contact
+        if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+        {
+          soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+          // decide wether the tangent field should be smoothed or not
+          if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+          {
+            //cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
+          }
+        }
+      }
     }
 
     //time_ is time at the end of this time step
@@ -255,15 +256,24 @@ void StatMechTime::Integrate()
 
     RCP<Epetra_MultiVector> randomnumbers = Teuchos::null;
     //redo time step in case of bad random configuration
+    /* We need "firstupdate" due to the fact that in case a time step is redone, we have to rebuild
+     * the octree in beamcmanager. Otherwise, the query methods in statmechmanager_->SearchAndSetCrosslinkers()
+     * doe not work.*/
+    bool firstupdate = true;
     do
     {
       //set and delete crosslinkers compared to converged configuration of last time step
       const double t_admin = Teuchos::Time::wallTime();
 
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-      	statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
+      {
+        if(firstupdate)
+          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
+        else
+          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_,true);
+      }
       else
-      	statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
+        statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
 
       //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
       if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
@@ -324,8 +334,8 @@ void StatMechTime::Integrate()
               beamcmanager_->UpdateUzawaIter();
               if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
               {
-								cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
-								break;
+                cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
+                break;
                 //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
               }
               if (discret_.Comm().MyPID() == 0)
@@ -340,10 +350,10 @@ void StatMechTime::Integrate()
               if(isconverged_==0)
               	break;
 
-							// update constraint norm and penalty parameter
-							beamcmanager_->UpdateConstrNorm();
-							// update Uzawa Lagrange multipliers
-							beamcmanager_->UpdateAlllmuzawa();
+              // update constraint norm and penalty parameter
+              beamcmanager_->UpdateConstrNorm();
+              // update Uzawa Lagrange multipliers
+              beamcmanager_->UpdateAlllmuzawa();
             } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
 
             // reset penalty parameter
@@ -373,6 +383,7 @@ void StatMechTime::Integrate()
         p.set("action","calc_struct_reset_istep");
         discret_.Evaluate(p,null,null,null,null,null);
         statmechmanager_->RestoreConv(stiff_, beamcmanager_);
+        firstupdate = false;
       }
 
     }
@@ -1290,46 +1301,46 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
  *----------------------------------------------------------------------*/
 void StatMechTime::EvaluateForceDepUnlinking(double& dt, RCP<Epetra_MultiVector> randomnumbers)
 {
-	// create the parameters for the discretization
-	ParameterList p;
-	// action for elements
-	p.set("action","calc_struct_internalforce");
-	p.set("delta time",dt);
-	//passing statistical mechanics parameters to elements
-	p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-	p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-	p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
-	p.set("RandomNumbers",randomnumbers);
-	p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
-	p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
-	p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
-	p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
-	p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-	p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
-	p.set("forcedepunlinking","yes");
-	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0)!=0.0)
-		p.set("clunbindforce",(statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0));
-	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0)!=0.0)
-	{
-		p.set("clunbindmoment",(statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0));
-		p.set("clunbindmomdir",(statmechmanager_->statmechparams_).get<int>("CLUNBINDMOMDIR",-1));
-	}
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set("action","calc_struct_internalforce");
+  p.set("delta time",dt);
+  //passing statistical mechanics parameters to elements
+  p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+  p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+  p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+  p.set("RandomNumbers",randomnumbers);
+  p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+  p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+  p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
+  p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
+  p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+  p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+  p.set("forcedepunlinking","yes");
+  if((statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0)!=0.0)
+    p.set("clunbindforce",(statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0));
+  if((statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0)!=0.0)
+  {
+    p.set("clunbindmoment",(statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0));
+    p.set("clunbindmomdir",(statmechmanager_->statmechparams_).get<int>("CLUNBINDMOMDIR",-1));
+  }
 
-	// set vector values needed by elements
-	discret_.ClearState();
+  // set vector values needed by elements
+  discret_.ClearState();
 
-	discret_.SetState("residual displacement",disi_);
-	discret_.SetState("displacement",dis_);
-	discret_.SetState("velocity",vel_);
+  discret_.SetState("residual displacement",disi_);
+  discret_.SetState("displacement",dis_);
+  discret_.SetState("velocity",vel_);
 
-	//discret_.SetState("velocity",velm_); // not used at the moment
-	RCP<Epetra_Vector> fint = rcp(new Epetra_Vector(*discret_.DofRowMap(),true));
+  //discret_.SetState("velocity",velm_); // not used at the moment
+  RCP<Epetra_Vector> fint = rcp(new Epetra_Vector(*discret_.DofRowMap(),true));
 
-	discret_.Evaluate(p,null,null,fint,null,null);
+  discret_.Evaluate(p,null,null,fint,null,null);
 
-	discret_.ClearState();
+  discret_.ClearState();
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*

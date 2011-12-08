@@ -12,13 +12,10 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
-#include "beam3contact.H"
-#include "beam3contact_octtree.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -26,12 +23,15 @@ Maintainer: Alexander Popp, Christian Cyron
 namespace LINALG
 {
   class SparseMatrix;
+  class TMatrix<class value_type,3,1>;
 }
 
 namespace DRT
 {
   class Discretization;
 }
+
+class Beam3ContactOctTree;
 
 namespace CONTACT
 {
@@ -46,6 +46,8 @@ using namespace Teuchos;
 
  \author popp (popp@lnm.mw.tum.de), cyron (cyron@lnm.mw.tum.de)
  */
+class Beam3contact;
+
 class Beam3cmanager
 {
 public:

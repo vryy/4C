@@ -54,9 +54,9 @@ using namespace LARGEROTATIONS;
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void StatMechManager::Output(ParameterList& params, const int ndim,
-														 const double& time, const int& istep, const double& dt,
-														 const Epetra_Vector& dis, const Epetra_Vector& fint,
-														 RCP<CONTACT::Beam3cmanager> beamcmanager)
+                             const double& time, const int& istep, const double& dt,
+                             const Epetra_Vector& dis, const Epetra_Vector& fint,
+                             RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
@@ -455,26 +455,26 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
   }
   // handling gmsh output seperately
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 100) == 0) )
-	{
-		/*construct unique filename for gmsh output with two indices: the first one marking the time step number
-		 * and the second one marking the newton iteration number, where numbers are written with zeros in the front
-		 * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
+  {
+    /*construct unique filename for gmsh output with two indices: the first one marking the time step number
+     * and the second one marking the newton iteration number, where numbers are written with zeros in the front
+     * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
 
-		// first index = time step index
-		std::ostringstream filename;
+    // first index = time step index
+    std::ostringstream filename;
 
-		//creating complete file name dependent on step number with 6 digits and leading zeros
-		if (istep<1000000)
-			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
-		else
-			dserror("Gmsh output implemented for a maximum of 999999 steps");
+    //creating complete file name dependent on step number with 6 digits and leading zeros
+    if (istep<1000000)
+      filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
+    else
+      dserror("Gmsh output implemented for a maximum of 999999 steps");
 
-		//calling method for writing Gmsh output
-		if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
-			GmshOutput(dis,filename,istep,beamcmanager);
-		else
-			GmshOutput(dis,filename,istep);
-	}
+    //calling method for writing Gmsh output
+    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+      GmshOutput(dis,filename,istep,beamcmanager);
+    else
+      GmshOutput(dis,filename,istep);
+  }
 
   return;
 } // StatMechManager::Output()
@@ -594,19 +594,19 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         /*/ highlight contacting elements (works for old gap function(??))
         if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
         {
-        	for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
-        	{
-        		// GIDs of contact discretization
-						int celeid1 = (*(beamcmanager->Pairs()))[j]->Element1()->Id();
-						int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
+          for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
+          {
+            // GIDs of contact discretization
+            int celeid1 = (*(beamcmanager->Pairs()))[j]->Element1()->Id();
+            int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
 
-						// element row maps should be the same in both discretizations (?)
-						int celerowid1 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid1);
-						int celerowid2 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid2);
-						int elerowid = discret_.ElementRowMap()->LID(element->Id());
+            // element row maps should be the same in both discretizations (?)
+            int celerowid1 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid1);
+            int celerowid2 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid2);
+            int elerowid = discret_.ElementRowMap()->LID(element->Id());
 
-						if(elerowid==celerowid1 || elerowid==celerowid2)
-							color = 0.375;
+            if(elerowid==celerowid1 || elerowid==celerowid2)
+              color = 0.375;
         	}
         }*/
 
@@ -658,31 +658,31 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             else
               GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
-					else if (eot == DRT::ELEMENTS::TrussLmType::Instance())
+          else if (eot == DRT::ELEMENTS::TrussLmType::Instance())
           {
-						LINALG::SerialDenseMatrix tmpcoord(3,2);
-						// the framing trusses (filaments)
-						for (int j=0; j<element->NumNode()-1; j=j+2)
-						{
-							for(int k=0; k<tmpcoord.M(); k++)
-							{
-								tmpcoord(k,0) = coord(k,j);
-								tmpcoord(k,1) = coord(k,j+1);
-							}
-							GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
-						}
-						// the interpolated truss
-						RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
-						for (int j=0; j<tmpcoord.M(); j++)
-						{
-							tmpcoord(j,0) = (*xint)(j);
-							tmpcoord(j,1) = (*xint)(j+3);
-						}
-						// change the color since elements of this type are considered crosslinkers ( currently)
-						color = 0.5;
-						GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
+            LINALG::SerialDenseMatrix tmpcoord(3,2);
+            // the framing trusses (filaments)
+            for (int j=0; j<element->NumNode()-1; j=j+2)
+            {
+              for(int k=0; k<tmpcoord.M(); k++)
+              {
+                tmpcoord(k,0) = coord(k,j);
+                tmpcoord(k,1) = coord(k,j+1);
+              }
+              GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
+            }
+            // the interpolated truss
+            RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
+            for (int j=0; j<tmpcoord.M(); j++)
+            {
+              tmpcoord(j,0) = (*xint)(j);
+              tmpcoord(j,1) = (*xint)(j+3);
+            }
+            // change the color since elements of this type are considered crosslinkers ( currently)
+            color = 0.5;
+            GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
           }
-					else
+          else
 #endif
 #ifdef D_TORSION3
           if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
@@ -704,32 +704,32 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         else
         {
 #ifdef D_TRUSS3
-        	const DRT::ElementType & eot = element->ElementType();
-        	if(eot==DRT::ELEMENTS::TrussLmType::Instance())
-        	{
-        		// coordinates of trusses A and B
-        		LINALG::SerialDenseMatrix coordA(3,2);
-        		LINALG::SerialDenseMatrix coordB(3,2);
-        		for(int j=0; j<coordA.M(); j++)
-        			for(int k=0; k<coordA.N(); k++)
-							{
-								coordA(j,k) = coord(j,k);
-								coordB(j,k) = coord(j,k+2);
-							}
-        		GmshOutputPeriodicBoundary(coordA, color, gmshfilecontent,element->Id(),false);
-        		GmshOutputPeriodicBoundary(coordB, color, gmshfilecontent,element->Id(),false);
-        		// interpolated node coordinates
-        		RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
-        		LINALG::SerialDenseMatrix intcoord(3,2);
-        		for(int j=0; j<intcoord.M(); j++)
-        		{
-        			intcoord(j,0) = (*xint)(j);
-        			intcoord(j,1) = (*xint)(j+3);
-        		}
-        		color = 0.5;
-        		GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
-        	}
-        	else
+          const DRT::ElementType & eot = element->ElementType();
+          if(eot==DRT::ELEMENTS::TrussLmType::Instance())
+          {
+            // coordinates of trusses A and B
+            LINALG::SerialDenseMatrix coordA(3,2);
+            LINALG::SerialDenseMatrix coordB(3,2);
+            for(int j=0; j<coordA.M(); j++)
+              for(int k=0; k<coordA.N(); k++)
+              {
+                coordA(j,k) = coord(j,k);
+                coordB(j,k) = coord(j,k+2);
+              }
+            GmshOutputPeriodicBoundary(coordA, color, gmshfilecontent,element->Id(),false);
+            GmshOutputPeriodicBoundary(coordB, color, gmshfilecontent,element->Id(),false);
+            // interpolated node coordinates
+            RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
+            LINALG::SerialDenseMatrix intcoord(3,2);
+            for(int j=0; j<intcoord.M(); j++)
+            {
+              intcoord(j,0) = (*xint)(j);
+              intcoord(j,1) = (*xint)(j+3);
+            }
+            color = 0.5;
+            GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
+          }
+          else
 #endif
         		GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
         }
@@ -755,27 +755,27 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
     if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHNETSTRUCT") &&
     	 DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
     {
-			// plot the rotated material triad (with axis length 0.5)
-			for(int i=0; i<trafo_->M(); i++)
-			{
-				LINALG::SerialDenseMatrix coord(3,2);
-				for(int j=0;j<coord.M(); j++)
-				{
-					coord(j,0) = cog_(j);
-					coord(j,1) = cog_(j)+0.5*(*trafo_)(i,j);
-				}
-				GmshWedge(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
-			}
-		  // plot the cog
-			GmshOutputBox(0.75, &cog_, 0.05, &filename);
-			gmshfileend << "SP(" << scientific;
-			gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+      // plot the rotated material triad (with axis length 0.5)
+      for(int i=0; i<trafo_->M(); i++)
+      {
+        LINALG::SerialDenseMatrix coord(3,2);
+        for(int j=0;j<coord.M(); j++)
+        {
+          coord(j,0) = cog_(j);
+          coord(j,1) = cog_(j)+0.5*(*trafo_)(i,j);
+        }
+        GmshWedge(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
+      }
+      // plot the cog
+      GmshOutputBox(0.75, &cog_, 0.05, &filename);
+      gmshfileend << "SP(" << scientific;
+      gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
 
-			// gmsh output of detected network structure volume
-			int nline = 16;
-			if(step>0)
-				GmshNetworkStructVolume(nline, gmshfileend, 0.875);
-		}
+      // gmsh output of detected network structure volume
+      int nline = 16;
+      if(step>0)
+        GmshNetworkStructVolume(nline, gmshfileend, 0.875);
+    }
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -886,110 +886,110 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 
       // write special output for broken elements
   		if (numshifts > 0)
-  		{
-  			// directional vector
-  			LINALG::Matrix<3, 1> dir;
-  			for (int dof = 0; dof < ndim; dof++)
-  				dir(dof) = unshift(dof,1) - unshift(dof,0);
-  			dir.Scale(1.0/dir.Norm2());
+      {
+        // directional vector
+        LINALG::Matrix<3, 1> dir;
+        for (int dof = 0; dof < ndim; dof++)
+          dir(dof) = unshift(dof,1) - unshift(dof,0);
+        dir.Scale(1.0/dir.Norm2());
 
-  			/* determine the intersection points of the line through unshift(:,0) and direction dir with the faces of the boundary cube
-  			 * and sort them by distance. Thus, we obtain an order by which we have to shift the element back into the cube so that all
-  			 * segments that arise by multiple shifts remain within the volume (see my notes on 6/12/2011).*/
-  			LINALG::Matrix<3,2> lambdaorder;
-  			lambdaorder.PutScalar(1e6);
-  			// collect lambdas
-  			for(int dof=0; dof<(int)lambdaorder.M(); dof++)
-  			{
-					switch((int)cut(dof,i))
-					{
-						case 1:
-						{
-							lambdaorder(dof,0) = -coord(dof, i) / dir(dof);
-							lambdaorder(dof,1) = dof;
-						}
-						break;
-						case 2:
-						{
-							lambdaorder(dof,0) = (periodlength - coord(dof,i)) / dir(dof);
-							lambdaorder(dof,1) = dof;
-						}
-						break;
-						default:
-						{
-							lambdaorder(dof,1) = dof;
-						}
-					}
-  			}
-  			// sort the lambdas (ascending values) and indices accordingly
-  			// in case of multiple shifts
-  			if(numshifts>1)
-  			{
-					for(int j=0; j<(int)lambdaorder.M()-1; j++)
-						for(int k=j+1; k<(int)lambdaorder.M(); k++)
-							if(lambdaorder(k,0)<lambdaorder(j,0))
-							{
-								double temp = lambdaorder(j,0);
-								int tempindex = (int)lambdaorder(j,1);
-								lambdaorder(j,0) = lambdaorder(k,0);
-								lambdaorder(j,1) = lambdaorder(k,1);
-								lambdaorder(k,0) = temp;
-								lambdaorder(k,1) = tempindex;
-							}
-  			}
-				else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
-					for(int n=0; n<(int)lambdaorder.N(); n++)
-						lambdaorder(0,n) = lambdaorder(shiftdof,n);
+        /* determine the intersection points of the line through unshift(:,0) and direction dir with the faces of the boundary cube
+         * and sort them by distance. Thus, we obtain an order by which we have to shift the element back into the cube so that all
+         * segments that arise by multiple shifts remain within the volume (see my notes on 6/12/2011).*/
+        LINALG::Matrix<3,2> lambdaorder;
+        lambdaorder.PutScalar(1e6);
+        // collect lambdas
+        for(int dof=0; dof<(int)lambdaorder.M(); dof++)
+        {
+          switch((int)cut(dof,i))
+          {
+            case 1:
+            {
+              lambdaorder(dof,0) = -coord(dof, i) / dir(dof);
+              lambdaorder(dof,1) = dof;
+            }
+            break;
+            case 2:
+            {
+              lambdaorder(dof,0) = (periodlength - coord(dof,i)) / dir(dof);
+              lambdaorder(dof,1) = dof;
+            }
+            break;
+            default:
+            {
+              lambdaorder(dof,1) = dof;
+            }
+          }
+        }
+        // sort the lambdas (ascending values) and indices accordingly
+        // in case of multiple shifts
+        if(numshifts>1)
+        {
+          for(int j=0; j<(int)lambdaorder.M()-1; j++)
+            for(int k=j+1; k<(int)lambdaorder.M(); k++)
+              if(lambdaorder(k,0)<lambdaorder(j,0))
+              {
+                double temp = lambdaorder(j,0);
+                int tempindex = (int)lambdaorder(j,1);
+                lambdaorder(j,0) = lambdaorder(k,0);
+                lambdaorder(j,1) = lambdaorder(k,1);
+                lambdaorder(k,0) = temp;
+                lambdaorder(k,1) = tempindex;
+              }
+        }
+        else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+          for(int n=0; n<(int)lambdaorder.N(); n++)
+            lambdaorder(0,n) = lambdaorder(shiftdof,n);
 
-				// calculate segment lambdas
-				for(int dof=numshifts-1; dof>0; dof--)
-					lambdaorder(dof,0) -= lambdaorder(dof-1,0);
+        // calculate segment lambdas
+        for(int dof=numshifts-1; dof>0; dof--)
+          lambdaorder(dof,0) -= lambdaorder(dof-1,0);
 
-  			// the idea is to gradually shift the matrix "unshift" back into the volume and, while doing so,
-  			// calculate the segments except for the last one
-  			// determine closest boundary component-wise
-  			for(int shift=0; shift<numshifts; shift++)
-  			{
-					//second point
-					for(int j=0 ;j<unshift.M(); j++)
-						unshift(j,1) = unshift(j,0) + lambdaorder(shift,0)*dir(j);
-					//GmshOutput
-					if(!ignoreeleid)
-						GmshWedge(nline,unshift,element,gmshfilecontent,color);
-					else
-						GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
+        // the idea is to gradually shift the matrix "unshift" back into the volume and, while doing so,
+        // calculate the segments except for the last one
+        // determine closest boundary component-wise
+        for(int shift=0; shift<numshifts; shift++)
+        {
+          //second point
+          for(int j=0 ;j<unshift.M(); j++)
+            unshift(j,1) = unshift(j,0) + lambdaorder(shift,0)*dir(j);
+          //GmshOutput
+          if(!ignoreeleid)
+            GmshWedge(nline,unshift,element,gmshfilecontent,color);
+          else
+            GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
 
-  				int currshift = (int)lambdaorder(shift,1);
-					// shift the coordinates of the second point
-					if(cut(currshift,i)==1.0)
-						unshift(currshift,1) += periodlength;
-					else if(cut(currshift,i)==2.0)
-						unshift(currshift,1) -= periodlength;
-					// make second point the first and calculate new second point in the next iteration!
-					for(int j=0; j<unshift.M(); j++)
-						unshift(j,0) = unshift(j,1);
-  			}
-  			//last segment
-  			// the last segment
-  			for(int dof=0; dof<unshift.M(); dof++)
-  				unshift(dof,1) = coord(dof,i+1);
-  			if(!ignoreeleid)
-  				GmshWedge(nline,unshift,element,gmshfilecontent,color);
-  			else
-  				GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
-  		}
-  		else // output for continuous elements
-  		{
-  			if (!kinked)
-  			{
-  				if(!ignoreeleid)
-  					GmshWedge(nline,coord,element,gmshfilecontent,color);
-  				else
-  					GmshWedge(nline,coord,element,gmshfilecontent,color,true);
-  			}
-  			else
-  				GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
-  		}
+          int currshift = (int)lambdaorder(shift,1);
+          // shift the coordinates of the second point
+          if(cut(currshift,i)==1.0)
+            unshift(currshift,1) += periodlength;
+          else if(cut(currshift,i)==2.0)
+            unshift(currshift,1) -= periodlength;
+          // make second point the first and calculate new second point in the next iteration!
+          for(int j=0; j<unshift.M(); j++)
+            unshift(j,0) = unshift(j,1);
+        }
+        //last segment
+        // the last segment
+        for(int dof=0; dof<unshift.M(); dof++)
+          unshift(dof,1) = coord(dof,i+1);
+        if(!ignoreeleid)
+          GmshWedge(nline,unshift,element,gmshfilecontent,color);
+        else
+          GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
+      }
+      else // output for continuous elements
+      {
+        if (!kinked)
+        {
+          if(!ignoreeleid)
+            GmshWedge(nline,coord,element,gmshfilecontent,color);
+          else
+            GmshWedge(nline,coord,element,gmshfilecontent,color,true);
+        }
+        else
+          GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
+      }
     }
   }
   return;
@@ -1368,31 +1368,31 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
           // first and second vector of the nodal triad
           LINALG::Matrix<3, 1> tangent;
-					LINALG::Matrix<3, 1> normal;
-					// rotation angle
-					double alpha = 0.0;
+          LINALG::Matrix<3, 1> normal;
+          // rotation angle
+          double alpha = 0.0;
 
-					// determine tangent and normal direction when helical binding spot geometry is applied
-					if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
-					{
-						LINALG::Matrix<3,3> bspottriad;
-						// auxiliary variable for storing a triad in quaternion form
-						LINALG::Matrix<4, 1> qnode;
-						// triad of node on first filament which is affected by the new crosslinker
-						for (int j=0; j<4; j++)
-							qnode(j) = bspottriadscol[j][nodeLID];
-						LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+          // determine tangent and normal direction when helical binding spot geometry is applied
+          if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+          {
+            LINALG::Matrix<3,3> bspottriad;
+            // auxiliary variable for storing a triad in quaternion form
+            LINALG::Matrix<4, 1> qnode;
+            // triad of node on first filament which is affected by the new crosslinker
+            for (int j=0; j<4; j++)
+              qnode(j) = bspottriadscol[j][nodeLID];
+            LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
 
-						for(int j=0; j<(int)tangent.M(); j++)
-						{
-							tangent(j) = bspottriad(j,0);
-							normal(j) = bspottriad(j,1);
-						}
-						// rotation angle
-						alpha = (*bspotorientations_)[nodeLID];
-					}
-					else	// conventional case
-					{
+            for(int j=0; j<(int)tangent.M(); j++)
+            {
+              tangent(j) = bspottriad(j,0);
+              normal(j) = bspottriad(j,1);
+            }
+            // rotation angle
+            alpha = (*bspotorientations_)[nodeLID];
+          }
+          else	// conventional case
+          {
             // choose a second (neighbour) node
             const DRT::Node *node1 = NULL;
             int currfilament = (int)(*filamentnumber_)[nodeLID];
@@ -1422,8 +1422,8 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
 	          // random angle
 	          // by modulo operation involving the crosslink molecule number
-						alpha = fmod((double) i, 2*M_PI);
-					}
+            alpha = fmod((double) i, 2*M_PI);
+          }
 
           // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
           RotationAroundFixedAxis(tangent,&normal,alpha);
@@ -1497,31 +1497,31 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
             // first and second vector of the nodal triad
             LINALG::Matrix<3, 1> tangent;
-  					LINALG::Matrix<3, 1> normal;
-  					// rotation angle
-  					double alpha = 0.0;
+            LINALG::Matrix<3, 1> normal;
+            // rotation angle
+            double alpha = 0.0;
 
-  					// determine tangent and normal direction when helical binding spot geometry is applied
-  					if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
-  					{
-  						LINALG::Matrix<3,3> bspottriad;
-  						// auxiliary variable for storing a triad in quaternion form
-  						LINALG::Matrix<4, 1> qnode;
-  						// triad of node on first filament which is affected by the new crosslinker
-  						for (int j=0; j<4; j++)
-  							qnode(j) = bspottriadscol[j][nodeLID];
-  						LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+            // determine tangent and normal direction when helical binding spot geometry is applied
+            if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+            {
+              LINALG::Matrix<3,3> bspottriad;
+              // auxiliary variable for storing a triad in quaternion form
+              LINALG::Matrix<4, 1> qnode;
+              // triad of node on first filament which is affected by the new crosslinker
+              for (int j=0; j<4; j++)
+                qnode(j) = bspottriadscol[j][nodeLID];
+              LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
 
-  						for(int j=0; j<(int)tangent.M(); j++)
-  						{
-  							tangent(j) = bspottriad(j,0);
-  							normal(j) = bspottriad(j,1);
-  						}
-  						// rotation angle
-  						alpha = (*bspotorientations_)[nodeLID];
-  					}
-  					else	// conventional case
-  					{
+              for(int j=0; j<(int)tangent.M(); j++)
+              {
+                tangent(j) = bspottriad(j,0);
+                normal(j) = bspottriad(j,1);
+              }
+              // rotation angle
+              alpha = (*bspotorientations_)[nodeLID];
+            }
+            else	// conventional case
+            {
               // choose a second (neighbour) node
               const DRT::Node *node1 = NULL;
               int currfilament = (int)(*filamentnumber_)[nodeLID];
@@ -1549,10 +1549,10 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
               // norm it since the cross product does not keep the length
               normal.Scale(1 / normal.Norm2());
 
-  	          // random angle
-  	          // by modulo operation involving the crosslink molecule number
-  						alpha = fmod((double) i, 2*M_PI);
-  					}
+              // random angle
+              // by modulo operation involving the crosslink molecule number
+              alpha = fmod((double) i, 2*M_PI);
+            }
 
             // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
             RotationAroundFixedAxis(tangent,&normal,alpha);
@@ -1600,22 +1600,22 @@ void StatMechManager::GmshWedge(const int& n,
 		const DRT::ElementType & eot = thisele->ElementType();
 #ifdef D_BEAM3II
 #ifdef D_BEAM3
-		if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
-		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-		else
-#endif
-#endif
-#ifdef D_TRUSS3
-		if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
-			radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
-		else
-#endif
-			dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
-		// case: crosslinker
-		if(thisele->Id()>basisnodes_)
-			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
+    if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+      radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
+    else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
+    else
+  #endif
+  #endif
+  #ifdef D_TRUSS3
+    if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
+      radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
+    else
+  #endif
+      dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
+    // case: crosslinker
+    if(thisele->Id()>basisnodes_)
+      radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
   }
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
@@ -1770,261 +1770,261 @@ void StatMechManager::GmshWedge(const int& n,
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-	if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
-	{
-		double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+  {
+    double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
-		cout<<"Visualizing test volume: ";
-		switch(structuretype_)
-		{
-			// either cluster or homogeneous network
-			case 0:
-			{
-				cout<<"Cluster"<<endl;
-				// draw three octagons/hexadecagon lying in the base planes
-				for(int i=0; i<3; i++)//spatial comp i
-					for(int j=0; j<3; j++)//spatial comp j
-						if(j<i)
-							for(int k=0; k<3; k++)//spatial comp k perp. to the others
-								if(k!=i && k!=j)
-								{
-									double radius = characlength_/2.0;
-									// some local variables
-									LINALG::SerialDenseMatrix edge(3,2,true);
-									LINALG::Matrix<3,1> radiusvec1;
-									LINALG::Matrix<3,1> radiusvec2;
-									LINALG::Matrix<3,1> auxvec;
-									LINALG::Matrix<3,1> theta;
-									LINALG::Matrix<3,3> R;
+    cout<<"Visualizing test volume: ";
+    switch(structuretype_)
+    {
+      // either cluster or homogeneous network
+      case 0:
+      {
+        cout<<"Cluster"<<endl;
+        // draw three octagons/hexadecagon lying in the base planes
+        for(int i=0; i<3; i++)//spatial comp i
+          for(int j=0; j<3; j++)//spatial comp j
+            if(j<i)
+              for(int k=0; k<3; k++)//spatial comp k perp. to the others
+                if(k!=i && k!=j)
+                {
+                  double radius = characlength_/2.0;
+                  // some local variables
+                  LINALG::SerialDenseMatrix edge(3,2,true);
+                  LINALG::Matrix<3,1> radiusvec1;
+                  LINALG::Matrix<3,1> radiusvec2;
+                  LINALG::Matrix<3,1> auxvec;
+                  LINALG::Matrix<3,1> theta;
+                  LINALG::Matrix<3,3> R;
 
-									// compute three dimensional angle theta
-									// unit vector perpendicular to jk-plane
-									LINALG::Matrix<3,1> axis;
-									for (int l=0;l<3;++l)
-										if(l==k)
-											axis(l) = 1.0;
-										else
-											axis(l) = 0.0;
-									for (int l=0;l<3;++l)
-										theta(l) = axis(l) * 2 * M_PI / n;
+                  // compute three dimensional angle theta
+                  // unit vector perpendicular to jk-plane
+                  LINALG::Matrix<3,1> axis;
+                  for (int l=0;l<3;++l)
+                    if(l==k)
+                      axis(l) = 1.0;
+                    else
+                      axis(l) = 0.0;
+                  for (int l=0;l<3;++l)
+                    theta(l) = axis(l) * 2 * M_PI / n;
 
-									// Compute rotation matrix R from rotation angle theta
-									angletotriad(theta,R);
+                  // Compute rotation matrix R from rotation angle theta
+                  angletotriad(theta,R);
 
-									// compute radius vector for first surface node of first edges
-									auxvec.Clear();
-									for (int l=0;l<3;++l)
-										if(l==j)
-											auxvec(l) = 1.0;
+                  // compute radius vector for first surface node of first edges
+                  auxvec.Clear();
+                  for (int l=0;l<3;++l)
+                    if(l==j)
+                      auxvec(l) = 1.0;
 
-									// radiusvector for point on surface
-									radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
-									radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
-									radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+                  // radiusvector for point on surface
+                  radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+                  radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+                  radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
 
-									// initialize all edge points to nodes
-									for (int l=0;l<3;++l)
-									{
-										edge(l,0) = cog_(l);
-										edge(l,1) = cog_(l);
-									}
+                  // initialize all edge points to nodes
+                  for (int l=0;l<3;++l)
+                  {
+                    edge(l,0) = cog_(l);
+                    edge(l,1) = cog_(l);
+                  }
 
-									// get first point on surface for node1 and node2
-									for (int l=0;l<3;++l)
-										edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
+                  // get first point on surface for node1 and node2
+                  for (int l=0;l<3;++l)
+                    edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
 
 
-									// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-									radiusvec2.Multiply(R,radiusvec1);
+                  // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+                  radiusvec2.Multiply(R,radiusvec1);
 
-									// get second point on surface for node1 and node2
-									for(int l=0;l<3;l++)
-										edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+                  // get second point on surface for node1 and node2
+                  for(int l=0;l<3;l++)
+                    edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
 
-									// shift the coordinates according to periodic boundary conditions
-									LINALG::SerialDenseMatrix edgeshift = edge;
-									for(int l=0; l<(int)edge.M(); l++)
-										for(int m=0; m<(int)edge.N(); m++)
-										{
-											if(edge(l,m)>periodlength)
-												edgeshift(l,m) -= periodlength;
-											else if(edge(l,m)<0.0)
-												edgeshift(l,m) += periodlength;
-										}
-									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-									GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+                  // shift the coordinates according to periodic boundary conditions
+                  LINALG::SerialDenseMatrix edgeshift = edge;
+                  for(int l=0; l<(int)edge.M(); l++)
+                    for(int m=0; m<(int)edge.N(); m++)
+                    {
+                      if(edge(l,m)>periodlength)
+                        edgeshift(l,m) -= periodlength;
+                      else if(edge(l,m)<0.0)
+                        edgeshift(l,m) += periodlength;
+                    }
+                  // write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+                  GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
 
-									// now the other edges will be computed
-									for (int sector=0;sector<n-1;++sector)
-									{
-										// initialize for next edge
-										for (int l=0;l<3;++l)
-										{
-											edge(l,0)=edge(l,1);
-											edge(l,1)=cog_(l);
-										}
+                  // now the other edges will be computed
+                  for (int sector=0;sector<n-1;++sector)
+                  {
+                    // initialize for next edge
+                    for (int l=0;l<3;++l)
+                    {
+                      edge(l,0)=edge(l,1);
+                      edge(l,1)=cog_(l);
+                    }
 
-										// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-										radiusvec1 = radiusvec2;
-										radiusvec2.Clear();
+                    // old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+                    radiusvec1 = radiusvec2;
+                    radiusvec2.Clear();
 
-										// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-										radiusvec2.Multiply(R,radiusvec1);
+                    // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+                    radiusvec2.Multiply(R,radiusvec1);
 
-										// get second point on surface for node1 and node2
-										for (int l=0;l<3;++l)
-											edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
-										edgeshift = edge;
-										for(int l=0; l<(int)edge.M(); l++)
-											for(int m=0; m<(int)edge.N(); m++)
-											{
-												if(edge(l,m)>periodlength)
-													edgeshift(l,m) -= periodlength;
-												else if(edge(l,m)<0.0)
-													edgeshift(l,m) += periodlength;
-											}
+                    // get second point on surface for node1 and node2
+                    for (int l=0;l<3;++l)
+                      edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+                    edgeshift = edge;
+                    for(int l=0; l<(int)edge.M(); l++)
+                      for(int m=0; m<(int)edge.N(); m++)
+                      {
+                        if(edge(l,m)>periodlength)
+                          edgeshift(l,m) -= periodlength;
+                        else if(edge(l,m)<0.0)
+                          edgeshift(l,m) += periodlength;
+                      }
 
-										GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
-									}
-								}
-			}
-			break;
-			// bundle network
-			case 1:
-			{
-				cout<<"Bundle"<<endl;
+                    GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+                  }
+                }
+      }
+      break;
+      // bundle network
+      case 1:
+      {
+        cout<<"Bundle"<<endl;
 
-				double radius = characlength_;
-				LINALG::Matrix<3,2> coord;
-				for(int i=0; i<(int)coord.M(); i++)
-					for(int j=0; j<(int)coord.N(); j++)
-					coord(i,j) = testvolumepos_[j](i);
+        double radius = characlength_;
+        LINALG::Matrix<3,2> coord;
+        for(int i=0; i<(int)coord.M(); i++)
+          for(int j=0; j<(int)coord.N(); j++)
+          coord(i,j) = testvolumepos_[j](i);
 
-				// some local variables
-				LINALG::Matrix<3,4> edges;
-				LINALG::Matrix<3,1> axis;
-				LINALG::Matrix<3,1> radiusvec1;
-				LINALG::Matrix<3,1> radiusvec2;
-				LINALG::Matrix<3,1> auxvec;
-				LINALG::Matrix<3,1> theta;
-				LINALG::Matrix<3,3> R;
+        // some local variables
+        LINALG::Matrix<3,4> edges;
+        LINALG::Matrix<3,1> axis;
+        LINALG::Matrix<3,1> radiusvec1;
+        LINALG::Matrix<3,1> radiusvec2;
+        LINALG::Matrix<3,1> auxvec;
+        LINALG::Matrix<3,1> theta;
+        LINALG::Matrix<3,3> R;
 
-				// compute three dimensional angle theta
-				for (int j=0;j<3;++j)
-					axis(j) = coord(j,1) - coord(j,0);
-				double norm_axis = axis.Norm2();
-				for (int j=0;j<3;++j)
-					theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
+        // compute three dimensional angle theta
+        for (int j=0;j<3;++j)
+          axis(j) = coord(j,1) - coord(j,0);
+        double norm_axis = axis.Norm2();
+        for (int j=0;j<3;++j)
+          theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
 
-				// Compute rotation matrix R from rotation angle theta
-				angletotriad(theta,R);
+        // Compute rotation matrix R from rotation angle theta
+        angletotriad(theta,R);
 
-				// compute radius vector for first surface node of first edges
-				for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
+        // compute radius vector for first surface node of first edges
+        for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
 
-				// radiusvector for point on surface
-				radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
-				radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
-				radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+        // radiusvector for point on surface
+        radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+        radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+        radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
 
-				// initialize all edge points to nodes
-				for (int j=0;j<3;++j)
-				{
-					edges(j,0) = coord(j,0);
-					edges(j,1) = coord(j,1);
-					edges(j,2) = coord(j,1);
-					edges(j,3) = coord(j,0);
-				}
+        // initialize all edge points to nodes
+        for (int j=0;j<3;++j)
+        {
+          edges(j,0) = coord(j,0);
+          edges(j,1) = coord(j,1);
+          edges(j,2) = coord(j,1);
+          edges(j,3) = coord(j,0);
+        }
 
-				// get first point on surface for node1 and node2
-				for (int j=0;j<3;++j)
-				{
-					edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
-					edges(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
-				}
+        // get first point on surface for node1 and node2
+        for (int j=0;j<3;++j)
+        {
+          edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+          edges(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+        }
 
-				// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-				radiusvec2.Multiply(R,radiusvec1);
+        // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+        radiusvec2.Multiply(R,radiusvec1);
 
-				// get second point on surface for node1 and node2
-				for(int j=0;j<3;j++)
-				{
-					edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-					edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-				}
-				// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-				// and the connecting lines between the prism bases -> rectangle
-				for(int j=1; j<(int)edges.N()+1; j++)
-				{
-					int jlow = (j-1)%(int)edges.N();
-					int jhigh= j%(int)edges.N();
-					int numsections = 10;
-					// original (unshifted) edges
-					LINALG::SerialDenseMatrix curredge(3,2);
-					for(int k=0; k<curredge.M(); k++)
-					{
-						curredge(k,0) = edges(k, jlow);
-						curredge(k,1) = edges(k, jhigh);
-					}
+        // get second point on surface for node1 and node2
+        for(int j=0;j<3;j++)
+        {
+          edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+          edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+        }
+        // write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+        // and the connecting lines between the prism bases -> rectangle
+        for(int j=1; j<(int)edges.N()+1; j++)
+        {
+          int jlow = (j-1)%(int)edges.N();
+          int jhigh= j%(int)edges.N();
+          int numsections = 10;
+          // original (unshifted) edges
+          LINALG::SerialDenseMatrix curredge(3,2);
+          for(int k=0; k<curredge.M(); k++)
+          {
+            curredge(k,0) = edges(k, jlow);
+            curredge(k,1) = edges(k, jhigh);
+          }
 
-					GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
-					/*gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
-					gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
-					gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
-				}
+          GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
+          /*gmshfilecontent << "SL(" << scientific;
+          gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
+          gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
+          gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
+        }
 
-				// now the other edges will be computed
-				for (int sector=0;sector<n-1;++sector)
-				{
-					// initialize for next edge
-					for (int j=0;j<3;++j)
-					{
-						edges(j,0)=edges(j,3);
-						edges(j,1)=edges(j,2);
-						edges(j,2)=coord(j,1);
-						edges(j,3)=coord(j,0);
-					}
+        // now the other edges will be computed
+        for (int sector=0;sector<n-1;++sector)
+        {
+          // initialize for next edge
+          for (int j=0;j<3;++j)
+          {
+            edges(j,0)=edges(j,3);
+            edges(j,1)=edges(j,2);
+            edges(j,2)=coord(j,1);
+            edges(j,3)=coord(j,0);
+          }
 
-					// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-					radiusvec1 = radiusvec2;
-					radiusvec2.Clear();
+          // old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+          radiusvec1 = radiusvec2;
+          radiusvec2.Clear();
 
-					// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-					radiusvec2.Multiply(R,radiusvec1);
+          // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+          radiusvec2.Multiply(R,radiusvec1);
 
-					// get second point on surface for node1 and node2
-					for (int j=0;j<3;++j)
-					{
-						edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-						edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-					}
+          // get second point on surface for node1 and node2
+          for (int j=0;j<3;++j)
+          {
+            edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+            edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+          }
 
-					// put coordinates into filecontent-stream
-					for(int j=1; j<(int)edges.N()+1; j++)
-					{
-						int jlow = (j-1)%(int)edges.N();
-						int jhigh= j%(int)edges.N();
-						int numsections = 10;
-						LINALG::SerialDenseMatrix curredge(3,2);
-						for(int k=0; k<curredge.M(); k++)
-						{
-							curredge(k,0) = edges(k,jlow);
-							curredge(k,1) = edges(k,jhigh);
-						}
+          // put coordinates into filecontent-stream
+          for(int j=1; j<(int)edges.N()+1; j++)
+          {
+            int jlow = (j-1)%(int)edges.N();
+            int jhigh= j%(int)edges.N();
+            int numsections = 10;
+            LINALG::SerialDenseMatrix curredge(3,2);
+            for(int k=0; k<curredge.M(); k++)
+            {
+              curredge(k,0) = edges(k,jlow);
+              curredge(k,1) = edges(k,jhigh);
+            }
 
-						GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
-						/*gmshfilecontent << "SL(" << scientific;
-						gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
-						gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
-						gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
-					}
-				}
-			}
-			break;
-			// layer
-			case 2:
-			{
+            GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
+            /*gmshfilecontent << "SL(" << scientific;
+            gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
+            gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
+            gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
+          }
+        }
+      }
+      break;
+      // layer
+      case 2:
+      {
               cout<<"Layer ("<<testvolumepos_.size()<<"-noded)"<<endl;
               double halfthick = characlength_/2.0;
               // compute normal
@@ -2091,13 +2091,13 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                         gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
                         gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                       }
-			}
-			break;
-			case 3:
-				cout<<"Homogeneous network"<<endl;
-			break;
-		}
-	}
+      }
+      break;
+      case 3:
+        cout<<"Homogeneous network"<<endl;
+      break;
+    }
+  }
 }//GmshNetworkStructVolume()
 
 /*----------------------------------------------------------------------*
@@ -2105,100 +2105,100 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color)
 {
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	// direction of edge
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  // direction of edge
 
-	LINALG::Matrix<3, 1> dir;
-	for(int k=0; k<(int)dir.M(); k++)
-		dir(k) = coord(k,1)-coord(k,0);
-	dir.Scale(1.0/dir.Norm2());
-	// divide given edge into intervals for periodic boundary shift and visualization
+  LINALG::Matrix<3, 1> dir;
+  for(int k=0; k<(int)dir.M(); k++)
+    dir(k) = coord(k,1)-coord(k,0);
+  dir.Scale(1.0/dir.Norm2());
+  // divide given edge into intervals for periodic boundary shift and visualization
 
-	for(int k=0; k<numsections; k++)
-	{
-		// k-th intersection point
-		LINALG::SerialDenseMatrix linepart(3,2);
-		for(int l=0; l<(int)linepart.M(); l++)
-		{
-			linepart(l,0) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)k;
-			linepart(l,1) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)(k+1);
-		}
+  for(int k=0; k<numsections; k++)
+  {
+    // k-th intersection point
+    LINALG::SerialDenseMatrix linepart(3,2);
+    for(int l=0; l<(int)linepart.M(); l++)
+    {
+      linepart(l,0) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)k;
+      linepart(l,1) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)(k+1);
+    }
 
-		// determine how the line is broken
-		// Periodic boundary shift
-		for(int l=0; l<linepart.M(); l++)
-			for(int m=0; m<linepart.N(); m++)
-			{
-				if(linepart(l,m)>periodlength)
-					while(linepart(l,m)>periodlength)
-						linepart(l,m) -= periodlength;
-				if(linepart(l,m)<0.0)
-					while(linepart(l,m)<0.0)
-						linepart(l,m) += periodlength;
-			}
+    // determine how the line is broken
+    // Periodic boundary shift
+    for(int l=0; l<linepart.M(); l++)
+      for(int m=0; m<linepart.N(); m++)
+      {
+        if(linepart(l,m)>periodlength)
+          while(linepart(l,m)>periodlength)
+            linepart(l,m) -= periodlength;
+        if(linepart(l,m)<0.0)
+          while(linepart(l,m)<0.0)
+            linepart(l,m) += periodlength;
+      }
 
-		LINALG::Matrix<3,1> cut;
-		cut.Clear();
-		for (int dof=0; dof<linepart.M(); dof++)
-		{
-			// point 0 close to zero boundary
-			if (fabs(linepart(dof,1)-periodlength-linepart(dof,0)) < fabs(linepart(dof,1) - linepart(dof,0)))
-				cut(dof) = 1.0;
-			// point 1 close to zero boundary
-			if (fabs(linepart(dof,1)+periodlength - linepart(dof,0)) < fabs(linepart(dof,1)-linepart(dof,0)))
-				cut(dof) = 2.0;
-		}
+    LINALG::Matrix<3,1> cut;
+    cut.Clear();
+    for (int dof=0; dof<linepart.M(); dof++)
+    {
+      // point 0 close to zero boundary
+      if (fabs(linepart(dof,1)-periodlength-linepart(dof,0)) < fabs(linepart(dof,1) - linepart(dof,0)))
+        cut(dof) = 1.0;
+      // point 1 close to zero boundary
+      if (fabs(linepart(dof,1)+periodlength - linepart(dof,0)) < fabs(linepart(dof,1)-linepart(dof,0)))
+        cut(dof) = 2.0;
+    }
 
-		// write special output for broken elements
-		if (cut(0) + cut(1) + cut(2) > 0.0)
-		{
-			//from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
-			double lambda0 = 1e4;
-			for (int dof = 0; dof < linepart.M(); dof++)
-			{
-				if (cut(dof) == 1.0)
-				{
-					if (fabs(-linepart(dof, 0) / dir(dof)) < fabs(lambda0))
-						lambda0 = -linepart(dof, 0) / dir(dof);
-				}
-				else if (cut(dof) == 2.0)
-				{
-					if (fabs((periodlength - linepart(dof, 0)) / dir(dof)) < fabs(lambda0))
-						lambda0 = (periodlength - linepart(dof, 0)) / dir(dof);
-				}
-			}
-			//from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
-			double lambda1 = 1e4;
-			for (int dof = 0; dof < linepart.M(); dof++)
-			{
-				if (cut(dof) == 2.0)
-				{
-					if (fabs(-linepart(dof, 1) / dir(dof)) < fabs(lambda1))
-						lambda1 = -linepart(dof, 1) / dir(dof);
-				}
-				else if (cut(dof) == 1.0)
-				{
-					if (fabs((periodlength - linepart(dof, 1)) / dir(dof)) < fabs(lambda1))
-						lambda1 = (periodlength - linepart(dof, 1)) / dir(dof);
-				}
-			}
-			//define output coordinates for broken elements, first segment
-			LINALG::SerialDenseMatrix coordout=linepart;
-			for(int l=0 ;l<coordout.M(); l++)
-				coordout(l,1) = linepart(l,0) + lambda0*dir(l);
-			GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+    // write special output for broken elements
+    if (cut(0) + cut(1) + cut(2) > 0.0)
+    {
+      //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
+      double lambda0 = 1e4;
+      for (int dof = 0; dof < linepart.M(); dof++)
+      {
+        if (cut(dof) == 1.0)
+        {
+          if (fabs(-linepart(dof, 0) / dir(dof)) < fabs(lambda0))
+            lambda0 = -linepart(dof, 0) / dir(dof);
+        }
+        else if (cut(dof) == 2.0)
+        {
+          if (fabs((periodlength - linepart(dof, 0)) / dir(dof)) < fabs(lambda0))
+            lambda0 = (periodlength - linepart(dof, 0)) / dir(dof);
+        }
+      }
+      //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
+      double lambda1 = 1e4;
+      for (int dof = 0; dof < linepart.M(); dof++)
+      {
+        if (cut(dof) == 2.0)
+        {
+          if (fabs(-linepart(dof, 1) / dir(dof)) < fabs(lambda1))
+            lambda1 = -linepart(dof, 1) / dir(dof);
+        }
+        else if (cut(dof) == 1.0)
+        {
+          if (fabs((periodlength - linepart(dof, 1)) / dir(dof)) < fabs(lambda1))
+            lambda1 = (periodlength - linepart(dof, 1)) / dir(dof);
+        }
+      }
+      //define output coordinates for broken elements, first segment
+      LINALG::SerialDenseMatrix coordout=linepart;
+      for(int l=0 ;l<coordout.M(); l++)
+        coordout(l,1) = linepart(l,0) + lambda0*dir(l);
+      GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
 
-			//define output coordinates for broken elements, second segment
-			for(int l=0; l<coordout.M(); l++)
-			{
-				coordout(l,0) = linepart(l,1);
-				coordout(l,1) = linepart(l,1)+lambda1*dir(l);
-			}
-			GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
-		}
-		else // output for continuous elements
-			GmshWedge(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
-	}
+      //define output coordinates for broken elements, second segment
+      for(int l=0; l<coordout.M(); l++)
+      {
+        coordout(l,0) = linepart(l,1);
+        coordout(l,1) = linepart(l,1)+lambda1*dir(l);
+      }
+      GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+    }
+    else // output for continuous elements
+      GmshWedge(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
+  }
 }//GmshNetworkStructVolumePeriodic()
 
 /*----------------------------------------------------------------------*
@@ -2585,31 +2585,31 @@ void StatMechManager::InitOutput(const int ndim, const double& dt)
  *----------------------------------------------------------------------*/
 void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt)
 {
-	/*Output:
-	 * (1) structure number and characteristic length (radius, thickness)
-	 * (2) internal energy
-	 * (3) histogram of inter-crosslinker distance of crosslinker elements -> Density-Density-Correlation
-	 *     in three columns (length of one column: numbins) due to periodic continuation of the boundary volume
-	 * (4) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
-	 * (5) radial density distribution
-	 */
-	if(!discret_.Comm().MyPID())
-		cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
+  /*Output:
+   * (1) structure number and characteristic length (radius, thickness)
+   * (2) internal energy
+   * (3) histogram of inter-crosslinker distance of crosslinker elements -> Density-Density-Correlation
+   *     in three columns (length of one column: numbins) due to periodic continuation of the boundary volume
+   * (4) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
+   * (5) radial density distribution
+   */
+  if(!discret_.Comm().MyPID())
+    cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
 
-	double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
+  double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-	// storage vector for shifted crosslinker LIDs(crosslinkermap)
-	LINALG::Matrix<3,1> boxcenter;
-	LINALG::Matrix<3,1> centershift;
-	std::vector<int> crosslinkerentries;
-	// determine the new center point of the periodic volume
-	DDCorrShift(&boxcenter, &centershift, &crosslinkerentries);
+  // storage vector for shifted crosslinker LIDs(crosslinkermap)
+  LINALG::Matrix<3,1> boxcenter;
+  LINALG::Matrix<3,1> centershift;
+  std::vector<int> crosslinkerentries;
+  // determine the new center point of the periodic volume
+  DDCorrShift(&boxcenter, &centershift, &crosslinkerentries);
 
-	if(!discret_.Comm().MyPID())
-		cout<<crosslinkerentries.size()<<" crosslinker elements found...\n"<<endl;
+  if(!discret_.Comm().MyPID())
+    cout<<crosslinkerentries.size()<<" crosslinker elements found...\n"<<endl;
 
   // Determine current network structure
-	LINALG::Matrix<3,1> cog;
+  LINALG::Matrix<3,1> cog;
   DDCorrCurrentStructure(disrow, &cog, &centershift, &crosslinkerentries, istep, filename);
   // store center of gravity for later use in GmshOutput()
   cog_ = cog;
@@ -2619,7 +2619,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename);
 
-	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
+  //calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // testwise, base centershift upon calculated cog_ (rise in adequacy?)
   LINALG::Matrix<3,1> newcentershift;
   for(int i=0; i<(int)cog.M(); i++)
@@ -2633,9 +2633,9 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   ComputeLocalMeshSize(disrow, newcentershift, istep);
 
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
-	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
-	Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
-	DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &newcentershift);
+  Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
+  Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
+  DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &newcentershift);
 
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
@@ -2672,10 +2672,10 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   for(int i=0; i<numbins; i++)
     for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
     {
-    	for(int col=0; col<crosslinksperbincol.NumVectors(); col++)
-    		crosslinksperbin[i][col] += (int)crosslinksperbincol[col][pid*numbins+i];
-    	for(int col=0; col<crosslinksperbinrotcol.NumVectors(); col++)
-    		crosslinksperbinrot[i][col] += (int)crosslinksperbinrotcol[col][pid*numbins+i];
+      for(int col=0; col<crosslinksperbincol.NumVectors(); col++)
+        crosslinksperbin[i][col] += (int)crosslinksperbincol[col][pid*numbins+i];
+      for(int col=0; col<crosslinksperbinrotcol.NumVectors(); col++)
+        crosslinksperbinrot[i][col] += (int)crosslinksperbinrotcol[col][pid*numbins+i];
       phibins[i] += (int)phibinscol[pid*numbins+i];
       thetabins[i] += (int)thetabinscol[pid*numbins+i];
       costhetabins[i] += (int)costhetabinscol[pid*numbins+i];
@@ -2694,9 +2694,9 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     {
       histogram<<i+1<<"    ";
       for(int j=0; j<(int)crosslinksperbin[i].size(); j++)
-      	histogram<<crosslinksperbin[i][j]<<"    ";
+        histogram<<crosslinksperbin[i][j]<<"    ";
       for(int j=0; j<(int)crosslinksperbinrot[i].size(); j++)
-      	histogram<<crosslinksperbinrot[i][j]<<"    ";
+        histogram<<crosslinksperbinrot[i][j]<<"    ";
       histogram<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    "<<radialdistbins[i]<<endl;
       //cout<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    "<<radialdistbins[i]<<endl;
     }
@@ -2704,8 +2704,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
   }
-	if(!discret_.Comm().MyPID())
-		cout<<"================================================================================="<<endl;
+  if(!discret_.Comm().MyPID())
+    cout<<"================================================================================="<<endl;
 }//StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*
@@ -2716,73 +2716,73 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
 {
-	int numrasterpoints = statmechparams_.get<int>("NUMRASTERPOINTS", 3);
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	// smallest average distance among all the average distances between the rasterpoints and all crosslinker elements
-	// (init with 2*pl,so that it is definitely overwritten by the first "real" value)
-	double smallestdistance = 2*periodlength;
+  int numrasterpoints = statmechparams_.get<int>("NUMRASTERPOINTS", 3);
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  // smallest average distance among all the average distances between the rasterpoints and all crosslinker elements
+  // (init with 2*pl,so that it is definitely overwritten by the first "real" value)
+  double smallestdistance = 2*periodlength;
 
-	//store crosslinker element position within crosslinkerbond to crosslinkerentries
-	for(int i=0; i<crosslinkerbond_->MyLength(); i++)
-		if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
-			crosslinkerentries->push_back(i);
+  //store crosslinker element position within crosslinkerbond to crosslinkerentries
+  for(int i=0; i<crosslinkerbond_->MyLength(); i++)
+    if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
+      crosslinkerentries->push_back(i);
 
-	int numcrossele = (int)crosslinkerentries->size();
+  int numcrossele = (int)crosslinkerentries->size();
 
-	// determine the new center of the box
-	if(numcrossele>0)
-	{
-		for(int i=0; i<numrasterpoints; i++)
-			for(int j=0; j<numrasterpoints; j++)
-				for(int k=0; k<numrasterpoints; k++)
-				{
-					double averagedistance = 0.0;
-					LINALG::Matrix<3,1> currentrasterpoint;
-					LINALG::Matrix<3,1> currentcentershift;
+  // determine the new center of the box
+  if(numcrossele>0)
+  {
+    for(int i=0; i<numrasterpoints; i++)
+      for(int j=0; j<numrasterpoints; j++)
+        for(int k=0; k<numrasterpoints; k++)
+        {
+          double averagedistance = 0.0;
+          LINALG::Matrix<3,1> currentrasterpoint;
+          LINALG::Matrix<3,1> currentcentershift;
 
-					// calculate current raster point
-					currentrasterpoint(0) = i*periodlength/(numrasterpoints-1);
-					currentrasterpoint(1) = j*periodlength/(numrasterpoints-1);
-					currentrasterpoint(2) = k*periodlength/(numrasterpoints-1);
+          // calculate current raster point
+          currentrasterpoint(0) = i*periodlength/(numrasterpoints-1);
+          currentrasterpoint(1) = j*periodlength/(numrasterpoints-1);
+          currentrasterpoint(2) = k*periodlength/(numrasterpoints-1);
 
-					// calculate the center shift (difference vector between regular center and new center of the boundary box)
-					for(int l=0; l<(int)currentrasterpoint.M(); l++)
-						currentcentershift(l) = currentrasterpoint(l)-periodlength/2.0;
+          // calculate the center shift (difference vector between regular center and new center of the boundary box)
+          for(int l=0; l<(int)currentrasterpoint.M(); l++)
+            currentcentershift(l) = currentrasterpoint(l)-periodlength/2.0;
 
-					// calculate average distance of crosslinker elements to raster point
-					for(int l=0; l<numcrossele; l++)
-					{
-						// get the crosslinker position in question and shift it according to new boundary box center
-						LINALG::Matrix<3,1> distance;
-						for(int m=0; m<(int)distance.M(); m++)
-						{
-							distance(m) = (*crosslinkerpositions_)[m][(*crosslinkerentries)[l]];
-							if (distance(m) > periodlength+currentcentershift(m))
-								distance(m) -= periodlength;
-							if (distance(m) < 0.0+currentcentershift(m))
-								distance(m) += periodlength;
-						}
-						distance -= currentrasterpoint;
-						averagedistance += distance.Norm2();
-					}
-					averagedistance /= (double)crosslinkerentries->size();
+          // calculate average distance of crosslinker elements to raster point
+          for(int l=0; l<numcrossele; l++)
+          {
+            // get the crosslinker position in question and shift it according to new boundary box center
+            LINALG::Matrix<3,1> distance;
+            for(int m=0; m<(int)distance.M(); m++)
+            {
+              distance(m) = (*crosslinkerpositions_)[m][(*crosslinkerentries)[l]];
+              if (distance(m) > periodlength+currentcentershift(m))
+                distance(m) -= periodlength;
+              if (distance(m) < 0.0+currentcentershift(m))
+                distance(m) += periodlength;
+            }
+            distance -= currentrasterpoint;
+            averagedistance += distance.Norm2();
+          }
+          averagedistance /= (double)crosslinkerentries->size();
 
-					if(averagedistance<smallestdistance)
-					{
-						smallestdistance = averagedistance;
-						*boxcenter = currentrasterpoint;
-						*centershift = currentcentershift;
-					}
-				}
-	}
-	else
-	{
-		boxcenter->PutScalar(periodlength/2.0);
-		centershift->PutScalar(0.0);
-	}
-	//if(!discret_.Comm().MyPID())
-		//cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
-	return;
+          if(averagedistance<smallestdistance)
+          {
+            smallestdistance = averagedistance;
+            *boxcenter = currentrasterpoint;
+            *centershift = currentcentershift;
+          }
+        }
+  }
+  else
+  {
+    boxcenter->PutScalar(periodlength/2.0);
+    centershift->PutScalar(0.0);
+  }
+  //if(!discret_.Comm().MyPID())
+    //cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
+  return;
 }//StatMechManager::DDCorrShift()
 
 /*------------------------------------------------------------------------------*
@@ -2791,870 +2791,870 @@ void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix
  |                                                        (public) mueller 11/10|
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
-																						 LINALG::Matrix<3,1>* cog,
-																						 LINALG::Matrix<3,1>* centershift,
-																						 std::vector<int>* crosslinkerentries,
-																						 const int& istep,
-																						 const std::ostringstream& filename,
-																						 bool filorientoutput)
+                                             LINALG::Matrix<3,1>* cog,
+                                             LINALG::Matrix<3,1>* centershift,
+                                             std::vector<int>* crosslinkerentries,
+                                             const int& istep,
+                                             const std::ostringstream& filename,
+                                             bool filorientoutput)
 {
-	// number of crosslinker elements
-	int numcrossele = (int)crosslinkerentries->size();
-	std::vector<int> crosslinksinvolume(3,0);
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  // number of crosslinker elements
+  int numcrossele = (int)crosslinkerentries->size();
+  std::vector<int> crosslinksinvolume(3,0);
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
   // get column map displacements
   Epetra_Vector discol(*(discret_.DofColMap()), true);
   LINALG::Export(disrow, discol);
 
-/// calculate center of gravity with respect to shiftedpositions for bound crosslinkers
-	std::vector<LINALG::Matrix<3,1> > shiftedpositions;
-	cog->Clear();
-	// shift positions according to new center point (raster point)
-	for(int i=0; i<numcrossele; i++)
-	{
-		LINALG::Matrix<3,1> currposition;
-		for(int j=0; j<(int)currposition.M(); j++)
-		{
-			currposition(j) = (*crosslinkerpositions_)[j][(*crosslinkerentries)[i]];
-			if (currposition(j) > periodlength+(*centershift)(j))
-				currposition(j) -= periodlength;
-			if (currposition(j) < 0.0+(*centershift)(j))
-				currposition(j) += periodlength;
-		}
-		(*cog) += currposition;
-		if(discret_.Comm().MyPID()==0)
-			shiftedpositions.push_back(currposition);
-	}
-	if(numcrossele != 0)
-		cog->Scale(1.0/(double)numcrossele);
+  /// calculate center of gravity with respect to shiftedpositions for bound crosslinkers
+  std::vector<LINALG::Matrix<3,1> > shiftedpositions;
+  cog->Clear();
+  // shift positions according to new center point (raster point)
+  for(int i=0; i<numcrossele; i++)
+  {
+    LINALG::Matrix<3,1> currposition;
+    for(int j=0; j<(int)currposition.M(); j++)
+    {
+      currposition(j) = (*crosslinkerpositions_)[j][(*crosslinkerentries)[i]];
+      if (currposition(j) > periodlength+(*centershift)(j))
+        currposition(j) -= periodlength;
+      if (currposition(j) < 0.0+(*centershift)(j))
+        currposition(j) += periodlength;
+    }
+    (*cog) += currposition;
+    if(discret_.Comm().MyPID()==0)
+      shiftedpositions.push_back(currposition);
+  }
+  if(numcrossele != 0)
+    cog->Scale(1.0/(double)numcrossele);
 
-	// zero out for new run
-	trafo_->Zero();
+  // zero out for new run
+  trafo_->Zero();
 
   // calculations done by Proc 0 only
   if(discret_.Comm().MyPID()==0)
   {
-		// number indicating structure type
-		int structurenumber = 0;
-		// indices for layer plane vectors
-		int dir1 = -1, dir2 = -1;
- 		double rlink = statmechparams_.get<double>("R_LINK", 1.0);
-		// number of nested intervals
-		int maxexponent = (int)ceil(log(periodlength/rlink)/log(2.0))*2;
-		// vector for test volumes (V[0]-sphere, V[1]-cylinder, V[2]-layer/homogenous network)
-		std::vector<double> volumes(3,pow(10*periodlength, 3.0));
-		// characteristic lengths of "volumes"
-		std::vector<double> characlength(3,10*periodlength);
-		// crosslinker fraction included in test volume
-		std::vector<double> crossfraction(3,0.0);
-		// number of iterations until crosslinker fraction lies within the given threshold fraction +/- tolerance
-		std::vector<int> niter(3,0);
+    // number indicating structure type
+    int structurenumber = 0;
+    // indices for layer plane vectors
+    int dir1 = -1, dir2 = -1;
+    double rlink = statmechparams_.get<double>("R_LINK", 1.0);
+    // number of nested intervals
+    int maxexponent = (int)ceil(log(periodlength/rlink)/log(2.0))*2;
+    // vector for test volumes (V[0]-sphere, V[1]-cylinder, V[2]-layer/homogenous network)
+    std::vector<double> volumes(3,pow(10*periodlength, 3.0));
+    // characteristic lengths of "volumes"
+    std::vector<double> characlength(3,10*periodlength);
+    // crosslinker fraction included in test volume
+    std::vector<double> crossfraction(3,0.0);
+    // number of iterations until crosslinker fraction lies within the given threshold fraction +/- tolerance
+    std::vector<int> niter(3,0);
 
-		// iterated vectors
-		// bundle
-		LINALG::Matrix<3,1> cylvec;
-		// layer
-		std::vector<LINALG::Matrix<3,1> > layervectors;
-		// cluster-layer vectors (layer vectors determined when actually, a cluster phase is detected)
-		std::vector<LINALG::Matrix<3,1> > clusterlayervecs;
+    // iterated vectors
+    // bundle
+    LINALG::Matrix<3,1> cylvec;
+    // layer
+    std::vector<LINALG::Matrix<3,1> > layervectors;
+    // cluster-layer vectors (layer vectors determined when actually, a cluster phase is detected)
+    std::vector<LINALG::Matrix<3,1> > clusterlayervecs;
 
-		// get the intersections of the axis of a cylinder with the (two) cube faces
-		std::vector<LINALG::Matrix<3,1> > intersections;
-		// coordinates of intersection points of layer-type volume with the cube edges
-		std::vector<LINALG::Matrix<3,1> > interseccoords;
+    // get the intersections of the axis of a cylinder with the (two) cube faces
+    std::vector<LINALG::Matrix<3,1> > intersections;
+    // coordinates of intersection points of layer-type volume with the cube edges
+    std::vector<LINALG::Matrix<3,1> > interseccoords;
 
-		if(numcrossele>0)
-		{
-/// calculate normed vectors and output filament element orientations
-			// normed vectors for structural analysis (projections of base vectors e1, e2, e3 onto structure)
-			std::vector<LINALG::Matrix<3,1> > normedvectors;
-			for(int i=0; i<3; i++)
-			{
-				LINALG::Matrix<3,1> normedi;
-				normedi.Clear();
-				normedvectors.push_back(normedi);
-			}
+    if(numcrossele>0)
+    {
+  /// calculate normed vectors and output filament element orientations
+      // normed vectors for structural analysis (projections of base vectors e1, e2, e3 onto structure)
+      std::vector<LINALG::Matrix<3,1> > normedvectors;
+      for(int i=0; i<3; i++)
+      {
+        LINALG::Matrix<3,1> normedi;
+        normedi.Clear();
+        normedvectors.push_back(normedi);
+      }
 
-/// determine normed vectors as well as output filament element vectors
-			std::ostringstream orientfilename;
-			orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
-			FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
+  /// determine normed vectors as well as output filament element vectors
+      std::ostringstream orientfilename;
+      orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
+      FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
 
-			// select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
-			// enclosed angle with the cylinder axis
-			int startiterindex = 0;
-			double veclength = 0.0;
-			cout<<"Normed vectors:"<<endl;
-			for(int i=0; i<(int)normedvectors.size(); i++)
-			{
-				if(normedvectors[i].Norm2() > veclength)
-				{
-					veclength = normedvectors[i].Norm2();
-					startiterindex = i;
-				}
-				// Scale normed vectors to unit length
-				normedvectors[i].Scale(1.0/normedvectors[i].Norm2());
-				cout<<i<<": "<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
-			}
+      // select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
+      // enclosed angle with the cylinder axis
+      int startiterindex = 0;
+      double veclength = 0.0;
+      cout<<"Normed vectors:"<<endl;
+      for(int i=0; i<(int)normedvectors.size(); i++)
+      {
+        if(normedvectors[i].Norm2() > veclength)
+        {
+          veclength = normedvectors[i].Norm2();
+          startiterindex = i;
+        }
+        // Scale normed vectors to unit length
+        normedvectors[i].Scale(1.0/normedvectors[i].Norm2());
+        cout<<i<<": "<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
+      }
 
-/// determine network structure
-			// threshold fraction of crosslinkers
-			double pthresh = 0.9;
+  /// determine network structure
+      // threshold fraction of crosslinkers
+      double pthresh = 0.9;
 
-			// calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
-			for(int i=0; i<(int)volumes.size(); i++)
-			{
-				switch(i)
-				{
-					// shperical volume
-					case 0:
-					{
-						bool leaveloop = false;
-						// tolerance
-						double lowertol = 0.05;
-						double uppertol = 0.01;
-						// initial search radius
-						double radius = periodlength/2.0;
-						// fraction of crosslinks within test volume
-						double pr = 0.0;
-						int exponent = 1;
+      // calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
+      for(int i=0; i<(int)volumes.size(); i++)
+      {
+        switch(i)
+        {
+          // shperical volume
+          case 0:
+          {
+            bool leaveloop = false;
+            // tolerance
+            double lowertol = 0.05;
+            double uppertol = 0.01;
+            // initial search radius
+            double radius = periodlength/2.0;
+            // fraction of crosslinks within test volume
+            double pr = 0.0;
+            int exponent = 1;
 
-						// determine the two normed vectors with the largest cross product 2-Norm (closest to being perpendicular)
-						// this is done in order to capture the smooth transformation from cluster to layer. More precisely, we
-						// calculate the layer triad. The information we gain from this procedure is useful once we observe a
-						// filament orientation distribution which is no longer homogeneous.
-						double crossprodnorm = 0.0;
-						for(int j=0; j<3; j++)
-							for(int k=0; k<3; k++)
-								if(k>j)
-								{
-									// cross product
-									LINALG::Matrix<3,1> crossvec;
-									crossvec(0) = normedvectors[j](1)*normedvectors[k](2) - normedvectors[j](2)*normedvectors[k](1);
-									crossvec(1) = normedvectors[j](2)*normedvectors[k](0) - normedvectors[j](0)*normedvectors[k](2);
-									crossvec(2) = normedvectors[j](0)*normedvectors[k](1) - normedvectors[j](1)*normedvectors[k](0);
-									if(crossvec.Norm2()>crossprodnorm)
-									{
-										crossprodnorm = crossvec.Norm2();
-										dir1=j;
-										dir2=k;
-									}
-								}
+            // determine the two normed vectors with the largest cross product 2-Norm (closest to being perpendicular)
+            // this is done in order to capture the smooth transformation from cluster to layer. More precisely, we
+            // calculate the layer triad. The information we gain from this procedure is useful once we observe a
+            // filament orientation distribution which is no longer homogeneous.
+            double crossprodnorm = 0.0;
+            for(int j=0; j<3; j++)
+              for(int k=0; k<3; k++)
+                if(k>j)
+                {
+                  // cross product
+                  LINALG::Matrix<3,1> crossvec;
+                  crossvec(0) = normedvectors[j](1)*normedvectors[k](2) - normedvectors[j](2)*normedvectors[k](1);
+                  crossvec(1) = normedvectors[j](2)*normedvectors[k](0) - normedvectors[j](0)*normedvectors[k](2);
+                  crossvec(2) = normedvectors[j](0)*normedvectors[k](1) - normedvectors[j](1)*normedvectors[k](0);
+                  if(crossvec.Norm2()>crossprodnorm)
+                  {
+                    crossprodnorm = crossvec.Norm2();
+                    dir1=j;
+                    dir2=k;
+                  }
+                }
 
-						// store initial vectors to be iterated
-						clusterlayervecs.push_back(normedvectors[dir1]);
-						clusterlayervecs.push_back(normedvectors[dir2]);
+            // store initial vectors to be iterated
+            clusterlayervecs.push_back(normedvectors[dir1]);
+            clusterlayervecs.push_back(normedvectors[dir2]);
 
-						// iterate both vectors in order to obtain projections into the layer plane
-						const int maxiterations = 25;
-						cout<<"\nVector iteration:"<<endl;
-						cout<<"Cluster1: ";
-						DDCorrIterateVector(discol, &clusterlayervecs[0], maxiterations);
-						cout<<"Cluster2: ";
-						DDCorrIterateVector(discol, &clusterlayervecs[1], maxiterations);
+            // iterate both vectors in order to obtain projections into the layer plane
+            const int maxiterations = 25;
+            cout<<"\nVector iteration:"<<endl;
+            cout<<"Cluster1: ";
+            DDCorrIterateVector(discol, &clusterlayervecs[0], maxiterations);
+            cout<<"Cluster2: ";
+            DDCorrIterateVector(discol, &clusterlayervecs[1], maxiterations);
 
-						// cross product n_1 x n_2, plane normal
-						LINALG::Matrix<3,1> normal;
-						normal(0) = clusterlayervecs[0](1)*clusterlayervecs[1](2) - clusterlayervecs[0](2)*clusterlayervecs[1](1);
-						normal(1) = clusterlayervecs[0](2)*clusterlayervecs[1](0) - clusterlayervecs[0](0)*clusterlayervecs[1](2);
-						normal(2) = clusterlayervecs[0](0)*clusterlayervecs[1](1) - clusterlayervecs[0](1)*clusterlayervecs[1](0);
-						normal.Scale(1.0/normal.Norm2());
-						clusterlayervecs.push_back(normal);
+            // cross product n_1 x n_2, plane normal
+            LINALG::Matrix<3,1> normal;
+            normal(0) = clusterlayervecs[0](1)*clusterlayervecs[1](2) - clusterlayervecs[0](2)*clusterlayervecs[1](1);
+            normal(1) = clusterlayervecs[0](2)*clusterlayervecs[1](0) - clusterlayervecs[0](0)*clusterlayervecs[1](2);
+            normal(2) = clusterlayervecs[0](0)*clusterlayervecs[1](1) - clusterlayervecs[0](1)*clusterlayervecs[1](0);
+            normal.Scale(1.0/normal.Norm2());
+            clusterlayervecs.push_back(normal);
 
-						// loop as long as pr has not yet reached pthresh
-						// flag indicating convergence (set to false, if max no. of iterations is reached)
-						bool converged = true;
-						while(!leaveloop)
-						{
-							int rcount = 0;
-							// loop over crosslinker elements
-							for(int j=0; j<numcrossele; j++)
-							{
-								// get distance of crosslinker element to center of gravity
-								LINALG::Matrix<3,1> dist = shiftedpositions[j];
-								dist -= *cog;
-								if(dist.Norm2()<=radius)
-									rcount++;
-							}
-							pr = double(rcount)/double(numcrossele);
+            // loop as long as pr has not yet reached pthresh
+            // flag indicating convergence (set to false, if max no. of iterations is reached)
+            bool converged = true;
+            while(!leaveloop)
+            {
+              int rcount = 0;
+              // loop over crosslinker elements
+              for(int j=0; j<numcrossele; j++)
+              {
+                // get distance of crosslinker element to center of gravity
+                LINALG::Matrix<3,1> dist = shiftedpositions[j];
+                dist -= *cog;
+                if(dist.Norm2()<=radius)
+                  rcount++;
+              }
+              pr = double(rcount)/double(numcrossele);
 
-							exponent++;
-							niter[0]++;
-							// new radius
-							if(exponent<=maxexponent)
-							{
-								if((pr<pthresh-lowertol || pr>pthresh+uppertol))
-								{
-									// determine "growth direction"
-									double sign;
-									if(pr<pthresh)
-										sign = 1.0;
-									else
-										sign = -1.0;
-									radius += sign*periodlength/pow(2.0,(double)exponent);
-								}
-								else
-								{
-									crosslinksinvolume[i] = rcount;
-									crossfraction[i] = pr;
-									leaveloop = true;
-								}
-							}
-							else
-							{
-								converged = false;
-								crosslinksinvolume[i] = rcount;
-								crossfraction[i] = pr;
-								leaveloop = true;
-							}
-						}
-						// store characteristic length and test sphere volume
-						if(converged)
-						{
-							// store cluster diameter
-							characlength[i] = 2.0*radius;
-							volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
-						}
-					}
-					break;
-					// cylindrical volume
-					case 1:
-					{
-						bool leaveloop = false;
-						// tolerance
-						double lowertol = 0.02;
-						double uppertol = 0.02;
-						double radius = periodlength/2.0;
-						double cyllength = 0.0;
-						double pr = 0.0;
-						int exponent = 1;
+              exponent++;
+              niter[0]++;
+              // new radius
+              if(exponent<=maxexponent)
+              {
+                if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+                {
+                  // determine "growth direction"
+                  double sign;
+                  if(pr<pthresh)
+                    sign = 1.0;
+                  else
+                    sign = -1.0;
+                  radius += sign*periodlength/pow(2.0,(double)exponent);
+                }
+                else
+                {
+                  crosslinksinvolume[i] = rcount;
+                  crossfraction[i] = pr;
+                  leaveloop = true;
+                }
+              }
+              else
+              {
+                converged = false;
+                crosslinksinvolume[i] = rcount;
+                crossfraction[i] = pr;
+                leaveloop = true;
+              }
+            }
+            // store characteristic length and test sphere volume
+            if(converged)
+            {
+              // store cluster diameter
+              characlength[i] = 2.0*radius;
+              volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
+            }
+          }
+          break;
+          // cylindrical volume
+          case 1:
+          {
+            bool leaveloop = false;
+            // tolerance
+            double lowertol = 0.02;
+            double uppertol = 0.02;
+            double radius = periodlength/2.0;
+            double cyllength = 0.0;
+            double pr = 0.0;
+            int exponent = 1;
 
-						// iterate to obtain fitting normed direction
-						LINALG::Matrix<3,1> normj = normedvectors[startiterindex];
-						const int maxiterations = 25;
-						cout<<"Bundle:   ";
-						DDCorrIterateVector(discol, &normj, maxiterations);
-						// for output
-						cylvec = normj;
+            // iterate to obtain fitting normed direction
+            LINALG::Matrix<3,1> normj = normedvectors[startiterindex];
+            const int maxiterations = 25;
+            cout<<"Bundle:   ";
+            DDCorrIterateVector(discol, &normj, maxiterations);
+            // for output
+            cylvec = normj;
 
-						// cube face boundaries of jk-surface of cubical volume
-						LINALG::Matrix<3,2> surfaceboundaries;
-						for(int j=0; j<(int)surfaceboundaries.M(); j++)
-						{
-							surfaceboundaries(j,0) = (*centershift)(j);
-							surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
-						}
-						for(int j=0; j<(int)surfaceboundaries.N(); j++)
-							for(int k=0; k<3; k++)
-								for(int l=0; l<3; l++)
-									if(l>k)
-										for(int m=0; m<3; m++)
-											if(m!=k && m!=l)
-											{
-												LINALG::Matrix<3,1> currentintersection;
-												// known intersection component
-												currentintersection(m) = surfaceboundaries(m,j);
-												// get line parameter
-												double lambdaline = (currentintersection(m)-(*cog)(m))/normj(m);
-												currentintersection(k) = (*cog)(k)+lambdaline*normj(k);
-												currentintersection(l) = (*cog)(l)+lambdaline*normj(l);
-												// check if intersection lies on volume boundary
-												if(currentintersection(k)<=surfaceboundaries(k,1) && currentintersection(k)>=surfaceboundaries(k,0) &&
-													 currentintersection(l)<=surfaceboundaries(l,1) && currentintersection(l)>=surfaceboundaries(l,0))
-													intersections.push_back(currentintersection);
-											}
-						LINALG::Matrix<3,1> deltaisecs = intersections[1];
-						deltaisecs -= intersections[0];
-						cyllength = deltaisecs.Norm2();
+            // cube face boundaries of jk-surface of cubical volume
+            LINALG::Matrix<3,2> surfaceboundaries;
+            for(int j=0; j<(int)surfaceboundaries.M(); j++)
+            {
+              surfaceboundaries(j,0) = (*centershift)(j);
+              surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
+            }
+            for(int j=0; j<(int)surfaceboundaries.N(); j++)
+              for(int k=0; k<3; k++)
+                for(int l=0; l<3; l++)
+                  if(l>k)
+                    for(int m=0; m<3; m++)
+                      if(m!=k && m!=l)
+                      {
+                        LINALG::Matrix<3,1> currentintersection;
+                        // known intersection component
+                        currentintersection(m) = surfaceboundaries(m,j);
+                        // get line parameter
+                        double lambdaline = (currentintersection(m)-(*cog)(m))/normj(m);
+                        currentintersection(k) = (*cog)(k)+lambdaline*normj(k);
+                        currentintersection(l) = (*cog)(l)+lambdaline*normj(l);
+                        // check if intersection lies on volume boundary
+                        if(currentintersection(k)<=surfaceboundaries(k,1) && currentintersection(k)>=surfaceboundaries(k,0) &&
+                           currentintersection(l)<=surfaceboundaries(l,1) && currentintersection(l)>=surfaceboundaries(l,0))
+                          intersections.push_back(currentintersection);
+                      }
+            LINALG::Matrix<3,1> deltaisecs = intersections[1];
+            deltaisecs -= intersections[0];
+            cyllength = deltaisecs.Norm2();
 
-						// calculate fraction of crosslinkers within cylinder
-						// flag indicating convergence (set to false, if max no. of iterations is reached)
-						bool converged = true;
-						while(!leaveloop)
-						{
-							int rcount = 0;
-							// loop over crosslinker elements
-							for(int j=0; j<numcrossele; j++)
-							{
-								// get distance of crosslinker element to normed1 through center of gravity
-								// intersection line-plane
-								LINALG::Matrix<3,1> crosstocog = shiftedpositions[j];
-								crosstocog -= *cog;
+            // calculate fraction of crosslinkers within cylinder
+            // flag indicating convergence (set to false, if max no. of iterations is reached)
+            bool converged = true;
+            while(!leaveloop)
+            {
+              int rcount = 0;
+              // loop over crosslinker elements
+              for(int j=0; j<numcrossele; j++)
+              {
+                // get distance of crosslinker element to normed1 through center of gravity
+                // intersection line-plane
+                LINALG::Matrix<3,1> crosstocog = shiftedpositions[j];
+                crosstocog -= *cog;
 
-								double numerator = crosstocog.Dot(normj);
-								double denominator = (normj).Dot(normj);
-								double lambdaisec = numerator/denominator;
-								// intersection and distance of crosslinker to intersection
-								LINALG::Matrix<3,1> isecpt = normj;
-								isecpt.Scale(lambdaisec);
-								isecpt += (*cog);
-								LINALG::Matrix<3,1> deltaiseccog = shiftedpositions[j];
-								deltaiseccog -= isecpt;
-								double distance = deltaiseccog.Norm2();
+                double numerator = crosstocog.Dot(normj);
+                double denominator = (normj).Dot(normj);
+                double lambdaisec = numerator/denominator;
+                // intersection and distance of crosslinker to intersection
+                LINALG::Matrix<3,1> isecpt = normj;
+                isecpt.Scale(lambdaisec);
+                isecpt += (*cog);
+                LINALG::Matrix<3,1> deltaiseccog = shiftedpositions[j];
+                deltaiseccog -= isecpt;
+                double distance = deltaiseccog.Norm2();
 
-								if(distance<=radius)
-									rcount++;
-							}
-							pr = double(rcount)/double(numcrossele);
+                if(distance<=radius)
+                  rcount++;
+              }
+              pr = double(rcount)/double(numcrossele);
 
-							exponent++;
-							niter[1]++;
-							// new radius
-							if(exponent<=maxexponent)
-							{
-								if((pr<pthresh-lowertol || pr>pthresh+uppertol))
-								{
-									// determine "growth direction"
-									double sign;
-									if(pr<pthresh)
-										sign = 1.0;
-									else
-										sign = -1.0;
-									radius += sign*periodlength/pow(2.0,(double)exponent);
-								}
-								else
-								{
-									crosslinksinvolume[i] = rcount;
-									crossfraction[i] = pr;
-									leaveloop = true;
-								}
-							}
-							else
-							{
-								converged = false;
-								crosslinksinvolume[i] = rcount;
-								crossfraction[i] = pr;
-								leaveloop = true;
-							}
-						}
-						if(converged)
-						{
-							// store bundle diameter
-							characlength[i] = 2.0*radius;
-							volumes[i] = M_PI*radius*radius*cyllength;
-						}
-					}
-					break;
-					// cuboid layer volume
-					case 2:
-					{
-						bool leaveloop = false;
-						// tolerance
-						double lowertol = 0.02;
-						double uppertol = 0.02;
-						double thickness = periodlength/2.0;
-						double pr = 0.0;
-						int exponent = 1;
+              exponent++;
+              niter[1]++;
+              // new radius
+              if(exponent<=maxexponent)
+              {
+                if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+                {
+                  // determine "growth direction"
+                  double sign;
+                  if(pr<pthresh)
+                    sign = 1.0;
+                  else
+                    sign = -1.0;
+                  radius += sign*periodlength/pow(2.0,(double)exponent);
+                }
+                else
+                {
+                  crosslinksinvolume[i] = rcount;
+                  crossfraction[i] = pr;
+                  leaveloop = true;
+                }
+              }
+              else
+              {
+                converged = false;
+                crosslinksinvolume[i] = rcount;
+                crossfraction[i] = pr;
+                leaveloop = true;
+              }
+            }
+            if(converged)
+            {
+              // store bundle diameter
+              characlength[i] = 2.0*radius;
+              volumes[i] = M_PI*radius*radius*cyllength;
+            }
+          }
+          break;
+          // cuboid layer volume
+          case 2:
+          {
+            bool leaveloop = false;
+            // tolerance
+            double lowertol = 0.02;
+            double uppertol = 0.02;
+            double thickness = periodlength/2.0;
+            double pr = 0.0;
+            int exponent = 1;
 
-						//determine the two normed vectors with the largest cross product 2-Norm (closest to being perpendicular)
-						double crossprodnorm = 0.0;
-						for(int j=0; j<3; j++)
-							for(int k=0; k<3; k++)
-								if(k>j)
-								{
-									// cross product
-									LINALG::Matrix<3,1> crossvec;
-									crossvec(0) = normedvectors[j](1)*normedvectors[k](2) - normedvectors[j](2)*normedvectors[k](1);
-									crossvec(1) = normedvectors[j](2)*normedvectors[k](0) - normedvectors[j](0)*normedvectors[k](2);
-									crossvec(2) = normedvectors[j](0)*normedvectors[k](1) - normedvectors[j](1)*normedvectors[k](0);
-									if(crossvec.Norm2()>crossprodnorm)
-									{
-										crossprodnorm = crossvec.Norm2();
-										dir1=j;
-										dir2=k;
-									}
-								}
+            //determine the two normed vectors with the largest cross product 2-Norm (closest to being perpendicular)
+            double crossprodnorm = 0.0;
+            for(int j=0; j<3; j++)
+              for(int k=0; k<3; k++)
+                if(k>j)
+                {
+                  // cross product
+                  LINALG::Matrix<3,1> crossvec;
+                  crossvec(0) = normedvectors[j](1)*normedvectors[k](2) - normedvectors[j](2)*normedvectors[k](1);
+                  crossvec(1) = normedvectors[j](2)*normedvectors[k](0) - normedvectors[j](0)*normedvectors[k](2);
+                  crossvec(2) = normedvectors[j](0)*normedvectors[k](1) - normedvectors[j](1)*normedvectors[k](0);
+                  if(crossvec.Norm2()>crossprodnorm)
+                  {
+                    crossprodnorm = crossvec.Norm2();
+                    dir1=j;
+                    dir2=k;
+                  }
+                }
 
-						// store initial vectors to be iterated
-						layervectors.push_back(normedvectors[dir1]);
-						layervectors.push_back(normedvectors[dir2]);
+            // store initial vectors to be iterated
+            layervectors.push_back(normedvectors[dir1]);
+            layervectors.push_back(normedvectors[dir2]);
 
-						// iterate both vectors in order to obtain projections into the layer plane
-						const int maxiterations = 25;
-						cout<<"Layer1:  ";
-						DDCorrIterateVector(discol, &layervectors[0], maxiterations);
-						cout<<"Layer2:  ";
-						DDCorrIterateVector(discol, &layervectors[1], maxiterations);
+            // iterate both vectors in order to obtain projections into the layer plane
+            const int maxiterations = 25;
+            cout<<"Layer1:  ";
+            DDCorrIterateVector(discol, &layervectors[0], maxiterations);
+            cout<<"Layer2:  ";
+            DDCorrIterateVector(discol, &layervectors[1], maxiterations);
 
-						// cross product n_1 x n_2, plane normal
-						LINALG::Matrix<3,1> normal;
-						normal(0) = layervectors[0](1)*layervectors[1](2) - layervectors[0](2)*layervectors[1](1);
-						normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
-						normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
-						normal.Scale(1.0/normal.Norm2());
-						layervectors.push_back(normal);
+            // cross product n_1 x n_2, plane normal
+            LINALG::Matrix<3,1> normal;
+            normal(0) = layervectors[0](1)*layervectors[1](2) - layervectors[0](2)*layervectors[1](1);
+            normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
+            normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
+            normal.Scale(1.0/normal.Norm2());
+            layervectors.push_back(normal);
 
-						// crosslinkerpositions which are considered to be within the cuboid
-						std::vector<LINALG::Matrix<3,1> > crosslinkswithinvolume;
+            // crosslinkerpositions which are considered to be within the cuboid
+            std::vector<LINALG::Matrix<3,1> > crosslinkswithinvolume;
 
-						// flag indicating convergence (set to false, if max no. of iterations is reached)
-						bool converged = true;
-						while(!leaveloop)
-						{
-							for(int j=0; j<numcrossele; j++)
-							{
-								// given, that cog E plane with normal vector "normal"
-								// constant in Hessian normal form
-								double d = normal.Dot((*cog));
-								// distance of crosslinker element to plane
-								double pn = normal.Dot(shiftedpositions[j]);
-								double disttoplane = fabs(pn-d);
+            // flag indicating convergence (set to false, if max no. of iterations is reached)
+            bool converged = true;
+            while(!leaveloop)
+            {
+              for(int j=0; j<numcrossele; j++)
+              {
+                // given, that cog E plane with normal vector "normal"
+                // constant in Hessian normal form
+                double d = normal.Dot((*cog));
+                // distance of crosslinker element to plane
+                double pn = normal.Dot(shiftedpositions[j]);
+                double disttoplane = fabs(pn-d);
 
-								if(disttoplane <= thickness)
-									crosslinkswithinvolume.push_back(shiftedpositions[j]);
-							}
-							pr = double(crosslinkswithinvolume.size())/double(numcrossele);
+                if(disttoplane <= thickness)
+                  crosslinkswithinvolume.push_back(shiftedpositions[j]);
+              }
+              pr = double(crosslinkswithinvolume.size())/double(numcrossele);
 
-							exponent++;
-							niter[2]++;
+              exponent++;
+              niter[2]++;
 
-							if(exponent<=maxexponent)
-							{
-								if((pr<pthresh-lowertol || pr>pthresh+uppertol))
-								{
-									double sign;
-									if(pr<pthresh)
-										sign = 1.0;
-									else
-										sign = -1.0;
-									thickness += sign*periodlength/pow(2.0,(double)exponent);
-									crosslinkswithinvolume.clear();
-								}
-								else
-								{
-									crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
-									crossfraction[i] = pr;
-									leaveloop = true;
-								}
-							}
-							else
-							{
-								converged = false;
-								crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
-								crossfraction[i] = pr;
-								leaveloop = true;
-							}
-						}
-						// calculation of the volume
-						// according to number of intersection points (only if crosslinker fraction calculation converged)
-						if(converged)
-						{
-							// cube face boundaries of jk-surface of cubical volume
-							LINALG::Matrix<3,2> surfaceboundaries;
-							for(int j=0; j<(int)surfaceboundaries.M(); j++)
-							{
-								surfaceboundaries(j,0) = (*centershift)(j);
-								surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
-							}
+              if(exponent<=maxexponent)
+              {
+                if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+                {
+                  double sign;
+                  if(pr<pthresh)
+                    sign = 1.0;
+                  else
+                    sign = -1.0;
+                  thickness += sign*periodlength/pow(2.0,(double)exponent);
+                  crosslinkswithinvolume.clear();
+                }
+                else
+                {
+                  crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
+                  crossfraction[i] = pr;
+                  leaveloop = true;
+                }
+              }
+              else
+              {
+                converged = false;
+                crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
+                crossfraction[i] = pr;
+                leaveloop = true;
+              }
+            }
+            // calculation of the volume
+            // according to number of intersection points (only if crosslinker fraction calculation converged)
+            if(converged)
+            {
+              // cube face boundaries of jk-surface of cubical volume
+              LINALG::Matrix<3,2> surfaceboundaries;
+              for(int j=0; j<(int)surfaceboundaries.M(); j++)
+              {
+                surfaceboundaries(j,0) = (*centershift)(j);
+                surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
+              }
 
-							// first step: find the intersection points layer x volume egdes.
-							// At first, we assume a layer delimited by the volume boundaries)
-							for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
-							{
-								for(int j=0; j<3; j++) // spatial component j
-									for(int k=0; k<3; k++) // spatial component k
-										if(k>j)// above diagonal
-											for(int l=0; l<3; l++) // spatial component l
-												if(l!=j && l!=k)
-												{
-													LINALG::Matrix<3,1> coords;
-													coords(l) = surfaceboundaries(l,surf);
-													for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
-														for(int m=0; m<(int)surfaceboundaries.M(); m++)
-															if(l!=m)
-															{
-																coords(m) = surfaceboundaries(m,edge);
-																for(int n=0; n<(int)surfaceboundaries.M(); n++)
-																	if(n!=m && n!=l)
-																	{
-																		coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
-																		double lowerbound = surfaceboundaries(n,0);
-																		double upperbound = surfaceboundaries(n,1);
-																		if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
-																		{
-																			bool redundant = false;
-																			// check for redundant entries
-																			if((int)interseccoords.size()>0)
-																			{
-																				LINALG::Matrix<3,1> check = coords;
-																				for(int p=0; p<(int)interseccoords.size(); p++)
-																				{
-																					check -= interseccoords[p];
-																					if(check.Norm2()<1e-4)
-																						redundant = true;
-																					check = coords;
-																				}
-																			}
-																			if(!redundant)
-																				interseccoords.push_back(coords);
-																		}
-																	}
-															}
-												}
-							}
+              // first step: find the intersection points layer x volume egdes.
+              // At first, we assume a layer delimited by the volume boundaries)
+              for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
+              {
+                for(int j=0; j<3; j++) // spatial component j
+                  for(int k=0; k<3; k++) // spatial component k
+                    if(k>j)// above diagonal
+                      for(int l=0; l<3; l++) // spatial component l
+                        if(l!=j && l!=k)
+                        {
+                          LINALG::Matrix<3,1> coords;
+                          coords(l) = surfaceboundaries(l,surf);
+                          for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
+                            for(int m=0; m<(int)surfaceboundaries.M(); m++)
+                              if(l!=m)
+                              {
+                                coords(m) = surfaceboundaries(m,edge);
+                                for(int n=0; n<(int)surfaceboundaries.M(); n++)
+                                  if(n!=m && n!=l)
+                                  {
+                                    coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
+                                    double lowerbound = surfaceboundaries(n,0);
+                                    double upperbound = surfaceboundaries(n,1);
+                                    if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
+                                    {
+                                      bool redundant = false;
+                                      // check for redundant entries
+                                      if((int)interseccoords.size()>0)
+                                      {
+                                        LINALG::Matrix<3,1> check = coords;
+                                        for(int p=0; p<(int)interseccoords.size(); p++)
+                                        {
+                                          check -= interseccoords[p];
+                                          if(check.Norm2()<1e-4)
+                                            redundant = true;
+                                          check = coords;
+                                        }
+                                      }
+                                      if(!redundant)
+                                        interseccoords.push_back(coords);
+                                    }
+                                  }
+                              }
+                        }
+              }
 
-							//second step: Approximate the base area of the volume/prism
-							// calculate and store unit direction vectors corners-COG
-							std::vector<LINALG::Matrix<3,1> > itercoords = interseccoords;
-							std::vector<LINALG::Matrix<3,1> > dirvecs;
-							std::vector<double> initdistances;
-							//cout<<"initdist = ";
-							for(int j=0; j<(int)interseccoords.size(); j++)
-							{
-								// directional vectors pointing from center of gravity towards the corners
-								LINALG::Matrix<3,1> dirvec = interseccoords[j];
-								dirvec -= *cog;
-								initdistances.push_back(dirvec.Norm2());
-								//cout<<dirvec.Norm2()<<" ";
-								dirvec.Scale(1.0/dirvec.Norm2());
-								dirvecs.push_back(dirvec);
-							}
-							//cout<<endl;
+              //second step: Approximate the base area of the volume/prism
+              // calculate and store unit direction vectors corners-COG
+              std::vector<LINALG::Matrix<3,1> > itercoords = interseccoords;
+              std::vector<LINALG::Matrix<3,1> > dirvecs;
+              std::vector<double> initdistances;
+              //cout<<"initdist = ";
+              for(int j=0; j<(int)interseccoords.size(); j++)
+              {
+                // directional vectors pointing from center of gravity towards the corners
+                LINALG::Matrix<3,1> dirvec = interseccoords[j];
+                dirvec -= *cog;
+                initdistances.push_back(dirvec.Norm2());
+                //cout<<dirvec.Norm2()<<" ";
+                dirvec.Scale(1.0/dirvec.Norm2());
+                dirvecs.push_back(dirvec);
+              }
+              //cout<<endl;
 
-							// calculate crosslinker projection positions in layer plane
-							std::vector<LINALG::Matrix<3,1> > crossprojections;
-							for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
-							{
-								// calculate projection of crosslinker onto layer plane
-								LINALG::Matrix<3,1> projection = crosslinkswithinvolume[j];
-								LINALG::Matrix<3,1> diffvec = normal;
-								// line paramater
-								double mu = (interseccoords[0].Dot(normal) - crosslinkswithinvolume[j].Dot(normal)) / (normal.Dot(normal));
-								diffvec.Scale(mu);
-								projection += diffvec;
-								crossprojections.push_back(projection);
-							}
+              // calculate crosslinker projection positions in layer plane
+              std::vector<LINALG::Matrix<3,1> > crossprojections;
+              for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
+              {
+                // calculate projection of crosslinker onto layer plane
+                LINALG::Matrix<3,1> projection = crosslinkswithinvolume[j];
+                LINALG::Matrix<3,1> diffvec = normal;
+                // line paramater
+                double mu = (interseccoords[0].Dot(normal) - crosslinkswithinvolume[j].Dot(normal)) / (normal.Dot(normal));
+                diffvec.Scale(mu);
+                projection += diffvec;
+                crossprojections.push_back(projection);
+              }
 
-							// calculate edge directions of the layer poygon
-							std::vector<LINALG::Matrix<3,1> > edgedirs;
-							std::vector<int> neworder;
-							for(int j=0; j<(int)interseccoords.size(); j++)
-								for(int k=0; k<(int)interseccoords.size(); k++)
-									if(k>j)
-										for(int l=0; l<(int)interseccoords[j].M(); l++)
-											if(fabs((interseccoords[j])(l)-(interseccoords[k])(l))<1e-7)
-											{
-												LINALG::Matrix<3,1> jdir = interseccoords[k];
-												jdir -= interseccoords[j];
-												jdir.Scale(1.0/jdir.Norm2());
-												edgedirs.push_back(jdir);
-												neworder.push_back(j);
-											}
+              // calculate edge directions of the layer poygon
+              std::vector<LINALG::Matrix<3,1> > edgedirs;
+              std::vector<int> neworder;
+              for(int j=0; j<(int)interseccoords.size(); j++)
+                for(int k=0; k<(int)interseccoords.size(); k++)
+                  if(k>j)
+                    for(int l=0; l<(int)interseccoords[j].M(); l++)
+                      if(fabs((interseccoords[j])(l)-(interseccoords[k])(l))<1e-7)
+                      {
+                        LINALG::Matrix<3,1> jdir = interseccoords[k];
+                        jdir -= interseccoords[j];
+                        jdir.Scale(1.0/jdir.Norm2());
+                        edgedirs.push_back(jdir);
+                        neworder.push_back(j);
+                      }
 
-							// iterate as long as layer volume contains 90-95% of the crosslinks
-							leaveloop = false;
-							int numiter = 30;
-							int iter = 0;
-							int rcount = 0;
-							double uplim = 0.01;
-							double lowlim = 0.03;
-							double threshold = 0.95;
-							// start with 1.0 (100% of crosslinkers within layer volume)
-							double crossfrac = 1.0;
-							while(!leaveloop)
-							{
-								if(iter<numiter)
-								{
-									if(crossfrac<threshold-lowlim || crossfrac>threshold+uplim)
-									{
-										//calculate new set of layer corner coordinates
-										for(int j=0; j<(int)itercoords.size(); j++)
-										{
-											LINALG::Matrix<3,1> deltaj = dirvecs[j];
-											deltaj.Scale(initdistances[j]/pow(1.4,(double)(iter+1)));
-											// depending on crossfrac, choose in which direction the triangle grows:
-											if(crossfrac>threshold)
-												itercoords[j] -= deltaj;
-											if(crossfrac<threshold)
-												itercoords[j] += deltaj;
-										}
+              // iterate as long as layer volume contains 90-95% of the crosslinks
+              leaveloop = false;
+              int numiter = 30;
+              int iter = 0;
+              int rcount = 0;
+              double uplim = 0.01;
+              double lowlim = 0.03;
+              double threshold = 0.95;
+              // start with 1.0 (100% of crosslinkers within layer volume)
+              double crossfrac = 1.0;
+              while(!leaveloop)
+              {
+                if(iter<numiter)
+                {
+                  if(crossfrac<threshold-lowlim || crossfrac>threshold+uplim)
+                  {
+                    //calculate new set of layer corner coordinates
+                    for(int j=0; j<(int)itercoords.size(); j++)
+                    {
+                      LINALG::Matrix<3,1> deltaj = dirvecs[j];
+                      deltaj.Scale(initdistances[j]/pow(1.4,(double)(iter+1)));
+                      // depending on crossfrac, choose in which direction the triangle grows:
+                      if(crossfrac>threshold)
+                        itercoords[j] -= deltaj;
+                      if(crossfrac<threshold)
+                        itercoords[j] += deltaj;
+                    }
 
-										// check if crosslinkers lie within the volume with the new base area
-										// number of crosslinkers
-										rcount = 0;
-										for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
-										{
-											// distance of crosslinker projection to center of gravity
-											LINALG::Matrix<3,1> crosstocog = crossprojections[j];
-											crosstocog -= *cog;
-											double dcrosstocog = crosstocog.Norm2();
-											crosstocog.Scale(1.0/dcrosstocog);
+                    // check if crosslinkers lie within the volume with the new base area
+                    // number of crosslinkers
+                    rcount = 0;
+                    for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
+                    {
+                      // distance of crosslinker projection to center of gravity
+                      LINALG::Matrix<3,1> crosstocog = crossprojections[j];
+                      crosstocog -= *cog;
+                      double dcrosstocog = crosstocog.Norm2();
+                      crosstocog.Scale(1.0/dcrosstocog);
 
-											// calculate shortest positive distance for intersections of the line (cog->crosslinker) with the layer polygon from the center of gravity
-											double dclosestisec = 10*periodlength;
-											for(int k=0; k<(int)edgedirs.size(); k++)
-											{
-												// line paramete (=length)
-												double numerator = edgedirs[k](1)*(itercoords[neworder[k]](0)-(*cog)(0)) - edgedirs[k](0)*(itercoords[neworder[k]](1)-(*cog)(1));
-												double denominator = crosstocog(0)*edgedirs[k](1) - crosstocog(1)*edgedirs[k](0);
-												// lambda either positive (i.e. intersection lies in the direction of the crosslinker) or negative
-												double lambda = numerator/denominator;
-												// in case of parallel directional vectors, lambda takes big value (does not matter anyway as this case is not important for the coming calculations)
-												if(fabs(denominator) < 1e-8)
-													lambda = 1e8;
-												// save smallest positive lambda. It marks the closest intersection of the (cog->crosslinker)-line with an edge
-												if(lambda>0.0 && lambda<dclosestisec)
-													dclosestisec = lambda;
-											}
-											// if the distance to the closest intersection is bigger than the distance between crosslinker and center of gravity,
-											// the linker in question lies within the iterated volume
-											if(dclosestisec>=dcrosstocog)
-												rcount++;
-										}
-										//new crosslinker fraction in volume
-										crossfrac = double(rcount)/double(crosslinkswithinvolume.size());
-										//cout<<"i="<<iter<<", crossfrac = "<<crossfrac<<", rcount = "<<rcount<<"/"<<crosslinkswithinvolume.size()<<endl;
-										iter++;
-									}
-									else
-									{
-										// set itercoords as new interseccoords
-										interseccoords = itercoords;
-										crosslinksinvolume[i] = rcount;
-										crossfraction[i] *= pr;
-										cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
-										leaveloop = true;
-									}
-								}
-								else
-								{
-									// set itercoords as new interseccoords
-									interseccoords = itercoords;
-									crosslinksinvolume[i] = rcount;
-									crossfraction[i] *= pr;
-									cout<<"-> adjusted volume after maxiter = "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
-									leaveloop = true;
-								}
-							}
+                      // calculate shortest positive distance for intersections of the line (cog->crosslinker) with the layer polygon from the center of gravity
+                      double dclosestisec = 10*periodlength;
+                      for(int k=0; k<(int)edgedirs.size(); k++)
+                      {
+                        // line paramete (=length)
+                        double numerator = edgedirs[k](1)*(itercoords[neworder[k]](0)-(*cog)(0)) - edgedirs[k](0)*(itercoords[neworder[k]](1)-(*cog)(1));
+                        double denominator = crosstocog(0)*edgedirs[k](1) - crosstocog(1)*edgedirs[k](0);
+                        // lambda either positive (i.e. intersection lies in the direction of the crosslinker) or negative
+                        double lambda = numerator/denominator;
+                        // in case of parallel directional vectors, lambda takes big value (does not matter anyway as this case is not important for the coming calculations)
+                        if(fabs(denominator) < 1e-8)
+                          lambda = 1e8;
+                        // save smallest positive lambda. It marks the closest intersection of the (cog->crosslinker)-line with an edge
+                        if(lambda>0.0 && lambda<dclosestisec)
+                          dclosestisec = lambda;
+                      }
+                      // if the distance to the closest intersection is bigger than the distance between crosslinker and center of gravity,
+                      // the linker in question lies within the iterated volume
+                      if(dclosestisec>=dcrosstocog)
+                        rcount++;
+                    }
+                    //new crosslinker fraction in volume
+                    crossfrac = double(rcount)/double(crosslinkswithinvolume.size());
+                    //cout<<"i="<<iter<<", crossfrac = "<<crossfrac<<", rcount = "<<rcount<<"/"<<crosslinkswithinvolume.size()<<endl;
+                    iter++;
+                  }
+                  else
+                  {
+                    // set itercoords as new interseccoords
+                    interseccoords = itercoords;
+                    crosslinksinvolume[i] = rcount;
+                    crossfraction[i] *= pr;
+                    cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
+                    leaveloop = true;
+                  }
+                }
+                else
+                {
+                  // set itercoords as new interseccoords
+                  interseccoords = itercoords;
+                  crosslinksinvolume[i] = rcount;
+                  crossfraction[i] *= pr;
+                  cout<<"-> adjusted volume after maxiter = "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
+                  leaveloop = true;
+                }
+              }
 
-							// calculation of layer volume
-							switch((int)interseccoords.size())
-							{
-								// triangle
-								case 3:
-								{
-									// area of the triangle via cosine rule
-									LINALG::Matrix<3,1> c = interseccoords[0];
-									c -= interseccoords[1];
-									LINALG::Matrix<3,1> a = interseccoords[1];
-									a -= interseccoords[2];
-									LINALG::Matrix<3,1> b = interseccoords[0];
-									b -= interseccoords[2];
-									double cl = c.Norm2();
-									double al = a.Norm2();
-									double bl = b.Norm2();
-									double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
-									double h = bl * sin(alpha);
+              // calculation of layer volume
+              switch((int)interseccoords.size())
+              {
+                // triangle
+                case 3:
+                {
+                  // area of the triangle via cosine rule
+                  LINALG::Matrix<3,1> c = interseccoords[0];
+                  c -= interseccoords[1];
+                  LINALG::Matrix<3,1> a = interseccoords[1];
+                  a -= interseccoords[2];
+                  LINALG::Matrix<3,1> b = interseccoords[0];
+                  b -= interseccoords[2];
+                  double cl = c.Norm2();
+                  double al = a.Norm2();
+                  double bl = b.Norm2();
+                  double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
+                  double h = bl * sin(alpha);
 
-									// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
-									volumes[i] = cl*h*thickness;
-								}
-								break;
-								// square/rectangle/trapezoid
-								case 4:
-								{
-									// edges
-									LINALG::Matrix<3,1> a = interseccoords[1];
-									a -= interseccoords[0];
-									LINALG::Matrix<3,1> c = interseccoords[3];
-									c -= interseccoords[2];
-									LINALG::Matrix<3,1> d = interseccoords[2];
-									d -= interseccoords[0];
-									// diagonal
-									LINALG::Matrix<3,1> f = interseccoords[2];
-									f -= interseccoords[1];
-									double al = a.Norm2();
-									double cl = c.Norm2();
-									double dl = d.Norm2();
-									double fl = f.Norm2();
-									double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
-									double h = dl * sin(alpha);
+                  // volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
+                  volumes[i] = cl*h*thickness;
+                }
+                break;
+                // square/rectangle/trapezoid
+                case 4:
+                {
+                  // edges
+                  LINALG::Matrix<3,1> a = interseccoords[1];
+                  a -= interseccoords[0];
+                  LINALG::Matrix<3,1> c = interseccoords[3];
+                  c -= interseccoords[2];
+                  LINALG::Matrix<3,1> d = interseccoords[2];
+                  d -= interseccoords[0];
+                  // diagonal
+                  LINALG::Matrix<3,1> f = interseccoords[2];
+                  f -= interseccoords[1];
+                  double al = a.Norm2();
+                  double cl = c.Norm2();
+                  double dl = d.Norm2();
+                  double fl = f.Norm2();
+                  double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
+                  double h = dl * sin(alpha);
 
-									volumes[i] = (al+cl) * h * thickness;
-									//cout<<"layer volume_rec = "<<volumes[i]<<endl;
-								}
-								break;
-								// hexahedron
-								case 6:
-								{
-									double hexvolume = 0.0;
-									// indices mapping correct order of hexagon edges
-									for(int j=0; j<(int)interseccoords.size(); j++)
-										for(int k=0; k<(int)interseccoords.size(); k++)
-											if(k<j)
-												for(int l=0; l<3; l++)
-													if(fabs(interseccoords[i](l)-interseccoords[j](l))<1e-7)// components identical
-													{
-														// get edge of j-th triangle within hexagon
-														LINALG::Matrix<3,1> a = interseccoords[k];
-														a -= *cog;
-														LINALG::Matrix<3,1> b = interseccoords[j];
-														b -= *cog;
-														LINALG::Matrix<3,1> c = interseccoords[k];
-														c -= interseccoords[j];
+                  volumes[i] = (al+cl) * h * thickness;
+                  //cout<<"layer volume_rec = "<<volumes[i]<<endl;
+                }
+                break;
+                // hexahedron
+                case 6:
+                {
+                  double hexvolume = 0.0;
+                  // indices mapping correct order of hexagon edges
+                  for(int j=0; j<(int)interseccoords.size(); j++)
+                    for(int k=0; k<(int)interseccoords.size(); k++)
+                      if(k<j)
+                        for(int l=0; l<3; l++)
+                          if(fabs(interseccoords[i](l)-interseccoords[j](l))<1e-7)// components identical
+                          {
+                            // get edge of j-th triangle within hexagon
+                            LINALG::Matrix<3,1> a = interseccoords[k];
+                            a -= *cog;
+                            LINALG::Matrix<3,1> b = interseccoords[j];
+                            b -= *cog;
+                            LINALG::Matrix<3,1> c = interseccoords[k];
+                            c -= interseccoords[j];
 
-														double al = a.Norm2();
-														double bl = b.Norm2();
-														double cl = c.Norm2();
-														double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
-														double h = bl * sin(alpha);
+                            double al = a.Norm2();
+                            double bl = b.Norm2();
+                            double cl = c.Norm2();
+                            double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
+                            double h = bl * sin(alpha);
 
-														hexvolume += cl*h*thickness;
-													}
-									volumes[i] = hexvolume;
-								}
-								break;
-							}
-							characlength[i] = 2.0*thickness;
-						}
-					}
-					break;
-				}
-			}
-		}
-		// smallest volume
-		double minimalvol = 9e99;
-		int minimum = 0;
-		for(int i=0; i<(int)volumes.size(); i++)
-			if(volumes[i]<minimalvol)
-			{
-				minimalvol = volumes[i];
-				structurenumber = i;
-				minimum = i;
-			}
-		if(structurenumber==0 && characlength[0]>=periodlength)
-			structurenumber = 3;
+                            hexvolume += cl*h*thickness;
+                          }
+                  volumes[i] = hexvolume;
+                }
+                break;
+              }
+              characlength[i] = 2.0*thickness;
+            }
+          }
+          break;
+        }
+      }
+    }
+    // smallest volume
+    double minimalvol = 9e99;
+    int minimum = 0;
+    for(int i=0; i<(int)volumes.size(); i++)
+      if(volumes[i]<minimalvol)
+      {
+        minimalvol = volumes[i];
+        structurenumber = i;
+        minimum = i;
+      }
+    if(structurenumber==0 && characlength[0]>=periodlength)
+      structurenumber = 3;
 
-		cout<<"\nVolumes: "<<endl;
-		for(int i=0; i<(int)volumes.size(); i++)
-			cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<" crosslinks: "<<crosslinksinvolume[i]<<"/"<<numcrossele<<"  niter: "<<niter[i]<<endl;
+    cout<<"\nVolumes: "<<endl;
+    for(int i=0; i<(int)volumes.size(); i++)
+      cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<" crosslinks: "<<crosslinksinvolume[i]<<"/"<<numcrossele<<"  niter: "<<niter[i]<<endl;
 
-/// cout and return network structure
-  	// write to output files
-  	// append structure number to DDCorr output
-		FILE* fp = NULL;
-		fp = fopen(filename.str().c_str(), "w");
-		std::stringstream structuretype;
-		structuretype<<structurenumber<<"    "<<characlength[minimum];
-		for(int j=0; j<16; j++)
-			structuretype<<"    "<<0.0;
-		structuretype<<endl;
-		fprintf(fp, structuretype.str().c_str());
-		fclose(fp);
+  /// cout and return network structure
+    // write to output files
+    // append structure number to DDCorr output
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream structuretype;
+    structuretype<<structurenumber<<"    "<<characlength[minimum];
+    for(int j=0; j<16; j++)
+      structuretype<<"    "<<0.0;
+    structuretype<<endl;
+    fprintf(fp, structuretype.str().c_str());
+    fclose(fp);
 
-		// clear the vector first
-		testvolumepos_.clear();
-  	switch(structurenumber)
-  	{
-  		// cluster
-  		case 0:
-  		{
-  			cout<<"\nNetwork structure: Cluster"<<endl;
-  			characlength_ = characlength[structurenumber];
-  			structuretype_ = structurenumber;
+    // clear the vector first
+    testvolumepos_.clear();
+    switch(structurenumber)
+    {
+      // cluster
+      case 0:
+      {
+        cout<<"\nNetwork structure: Cluster"<<endl;
+        characlength_ = characlength[structurenumber];
+        structuretype_ = structurenumber;
 
-  			// calculate the trafo_ matrix (as if we had a layer)
+        // calculate the trafo_ matrix (as if we had a layer)
 
-				// adjust second plane direction so that we get an orthonormal basis
-  			clusterlayervecs[1](0) = clusterlayervecs[0](1)*clusterlayervecs[2](2) - clusterlayervecs[0](2)*clusterlayervecs[2](1);
-  			clusterlayervecs[1](1) = clusterlayervecs[0](2)*clusterlayervecs[2](0) - clusterlayervecs[0](0)*clusterlayervecs[2](2);
-  			clusterlayervecs[1](2) = clusterlayervecs[0](0)*clusterlayervecs[2](1) - clusterlayervecs[0](1)*clusterlayervecs[2](0);
-			  clusterlayervecs[1].Scale(1/clusterlayervecs[1].Norm2()); // hm, not necessary
+        // adjust second plane direction so that we get an orthonormal basis
+        clusterlayervecs[1](0) = clusterlayervecs[0](1)*clusterlayervecs[2](2) - clusterlayervecs[0](2)*clusterlayervecs[2](1);
+        clusterlayervecs[1](1) = clusterlayervecs[0](2)*clusterlayervecs[2](0) - clusterlayervecs[0](0)*clusterlayervecs[2](2);
+        clusterlayervecs[1](2) = clusterlayervecs[0](0)*clusterlayervecs[2](1) - clusterlayervecs[0](1)*clusterlayervecs[2](0);
+        clusterlayervecs[1].Scale(1/clusterlayervecs[1].Norm2()); // hm, not necessary
 
-			  // build the base
-			  for(int i=0; i<trafo_->M(); i++)
-			  	for(int j=0; j<trafo_->N(); j++)
-						(*trafo_)(i,j) = clusterlayervecs[i](j);
-  		}
-  		break;
-  		// bundle
-  		case 1:
-  		{
-  			cout<<"\nNetwork structure: Bundle"<<endl;
-  			cout<<"axis vector: "<<cylvec(0)<<" "<<cylvec(1)<<" "<<cylvec(2)<<endl;
-  			structuretype_ = structurenumber;
-  			characlength_ = characlength[structurenumber];
-  			for(int i=0; i<(int)intersections.size(); i++)
-  				testvolumepos_.push_back(intersections[i]);
+        // build the base
+        for(int i=0; i<trafo_->M(); i++)
+          for(int j=0; j<trafo_->N(); j++)
+            (*trafo_)(i,j) = clusterlayervecs[i](j);
+      }
+      break;
+      // bundle
+      case 1:
+      {
+        cout<<"\nNetwork structure: Bundle"<<endl;
+        cout<<"axis vector: "<<cylvec(0)<<" "<<cylvec(1)<<" "<<cylvec(2)<<endl;
+        structuretype_ = structurenumber;
+        characlength_ = characlength[structurenumber];
+        for(int i=0; i<(int)intersections.size(); i++)
+          testvolumepos_.push_back(intersections[i]);
 
-  			// save trafo matrix for later use in DDCorrFunction()
-  			// second direction
-  			LINALG::Matrix<3,1> raddir1;
-  			raddir1(0) = 0.0;
-  			raddir1(1) = 1.0;
-  			raddir1(2) = cylvec(1)/cylvec(2);
-  			raddir1.Scale(1.0/raddir1.Norm2());
-  			// third direction
-				LINALG::Matrix<3,1> raddir2;
-				raddir2(0) = raddir1(1)*cylvec(2) - raddir1(2)*cylvec(1);
-				raddir2(1) = raddir1(2)*cylvec(0) - raddir1(0)*cylvec(2);
-				raddir2(2) = raddir1(0)*cylvec(1) - raddir1(1)*cylvec(0);
-				raddir2.Scale(1.0/raddir2.Norm2());
+        // save trafo matrix for later use in DDCorrFunction()
+        // second direction
+        LINALG::Matrix<3,1> raddir1;
+        raddir1(0) = 0.0;
+        raddir1(1) = 1.0;
+        raddir1(2) = cylvec(1)/cylvec(2);
+        raddir1.Scale(1.0/raddir1.Norm2());
+        // third direction
+        LINALG::Matrix<3,1> raddir2;
+        raddir2(0) = raddir1(1)*cylvec(2) - raddir1(2)*cylvec(1);
+        raddir2(1) = raddir1(2)*cylvec(0) - raddir1(0)*cylvec(2);
+        raddir2(2) = raddir1(0)*cylvec(1) - raddir1(1)*cylvec(0);
+        raddir2.Scale(1.0/raddir2.Norm2());
 
-			  // build the base
-			  for(int j=0; j<trafo_->N(); j++)
-			  {
-			  	(*trafo_)(0,j) = cylvec(j);
-			  	(*trafo_)(1,j) = raddir1(j);
-			  	(*trafo_)(2,j)= raddir2(j);
-			  }
-  		}
-  		break;
-  		// layer
-  		case 2:
-  		{
-  			cout<<"\nNetwork structure: Layer ( ";
-  			switch((int)(interseccoords.size()))
-  			{
-  				case 3: cout<<"triangular shape )"; break;
-  				case 4: cout<<"rectangular shape )"; break;
-  				case 6: cout<<"haxagonal shape )"; break;
-  			}
-  			cout<<endl;
-  			for(int i=0; i<(int)layervectors.size(); i++)
-  				cout<<"layer vector "<<i+1<<": "<<layervectors[i](0)<<" "<<layervectors[i](1)<<" "<<layervectors[i](2)<<endl;
-  			structuretype_ = structurenumber;
-  			characlength_ = characlength[structurenumber];
-  			for(int i=0; i<(int)interseccoords.size(); i++)
-  				testvolumepos_.push_back(interseccoords[i]);
+        // build the base
+        for(int j=0; j<trafo_->N(); j++)
+        {
+          (*trafo_)(0,j) = cylvec(j);
+          (*trafo_)(1,j) = raddir1(j);
+          (*trafo_)(2,j)= raddir2(j);
+        }
+      }
+      break;
+      // layer
+      case 2:
+      {
+        cout<<"\nNetwork structure: Layer ( ";
+        switch((int)(interseccoords.size()))
+        {
+          case 3: cout<<"triangular shape )"; break;
+          case 4: cout<<"rectangular shape )"; break;
+          case 6: cout<<"haxagonal shape )"; break;
+        }
+        cout<<endl;
+        for(int i=0; i<(int)layervectors.size(); i++)
+          cout<<"layer vector "<<i+1<<": "<<layervectors[i](0)<<" "<<layervectors[i](1)<<" "<<layervectors[i](2)<<endl;
+        structuretype_ = structurenumber;
+        characlength_ = characlength[structurenumber];
+        for(int i=0; i<(int)interseccoords.size(); i++)
+          testvolumepos_.push_back(interseccoords[i]);
 
-  			// calculate second plane vector (which is now exactly orthogonal to vec1)
-  			layervectors[1](0) = layervectors[0](1)*layervectors[2](2) - layervectors[0](2)*layervectors[2](1);
-  			layervectors[1](1) = layervectors[0](2)*layervectors[2](0) - layervectors[0](0)*layervectors[2](2);
-  			layervectors[1](2) = layervectors[0](0)*layervectors[2](1) - layervectors[0](1)*layervectors[2](0);
-				layervectors[1].Scale(1/layervectors[1].Norm2()); // hm, not necessary
+        // calculate second plane vector (which is now exactly orthogonal to vec1)
+        layervectors[1](0) = layervectors[0](1)*layervectors[2](2) - layervectors[0](2)*layervectors[2](1);
+        layervectors[1](1) = layervectors[0](2)*layervectors[2](0) - layervectors[0](0)*layervectors[2](2);
+        layervectors[1](2) = layervectors[0](0)*layervectors[2](1) - layervectors[0](1)*layervectors[2](0);
+        layervectors[1].Scale(1/layervectors[1].Norm2()); // hm, not necessary
 
-			  // build the base
-			  for(int i=0; i<trafo_->M(); i++)
-			  	for(int j=0; j<trafo_->N(); j++)
-						(*trafo_)(i,j) = layervectors[i](j);
-  		}
-  		break;
-  		// homogeneous
-  		case 3:
-  		{
-  			cout<<"\nNetwork structure: Homogeneous network"<<endl;
-  			structuretype_ = structurenumber;
-  			characlength_ = characlength[0];
+        // build the base
+        for(int i=0; i<trafo_->M(); i++)
+          for(int j=0; j<trafo_->N(); j++)
+            (*trafo_)(i,j) = layervectors[i](j);
+      }
+      break;
+      // homogeneous
+      case 3:
+      {
+        cout<<"\nNetwork structure: Homogeneous network"<<endl;
+        structuretype_ = structurenumber;
+        characlength_ = characlength[0];
 
-  			// save trafo matrix for later use in DDCorrFunction()
-  			for(int i=0; i<trafo_->M(); i++)
-					(*trafo_)(i,i) = 1.0;
-  		}
-  		break;
-  	}
+        // save trafo matrix for later use in DDCorrFunction()
+        for(int i=0; i<trafo_->M(); i++)
+          (*trafo_)(i,i) = 1.0;
+      }
+      break;
+    }
   }
   // Communicate trafo_ to other procs
   std::vector<double> localtrafo(9,0.0);
   std::vector<double> globaltrafo(9,0.0);
   for(int i=0; i<trafo_->M(); i++)
-  	for(int j=0; j<trafo_->N(); j++)
-  	{
-  		localtrafo.at(3*i+j) = (*trafo_)(i,j);
-			discret_.Comm().SumAll(&localtrafo[3*i+j], &globaltrafo[3*i+j], 1);
-  		(*trafo_)(i,j) = globaltrafo.at(3*i+j);
-  	}
+    for(int j=0; j<trafo_->N(); j++)
+    {
+      localtrafo.at(3*i+j) = (*trafo_)(i,j);
+      discret_.Comm().SumAll(&localtrafo[3*i+j], &globaltrafo[3*i+j], 1);
+      (*trafo_)(i,j) = globaltrafo.at(3*i+j);
+    }
   //cout<<*trafo_<<endl;
 }//DDCorrCurrentStructure()
 
@@ -3663,75 +3663,75 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
 {
-	// get filament number conditions
-	vector<DRT::Condition*> filaments(0);
-	discret_.GetCondition("FilamentNumber", filaments);
-	bool vectorconverged = false;
-	int iteration = 0;
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double tolangle = M_PI/180.0; // 1°
+  // get filament number conditions
+  vector<DRT::Condition*> filaments(0);
+  discret_.GetCondition("FilamentNumber", filaments);
+  bool vectorconverged = false;
+  int iteration = 0;
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double tolangle = M_PI/180.0; // 1°
 
-	while(!vectorconverged)
-	{
-		if(iteration<maxiterations)
-		{
-			LINALG::Matrix<3,1> vectorjp;
-			vectorjp.Clear();
-			for(int fil=0; fil<(int)filaments.size(); fil++)
-			{
-				// get next filament
-				DRT::Condition* currfilament = filaments[fil];
-				for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
-				{
-					// obtain column map LIDs
-					int gid0 = currfilament->Nodes()->at(node-1);
-					int gid1 = currfilament->Nodes()->at(node);
-					int nodelid0 = discret_.NodeColMap()->LID(gid0);
-					int nodelid1 = discret_.NodeColMap()->LID(gid1);
-					DRT::Node* node0 = discret_.lColNode(nodelid0);
-					DRT::Node* node1 = discret_.lColNode(nodelid1);
+  while(!vectorconverged)
+  {
+    if(iteration<maxiterations)
+    {
+      LINALG::Matrix<3,1> vectorjp;
+      vectorjp.Clear();
+      for(int fil=0; fil<(int)filaments.size(); fil++)
+      {
+        // get next filament
+        DRT::Condition* currfilament = filaments[fil];
+        for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
+        {
+          // obtain column map LIDs
+          int gid0 = currfilament->Nodes()->at(node-1);
+          int gid1 = currfilament->Nodes()->at(node);
+          int nodelid0 = discret_.NodeColMap()->LID(gid0);
+          int nodelid1 = discret_.NodeColMap()->LID(gid1);
+          DRT::Node* node0 = discret_.lColNode(nodelid0);
+          DRT::Node* node1 = discret_.lColNode(nodelid1);
 
-					// calculate directional vector between nodes
-					LINALG::Matrix<3, 1> dirvec;
-					for(int dof=0; dof<3; dof++)
-					{
-						int dofgid0 = discret_.Dof(node0)[dof];
-						int dofgid1 = discret_.Dof(node1)[dof];
-						double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
-						double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
-						// check for periodic boundary shift and correct accordingly
-						if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-							poscomponent1 -= periodlength;
-						else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-							poscomponent1 += periodlength;
+          // calculate directional vector between nodes
+          LINALG::Matrix<3, 1> dirvec;
+          for(int dof=0; dof<3; dof++)
+          {
+            int dofgid0 = discret_.Dof(node0)[dof];
+            int dofgid1 = discret_.Dof(node1)[dof];
+            double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
+            double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
+            // check for periodic boundary shift and correct accordingly
+            if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+              poscomponent1 -= periodlength;
+            else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+              poscomponent1 += periodlength;
 
-						dirvec(dof) = poscomponent1-poscomponent0;
-					}
-					// normed vector
-					dirvec.Scale(1.0/dirvec.Norm2());
+            dirvec(dof) = poscomponent1-poscomponent0;
+          }
+          // normed vector
+          dirvec.Scale(1.0/dirvec.Norm2());
 
-					if(acos(dirvec.Dot((*vectorj)))>(M_PI/2.0))
-						dirvec.Scale(-1.0);
-					vectorjp += dirvec;
-				}
-			}
-			vectorjp.Scale(1.0/vectorjp.Norm2());
-			// check angle between old and n_j and n_(j+1)
-			double vecvecangle = acos(vectorjp.Dot((*vectorj)));
-			if(vecvecangle < tolangle)
-			{
-				cout<<" vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
-				vectorconverged = true;
-			}
-			*vectorj = vectorjp;
-		}
-		else
-		{
-			cout<<"...Vector did not converge after "<<maxiterations<<" iterations. Continuing..."<<endl;
-			vectorconverged = true;
-		}
-		iteration++;
-	}
+          if(acos(dirvec.Dot((*vectorj)))>(M_PI/2.0))
+            dirvec.Scale(-1.0);
+          vectorjp += dirvec;
+        }
+      }
+      vectorjp.Scale(1.0/vectorjp.Norm2());
+      // check angle between old and n_j and n_(j+1)
+      double vecvecangle = acos(vectorjp.Dot((*vectorj)));
+      if(vecvecangle < tolangle)
+      {
+        cout<<" vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
+        vectorconverged = true;
+      }
+      *vectorj = vectorjp;
+    }
+    else
+    {
+      cout<<"...Vector did not converge after "<<maxiterations<<" iterations. Continuing..."<<endl;
+      vectorconverged = true;
+    }
+    iteration++;
+  }
 }//DDCorrIterateVector()
 /*------------------------------------------------------------------------------*                                                 |
  | density-density correlation function                  (private) mueller 12/10|
@@ -3743,162 +3743,162 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 
 
 /// preliminary operations to set workframe
-	// exporter and importer
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
-	// tranfer map format of crosslinkerbond_ and crosslinkerpositions_
-	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
-	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
-	if(discret_.Comm().MyPID()!=0)
-	{
-		crosslinkerbond_->PutScalar(0.0);
-		crosslinkerpositions_->PutScalar(0.0);
-	}
-	// distribute information to processors
-	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
+  // exporter and importer
+  Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+  Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+  // tranfer map format of crosslinkerbond_ and crosslinkerpositions_
+  Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
+  Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
+  if(discret_.Comm().MyPID()!=0)
+  {
+    crosslinkerbond_->PutScalar(0.0);
+    crosslinkerpositions_->PutScalar(0.0);
+  }
+  // distribute information to processors
+  crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
+  crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
 
-	// reproduce redundancy prior to Export (not needed in this method, but in the course of DDCorroutput())
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
+  // reproduce redundancy prior to Export (not needed in this method, but in the course of DDCorroutput())
+  crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+  crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
 /// preparations for calculation of inter-crosslink distances between central box and surrounding box crosslinker elements
-	/* rotate crosslinker position into new (material) coordinate system, then construct
-	 * new surrounding box crosslinker position with periodic continuations according to the new
-	 * coordinate directions. This will in some cases lead to a cutoff of crosslinkers which come to lie
-	 * outside of the rotated volume. These crosslinkers are neglected.
-	 * The reasons why we are allowed do this, lie with the structure of the network as well as the object of observation.
-	 * When considering the worst case, we lose 19.6% of the volume (rotation around two axis, 45° each). Still, this does
-	 * not matter in our case. Since we want to study stationary phases like the cluster or the layer phase,
-	 * we only consider time intervals where the phase in question does not change its shape anymore. In addition,
-	 * we try to center the structure as well as possible within the boundary volume by shifting the center of the
-	 * periodic box. Clusters are not affected by the rotation and cutoff since they constitute a structural singularity,
-	 * so to speak, and therefore have no contace to the volume boundaries. They are not affected by periodic BCs and are
-	 * strongly localized density peaks. Layers tend to span over at least one direction of the periodic boundary volume.
-	 * If this stage is reached, the cutoff will not affect the layer, i.e. its crosslinkers at all, since there is no material
-	 * in the corners of the boundary volume anymore.
-	 * Ergo, we wait until this stadium is reached and then start to evaluate (done via Matlab, not directly implemented).
-	 * For homogeneous networks, of course, things are different. However, we do not need to worry about it since we have
-	 * equally distributed filament directions and hence no need to rotate neither the coordinate system nor the entire volume.
-	 */
+  /* rotate crosslinker position into new (material) coordinate system, then construct
+   * new surrounding box crosslinker position with periodic continuations according to the new
+   * coordinate directions. This will in some cases lead to a cutoff of crosslinkers which come to lie
+   * outside of the rotated volume. These crosslinkers are neglected.
+   * The reasons why we are allowed do this, lie with the structure of the network as well as the object of observation.
+   * When considering the worst case, we lose 19.6% of the volume (rotation around two axis, 45° each). Still, this does
+   * not matter in our case. Since we want to study stationary phases like the cluster or the layer phase,
+   * we only consider time intervals where the phase in question does not change its shape anymore. In addition,
+   * we try to center the structure as well as possible within the boundary volume by shifting the center of the
+   * periodic box. Clusters are not affected by the rotation and cutoff since they constitute a structural singularity,
+   * so to speak, and therefore have no contace to the volume boundaries. They are not affected by periodic BCs and are
+   * strongly localized density peaks. Layers tend to span over at least one direction of the periodic boundary volume.
+   * If this stage is reached, the cutoff will not affect the layer, i.e. its crosslinkers at all, since there is no material
+   * in the corners of the boundary volume anymore.
+   * Ergo, we wait until this stadium is reached and then start to evaluate (done via Matlab, not directly implemented).
+   * For homogeneous networks, of course, things are different. However, we do not need to worry about it since we have
+   * equally distributed filament directions and hence no need to rotate neither the coordinate system nor the entire volume.
+   */
 /// calculate  shifted as well as shifted and rotated crosslinker positions of the center box
-	Epetra_MultiVector centerboxpostrans(*transfermap_,3);
-	Epetra_MultiVector centerboxrotpostrans(*transfermap_,3);
-	for(int i=0; i<transfermap_->NumMyElements(); i++)
-	{
-		LINALG::SerialDenseMatrix crosspos(3,1);
-		for(int j=0; j<crosspos.M(); j++)
-		{
-			// 1. original position
-			crosspos(j,0) = crosslinkerpositionstrans[j][i];
-			// 2. shift, so that crosspos comes to lie within not yet rotated new center box
-			if (crosspos(j,0) > periodlength+(*centershift)(j))
-				crosspos(j,0) -= periodlength;
-			if (crosspos(j,0) < 0.0+(*centershift)(j))
-				crosspos(j,0) += periodlength;
-			// 2.5 store standard shifted center box position
-			centerboxpostrans[j][i] = crosspos(j,0);
-			// 3. translate origin
-			crosspos(j,0) -= cog_(j);
-		}
-		// 4. transform the crosslink molecule position into material coordinates
-		LINALG::SerialDenseMatrix crossposrot(3,1);
-		trafo_->Multiply(false, crosspos, crossposrot);
-		for(int j=0; j<centerboxrotpostrans.NumVectors(); j++)
-			centerboxrotpostrans[j][i] = crossposrot(j,0);
-	}
+  Epetra_MultiVector centerboxpostrans(*transfermap_,3);
+  Epetra_MultiVector centerboxrotpostrans(*transfermap_,3);
+  for(int i=0; i<transfermap_->NumMyElements(); i++)
+  {
+    LINALG::SerialDenseMatrix crosspos(3,1);
+    for(int j=0; j<crosspos.M(); j++)
+    {
+      // 1. original position
+      crosspos(j,0) = crosslinkerpositionstrans[j][i];
+      // 2. shift, so that crosspos comes to lie within not yet rotated new center box
+      if (crosspos(j,0) > periodlength+(*centershift)(j))
+        crosspos(j,0) -= periodlength;
+      if (crosspos(j,0) < 0.0+(*centershift)(j))
+        crosspos(j,0) += periodlength;
+      // 2.5 store standard shifted center box position
+      centerboxpostrans[j][i] = crosspos(j,0);
+      // 3. translate origin
+      crosspos(j,0) -= cog_(j);
+    }
+    // 4. transform the crosslink molecule position into material coordinates
+    LINALG::SerialDenseMatrix crossposrot(3,1);
+    trafo_->Multiply(false, crosspos, crossposrot);
+    for(int j=0; j<centerboxrotpostrans.NumVectors(); j++)
+      centerboxrotpostrans[j][i] = crossposrot(j,0);
+  }
 
 /// calculate shifted and rotated crosslinker positions for the surrounding boxes (including the center box)
-	Epetra_MultiVector positionstrans(*transfermap_, 3*27, true);
-	Epetra_MultiVector rotatedpositionstrans(*transfermap_, 3*27, true);
-	std::vector<std::vector<int> > boxindices;
-	int boxnumber=0;
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			for(int k=0; k<3; k++)
-			{
-				// box indices
-				std::vector<int> ijk;
-				ijk.push_back(i);
-				ijk.push_back(j);
-				ijk.push_back(k);
-				boxindices.push_back(ijk);
-				// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
-				for(int l=0; l<transfermap_->NumMyElements(); l++)
-					for(int m=0; m<centerboxpostrans.NumVectors(); m++)
-					{
-						// shift standard crosslinker positions to box with indices (i,j,k)
-						positionstrans[boxnumber*3+m][l] = centerboxpostrans[m][l] + (ijk[m]-1)*periodlength;
-						// shift the rotated crosslinker positions to box with indices (i,j,k)
-						rotatedpositionstrans[boxnumber*3+m][l] = centerboxrotpostrans[m][l] + (ijk[m]-1)*periodlength;
-					}
-				boxnumber++;
-			}
-	// communicate positions for redundancy (crosslinkermap format)
-	Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
-	Epetra_MultiVector rotatedpositions(*crosslinkermap_, 3*27, true);
-	positions.Import(positionstrans, crosslinkimporter, Insert);
-	rotatedpositions.Import(rotatedpositionstrans, crosslinkimporter, Insert);
+  Epetra_MultiVector positionstrans(*transfermap_, 3*27, true);
+  Epetra_MultiVector rotatedpositionstrans(*transfermap_, 3*27, true);
+  std::vector<std::vector<int> > boxindices;
+  int boxnumber=0;
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      for(int k=0; k<3; k++)
+      {
+        // box indices
+        std::vector<int> ijk;
+        ijk.push_back(i);
+        ijk.push_back(j);
+        ijk.push_back(k);
+        boxindices.push_back(ijk);
+        // obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
+        for(int l=0; l<transfermap_->NumMyElements(); l++)
+          for(int m=0; m<centerboxpostrans.NumVectors(); m++)
+          {
+            // shift standard crosslinker positions to box with indices (i,j,k)
+            positionstrans[boxnumber*3+m][l] = centerboxpostrans[m][l] + (ijk[m]-1)*periodlength;
+            // shift the rotated crosslinker positions to box with indices (i,j,k)
+            rotatedpositionstrans[boxnumber*3+m][l] = centerboxrotpostrans[m][l] + (ijk[m]-1)*periodlength;
+          }
+        boxnumber++;
+      }
+  // communicate positions for redundancy (crosslinkermap format)
+  Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
+  Epetra_MultiVector rotatedpositions(*crosslinkermap_, 3*27, true);
+  positions.Import(positionstrans, crosslinkimporter, Insert);
+  rotatedpositions.Import(rotatedpositionstrans, crosslinkimporter, Insert);
 
-	// retrieve center of gravity (global coordinates)
-	Epetra_SerialDenseMatrix cog(3,1);
-	for(int i=0; i<cog.M(); i++)
-		cog(i,0) = cog_(i);
+  // retrieve center of gravity (global coordinates)
+  Epetra_SerialDenseMatrix cog(3,1);
+  for(int i=0; i<cog.M(); i++)
+    cog(i,0) = cog_(i);
 
 /// sort inter-crosslink distances into respective bins
-	//parallel brute force from here on
-	/* 1. loop over boxes
-	 * 2. loop over the crosslinkermap format crosslinkers of the boxes
-	 * 3. loop over the transfermap format crosslinkers of the actual (center box)
-	 * 4. if(): only calculate deltaxij if the following if both indices i and j stand for crosslinker elements or periodic
-	 *          images of the those elements
-	 */
-	for(int boxnum=0; boxnum<boxnumber; boxnum++)
-		for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
-			for(int i=0; i<transfermap_->NumMyElements(); i++)
-				if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
-				{
-					// sort standard (GLOBAL coordinates) inter-crosslink distances into bins
-					for(int m=0; m<centerboxpostrans.NumVectors(); m++)
-					{
-						// centerbox crosslinker component m
-						double cboxposm = centerboxpostrans[m][i];
-						// surr. box crosslinker component m
-						double surrboxposm = positions[boxnum*3+m][j];
+  //parallel brute force from here on
+  /* 1. loop over boxes
+   * 2. loop over the crosslinkermap format crosslinkers of the boxes
+   * 3. loop over the transfermap format crosslinkers of the actual (center box)
+   * 4. if(): only calculate deltaxij if the following if both indices i and j stand for crosslinker elements or periodic
+   *          images of the those elements
+   */
+  for(int boxnum=0; boxnum<boxnumber; boxnum++)
+    for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+      for(int i=0; i<transfermap_->NumMyElements(); i++)
+        if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
+        {
+          // sort standard (GLOBAL coordinates) inter-crosslink distances into bins
+          for(int m=0; m<centerboxpostrans.NumVectors(); m++)
+          {
+            // centerbox crosslinker component m
+            double cboxposm = centerboxpostrans[m][i];
+            // surr. box crosslinker component m
+            double surrboxposm = positions[boxnum*3+m][j];
 
-						double distm = fabs(surrboxposm-cboxposm);
-						int absbin = (int)floor(distm/periodlength*(double)numbins);
-						if(absbin==3*numbins)
-							absbin--;
-						int thebin = absbin%numbins;
-						int thecol = (int)floor((double)absbin/(double)numbins)+3*m;
-						crosslinksperbinrow[thecol][thebin] += 1.0;
-					}
+            double distm = fabs(surrboxposm-cboxposm);
+            int absbin = (int)floor(distm/periodlength*(double)numbins);
+            if(absbin==3*numbins)
+              absbin--;
+            int thebin = absbin%numbins;
+            int thecol = (int)floor((double)absbin/(double)numbins)+3*m;
+            crosslinksperbinrow[thecol][thebin] += 1.0;
+          }
 
-					// sort inter-crosslink distances of ROTATED system into bins
-					for(int m=0; m<centerboxrotpostrans.NumVectors(); m++)
-					{
-						//centerbox crosslinker component m
-						double cboxposrotm = centerboxrotpostrans[m][i];
-						// surrounding box crosslinker position component m
-						double surrboxposrotm = rotatedpositions[boxnum*3+m][j];
-						int surrboxindex = boxindices[boxnum][m];
-						// check if both crosslinkers lie within the shifted and rotated boundary volume
-						double deltacbox = fabs(cboxposrotm-(*centershift)(m));
-						double deltasbox = fabs(surrboxposrotm-((*centershift)(m)+(surrboxindex-1)*periodlength));
-						if(deltacbox<=periodlength/2.0 && deltasbox<=periodlength/2.0) // inside the rotated volume
-						{
-							// determine bin for rotated fixed system coordinates
-							double distm = fabs(surrboxposrotm-cboxposrotm);
-							int thebin = (int)floor(distm/periodlength*(double)numbins);
-							int thecol = m;
-							// only distances [0;H[
-							if(thebin<numbins)
-								crosslinksperbinrotrow[thecol][thebin] += 1.0;
-						}
-					}
-				}
-	return;
+          // sort inter-crosslink distances of ROTATED system into bins
+          for(int m=0; m<centerboxrotpostrans.NumVectors(); m++)
+          {
+            //centerbox crosslinker component m
+            double cboxposrotm = centerboxrotpostrans[m][i];
+            // surrounding box crosslinker position component m
+            double surrboxposrotm = rotatedpositions[boxnum*3+m][j];
+            int surrboxindex = boxindices[boxnum][m];
+            // check if both crosslinkers lie within the shifted and rotated boundary volume
+            double deltacbox = fabs(cboxposrotm-(*centershift)(m));
+            double deltasbox = fabs(surrboxposrotm-((*centershift)(m)+(surrboxindex-1)*periodlength));
+            if(deltacbox<=periodlength/2.0 && deltasbox<=periodlength/2.0) // inside the rotated volume
+            {
+              // determine bin for rotated fixed system coordinates
+              double distm = fabs(surrboxposrotm-cboxposrotm);
+              int thebin = (int)floor(distm/periodlength*(double)numbins);
+              int thecol = m;
+              // only distances [0;H[
+              if(thebin<numbins)
+                crosslinksperbinrotrow[thecol][thebin] += 1.0;
+            }
+          }
+        }
+  return;
 }//StatMechManager::DDCorrFunction()
 
 /*------------------------------------------------------------------------------*                                                 |
@@ -3907,50 +3907,50 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
  *------------------------------------------------------------------------------*/
 void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 {
-	if(discret_.Comm().MyPID()==0)
-	{
-		int free = 0;
-		int onebond = 0;
-		int twobond = 0;
+  if(discret_.Comm().MyPID()==0)
+  {
+    int free = 0;
+    int onebond = 0;
+    int twobond = 0;
 
-		for(int i=0; i<crosslinkerbond_->MyLength(); i++)
-		{
-			// count number of node IDs in crosslinkerbond_ entry i
-			int numofnodes = 0;
-			for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-				if((*crosslinkerbond_)[j][i]>-0.9)
-					numofnodes++;
-			// increment according to numofnodes
-			switch(numofnodes)
-			{
-				// free
-				case 0:
-					free++;
-				break;
-				// crosslink with one bond
-				case 1:
-					onebond++;
-				break;
-				// crosslink with two bonds
-				case 2:
-					twobond++;
-				break;
-			}
-		}
+    for(int i=0; i<crosslinkerbond_->MyLength(); i++)
+    {
+      // count number of node IDs in crosslinkerbond_ entry i
+      int numofnodes = 0;
+      for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+        if((*crosslinkerbond_)[j][i]>-0.9)
+          numofnodes++;
+      // increment according to numofnodes
+      switch(numofnodes)
+      {
+        // free
+        case 0:
+          free++;
+        break;
+        // crosslink with one bond
+        case 1:
+          onebond++;
+        break;
+        // crosslink with two bonds
+        case 2:
+          twobond++;
+        break;
+      }
+    }
 
-		// write to file
-		FILE* fp = NULL;
-		fp = fopen(filename.str().c_str(), "a");
-		std::stringstream ccount;
-		ccount<<free<<"    "<<onebond<<"    "<<twobond<<"    ";
-		for(int i=0; i<13; i++)
-			ccount<<"    0";
-		ccount<<endl;
-		fprintf(fp, ccount.str().c_str());
-		fclose(fp);
-	}
+    // write to file
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+    std::stringstream ccount;
+    ccount<<free<<"    "<<onebond<<"    "<<twobond<<"    ";
+    for(int i=0; i<13; i++)
+      ccount<<"    0";
+    ccount<<endl;
+    fprintf(fp, ccount.str().c_str());
+    fclose(fp);
+  }
 
-	return;
+  return;
 }
 
 /*------------------------------------------------------------------------------*                                                 |
@@ -3958,237 +3958,237 @@ void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
  *------------------------------------------------------------------------------*/
 void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep)
 {
-	/* what this does:
-	 * 1) orientation correlation function for all proximal binding spot pairs (regardless of orientation)
-	 * 2) count the number of overall possible binding spots for crosslinkers (proximal and correctly oriented)
-	 * 3) order parameter
-	 */
-	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
-	{
+  /* what this does:
+   * 1) orientation correlation function for all proximal binding spot pairs (regardless of orientation)
+   * 2) count the number of overall possible binding spots for crosslinkers (proximal and correctly oriented)
+   * 3) order parameter
+   */
+  if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
+  {
 
-		// current node positions (column map)
-		std::map<int, LINALG::Matrix<3, 1> > currentpositions;
-		currentpositions.clear();
+    // current node positions (column map)
+    std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+    currentpositions.clear();
 
-		Epetra_Vector discol(*discret_.DofColMap(), true);
+    Epetra_Vector discol(*discret_.DofColMap(), true);
 
-		LINALG::Export(disrow, discol);
+    LINALG::Export(disrow, discol);
 
-		for (int i=0; i<discret_.NumMyColNodes(); ++i)
-		{
-			//get pointer at a node
-			const DRT::Node* node = discret_.lColNode(i);
+    for (int i=0; i<discret_.NumMyColNodes(); ++i)
+    {
+      //get pointer at a node
+      const DRT::Node* node = discret_.lColNode(i);
 
-			//get GIDs of this node's degrees of freedom
-			std::vector<int> dofnode = discret_.Dof(node);
+      //get GIDs of this node's degrees of freedom
+      std::vector<int> dofnode = discret_.Dof(node);
 
-			LINALG::Matrix<3, 1> currpos;
+      LINALG::Matrix<3, 1> currpos;
 
-			for(int j=0; j<(int)currpos.M(); j++)
-				currpos(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofnode[j])];
+      for(int j=0; j<(int)currpos.M(); j++)
+        currpos(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofnode[j])];
 
-			currentpositions[node->LID()] = currpos;
-		}
+      currentpositions[node->LID()] = currpos;
+    }
 
-		// NODAL TRIAD UPDATE
-		//first get triads at all row nodes
-		Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()), 4, true);
-		Epetra_MultiVector nodaltriadscol(*(discret_.NodeColMap()),4,true);
-		Epetra_Import importer(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
+    // NODAL TRIAD UPDATE
+    //first get triads at all row nodes
+    Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()), 4, true);
+    Epetra_MultiVector nodaltriadscol(*(discret_.NodeColMap()),4,true);
+    Epetra_Import importer(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
 
-		for (int i=0; i<discret_.NodeRowMap()->NumMyElements(); i++)
-		{
-			//lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-			int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
-			int lowestidele(0);
-			for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
-				if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
-				{
-					lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
-					lowestidele = j;
-				}
+    for (int i=0; i<discret_.NodeRowMap()->NumMyElements(); i++)
+    {
+      //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+      int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
+      int lowestidele(0);
+      for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
+        if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
+        {
+          lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
+          lowestidele = j;
+        }
 
-			//check type of element (orientation triads are not for all elements available in the same way
-			DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
-			//if element is of type beam3ii get nodal triad
+      //check type of element (orientation triads are not for all elements available in the same way
+      DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+      //if element is of type beam3ii get nodal triad
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-			if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-			{
-				DRT::ELEMENTS::Beam3ii* filele = NULL;
-				filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+      if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      {
+        DRT::ELEMENTS::Beam3ii* filele = NULL;
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
 
-				//check whether crosslinker is connected to first or second node of that element
-				int nodenumber = 0;
-				if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
-					nodenumber = 1;
+        //check whether crosslinker is connected to first or second node of that element
+        int nodenumber = 0;
+        if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+          nodenumber = 1;
 
-				//save nodal triad of this node in nodaltriadrow
-				for(int j=0; j<4; j++)
-					nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
-			}
-			else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-			{
-				DRT::ELEMENTS::Beam3* filele = NULL;
-				filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+        //save nodal triad of this node in nodaltriadrow
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+      }
+      else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+      {
+        DRT::ELEMENTS::Beam3* filele = NULL;
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
 
-				//approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
-				for(int j=0; j<4; j++)
-					nodaltriadsrow[j][i] = (filele->Qnew_[0])(j);
-			}
-			else
-				dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+        //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = (filele->Qnew_[0])(j);
+      }
+      else
+        dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
 #endif
 #endif
-		}
-		//export nodaltriadsrow to col map variable
-		nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
+    }
+    //export nodaltriadsrow to col map variable
+    nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
 
-		// distance and orientation checks
-		int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-		// max. distance between two binding spots
-		double maxdist = statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0);
-		// max. angle
-		double maxangle = M_PI/2.0;
-		// minimal and maximal linker search radii
-		double rmin = statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0);
-		double rmax = statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0);
-		// number of overall independent combinations
-		int numnodes = discret_.NodeColMap()->NumMyElements();
-		int numcombinations = (numnodes*numnodes-numnodes)/2;
-		// combinations on each processor
-		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
-		int remainder = numcombinations%combinationsperproc;
+    // distance and orientation checks
+    int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+    // max. distance between two binding spots
+    double maxdist = statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0);
+    // max. angle
+    double maxangle = M_PI/2.0;
+    // minimal and maximal linker search radii
+    double rmin = statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0);
+    double rmax = statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0);
+    // number of overall independent combinations
+    int numnodes = discret_.NodeColMap()->NumMyElements();
+    int numcombinations = (numnodes*numnodes-numnodes)/2;
+    // combinations on each processor
+    int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+    int remainder = numcombinations%combinationsperproc;
 
-		int bindingspots = 0;
-		int combicount = 0;
-		Epetra_Vector anglesrow(*ddcorrrowmap_, true);
-		Epetra_MultiVector orderparameterbinsrow(*ddcorrrowmap_,2, true);
-		// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
-		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
-		{
-			bool quitloop = false;
-			if(mypid==discret_.Comm().MyPID())
-			{
-				bool continueloop = false;
-				int appendix = 0;
-				if(mypid==discret_.Comm().NumProc()-1)
-					appendix = remainder;
+    int bindingspots = 0;
+    int combicount = 0;
+    Epetra_Vector anglesrow(*ddcorrrowmap_, true);
+    Epetra_MultiVector orderparameterbinsrow(*ddcorrrowmap_,2, true);
+    // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
+    for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+    {
+      bool quitloop = false;
+      if(mypid==discret_.Comm().MyPID())
+      {
+        bool continueloop = false;
+        int appendix = 0;
+        if(mypid==discret_.Comm().NumProc()-1)
+          appendix = remainder;
 
-				for(int i=0; i<discret_.NodeColMap()->NumMyElements(); i++)
-				{
-					for(int j=0; j<discret_.NodeColMap()->NumMyElements(); j++)
-					{
-						// start adding crosslink from here
-						if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
-							continueloop = true;
-						// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
-						if(j>i && continueloop)
-							if(combicount<combinationsperproc+appendix)
-							{
-								combicount++;
+        for(int i=0; i<discret_.NodeColMap()->NumMyElements(); i++)
+        {
+          for(int j=0; j<discret_.NodeColMap()->NumMyElements(); j++)
+          {
+            // start adding crosslink from here
+            if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
+              continueloop = true;
+            // only entries above main diagonal and within limits of designated number of crosslink molecules per processor
+            if(j>i && continueloop)
+              if(combicount<combinationsperproc+appendix)
+              {
+                combicount++;
 
-								LINALG::Matrix<2,1> LID;
-								LID(0) = i;
-								LID(1) = j;
+                LINALG::Matrix<2,1> LID;
+                LID(0) = i;
+                LID(1) = j;
 
-								LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0)))->second);
-								distance -= (currentpositions.find((int)LID(1)))->second;
+                LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0)))->second);
+                distance -= (currentpositions.find((int)LID(1)))->second;
 
-								// current distance bin
-								int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
-								// reduce bin if distance == maxdist
-								if(currdistbin==numbins)
-									currdistbin--;
+                // current distance bin
+                int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
+                // reduce bin if distance == maxdist
+                if(currdistbin==numbins)
+                  currdistbin--;
 
-								// direction between currently considered two nodes
-								LINALG::Matrix<3,1> direction(distance);
-								direction.Scale(1.0/direction.Norm2());
-								RCP<double> phifil = rcp(new double(0.0));
-								bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
+                // direction between currently considered two nodes
+                LINALG::Matrix<3,1> direction(distance);
+                direction.Scale(1.0/direction.Norm2());
+                RCP<double> phifil = rcp(new double(0.0));
+                bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
 
-								// increment count for that bin
-								orderparameterbinsrow[0][currdistbin] += 1.0;
-								// order parameter
-								orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+                // increment count for that bin
+                orderparameterbinsrow[0][currdistbin] += 1.0;
+                // order parameter
+                orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
 
-								// proximity check
-								if(distance.Norm2()>rmin && distance.Norm2()<rmax)
-								{
-									// if angular constraints are met, increase binding spot count
-									if(orientation)
-										bindingspots++;
+                // proximity check
+                if(distance.Norm2()>rmin && distance.Norm2()<rmax)
+                {
+                  // if angular constraints are met, increase binding spot count
+                  if(orientation)
+                    bindingspots++;
 
-									// determine the bin
-									int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
-									// in case the distance is exactly periodlength*sqrt(3)
-									if(curranglebin==numbins)
-										curranglebin--;
-									anglesrow[curranglebin] += 1.0;
-								}
-							}
-							else
-							{
-								quitloop = true;
-								break;
-							}
-					}
-					if(quitloop)
-						break;
-				}
-				if(quitloop)
-					break;
-			}
-			else
-				continue;
-		}
-		// Export
-		// add up binding spots
-		int bspotsglob = 0;
-		discret_.Comm().SumAll(&bindingspots,&bspotsglob,1);
+                  // determine the bin
+                  int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
+                  // in case the distance is exactly periodlength*sqrt(3)
+                  if(curranglebin==numbins)
+                    curranglebin--;
+                  anglesrow[curranglebin] += 1.0;
+                }
+              }
+              else
+              {
+                quitloop = true;
+                break;
+              }
+          }
+          if(quitloop)
+            break;
+        }
+        if(quitloop)
+          break;
+      }
+      else
+        continue;
+    }
+    // Export
+    // add up binding spots
+    int bspotsglob = 0;
+    discret_.Comm().SumAll(&bindingspots,&bspotsglob,1);
 
-		Epetra_Vector anglescol(*ddcorrcolmap_, true);
-		Epetra_MultiVector orderparameterbinscol(*ddcorrcolmap_,2, true);
-		Epetra_Import ddcorrimporter(*ddcorrcolmap_, *ddcorrrowmap_);
-		anglescol.Import(anglesrow, ddcorrimporter, Insert);
-		orderparameterbinscol.Import(orderparameterbinsrow,ddcorrimporter,Insert);
+    Epetra_Vector anglescol(*ddcorrcolmap_, true);
+    Epetra_MultiVector orderparameterbinscol(*ddcorrcolmap_,2, true);
+    Epetra_Import ddcorrimporter(*ddcorrcolmap_, *ddcorrrowmap_);
+    anglescol.Import(anglesrow, ddcorrimporter, Insert);
+    orderparameterbinscol.Import(orderparameterbinsrow,ddcorrimporter,Insert);
 
-		// Add the processor-specific data up
-		std::vector<int> angles(numbins, 0);
-		std::vector<std::vector<double> > orderparameter(numbins, std::vector<double>(2,0.0));
-		for(int i=0; i<numbins; i++)
-			for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
-			{
-				angles[i] += (int)anglescol[pid*numbins+i];
-				orderparameter[i][0] += orderparameterbinscol[0][pid*numbins+i];
-				orderparameter[i][1] += orderparameterbinscol[1][pid*numbins+i];
-			}
+    // Add the processor-specific data up
+    std::vector<int> angles(numbins, 0);
+    std::vector<std::vector<double> > orderparameter(numbins, std::vector<double>(2,0.0));
+    for(int i=0; i<numbins; i++)
+      for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+      {
+        angles[i] += (int)anglescol[pid*numbins+i];
+        orderparameter[i][0] += orderparameterbinscol[0][pid*numbins+i];
+        orderparameter[i][1] += orderparameterbinscol[1][pid*numbins+i];
+      }
 
-		// average values
-		for(int i=0; i<numbins; i++)
-			if(orderparameter[i][0]>0.0) // i.e. >0
-				orderparameter[i][1] /= orderparameter[i][0];
-			else
-				orderparameter[i][1] = -99.0;
+    // average values
+    for(int i=0; i<numbins; i++)
+      if(orderparameter[i][0]>0.0) // i.e. >0
+        orderparameter[i][1] /= orderparameter[i][0];
+      else
+        orderparameter[i][1] = -99.0;
 
-		// write data to file
-		if(!discret_.Comm().MyPID())
-		{
-			std::ostringstream orientfilename;
-			orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
+    // write data to file
+    if(!discret_.Comm().MyPID())
+    {
+      std::ostringstream orientfilename;
+      orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
 
-			FILE* fp = NULL;
-			fp = fopen(orientfilename.str().c_str(), "w");
-			std::stringstream histogram;
+      FILE* fp = NULL;
+      fp = fopen(orientfilename.str().c_str(), "w");
+      std::stringstream histogram;
 
-			histogram<<bspotsglob<<"    "<<-99<<"    "<<-99<<endl;
-			for(int i=0; i<numbins; i++)
-				histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameter[i][1]<<endl;
-			//write content into file and close it
-			fprintf(fp, histogram.str().c_str());
-			fclose(fp);
-		}
-	}
+      histogram<<bspotsglob<<"    "<<-99<<"    "<<-99<<endl;
+      for(int i=0; i<numbins; i++)
+        histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameter[i][1]<<endl;
+      //write content into file and close it
+      fprintf(fp, histogram.str().c_str());
+      fclose(fp);
+    }
+  }
 }//NumLinkerSpotsAndOrientation()
 
 /*------------------------------------------------------------------------------*                                                 |
@@ -4197,258 +4197,258 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
  *------------------------------------------------------------------------------*/
 void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
 {
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double maxdist = periodlength/2.0*sqrt(3.0);
-	int numbins = statmechparams_.get<int>("HISTOGRAMBINS",1);
-	// center of gravity
-	LINALG::Matrix<3,1> cog;
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double maxdist = periodlength/2.0*sqrt(3.0);
+  int numbins = statmechparams_.get<int>("HISTOGRAMBINS",1);
+  // center of gravity
+  LINALG::Matrix<3,1> cog;
   for(int i=0; i<(int)cog.M(); i++)
-  	cog(i) = centershift(i) + periodlength/2.0;
+    cog(i) = centershift(i) + periodlength/2.0;
 
-	// 1. set up of a row map vector containing the global node positions
-	std::vector<LINALG::Matrix<3,1> > xrelnodes;
-	xrelnodes.clear();
-	for (int i=0; i<discret_.NumMyRowNodes(); i++)
-	{
-		//get pointer at a node
-		const DRT::Node* node = discret_.lRowNode(i);
-		//get GIDs of this node's degrees of freedom
-		std::vector<int> dofnode = discret_.Dof(node);
-		// global position and shift according to new centershift
-		LINALG::Matrix<3, 1> xglob;
+  // 1. set up of a row map vector containing the global node positions
+  std::vector<LINALG::Matrix<3,1> > xrelnodes;
+  xrelnodes.clear();
+  for (int i=0; i<discret_.NumMyRowNodes(); i++)
+  {
+    //get pointer at a node
+    const DRT::Node* node = discret_.lRowNode(i);
+    //get GIDs of this node's degrees of freedom
+    std::vector<int> dofnode = discret_.Dof(node);
+    // global position and shift according to new centershift
+    LINALG::Matrix<3, 1> xglob;
 
-		// shift according to given center (cog)
-		for(int j=0; j<(int)xglob.M(); j++)
-		{
-			// get the global node position
-			xglob(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
-			// shift the j-th component according to new center
-			if (xglob(j) > periodlength+centershift(j))
-				xglob(j) -= periodlength;
-			if (xglob(j) < centershift(j))
-				xglob(j) += periodlength;
-		}
-		xglob -= cog;
-		xrelnodes.push_back(xglob);
-	}
+    // shift according to given center (cog)
+    for(int j=0; j<(int)xglob.M(); j++)
+    {
+      // get the global node position
+      xglob(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
+      // shift the j-th component according to new center
+      if (xglob(j) > periodlength+centershift(j))
+        xglob(j) -= periodlength;
+      if (xglob(j) < centershift(j))
+        xglob(j) += periodlength;
+    }
+    xglob -= cog;
+    xrelnodes.push_back(xglob);
+  }
 
-	Epetra_Vector fillengthrow(*ddcorrrowmap_, true);
-	// calculate sqrt(DV/DL)
-	for(int i=1; i<discret_.NumMyRowNodes(); i++)
-	{
-		// column map LID of the two nodes in question
-		int gid0 = discret_.NodeRowMap()->GID(i-1);
-		int gid1 = discret_.NodeRowMap()->GID(i);
-		int collid0 = discret_.NodeColMap()->LID(gid0);
-		int collid1 = discret_.NodeColMap()->LID(gid1);
+  Epetra_Vector fillengthrow(*ddcorrrowmap_, true);
+  // calculate sqrt(DV/DL)
+  for(int i=1; i<discret_.NumMyRowNodes(); i++)
+  {
+    // column map LID of the two nodes in question
+    int gid0 = discret_.NodeRowMap()->GID(i-1);
+    int gid1 = discret_.NodeRowMap()->GID(i);
+    int collid0 = discret_.NodeColMap()->LID(gid0);
+    int collid1 = discret_.NodeColMap()->LID(gid1);
 
-		// make sure both nodes lie on the same filament
-		if((*filamentnumber_)[collid0] == (*filamentnumber_)[collid1])
-		{
-			// calculate node bins
-			int index0 = i-1;
-			int index1 = i;
-			int bin0 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
-			int bin1 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
-			if(bin0 == numbins)
-				bin0--;
-			if(bin1 == numbins)
-				bin1--;
+    // make sure both nodes lie on the same filament
+    if((*filamentnumber_)[collid0] == (*filamentnumber_)[collid1])
+    {
+      // calculate node bins
+      int index0 = i-1;
+      int index1 = i;
+      int bin0 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
+      int bin1 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
+      if(bin0 == numbins)
+        bin0--;
+      if(bin1 == numbins)
+        bin1--;
 
-			// case: the two nodes lie within different bins: add length segments binwise
-			if(bin0 != bin1)
-			{
-				// switch in order to follow convention
-				if(bin1<bin0)
-				{
-					index0 = i;
-					index1 = i-1;
-					bin0 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
-					bin1 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
-				}
+      // case: the two nodes lie within different bins: add length segments binwise
+      if(bin0 != bin1)
+      {
+        // switch in order to follow convention
+        if(bin1<bin0)
+        {
+          index0 = i;
+          index1 = i-1;
+          bin0 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
+          bin1 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
+        }
 
-				// check, if element is broken and unshift in order to obtain correct directional vector
-				// calculate directional vector between nodes
-				LINALG::Matrix<3,1> unshift = xrelnodes[index1];
+        // check, if element is broken and unshift in order to obtain correct directional vector
+        // calculate directional vector between nodes
+        LINALG::Matrix<3,1> unshift = xrelnodes[index1];
 
-				for(int j=0; j<(int)xrelnodes[index0].M(); j++)
-				{
-					// check for periodic boundary shift and correct accordingly
-					if (fabs(xrelnodes[index1](j) - periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
-						unshift(j) -= periodlength;
-					else if (fabs(xrelnodes[index1](j) + periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
-						unshift(j) += periodlength;
-				}
+        for(int j=0; j<(int)xrelnodes[index0].M(); j++)
+        {
+          // check for periodic boundary shift and correct accordingly
+          if (fabs(xrelnodes[index1](j) - periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
+            unshift(j) -= periodlength;
+          else if (fabs(xrelnodes[index1](j) + periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
+            unshift(j) += periodlength;
+        }
 
 
-				LINALG::Matrix<3,1> dirvec = unshift;
-				dirvec -= xrelnodes[index0];
-				// directional unit vector
-				dirvec.Scale(1.0/dirvec.Norm2());
+        LINALG::Matrix<3,1> dirvec = unshift;
+        dirvec -= xrelnodes[index0];
+        // directional unit vector
+        dirvec.Scale(1.0/dirvec.Norm2());
 
-				// number of bin intersections
-				int numisecs = abs(bin1-bin0);
-				// starting point
-				LINALG::Matrix<3,1> xstartj = xrelnodes[index0];
+        // number of bin intersections
+        int numisecs = abs(bin1-bin0);
+        // starting point
+        LINALG::Matrix<3,1> xstartj = xrelnodes[index0];
 
-				/*-----------------------------------
-				 * short example:
-				 *    bin:   16    17    18    19
-				 *         |  o--|-----|-----|--o  |
-				 * abslim: 16    17    18    19    20
-				 * binlim:       0     1     2
-				  -----------------------------------*/
-				//cout<<"numisecs = "<<numisecs<<endl;
-				for(int j=0; j<numisecs; j++)
-				{
-					// all segments except last segment
-					if(j<=numisecs-1)
-					{
-						int currbin = bin0+j;
-						// j-th bin limit
-						double nextbinlimit = (double)(currbin+1)/(double)numbins*maxdist;
+        /*-----------------------------------
+         * short example:
+         *    bin:   16    17    18    19
+         *         |  o--|-----|-----|--o  |
+         * abslim: 16    17    18    19    20
+         * binlim:       0     1     2
+          -----------------------------------*/
+        //cout<<"numisecs = "<<numisecs<<endl;
+        for(int j=0; j<numisecs; j++)
+        {
+          // all segments except last segment
+          if(j<=numisecs-1)
+          {
+            int currbin = bin0+j;
+            // j-th bin limit
+            double nextbinlimit = (double)(currbin+1)/(double)numbins*maxdist;
 
-						// line parameter mu for intersection of line with spherical shell:
-						// note: we take the solution that is (may be?) >=0 since we chose the directional vector accordingly
+            // line parameter mu for intersection of line with spherical shell:
+            // note: we take the solution that is (may be?) >=0 since we chose the directional vector accordingly
 
-						//cout<<"  j="<<j<<", xstartj: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
-						double a = xstartj.Dot(dirvec);
-						double b = sqrt(a*a-xstartj.Norm2()*xstartj.Norm2()+nextbinlimit*nextbinlimit);
-						double mu = -a + b;
+            //cout<<"  j="<<j<<", xstartj: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+            double a = xstartj.Dot(dirvec);
+            double b = sqrt(a*a-xstartj.Norm2()*xstartj.Norm2()+nextbinlimit*nextbinlimit);
+            double mu = -a + b;
 
-						//cout<<"  mu("<<j<<") = "<<mu<<endl;
+            //cout<<"  mu("<<j<<") = "<<mu<<endl;
 
-						// intersection of the line with the spherical shell
-						LINALG::Matrix<3,1> isection = dirvec;
-						isection.Scale(mu);
-						isection += xstartj;
-						// calculate element (filament) segment added to the respective bin
-						LINALG::Matrix<3,1> segment = isection;
-						segment -= xstartj;
-						fillengthrow[currbin] += segment.Norm2();
-						// store current intersection in case there is more than one
-						xstartj = isection;
-						//if(numisecs>0)
-						//	cout<<"    j="<<j+1<<", previs: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
-					}
-					// last segment
-					if(j==numisecs-1)
-					{
-						//cout<<"  xfinale: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
-						LINALG::Matrix<3,1> segment = xrelnodes[index1];
-						segment -= xstartj;
-						fillengthrow[bin1] += segment.Norm2();
-						xstartj.Clear();
-					}
-				}
-			}
-			else // just add the entire element length
-			{
-				LINALG::Matrix<3,1> elength = xrelnodes[i];
-				elength -= xrelnodes[i-1];
-				fillengthrow[bin0] += elength.Norm2();
-			}
-		}
-	}
+            // intersection of the line with the spherical shell
+            LINALG::Matrix<3,1> isection = dirvec;
+            isection.Scale(mu);
+            isection += xstartj;
+            // calculate element (filament) segment added to the respective bin
+            LINALG::Matrix<3,1> segment = isection;
+            segment -= xstartj;
+            fillengthrow[currbin] += segment.Norm2();
+            // store current intersection in case there is more than one
+            xstartj = isection;
+            //if(numisecs>0)
+            //	cout<<"    j="<<j+1<<", previs: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+          }
+          // last segment
+          if(j==numisecs-1)
+          {
+            //cout<<"  xfinale: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+            LINALG::Matrix<3,1> segment = xrelnodes[index1];
+            segment -= xstartj;
+            fillengthrow[bin1] += segment.Norm2();
+            xstartj.Clear();
+          }
+        }
+      }
+      else // just add the entire element length
+      {
+        LINALG::Matrix<3,1> elength = xrelnodes[i];
+        elength -= xrelnodes[i-1];
+        fillengthrow[bin0] += elength.Norm2();
+      }
+    }
+  }
 
-	Epetra_Vector fillengthcol(*ddcorrcolmap_,true);
-	Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
-	fillengthcol.Import(fillengthrow,importer,Insert);
-	// Add the processor-specific data up
-	std::vector<double> fillength(numbins, 0.0);
-	for(int i=0; i<numbins; i++)
-		for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
-			fillength[i] += fillengthcol[pid*numbins+i];
+  Epetra_Vector fillengthcol(*ddcorrcolmap_,true);
+  Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
+  fillengthcol.Import(fillengthrow,importer,Insert);
+  // Add the processor-specific data up
+  std::vector<double> fillength(numbins, 0.0);
+  for(int i=0; i<numbins; i++)
+    for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+      fillength[i] += fillengthcol[pid*numbins+i];
 
-	// Proc 0 section
-	if(discret_.Comm().MyPID()==0)
-	{
-		std::ostringstream filename;
-		filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
+  // Proc 0 section
+  if(discret_.Comm().MyPID()==0)
+  {
+    std::ostringstream filename;
+    filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
 
-		FILE* fp = NULL;
-		fp = fopen(filename.str().c_str(), "w");
-		std::stringstream histogram;
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream histogram;
 
-		for(int i=0; i<numbins; i++)
-			histogram<<i+1<<"    "<<std::setprecision(12)<<fillength[i]<<endl;
+    for(int i=0; i<numbins; i++)
+      histogram<<i+1<<"    "<<std::setprecision(12)<<fillength[i]<<endl;
 
-		//write content into file and close it
-		fprintf(fp, histogram.str().c_str());
-		fclose(fp);
-	}
+    //write content into file and close it
+    fprintf(fp, histogram.str().c_str());
+    fclose(fp);
+  }
 }
 
 /*------------------------------------------------------------------------------*                                                 |
- | distribution of spherical coordinates                  (public) mueller 12/10|
- *------------------------------------------------------------------------------*/
+| distribution of spherical coordinates                  (public) mueller 12/10|
+*------------------------------------------------------------------------------*/
 void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
-																									Epetra_Vector& phibinsrow,
-																									Epetra_Vector& thetabinsrow,
-																									Epetra_Vector& costhetabinsrow)
+                                                  Epetra_Vector& phibinsrow,
+                                                  Epetra_Vector& thetabinsrow,
+                                                  Epetra_Vector& costhetabinsrow)
 {
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
-	for(int i=0; i<discret_.NumMyRowElements(); i++)
-	{
-		DRT::Element* element = discret_.lRowElement(i);
-		// consider filament elements only
-		if(element->Id()<basisnodes_)
-		{
-			int gid0 = element->Nodes()[0]->Id();
-			int gid1 = element->Nodes()[1]->Id();
-			int lid0 = discret_.NodeRowMap()->LID(gid0);
-			int lid1 = discret_.NodeRowMap()->LID(gid1);
-			DRT::Node* node0 = discret_.lRowNode(lid0);
-			DRT::Node* node1 = discret_.lRowNode(lid1);
+  for(int i=0; i<discret_.NumMyRowElements(); i++)
+  {
+    DRT::Element* element = discret_.lRowElement(i);
+    // consider filament elements only
+    if(element->Id()<basisnodes_)
+    {
+      int gid0 = element->Nodes()[0]->Id();
+      int gid1 = element->Nodes()[1]->Id();
+      int lid0 = discret_.NodeRowMap()->LID(gid0);
+      int lid1 = discret_.NodeRowMap()->LID(gid1);
+      DRT::Node* node0 = discret_.lRowNode(lid0);
+      DRT::Node* node1 = discret_.lRowNode(lid1);
 
-			// calculate directional vector between nodes
-			double dirlength = 0.0;
-			Epetra_SerialDenseMatrix dirvec(3,1);
-			for(int dof=0; dof<dirvec.M(); dof++)
-			{
-				int dofgid0 = discret_.Dof(node0)[dof];
-				int dofgid1 = discret_.Dof(node1)[dof];
-				double poscomponent0 = node0->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid0)];
-				double poscomponent1 = node1->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid1)];
-				// check for periodic boundary shift and correct accordingly
-				if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-					poscomponent1 -= periodlength;
-				else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-					poscomponent1 += periodlength;
+      // calculate directional vector between nodes
+      double dirlength = 0.0;
+      Epetra_SerialDenseMatrix dirvec(3,1);
+      for(int dof=0; dof<dirvec.M(); dof++)
+      {
+        int dofgid0 = discret_.Dof(node0)[dof];
+        int dofgid1 = discret_.Dof(node1)[dof];
+        double poscomponent0 = node0->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid0)];
+        double poscomponent1 = node1->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid1)];
+        // check for periodic boundary shift and correct accordingly
+        if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+          poscomponent1 -= periodlength;
+        else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+          poscomponent1 += periodlength;
 
-				dirvec(dof,0) = poscomponent1-poscomponent0;
-				dirlength += dirvec(dof,0)*dirvec(dof,0);
-			}
-			dirlength = sqrt(dirlength);
-			// normed directional vector
-			dirvec.Scale(1.0/dirlength);
+        dirvec(dof,0) = poscomponent1-poscomponent0;
+        dirlength += dirvec(dof,0)*dirvec(dof,0);
+      }
+      dirlength = sqrt(dirlength);
+      // normed directional vector
+      dirvec.Scale(1.0/dirlength);
 
-			Epetra_SerialDenseMatrix dirvecrot(3,1,true);
-			trafo_->Multiply(false,dirvec,dirvecrot);
+      Epetra_SerialDenseMatrix dirvecrot(3,1,true);
+      trafo_->Multiply(false,dirvec,dirvecrot);
 
-			// transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
-			double phi = atan2(dirvecrot(1,0),dirvecrot(0,0)) + M_PI;
-			double theta = acos(dirvecrot(2,0));
+      // transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
+      double phi = atan2(dirvecrot(1,0),dirvecrot(0,0)) + M_PI;
+      double theta = acos(dirvecrot(2,0));
 
-			int phibin = (int)floor(phi/(2*M_PI)*numbins);
-			int thetabin = (int)floor(theta/M_PI*numbins);
-			int costhetabin = (int)floor((cos(theta)+1.0)/2.0*numbins);
-			if(phibin == numbins)
-				phibin--;
-			if(thetabin == numbins)
-				thetabin--;
-			if(costhetabin == numbins)
-				costhetabin--;
-			if(phibin<0 || thetabin<0)
-				dserror("bin smaller zero");
-			phibinsrow[phibin] += 1.0;
-			thetabinsrow[thetabin] += 1.0;
-			costhetabinsrow[costhetabin] += 1.0;
-		}
-	}
-	return;
+      int phibin = (int)floor(phi/(2*M_PI)*numbins);
+      int thetabin = (int)floor(theta/M_PI*numbins);
+      int costhetabin = (int)floor((cos(theta)+1.0)/2.0*numbins);
+      if(phibin == numbins)
+        phibin--;
+      if(thetabin == numbins)
+        thetabin--;
+      if(costhetabin == numbins)
+        costhetabin--;
+      if(phibin<0 || thetabin<0)
+        dserror("bin smaller zero");
+      phibinsrow[phibin] += 1.0;
+      thetabinsrow[thetabin] += 1.0;
+      costhetabinsrow[costhetabin] += 1.0;
+    }
+  }
+  return;
 }//SphericalCoordsDistribution()
 
 /*------------------------------------------------------------------------------*
@@ -4456,57 +4456,57 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
  *------------------------------------------------------------------------------*/
 void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift)
 {
-		// simpler version taking into account only the original boundary volume
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double maxdistance = periodlength/2.0*sqrt(3.0);
-	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+    // simpler version taking into account only the original boundary volume
+  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double maxdistance = periodlength/2.0*sqrt(3.0);
+  int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 
-	LINALG::Matrix<3,1> cog;
+  LINALG::Matrix<3,1> cog;
   for(int i=0; i<(int)cog.M(); i++)
-  	cog(i) = centershift(i) + periodlength/2.0;
+    cog(i) = centershift(i) + periodlength/2.0;
 
-	// Export to transfer map format
-	Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
-	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Export crosslinkimporter(*crosslinkermap_, *transfermap_);
-	// note: it seems to be necessary to clear all vectors other than on Proc 0.
-	// otherwise, i.e. using method "Insert" on Export, from time to time (no clear pattern has emerged so far)
-	// incorrect data is written to transfer vectors. Odd!
-	if(discret_.Comm().MyPID()!=0)
-	{
-		crosslinkerbond_->PutScalar(0.0);
-		crosslinkerpositions_->PutScalar(0.0);
-	}
-	//Export
-	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	// Reimport to create pre-Export status on all procs
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
+  // Export to transfer map format
+  Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
+  Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
+  Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+  Epetra_Export crosslinkimporter(*crosslinkermap_, *transfermap_);
+  // note: it seems to be necessary to clear all vectors other than on Proc 0.
+  // otherwise, i.e. using method "Insert" on Export, from time to time (no clear pattern has emerged so far)
+  // incorrect data is written to transfer vectors. Odd!
+  if(discret_.Comm().MyPID()!=0)
+  {
+    crosslinkerbond_->PutScalar(0.0);
+    crosslinkerpositions_->PutScalar(0.0);
+  }
+  //Export
+  crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
+  crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
+  // Reimport to create pre-Export status on all procs
+  crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+  crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
-	// calculate distance of crosslinkers to center of gravity
-	for(int i=0; i<crosslinkerbondtrans.MyLength(); i++)
-		if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9)
-		{
-			LINALG::Matrix<3,1> distance;
-			// shift coordinates according to new boundary box center
-			for(int j=0; j<crosslinkerpositionstrans.NumVectors(); j++)
-			{
-				distance(j) = crosslinkerpositionstrans[j][i];
-				if (distance(j) > periodlength+centershift(j))
-					distance(j) -= periodlength;
-				if (distance(j) < centershift(j))
-					distance(j) += periodlength;
-			}
-			distance -= cog;
-			// determine histogram bin for current crosslinker element
-			int currbin = (int)floor(distance.Norm2()/maxdistance * numbins);
-			if(currbin==numbins)
-				currbin--;
-			radialdistancesrow[currbin] += 1.0;
-		}
-	return;
+  // calculate distance of crosslinkers to center of gravity
+  for(int i=0; i<crosslinkerbondtrans.MyLength(); i++)
+    if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9)
+    {
+      LINALG::Matrix<3,1> distance;
+      // shift coordinates according to new boundary box center
+      for(int j=0; j<crosslinkerpositionstrans.NumVectors(); j++)
+      {
+        distance(j) = crosslinkerpositionstrans[j][i];
+        if (distance(j) > periodlength+centershift(j))
+          distance(j) -= periodlength;
+        if (distance(j) < centershift(j))
+          distance(j) += periodlength;
+      }
+      distance -= cog;
+      // determine histogram bin for current crosslinker element
+      int currbin = (int)floor(distance.Norm2()/maxdistance * numbins);
+      if(currbin==numbins)
+        currbin--;
+      radialdistancesrow[currbin] += 1.0;
+    }
+  return;
 }//RadialDensityDistribution()
 
 /*----------------------------------------------------------------------*
@@ -4520,74 +4520,74 @@ void StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vec
 
   if(discret_.Comm().MyPID()==0)
   {
-  	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+    double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
     FILE* fp = NULL;
     if(fileoutput)
-    	fp = fopen(filename.str().c_str(), "w");
+      fp = fopen(filename.str().c_str(), "w");
     std::stringstream fileleorientation;
 
-  	// get filament number conditions
-		vector<DRT::Condition*> filaments(0);
-		discret_.GetCondition("FilamentNumber", filaments);
+    // get filament number conditions
+    vector<DRT::Condition*> filaments(0);
+    discret_.GetCondition("FilamentNumber", filaments);
 
-		for(int fil=0; fil<(int)filaments.size(); fil++)
-		{
-			// get next filament
-			DRT::Condition* currfilament = filaments[fil];
-			for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
-			{
-				// obtain column map LIDs
-				int gid0 = currfilament->Nodes()->at(node-1);
-				int gid1 = currfilament->Nodes()->at(node);
-				int nodelid0 = discret_.NodeColMap()->LID(gid0);
-				int nodelid1 = discret_.NodeColMap()->LID(gid1);
-				DRT::Node* node0 = discret_.lColNode(nodelid0);
-				DRT::Node* node1 = discret_.lColNode(nodelid1);
+    for(int fil=0; fil<(int)filaments.size(); fil++)
+    {
+      // get next filament
+      DRT::Condition* currfilament = filaments[fil];
+      for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
+      {
+        // obtain column map LIDs
+        int gid0 = currfilament->Nodes()->at(node-1);
+        int gid1 = currfilament->Nodes()->at(node);
+        int nodelid0 = discret_.NodeColMap()->LID(gid0);
+        int nodelid1 = discret_.NodeColMap()->LID(gid1);
+        DRT::Node* node0 = discret_.lColNode(nodelid0);
+        DRT::Node* node1 = discret_.lColNode(nodelid1);
 
-				// calculate directional vector between nodes
-				LINALG::Matrix<3, 1> dirvec;
-				for(int dof=0; dof<3; dof++)
-				{
-					int dofgid0 = discret_.Dof(node0)[dof];
-					int dofgid1 = discret_.Dof(node1)[dof];
-					double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
-					double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
-					// check for periodic boundary shift and correct accordingly
-					if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-						poscomponent1 -= periodlength;
-					else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
-						poscomponent1 += periodlength;
+        // calculate directional vector between nodes
+        LINALG::Matrix<3, 1> dirvec;
+        for(int dof=0; dof<3; dof++)
+        {
+          int dofgid0 = discret_.Dof(node0)[dof];
+          int dofgid1 = discret_.Dof(node1)[dof];
+          double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
+          double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
+          // check for periodic boundary shift and correct accordingly
+          if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+            poscomponent1 -= periodlength;
+          else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+            poscomponent1 += periodlength;
 
-					dirvec(dof) = poscomponent1-poscomponent0;
-				}
-				// normed vector
-				dirvec.Scale(1/dirvec.Norm2());
+          dirvec(dof) = poscomponent1-poscomponent0;
+        }
+        // normed vector
+        dirvec.Scale(1/dirvec.Norm2());
 
-				// add element directional vectors up
-				for(int i=0; i<(int)normedvectors->size(); i++)
-				{
-					// base vector
-					LINALG::Matrix<3,1> ei;
-					LINALG::Matrix<3,1> vi = dirvec;
+        // add element directional vectors up
+        for(int i=0; i<(int)normedvectors->size(); i++)
+        {
+          // base vector
+          LINALG::Matrix<3,1> ei;
+          LINALG::Matrix<3,1> vi = dirvec;
 
-					ei.Clear();
-					ei(i) = 1.0;
+          ei.Clear();
+          ei(i) = 1.0;
 
-					if(acos(vi.Dot(ei))>(M_PI/2.0))
-						vi.Scale(-1.0);
-					(*normedvectors)[i] += vi;
-				}
+          if(acos(vi.Dot(ei))>(M_PI/2.0))
+            vi.Scale(-1.0);
+          (*normedvectors)[i] += vi;
+        }
 
-				// write normed directional vector to stream
-				fileleorientation<<fil<<"    "<<std::setprecision(12)<<dirvec(0)<<" "<<dirvec(1)<<" "<<dirvec(2)<<endl;
-			}
-		}
-		if(fileoutput)
-		{
-			fprintf(fp, fileleorientation.str().c_str());
-			fclose(fp);
-		}
+        // write normed directional vector to stream
+        fileleorientation<<fil<<"    "<<std::setprecision(12)<<dirvec(0)<<" "<<dirvec(1)<<" "<<dirvec(2)<<endl;
+      }
+    }
+    if(fileoutput)
+    {
+      fprintf(fp, fileleorientation.str().c_str());
+      fclose(fp);
+    }
   }
 }// StatMechManager:FilamentOrientations()
 

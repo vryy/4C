@@ -16,13 +16,21 @@ Maintainer: Christoph Meier
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_discret.H"
 #include "beam3contact.H"
 
 using namespace std;
 using namespace Teuchos;
 using namespace CONTACT;
+
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 /*!
  \brief Octtree for beam contact search...
@@ -33,7 +41,7 @@ class Beam3ContactOctTree
   public:
     //!\brief Constructor
     Beam3ContactOctTree(ParameterList& params,
-												DRT::Discretization& discret,
+                        DRT::Discretization& discret,
                         DRT::Discretization& searchdis,
                         const int& dofoffset);
 

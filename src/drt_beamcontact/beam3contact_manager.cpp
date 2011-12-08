@@ -18,6 +18,7 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 
 #ifdef D_BEAM3
@@ -47,7 +48,7 @@ alphaf_(alphaf)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
-	RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
+  RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
   cdiscret_ = rcp(new DRT::Discretization((string)"beam contact",comm));
 
   // loop over all column nodes of underlying problem discret and add
@@ -221,74 +222,74 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // update currentpositions and existing beam contact pairs
   SetState(currentpositions,disrow);
 
-	//**********************************************************************
-	// octtree search (loop over all elements and find closest pairs)
-	//**********************************************************************
+  //**********************************************************************
+  // octtree search (loop over all elements and find closest pairs)
+  //**********************************************************************
   if(tree_ != Teuchos::null)
   {
-		double t_start = Teuchos::Time::wallTime();
+    double t_start = Teuchos::Time::wallTime();
 
-		vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
+    vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
 
-		// merge old and new contact pairs
-		for (int k=0;k<(int)newpairs.size();++k)
-		{
-			int currid1 = (newpairs[k]->Element1())->Id();
-			int currid2 = (newpairs[k]->Element2())->Id();
-			bool foundbefore = false;
+    // merge old and new contact pairs
+    for (int k=0;k<(int)newpairs.size();++k)
+    {
+      int currid1 = (newpairs[k]->Element1())->Id();
+      int currid2 = (newpairs[k]->Element2())->Id();
+      bool foundbefore = false;
 
-			for (int m=0;m<(int)pairs_.size();++m)
-			{
-				int id1 = (pairs_[m]->Element1())->Id();
-				int id2 = (pairs_[m]->Element2())->Id();
+      for (int m=0;m<(int)pairs_.size();++m)
+      {
+        int id1 = (pairs_[m]->Element1())->Id();
+        int id2 = (pairs_[m]->Element2())->Id();
 
-				// pair already exists
-				if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
-					foundbefore = true;
-			}
+        // pair already exists
+        if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
+          foundbefore = true;
+      }
 
-			// add to pairs_ if not found before
-			if (!foundbefore)
-				pairs_.push_back(newpairs[k]);
-		}
+      // add to pairs_ if not found before
+      if (!foundbefore)
+        pairs_.push_back(newpairs[k]);
+    }
 
-		double t_end = Teuchos::Time::wallTime() - t_start;
-		if(!pdiscret_.Comm().MyPID())
-			cout << "\nOctree Search: " << t_end << " seconds\n";
+    double t_end = Teuchos::Time::wallTime() - t_start;
+    if(!pdiscret_.Comm().MyPID())
+      cout << "\nOctree Search: " << t_end << " seconds\n";
 
 
-		/*//Print ContactPairs to .dat-file and plot with Matlab....................
-		std::ostringstream filename2;
-		filename2 << "ContactPairs_beam3contactmanager.dat";
-		FILE* fp2 = NULL;
-		fp2 = fopen(filename2.str().c_str(), "w");
-		fclose(fp2);
-		//open file to write output data into
-		// write output to temporary stringstream;
-		std::stringstream myfile2;
-		fp2 = fopen(filename2.str().c_str(), "a");
-		for (int i=0;i<(int)pairs_.size();i++)
-			myfile2 << (pairs_[i]->Element1())->Id() <<"  "<< (pairs_[i]->Element2())->Id() <<endl;
-		fprintf(fp2, myfile2.str().c_str());
-		fclose(fp2);*/
+    /*//Print ContactPairs to .dat-file and plot with Matlab....................
+    std::ostringstream filename2;
+    filename2 << "ContactPairs_beam3contactmanager.dat";
+    FILE* fp2 = NULL;
+    fp2 = fopen(filename2.str().c_str(), "w");
+    fclose(fp2);
+    //open file to write output data into
+    // write output to temporary stringstream;
+    std::stringstream myfile2;
+    fp2 = fopen(filename2.str().c_str(), "a");
+    for (int i=0;i<(int)pairs_.size();i++)
+      myfile2 << (pairs_[i]->Element1())->Id() <<"  "<< (pairs_[i]->Element2())->Id() <<endl;
+    fprintf(fp2, myfile2.str().c_str());
+    fclose(fp2);*/
   }
   else
   {
-		//**********************************************************************
-		// brute-force search (loop over all elements and find closest pairs)
-		//**********************************************************************
-		// call function 'SearchPossibleContactPairs' to fill the vector pairs_
-		// with pairs of elements, that might get in contact. The criterion is
-		// the distance of the nodes of the elements, which has to be smaller
-		// than the search radius searchradius_
-		//**********************************************************************
+    //**********************************************************************
+    // brute-force search (loop over all elements and find closest pairs)
+    //**********************************************************************
+    // call function 'SearchPossibleContactPairs' to fill the vector pairs_
+    // with pairs of elements, that might get in contact. The criterion is
+    // the distance of the nodes of the elements, which has to be smaller
+    // than the search radius searchradius_
+    //**********************************************************************
 
-		// call search algorithm
-		double t_start = Teuchos::Time::wallTime();
-		SearchPossibleContactPairs(currentpositions);
-		double t_end = Teuchos::Time::wallTime() - t_start;
-		if(!pdiscret_.Comm().MyPID())
-			cout << "\nBrute Force Search: " << t_end << " seconds\n";
+    // call search algorithm
+    double t_start = Teuchos::Time::wallTime();
+    SearchPossibleContactPairs(currentpositions);
+    double t_end = Teuchos::Time::wallTime() - t_start;
+    if(!pdiscret_.Comm().MyPID())
+      cout << "\nBrute Force Search: " << t_end << " seconds\n";
   }
   
   //**********************************************************************
@@ -313,7 +314,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // uncomplete stiffness matrix
   stiffmatrix.UnComplete();
   if(!pdiscret_.Comm().MyPID())
-  	cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
+    cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
 
   // print current pair vector on the screen
   for (int i=0;i<(int)pairs_.size();++i)
@@ -939,31 +940,31 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     std::stringstream gmshfileheader;
     // write output to temporary stringstream; 
     gmshfileheader <<"General.BackgroundGradient = 0;\n";
-		gmshfileheader <<"View.LineType = 1;\n";
-		gmshfileheader <<"View.LineWidth = 1.4;\n";
-		gmshfileheader <<"View.PointType = 1;\n";
-		gmshfileheader <<"View.PointSize = 3;\n";
-		gmshfileheader <<"General.ColorScheme = 1;\n";
-		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
-		gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
-		//gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
-		gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
-		gmshfileheader <<"General.Color.Text = {0,0,0};\n";
-		gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
-		gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
-		gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
-		gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
-		gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
-		gmshfileheader <<"View.ColormapAlpha = 1;\n";
-		gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
-		gmshfileheader <<"View.ColormapBeta = 0;\n";
-		gmshfileheader <<"View.ColormapBias = 0;\n";
-		gmshfileheader <<"View.ColormapCurvature = 0;\n";
-		gmshfileheader <<"View.ColormapInvert = 0;\n";
-		gmshfileheader <<"View.ColormapNumber = 2;\n";
-		gmshfileheader <<"View.ColormapRotation = 0;\n";
-		gmshfileheader <<"View.ColormapSwap = 0;\n";
-		gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
+    gmshfileheader <<"View.LineType = 1;\n";
+    gmshfileheader <<"View.LineWidth = 1.4;\n";
+    gmshfileheader <<"View.PointType = 1;\n";
+    gmshfileheader <<"View.PointSize = 3;\n";
+    gmshfileheader <<"General.ColorScheme = 1;\n";
+    gmshfileheader <<"General.Color.Background = {255,255,255};\n";
+    gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
+    //gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+    gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
+    gmshfileheader <<"General.Color.Text = {0,0,0};\n";
+    gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
+    gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
+    gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
+    gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
+    gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
+    gmshfileheader <<"View.ColormapAlpha = 1;\n";
+    gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
+    gmshfileheader <<"View.ColormapBeta = 0;\n";
+    gmshfileheader <<"View.ColormapBias = 0;\n";
+    gmshfileheader <<"View.ColormapCurvature = 0;\n";
+    gmshfileheader <<"View.ColormapInvert = 0;\n";
+    gmshfileheader <<"View.ColormapNumber = 2;\n";
+    gmshfileheader <<"View.ColormapRotation = 0;\n";
+    gmshfileheader <<"View.ColormapSwap = 0;\n";
+    gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
 
     //write content into file and close it
     fprintf(fp, gmshfileheader.str().c_str());
@@ -1139,8 +1140,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 
       if (pairs_[i]->GetNewGapStatus() == true)
       {
-      	pairs_[i]->InvertNormal();
-				cout << "Penetration to large, choose higher penalty parameter!" << endl;
+        pairs_[i]->InvertNormal();
+        cout << "Penetration to large, choose higher penalty parameter!" << endl;
       }
 #ifdef RELCONSTRTOL
 #ifdef D_BEAM3
@@ -1149,27 +1150,27 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
       std::vector<double> radii(2,0.0);
       for(int k=0; k<(int)radii.size();k++)
       {
-      	// get Element type
-      	DRT::Element* currele = cdiscret_->gElement(pairs_[i]->Element1()->Id());
-      	if(k>0)
-      		currele = cdiscret_->gElement(pairs_[i]->Element2()->Id());
+        // get Element type
+        DRT::Element* currele = cdiscret_->gElement(pairs_[i]->Element1()->Id());
+        if(k>0)
+          currele = cdiscret_->gElement(pairs_[i]->Element2()->Id());
 
-				const DRT::ElementType & eot = currele->ElementType();
-				if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-					radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(currele))->Izz()) / M_PI));
-				else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-					radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(currele))->Izz()) / M_PI));
-				if(radii[k]==0.0)
-					dserror("beam radius is 0! Check your element type.");
+        const DRT::ElementType & eot = currele->ElementType();
+        if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+          radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(currele))->Izz()) / M_PI));
+        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+          radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(currele))->Izz()) / M_PI));
+        if(radii[k]==0.0)
+          dserror("beam radius is 0! Check your element type.");
       }
 
-			double smallerradius = min(radii[0], radii[1]);
+      double smallerradius = min(radii[0], radii[1]);
 
-			gapvector[j] = pairs_[i]->GetGap()/smallerradius;
+      gapvector[j] = pairs_[i]->GetGap()/smallerradius;
 #endif
 #endif
 #else
-			gapvector[j] = pairs_[i]->GetGap();
+      gapvector[j] = pairs_[i]->GetGap();
 #endif
       j++;
     }
@@ -1215,10 +1216,6 @@ void CONTACT::Beam3cmanager::ShiftAllNormal()
 
 
 }
-
-
-
-
 
 /*----------------------------------------------------------------------*
  |  Update all Uzawa-based Lagrange multipliers               popp 04/10|

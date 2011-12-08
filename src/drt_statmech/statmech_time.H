@@ -16,7 +16,6 @@ Maintainer: Christian Cyron
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_beamcontact/beam3contact_manager.H"
 /*!
 \brief time integration for structural problems with statistical mechanics
 
@@ -25,6 +24,11 @@ Maintainer: Christian Cyron
 
 // forward declarations
 class StatMechManager;
+
+namespace CONTACT
+{
+  class Beam3cmanager;
+}
 
 
 class StatMechTime : public virtual StruGenAlpha
