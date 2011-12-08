@@ -1221,9 +1221,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 										}
 										for(int k=0; k<(int)LID.M(); k++)
 										{
-											// get an element adjacent to the k-th node (any adjacent element does the job, we simply need a starting point)
-											int elegid = beamcmanager->ContactDiscret().lColNode((int)LID(k))->Elements()[0]->Id();
-											intersection = beamcmanager->OcTree()->IsecBBoxesOfOctantWith(elegid, nodecoords, LID);
+											intersection = beamcmanager->OcTree()->IntersectBBoxesWith(nodecoords, LID);
 											if(intersection)
 												break;
 										}

@@ -172,7 +172,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
  |  Intersect the bounding boxes of a certain octant with a given       |
  |  bounding box (public)                                  mueller 01/11|
  *----------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID)
+bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID)
 {
 	/* note:
 	 * 1) do not apply this before having constructed the octree. This is merely a query tool
@@ -189,9 +189,6 @@ bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_Seria
 	// determine bounding box limits
 	RCP<Epetra_SerialDenseMatrix> bboxlimits;
 
-	// retrieve octant in which the bounding box with ID thisBBoxID is located
-	std::vector<int> octants = InWhichOctantLies(bboxid);
-
 	// build bounding box according to given type
 	switch(boundingbox_)
 	{
@@ -203,50 +200,72 @@ bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_Seria
 		break;
 		default: dserror("No or an invalid Octree type was chosen. Check your input file!");
 	}
+
+	// retrieve octants in which the bounding box with ID thisBBoxID is located
+	std::vector<std::vector<int> > octants;
+	octants.clear();
+	// get the octants for two bounding boxe (element) GIDs adjacent to each given node LID
+	for(int i=0; i<(int)nodeLID.M(); i++)
+		octants.push_back(InWhichOctantLies(searchdis_.lColNode((int)nodeLID(i))->Elements()[0]->Id()));
+
 	// intersection of given bounding box with all other bounding boxes in given octant
-	for(int oct=0; oct<(int)octants.size(); oct++)
+	for(int ibox=0; ibox<(int)octants.size(); ibox++)
 	{
-		if(octants[oct]!=-1)
+		for(int oct=0; oct<(int)octants[ibox].size(); oct++)
 		{
-			for(int i=0; i<bboxesinoctants_->NumVectors(); i++)
+			if(octants[ibox][oct]!=-1)
 			{
-				// get the second bounding box ID
-				int bboxinoct = (int)(*bboxesinoctants_)[i][octants[oct]];
-				/*check for adjacent nodes: if there are adjacent nodes, then, of course, there
-				 * the intersection test will turn out positive. We skip those cases.*/
-				// note: bounding box IDs are equal to element GIDs
-				bool sharednode = false;
-				for(int j=0; j<searchdis_.gElement(bboxinoct)->NumNode(); j++)
-					for(int k=0; k<(int)nodeLID.M(); k++)
-						if(searchdis_.gElement(bboxinoct)->NodeIds()[j]==(int)nodeLID(k))
+				for(int i=0; i<bboxesinoctants_->NumVectors(); i++)
+				{
+					// take only values of existing bounding boxes and not the filler values (-9)
+					if((int)(*bboxesinoctants_)[i][octants[ibox][oct]]>-0.9)
+					{
+						// get the second bounding box ID
+						int bboxinoct = (int)(*bboxesinoctants_)[i][octants[ibox][oct]];
+						/*check for adjacent nodes: if there are adjacent nodes, then, of course, there
+						 * the intersection test will turn out positive. We skip those cases.*/
+						// note: bounding box IDs are equal to element GIDs
+						bool sharednode = false;
+						for(int j=0; j<searchdis_.gElement(bboxinoct)->NumNode(); j++)
 						{
-							sharednode = true;
-							break;
+							for(int k=0; k<(int)nodeLID.M(); k++)
+							{
+								if(searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct)->NodeIds()[j])==(int)nodeLID(k))
+								{
+									sharednode = true;
+									break;
+								}
+							}
+							if(sharednode)
+								break;
+						}
+						// apply different bounding box intersection schemes
+						if(!sharednode)
+						{
+							switch(boundingbox_)
+							{
+								case Beam3ContactOctTree::axisaligned:
+									intersection = IsecAABBNoElement(bboxinoct, bboxlimits);
+								break;
+								case Beam3ContactOctTree::cyloriented:
+									intersection = IsecCOBBNoElement(bboxinoct, bboxlimits);
+								break;
+								default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+							}
 						}
 
-
-				// apply different bounding box intersection schemes
-				if(!sharednode)
-				{
-					switch(boundingbox_)
-					{
-						case Beam3ContactOctTree::axisaligned:
-							intersection = IsecAABBNoElement(bboxinoct, bboxlimits);
-						break;
-						case Beam3ContactOctTree::cyloriented:
-							intersection = IsecCOBBNoElement(bboxinoct, bboxlimits);
-						break;
-						default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+						if(intersection)
+							break;
 					}
+					else // loop reached the first bogus value (-9)
+						break;
 				}
-
-				// leave loop when an intersection has been detected
-				if(intersection)
-					break;
 			}
+			else
+				break;
+			if(intersection)
+				break;
 		}
-		else
-			break;
 		if(intersection)
 			break;
 	}
