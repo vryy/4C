@@ -62,7 +62,6 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
     {
       GEO::CUT::Point * p = n->point();
       GEO::CUT::Point::PointPosition pos = p->Position();
-            if (node->Id()==118) cout << "pos " << pos << endl;
       if (pos==GEO::CUT::Point::outside and bgdis->NumDof(node) != 0) //std
       {
         //cout << " outside " << pos <<  " "<< node->Id() << endl;
