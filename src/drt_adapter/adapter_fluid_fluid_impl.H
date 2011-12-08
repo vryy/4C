@@ -195,9 +195,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
         {dserror("not implemented"); return Teuchos::null;}
 
-  private:
 
-    void PrepareFluidXFluidBoundaryDis();
+  private:
 
     /// the actual fluid algorithm
     FLD::XFluidFluid        fluid_;

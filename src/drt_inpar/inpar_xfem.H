@@ -41,6 +41,15 @@ namespace INPAR
       Two_Sided_Mortaring
     };
 
+    // xfluidfluid-fsi-monolithic approach
+    enum Monolithic_xffsi_Approach
+    {
+      XFFSI_Full_Newton,
+      XFFSI_FixedALE_Interpolation,
+      XFFSI_FixedALE_Partitioned
+    };
+
+
   }  // namespace XFEM
 
 }  // namespace INPAR

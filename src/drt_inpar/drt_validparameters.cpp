@@ -3923,6 +3923,19 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    ),
                                &xfem_general);
 
+
+  // xfluidfluid-fsi-monolithic approach
+  setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",
+                                    tuple<std::string>("xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
+                                    tuple<int>(
+                                      INPAR::XFEM::XFFSI_Full_Newton,    //xffsi with no fixed xfem-coupling
+                                      INPAR::XFEM::XFFSI_FixedALE_Interpolation,  // xffsi with fixed xfem-coupling in every newtonstep
+                                                                                  // and interpolations for embedded-dis afterwards
+                                      INPAR::XFEM::XFFSI_FixedALE_Partitioned      // xffsi with fixed xfem-coupling in every newtonstep
+                                                                                  // and solving fluid-field again
+                                       ),
+                                   &xfem_general);
+
   IntParameter("BOUNDARY_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
 
   // Nitsche stabilization parameter

@@ -235,11 +235,12 @@ namespace FLD
 
 
     XFluidFluid(Teuchos::RCP<DRT::Discretization>  actdis,
-                 Teuchos::RCP<DRT::Discretization>  embdis,
-                 LINALG::Solver &                   solver,
-                 const ParameterList &              params,
-                 bool                               alefluid=false,
-                 bool                               monolithicfluidfluidfsi=false);
+                Teuchos::RCP<DRT::Discretization>  embdis,
+                LINALG::Solver &                   solver,
+                const ParameterList &              params,
+                bool                               alefluid=false,
+                bool                               monolithicfluidfluidfsi=false);
+
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems
@@ -287,6 +288,8 @@ namespace FLD
     void CutAndSaveBgFluidStatus();
 
     void SetBgStateVectorsAndPrepareTimeStep();
+
+    void UpdateMonolithicFluidSolution();
 
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
@@ -539,6 +542,7 @@ namespace FLD
     //! @name XFEM coupling specific parameters
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
+    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_apporach_; // xfluidfluid monolithic approach
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
     //@}
@@ -625,6 +629,10 @@ namespace FLD
     Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
 
     bool       monolithicfluidfluidfsi_;
+
+    // used for monolithic_fixedale_partitioned
+    Teuchos::RCP<Epetra_Vector>    toggle_;
+    Teuchos::RCP<const Epetra_Map> fixedfsidofmap_;
 
     int maxnumdofsets_;
 

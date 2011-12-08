@@ -15,6 +15,7 @@ Maintainer: Shadan Shahmiri
 #include "xfluidfluid_timeInt.H"
 #include "xfem_fluidwizard.H"
 
+#include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_cut/cut_boundingbox.H"
@@ -24,20 +25,18 @@ Maintainer: Shadan Shahmiri
 
 #include <iostream>
 
-
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   const RCP<DRT::Discretization> bgdis,
   const RCP<DRT::Discretization> embdis,
   XFEM::FluidWizard              wizard,
   int                            step
   ) :
-  bgdis_(bgdis),
   embdis_(embdis),
-  wizard_(wizard),
   step_(step)
   {
 
-    CreateBgNodeMaps();
+    CreateBgNodeMaps(bgdis,wizard);
+    currentbgdofmap_ =  bgdis->DofRowMap();
     return;
 
   } // end constructor
@@ -45,60 +44,63 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 // -------------------------------------------------------------------
 // map of standard node ids and their dof-gids in for this time step
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps()
+void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
+                                                        XFEM::FluidWizard              wizard)
 {
-  const Epetra_Map* noderowmap = bgdis_->NodeRowMap();
+  const Epetra_Map* noderowmap = bgdis->NodeRowMap();
   // map of standard nodes and their dof-ids
+
   for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
   {
     int gid;
     // get global id of a node
     gid = noderowmap->GID(lid);
     // get the node
-    DRT::Node * node = bgdis_->gNode(gid);
-    GEO::CUT::Node * n = wizard_.GetNode(node->Id());
+    DRT::Node * node = bgdis->gNode(gid);
+    GEO::CUT::Node * n = wizard.GetNode(node->Id());
     if (n!=NULL) // xfem nodes
     {
       GEO::CUT::Point * p = n->point();
       GEO::CUT::Point::PointPosition pos = p->Position();
-      if (pos==GEO::CUT::Point::outside and bgdis_->NumDof(node) != 0) //std
+            if (node->Id()==118) cout << "pos " << pos << endl;
+      if (pos==GEO::CUT::Point::outside and bgdis->NumDof(node) != 0) //std
       {
         //cout << " outside " << pos <<  " "<< node->Id() << endl;
-        vector<int> gdofs = bgdis_->Dof(node);
+        vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
       }
-      else if (pos==GEO::CUT::Point::inside and  bgdis_->NumDof(node) == 0) //void
+      else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) == 0) //void
       {
         //cout << " inside " <<  pos << " " << node->Id() << endl;
       }
-      else if (pos==GEO::CUT::Point::inside and  bgdis_->NumDof(node) != 0) //enriched
+      else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) != 0) //enriched
       {
         //cout << " inside enriched" <<  pos << " " << node->Id() << endl;
-        vector<int> gdofs = bgdis_->Dof(node);
+        vector<int> gdofs = bgdis->Dof(node);
         enrichednodenp_[gid] = gdofs;
       }
-      else if (pos==GEO::CUT::Point::oncutsurface and bgdis_->NumDof(node) == 0)
+      else if (pos==GEO::CUT::Point::oncutsurface and bgdis->NumDof(node) == 0)
       {
         cout << " oncutsurface " << node->Id() << endl;
       }
       else
       {
-        cout << "  hier ?! " <<  pos << " " <<  node->Id() << endl;
+        cout << "  hier ?! " <<  pos << " " <<  node->Id() <<  "numdof: " << bgdis->NumDof(node) << endl;
       }
     }
-    else if( bgdis_->NumDof(node) != 0) // no xfem node
+    else if( bgdis->NumDof(node) != 0) // no xfem node
     {
-      vector<int> gdofs = bgdis_->Dof(node);
+      vector<int> gdofs = bgdis->Dof(node);
       stdnodenp_[gid] = gdofs;
     }
     else
-      cout << " why here? " << endl;
+      cout << " why here? " << "node "<<  node->Id()<< " " <<  bgdis->NumDof(node) <<  endl;
   }
 
 //     //debug output
-//     for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+//     for (int i=0; i<bgdis->NumMyColNodes(); ++i)
 //     {
-//       const DRT::Node* actnode = bgdis_->lColNode(i);
+//       const DRT::Node* actnode = bgdis->lColNode(i);
 //       map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
 //       map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
 //       map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
@@ -128,29 +130,39 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - Create new map of bg nodes
 // - Gmsh-output
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps()
+void XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
+                                                                  XFEM::FluidWizard        wizard)
 {
   // save the old maps and clear the maps for the new cut
   // (all maps are related to the background fluid)
   SaveBgNodeMaps();
 
-  // Create new maps
-  CreateBgNodeMaps();
+//   oldbgdofmap_ = currentbgdofmap_;
+//   currentbgdofmap_ =  bgdis->DofRowMap();
 
-  GmshOutput();
+  // Create new maps
+  CreateBgNodeMaps(bgdis,wizard);
+
+//   if ((oldbgdofmap_->SameAs(*currentbgdofmap_) and  (stdnoden_ == stdnodenp_) and
+//        (enrichednoden_ == enrichednodenp_)))
+//       samemaps_ = true;
+//   else samemaps_ = false;
+
+  GmshOutput(bgdis);
 }
 
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuchos::RCP<Epetra_Vector>           bgstatevn,
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
+                                                                            Teuchos::RCP<Epetra_Vector>           bgstatevn,
                                                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                                                             Teuchos::RCP<Epetra_Vector>           aledispn)
 {
-  for (int lnid=0; lnid<bgdis_->NumMyRowNodes(); lnid++)
+  for (int lnid=0; lnid<bgdis->NumMyRowNodes(); lnid++)
   {
-    DRT::Node* bgnode = bgdis_->lRowNode(lnid);
+    DRT::Node* bgnode = bgdis->lRowNode(lnid);
     map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
     map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
     map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
@@ -162,13 +174,13 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuc
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
       vector<int> gdofsn = iterstn->second;
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[0])] =
+      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] =
         (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[1])] =
+      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] =
         (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[2])] =
+      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] =
         (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[3])] =
+      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] =
         (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
     }
     // Project dofs from embdis to bgdis:
@@ -208,10 +220,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuc
 //         if (insideelement)
 //         {
 //           // hier set state
-//           (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[0])] = interpolatedvec(0);
-//           (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[1])] = interpolatedvec(1);
-//           (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[2])] = interpolatedvec(2);
-//           (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[3])] = interpolatedvec(3);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[0])] = interpolatedvec(0);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[1])] = interpolatedvec(1);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[2])] = interpolatedvec(2);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[3])] = interpolatedvec(3);
 //           break;
 //         }
 //         count ++;
@@ -228,10 +240,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuc
         if (insideelement)
         {
           // hier set state
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[0])] = interpolatedvec(0);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[1])] = interpolatedvec(1);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[2])] = interpolatedvec(2);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[3])] = interpolatedvec(3);
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] = interpolatedvec(0);
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] = interpolatedvec(1);
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] = interpolatedvec(2);
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] = interpolatedvec(3);
           break;
         }
         count ++;
@@ -243,18 +255,18 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuc
             or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
         {
           vector<int> gdofsn = iteren->second;
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[0])] =
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] =
             (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[1])] =
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] =
             (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[2])] =
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] =
             (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis_->Dof(bgnode)[3])] =
+          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] =
             (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
         }
         else
         {
-          cout << YELLOW_LIGHT << " Warning XFFT: No patch element found for the node " << bgnode->Id() ;
+          cout << YELLOW_LIGHT << " Warning FFT: No patch element found for the node " << bgnode->Id() ;
           if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterstnp != stdnodenp_.end())
             cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
           else if (iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
@@ -279,7 +291,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(Teuc
       //cout << "do nothing" << bgnode->Id() << endl; ;
     }
     else
-      cout << "warum bin ich da?! " <<  bgdis_->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
+      cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
   }
 }//SetNewBgStatevectorAndProjectEmbToBg
 
@@ -354,6 +366,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
         }
       }
 
+
       // check whether the xfemnode (the node with no values) is in the element
       LINALG::Matrix< 3,numnodes > xyzem(pxyze,true);
       GEO::CUT::Position <DRT::Element::hex8> pos(xyzem,x);
@@ -403,6 +416,113 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
 }//ComputeSpacialToElementCoordAndProject
 
 // -------------------------------------------------------------------
+// In this function:
+//
+// - pele (in): The element where we want to extract our values from
+// - x    (in): The coordinates of the node without values (x,y,z)
+// - interpolatedvec (out): The vector after interpolation
+// - embstate_n (in): Source state vector
+// - embeddedddisp (in): The displacement of the embedded fluid at the
+//   time that it is considered as source of the interpolation
+// - sourcedis (in): the source discretization where we get the values
+//   from
+//
+//   Check whether the unknown node lies in the pele. If yes fill the
+//   interpolatedvec and return true.
+//
+// -------------------------------------------------------------------
+bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject2(DRT::Element*                       pele,
+                                                                              LINALG::Matrix<3,1>&                x,
+                                                                              LINALG::Matrix<4,1>&                interpolatedvec,
+                                                                              Epetra_Vector                       embstate_n,
+                                                                              Teuchos::RCP<Epetra_Vector>         embeddeddisp,
+                                                                              Teuchos::RCP<DRT::Discretization>   sourcedis)
+{
+  const std::size_t numnode = pele->NumNode();
+  LINALG::SerialDenseMatrix pxyze(3,numnode);
+  DRT::Node** pelenodes = pele->Nodes();
+
+  std::vector<double> myval(4);
+  std::vector<double> mydisp(4);
+  std::vector<int> pgdofs(4);
+  LINALG::Matrix<3,1> xsi(true);
+
+  bool inside = false;
+
+  switch ( pele->Shape() )
+  {
+    case DRT::Element::hex8:
+    {
+//      cout <<" bg ele id" << pele->Id() << endl;
+      const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      LINALG::Matrix<4,numnodes> veln(true);
+      LINALG::Matrix<4,numnodes> disp;
+
+      for (int inode = 0; inode < numnodes; ++inode)
+      {
+        // the enriched nodes are also included
+        if (sourcedis->NumDof(pelenodes[inode]) > 0)
+        {
+          sourcedis->Dof(pelenodes[inode],0,pgdofs);
+//           cout << sourcedis->NumDof(pelenodes[inode]) << endl;
+//           cout << pgdofs.at(0) << " " << pgdofs.at(1) << " " << pgdofs.at(2) << " "<< pgdofs.at(3)<<  endl;
+          DRT::UTILS::ExtractMyValues(embstate_n,myval,pgdofs);
+          veln(0,inode) = myval[0];
+          veln(1,inode) = myval[1];
+          veln(2,inode) = myval[2];
+          veln(3,inode) = myval[3];
+
+          // get the coordinates of patch element
+          pxyze(0,inode) = pelenodes[inode]->X()[0];
+          pxyze(1,inode) = pelenodes[inode]->X()[1];
+          pxyze(2,inode) = pelenodes[inode]->X()[2];
+        }
+      }
+
+
+      // check whether the node with no values is in the element
+      LINALG::Matrix< 3,numnodes > xyzem(pxyze,true);
+      GEO::CUT::Position <DRT::Element::hex8> pos(xyzem,x);
+      double tol = 1e-10;
+      bool insideelement = pos.ComputeTol(tol);
+
+      if (insideelement)
+      {
+        // get the coordinates of x in element coordinates of patch element pele (xsi)
+        xsi = pos.LocalCoordinates();
+        // evaluate shape function
+        LINALG::SerialDenseVector shp(numnodes);
+        DRT::UTILS::shape_function_3D( shp, xsi(0,0), xsi(1,0), xsi(2,0), DRT::Element::hex8 );
+        // Interpolate
+        for (int inode = 0; inode < numnodes; ++inode){
+          for (std::size_t isd = 0; isd < 4; ++isd){
+            interpolatedvec(isd) += veln(isd,inode)*shp(inode);
+          }
+        }
+        inside = true;
+        break;
+      }
+      else
+      {
+        inside = false;
+        break;
+      }
+    }
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    {
+      dserror("No support for hex20 and hex27!");
+      break;
+    }
+    default:
+    {
+      dserror("Element-type not supported here!");
+    }
+  }
+  return inside;
+}//ComputeSpacialToElementCoordAndProject2
+
+// -------------------------------------------------------------------
 // Needed for fluid-fluid-fsi
 //
 // In this function:
@@ -420,7 +540,8 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
 //               interpolation)
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(Teuchos::RCP<Epetra_Vector>    statevbg_n,
+void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discretization>        bgdis,
+                                                            Teuchos::RCP<Epetra_Vector>    statevbg_n,
                                                             Epetra_Vector                  statevemb_n,
                                                             Teuchos::RCP<Epetra_Vector>    statevembnew_n,
                                                             Teuchos::RCP<Epetra_Vector>    aledispnp,
@@ -430,7 +551,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(Teuchos::RCP<Epetra_
   std::vector<int> pgdofs(4);
 
   // Gmsh----------------------------------------------------------
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     {
@@ -573,15 +694,15 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(Teuchos::RCP<Epetra_
       }
       if (count == embdis_->NumMyColElements()) //if no embedded elements found
       {
-//         cout << "no embedded element found for: " <<  embnode->Id() << endl;
-//         count = 0;
+        cout << "no embedded element found for: " <<  embnode->Id() << endl;
+         count = 0;
 //         // check all background elements to find the right one
-//         for (int e=0; e<bgdis_->NumMyColElements(); e++)
-//         {
-//           DRT::Element* bgele = bgdis_->lColElement(e);
-//           LINALG::Matrix<4,1> interpolatedvec(true);
+         for (int e=0; e<bgdis->NumMyColElements(); e++)
+         {
+            DRT::Element* bgele = bgdis->lColElement(e);
+            LINALG::Matrix<4,1> interpolatedvec(true);
 
-//          insideelement = ComputeSpacialToElementCoordAndProject(bgele,embnodecords,interpolatedvec,*statevbg_n,aledispnpoldstate,bgdis_);
+            insideelement = ComputeSpacialToElementCoordAndProject2(bgele,embnodecords,interpolatedvec,*statevbg_n,aledispnpoldstate,bgdis);
 //            if (insideelement)
 //            {
 //              // here set state
@@ -592,10 +713,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(Teuchos::RCP<Epetra_
 //              break;
 //            }
 //            count ++;
-//          }
-//          if (count == bgdis_->NumMyColElements())
+        }
+//          if (count == bgdis->NumMyColElements())
 //            cout << "no bg elements found for: " << embnode->Id() << endl;
-      }
+        }
     }
   }
 
@@ -604,16 +725,16 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(Teuchos::RCP<Epetra_
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::GmshOutput()
+void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>        bgdis)
 {
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("std_enriched_map", step_, 30, 0, bgdis_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("std_enriched_map", step_, 30, 0, bgdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     gmshfilecontent << "View \" " << "std/enriched/void n\" {\n";
-    for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+    for (int i=0; i<bgdis->NumMyColNodes(); ++i)
     {
       int kind = 0;
-      const DRT::Node* actnode = bgdis_->lColNode(i);
+      const DRT::Node* actnode = bgdis->lColNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
       map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
       map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(actnode->Id());
@@ -625,10 +746,10 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput()
   }
   {
     gmshfilecontent << "View \" " << "std/enriched/void n+1\" {\n";
-    for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+    for (int i=0; i<bgdis->NumMyColNodes(); ++i)
     {
       int kind = 0;
-      const DRT::Node* actnode = bgdis_->lColNode(i);
+      const DRT::Node* actnode = bgdis->lColNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
       map<int, vector<int> >::const_iterator iter = stdnodenp_.find(actnode->Id());
       map<int, vector<int> >::const_iterator iteren = enrichednodenp_.find(actnode->Id());

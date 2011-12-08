@@ -20,12 +20,10 @@ Maintainer: Shadan Shahmiri
 
 
 #include "xfem_fluidwizard.H"
-#include "../drt_cut/cut_position.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_lib/drt_condition_selector.H"
 
 namespace XFEM
 {
@@ -53,19 +51,23 @@ public:
 
 
   // Create maps of bgfluid's nodes needed for time integration
-  void CreateBgNodeMaps();
+  void CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
+                        XFEM::FluidWizard              wizard);
 
   // Save the old state
   void SaveBgNodeMaps();
 
-  void SaveAndCreateNewBgNodeMaps();
+  void SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
+                                   XFEM::FluidWizard              wizard);
 
-  void SetNewBgStatevectorAndProjectEmbToBg(Teuchos::RCP<Epetra_Vector>           bgstatevn,
+  void SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
+                                            Teuchos::RCP<Epetra_Vector>           bgstatevn,
                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                             Teuchos::RCP<Epetra_Vector>           aledispn);
 
-  void SetNewEmbStatevector(Teuchos::RCP<Epetra_Vector>    statevbg_n,
+  void SetNewEmbStatevector(const RCP<DRT::Discretization>        bgdis,
+                            Teuchos::RCP<Epetra_Vector>    statevbg_n,
                             Epetra_Vector                  statevemb_n,
                             Teuchos::RCP<Epetra_Vector>    statevembnew_n,
                             Teuchos::RCP<Epetra_Vector>    aledispnp,
@@ -78,16 +80,21 @@ public:
                                               Teuchos::RCP<Epetra_Vector>         embeddeddisp,
                                               Teuchos::RCP<DRT::Discretization>   sourcedis);
 
-  void GmshOutput();
+  bool ComputeSpacialToElementCoordAndProject2(DRT::Element*                       pele,
+                                               LINALG::Matrix<3,1>&                x,
+                                               LINALG::Matrix<4,1>&                interpolatedvec,
+                                               Epetra_Vector                       embstate_n,
+                                               Teuchos::RCP<Epetra_Vector>         embeddeddisp,
+                                               Teuchos::RCP<DRT::Discretization>   sourcedis);
+
+  void GmshOutput(const RCP<DRT::Discretization>        bgdis);
 
 //  void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> &
 //  patchboxes);
 
   private:
 
-  RCP<DRT::Discretization> bgdis_; // bg  discretization
   RCP<DRT::Discretization> embdis_; // bg  discretization
-
 
   // maps needed for xfem time integration
   std::map<int, vector<int> > stdnoden_;
@@ -96,7 +103,8 @@ public:
   std::map<int, vector<int> > enrichednoden_;
   std::map<int, vector<int> > enrichednodenp_;
 
-  XFEM::FluidWizard wizard_;
+  const Epetra_Map* currentbgdofmap_;
+  const Epetra_Map* oldbgdofmap_;
 
   int step_;
 };
