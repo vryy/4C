@@ -174,7 +174,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
  *----------------------------------------------------------------------*/
 bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID)
 {
-	/* note:
+	/* notes:
 	 * 1) do not apply this before having constructed the octree. This is merely a query tool
 	 * 2)"boxid" does not necessarily coincide with the bounding box we are going to intersect with the other boxes
 	 * in the octant. The reason: The bounding box may actually not exist.

@@ -105,7 +105,7 @@ class Beam3ContactOctTree
     // dof offset between discret_ and searchdis_
     int dofoffset_;
     
-    // max tree depth
+    // maximum tree depth
     int maxtreedepth_;
 
     // diameters of all beam elements

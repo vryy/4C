@@ -303,7 +303,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 #ifdef MEASURETIME
 	const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
-	/*first we modify the displacement vector so that current nodal position at the end of current time step complies with
+	/* first we modify the displacement vector so that current nodal position at the end of current time step complies with
 	 * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
 
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
