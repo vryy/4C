@@ -1337,7 +1337,9 @@ void STR::TimInt::OutputContact()
 void STR::TimInt::OutputErrorNorms()
 {
   // get out of here if no output wanted
-  if (MORTARANALYTICALSOL==0) return;
+  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  INPAR::MORTAR::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ErrorNorms>(listcmt,"ERROR_NORMS");
+  if (entype==INPAR::MORTAR::errornorms_none) return;
 
   // initialize variables
   RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));

@@ -1328,6 +1328,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::CONTACT::output_both, INPAR::CONTACT::output_both),
       &scontact);
 
+  setStringToIntegralParameter<int>("ERROR_NORMS","None","Choice of analytical solution for error norm computation",
+      tuple<std::string>("None","none", "No", "no",
+                         "Zero", "zero",
+                         "Bending", "bending",
+                         "Sphere", "sphere,"
+                         "Thick", "thick"),
+      tuple<int>(
+              INPAR::MORTAR::errornorms_none, INPAR::MORTAR::errornorms_none,
+              INPAR::MORTAR::errornorms_none, INPAR::MORTAR::errornorms_none,
+              INPAR::MORTAR::errornorms_zero, INPAR::MORTAR::errornorms_zero,
+              INPAR::MORTAR::errornorms_bending, INPAR::MORTAR::errornorms_bending,
+              INPAR::MORTAR::errornorms_sphere, INPAR::MORTAR::errornorms_sphere,
+              INPAR::MORTAR::errornorms_thicksphere, INPAR::MORTAR::errornorms_thicksphere),
+      &scontact);
+
   setStringToIntegralParameter<int>("PARALLEL_REDIST","Static","Type of redistribution algorithm",
       tuple<std::string>("None","none", "No", "no",
                          "Static", "static",

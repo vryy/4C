@@ -1001,6 +1001,7 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_strategy_base.cpp
 )
 set(OBJS_DRT_MORTAR_LIB
+  src/drt_mortar/mortar_analytical.cpp
   src/drt_mortar/mortar_element.cpp
   src/drt_mortar/mortar_element_integrator.cpp
   src/drt_mortar/mortar_element_shapefct.cpp
@@ -2140,6 +2141,8 @@ baci_test(meshtying3D_structure_augmented 1 "")
 baci_test(meshtying3D_structure_augmented 2 "")
 baci_test(meshtying3D_structure_duallagr 1 "")
 baci_test(meshtying3D_structure_duallagr 2 "")
+baci_test(meshtying3D_structure_errors 1 "")
+baci_test(meshtying3D_structure_errors 2 "")
 baci_test(meshtying3D_structure_penalty 1 "")
 baci_test(meshtying3D_structure_penalty 2 "")
 baci_test(meshtying3D_structure_simpler 1 "")
