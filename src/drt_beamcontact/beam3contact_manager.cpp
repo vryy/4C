@@ -175,22 +175,22 @@ alphaf_(alphaf)
   uzawaiter_ = 0;
 
   if(!pdiscret_.Comm().MyPID())
-  	cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
+    cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
 
   // initialize octtree for contact search
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
       cout << "Penalty parameter      = " << currentpp_ << endl;
-  	tree_ = rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
+    tree_ = rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
   }
   else
   {
     // Compute the search radius for searching possible contact pairs
     ComputeSearchRadius();
-  	tree_ = Teuchos::null;
+    tree_ = Teuchos::null;
     if(!pdiscret_.Comm().MyPID())
-    	cout<<"\nBrute Force Search"<<endl;
+      cout<<"\nBrute Force Search"<<endl;
   }
 
   return;
@@ -435,7 +435,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
       
       // store updated nodal coordinates
       for(int n=0;n<3;n++)
-      	ele1pos(n,m) = temppos(n);
+        ele1pos(n,m) = temppos(n);
     }
     // Loop over all nodes of element 2
     for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
@@ -445,7 +445,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
         
       // store updated nodal coordinates
       for(int n=0;n<3;n++)
-      	ele2pos(n,m) = temppos(n);
+        ele2pos(n,m) = temppos(n);
     }
     // finally update nodal positions in contact pair objects
     pairs_[i]->UpdateElePos(ele1pos,ele2pos);
@@ -853,8 +853,8 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
   if (!newgapfunction)
   {
-		pairs_.clear();
-		pairs_.resize(0);
+    pairs_.clear();
+    pairs_.resize(0);
   }
 
   return;

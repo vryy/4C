@@ -545,7 +545,7 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
               lambdaorder(k,1) = tempindex;
             }
       }
-      else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+      else  // for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
         for(int n=0; n<(int)lambdaorder.N(); n++)
           lambdaorder(0,n) = lambdaorder(shiftdof,n);
 
@@ -813,7 +813,7 @@ RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateAABBNoElement(const Epe
               lambdaorder(k,1) = tempindex;
             }
       }
-      else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+      else  // for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
         for(int n=0; n<(int)lambdaorder.N(); n++)
           lambdaorder(0,n) = lambdaorder(shiftdof,n);
 
@@ -1245,13 +1245,13 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
   // fill bboxinoct for Proc 0
   if(searchdis_.Comm().MyPID()==0)
   {
-  	bboxesinoctants_->PutScalar(-9.0);
+    bboxesinoctants_->PutScalar(-9.0);
     for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
       for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
         (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
   }
   else
-  	bboxesinoctants_->PutScalar(0.0);
+    bboxesinoctants_->PutScalar(0.0);
 
   // Communication
   Epetra_Export exporter(octtreemap, octtreerowmap);
@@ -1420,11 +1420,11 @@ bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
       for(int j=0; j<(int)(*numshifts_)[entry2]+1; j++)
       {
         //Intersection Test
-        a_xmin=(*allbboxes_)[i*6][entry1];   	 a_xmax=(*allbboxes_)[i*6+1][entry1];
+        a_xmin=(*allbboxes_)[i*6][entry1];     a_xmax=(*allbboxes_)[i*6+1][entry1];
         a_ymin=(*allbboxes_)[i*6+2][entry1];   a_ymax=(*allbboxes_)[i*6+3][entry1];
         a_zmin=(*allbboxes_)[i*6+4][entry1];   a_zmax=(*allbboxes_)[i*6+5][entry1];
 
-        b_xmin=(*allbboxes_)[j*6][entry2];   	 b_xmax=(*allbboxes_)[j*6+1][entry2];
+        b_xmin=(*allbboxes_)[j*6][entry2];     b_xmax=(*allbboxes_)[j*6+1][entry2];
         b_ymin=(*allbboxes_)[j*6+2][entry2];   b_ymax=(*allbboxes_)[j*6+3][entry2];
         b_zmin=(*allbboxes_)[j*6+4][entry2];   b_zmax=(*allbboxes_)[j*6+5][entry2];
 
@@ -1439,7 +1439,7 @@ bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
         break;
     }
   }
-  else	// standard procedure without periodic boundary conditions
+  else  // standard procedure without periodic boundary conditions
   {
     //Intersection Test
     a_xmin=(*allbboxes_)[0][entry1];   a_xmax=(*allbboxes_)[1][entry1];
@@ -1495,11 +1495,11 @@ bool Beam3ContactOctTree::IsecAABBNoElement(const int& bboxinoct, RCP<Epetra_Ser
       for(int j=0; j<numsegments; j++)
       {
         //Intersection Test
-        a_xmin=(*allbboxes_)[i*6][bboxcolid];   	a_xmax=(*allbboxes_)[i*6+1][bboxcolid];
+        a_xmin=(*allbboxes_)[i*6][bboxcolid];     a_xmax=(*allbboxes_)[i*6+1][bboxcolid];
         a_ymin=(*allbboxes_)[i*6+2][bboxcolid];   a_ymax=(*allbboxes_)[i*6+3][bboxcolid];
         a_zmin=(*allbboxes_)[i*6+4][bboxcolid];   a_zmax=(*allbboxes_)[i*6+5][bboxcolid];
 
-        b_xmin=(*bboxlimits)(j*6,0);   	 b_xmax=(*bboxlimits)(j*6+1,0);
+        b_xmin=(*bboxlimits)(j*6,0);     b_xmax=(*bboxlimits)(j*6+1,0);
         b_ymin=(*bboxlimits)(j*6+2,0);   b_ymax=(*bboxlimits)(j*6+3,0);
         b_zmin=(*bboxlimits)(j*6+4,0);   b_zmax=(*bboxlimits)(j*6+5,0);
 
@@ -1514,7 +1514,7 @@ bool Beam3ContactOctTree::IsecAABBNoElement(const int& bboxinoct, RCP<Epetra_Ser
         break;
     }
   }
-  else	// standard procedure without periodic boundary conditions
+  else  // standard procedure without periodic boundary conditions
   {
     //Intersection Test
     a_xmin=(*allbboxes_)[0][bboxcolid];   a_xmax=(*allbboxes_)[1][bboxcolid];

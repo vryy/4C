@@ -676,7 +676,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 
     // decide wether the modified gap function will be apllied or not
     if (ngf_)
-    	sgn_skalar = sgn(Computeskalar());
+      sgn_skalar = sgn(Computeskalar());
 
 
     //********************************************************************
@@ -1210,10 +1210,10 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 
   if (ngf_)
   {
-		double normalold_normal=0;
-		normalold_normal = Computeskalar();
-		if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
-		gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
+    double normalold_normal=0;
+    normalold_normal = Computeskalar();
+    if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
+    gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
   }
 
   oldgap_ = gap;
@@ -1841,8 +1841,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
       {
 
         //only one neighbor element on each side of the considered element is allowed
-      	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
-      		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+        if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+          if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
         globalneighborId = (*((**(element1->Nodes())).Elements()+y))->Id();
 
@@ -1870,8 +1870,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
         {
 
           //only one neighbor element on each side of the considered element is allowed
-        	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
-        		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+          if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+            if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
           globalneighborId = (*((**(element1->Nodes()+n_right)).Elements()+y))->Id();
 
@@ -1908,8 +1908,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   {
 
     //only one neighbor element on each side of the considered element is allowed
-  	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
-  		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+    if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+      if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes())).Elements()+y))->Id();
 
@@ -1938,8 +1938,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   for (int y=0; y<(**(element2->Nodes()+n_right)).NumElement ();++y)
   {
     //only one neighbor element on each side of the considered element is allowed
-  	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
-  		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+    if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+      if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes()+n_right)).Elements()+y))->Id();
 
