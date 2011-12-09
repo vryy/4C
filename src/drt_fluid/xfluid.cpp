@@ -41,15 +41,10 @@
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
+FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol  )
   : xfluid_( xfluid ),
     wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
 {
-
-
-  // cut and find the fluid dofset
-  Epetra_Vector idispcol( *xfluid.boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0 );
 
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
@@ -64,6 +59,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
 
   //print all dofsets
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
+  if(xfluid_.myrank_ == 0) cout << "\n" << endl;
 
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_,xfluid.numdim_,velpressplitter_);
 
@@ -169,11 +165,14 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
   // set general vector values of boundarydis needed by elements
   cutdiscret.ClearState();
-  LINALG::Export(*(xfluid_.solidvelnp_),*(xfluid_.ivelnp_));
-  cutdiscret.SetState("ivelnp",xfluid_.ivelnp_);
 
-  LINALG::Export(*(xfluid_.soliddispnp_),*(xfluid_.idispnp_));
+  cutdiscret.SetState("ivelnp",xfluid_.ivelnp_);
   cutdiscret.SetState("idispnp",xfluid_.idispnp_);
+
+
+  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutdiscret.DofColMap(),true);
+  // let the elements fill it
+  eleparams.set("iforcenp",iforcecolnp);
 
 
   // set scheme-specific element parameters and vector values
@@ -182,7 +181,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   else
     discret.SetState("velaf",velnp_);
 
-  int itemax = xfluid_.params_.get<int>("ITEMAX");
+  int itemax = xfluid_.params_.get<int>("max nonlin iter steps");
 
   // convergence check at itemax is skipped for speedup if
   // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -355,13 +354,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
 
 
-//              testvol += test_vc;
-//              cout << "test_vc" << test_vc << endl;
-
               set_counter += 1;
 
           } // end of loop over cellsets // end of assembly for each set of cells
-//          cout << "testvol " << testvol << endl;
 
 #else
 
@@ -515,6 +510,17 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     // scaling to get true residual vector
     trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
 
+
+    // for output in adapter
+//    cutdiscret.SetState("iforcenp", iforcecolnp);
+
+    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
+    xfluid_.itrueresidual_->PutScalar(0.0);
+    xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
+
+
+
+
     // finalize the complete matrix
     sysmat_->Complete();
   }
@@ -534,8 +540,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                                            Teuchos::RCP<Epetra_Vector> acc)
 {
 
-	const int step_diff = 10;
-	const bool screen_out = 1;
+  const int step_diff = 10;
+  bool screen_out = xfluid_.gmsh_debug_out_screen_;
 
    // output for Element and Node IDs
    std::ostringstream filename_base_vel;
@@ -1033,6 +1039,7 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
           bound_f << ",";
 
         bound_f << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
+//        bound_f << iforcenp(0) << "," <<  iforcenp(1) << "," << iforcenp(2);
       }
       bound_f << "};\n";
     }
@@ -1063,12 +1070,13 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> soliddis,
                      LINALG::Solver & solver,
                      const Teuchos::ParameterList & params,
-                     const Teuchos::ParameterList& xfemparams,
+                     Teuchos::RCP<IO::DiscretizationWriter> output,
                      bool alefluid )
   : discret_(actdis),
     soliddis_(soliddis),
     solver_(solver),
     params_(params),
+    fluid_output_(output),
     alefluid_(alefluid),
     time_(0.0),
     step_(0)
@@ -1078,64 +1086,86 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
 
-  physicaltype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params_,"PHYSICAL_TYPE");
-  timealgo_     = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(params_,"TIMEINTEGR");
-  stepmax_      = params_.get<int>("NUMSTEP");
-  maxtime_      = params_.get<double>("MAXTIME");
-  dta_          = params_.get<double>("TIMESTEP");
+
+  // -------------------------------------------------------------------
+  // get input params and print Xfluid specific configurations
+  // -------------------------------------------------------------------
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_,"Physical Type");
+  timealgo_     = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_,"time int algo");
+  stepmax_      = params_.get<int>   ("max number timesteps");
+  maxtime_      = params_.get<double>("total time");
+  dta_          = params_.get<double>("time step size");
   dtp_          = dta_;
-  theta_        = params_.get<double>("THETA");
-  newton_       = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(params_,"NONLINITER");
-  convform_     = params_.get<string>("CONVFORM");
+
+  theta_        = params_.get<double>("theta");
+  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
+  convform_     = params_.get<string>("form of convective term","convective");
 
   upres_        = params_.get<int>("write solution every", -1);
 
-  numdim_       = genprob.ndim; //params_.get<int>("DIM");
+  numdim_       = genprob.ndim;
 
-  maxnumdofsets_ = xfemparams.get<int>("MAX_NUM_DOFSETS");
+  // get the maximal number of dofsets that are possible to use
+  maxnumdofsets_ = params_.sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
   // get XFEM specific input parameters
-  boundIntType_ = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xfemparams,"EMBEDDED_BOUNDARY");
-  boundIntFunct_ = xfemparams.get<int>("BOUNDARY_FUNCT_NO");
+  boundIntType_ = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_.sublist("XFEM"),"EMBEDDED_BOUNDARY");
 
-  initfield_ = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(params_,"INITIALFIELD");
+  // get input parameter how to prescribe interface velocity
+  interface_vel_init_          = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_.sublist("XFEM"),"INTERFACE_VEL_INITIAL");
+  interface_vel_init_func_no_  = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_.sublist("XFEM"),"VEL_INIT_FUNCT_NO");
+  interface_vel_               = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(params_.sublist("XFEM"),"INTERFACE_VEL");
+  interface_vel_func_no_       = params_.sublist("XFEM").get<int>("VEL_FUNCT_NO", -1);
 
-  if(initfield_ != INPAR::FLUID::initfield_zero_field)
+  // get input parameter how to prescribe solid displacement
+  interface_disp_           = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(params_.sublist("XFEM"),"INTERFACE_DISP");
+  interface_disp_func_no_   = params_.sublist("XFEM").get<int>("DISP_FUNCT_NO", -1);
+  interface_disp_curve_no_  = params_.sublist("XFEM").get<int>("DISP_CURVE_NO", -1);
+
+
+  // output for used FUNCT
+  if(myrank_ == 0)
   {
-    startfuncno_ = params_.get<int>("STARTFUNCNO");
-    if (initfield_ != INPAR::FLUID::initfield_field_by_function and
-        initfield_ != INPAR::FLUID::initfield_disturbed_field_from_function)
-    {
-      startfuncno_=-1;
-    }
+    std::cout << "Set fields by following functions: \n"
+              << "\t\t initial interface velocity     by funct: " <<  interface_vel_init_func_no_  << "\n"
+              << "\t\t interface velocity             by funct: " <<  interface_vel_func_no_       << "\n"
+              << "\t\t interface displacement         by funct: " <<  interface_disp_func_no_
+                                                   << ", curve: " <<  interface_disp_curve_no_     <<  "\n\n";
   }
 
-
+  // get Nitsche stabilization factors
   nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
 
-  gaussPointType_ = xfemparams.get<std::string>("GAUSSPOINTSBY");//blockkk or remove
+
+  gaussPointType_ = params_.sublist("XFEM").get<std::string>("GAUSSPOINTSBY");
+
+  if(myrank_ == 0)
+  {
+    std::cout<<"\nGauss point generating method = "<< gaussPointType_ << "\n\n";
+  }
 
   // load GMSH output flags
-  gmsh_sol_out_      = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_SOL_OUT");
-  gmsh_debug_out_    = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  gmsh_discret_out_  = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DISCRET_OUT");
-  gmsh_cut_out_      = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_CUT_OUT");
+  gmsh_sol_out_          = (bool)params_.sublist("XFEM").get<int>("GMSH_SOL_OUT");
+  gmsh_debug_out_        = (bool)params_.sublist("XFEM").get<int>("GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = (bool)params_.sublist("XFEM").get<int>("GMSH_DEBUG_OUT_SCREEN");
+  gmsh_discret_out_      = (bool)params_.sublist("XFEM").get<int>("GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = (bool)params_.sublist("XFEM").get<int>("GMSH_CUT_OUT");
 
 
   switch (boundIntType_)
   {
   case INPAR::XFEM::BoundaryTypeSigma:
-	  cout << "XFEM interface method: BoundaryTypeSigma" << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
 	  break;
   case INPAR::XFEM::BoundaryTypeTauPressure:
 	  dserror ("XFEM interface method: BoundaryTypeTauPressure not available");
 	  break;
   case INPAR::XFEM::BoundaryTypeNitsche:
-	  cout << "XFEM interface method: BoundaryTypeNitsche" << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
 	  break;
   case INPAR::XFEM::BoundaryTypeNeumann:
-	  cout << "XFEM interface method: BoundaryTypeNeumann" << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNeumann" << END_COLOR << endl;
 	  break;
   default:
 	dserror("BoundaryType unknown!!!");
@@ -1149,25 +1179,33 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
 
 
+
+  // -------------------------------------------------------------------
+  // create boundary dis
+  // -------------------------------------------------------------------
+
   string element_name = "BELE3"; // use always 3 dofs
 
   // ensure that degrees of freedom in the discretization have been set
-  if ( not discret_->Filled() or not actdis->HaveDofs() )
+  if ( not discret_->Filled() or not discret_->HaveDofs() )
     discret_->FillComplete();
 
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "boundary", element_name, conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
   if (boundarydis_->NumGlobalNodes() == 0)
   {
     std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";
   }
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis));
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
+
+
+
 
   // get constant density variable for incompressible flow
   {
@@ -1178,20 +1216,13 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
   }
 
-//========================================================================================================
-////  cout << "boundarydis_" << *boundarydis_ << endl;
-//    fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
-//    fluid_output_->WriteMesh(0,0.0);
-//  const Teuchos::RCP<Epetra_Vector> velnp = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-//
-//  // set values
-//cout << *velnp << endl;
-////
-////    // step number and time
-//    fluid_output_->NewStep(100,100.0);
-//    fluid_output_->WriteVector("velnp",velnp);
-//    fluid_output_->WriteElementData();
-//===========================================================================================================
+  // -------------------------------------------------------------------
+  // create output dofsets and prepare output
+  // -------------------------------------------------------------------
+
+//  // create solid output object
+//  solid_output_ = rcp(new IO::DiscretizationWriter(soliddis_));
+//  solid_output_->WriteMesh(0,0.0);
 
 
   // store a dofset with the complete fluid unknowns
@@ -1204,36 +1235,43 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
 
-  // create fluid output object
-  fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
-  fluid_output_->WriteMesh(0,0.0);
+//  // create fluid output object
+//  fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
+//  fluid_output_->WriteMesh(0,0.0);
 
-  // create new XFluidState object
-  state_ = Teuchos::rcp( new XFluidState( *this ) );
-
-  // create solid output object
-  solid_output_ = rcp(new IO::DiscretizationWriter(soliddis_));
-  solid_output_->WriteMesh(0,0.0);
 
   // create interface/boundary output object
   boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
   boundary_output_->WriteMesh(0,0.0);
 
 
+
+  // -------------------------------------------------------------------
+  // create XFluidState object
+  // -------------------------------------------------------------------
+
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0.0 );
+
+  // create new XFluidState object
+  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+
+
   // get dofrowmap for solid discretization
   soliddofrowmap_ = soliddis_->DofRowMap();
-
+//
   solidvelnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-  solidveln_  = LINALG::CreateVector(*soliddofrowmap_,true);
-  solidvelnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
-
+//  solidveln_  = LINALG::CreateVector(*soliddofrowmap_,true);
+//  solidvelnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
+//
   soliddispnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-  soliddispn_  = LINALG::CreateVector(*soliddofrowmap_,true);
-  soliddispnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
+//  soliddispn_  = LINALG::CreateVector(*soliddofrowmap_,true);
+//  soliddispnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
 
 //  cout << *soliddofrowmap_ << endl;
 
-  outvec_solid_disp_ = LINALG::CreateVector(*soliddofrowmap_,true);
+//  outvec_solid_disp_ = LINALG::CreateVector(*soliddofrowmap_,true);
 
   //--------------------------------------------------------
   // FluidFluid-Boundary Vectors passes to element
@@ -1244,6 +1282,14 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
   idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+  idispn_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+
+  itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+
+
+  // set an initial interface velocity field
+  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct)
+    SetInitialInterfaceField();
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -1252,80 +1298,112 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   SetElementTurbulenceParameter();
 }
 
-void FLD::XFluid::Integrate()
+void FLD::XFluid::PrintStabilizationParams()
 {
-  // output of stabilization details
+    // output of stabilization details
+    if (myrank_==0)
+    {
+      ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+      cout << "+------------------------------------------------------------------------------------+" << endl;
+      cout << "                              FLUID-STABILIZATION                       " << endl;
+
+      cout << "Stabilization type: " << stabparams->get<string>("STABTYPE") << "\n";
+      cout << "                    " << stabparams->get<string>("TDS")<< "\n";
+      cout << "\n";
+
+      string def_tau = stabparams->get<string>("DEFINITION_TAU");
+
+      // instationary case
+      if (timealgo_!=INPAR::FLUID::timeint_stationary)
+      {
+        cout <<  "                    " << "Tau Type        = " << def_tau <<"\n";
+
+        // check for instationary version of tau definitions
+        if(def_tau != "Taylor_Hughes_Zarins" and
+           def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen" and
+           def_tau != "Taylor_Hughes_Zarins_scaled" and
+           def_tau != "Franca_Barrenechea_Valentin_Frey_Wall" and
+           def_tau != "Shakib_Hughes_Codina" and
+           def_tau != "Codina" and
+           def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
+           def_tau != "Smoothed_FBVW")
+        {
+          dserror("not a valid tau definition (DEFINITION_TAU) without \"dt\" for instationary problems");
+        }
+      }
+      else // stationary case
+      {
+          if(def_tau != "Taylor_Hughes_Zarins_wo_dt" and
+             def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt" and
+             def_tau != "Taylor_Hughes_Zarins_scaled_wo_dt" and
+             def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
+             def_tau != "Shakib_Hughes_Codina_wo_dt" and
+             def_tau != "Codina_wo_dt" and
+             def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt")
+          {
+            dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
+          }
+      }
+      cout << "\n";
+
+      if(stabparams->get<string>("TDS") == "quasistatic")
+      {
+        if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+        {
+          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+        }
+      }
+      cout <<  "                    " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+      cout <<  "                    " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+      cout <<  "                    " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+      cout <<  "                    " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+      cout <<  "                    " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+      cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+      cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+      cout << "+------------------------------------------------------------------------------------+" << endl;
+      cout << "\n";
+    }
+
+}
+
+
+void FLD::XFluid::PrintTimeInt()
+{
+
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
   if (myrank_==0)
   {
-    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-    cout << "+------------------------------------------------------------------------------------+" << endl;
-    cout << "                              FLUID-STABILIZATION                       " << endl;
-
-    cout << "Stabilization type: " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                    " << stabparams->get<string>("TDS")<< "\n";
-    cout << "\n";
-
-    string def_tau = stabparams->get<string>("DEFINITION_TAU");
-
-    // instationary case
-    if (timealgo_!=INPAR::FLUID::timeint_stationary)
+    switch (timealgo_)
     {
-      cout <<  "                    " << "Tau Type        = " << def_tau <<"\n";
-
-      // check for instationary version of tau definitions
-      if(def_tau != "Taylor_Hughes_Zarins" and
-         def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen" and
-         def_tau != "Taylor_Hughes_Zarins_scaled" and
-         def_tau != "Franca_Barrenechea_Valentin_Frey_Wall" and
-         def_tau != "Shakib_Hughes_Codina" and
-         def_tau != "Codina" and
-         def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
-         def_tau != "Smoothed_FBVW")
-      {
-    	  dserror("not a valid tau definition (DEFINITION_TAU) without \"dt\" for instationary problems");
-      }
-    }
-    else // stationary case
-    {
-        if(def_tau != "Taylor_Hughes_Zarins_wo_dt" and
-           def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt" and
-           def_tau != "Taylor_Hughes_Zarins_scaled_wo_dt" and
-           def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
-           def_tau != "Shakib_Hughes_Codina_wo_dt" and
-           def_tau != "Codina_wo_dt" and
-           def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt")
-        {
-      	  dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
-        }
-    }
-    cout << "\n";
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
-    {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
-    }
-    cout <<  "                    " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                    " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                    " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                    " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                    " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    cout << "+------------------------------------------------------------------------------------+" << endl;
-    cout << "\n";
+    case INPAR::FLUID::timeint_stationary:
+      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+      break;
+    case INPAR::FLUID::timeint_one_step_theta:
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
+            time_,maxtime_,dta_,step_,stepmax_);
+      break;
+    case INPAR::FLUID::timeint_afgenalpha:
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,step_,stepmax_);
+      break;
+    case INPAR::FLUID::timeint_bdf2:
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,step_,stepmax_);
+      break;
+    default:
+      dserror("parameter out of range: IOP\n");
+    } /* end of switch(timealgo) */
   }
+}
 
-  // TODO: do this in ADAPTER!!!
-  if(initfield_ != INPAR::FLUID::initfield_zero_field)
-  {
-    SetInitialFlowField(initfield_,startfuncno_);
-  }
 
-  SetInitialSolidField();
+void FLD::XFluid::Integrate()
+{
+  if(myrank_== 0) std::cout << YELLOW_LIGHT << "Integrate routine for STATIONARY INTERFACES" << END_COLOR << endl;
+
 
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary)
@@ -1337,36 +1415,25 @@ void FLD::XFluid::Integrate()
   TimeMonitor::summarize();
 }
 
+
+
 void FLD::XFluid::TimeLoop()
 {
   printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
 
   while (step_<stepmax_ and time_<maxtime_)
   {
+    // -----------------------------------------------------------------
+    //                    prepare the timestep
+    // -----------------------------------------------------------------
     PrepareTimeStep();
-    // -------------------------------------------------------------------
-    //                       output to screen
-    // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      switch (timealgo_)
-      {
-      case INPAR::FLUID::timeint_one_step_theta:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
-              time_,maxtime_,dta_,step_,stepmax_);
-        break;
-      case INPAR::FLUID::timeint_afgenalpha:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-        break;
-      case INPAR::FLUID::timeint_bdf2:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-        break;
-      default:
-        dserror("parameter out of range: IOP\n");
-      } /* end of switch(timealgo) */
-    }
+
+
+    // -----------------------------------------------------------------
+    //        prepare nonlinear solve (used for NonlinearSolve()
+    // -----------------------------------------------------------------
+    PrepareNonlinearSolve();
+
 
     // -----------------------------------------------------------------
     //                     solve nonlinear equation
@@ -1414,49 +1481,27 @@ void FLD::XFluid::SolveStationaryProblem()
     // -------------------------------------------------------------------
     step_ += 1;
     time_ += dta_;
+
     // -------------------------------------------------------------------
     //                         out to screen
     // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-    }
+    PrintTimeInt();
+
 
     SetElementTimeParameter();
+
 
     // -------------------------------------------------------------------
     //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
-    {
-      ParameterList eleparams;
+    SetDirichletNeumannBC();
 
-      // other parameters needed by the elements
-      eleparams.set("total time",time_);
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("velaf",state_->velnp_);
-      // predicted dirichlet values
-      // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null,state_->dbcmaps_);
-
-      discret_->ClearState();
-
-      // set thermodynamic pressure
-      eleparams.set("thermodynamic pressure",thermpressaf_);
-
-      state_->neumann_loads_->PutScalar(0.0);
-      discret_->SetState("scaaf",state_->scaaf_);
-//      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
-      XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, *boundarydis_, state_->neumann_loads_);
-
-      discret_->ClearState();
-    }
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
     NonlinearSolve();
+
 
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual
@@ -1494,6 +1539,12 @@ void FLD::XFluid::PrepareTimeStep()
 
 	  printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
 
+    // -------------------------------------------------------------------
+    //                       output to screen
+    // -------------------------------------------------------------------
+    PrintTimeInt();
+
+
 	  // -------------------------------------------------------------------
 	  // set time parameters dependent on time integration scheme and step
 	  // -------------------------------------------------------------------
@@ -1506,12 +1557,12 @@ void FLD::XFluid::PrepareTimeStep()
 	    // do a backward Euler step for the first timestep
 	    if (step_==1)
 	    {
-	      theta_ = params_.get<double>("START_THETA");
+	      theta_ = params_.get<double>("start theta");
 	    }
 	    else if (step_ > 1)
 	    {
 	      // for OST
-	      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_.get<double>("THETA");
+	      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_.get<double>("theta");
 
 	      // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
 	      if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -1520,72 +1571,67 @@ void FLD::XFluid::PrepareTimeStep()
 	  }
 
 	  // -------------------------------------------------------------------
-	  //  set time parameter for element call
+	  //               set time parameter for element call
 	  // -------------------------------------------------------------------
 	  SetElementTimeParameter();
 
-	  // -------------------------------------------------------------------
-	  // set part(s) of the rhs vector(s) belonging to the old timestep
-	  // (only meaningful for momentum part)
-	  //
-	  // stationary/af-generalized-alpha: hist_ = 0.0
-	  //
-	  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
-	  //
-	  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
-	  //
-	  // -------------------------------------------------------------------
-
-	  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
-	                                                timealgo_, dta_, theta_, state_->hist_);
-
-
-	    // -------------------------------------------------------------------
-	    //         evaluate Dirichlet and Neumann boundary conditions
-	    // -------------------------------------------------------------------
-	    {
-	      ParameterList eleparams;
-
-	      // other parameters needed by the elements
-	      eleparams.set("total time",time_);
-
-	      // set vector values needed by elements
-	      discret_->ClearState();
-	      discret_->SetState("velaf",state_->velnp_);
-	      // predicted dirichlet values
-	      // velnp then also holds prescribed new dirichlet values
-	      discret_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
-
-	      discret_->ClearState();
-
-	      // set thermodynamic pressure
-	      eleparams.set("thermodynamic pressure",thermpressaf_);
-
-	      state_->neumann_loads_->PutScalar(0.0);
-	      discret_->SetState("scaaf",state_->scaaf_);
-//	      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
-	      XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, *boundarydis_, state_->neumann_loads_);
-
-	      discret_->ClearState();
-	    }
-
 }
+
+
+void FLD::XFluid::PrepareNonlinearSolve()
+{
+
+  cout << "FLD::XFLUID::PrepareNonlinearSolve()" << endl;
+
+
+  // -------------------------------------------------------------------
+  //  perform CUT, transform vectors from old dofset to new dofset and set state vectors
+  // -------------------------------------------------------------------
+  if(INPAR::XFEM::XFluidStationaryBoundary != params_.sublist("XFEM").get<int>("XFLUID_BOUNDARY"))
+    CutAndSetStateVectors();
+
+
+  // -------------------------------------------------------------------
+  //                 set old part of righthandside
+  // -------------------------------------------------------------------
+  // set part(s) of the rhs vector(s) belonging to the old timestep
+  // (only meaningful for momentum part)
+  //
+  // stationary/af-generalized-alpha: hist_ = 0.0
+  //
+  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
+  //
+  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
+  //
+  // -------------------------------------------------------------------
+
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+                                                timealgo_, dta_, theta_, state_->hist_);
+
+
+  // -------------------------------------------------------------------
+  //         evaluate Dirichlet and Neumann boundary conditions
+  // -------------------------------------------------------------------
+  SetDirichletNeumannBC();
+}
+
+
 
 void FLD::XFluid::NonlinearSolve()
 {
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol        = params_.get<double>("CONVTOL");
+  const double  ittol        = params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = DRT::INPUT::IntegralValue<bool>(params_,"ADAPTCONV");
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  int itemax = params_.get<int>("ITEMAX");
+  int itemax = params_.get<int>("max nonlin iter steps");
 
   dtsolve_  = 0.0;
   dtele_    = 0.0;
@@ -1824,8 +1870,6 @@ void FLD::XFluid::NonlinearSolve()
     // -------------------------------------------------------------------
     state_->velnp_->Update(1.0,*state_->incvel_,1.0);
 
-//    // debug output
-//    state_->GmshOutput( *discret_, *boundarydis_, "result", itnum, state_->velnp_ );
 
     // -------------------------------------------------------------------
     // For af-generalized-alpha: update accelerations
@@ -1958,6 +2002,160 @@ void FLD::XFluid::TimeUpdate()
 } //XFluid::TimeUpdate()
 
 
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void FLD::XFluid::CutAndSetStateVectors()
+{
+  cout << "CutAndSetStateVectors " << endl;
+
+  // save the old state vector
+  staten_ = state_;
+
+  // save the old maps and clear the maps for the new cut
+//  stdnoden_ = stdnodenp_;
+//  enrichednoden_ = enrichednodenp_;
+//  stdnodenp_.clear();
+//  enrichednodenp_.clear();
+
+  // new cut current time step
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0. );
+
+  LINALG::Export(*idispnp_,idispcol);
+  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+//  // map of standard and enriched node ids and their dof-gids for new cut
+//  const Epetra_Map* noderowmapnp = bgdis_->NodeRowMap();
+//  // map of standard nodes and their dof-ids for n+1
+//  for (int lid=0; lid<noderowmapnp->NumGlobalPoints(); lid++)
+//  {
+//    int gid;
+//    // get global id of a node
+//    gid = noderowmapnp->GID(lid);
+//    // get the node
+//    DRT::Node * node = bgdis_->gNode(gid);
+//    GEO::CUT::Node * n = state_->wizard_.GetNode(node->Id());
+//    if (n!=NULL) // xfem nodes
+//    {
+//      GEO::CUT::Point * p = n->point();
+//      GEO::CUT::Point::PointPosition pos = p->Position();
+//      if (pos==GEO::CUT::Point::outside and bgdis_->NumDof(node) != 0) //std
+//      {
+//        //cout << " outside " << pos <<  " "<< node->Id() << endl;
+//        vector<int> gdofs = bgdis_->Dof(node);
+//        stdnodenp_[gid] = gdofs;
+//      }
+//      else if (pos==GEO::CUT::Point::inside and  bgdis_->NumDof(node) == 0) //void
+//      {
+//        // cout << " inside " <<  pos << " " << node->Id() << endl;
+//      }
+//      else if (pos==GEO::CUT::Point::inside and  bgdis_->NumDof(node) != 0) //enriched
+//      {
+//        vector<int> gdofs = bgdis_->Dof(node);
+//        enrichednodenp_[gid] = gdofs;
+//      }
+//      else if (pos==GEO::CUT::Point::oncutsurface and bgdis_->NumDof(node) == 0)
+//      {
+//        cout << " oncutsurface " << node->Id() << endl;
+//      }
+//      else
+//      {
+//        cout << "  hier ?! " <<  pos << " " <<  node->Id() << endl;
+//      }
+//    }
+//    else if( bgdis_->NumDof(node) != 0) // no xfem node
+//    {
+//      vector<int> gdofs = bgdis_->Dof(node);
+//      stdnodenp_[gid] = gdofs;
+//    }
+//    else
+//      cout << " why here? " << endl;
+//  }
+
+//    //debug output
+//    for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+//    {
+//      int kind = 0;
+//      const DRT::Node* actnode = bgdis_->lColNode(i);
+//      map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
+//      if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
+//      if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
+//      if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
+//      if (iter4 == enrichednodenp_.end() and iter3 == stdnodenp_.end()) cout  << " void np :" <<  actnode->Id() << " "  ;
+//    }
+
+//  SetNewStatevectorAndProjectEmbToBg(stdnoden_,stdnodenp_,enrichednoden_,enrichednodenp_,patchboxes,staten_->veln_,state_->veln_,aleveln_);
+//  SetNewStatevectorAndProjectEmbToBg(stdnoden_,stdnodenp_,enrichednoden_,enrichednodenp_,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
+//  SetNewStatevectorAndProjectEmbToBg(stdnoden_,stdnodenp_,enrichednoden_,enrichednodenp_,patchboxes,staten_->accn_,state_->accn_,aleaccn_);
+//
+//
+//  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+//                                                timealgo_, dta_, theta_, state_->hist_);
+//  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
+//                                                timealgo_, dta_, theta_, alehist_);
+//
+
+
+  cout << " XFEM::TIMEINTEGRATION !!! at the moment not available" << endl;
+
+
+
+  // for moving interface when no new dof is created (copy old vectors)
+  state_->veln_->Update(1.0,*staten_->veln_,0.0);
+  state_->accn_->Update(1.0,*staten_->accn_,0.0);
+
+  //velocity as start value for first Newton step
+  state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start velue
+
+
+//  // update prescribed interface velocity
+//  LINALG::Export(*(solidvelnp_),*(ivelnp_));
+//  boundarydis_->SetState("ivelnp",ivelnp_);
+
+//  // debug output
+//  int count = -1; // no counter for standard solution output
+//  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", count, step_, state_->veln_, aleveln_, aledispnp_);
+//  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", count, step_, state_->velnm_, alevelnm_, aledispnp_);
+//  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_accn", count, step_, state_->accn_, aleaccn_, aledispnp_);
+
+}
+
+
+//----------------------------------------------------------------------
+// LiftDrag                                                  chfoe 11/07
+//----------------------------------------------------------------------
+//calculate lift&drag forces and angular moments
+//
+//Lift and drag forces are based upon the right hand side true-residual entities
+//of the corresponding nodes. The contribution of the end node of a line is entirely
+//added to a present L&D force.
+//
+//Notice: Angular moments obtained from lift&drag forces currently refer to the
+//        initial configuration, i.e. are built with the coordinates X of a particular
+//        node irrespective of its current position.
+/*----------------------------------------------------------------------*/
+void FLD::XFluid::LiftDrag() const
+{
+//  cout << YELLOW_LIGHT << "check LiftDrag implementation" << END_COLOR << endl;
+
+//  // in this map, the results of the lift drag calculation are stored
+//  RCP<map<int,vector<double> > > liftdragvals;
+//
+//  FLD::UTILS::LiftDrag(*discret_,*state_->trueresidual_,params_,liftdragvals);
+//
+//  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
+//    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+
+  return;
+}
+
+
+
+
 
 void FLD::XFluid::StatisticsAndOutput()
 {
@@ -2002,8 +2200,69 @@ void FLD::XFluid::Output()
     //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
     if(gmsh_discret_out_)
     {
-        const int step_diff = 1;
-        const bool screen_out = 1;
+        const int step_diff = 10;
+        bool screen_out = gmsh_debug_out_screen_;
+
+
+
+        // compute the current solid and boundary position
+        std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
+        std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+        {
+
+          Epetra_Vector dispcol( *soliddis_->DofColMap() );
+          dispcol.PutScalar( 0. );
+
+          LINALG::Export(*soliddispnp_,dispcol);
+
+          currsolidpositions.clear();
+
+          for (int lid = 0; lid < soliddis_->NumMyColNodes(); ++lid)
+          {
+            const DRT::Node* node = soliddis_->lColNode(lid);
+            vector<int> lm;
+            soliddis_->Dof(node, lm);
+            vector<double> mydisp;
+            DRT::UTILS::ExtractMyValues(dispcol,mydisp,lm);
+            if (mydisp.size() != 3)
+              dserror("we need 3 displacements here");
+
+            LINALG::Matrix<3,1> currpos;
+            currpos(0) = node->X()[0] + mydisp[0];
+            currpos(1) = node->X()[1] + mydisp[1];
+            currpos(2) = node->X()[2] + mydisp[2];
+            currsolidpositions.insert(make_pair(node->Id(),currpos));
+          }
+        }
+
+        {
+
+          Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+          idispcol.PutScalar( 0. );
+
+          LINALG::Export(*idispnp_,idispcol);
+
+          currinterfacepositions.clear();
+
+          for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
+          {
+            const DRT::Node* node = boundarydis_->lColNode(lid);
+            vector<int> lm;
+            boundarydis_->Dof(node, lm);
+            vector<double> mydisp;
+            DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+            if (mydisp.size() != 3)
+              dserror("we need 3 displacements here");
+
+            LINALG::Matrix<3,1> currpos;
+            currpos(0) = node->X()[0] + mydisp[0];
+            currpos(1) = node->X()[1] + mydisp[1];
+            currpos(2) = node->X()[2] + mydisp[2];
+            currinterfacepositions.insert(make_pair(node->Id(),currpos));
+          }
+        }
+
+
 
         // output for Element and Node IDs
         const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", step_, step_diff, screen_out, discret_->Comm().MyPID());
@@ -2036,7 +2295,8 @@ void FLD::XFluid::Output()
             for (int i=0; i<soliddis_->NumMyColElements(); ++i)
             {
                 const DRT::Element* actele = soliddis_->lColElement(i);
-                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+//                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+                IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, currsolidpositions, gmshfilecontent);
             };
             gmshfilecontent << "};\n";
         }
@@ -2056,7 +2316,8 @@ void FLD::XFluid::Output()
             for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
             {
                 const DRT::Element* actele = boundarydis_->lColElement(i);
-                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+//                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+                IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, currinterfacepositions, gmshfilecontent);
             };
             gmshfilecontent << "};\n";
         }
@@ -2169,20 +2430,22 @@ void FLD::XFluid::Output()
        fluid_output_->WriteElementData();
 
 
-       // output for solid
-       solid_output_->NewStep(step_,time_);
-
-       solid_output_->WriteVector("displacement", outvec_solid_disp_);
-
-       solid_output_->WriteElementData();
-
-
        // output for interface
        boundary_output_->NewStep(step_,time_);
 
        boundary_output_->WriteVector("ivelnp", ivelnp_);
+       boundary_output_->WriteVector("idispnp", idispnp_);
 
        boundary_output_->WriteElementData();
+
+
+       // no solid output for XFluid, solid output for XFSI done by Adapter and structure part
+       //       // output for solid
+       //       solid_output_->NewStep(step_,time_);
+       //
+       //       solid_output_->WriteVector("displacement", soliddispnp_);
+       //
+       //       solid_output_->WriteElementData();
    }
 
 	//    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
@@ -2279,12 +2542,13 @@ void FLD::XFluid::SetInitialFlowField(
   const int startfuncno
   )
 {
-  cout << "SetInitialFlowField " << endl;
+
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
   if (initfield == INPAR::FLUID::initfield_field_by_function/* or
       initfield == INPAR::FLUID::initfield_disturbed_field_from_function*/)
   {
+    cout << "SetInitialFlowField with function number " << startfuncno << endl;
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -2307,9 +2571,8 @@ void FLD::XFluid::SetInitialFlowField(
 
     // initialize veln_ as well.
     state_->veln_->Update(1.0,*state_->velnp_ ,0.0);
+
   }
-
-
   // special initial function: Beltrami flow (3-D)
   else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
@@ -2392,70 +2655,246 @@ void FLD::XFluid::SetInitialFlowField(
   return;
 } // end SetInitialFlowField
 
-void FLD::XFluid::SetInitialSolidField()
+void FLD::XFluid::SetInitialInterfaceField()
 {
 
+  if(interface_vel_init_func_no_ != -1)
+  {
+    cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
 
-  int solid_vel_func_no = boundIntFunct_;
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      const vector<int> nodedofset = boundarydis_->Dof(lnode);
 
-
-  //  int solid_disp_func_no = 2;
-  //cout << "SetInitialSolidField " << endl;
-//      // loop all nodes on the processor
-//      for(int lnodeid=0;lnodeid<soliddis_->NumMyRowNodes();lnodeid++)
-//      {
-//        // get the processor local node
-//        DRT::Node*  lnode      = soliddis_->lRowNode(lnodeid);
-//        // the set of degrees of freedom associated with the node
-//        const vector<int> nodedofset = soliddis_->Dof(lnode);
-//
-//        if (nodedofset.size()!=0)
-//        {
-//          for(int index=0;index<numdim_+1;++index)
-//          {
-//            int gid = nodedofset[index];
-//
-//            double initialval=DRT::Problem::Instance()->Funct(solid_disp_func_no-1).Evaluate(index,lnode->X(),0.0,NULL);
-//            soliddispnp_->ReplaceGlobalValues(1,&initialval,&gid);
-//          }
-//        }
-//      }
-//
-//      // initialize dispn as well.
-//      soliddispn_->Update(1.0,*soliddispnp_ ,0.0);
-
-
-      if(solid_vel_func_no != -1)
+      if (nodedofset.size()!=0)
       {
-          cout << "WDBC read by function: FUNCT " << boundIntFunct_ << endl;
+        for(int dof=0;dof<(int)nodedofset.size();++dof)
+        {
+          int gid = nodedofset[dof];
 
-          // loop all nodes on the processor
-          for(int lnodeid=0;lnodeid<soliddis_->NumMyRowNodes();lnodeid++)
-          {
-             // get the processor local node
-             DRT::Node*  lnode      = soliddis_->lRowNode(lnodeid);
-             // the set of degrees of freedom associated with the node
-             const vector<int> nodedofset = soliddis_->Dof(lnode);
-
-             if (nodedofset.size()!=0)
-             {
-                 for(int dof=0;dof<(int)nodedofset.size();++dof)
-                 {
-                   int gid = nodedofset[dof];
-
-                   double initialval=DRT::Problem::Instance()->Funct(solid_vel_func_no-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
-                   solidvelnp_->ReplaceGlobalValues(1,&initialval,&gid);
-                 }
-             }
-
-          }
-
-          // initialize veln_ as well.
-          solidveln_->Update(1.0,*solidvelnp_ ,0.0);
+          double initialval=DRT::Problem::Instance()->Funct(interface_vel_init_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+          ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
+        }
       }
 
-      return;
+    }
+
+    // initialize veln_ as well.
+    iveln_->Update(1.0,*ivelnp_ ,0.0);
+
+  }
+
+  return;
 } // end SetInitialSolidField
+
+
+
+void FLD::XFluid::SetInterfaceDisplacement( double time )
+{
+  cout << "\t set interface displacement at current time " << time << endl;
+
+  if( timealgo_ != INPAR::FLUID::timeint_stationary)
+  {
+
+    if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct)
+    {
+
+      if(interface_disp_func_no_ != -1)
+      {
+        cout << "\t ... solid displacement by FUNCT " << interface_disp_func_no_ << " and CURVE " << interface_disp_curve_no_ << endl;
+
+        double curvefac = 1.0;
+
+        if( interface_disp_curve_no_ > -1) curvefac = DRT::Problem::Instance()->Curve( interface_disp_curve_no_-1).f(time);
+
+        // loop all nodes on the processor
+        for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+        {
+          // get the processor local node
+          DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+          // the set of degrees of freedom associated with the node
+          const vector<int> nodedofset = boundarydis_->Dof(lnode);
+
+          if (nodedofset.size()!=0)
+          {
+            for(int dof=0;dof<(int)nodedofset.size();++dof)
+            {
+              int gid = nodedofset[dof];
+
+              double initialval=DRT::Problem::Instance()->Funct( interface_disp_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+
+              initialval *= curvefac;
+              idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+            }
+          }
+
+        }
+
+      }
+      else dserror("define DISP_FUNCT_NO > -1 for INTERFACE_DISPLACEMENT =  interface_disp_by_funct");
+    }
+    else if( interface_disp_ == INPAR::XFEM::interface_disp_zero)
+    {
+      idispnp_->PutScalar(0.0);
+    }
+    else if( interface_disp_ == INPAR::XFEM::interface_disp_by_fsi)
+    {
+      dserror("do not call ComputeSolidDisplacement for fsi application!");
+    }
+    else dserror("unknown solid_disp type");
+
+
+  }
+  else
+  {
+    dserror("ComputeInterfaceDisplacement should not be called for stationary time integration");
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluid::ComputeInterfaceVelocities()
+{
+  // compute interface velocities for different moving boundary applications
+  // XFLUID:  use interface vel by displacement
+  //          use interface vel by external function
+  //          use zero interface vel
+  // XFSI:    use always interface vel by displacement (second order yes/no )
+  // (the right input parameter configuration is checked in adapter_fluid_base_algorithm)
+
+  cout << "\t set interface velocity " << endl;
+
+  if( timealgo_ != INPAR::FLUID::timeint_stationary)
+  {
+
+    if(interface_vel_ == INPAR::XFEM::interface_vel_by_disp)
+    {
+      if(Step() == 0) dserror("for interface_vel_by_disp, set idispn!!!");
+      // compute the interface velocity using the new and old interface displacement vector
+
+      cout << "\t ... interface velocity by displacement ";
+
+      cout << " PAY ATTENTION: MAYBE this is done twice (in ApplyInterfaceVelocities and here)" << endl;
+
+      double thetaiface = 0.0;
+      if (params_.get<bool>("interface second order"))
+      {
+        cout << " (second order: YES) " << endl;
+        thetaiface = 0.5;
+      }
+      else
+      {
+        cout << " (second order: NO) " << endl;
+        thetaiface = 1.0;
+      }
+
+      ivelnp_->Update(1.0/(thetaiface*Dt()),*idispnp_,-1.0/(thetaiface*Dt()),*idispn_,0.0);
+      ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
+
+      cout << "ivelnp_ " << *ivelnp_ << endl;
+
+    }
+    else if(interface_vel_ == INPAR::XFEM::interface_vel_by_funct)
+    {
+
+      if(interface_vel_func_no_ != -1)
+      {
+        cout << "\t ... interface velocity by FUNCT " << interface_vel_func_no_ << endl;
+
+        // loop all nodes on the processor
+        for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+        {
+          // get the processor local node
+          DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+          // the set of degrees of freedom associated with the node
+          const vector<int> nodedofset = boundarydis_->Dof(lnode);
+
+          if (nodedofset.size()!=0)
+          {
+            for(int dof=0;dof<(int)nodedofset.size();++dof)
+            {
+              int gid = nodedofset[dof];
+
+              double initialval=DRT::Problem::Instance()->Funct(interface_vel_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+              ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
+            }
+          } // end if
+        } // end for
+
+      }
+
+    }
+    else if(interface_vel_ == INPAR::XFEM::interface_vel_zero)
+    {
+      cout << "\t ... interface velocity: zero" << endl;
+
+      ivelnp_->PutScalar(0.0);
+    }
+
+  }
+  else
+  {
+    dserror("ComputeInterfaceVelocities should not be called for stationary time integration");
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluid::SetInterfaceFields()
+{
+
+    // extract ivelnp from solid velocity
+    LINALG::Export(*(solidvelnp_),*(ivelnp_));
+
+    // extract idispnp from solid displacement
+    LINALG::Export(*(soliddispnp_),*(idispnp_));
+
+}
+
+
+
+// -------------------------------------------------------------------
+// set general fluid parameter (AE 01/2011)
+// -------------------------------------------------------------------
+void FLD::XFluid::SetDirichletNeumannBC()
+{
+#ifdef D_FLUID3
+
+    ParameterList eleparams;
+
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("velaf",state_->velnp_);
+    // predicted dirichlet values
+    // velnp then also holds prescribed new dirichlet values
+    discret_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null,state_->dbcmaps_);
+
+    discret_->ClearState();
+
+    // set thermodynamic pressure
+    eleparams.set("thermodynamic pressure",thermpressaf_);
+
+    state_->neumann_loads_->PutScalar(0.0);
+    discret_->SetState("scaaf",state_->scaaf_);
+//      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+    XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, *boundarydis_, state_->neumann_loads_);
+
+    discret_->ClearState();
+
+#endif
+}
+
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)

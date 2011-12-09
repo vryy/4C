@@ -21,8 +21,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_f3/fluid3.H"
 
 #include "../drt_inpar/inpar_xfem.H"
-#include "../drt_bele3/bele3.H"
-#include "../drt_bele3/bele3_4.H"
 
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"

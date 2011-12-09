@@ -3929,6 +3929,15 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    ),
                                &xfem_general);
 
+  setStringToIntegralParameter<int>("XFLUID_BOUNDARY","xfluid_moving_boundary","moving boundary or stationary boundary or xfsi boundary",
+                               tuple<std::string>("xfluid_moving_boundary","xfluid_stationary_boundary", "xfsi_moving_boundary"),
+                               tuple<int>(
+                                   INPAR::XFEM::XFluidMovingBoundary,       // moving boundary
+                                   INPAR::XFEM::XFluidStationaryBoundary,    // stationary boundary
+                                   INPAR::XFEM::XFSIMovingBoundary
+                                   ),
+                               &xfem_general);
+
   setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_mortaring","on which side is the main part of enforcing",
                                tuple<std::string>("xfluid_sided_mortaring", "embedded_sided_mortaring", "two_sided_mortaring"),
                                tuple<int>(
@@ -3938,6 +3947,14 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    ),
                                &xfem_general);
 
+
+  setStringToIntegralParameter<int>("INTERFACE_VEL_INITIAL","interface_vel_init_zero","how to compute or define the initial interface velocity",
+                               tuple<std::string>("interface_vel_init_by_funct", "interface_vel_init_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_vel_init_by_funct,   // define interface velocity by function
+                                   INPAR::XFEM::interface_vel_init_zero        // zero interface velocity function
+                                   ),
+                               &xfem_general);
 
   // xfluidfluid-fsi-monolithic approach
   setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",
@@ -3951,7 +3968,30 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                        ),
                                    &xfem_general);
 
-  IntParameter("BOUNDARY_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
+
+  setStringToIntegralParameter<int>("INTERFACE_VEL","interface_vel_by_disp","how to compute or define the interface velocity",
+                               tuple<std::string>("interface_vel_by_disp", "interface_vel_by_funct", "interface_vel_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_vel_by_disp,    // define interface velocity by displacement of solid
+                                   INPAR::XFEM::interface_vel_by_funct,   // define interface velocity by function
+                                   INPAR::XFEM::interface_vel_zero        // zero interface velocity function
+                                   ),
+                               &xfem_general);
+
+  setStringToIntegralParameter<int>("INTERFACE_DISP","interface_disp_zero","how to define the interface displacement",
+                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_disp_by_fsi,     // define interface displacement by structure solution of fsi algo
+                                   INPAR::XFEM::interface_disp_by_funct,   // define interface displacement by function
+                                   INPAR::XFEM::interface_disp_zero        // zero interface displacement function
+                                   ),
+                               &xfem_general);
+
+  IntParameter("DISP_FUNCT_NO",-1,"funct number for interface displacement",&xfem_general);
+  IntParameter("DISP_CURVE_NO",-1,"curve number for interface displacement",&xfem_general);
+
+  IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
+  IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfem_general);
 
   // Nitsche stabilization parameter
   DoubleParameter("Nitsche_stab",       1.0, "define Nitsche's stabilization parameter for BoundaryTypeNitsche",&xfem_general);

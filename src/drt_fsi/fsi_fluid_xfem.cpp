@@ -6,6 +6,8 @@
 #include "../drt_inpar/drt_validparameters.H"
 
 
+extern struct _GENPROB     genprob;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(Epetra_Comm& comm)
@@ -32,10 +34,13 @@ FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm()
 }
 
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Timeloop()
 {
+  // Axels Xfluid implementation
+  if(genprob.probtyp == prb_fluid_xfem)
   while (NotFinished())
   {
     PrepareTimeStep();
@@ -43,6 +48,23 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
     Update();
     Output();
   }
+
+  // Benedikts Xfluid implementation
+  if(genprob.probtyp == prb_fluid_xfem2)
+  {
+    if(Comm().MyPID()==0) std::cout << YELLOW_LIGHT << "Integrate routine for MOVING INTERFACES" << END_COLOR << "\n" << endl;
+
+
+    while (NotFinished())
+    {
+      PrepareTimeStep();
+      Solve();
+      Update();
+      Output();
+    }
+  }
+
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -61,12 +83,12 @@ void FSI::FluidXFEMAlgorithm::PrepareTimeStep()
   step_ += 1;
   time_ += dt_;
 
-  if (Comm().MyPID()==0)
-    std::cout << "\n"
-              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
-              << "\n\n";
+//  if (Comm().MyPID()==0)
+//    std::cout << "\n"
+//              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
+//              << "     DT = " << std::scientific << dt_
+//              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
+//              << "\n\n";
 
   MBFluidField().PrepareTimeStep();
 }

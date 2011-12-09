@@ -977,7 +977,11 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
     // create new points
     element->GlobalCoordinates( rst, xyz );
     projected_points.push_back( mesh.NewPoint( xyz.A(), NULL, NULL ) );
-    projected_points.back()->Position( position );
+    // change Benedikt: do not set the position for additionally created points
+    // REMARK:
+    // the propagation of the inside/outside position to facets and volume cells can destroy on-cut-surface points!
+    // At the moment we do not need the inside/outside information of newly created points for tetrahedralization
+//    projected_points.back()->Position( position );
   }
 
   // create integration cells

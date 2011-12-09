@@ -24,6 +24,8 @@
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dofset_independent.H"
 
+#include "fluid_utils_mapextractor.H" // should go away
+
 namespace DRT
 {
   class Discretization;
@@ -79,7 +81,7 @@ namespace FLD
     {
     public:
 
-      explicit XFluidState( XFluid & xfluid );
+      explicit XFluidState( XFluid & xfluid, Epetra_Vector & idispcol );
 
       void Evaluate( Teuchos::ParameterList & eleparams,
                      DRT::Discretization & discret,
@@ -109,11 +111,11 @@ namespace FLD
       /// (standard) residual vector (rhs for the incremental form),
       Teuchos::RCP<Epetra_Vector>    residual_;
 
-      /// rhs: right hand side vector for linearised flow solution
-      Teuchos::RCP<Epetra_Vector>    rhs_;
-
       /// true (rescaled) residual vector without zeros at dirichlet positions
       Teuchos::RCP<Epetra_Vector>    trueresidual_;
+
+      /// rhs: right hand side vector for linearised flow solution
+      Teuchos::RCP<Epetra_Vector>    rhs_;
 
       /// Nonlinear iteration increment vector
       Teuchos::RCP<Epetra_Vector>    incvel_;
@@ -152,6 +154,9 @@ namespace FLD
       //! Extractor used for convergence check
       LINALG::MapExtractor      velpressplitter_;
 
+      /// row dof map extractor
+      const UTILS::MapExtractor* surfacesplitter_;
+
       //! dof-row maps
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
@@ -167,6 +172,11 @@ namespace FLD
 
       /// return the wizard
       Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
+
+
+      XFluid & xfluid_;
+
+      Teuchos::RCP<XFEM::FluidWizard> wizard_;
 
     private:
 
@@ -197,20 +207,24 @@ namespace FLD
                                    GEO::CUT::ElementHandle * e,
                                    GEO::CUT::VolumeCell * vc );
 
-      XFluid & xfluid_;
-      Teuchos::RCP<XFEM::FluidWizard> wizard_;
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
     };
 
   public:
 
-    XFluid( Teuchos::RCP<DRT::Discretization>  actdis,
-            Teuchos::RCP<DRT::Discretization>  soliddis,
-            LINALG::Solver &                   solver,
-            const Teuchos::ParameterList &     params,
-            const Teuchos::ParameterList &     xdyn,
-            bool                               alefluid=false
+    XFluid( Teuchos::RCP<DRT::Discretization>      actdis,
+            Teuchos::RCP<DRT::Discretization>      soliddis,
+            LINALG::Solver &                       solver,
+            const Teuchos::ParameterList &         params,
+            Teuchos::RCP<IO::DiscretizationWriter> output,
+            bool                                   alefluid=false
       );
+
+    /// print stabilization params to screen
+    void PrintStabilizationParams();
+
+    /// print time integration output
+    void PrintTimeInt();
 
     /// start time loop for startingalgo, normal problems and restarts
     void Integrate();
@@ -223,6 +237,9 @@ namespace FLD
 
     /// setup the variables to do a new time step
     void PrepareTimeStep();
+
+    /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
+    void PrepareNonlinearSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();
@@ -249,6 +266,10 @@ namespace FLD
     /// iteration. Current solution becomes old solution of next timestep.
     void TimeUpdate();
 
+    /// CUT at new interface position, transform vectors,
+    /// perform time integration and set new Vectors
+    void CutAndSetStateVectors();
+
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
     void StatisticsAndOutput();
@@ -263,7 +284,72 @@ namespace FLD
       );
 
     /// set an initial solid field
-    void SetInitialSolidField();
+    void SetInitialInterfaceField();
+
+    void SetInterfaceDisplacement( double time );
+
+    void ComputeInterfaceVelocities();
+
+    void SetInterfaceFields();
+
+    /// set Dirichlet and Neumann boundary conditions
+    void SetDirichletNeumannBC();
+
+
+    /*!
+      \brief Access output object
+    */
+    IO::DiscretizationWriter& DiscWriter()
+    {
+      return *fluid_output_;
+    }
+
+    Teuchos::RCP<Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual()     { cout << "Residual" << endl;     return state_->residual_; }
+    Teuchos::RCP<Epetra_Vector> TrueResidual() { cout << "Xfluid_TrueResidual" << endl; return state_->trueresidual_; }
+    Teuchos::RCP<Epetra_Vector> Velnp()        { cout << "Velnp" << endl;        return state_->velnp_; }
+    Teuchos::RCP<Epetra_Vector> Velaf()        { cout << "Velaf" << endl;        return state_->velaf_; }
+    Teuchos::RCP<Epetra_Vector> Veln()         { cout << "Veln() in!!! " <<  endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
+
+    Teuchos::RCP<Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
+    Teuchos::RCP<Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
+
+
+//    Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluiddofrowmap_; }
+
+    LINALG::MapExtractor& VelPresSplitter() { return state_->velpressplitter_; }
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return state_->velpressplitter_.OtherMap(); }
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return state_->velpressplitter_.CondMap(); }
+//    Teuchos::RCP<const Epetra_Map>PressureRowMap() { return state_->fluidfluidvelpressplitter_.CondMap(); }
+//    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
+
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
+
+//    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
+
+    /// provide access to the Dirichlet maps
+    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
+
+    /// Expand the Dirichlet DOF set
+    ///
+    /// The method expands the DOF set (map) which contains the DOFs
+    /// subjected to Dirichlet boundary conditions. For instance, the method is
+    /// called by the staggered FSI in which the velocities on the FSI
+    /// interface are prescribed by the other fields.
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    Teuchos::RCP<DRT::Discretization> Discretization() { dserror("which discretization"); return soliddis_; }
+
+    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
+
+    /// introduce surface split extractor object
+    /*!
+      This method must (and will) be called during setup with a properly
+      initialized extractor object iff we are on an ale mesh.
+    */
+//    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) {cout << "SetSurfaceSplitter" << endl; state_->surfacesplitter_ = surfacesplitter; }
+
 
     /*!
       \brief return type of time integration scheme
@@ -275,6 +361,16 @@ namespace FLD
 
     const std::string GaussPointType() const {return gaussPointType_;} //block or remove
 
+    double Dt() const { return dta_; }
+
+    double Time() const { return time_; }
+
+    int Step() const { return step_; }
+
+    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+
+    void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
@@ -284,6 +380,13 @@ namespace FLD
       else
         return density_/(theta_*dta_);
     }
+
+    /// introduce surface split extractor object
+    /*!
+      This method must (and will) be called during setup with a properly
+      initialized extractor object iff we are on an ale mesh.
+     */
+    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { state_->surfacesplitter_ = surfacesplitter; }
 
     // dof-row maps
     const Epetra_Map* soliddofrowmap_;
@@ -306,16 +409,21 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    ivelnm_;
 
     Teuchos::RCP<Epetra_Vector>    idispnp_;
+    Teuchos::RCP<Epetra_Vector>    idispn_;
+
+    Teuchos::RCP<Epetra_Vector>    itrueresidual_;
+
+    Teuchos::RCP<Epetra_Vector>    iforcenp_;
 
     Teuchos::RCP<Epetra_Vector>    solidvelnp_;
-    Teuchos::RCP<Epetra_Vector>    solidveln_;
-    Teuchos::RCP<Epetra_Vector>    solidvelnm_;
-
+//    Teuchos::RCP<Epetra_Vector>    solidveln_;
+//    Teuchos::RCP<Epetra_Vector>    solidvelnm_;
+//
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
-    Teuchos::RCP<Epetra_Vector>    soliddispn_;
-    Teuchos::RCP<Epetra_Vector>    soliddispnm_;
+//    Teuchos::RCP<Epetra_Vector>    soliddispn_;
+//    Teuchos::RCP<Epetra_Vector>    soliddispnm_;
 
-    Teuchos::RCP<Epetra_Vector>    outvec_solid_disp_;
+//    Teuchos::RCP<Epetra_Vector>    outvec_solid_disp_;
 
   private:
 
@@ -372,7 +480,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      discret_;
     Teuchos::RCP<DRT::Discretization>      soliddis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
-    LINALG::Solver&               solver_;
+    LINALG::Solver&                        solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
 //     //! integrated basis vector (pressure component)
@@ -382,7 +490,15 @@ namespace FLD
     Teuchos::ParameterList params_;
 
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
-    int boundIntFunct_;
+    int interface_vel_func_no_;
+    int interface_vel_init_func_no_;
+
+    INPAR::XFEM::InterfaceInitVel interface_vel_init_;
+    INPAR::XFEM::InterfaceVel     interface_vel_;
+
+    INPAR::XFEM::InterfaceDisplacement interface_disp_;
+    int interface_disp_func_no_;
+    int interface_disp_curve_no_;
 
     // initial flow field
     INPAR::FLUID::InitialField initfield_;
@@ -394,12 +510,13 @@ namespace FLD
     std::string gaussPointType_; //blockk or remove
 
     bool gmsh_debug_out_;
+    bool gmsh_debug_out_screen_;
     bool gmsh_sol_out_;
     bool gmsh_discret_out_;
     bool gmsh_cut_out_;
 
-    Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
+    Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> boundary_output_;
 
 
@@ -468,6 +585,9 @@ namespace FLD
     double  dtfilter_;
     double  dtsolve_;
 
+    /// state object at old time step
+    Teuchos::RCP<XFluidState> staten_;
+    /// state object at current new time step
     Teuchos::RCP<XFluidState> state_;
 
     int maxnumdofsets_;

@@ -46,6 +46,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       break;
     }
     case prb_fluid_xfem:
+    case prb_fluid_xfem2:
     case prb_fsi_xfem:
     {
       //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;

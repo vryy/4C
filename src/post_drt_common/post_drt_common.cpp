@@ -602,8 +602,8 @@ void PostProblem::read_meshes()
 
       // to avoid building dofmanagers, in output mode elements answer
       // with a fixed number of nodal unknowns
-      if (currfield.problem()->Problemtype() == prb_fluid_xfem or
-          currfield.problem()->Problemtype() == prb_fsi_xfem)
+      if (currfield.problem()->Problemtype() == prb_fluid_xfem /*or
+          currfield.problem()->Problemtype() == prb_fsi_xfem*/)
       {
         cout << "Name = " << currfield.discretization()->Name();
         if (currfield.discretization()->Name() == "fluid")

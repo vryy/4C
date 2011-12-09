@@ -33,6 +33,36 @@ namespace INPAR
       BoundaryTypeNeumann
     };
 
+    enum MovingBoundary
+    {
+      XFluidMovingBoundary,
+      XFluidStationaryBoundary,
+      XFSIMovingBoundary
+    };
+
+    /// how to define the interface (solid) velocity
+    enum InterfaceInitVel
+    {
+      interface_vel_init_by_funct,
+      interface_vel_init_zero
+    };
+
+    /// how to define the interface (solid) velocity
+    enum InterfaceVel
+    {
+      interface_vel_by_disp,
+      interface_vel_by_funct,
+      interface_vel_zero
+    };
+
+    /// how to prescribe the interface (solid) displacement
+    enum InterfaceDisplacement
+    {
+      interface_disp_by_fsi,
+      interface_disp_by_funct,
+      interface_disp_zero
+    };
+
     /// which sided-mortaring is used to enforce the boundary condition
     enum CouplingStrategy
     {

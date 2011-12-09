@@ -43,6 +43,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
 
+#include "../drt_bele3/bele3.H"
+#include "../drt_bele3/bele3_4.H"
+
 #include "../linalg/linalg_fixedsizeblockmatrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
@@ -8297,6 +8300,14 @@ namespace DRT
                                const vector<int>&           lm,
                                Epetra_SerialDenseMatrix  &  side_xyze) = 0;
 
+
+        virtual void buildInterfaceForce( const Teuchos::RCP<Epetra_Vector> &  iforcecol,
+                                          const DRT::Discretization &          cutdis,
+                                          const vector<int>&                   lm,
+                                          LINALG::Matrix<nsd_,1> &             traction,
+                                          double &                             fac ) = 0;
+
+
         virtual void buildCouplingMatrices(LINALG::Matrix<3,1> & normal,
                                            const double          fac,
                                            LINALG::Matrix<nen_,1>  & funct,
@@ -8433,21 +8444,21 @@ namespace DRT
           LINALG::Matrix<3,1> sol(true); // sol carries xi_1, xi_2, d (distance)
 
           if(side_distype == DRT::Element::tri3 or
-             side_distype == DRT::Element::tri6)
+              side_distype == DRT::Element::tri6)
           {
-        	  sol(0) = 0.333333333333333;
-        	  sol(1) = 0.333333333333333;
+            sol(0) = 0.333333333333333;
+            sol(1) = 0.333333333333333;
           }
           else if( side_distype == DRT::Element::quad4 or
-                   side_distype == DRT::Element::quad8 or
-                   side_distype == DRT::Element::quad9)
+              side_distype == DRT::Element::quad8 or
+              side_distype == DRT::Element::quad9)
           {
-        	  sol(0) = 0.0;
-        	  sol(1) = 0.0;
+            sol(0) = 0.0;
+            sol(1) = 0.0;
           }
           else
           {
-        	  dserror("define start side xi-coordinates for unsupported cell type");
+            dserror("define start side xi-coordinates for unsupported cell type");
           }
 
           const double relTolIncr = 1.0e-10;   // rel tolerance for the local coordinates increment
@@ -8462,155 +8473,135 @@ namespace DRT
           while(iter < maxiter && !converged)
           {
 
-        	  iter++;
+            iter++;
 
 
-        	  // get current values
-              DRT::UTILS::shape_function_2D( funct, sol( 0 ), sol( 1 ), side_distype );
-              DRT::UTILS::shape_function_2D_deriv1( deriv, sol( 0 ), sol( 1 ), side_distype );
-              DRT::UTILS::shape_function_2D_deriv2( deriv2, sol( 0 ), sol( 1 ), side_distype );
+            // get current values
+            DRT::UTILS::shape_function_2D( funct, sol( 0 ), sol( 1 ), side_distype );
+            DRT::UTILS::shape_function_2D_deriv1( deriv, sol( 0 ), sol( 1 ), side_distype );
+            DRT::UTILS::shape_function_2D_deriv2( deriv2, sol( 0 ), sol( 1 ), side_distype );
 
-              x.Multiply(xyze_, funct);
+            x.Multiply(xyze_, funct);
 
-              derxy.MultiplyNT(xyze_, deriv);
+            derxy.MultiplyNT(xyze_, deriv);
 
-              derxy2.MultiplyNT(xyze_, deriv2);
+            derxy2.MultiplyNT(xyze_, deriv2);
 
-              // set dx_dr and dx_ds
-              for (int i=0; i< 3; i++)
-              {
-            	  dx_dr(i) = derxy(i,0);
-            	  dx_ds(i) = derxy(i,1);
+            // set dx_dr and dx_ds
+            for (int i=0; i< 3; i++)
+            {
+              dx_dr(i) = derxy(i,0);
+              dx_ds(i) = derxy(i,1);
 
-            	  dx_drdr(i) = derxy2(i,0);
-            	  dx_dsds(i) = derxy2(i,1);
-            	  dx_drds(i) = derxy2(i,2);
-              }
+              dx_drdr(i) = derxy2(i,0);
+              dx_dsds(i) = derxy2(i,1);
+              dx_drds(i) = derxy2(i,2);
+            }
 
-              // get vector products
-              LINALG::Matrix<3,1> dx_drdr_times_dx_ds(true);
-              LINALG::Matrix<3,1> dx_dr_times_dx_drds(true);
-              LINALG::Matrix<3,1> dx_drds_times_dx_ds(true);
-              LINALG::Matrix<3,1> dx_dr_times_dx_dsds(true);
-              LINALG::Matrix<3,1> dx_dr_times_dx_ds(true);
+            // get vector products
+            LINALG::Matrix<3,1> dx_drdr_times_dx_ds(true);
+            LINALG::Matrix<3,1> dx_dr_times_dx_drds(true);
+            LINALG::Matrix<3,1> dx_drds_times_dx_ds(true);
+            LINALG::Matrix<3,1> dx_dr_times_dx_dsds(true);
+            LINALG::Matrix<3,1> dx_dr_times_dx_ds(true);
 
-              dx_drdr_times_dx_ds(0) = dx_drdr(1)*dx_ds(2)-dx_ds(1)*dx_drdr(2);
-              dx_drdr_times_dx_ds(1) = dx_drdr(2)*dx_ds(0)-dx_ds(2)*dx_drdr(0);
-              dx_drdr_times_dx_ds(2) = dx_drdr(0)*dx_ds(1)-dx_ds(0)*dx_drdr(1);
+            dx_drdr_times_dx_ds(0) = dx_drdr(1)*dx_ds(2)-dx_ds(1)*dx_drdr(2);
+            dx_drdr_times_dx_ds(1) = dx_drdr(2)*dx_ds(0)-dx_ds(2)*dx_drdr(0);
+            dx_drdr_times_dx_ds(2) = dx_drdr(0)*dx_ds(1)-dx_ds(0)*dx_drdr(1);
 
-              dx_dr_times_dx_drds(0) = dx_dr(1)*dx_drds(2)-dx_drds(1)*dx_dr(2);
-              dx_dr_times_dx_drds(1) = dx_dr(2)*dx_drds(0)-dx_drds(2)*dx_dr(0);
-              dx_dr_times_dx_drds(2) = dx_dr(0)*dx_drds(1)-dx_drds(0)*dx_dr(1);
+            dx_dr_times_dx_drds(0) = dx_dr(1)*dx_drds(2)-dx_drds(1)*dx_dr(2);
+            dx_dr_times_dx_drds(1) = dx_dr(2)*dx_drds(0)-dx_drds(2)*dx_dr(0);
+            dx_dr_times_dx_drds(2) = dx_dr(0)*dx_drds(1)-dx_drds(0)*dx_dr(1);
 
-              dx_drds_times_dx_ds(0) = dx_drds(1)*dx_ds(2)-dx_ds(1)*dx_drds(2);
-              dx_drds_times_dx_ds(1) = dx_drds(2)*dx_ds(0)-dx_ds(2)*dx_drds(0);
-              dx_drds_times_dx_ds(2) = dx_drds(0)*dx_ds(1)-dx_ds(0)*dx_drds(1);
+            dx_drds_times_dx_ds(0) = dx_drds(1)*dx_ds(2)-dx_ds(1)*dx_drds(2);
+            dx_drds_times_dx_ds(1) = dx_drds(2)*dx_ds(0)-dx_ds(2)*dx_drds(0);
+            dx_drds_times_dx_ds(2) = dx_drds(0)*dx_ds(1)-dx_ds(0)*dx_drds(1);
 
-              dx_dr_times_dx_dsds(0) = dx_dr(1)*dx_dsds(2)-dx_dsds(1)*dx_dr(2);
-              dx_dr_times_dx_dsds(1) = dx_dr(2)*dx_dsds(0)-dx_dsds(2)*dx_dr(0);
-              dx_dr_times_dx_dsds(2) = dx_dr(0)*dx_dsds(1)-dx_dsds(0)*dx_dr(1);
+            dx_dr_times_dx_dsds(0) = dx_dr(1)*dx_dsds(2)-dx_dsds(1)*dx_dr(2);
+            dx_dr_times_dx_dsds(1) = dx_dr(2)*dx_dsds(0)-dx_dsds(2)*dx_dr(0);
+            dx_dr_times_dx_dsds(2) = dx_dr(0)*dx_dsds(1)-dx_dsds(0)*dx_dr(1);
 
-              dx_dr_times_dx_ds(0) = dx_dr(1)*dx_ds(2)-dx_ds(1)*dx_dr(2);
-              dx_dr_times_dx_ds(1) = dx_dr(2)*dx_ds(0)-dx_ds(2)*dx_dr(0);
-              dx_dr_times_dx_ds(2) = dx_dr(0)*dx_ds(1)-dx_ds(0)*dx_dr(1);
+            dx_dr_times_dx_ds(0) = dx_dr(1)*dx_ds(2)-dx_ds(1)*dx_dr(2);
+            dx_dr_times_dx_ds(1) = dx_dr(2)*dx_ds(0)-dx_ds(2)*dx_dr(0);
+            dx_dr_times_dx_ds(2) = dx_dr(0)*dx_ds(1)-dx_ds(0)*dx_dr(1);
 
-              // define sysmat
-              for(int i=0; i< 3; i++)
-              {
-            	  // d/dr
-            	  sysmat(i,0) = dx_dr(i) - sol(2) * (dx_drdr_times_dx_ds(i) + dx_dr_times_dx_drds(i));
+            // define sysmat
+            for(int i=0; i< 3; i++)
+            {
+              // d/dr
+              sysmat(i,0) = dx_dr(i) - sol(2) * (dx_drdr_times_dx_ds(i) + dx_dr_times_dx_drds(i));
 
-            	  // d/ds
-            	  sysmat(i,1) = dx_ds(i) - sol(2) * (dx_drds_times_dx_ds(i) + dx_dr_times_dx_dsds(i));
+              // d/ds
+              sysmat(i,1) = dx_ds(i) - sol(2) * (dx_drds_times_dx_ds(i) + dx_dr_times_dx_dsds(i));
 
-            	  // d/d(dist)
-            	  sysmat(i,2) = - dx_dr_times_dx_ds(i);
+              // d/d(dist)
+              sysmat(i,2) = - dx_dr_times_dx_ds(i);
 
 
-            	  // residual
-            	  residuum(i) = x(i) - sol(2) * dx_dr_times_dx_ds(i) - x_gp_lin(i);
+              // residual
+              residuum(i) = x(i) - sol(2) * dx_dr_times_dx_ds(i) - x_gp_lin(i);
 
-              }
+            }
 
-//              // scale the system
-//              LINALG::Matrix<3,1> Diag(true);
-//
-//              for(int r=0; r< 3; r++)
-//              {
-//            	  double max_abs_row = 0.0;
-//            	  for(int c=0; c< 3; c++)
-//            	  {
-//            		  max_abs_row = max(max_abs_row, fabs(sysmat(r,c)));
-//            	  }
-//            	  Diag(r) = max_abs_row;
-//              }
-//
-//              for(int r=0; r< 3; r++)
-//              {
-//            	  for(int c=0; c< 3; c++)
-//            		  sysmat(r,c)/=Diag(r);
-//            	      residuum(r)/=Diag(r);
-//              }
 
-              sysmat.Invert();
 
-              //solve Newton iteration
-              incr.Clear();
-              incr.Multiply(-1.0,sysmat,residuum); // incr = -Systemmatrix^-1 * residuum
+            sysmat.Invert();
 
-              // update solution
-              sol.Update(1.0, incr, 1.0);
+            //solve Newton iteration
+            incr.Clear();
+            incr.Multiply(-1.0,sysmat,residuum); // incr = -Systemmatrix^-1 * residuum
 
-              if ( (incr.Norm2()/sol.Norm2() < relTolIncr) && (residuum.Norm2()/sol.Norm2() < relTolRes) )
-              {
-            	  converged = true;
-              }
+            // update solution
+            sol.Update(1.0, incr, 1.0);
 
-              // check ° relative criterion for local coordinates (between [-1,1]^2)
-              //       ° absolute criterion for distance (-> 0)
-              //       ° relative criterion for whole residuum
-              if(    sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
-                  && incr(2) < absTOLdist
-                  && residuum.Norm2()/sol.Norm2() < relTolRes)
-              {
-            	  converged = true;
-              }
+            if ( (incr.Norm2()/sol.Norm2() < relTolIncr) && (residuum.Norm2()/sol.Norm2() < relTolRes) )
+            {
+              converged = true;
+            }
+
+            // check ° relative criterion for local coordinates (between [-1,1]^2)
+            //       ° absolute criterion for distance (-> 0)
+            //       ° relative criterion for whole residuum
+            if(    sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
+                && incr(2) < absTOLdist
+                && residuum.Norm2()/sol.Norm2() < relTolRes)
+            {
+              converged = true;
+            }
 
           }
 
-//          if(converged) cout << "converged " << endl;
           if(!converged)
           {
-        	  cout.precision(15);
+            cout.precision(15);
 
-              cout << "increment criterion loc coord "
-                   << sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1))
-                   << " TOL: " << relTolIncr
-                   << endl;
-              cout << "absolute criterion for distance "
-                   << incr(2)
-                   << " TOL: " << absTOLdist
-                   << endl;
-              cout << "relative criterion whole residuum "
-                   << residuum.Norm2()/sol.Norm2()
-                   << relTolRes
-                   << endl;
+            cout << "increment criterion loc coord "
+                << sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1))
+                << " TOL: " << relTolIncr
+                << endl;
+            cout << "absolute criterion for distance "
+                << incr(2)
+                << " TOL: " << absTOLdist
+                << endl;
+            cout << "relative criterion whole residuum "
+                << residuum.Norm2()/sol.Norm2()
+                << relTolRes
+                << endl;
 
 
-        	  cout << "sysmat.Invert" << sysmat << endl;
-        	  cout << "sol-norm " << sol.Norm2() << endl;
-        	  cout << "sol " << sol << endl;
-        	  cout << "x_gp_lin" << x_gp_lin << endl;
-        	  cout << "side " << xyze_ << endl;
+            cout << "sysmat.Invert" << sysmat << endl;
+            cout << "sol-norm " << sol.Norm2() << endl;
+            cout << "sol " << sol << endl;
+            cout << "x_gp_lin" << x_gp_lin << endl;
+            cout << "side " << xyze_ << endl;
 
-        	  dserror( "newton scheme in ProjectOnSide not converged! " );
+            dserror( "newton scheme in ProjectOnSide not converged! " );
           }
 
 
 
           // evaluate shape function at solution
           DRT::UTILS::shape_function_2D( side_funct_, sol( 0 ), sol( 1 ), side_distype );
-//          DRT::UTILS::shape_function_2D( side_deriv_, sol( 0 ), sol( 1 ), side_distype );
 
           // get projected gauss point
           x_side.Multiply(xyze_, side_funct_);
@@ -8676,6 +8667,33 @@ namespace DRT
 
         }
 
+        virtual void buildInterfaceForce( const Teuchos::RCP<Epetra_Vector> &   iforcecol,
+                                          const DRT::Discretization &           cutdis,
+                                          const vector<int>&                    lm,
+                                          LINALG::Matrix<nsd_,1> &              traction,
+                                          double &                              fac )
+        {
+
+          if(numdof != nsd_) dserror(" pay attention in buildInterfaceForce: numdof != nsd_");
+
+          const Epetra_Map* dofcolmap = cutdis.DofColMap();
+
+          if((int) lm.size() != side_nen_*numdof) dserror("mismatch between number of side nodes and lm.size()");
+
+          for (int inode = 0; inode < side_nen_; ++inode)
+          {
+
+            for(int idim=0; idim<3; ++idim )
+            {
+              int gdof = lm[idim+(inode*numdof)];
+
+              // f^i = ( N^i, t ) = ( N^i, (-pI+2mu*eps(u))*n )
+              (*iforcecol)[dofcolmap->LID(gdof)] += side_funct_(inode) * traction(idim) * fac;
+            }
+
+          }
+
+        }
 
         virtual void buildCouplingMatrices(LINALG::Matrix<nsd_,1>        & normal,
                                             const double                fac,
@@ -8765,15 +8783,12 @@ namespace DRT
           LINALG::BlockMatrix<LINALG::Matrix<side_nen_,side_nen_>,3,3> BCuiui;   //Ki_iK*G_sui
           LINALG::BlockMatrix<LINALG::Matrix<side_nen_, 1>,3,1>       extrhsi;  //G_uis*Inv(K_ss)*rhs
 
-          // no couplings with pressure interface pi
 
-
-
-           BCuui  .Multiply( K_iK, BK_sui_ );
-           BKi_iK  .Multiply( BK_uis_, BinvK_ss );
-           BCuiu  .Multiply( BKi_iK, K_su );
-           BCuiui .Multiply( BKi_iK, BK_sui_ );
-           extrhsi.Multiply( BKi_iK, rhs );
+          BCuui  .Multiply( K_iK, BK_sui_ );
+          BKi_iK  .Multiply( BK_uis_, BinvK_ss );
+          BCuiu  .Multiply( BKi_iK, K_su );
+          BCuiui .Multiply( BKi_iK, BK_sui_ );
+          extrhsi.Multiply( BKi_iK, rhs );
 
 
 
@@ -8790,7 +8805,6 @@ namespace DRT
                    int c = ( 4 )*ic + icb;
                    for ( int ir=0; ir<side_nen_; ++ir )
                    {
-//                     int r = ( 3 )*ir + irb;
                      int r = ( numdof )*ir + irb;
                      C_uiu_( r, c ) -= local_BCuiu( ir, ic );
                    }
@@ -8827,13 +8841,11 @@ namespace DRT
                  LINALG::Matrix<nen_,side_nen_> & local_BCuui = *BCuui( irb, icb );
                  for ( int ic=0; ic<side_nen_; ++ic )
                  {
-//                   int c = ( 3 )*ic + icb;
                    int c = ( numdof )*ic + icb;
                    for ( int ir=0; ir<nen_; ++ir )
                    {
                      int r = ( 4 )*ir + irb;
                      C_uui_( r, c ) -= local_BCuui( ir, ic );
-//                     C_uui_( r, (4)*ic +3); // pressure component
                    }
                  }
                }
@@ -8867,10 +8879,8 @@ namespace DRT
                LINALG::Matrix<side_nen_,1> & local_extrhsi = *extrhsi( irb, 0 );
                for ( int ir=0; ir<side_nen_; ++ir )
                {
-//                 unsigned r = 3*ir + irb;
                  unsigned r = numdof*ir + irb;
                  rhC_ui_( r, 0 ) -= local_extrhsi( ir, 0 );
-//                 rhC_ui_( 4*ir+3,0) = 0.0; // pressure component
                }
              }
            }
@@ -8896,7 +8906,6 @@ namespace DRT
                   LINALG::Matrix<nen_,side_nen_> & local_BK_sui = *BK_sui_( irb, icb );
                   for ( int ic=0; ic<side_nen_; ++ic )
                   {
-//                    int c = ( 3 )*ic + icb;
                     int c = ( numdof )*ic + icb;
                     for ( int ir=0; ir<nen_; ++ir )
                     {
@@ -8921,7 +8930,6 @@ namespace DRT
                     int c = ( 6 )*ic + icb;
                     for ( int ir=0; ir<side_nen_; ++ir )
                     {
-//                      int r = ( 3 )*ir + irb;
                       int r = ( numdof )*ir + irb;
                       K_uis_( r, c ) = local_BK_uis( ir, ic );
                     }
@@ -9534,6 +9542,7 @@ namespace DRT
 
          LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
          side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
+
          // + gamma*mu/h_K (v2, u2))
          for(int ir=0; ir<side_nen_; ir++)
          {
@@ -9632,18 +9641,14 @@ namespace DRT
         LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,6,1>     rhsi_;
         LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,6> BK_uis_;
 
-//        LINALG::Matrix<3*side_nen,4*nen>       C_uiu_;
-        LINALG::Matrix<numdof*side_nen_,4*nen_>       C_uiu_; // row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
-//        LINALG::Matrix<4*nen,3*side_nen>       C_uui_;
-        LINALG::Matrix<4*nen_,numdof*side_nen_>       C_uui_; // includes ui(,pi)
-//        LINALG::Matrix<3*side_nen,1>           rhC_ui_;
-        LINALG::Matrix<numdof*side_nen_,1>                 rhC_ui_; // includes (ui,pi)
-        LINALG::Matrix<numdof*side_nen_,numdof*side_nen_>  C_uiui_; // includes (ui,pi) only for Nitsche coupling
+        LINALG::Matrix<numdof*side_nen_,4*nen_>            C_uiu_;    // row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
+        LINALG::Matrix<4*nen_,numdof*side_nen_>            C_uui_;    // includes ui(,pi)
+        LINALG::Matrix<numdof*side_nen_,1>                 rhC_ui_;   // includes (ui,pi)
+        LINALG::Matrix<numdof*side_nen_,numdof*side_nen_>  C_uiui_;   // includes (ui,pi) only for Nitsche coupling
         LINALG::Matrix<side_nen_,1>                        side_funct_;
         LINALG::Matrix<nsd_-1,side_nen_>                   side_deriv_;
         LINALG::Matrix<6*nen_,numdof*side_nen_>            K_sui_;
-//        LINALG::Matrix<3*side_nen,6*nen>       K_uis_;
-        LINALG::Matrix<numdof*side_nen_,6*nen_>            K_uis_; // G_uis
+        LINALG::Matrix<numdof*side_nen_,6*nen_>            K_uis_;    // G_uis
         LINALG::Matrix<3,side_nen_>                        eivel_;
         LINALG::Matrix<side_nen_,1>                        eipres_;
         LINALG::Matrix<3,side_nen_>                        eidisp_;
@@ -9701,7 +9706,6 @@ namespace DRT
           default:
             dserror( "unsupported side shape %d", side->Shape() );
           }
-//          return Teuchos::rcp(si);
         }
         else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
         {
@@ -9742,7 +9746,6 @@ namespace DRT
           default:
             dserror( "unsupported side shape %d", side->Shape() );
           }
-//          return Teuchos::rcp(si);
         }
         else dserror("unknown boundary element Type!");
 
@@ -10050,12 +10053,11 @@ namespace DRT
         DRT::UTILS::shape_function_3D_deriv1( emb_deriv_, rst_emb( 0 ), rst_emb( 1 ), rst_emb( 2 ), emb_distype );
 
 
-
         LINALG::Matrix<nsd_,nsd_> emb_xjm(true);
         LINALG::Matrix<nsd_,nsd_> emb_xji(true);
 
         emb_xjm.MultiplyNT(emb_deriv_,emb_xyze_);
-        //double det = emb_xji.Invert(emb_xjm);
+        emb_xji.Invert(emb_xjm);
 
         // compute global first derivates
         emb_derxy_.Multiply(emb_xji,emb_deriv_);
@@ -10063,10 +10065,6 @@ namespace DRT
         // get velocity derivatives at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         emb_vderxy_.MultiplyNT(emb_vel_,emb_derxy_);
-
-//        cout << "emb_deriv_" << emb_deriv_ << endl;
-//        cout << "emb_derxy" << emb_derxy_ << endl;
-//        cout << "emb_vderxy_" << emb_vderxy_ << endl;
 
 
       }
@@ -11337,10 +11335,10 @@ namespace DRT
       }
 
 
-      LINALG::Matrix<4*emb_nen_,4*nen_>      C_uiu_; // row: sidenode1:u1,u2,u3,p, sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
-      LINALG::Matrix<4*nen_,4*emb_nen_>      C_uui_; // includes (ui,pi)
-      LINALG::Matrix<4*emb_nen_,1>           rhC_ui_; // includes (ui,pi)
-      LINALG::Matrix<4*emb_nen_,4*emb_nen_>  C_uiui_; // includes (ui,pi) only for Nitsche coupling
+      LINALG::Matrix<4*emb_nen_ ,4*nen_>      C_uiu_;    // row: sidenode1:u1,u2,u3,p, sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
+      LINALG::Matrix<4*nen_,4*emb_nen_>      C_uui_;    // includes (ui,pi)
+      LINALG::Matrix<4*emb_nen_,1>           rhC_ui_;   // includes (ui,pi)
+      LINALG::Matrix<4*emb_nen_,4*emb_nen_>  C_uiui_;   // includes (ui,pi) only for Nitsche coupling
       LINALG::Matrix<emb_nen_,1>             emb_funct_;
       LINALG::Matrix<nsd_,emb_nen_>          emb_deriv_;
       LINALG::Matrix<nsd_,nsd_>              emb_vderxy_;
@@ -11364,8 +11362,6 @@ namespace DRT
                                                                        Epetra_SerialDenseMatrix &  emb_xyze
                                                                        )
     {
-
-
 
       EmbCoupling * emb = NULL;
       switch ( emb_ele->Shape() )
@@ -11406,17 +11402,7 @@ namespace DRT
       return Teuchos::rcp(emb);
     }
 
-
     } // end namespace Xfluid
-//  }
-//}
-
-
-
-
-
-
-
 
 
 
@@ -11439,6 +11425,10 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   Epetra_SerialDenseMatrix&  Cuiui
   )
 {
+
+  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
+
+
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
@@ -11736,6 +11726,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
 
 
+
     // loop gausspoints
     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
           i!=cutintpoints.end();
@@ -11786,8 +11777,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         default:
           throw std::runtime_error( "unsupported integration cell type" );
         }
-
-  //      std::cout<<normal(0,0)<<"\t"<<normal<<(1,0)<<"\t"<<normal(2,0)<<"\n";
 
 
         const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
@@ -11886,6 +11875,57 @@ if(!fluidfluidcoupling)
         K_us( Velz, Sigmazy )->Update( -fac*normal(1), bK_ss, 1.0 );
         K_us( Velz, Sigmazz )->Update( -fac*normal(2), bK_ss, 1.0 );
 
+        // calculate interface forces
+        if(!fluidfluidcoupling)
+        {
+          // evaluate the derivatives of shape functions
+          DRT::UTILS::shape_function_deriv1<distype>(rst,deriv_);
+          xjm_.MultiplyNT(deriv_,xyze_);
+          det_ = xji_.Invert(xjm_);
+
+          // compute global first derivates
+          derxy_.Multiply(xji_,deriv_);
+
+
+          // get velocity derivatives at integration point
+          // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+          vderxy_.MultiplyNT(evelaf,derxy_);
+
+          // get pressure at integration point
+          // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+          double press = funct_.Dot(epreaf);
+
+
+          // compute the stresses at the current Gaussian point for computing the interface force
+          LINALG::Matrix<nsd_,nsd_> eps(true);
+          for(int i=0; i<nsd_; i++)
+          {
+            for(int j=0; j<nsd_; j++)
+            {
+              eps(i,j) = 0.5 * (vderxy_(i,j) + vderxy_(j,i));
+            }
+          }
+
+
+          // t = ( -pI + 2mu eps(u) )*n^f
+          LINALG::Matrix<nsd_,1> traction (true);
+          traction.Multiply(eps, normal);
+          traction.Scale(2.0*visceff_);
+
+          // add the pressure part
+          traction.Update( -press, normal, 1.0);
+
+          // we need normal vector on fluid
+          traction.Scale(-1.0);
+
+          double surf_fac = drs*iquad.Weight();
+
+          si->buildInterfaceForce(iforcecol, cutdis, cutla[0].lm_, traction, surf_fac );
+
+        }
+
+
+
 #if 0
               /*                      \
              |  (virt tau) * n^f , Dui |
@@ -11954,6 +11994,18 @@ if(!fluidfluidcoupling)
 //         assembler.template Vector<Vely>(shp.d0, fac*disctau_times_nf(1));
 //         assembler.template Vector<Velz>(shp.d0, fac*disctau_times_nf(2));
 
+        // integrate the force boundary
+
+        // here the interface force is integrated
+        // this is done using test
+        // shape functions of the boundary mesh
+        // hence, we can't use the local assembler here
+//        for (size_t inode = 0; inode < numnode_boundary; ++inode)
+//        {
+//          force_boundary(0,inode) += funct_boundary(inode) * -(disctau_times_nf(0) * fac);
+//          force_boundary(1,inode) += funct_boundary(inode) * -(disctau_times_nf(1) * fac);
+//          force_boundary(2,inode) += funct_boundary(inode) * -(disctau_times_nf(2) * fac);
+//        }
 
 #if 0
               /*                  \
@@ -12397,6 +12449,10 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
   Epetra_SerialDenseMatrix&  Cuiui
   )
 {
+
+  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
+
+
   // volume integral, just for the partial volume
   double meas_partial_volume = 0.0;
 
@@ -12404,14 +12460,14 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
-      // evaluate shape functions and derivatives at integration point
-      EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
-      //----------------------------------------------------------------------
-      // set time-integration factors for left- and right-hand side
-      // (two right-hand-side factors: general and for residuals)
-      //----------------------------------------------------------------------
-      meas_partial_volume += fac_;
+    //----------------------------------------------------------------------
+    // set time-integration factors for left- and right-hand side
+    // (two right-hand-side factors: general and for residuals)
+    //----------------------------------------------------------------------
+    meas_partial_volume += fac_;
   }
 
 
@@ -12427,184 +12483,177 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
   ExtractValuesFromGlobalVector(dis, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
 
-  // numbering for velocity components and pressure
-  //const unsigned Velx = 0;
-  //const unsigned Vely = 1;
-  //const unsigned Velz = 2;
-  //const unsigned Pres = 3;
-
-
   // integrate surface
 
-   DRT::Element::LocationArray cutla( 1 );
+  DRT::Element::LocationArray cutla( 1 );
 
-   LINALG::Matrix<3,1> normal;
-   LINALG::Matrix<3,1> x_side;
+  LINALG::Matrix<3,1> normal;
+  LINALG::Matrix<3,1> x_side;
 
-   bool fluidfluidcoupling = false;
+  bool fluidfluidcoupling = false;
 
-   std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > > side_impl;
-   Teuchos::RCP<XFLUID::SideInterface<distype> > si;
+  std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > > side_impl;
+  Teuchos::RCP<XFLUID::SideInterface<distype> > si;
 
-   // find all the intersecting elements of actele
-   std::set<int> begids;
-   for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-        bc!=bcells.end(); ++bc )
+  // find all the intersecting elements of actele
+  std::set<int> begids;
+  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+      bc!=bcells.end(); ++bc )
+  {
+    int sid = bc->first;
+    begids.insert(sid);
+  }
+
+  // map of boundary element gids, to coupling matrices Gsui and Guis (Cuiui = - Guis*Kss^-1*Gsui)
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+
+  // lm vector of all intersecting elements (boundary elements which intersect the current element)
+  std::vector<int> patchelementslmv;
+  std::vector<int> patchelementslmowner;
+  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+  {
+    DRT::Element * side = cutdis.gElement(*bgid); // for each boundary element there is one corresponding side
+    vector<int> patchlm;
+    vector<int> patchlmowner;
+    vector<int> patchlmstride;
+    side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
+
+    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+
+    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+    // get coupling matrices for the current side (boundary element)
+    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+
+    Cuiui_matrices.resize(1);
+    Cuiui_matrices[0].Reshape(patchlm.size(),patchlm.size()); //Cuiui (coupling between background elements sigma and current side!)
+  }
+
+
+   // map of side-element id and Guass points
+   for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+       i!=bintpoints.end();
+       ++i )
    {
-     int sid = bc->first;
-     begids.insert(sid);
-   }
+     int sid = i->first;
+     const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
 
-   // map of boundary element gids, to coupling matrices Gsui and Guis (Cuiui = - Guis*Kss^-1*Gsui)
-   std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+     std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+     if ( j==bcells.end() )
+       dserror( "missing boundary cell" );
 
-   // lm vector of all intersecting elements (boundary elements which intersect the current element)
-   std::vector<int> patchelementslmv;
-   std::vector<int> patchelementslmowner;
-   for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
-   {
-     DRT::Element * side = cutdis.gElement(*bgid); // for each boundary element there is one corresponding side
-     vector<int> patchlm;
-     vector<int> patchlmowner;
-     vector<int> patchlmstride;
-     side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
+     const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+     if ( bcs.size()!=cutintpoints.size() )
+       dserror( "boundary cell integration rules mismatch" );
 
-     patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
-     patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+     DRT::Element * side = cutdis.gElement( sid );
+     side->LocationVector(cutdis,cutla,false);
 
-     patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
-     patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+     const int numnodes = side->NumNode();
+     DRT::Node ** nodes = side->Nodes();
+     Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+     for ( int i=0; i<numnodes; ++i )
+     {
+       const double * x = nodes[i]->X();
+       std::copy( x, x+3, &side_xyze( 0, i ) );
+     }
 
-     // get coupling matrices for the current side (boundary element)
-     std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+     std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
 
-     Cuiui_matrices.resize(1);
-     Cuiui_matrices[0].Reshape(patchlm.size(),patchlm.size()); //Cuiui (coupling between background elements sigma and current side!)
-   }
+     std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
 
-
-	  // map of side-element id and Guass points
-	  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
-	        i!=bintpoints.end();
-	        ++i )
-	  {
-	    int sid = i->first;
-	    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
-
-	    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
-	    if ( j==bcells.end() )
-	      dserror( "missing boundary cell" );
-
-	    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
-	    if ( bcs.size()!=cutintpoints.size() )
-	      dserror( "boundary cell integration rules mismatch" );
-
-	    DRT::Element * side = cutdis.gElement( sid );
-	    side->LocationVector(cutdis,cutla,false);
-
-	    const int numnodes = side->NumNode();
-	    DRT::Node ** nodes = side->Nodes();
-	    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
-	    for ( int i=0; i<numnodes; ++i )
-	    {
-	      const double * x = nodes[i]->X();
-	      std::copy( x, x+3, &side_xyze( 0, i ) );
-	    }
-
-	    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
-
-	    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
-
-	    if ( side_matrices.size()==3 )
-	      fluidfluidcoupling = true;
+     if ( side_matrices.size()==3 )
+       fluidfluidcoupling = true;
 
 
-	    if(fluidfluidcoupling)
-	    {
-	    	// coupling matrices between background element and one! side
-	        Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
-	        Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
-	        Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+     if(fluidfluidcoupling)
+     {
+       // coupling matrices between background element and one! side
+       Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+       Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+       Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
 
-	        // coupling matrices between one side and itself via the element Kss
-	        std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
-	        std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
-	        Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
+       // coupling matrices between one side and itself via the element Kss
+       std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+       std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+       Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
 
-	        si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
-	    }
-	    else
-	    {
-	        si = XFLUID::SideInterface<distype>::Impl(side,side_xyze);
-	    }
+       si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+     }
+     else
+     {
+       si = XFLUID::SideInterface<distype>::Impl(side,side_xyze);
+     }
 
-	    side_impl[sid] = si;
+     side_impl[sid] = si;
 
-	    // get velocity at integration point of boundary dis
+     // get velocity at integration point of boundary dis
 
-	    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
-	    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+     si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+     si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
 
 
-	    double meas_surface = 0.0;
+     double meas_surface = 0.0;
 
-	    // pre-evaluate for element-size
-	    // loop gausspoints
-	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-	          i!=cutintpoints.end();
-	          ++i )
-	    {
-	      const DRT::UTILS::GaussIntegration & gi = *i;
-	      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+     // pre-evaluate for element-size
+     // loop gausspoints
+     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+         i!=cutintpoints.end();
+         ++i )
+     {
+       const DRT::UTILS::GaussIntegration & gi = *i;
+       GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
 
-	      //gi.Print();
+       //gi.Print();
 
-	      // TODO: do this transformation not twice!!!
-	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
-	      {
+       // TODO: do this transformation not twice!!!
+       for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+       {
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-        double drs = 0;
+         double drs = 0;
 
-        si->Evaluate(eta,x_side,normal,drs);
+         si->Evaluate(eta,x_side,normal,drs);
 
-        const double fac = drs*iquad.Weight();
+         const double fac = drs*iquad.Weight();
 
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
-        pos.Compute();
-        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+         // find element local position of gauss point at interface
+         GEO::CUT::Position<distype> pos( xyze_, x_side );
+         pos.Compute();
+         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
 #else
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+         const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
-        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+         double drs = 0; // transformation factor between reference cell and linearized boundary cell
 
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-        normal.Clear();
+         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+         normal.Clear();
 
-        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-        switch ( bc->Shape() )
-        {
-        case DRT::Element::tri3:
-        {
-            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        case DRT::Element::quad4:
-        {
-            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        default:
-          throw std::runtime_error( "unsupported integration cell type" );
-        }
+         // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+         switch ( bc->Shape() )
+         {
+         case DRT::Element::tri3:
+         {
+           bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+           break;
+         }
+         case DRT::Element::quad4:
+         {
+           bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+           break;
+         }
+         default:
+           throw std::runtime_error( "unsupported integration cell type" );
+         }
 #endif
 
-            meas_surface += drs*iquad.Weight();
-	      }
-	    }
+         meas_surface += drs*iquad.Weight();
+       }
+     }
 
 
 
@@ -12615,7 +12664,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
 
       // define stabilization parameters and mortaring weights
-
 
       double kappa1 = 1.0;      // Xfluid-sided mortaring
 
@@ -12629,18 +12677,18 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
       double kappa2 = 1.0-kappa1;
 
-	    // loop gausspoints
-	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-	          i!=cutintpoints.end();
-	          ++i )
-	    {
-	      const DRT::UTILS::GaussIntegration & gi = *i;
-	      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+      // loop gausspoints
+      for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+            i!=cutintpoints.end();
+            ++i )
+      {
+        const DRT::UTILS::GaussIntegration & gi = *i;
+        GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
 
-	      //gi.Print();
+        //gi.Print();
 
-	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
-	      {
+        for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+        {
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
@@ -12696,35 +12744,34 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 #endif
 
 
-	        // evaluate shape functions
-	        DRT::UTILS::shape_function<distype>( rst, funct_ );
+        // evaluate shape functions
+        DRT::UTILS::shape_function<distype>( rst, funct_ );
 
-	        // evaluate shape functions and derivatives at integration point
-//	        EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+        // evaluate shape functions and derivatives at integration point
 
-	        DRT::UTILS::shape_function_deriv1<distype>(rst,deriv_);
-	        xjm_.MultiplyNT(deriv_,xyze_);
-	        det_ = xji_.Invert(xjm_);
-
-
-	        // compute global first derivates
-	        derxy_.Multiply(xji_,deriv_);
+        DRT::UTILS::shape_function_deriv1<distype>(rst,deriv_);
+        xjm_.MultiplyNT(deriv_,xyze_);
+        det_ = xji_.Invert(xjm_);
 
 
-	        // get velocity at integration point
-	        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-	        velint_.Multiply(evelaf,funct_);
+        // compute global first derivates
+        derxy_.Multiply(xji_,deriv_);
 
 
-//	        get velocity derivatives at integration point
-//	        (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-	        vderxy_.MultiplyNT(evelaf,derxy_);
+        // get velocity at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        velint_.Multiply(evelaf,funct_);
 
-//	        get pressure at integration point
-//	        (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-	        double press = funct_.Dot(epreaf);
 
-	        const double timefacfac = f3Parameter_->timefac_ * fac;
+        // get velocity derivatives at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        vderxy_.MultiplyNT(evelaf,derxy_);
+
+        // get pressure at integration point
+        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        double press = funct_.Dot(epreaf);
+
+        const double timefacfac = f3Parameter_->timefac_ * fac;
 
 
 
@@ -12789,12 +12836,49 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
                                           );
       }
 
+      // calculate interface forces
+      if(!fluidfluidcoupling)
+      {
+
+
+        // get pressure at integration point
+        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        double press = funct_.Dot(epreaf);
+
+
+        // compute the stresses at the current Gaussian point for computing the interface force
+        LINALG::Matrix<nsd_,nsd_> eps(true);
+        for(int i=0; i<nsd_; i++)
+        {
+          for(int j=0; j<nsd_; j++)
+          {
+            eps(i,j) = 0.5 * (vderxy_(i,j) + vderxy_(j,i));
+          }
+        }
+
+
+        // t = ( -pI + 2mu eps(u) )*n^f
+        LINALG::Matrix<nsd_,1> traction (true);
+        traction.Multiply(eps, normal);
+        traction.Scale(2.0*visceff_);
+
+        // add the pressure part
+        traction.Update( -press, normal, 1.0);
+
+        // we need normal vector on fluid
+        traction.Scale(-1.0);
+
+        double surf_fac = drs*iquad.Weight();
+
+        si->buildInterfaceForce(iforcecol, cutdis, cutla[0].lm_, traction, surf_fac );
+
+      }
 
 
 
-	      }
-	    }
-	  }
+      }
+    }
+  }
 
 
 
@@ -13422,7 +13506,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
                 velint_,                 // bg u^n
                 ivelint_WDBC_JUMP         // Dirichlet velocity vector or prescribed jump vector
             );
-
 
 
           }

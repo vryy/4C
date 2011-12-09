@@ -484,6 +484,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
+  src/drt_adapter/adapter_xfluid2_impl.cpp
   src/drt_adapter/adapter_fluid_fluid_impl.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
@@ -2365,9 +2366,13 @@ baci_test(xfluid_channel_constWDBC_straightCut 1 "")
 baci_test(xfluid_channel_constWDBC_straightCut_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_instat 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_Nitsche 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
+baci_test(xfsi_fluid_pusher_instat_OST_1_Nitsche 1 "")
+baci_test(xfsi_fluid_pusher_instat_OST_1 1 "")
+baci_test(xfsi_fluid_pusher_stat 1 "")
 baci_test(one_d_3_artery_network 1 9999)
 baci_test(trachea 2 100)
 baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 1 599)

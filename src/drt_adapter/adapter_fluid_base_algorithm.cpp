@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_impl.H"
 #include "adapter_fluid_projection.H"
 #include "adapter_xfluid_impl.H"
+#include "adapter_xfluid2_impl.H"
 #include "adapter_fluid_genalpha.H"
 #include "adapter_fluid_combust.H"
 #include "adapter_fluid_lung.H"
@@ -106,6 +107,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     if (genprob.probtyp == prb_fsi_xfem or
         genprob.probtyp == prb_fluid_xfem or
+        genprob.probtyp == prb_fluid_xfem2 or
         genprob.probtyp == prb_combust)
     {
       actdis->FillComplete(false,false,false);
@@ -123,6 +125,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     rcp(new IO::DiscretizationWriter(actdis));
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
+      genprob.probtyp != prb_fluid_xfem2 and
       genprob.probtyp != prb_combust and
       genprob.probtyp != prb_fluid_fluid and
       genprob.probtyp != prb_fluid_fluid_ale and
@@ -197,6 +200,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // compute null space information
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
+      genprob.probtyp != prb_fluid_xfem2 and
       genprob.probtyp != prb_combust)
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
@@ -374,19 +378,59 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ----------------------------------------------- XFEM related stuff
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+    // Axel's unused input parameters
     fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
     fluidtimeparams->sublist("XFEM").set<bool>("INCOMP_PROJECTION", DRT::INPUT::IntegralValue<int>(xdyn,"INCOMP_PROJECTION")==1 );
     fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", DRT::INPUT::IntegralValue<int>(xdyn,"CONDEST")==1 );
     fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
+    // interface coupling method
     fluidtimeparams->sublist("XFEM").set<int>("EMBEDDED_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
+
+    fluidtimeparams->sublist("XFEM").set<int>("XFLUID_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xdyn, "XFLUID_BOUNDARY"));
+
+    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_VEL_INITIAL", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceInitVel>(xdyn, "INTERFACE_VEL_INITIAL"));
+    fluidtimeparams->sublist("XFEM").set<int>("VEL_INIT_FUNCT_NO", xdyn.get<int>("VEL_INIT_FUNCT_NO"));
+    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_VEL", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(xdyn, "INTERFACE_VEL"));
+    fluidtimeparams->sublist("XFEM").set<int>("VEL_FUNCT_NO", xdyn.get<int>("VEL_FUNCT_NO"));
+
+    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_DISP", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(xdyn, "INTERFACE_DISP"));
+    fluidtimeparams->sublist("XFEM").set<int>("DISP_FUNCT_NO", xdyn.get<int>("DISP_FUNCT_NO"));
+    fluidtimeparams->sublist("XFEM").set<int>("DISP_CURVE_NO", xdyn.get<int>("DISP_CURVE_NO"));
+
+
     fluidtimeparams->sublist("XFEM").set<int>("COUPLING_STRATEGY", DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(xdyn, "COUPLING_STRATEGY"));
-    fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
     fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab", xdyn.get<double>("Nitsche_stab"));
     fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab_conv", xdyn.get<double>("Nitsche_stab_conv"));
+    fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
     fluidtimeparams->sublist("XFEM").set<string>("GAUSSPOINTSBY", xdyn.get<string>("GAUSSPOINTSBY"));
+
+    // GMSH solution output
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT",        DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT"));
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT_SCREEN", DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT_SCREEN"));
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
+
     fluidtimeparams->sublist("XFEM").set<int>("MONOLITHIC_XFFSI_APPROACH", DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(xdyn,"MONOLITHIC_XFFSI_APPROACH"));
+
   }
+
+  if( genprob.probtyp == prb_fluid_xfem2 or
+      genprob.probtyp == prb_fsi_xfem      )
+  {
+    // check some input configurations
+    INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(fluidtimeparams->sublist("XFEM"), "XFLUID_BOUNDARY");
+    INPAR::XFEM::InterfaceVel   interf_vel       = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(fluidtimeparams->sublist("XFEM"),"INTERFACE_VEL");
+    INPAR::XFEM::InterfaceDisplacement interf_disp    = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(fluidtimeparams->sublist("XFEM"),"INTERFACE_DISP");
+
+    if(genprob.probtyp == prb_fsi_xfem and xfluid_mov_bound!= INPAR::XFEM::XFSIMovingBoundary) dserror("choose xfsi_moving_boundary!!! for prb_fsi_xfem");
+    if(genprob.probtyp == prb_fluid_xfem2 and xfluid_mov_bound== INPAR::XFEM::XFSIMovingBoundary) dserror("do not choose xfsi_moving_boundary!!! for prb_fluid_xfem2");
+    if(genprob.probtyp == prb_fsi_xfem and interf_disp != INPAR::XFEM::interface_disp_by_fsi) dserror("choose interface_disp_by_fsi for prb_fsi_xfem");
+    if(genprob.probtyp == prb_fluid_xfem2 and interf_disp == INPAR::XFEM::interface_disp_by_fsi ) dserror("do not choose interface_disp_by_fsi for prb_fluid_xfem2");
+    if(genprob.probtyp == prb_fsi_xfem and interf_vel != INPAR::XFEM::interface_vel_by_disp ) dserror("do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
+  }
+
 
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION FLUID contains parameters for the fluid field
@@ -458,7 +502,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi_xfem or
-      genprob.probtyp == prb_fluid_xfem)
+      genprob.probtyp == prb_fluid_xfem or
+      genprob.probtyp == prb_fluid_xfem2)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
@@ -546,12 +591,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
 
-    if (genprob.probtyp == prb_fsi_xfem or
+    if (/*genprob.probtyp == prb_fsi_xfem or*/
         genprob.probtyp == prb_fluid_xfem)
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
       fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, fluidtimeparams));
+    }
+    else if (genprob.probtyp == prb_fsi_xfem or
+             genprob.probtyp == prb_fluid_xfem2 )
+    {
+      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+
+      fluid_ = rcp( new ADAPTER::XFluid2Impl( actdis, soliddis, solver, fluidtimeparams, output));
     }
     else if (genprob.probtyp == prb_combust)
     {

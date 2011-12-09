@@ -125,7 +125,6 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
 //    m.FindNodalDOFSets( include_inner );
   }
 
-  std::cout<<"Gauss point generating method = "<<gausstype<<"\n";
 
   if(gausstype=="Tessellation")
   {

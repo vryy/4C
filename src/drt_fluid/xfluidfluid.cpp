@@ -1960,15 +1960,15 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   {
   case INPAR::XFEM::BoundaryTypeSigma:
     element_name = "BELE3"; // use 3 dofs, (REMARK: also BELE3_4 with Xfluid-Mortaring possible, but more expensive!)
-    std::cout << "XFEM interface method: BoundaryTypeSigma" << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
       dserror("choose Xfluid_Sided_Mortaring for BoundaryTypeSigma");
     break;
   case INPAR::XFEM::BoundaryTypeNitsche:
     element_name = "BELE3_4"; // use 4 dofs
-    std::cout << "XFEM interface method: BoundaryTypeNitsche" << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
     if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
-      std::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << endl;
+      std::cout << RED_LIGHT << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << END_COLOR << endl;
     break;
   case INPAR::XFEM::BoundaryTypeNeumann:
     dserror ("XFEM interface method: BoundaryTypeNeumann not available for Xfluidfluid");

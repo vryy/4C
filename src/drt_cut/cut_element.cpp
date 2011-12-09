@@ -188,7 +188,7 @@ void GEO::CUT::Element::FindNodePositions()
                 {
                     if ( (d > 0) and (fabs( d ) < fabs( smallest_dist )) ) // new smaller distance found for the same facet with another side
                     {
-#if DEBUG
+#ifdef DEBUG
                         if( pos == Point::inside) cout << "!!! position of node " << n->Id()  << " has changed from inside to outside" << endl;
 #endif
                         // set new position
@@ -199,7 +199,7 @@ void GEO::CUT::Element::FindNodePositions()
                     }
                     else if((d < 0) and (fabs( d ) < fabs( smallest_dist ))) //new smaller distance found for the same facet with another side
                     {
-#if DEBUG
+#ifdef DEBUG
                         if( pos == Point::outside) cout << "!!! position of node " << n->Id()  << " has changed from outside to inside" << endl;
 #endif
 

@@ -232,15 +232,28 @@ int main(
         cout << "Output XFEM Problem" << endl;
 
         string basename = problem.outname();
+
         cout << "  Structural Field" << endl;
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
+//        cout << "  Fluid Field" << endl;
+//        PostField* fluidfield = problem.get_discretization(1);
+//        XFluidEnsightWriter xfluidwriter(fluidfield, basename);
+//        xfluidwriter.WriteFiles();
+
         cout << "  Fluid Field" << endl;
         PostField* fluidfield = problem.get_discretization(1);
-        XFluidEnsightWriter xfluidwriter(fluidfield, basename);
-        xfluidwriter.WriteFiles();
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+
+
+        cout << "  Interface Field" << endl;
+        PostField* ifacefield = problem.get_discretization(2);
+        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+        ifacewriter.WriteFiles();
+
 
         // in the future, we might also write the interface
         // but at the moment, some procs might have no row elements
@@ -277,7 +290,15 @@ int main(
     }
     case prb_fluid_xfem2:
     {
+        cout << "Output XFluid2 Problem" << endl;
+
         string basename = problem.outname();
+
+//        cout << "  Structural Field" << endl;
+//        PostField* structfield = problem.get_discretization(0);
+//        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
+//        structwriter.WriteFiles();
+
 
         cout << "  Fluid Field" << endl;
         PostField* fluidfield = problem.get_discretization(0);
@@ -285,14 +306,8 @@ int main(
         fluidwriter.WriteFiles();
 
 
-        cout << "  Structural Field" << endl;
-        PostField* structfield = problem.get_discretization(1);
-        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
-
-
         cout << "  Interface Field" << endl;
-        PostField* ifacefield = problem.get_discretization(2);
+        PostField* ifacefield = problem.get_discretization(1);
         InterfaceEnsightWriter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
 
