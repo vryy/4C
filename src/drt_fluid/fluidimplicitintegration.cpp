@@ -70,9 +70,6 @@ Maintainer: Peter Gamnitzer
 // include Gmsh output
 //#define GMSHOUTPUT
 
-// include define flags for turbulence models under development
-#include "fluid_turbulence_defines.H"
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

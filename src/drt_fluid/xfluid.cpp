@@ -2492,6 +2492,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementTurbulenceParameter()
 {
+#ifdef D_FLUID3
   ParameterList eleparams;
 
   eleparams.set("action","set_turbulence_parameter");
@@ -2505,6 +2506,9 @@ void FLD::XFluid::SetElementTurbulenceParameter()
 
   // call standard loop over elements
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+#else
+  dserror("D_FLUID3 required");
+#endif
   return;
 }
 
