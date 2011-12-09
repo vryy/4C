@@ -2566,6 +2566,11 @@ void FLD::XFluidFluid::PrepareTimeStep()
                                                 timealgo_, dta_, theta_, alehist_);
 
   // -------------------------------------------------------------------
+  //  Set time parameter for element call
+  // -------------------------------------------------------------------
+  SetElementTimeParameter();
+
+  // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   {
@@ -2604,11 +2609,6 @@ void FLD::XFluidFluid::PrepareTimeStep()
     bgdis_->ClearState();
   }
 
-  // -------------------------------------------------------------------
-  //  Set time parameter for element call
-  // -------------------------------------------------------------------
-  SetElementTimeParameter();
-
   bgdis_->ClearState();
   bgdis_->SetState("velaf",state_->velnp_);
   bgdis_->SetState("hist",state_->hist_);
@@ -2618,8 +2618,8 @@ void FLD::XFluidFluid::PrepareTimeStep()
   embdis_->SetState("hist",alehist_);
 
   // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
-   LINALG::Export(*(alevelnp_),*(ivelnp_));
-   boundarydis_->SetState("ivelnp",ivelnp_);
+  LINALG::Export(*(alevelnp_),*(ivelnp_));
+  boundarydis_->SetState("ivelnp",ivelnp_);
 }
 
 // ----------------------------------------------------------------
@@ -4204,7 +4204,6 @@ void FLD::XFluidFluid::SetInitialFlowField(
     aleveln_->Update(1.0,*alevelnp_ ,0.0);
     LINALG::Export(*(alevelnp_),*(ivelnp_));
   }
-
 
   // special initial function: Beltrami flow (3-D)
   else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
