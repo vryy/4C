@@ -121,41 +121,13 @@ will also want to choose your favorite text editor. (See section~\ref{sec:Text-e
 \subsection{Configure}
 
 Before compiling a \texttt{Makefile} needs to be generated. There
-is a configuration script to do this. It needs two arguments: a platform
-specification and a parameter list. Both are available as files in
-the \texttt{config} subdirectory.
+is a configuration script to do this.
 
-\begin{itemize}
-\item There is a platform specification file for each supported platform.
-This includes different versions of Linux on desktop computers and
-the cluster configuration. On all platforms both serial and parallel
-versions are supported.
-\item in \texttt{config/defines} there is a list of all available parameters;
-uncomment those which are needed; mandatory/recommended are:
+The scripts \texttt{do-configure} and \texttt{do-configure-debug}
+generate the \texttt{Makefile} for either the release or the debug
+version of BACI. Run the required one in the console.
 
-\begin{itemize}
-\item insert the flag \texttt{CCADISCRET} to get the shiny new
-implementation
-\item select the element flags you need (this requires a slight amount
-of FE knowledge)
-\item include \texttt{TRILINOS\_PACKAGE} (the
-great huge libraries) and make sure to also include
-\texttt{AZTEC\_PACKAGE} (iterative solvers) and \texttt{UMFPACK}
-(direct solver).
-\end{itemize}
-\item save defines in a separate file, e.g. \texttt{config/defines.my}
-
-
-For example inside the \ccarat{} directory the call
-
-\begin{lyxcode}
-./configure~config/muench.fc6.ser~config/defines.my~
-\end{lyxcode}
-creates a \texttt{Makefile} by aid of \texttt{Makefile.in} for a serial
-executable;
-
-\item after reconfiguring use \texttt{make clean} before recompiling
-\end{itemize}
+After reconfiguring use \texttt{make clean} before recompiling
 
 \subsection{Compile}
 
@@ -165,8 +137,8 @@ too. See below.
 
 The required libraries and include files are found in \texttt{/lnm/lib/\$PLATFORM/\$VERSION}.
 \ccarat{} depends on the Trilinos libraries, a few external solver
-libraries and metis and hdf5. Additional the boost libraries will be
-used in the future. You should not need to worry about these libraries
+libraries and metis and hdf5. Additional the boost libraries are used.
+You should not need to worry about these libraries
 as long as to stick to the provided configurations.
 
 Please note that these are static libraries. \ccarat{} does not need
@@ -1393,15 +1365,21 @@ You will be prompted to enter the workspace directory. Leave it as recommended a
 
 \item Right-Click on BACI in the Project Explorer and Choose \texttt{Properties}
 
+\item On \texttt{C/C++ General} in "Paths and Symbols":
+	In the "Includes" as well as in the "Symbols" part click "Add":
+	Write some dummy name in the new window and click at "Add to all configurations" and "Add to all languages"
+
 \item On \texttt{C/C++ Build} De-Select "Generate Makefiles automatically"
 
 \item From the text field "Build directory", remove the part \texttt{/Debug}
 
-\item Open tab "Behaviour" and remove "all" from Auto build and Incremental build and press OK
+\item Open tab "Behaviour" and remove "all" from "Build(Incremental build)" and press "OK"
 
-\item Open subitem of \texttt{C/C++ Build} named \texttt{Discovery Options}
+\item Close Eclipse
 
-\item Under \texttt{Discover Makefile Options}, browse to your previously created Makefile and press Load to load all defines flag from your Makefile
+\item Change to console and reconfigure BACI (the "DEFINES" are loaded now into BACI)
+
+\item build BACI using "make"
 
 \item Restart eclipse!
 
