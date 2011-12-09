@@ -258,7 +258,7 @@ void StatMechTime::Integrate()
     //redo time step in case of bad random configuration
     /* We need "firstupdate" due to the fact that in case a time step is redone, we have to rebuild
      * the octree in beamcmanager. Otherwise, the query methods in statmechmanager_->SearchAndSetCrosslinkers()
-     * doe not work.*/
+     * does not work.*/
     bool firstupdate = true;
     do
     {
@@ -335,6 +335,7 @@ void StatMechTime::Integrate()
               if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
               {
                 cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
+                isconverged_=0;
                 break;
                 //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
               }
