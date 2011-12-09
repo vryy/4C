@@ -3,6 +3,7 @@
 #include "xfem_fluidwizard.H"
 
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_cut/cut_meshintersection.H"
 #include "../drt_cut/cut_node.H"
@@ -37,4 +38,10 @@ int XFEM::FluidDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, co
 {
   int count = DRT::DofSet::AssignDegreesOfFreedom( dis, dspos, start );
   return count;
+}
+
+void XFEM::FluidDofSet::MinGID()
+{
+  // set the minimal GID of the fixed-size-dofset
+  minGID_ = dis_.DofRowMap()->MinAllGID();
 }

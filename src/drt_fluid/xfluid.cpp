@@ -58,7 +58,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
-
+  dofset_->MinGID(); // set the minimal GID of xfem dis
   xfluid.discret_->ReplaceDofSet( dofset_, true );
   xfluid.discret_->FillComplete();
 

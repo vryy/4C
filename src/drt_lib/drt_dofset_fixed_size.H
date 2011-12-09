@@ -59,6 +59,7 @@ public:
   FixedSizeDofSet(int numreservedof)
     :DofSet(), numMyReservedDofs_(numreservedof)
   {
+    minGID_ = -1;
     return;
   }
 
@@ -82,6 +83,23 @@ public:
   {
     return MinAllGID() + numMyReservedDofs_;
   }
+
+  virtual int MinAllGID() const
+  {
+    int mymindof;
+    if (minGID_ == -1)
+      mymindof = dofrowmap_->MinAllGID();
+    else
+    {
+      int minall = dofrowmap_->MinAllGID() ;
+      mymindof = (minGID_ <= minall ) ? minGID_ : minall;
+    }
+    return mymindof;
+  }
+
+  virtual void MinGID() {}
+
+  int minGID_ ;
 
 protected:
 

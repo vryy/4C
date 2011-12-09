@@ -12,12 +12,15 @@ namespace XFEM
   {
   public:
 
-    FluidDofSet( FluidWizard * wizard , int numMyReservedDofs )
-      : FixedSizeDofSet(numMyReservedDofs), wizard_( wizard )
+    FluidDofSet( FluidWizard * wizard , int numMyReservedDofs , const DRT::Discretization& dis)
+      : FixedSizeDofSet(numMyReservedDofs), wizard_( wizard ), dis_ (dis)
     {
+
     }
 
     void Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const;
+
+    virtual void MinGID();
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
@@ -30,6 +33,8 @@ namespace XFEM
   private:
 
     FluidWizard * wizard_;
+
+    const DRT::Discretization& dis_;
   };
 }
 

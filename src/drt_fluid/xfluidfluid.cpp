@@ -50,8 +50,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_.DofSet(maxNumMyReservedDofs);
-
-  xfluid_.bgdis_->ReplaceDofSet( dofset_, true );
+  dofset_->MinGID();  // set the minimal GID of xfem dis
+  xfluid_.bgdis_->ReplaceDofSet( dofset_, true);
   xfluid_.bgdis_->FillComplete();
 
   //print all dofsets
