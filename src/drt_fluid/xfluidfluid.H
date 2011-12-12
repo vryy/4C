@@ -252,9 +252,11 @@ namespace FLD
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
-    /// setup the variables to do a new time step, new cut and
-    /// xfem-Timeintegration happens here
+    /// setup the variables to do a new time step
     void PrepareTimeStep();
+
+    /// new cut and xfem-Timeintegration happens here
+    void PrepareNonlinearSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();

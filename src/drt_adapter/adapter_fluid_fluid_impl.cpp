@@ -227,8 +227,13 @@ void ADAPTER::FluidFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::NonlinearSolve()
 {
+
+  // new cut, xfem time integration, set hist_ and Boundary conditions
+  fluid_.PrepareNonlinearSolve(),
+
   fluid_.NonlinearSolve();
 }
+
 
 
 /*----------------------------------------------------------------------*/
