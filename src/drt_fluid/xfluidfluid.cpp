@@ -1937,7 +1937,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
   convform_          = params_.get<string>("form of convective term","convective");
   upres_             = params_.get<int>("write solution every", -1);
-  setinitflow_       = params_.get<int>("eval err for analyt sol");
+//  setinitflow_       = params_.get<int>("eval err for analyt sol");
 
   numdim_            = genprob.ndim; //params_.get<int>("DIM");
 

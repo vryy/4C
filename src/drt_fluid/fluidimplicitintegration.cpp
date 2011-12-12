@@ -5652,7 +5652,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
       {
         cout << "                             " ;
         cout << "with Smagorinsky constant Cs= ";
-        cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+        cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
         cout << &endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
@@ -5665,13 +5665,12 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           }
 
           cout << "                             "          ;
+          cout << "\n";
           cout << "- Smagorinsky constant:   Cs   = "      ;
           cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
           cout << &endl;
-
-          cout << "                             "          ;
           cout << "- viscous length      :   l_tau= "      ;
-          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU");
+          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
           cout << &endl;
         }
         else if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
@@ -5685,11 +5684,10 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
         else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
         {
           cout << "                             "      ;
+          cout << "\n";
           cout << "- Constant:  Cl   = "      ;
-          cout << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY");
-          cout << "\n                             ";
-          cout << "                           ";
-          cout << "- Scale separation:  " << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION");
+          cout << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
+          cout << "- Scale separation:  " << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
           cout << &endl;
         }
         else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
