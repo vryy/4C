@@ -368,12 +368,14 @@ namespace TSI
     int iter_;  //!< iteration step
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iteration
+    double normrhsiter0_; //!< norm of residual force of first iteration
     double normrhs_;  //!< norm of residual forces
     double normstrrhs_;  //!< norm of structural residual forces
     double normthrrhs_;  //!< norm of thermal residual forces
     double norminc_;  //!< norm of residual unknowns
     int ns_;  //!< length of structural residual forces
     int nt_;  //!< length of thermal residual forces
+    int ntsi_;  //!< length of TSI residual forces
 
     //@}
 

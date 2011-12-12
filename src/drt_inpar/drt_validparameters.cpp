@@ -1835,11 +1835,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<std::string>(
                                    "Abs",
                                    "Rel",
+                                   "RelIter0",
                                    "Mix"
                                    ),
                                  tuple<int>(
                                    INPAR::TSI::convnorm_abs,
                                    INPAR::TSI::convnorm_rel,
+                                   INPAR::TSI::convnorm_reliter0,
                                    INPAR::TSI::convnorm_mix
                                    ),
                                  &tsidyn);

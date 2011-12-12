@@ -486,6 +486,8 @@ void TSI::Monolithic::NewtonFull(
   // get length of the structural and thermal vector
   ns_ = (*(StructureField().RHS())).GlobalLength();
   nt_ = (*(ThermoField().RHS())).GlobalLength();
+  // get length of all TSI dofs
+  ntsi_ = (*rhs_).GlobalLength();
 
   Epetra_Time timerthermo(Comm());
   timerthermo.ResetStartTime();
@@ -501,7 +503,7 @@ void TSI::Monolithic::NewtonFull(
 
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
-  {  
+  {
     // compute residual forces #rhs_ and tangent #tang_
     // whose components are globally oriented
     // build linear system stiffness matrix and rhs/force residual for each
@@ -510,7 +512,7 @@ void TSI::Monolithic::NewtonFull(
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_);
-  
+
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
@@ -539,6 +541,8 @@ void TSI::Monolithic::NewtonFull(
     // build residual force norm
     // for now use for simplicity only L2/Euclidian norm
     rhs_->Norm2(&normrhs_);
+    if (iter_ == 1)
+      normrhsiter0_ = normrhs_;
     StructureField().RHS()->Norm2(&normstrrhs_);
     ThermoField().RHS()->Norm2(&normthrrhs_);
 
@@ -1079,13 +1083,16 @@ bool TSI::Monolithic::Converged()
   switch (normtypefres_)
   {
   case INPAR::TSI::convnorm_abs:
-    convfres = normrhs_ < tolfres_;
+    convfres = (normrhs_/ntsi_) < tolfres_;
     break;
   case INPAR::TSI::convnorm_rel:
     convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normthrrhs_/nt_) < tolfres_) );
     break;
   case INPAR::TSI::convnorm_mix:
     convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
+    break;
+  case INPAR::TSI::convnorm_reliter0:
+    convfres = (normrhs_/normrhsiter0_ < tolfres_);
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");

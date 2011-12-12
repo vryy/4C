@@ -46,7 +46,8 @@ namespace TSI
   enum ConvNorm
   {
     convnorm_abs,  ///< absolute norm
-    convnorm_rel,  ///< relative norm
+    convnorm_rel,  ///< scaled norm of the single field residual with the length of the vector
+    convnorm_reliter0,  ///< relative norm of TSI problem with inital TSI rhs
     convnorm_mix   ///< mixed absolute-relative norm
   };
 
