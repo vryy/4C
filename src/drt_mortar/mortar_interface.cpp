@@ -597,7 +597,7 @@ void MORTAR::MortarInterface::Redistribute()
     dserror("ERROR: You are not supposed to be here...");
   
   // some local variables
-  RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+  RCP<Epetra_Comm> comm = rcp(Comm().Clone());
   const int myrank  = comm->MyPID();
   const int numproc = comm->NumProc();
   Epetra_Time time(*comm);
