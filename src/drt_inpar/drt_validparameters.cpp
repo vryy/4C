@@ -1332,7 +1332,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>("None","none", "No", "no",
                          "Zero", "zero",
                          "Bending", "bending",
-                         "Sphere", "sphere,"
+                         "Sphere", "sphere",
                          "Thick", "thick"),
       tuple<int>(
               INPAR::MORTAR::errornorms_none, INPAR::MORTAR::errornorms_none,
