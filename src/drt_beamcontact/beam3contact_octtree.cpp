@@ -69,7 +69,7 @@ dofoffset_(dofoffset)
       cout<<"Search routine:\nOctree + Axis Aligned BBs"<<endl;
     boundingbox_ = Beam3ContactOctTree::axisaligned;
   }
-  else if(boundingbox == "octree_cyloriented")
+  else if(boundingbox == "octree_cylorient")
   {
     if(!discret_.Comm().MyPID())
       cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<endl;
@@ -196,10 +196,10 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
   switch(boundingbox_)
   {
     case Beam3ContactOctTree::axisaligned:
-      bboxlimits = CreateAABBNoElement(nodecoords);
+      CreateAABB(nodecoords,0,bboxlimits);
     break;
     case Beam3ContactOctTree::cyloriented:
-      bboxlimits = CreateCOBBNoElement(nodecoords);
+      CreateCOBB(nodecoords,0,bboxlimits);
     break;
     default: dserror("No or an invalid Octree type was chosen. Check your input file!");
   }
@@ -224,16 +224,17 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
           if((int)(*bboxesinoctants_)[i][octants[ibox][oct]]>-0.9)
           {
             // get the second bounding box ID
-            int bboxinoct = (int)(*bboxesinoctants_)[i][octants[ibox][oct]];
+            std::vector<int> bboxinoct(2,-1);
+            bboxinoct[0] = (int)(*bboxesinoctants_)[i][octants[ibox][oct]];
             /*check for adjacent nodes: if there are adjacent nodes, then, of course, there
              * the intersection test will turn out positive. We skip those cases.*/
             // note: bounding box IDs are equal to element GIDs
             bool sharednode = false;
-            for(int j=0; j<searchdis_.gElement(bboxinoct)->NumNode(); j++)
+            for(int j=0; j<searchdis_.gElement(bboxinoct[0])->NumNode(); j++)
             {
               for(int k=0; k<(int)nodeLID.M(); k++)
               {
-                if(searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct)->NodeIds()[j])==(int)nodeLID(k))
+                if(searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct[0])->NodeIds()[j])==(int)nodeLID(k))
                 {
                   sharednode = true;
                   break;
@@ -248,10 +249,10 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
               switch(boundingbox_)
               {
                 case Beam3ContactOctTree::axisaligned:
-                  intersection = IsecAABBNoElement(bboxinoct, bboxlimits);
+                  intersection = IntersectionAABB(bboxinoct, bboxlimits);
                 break;
                 case Beam3ContactOctTree::cyloriented:
-                  intersection = IsecCOBBNoElement(bboxinoct, bboxlimits);
+                  intersection = IntersectionCOBB(bboxinoct, bboxlimits);
                 break;
                 default: dserror("No or an invalid Octree type was chosen. Check your input file!");
               }
@@ -285,15 +286,6 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
 #ifdef MEASURETIME
   double t_AABB = Teuchos::Time::wallTime();
 #endif
-  // Initialize Variables....................
-  //edge length of root box in case of periodic boundary conditions
-  double PeriodLength = 0.0;
-  if(periodicBC_)
-  {
-    Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    PeriodLength = statmechparams.get<double>("PeriodLength", 0.0);
-  }
-
   // Get Nodes from discretization....................
   // build bounding boxes according to input parameter
   for (int elecolid=0; elecolid<searchdis_.ElementColMap()->NumMyElements(); elecolid++)
@@ -388,14 +380,20 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
 /*-----------------------------------------------------------------------------------------*
  |  Create an Axis Aligned Bounding Box   (private)                           mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid)
+void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
+  // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
+  // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
+
   // factor by which the box is extruded in each dimension (->input file parameter??)
   const double extrusionfactor = 1.05;
 
   //Decision if periodic boundary condition is applied....................
   //number of spatial dimensions
   const int ndim = 3;
+
+  if(elecolid<0 || elecolid>=searchdis_.ElementColMap()->NumMyElements())
+    dserror("Given Element Column Map ID is %d !", elecolid);
 
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
 
@@ -414,7 +412,7 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
   LINALG::SerialDenseMatrix unshift = coord;
 
   // Compute "cut"-matrix (only in case of periodic BCs)
-  double PeriodLength = 0.0;
+  RCP<double> PeriodLength = Teuchos::null;
   // number of overall shifts
   int numshifts = 0;
   // dof at which the bounding box segment is shifted (used in case of a single shift)
@@ -422,78 +420,93 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
   if(periodicBC_)
   {
     Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    PeriodLength = statmechparams.get<double>("PeriodLength",0.0);
+    PeriodLength = rcp(new double(statmechparams.get<double>("PeriodLength",0.0)));
 
     for (int dof=0; dof<ndim; dof++)
     {
       // initialize unshift with coord values
       unshift(dof,0) = coord(dof,0);
       unshift(dof,1) = coord(dof,1);
-      if (fabs(coord(dof,1)-PeriodLength-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+      if (fabs(coord(dof,1)-(*PeriodLength)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
       {
         cut(dof) = 1.0;
         shiftdof = dof;
-        unshift(dof,1) -= PeriodLength;
+        unshift(dof,1) -= (*PeriodLength);
         numshifts++;
       }
-      if (fabs(coord(dof,1)+PeriodLength - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+      if (fabs(coord(dof,1)+(*PeriodLength) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
       {
         cut(dof) = 2.0;
         shiftdof = dof;
-        unshift(dof,1) += PeriodLength;
+        unshift(dof,1) += (*PeriodLength);
         numshifts++;
       }
     }
-    // store number of shifts
-    (*numshifts_)[elecolid] = numshifts;
-  }
 
+    if(bboxlimits!=Teuchos::null)
+      bboxlimits = rcp(new Epetra_SerialDenseMatrix((numshifts+1)*6,1));
+    else
+      (*numshifts_)[elecolid] = numshifts; // store number of shifts
+  }
+  else
+  {
+    if(bboxlimits!=Teuchos::null)
+      bboxlimits = rcp(new Epetra_SerialDenseMatrix(6,1));
+  }
   /* take action according to number of shifts
    * this may seem not too elegant, but consider that among the cut elements the majority is only shifted once.
    * A single shift can be performed with much less computational effort than multiple shifts since in the case of
    * multiple shifts, one has to reiterate the dof-wise shifts, determine the position of the nodes after each shift
    * and calculate the coordinates of the found segments.
    */
+  double bboxdiameter = (*diameter_)[elecolid];;
+  if(bboxlimits!=Teuchos::null)
+    bboxdiameter = (*diameter_)[searchdis_.ElementColMap()->NumMyElements()-1];
+
   // standard unshifted bounding box
   switch(numshifts)
   {
     case 0:
     {
-      //do normal process with nodecoords0 and nodecoords1....................
+      //do normal process with nodecoords0 and nodecoords1.
       //Calculate Center Point of AABB
       LINALG::Matrix<3,1> midpoint;
       for(int i=0; i<(int)midpoint.M(); i++)
-          midpoint(i) = 0.5*(coord(i,0) + coord(i,1));
+        midpoint(i) = 0.5*(coord(i,0) + coord(i,1));
 
       //Calculate edgelength of AABB
       LINALG::Matrix<3,1> edgelength;
       for(int i=0; i<(int)edgelength.M(); i++)
-          edgelength(i) = fabs(coord(i,1) - coord(i,0));
+        edgelength(i) = fabs(coord(i,1) - coord(i,0));
 
       //Check for edgelength of AABB
       for(int i=0; i<(int)edgelength.M(); i++)
-        if (edgelength(i)<(*diameter_)[elecolid])
-          edgelength(i) = (*diameter_)[elecolid];
+        if (edgelength(i)<bboxdiameter)
+          edgelength(i) = bboxdiameter;
 
       // Calculate limits of AABB with extrusion around midpoint
-      for(int i=0; i<6; i++)
-        if(i%2==0)
-          (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-        else if(i%2==1)
-          (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-      // fill all latter entries  except for the last one (->ID) with bogus values (in case of periodic BCs)
-      if(periodicBC_)
-        for(int i=6; i<allbboxes_->NumVectors()-1; i++)
-          (*allbboxes_)[i][elecolid] = -1e9;
-
-      (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
+      if(bboxlimits!=Teuchos::null)
+      {
+        for(int i=0; i<6; i++)
+          if(i%2==0)
+            (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          else if(i%2==1)
+            (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+      }
+      else
+      {
+        for(int i=0; i<6; i++)
+        {
+          if(i%2==0)
+            (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          else if(i%2==1)
+            (*allbboxes_)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        }
+      }
     }
     break;
     default: // broken bounding boxes due to periodic BCs
     {
-      Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-      PeriodLength = statmechparams.get<double>("PeriodLength",0.0);
-
       // directional vector
       LINALG::Matrix<3, 1> dir;
       for (int dof = 0; dof < ndim; dof++)
@@ -518,7 +531,7 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
           break;
           case 2:
           {
-            lambdaorder(dof,0) = (PeriodLength - coord(dof,0)) / dir(dof);
+            lambdaorder(dof,0) = ((*PeriodLength) - coord(dof,0)) / dir(dof);
             lambdaorder(dof,1) = dof;
           }
           break;
@@ -533,21 +546,21 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
       // in case of multiple shifts
       if(numshifts>1)
       {
-        for(int j=0; j<(int)lambdaorder.M()-1; j++)
-          for(int k=j+1; k<(int)lambdaorder.M(); k++)
-            if(lambdaorder(k,0)<lambdaorder(j,0))
+        for(int i=0; i<(int)lambdaorder.M()-1; i++)
+          for(int j=i+1; j<(int)lambdaorder.M(); j++)
+            if(lambdaorder(j,0)<lambdaorder(i,0))
             {
-              double temp = lambdaorder(j,0);
-              int tempindex = (int)lambdaorder(j,1);
-              lambdaorder(j,0) = lambdaorder(k,0);
-              lambdaorder(j,1) = lambdaorder(k,1);
-              lambdaorder(k,0) = temp;
-              lambdaorder(k,1) = tempindex;
+              double temp = lambdaorder(i,0);
+              int tempindex = (int)lambdaorder(i,1);
+              lambdaorder(i,0) = lambdaorder(j,0);
+              lambdaorder(i,1) = lambdaorder(j,1);
+              lambdaorder(j,0) = temp;
+              lambdaorder(j,1) = tempindex;
             }
       }
       else  // for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
-        for(int n=0; n<(int)lambdaorder.N(); n++)
-          lambdaorder(0,n) = lambdaorder(shiftdof,n);
+        for(int i=0; i<(int)lambdaorder.N(); i++)
+          lambdaorder(0,i) = lambdaorder(shiftdof,i);
 
       // calculate segment lambdas
       for(int dof=numshifts-1; dof>0; dof--)
@@ -559,8 +572,8 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
       for(int shift=0; shift<numshifts; shift++)
       {
         //second point
-        for(int j=0 ;j<unshift.M(); j++)
-          unshift(j,1) = unshift(j,0) + lambdaorder(shift,0)*dir(j);
+        for(int i=0 ;i<unshift.M(); i++)
+          unshift(i,1) = unshift(i,0) + lambdaorder(shift,0)*dir(i);
 
         //Calculate Center Point and edgelength of AABB
         LINALG::Matrix<3,1> midpoint;
@@ -570,25 +583,41 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
           midpoint(i) = 0.5*(unshift(i,0) + unshift(i,1));
           edgelength(i) = unshift(i,1) - unshift(i,0);
           //Check for edgelength of AABB if too small (bbox parallel to one of the spatial axes)
-          if (edgelength(i)<(*diameter_)[elecolid])
-            edgelength(i) = (*diameter_)[elecolid];
+          for(int i=0; i<(int)edgelength.M(); i++)
+            if (edgelength(i)<bboxdiameter)
+              edgelength(i) = bboxdiameter;
         }
         // Calculate limits of AABB of the current segment (which definitely lies in the volume) with extrusion around midpoint
-        for(int i=0; i<6; i++)
-          if(i%2==0)
-           (*allbboxes_)[shift*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-          else if(i%2==1)
-           (*allbboxes_)[shift*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        if(bboxlimits!=Teuchos::null)
+        {
+          for(int i=0; i<6; i++)
+          {
+            if(i%2==0)
+              (*bboxlimits)(shift*6+i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+            else if(i%2==1)
+              (*bboxlimits)(shift*6+i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          }
+        }
+        else
+        {
+          for(int i=0; i<6; i++)
+          {
+            if(i%2==0)
+              (*allbboxes_)[shift*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+            else if(i%2==1)
+              (*allbboxes_)[shift*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          }
+        }
 
         int currshift = (int)lambdaorder(shift,1);
         // shift the coordinates of the second point
         if(cut(currshift)==1.0)
-          unshift(currshift,1) += PeriodLength;
+          unshift(currshift,1) += (*PeriodLength);
         else if(cut(currshift)==2.0)
-          unshift(currshift,1) -= PeriodLength;
+          unshift(currshift,1) -= (*PeriodLength);
         // make second point the first and calculate new second point in the next iteration!
-        for(int j=0; j<unshift.M(); j++)
-          unshift(j,0) = unshift(j,1);
+        for(int i=0; i<unshift.M(); i++)
+          unshift(i,0) = unshift(i,1);
       }
 
       // the last segment
@@ -603,44 +632,71 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
         midpoint(i) = 0.5*(unshift(i,0) + unshift(i,1));
         edgelength(i) = unshift(i,1) - unshift(i,0);
         //Check for edgelength of AABB if too small (bbox parallel to one of the spatial axes)
-        if (edgelength(i)<(*diameter_)[elecolid])
-          edgelength(i) = (*diameter_)[elecolid];
+        if (edgelength(i)<bboxdiameter)
+          edgelength(i) = bboxdiameter;
       }
 
       // limits of the last bounding box
-      for(int i=0; i<6; i++)
-        if(i%2==0)
-         (*allbboxes_)[numshifts*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-        else if(i%2==1)
-         (*allbboxes_)[numshifts*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-
-      //fill up the rest of the 24 values with bogus values
-      if(numshifts<3)
-        for(int i=allbboxes_->NumVectors()-1; i>(numshifts+1)*6-1; i--)
-          (*allbboxes_)[i][elecolid] = -1e9;
-
-       // store GID (=box number)
-       (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
+      if(bboxlimits!=Teuchos::null)
+      {
+        for(int i=0; i<6; i++)
+        {
+          if(i%2==0)
+            (*bboxlimits)(numshifts*6+i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          else if(i%2==1)
+            (*bboxlimits)(numshifts*6+i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        }
+      }
+      else
+      {
+        for(int i=0; i<6; i++)
+        {
+          if(i%2==0)
+            (*allbboxes_)[numshifts*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+          else if(i%2==1)
+            (*allbboxes_)[numshifts*6+i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
+        }
+      }
     }
+  }
+
+  if(bboxlimits==Teuchos::null)
+  {
+    //fill up the rest of the 24 values with bogus values
+    if(periodicBC_ && numshifts<3)
+      for(int i=allbboxes_->NumVectors()-1; i>(numshifts+1)*6-1; i--)
+        (*allbboxes_)[i][elecolid] = -1e9;
+
+     // store GID (=box number)
+     (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
   }
 
   //Bring coordinates in case of periodic boundary condition in right order ( "-1e9 signals the bogus value from above)
   //[xmin xmax ymin ymax zmin zmax ...]
-  if (periodicBC_)
+  if (periodicBC_ && numshifts>0)
   {
-    if((*allbboxes_)[6][elecolid]!=-1e9)
-    {
-      double minimum =0.0;    double maximum =0.0;
+    double minimum =0.0;    double maximum =0.0;
 
-      for(int l=0; l<(allbboxes_->NumVectors()-1)/2;l++)
+    if(bboxlimits!=Teuchos::null)
+    {
+      for(int i=6; i<(bboxlimits->M())/2;i++)
+      {
+        minimum = min((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
+        maximum = max((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
+        (*bboxlimits)(2*i,0) = minimum;    (*bboxlimits)(2*i+1,0) = maximum;
+      }
+    }
+    else
+    {
+      for(int i=6; i<(allbboxes_->NumVectors()-1)/2;i++)
       {
         // leave loop at first bogus entry
-        if((2*l)%6==0 && (*allbboxes_)[2*l][elecolid]==-1e9)
+        if((2*i)%6==0 && (*allbboxes_)[2*i][elecolid]==-1e9)
           break;
-        minimum = min((*allbboxes_)[2*l][elecolid],(*allbboxes_)[2*l+1][elecolid]);
-        maximum = max((*allbboxes_)[2*l][elecolid],(*allbboxes_)[2*l+1][elecolid]);
+        minimum = min((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
+        maximum = max((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
         //cout << minimum << endl;
-        (*allbboxes_)[2*l][elecolid] = minimum;    (*allbboxes_)[2*l+1][elecolid] = maximum;
+        (*allbboxes_)[2*i][elecolid] = minimum;    (*allbboxes_)[2*i+1][elecolid] = maximum;
       }// end of correct
     }
   } // end of normal AAABB
@@ -651,118 +707,83 @@ void Beam3ContactOctTree::CreateAABB(const Epetra_SerialDenseMatrix& coord, cons
 /*-----------------------------------------------------------------------------------------*
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateCOBB(const Epetra_SerialDenseMatrix& coord, const int& elecolid)
+void Beam3ContactOctTree::CreateCOBB(const Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
-  return;
-}
+  // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
+  // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
-/*-----------------------------------------------------------------------------------------*
- |  Create an Axis Aligned Bounding Box without a finite element (private)    mueller 11/11|
- *----------------------------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateAABBNoElement(const Epetra_SerialDenseMatrix& coord)
-{
-  RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null;
-
-  // factor by which the box is extruded in each dimension (->input file parameter??)
   const double extrusionfactor = 1.05;
-
-  //Decision if periodic boundary condition is applied....................
-  //number of spatial dimensions
+  RCP<double> PeriodLength = Teuchos::null;
   const int ndim = 3;
-
-  /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
-   * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
-   * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
-   * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
-   * 0 close to boundary at PeriodLength);*/
-  LINALG::Matrix<ndim,1> cut;
+  int elegid = searchdis_.ElementColMap()->GID(elecolid);
+  int numshifts = 0;
+  int shiftdof = -1;
+  LINALG::Matrix<3,1> cut;
   cut.Clear();
-
-  /* "coord" currently holds the shifted set of coordinates.
-   * In order to determine the correct vector "dir" of the visualization at the boundaries,
-   * a copy of "coord" with adjustments in the proper places is introduced*/
   LINALG::SerialDenseMatrix unshift = coord;
 
-  // number of shifts for this bounding box
-  int numshifts = 0;
-  // Compute "cut"-matrix (only in case of periodic BCs)
-  double PeriodLength = 0.0;
-  // dof at which the bounding box segment is shifted (used in case of a single shift)
-  int shiftdof = -1;
   if(periodicBC_)
   {
     Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    PeriodLength = statmechparams.get<double>("PeriodLength",0.0);
+    PeriodLength = rcp(new double(statmechparams.get<double>("PeriodLength",0.0)));
 
     for (int dof=0; dof<ndim; dof++)
     {
-      // initialize unshift with coord values
-      unshift(dof,0) = coord(dof,0);
-      unshift(dof,1) = coord(dof,1);
-      if (fabs(coord(dof,1)-PeriodLength-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+      if (fabs(coord(dof,1)-(*PeriodLength)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
       {
         cut(dof) = 1.0;
         shiftdof = dof;
-        unshift(dof,1) -= PeriodLength;
+        unshift(dof,1) -= (*PeriodLength);
         numshifts++;
       }
-      if (fabs(coord(dof,1)+PeriodLength - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+      if (fabs(coord(dof,1)+(*PeriodLength) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
       {
         cut(dof) = 2.0;
         shiftdof = dof;
-        unshift(dof,1) += PeriodLength;
+        unshift(dof,1) += (*PeriodLength);
         numshifts++;
       }
     }
-    bboxlimits = rcp(new Epetra_SerialDenseMatrix((numshifts+1)*6,1));
+    if(bboxlimits!=Teuchos::null)
+      bboxlimits = rcp(new Epetra_SerialDenseMatrix((numshifts+1)*6,1));
+    else
+      (*numshifts_)[elecolid] = numshifts;
   }
   else
-    bboxlimits = rcp(new Epetra_SerialDenseMatrix(6,1));
+  {
+    if(bboxlimits!=Teuchos::null)
+      bboxlimits = rcp(new Epetra_SerialDenseMatrix(6,1));
+  }
 
-  /* take action according to number of shifts
-   * this may seem not too elegant, but consider that among the cut elements the majority is only shifted once.
-   * A single shift can be performed with much less computational effort than multiple shifts since in the case of
-   * multiple shifts, one has to reiterate the dof-wise shifts, determine the position of the nodes after each shift
-   * and calculate the coordinates of the found segments.
-   */
-  // standard unshifted bounding box
   switch(numshifts)
   {
     case 0:
     {
-      //do normal process with nodecoords0 and nodecoords1....................
-      //Calculate Center Point of AABB
-      LINALG::Matrix<3,1> midpoint;
-      for(int i=0; i<(int)midpoint.M(); i++)
-          midpoint(i) = 0.5*(coord(i,0) + coord(i,1));
+      LINALG::Matrix<3,1> axis;
+      for(int i=0; i<(int)axis.M(); i++)
+        axis(i) = coord(i,1) - coord(i,0);
+      axis.Scale(extrusionfactor);
 
-      //Calculate edgelength of AABB
-      LINALG::Matrix<3,1> edgelength;
-      for(int i=0; i<(int)edgelength.M(); i++)
-          edgelength(i) = fabs(coord(i,1) - coord(i,0));
-
-      //Check for edgelength of AABB
-      for(int i=0; i<(int)edgelength.M(); i++)
-        if (edgelength(i)<(*diameter_)[0])
-          edgelength(i) = (*diameter_)[0];
-
-      // Calculate limits of AABB with extrusion around midpoint
-      for(int i=0; i<6; i++)
-        if(i%2==0)
-          (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-        else if(i%2==1)
-          (*bboxlimits)(i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-      // fill all latter entries  except for the last one (->ID) with bogus values (in case of periodic BCs)
-      if(periodicBC_)
-        for(int i=6; i<bboxlimits->M(); i++)
-          (*bboxlimits)(i,0) = -1e9;
+      if(bboxlimits!=Teuchos::null)
+      {
+        for(int i=0; i<coord.M(); i++)
+        {
+          (*bboxlimits)(i,0) = coord(i,1)-axis(i);
+          (*bboxlimits)(i+3,0) = coord(i,0)+axis(i);
+        }
+      }
+      else
+      {
+        for(int i=0; i<coord.M(); i++)
+        {
+          (*allbboxes_)[i][elecolid] = coord(i,1)-axis(i);
+          (*allbboxes_)[i+3][elecolid] = coord(i,0)+axis(i);
+        }
+      }
     }
     break;
     default: // broken bounding boxes due to periodic BCs
     {
-      Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-      PeriodLength = statmechparams.get<double>("PeriodLength",0.0);
-
       // directional vector
       LINALG::Matrix<3, 1> dir;
       for (int dof = 0; dof < ndim; dof++)
@@ -787,7 +808,7 @@ RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateAABBNoElement(const Epe
           break;
           case 2:
           {
-            lambdaorder(dof,0) = (PeriodLength - coord(dof,0)) / dir(dof);
+            lambdaorder(dof,0) = ((*PeriodLength) - coord(dof,0)) / dir(dof);
             lambdaorder(dof,1) = dof;
           }
           break;
@@ -797,120 +818,102 @@ RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateAABBNoElement(const Epe
           }
         }
       }
+
       // sort the lambdas (ascending values) and indices accordingly
       // in case of multiple shifts
       if(numshifts>1)
       {
-        for(int j=0; j<(int)lambdaorder.M()-1; j++)
-          for(int k=j+1; k<(int)lambdaorder.M(); k++)
-            if(lambdaorder(k,0)<lambdaorder(j,0))
+        for(int i=0; i<(int)lambdaorder.M()-1; i++)
+          for(int j=i+1; j<(int)lambdaorder.M(); j++)
+            if(lambdaorder(j,0)<lambdaorder(i,0))
             {
-              double temp = lambdaorder(j,0);
-              int tempindex = (int)lambdaorder(j,1);
-              lambdaorder(j,0) = lambdaorder(k,0);
-              lambdaorder(j,1) = lambdaorder(k,1);
-              lambdaorder(k,0) = temp;
-              lambdaorder(k,1) = tempindex;
+              double temp = lambdaorder(i,0);
+              int tempindex = (int)lambdaorder(i,1);
+              lambdaorder(i,0) = lambdaorder(j,0);
+              lambdaorder(i,1) = lambdaorder(j,1);
+              lambdaorder(j,0) = temp;
+              lambdaorder(j,1) = tempindex;
             }
       }
-      else  // for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
-        for(int n=0; n<(int)lambdaorder.N(); n++)
-          lambdaorder(0,n) = lambdaorder(shiftdof,n);
+      else  // for a single shift
+        for(int i=0; i<(int)lambdaorder.N(); i++)
+          lambdaorder(0,i) = lambdaorder(shiftdof,i);
 
-      // calculate segment lambdas
+      // calculate segment lambdas (lengths!!)
       for(int dof=numshifts-1; dof>0; dof--)
         lambdaorder(dof,0) -= lambdaorder(dof-1,0);
 
-      // the idea is to gradually shift the matrix "unshift" back into the volume and, while doing so,
-      // calculate the segments except for the last one
-      // determine closest boundary component-wise
       for(int shift=0; shift<numshifts; shift++)
       {
         //second point
-        for(int j=0 ;j<unshift.M(); j++)
-          unshift(j,1) = unshift(j,0) + lambdaorder(shift,0)*dir(j);
-
-        //Calculate Center Point and edgelength of AABB
-        LINALG::Matrix<3,1> midpoint;
-        LINALG::Matrix<3,1> edgelength;
-        for(int i=0; i<(int)midpoint.M(); i++)
+        for(int i=0 ;i<unshift.M(); i++)
+          unshift(i,1) = unshift(i,0) + lambdaorder(shift,0)*dir(i);
+        // Calculate limits of the bounding box segment (convenient because lambdas are segment lengths)
+        if(bboxlimits!=Teuchos::null)
         {
-          midpoint(i) = 0.5*(unshift(i,0) + unshift(i,1));
-          edgelength(i) = unshift(i,1) - unshift(i,0);
-          //Check for edgelength of AABB if too small (bbox parallel to one of the spatial axes)
-          if (edgelength(i)<(*diameter_)[0])
-            edgelength(i) = (*diameter_)[0];
+          for(int i=0; i<unshift.M(); i++)
+          {
+             (*bboxlimits)(shift*6+i,0) = unshift(i,1)-lambdaorder(shift,0)*extrusionfactor;
+             (*bboxlimits)(shift*6+i+3,0) = unshift(i,0)+lambdaorder(shift,0)*extrusionfactor;
+          }
         }
-        // Calculate limits of AABB of the current segment (which definitely lies in the volume) with extrusion around midpoint
-        for(int i=0; i<6; i++)
-          if(i%2==0)
-            (*bboxlimits)(shift*6+i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-          else if(i%2==1)
-            (*bboxlimits)(shift*6+i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-
+        else
+        {
+          for(int i=0; i<unshift.M(); i++)
+          {
+             (*allbboxes_)[shift*6+i][elecolid] = unshift(i,1)-lambdaorder(shift,0)*extrusionfactor;
+             (*allbboxes_)[shift*6+i+3][elecolid] = unshift(i,0)+lambdaorder(shift,0)*extrusionfactor;
+          }
+        }
         int currshift = (int)lambdaorder(shift,1);
-        // shift the coordinates of the second point
         if(cut(currshift)==1.0)
-          unshift(currshift,1) += PeriodLength;
+          unshift(currshift,1) += (*PeriodLength);
         else if(cut(currshift)==2.0)
-          unshift(currshift,1) -= PeriodLength;
-        // make second point the first and calculate new second point in the next iteration!
-        for(int j=0; j<unshift.M(); j++)
-          unshift(j,0) = unshift(j,1);
+          unshift(currshift,1) -= (*PeriodLength);
+        for(int i=0; i<unshift.M(); i++)
+          unshift(i,0) = unshift(i,1);
       }
 
       // the last segment
+      LINALG::Matrix<3,1> axis;
       for(int dof=0; dof<unshift.M(); dof++)
-        unshift(dof,1) = coord(dof,1);
-
-      //Calculate Center Point and edgelength of AABB
-      LINALG::Matrix<3,1> midpoint;
-      LINALG::Matrix<3,1> edgelength;
-      for(int i=0; i<(int)midpoint.M(); i++)
       {
-        midpoint(i) = 0.5*(unshift(i,0) + unshift(i,1));
-        edgelength(i) = unshift(i,1) - unshift(i,0);
-        //Check for edgelength of AABB if too small (bbox parallel to one of the spatial axes)
-        if (edgelength(i)<(*diameter_)[0])
-          edgelength(i) = (*diameter_)[0];
+        unshift(dof,1) = coord(dof,1);
+        axis(dof) = unshift(dof,1)-unshift(dof,0);
       }
+      axis.Scale(extrusionfactor);
+
       // limits of the last bounding box
-      for(int i=0; i<6; i++)
-        if(i%2==0)
-          (*bboxlimits)(numshifts*6+i,0) = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-        else if(i%2==1)
-          (*bboxlimits)(numshifts*6+i,0) = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-    }
-  }
-  //Bring coordinates in case of periodic boundary condition in right order ( "-1e9 signals the bogus value from above)
-  //[xmin xmax ymin ymax zmin zmax ...]
-  if (periodicBC_)
-  {
-    double minimum =0.0;    double maximum =0.0;
-
-    for(int l=0; l<(bboxlimits->M())/2;l++)
-    {
-      // leave loop at first bogus entry
-      if((2*l)%6==0 && (*bboxlimits)(2*l,0)==-1e9)
-        break;
-      minimum = min((*bboxlimits)(2*l,0),(*bboxlimits)(2*l+1,0));
-      maximum = max((*bboxlimits)(2*l,0),(*bboxlimits)(2*l+1,0));
-      //cout << minimum << endl;
-      (*bboxlimits)(2*l,0) = minimum;    (*bboxlimits)(2*l+1,0) = maximum;
+      if(bboxlimits!=Teuchos::null)
+      {
+        for(int dof=0; dof<unshift.M(); dof++)
+        {
+          (*bboxlimits)(numshifts*6+dof,0) = unshift(dof,1)-axis(dof);
+          (*bboxlimits)(numshifts*6+dof+3,0) = unshift(dof,0)+axis(dof);
+        }
+      }
+      else
+      {
+        for(int dof=0; dof<unshift.M(); dof++)
+        {
+          (*allbboxes_)[numshifts*6+dof][elecolid] = unshift(dof,1)-axis(dof);
+          (*allbboxes_)[numshifts*6+dof+3][elecolid] = unshift(dof,0)+axis(dof);
+        }
+      }
     }
   }
 
-  return bboxlimits;
-}
+  // fill all latter entries  except for the last one (->ID) with bogus values (in case of periodic BCs)
+  if(periodicBC_ && numshifts<3)
+    for(int i=allbboxes_->NumVectors()-1; i>(numshifts+1)*6-1; i--)
+      (*allbboxes_)[i][elecolid] = -1e9;
+  // last entry: element GID
+  (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
 
-/*-----------------------------------------------------------------------------------------*
- |  Create Cylindrical an Oriented Bounding Box without a beam (private)      mueller 11/11|
- *----------------------------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateCOBBNoElement(const Epetra_SerialDenseMatrix& coord)
-{
-  RCP<Epetra_SerialDenseMatrix> boxlimits=Teuchos::null;
-
-  return boxlimits;
+  //for(int i=0; i<allbboxes_->NumVectors(); i++)
+  //  cout<<(*allbboxes_)[i][elecolid]<<" ";
+  //cout<<";"<<endl;
+  return;
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -1400,8 +1403,13 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
  |  Axis Aligned Bounding Box Intersection function when both bounding boxes         |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
+bool Beam3ContactOctTree::IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
+  /* Why have bboxlimits seperately? In certain cases, it is required to intersect hypothetical bounding boxes
+   * (i.e. without an existing element) with bounding boxes of existing elements. Then, the second bounding box ID
+   * is not relevant anymore since it does not exist in the octree. bboxlimits takes over the part of defining the
+   * limits of the (hypothetical) bounding box.*/
+
   bool intersection = false;
   // translate box / element GIDs to ElementColMap()-LIDs
   // note: GID and ColumnMap LID are usually the same except for crosslinker elements from statistical mechanics
@@ -1414,19 +1422,33 @@ bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
 
   if(periodicBC_)
   {
+    int numshifts = 0;
+    if(bboxlimits!=Teuchos::null)
+      numshifts = (bboxlimits->M()%6)-1;
+    else
+      numshifts = (int)(*numshifts_)[entry2];
     // note: n shifts means n+1 segments
     for(int i=0; i<(int)(*numshifts_)[entry1]+1; i++)
     {
-      for(int j=0; j<(int)(*numshifts_)[entry2]+1; j++)
+      for(int j=0; j<numshifts+1; j++)
       {
         //Intersection Test
         a_xmin=(*allbboxes_)[i*6][entry1];     a_xmax=(*allbboxes_)[i*6+1][entry1];
         a_ymin=(*allbboxes_)[i*6+2][entry1];   a_ymax=(*allbboxes_)[i*6+3][entry1];
         a_zmin=(*allbboxes_)[i*6+4][entry1];   a_zmax=(*allbboxes_)[i*6+5][entry1];
 
-        b_xmin=(*allbboxes_)[j*6][entry2];     b_xmax=(*allbboxes_)[j*6+1][entry2];
-        b_ymin=(*allbboxes_)[j*6+2][entry2];   b_ymax=(*allbboxes_)[j*6+3][entry2];
-        b_zmin=(*allbboxes_)[j*6+4][entry2];   b_zmax=(*allbboxes_)[j*6+5][entry2];
+        if(bboxlimits!=Teuchos::null)
+        {
+          b_xmin=(*bboxlimits)(j*6,0);     b_xmax=(*bboxlimits)(j*6+1,0);
+          b_ymin=(*bboxlimits)(j*6+2,0);   b_ymax=(*bboxlimits)(j*6+3,0);
+          b_zmin=(*bboxlimits)(j*6+4,0);   b_zmax=(*bboxlimits)(j*6+5,0);
+        }
+        else
+        {
+          b_xmin=(*allbboxes_)[j*6][entry2];     b_xmax=(*allbboxes_)[j*6+1][entry2];
+          b_ymin=(*allbboxes_)[j*6+2][entry2];   b_ymax=(*allbboxes_)[j*6+3][entry2];
+          b_zmin=(*allbboxes_)[j*6+4][entry2];   b_zmax=(*allbboxes_)[j*6+5][entry2];
+        }
 
         // if intersection exists, return true
         if (!((a_xmin >= b_xmax || b_xmin >= a_xmax) || (a_ymin >= b_ymax || b_ymin >= a_ymax) || (a_zmin >= b_zmax || b_zmin >= a_zmax)))
@@ -1446,15 +1468,22 @@ bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
     a_ymin=(*allbboxes_)[2][entry1];   a_ymax=(*allbboxes_)[3][entry1];
     a_zmin=(*allbboxes_)[4][entry1];   a_zmax=(*allbboxes_)[5][entry1];
 
-    b_xmin=(*allbboxes_)[0][entry2];   b_xmax=(*allbboxes_)[1][entry2];
-    b_ymin=(*allbboxes_)[2][entry2];   b_ymax=(*allbboxes_)[3][entry2];
-    b_zmin=(*allbboxes_)[4][entry2];   b_zmax=(*allbboxes_)[5][entry2];
-
+    if(bboxlimits!=Teuchos::null)
+    {
+      b_xmin=(*bboxlimits)(0,0);   b_xmax=(*bboxlimits)(1,0);
+      b_ymin=(*bboxlimits)(2,0);   b_ymax=(*bboxlimits)(3,0);
+      b_zmin=(*bboxlimits)(4,0);   b_zmax=(*bboxlimits)(5,0);
+    }
+    else
+    {
+      b_xmin=(*allbboxes_)[0][entry2];   b_xmax=(*allbboxes_)[1][entry2];
+      b_ymin=(*allbboxes_)[2][entry2];   b_ymax=(*allbboxes_)[3][entry2];
+      b_zmin=(*allbboxes_)[4][entry2];   b_zmax=(*allbboxes_)[5][entry2];
+    }
     // if intersection exists, return true
     if (!((a_xmin >= b_xmax || b_xmin >= a_xmax) || (a_ymin >= b_ymax || b_ymin >= a_ymax) || (a_zmin >= b_zmax || b_zmin >= a_zmax)))
       intersection = true;
   }
-
 
   return intersection;
 }
@@ -1463,83 +1492,281 @@ bool Beam3ContactOctTree::IntersectionAABB(std::vector<int>& bboxIDs)
  |  Cylindrical Oriented Bounding Box Intersection function when both bounding boxes |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionCOBB(std::vector<int>& bboxIDs)
+bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
+  /* intersection test by calculating the distance between the two bounding box center lines
+   * and comparing it to the respective diameters of the beams*/
   bool intersection = false;
-  return intersection;
-}
+  int bboxid0 = searchdis_.ElementColMap()->LID(bboxIDs[0]);
+  int bboxid1 = searchdis_.ElementColMap()->LID(bboxIDs[1]);
 
-/*-----------------------------------------------------------------------------------*
- |  Axis Aligned Bounding Box Intersection function when only one of the             |
- |  bounding boxes represents an actual finite element (private)        mueller 11/11|
- *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IsecAABBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits)
-{
-  bool intersection = false;
-  // translate box / element GIDs to ElementColMap()-LIDs
-  // note: GID and ColumnMap LID are usually the same except for crosslinker elements from statistical mechanics
-  int bboxcolid = searchdis_.ElementColMap()->LID(bboxinoct);
+  // In case of a hypothetical BB, simply take the last beam element's diameter (does the job for now)
+  double bbox1diameter = 0.0;
+  if(bboxlimits!=Teuchos::null)
+    bbox1diameter = (*diameter_)[diameter_->MyLength()-1];
+  else
+    bbox1diameter = (*diameter_)[bboxid1];
 
-  // number of shifts in bboxlimits
-  int numsegments = bboxlimits->M()/6;
-
-  //Initialization....................
-  double a_xmin, a_xmax, a_ymin, a_ymax, a_zmin, a_zmax;
-  double b_xmin, b_xmax, b_ymin, b_ymax, b_zmin, b_zmax;
+  // A heuristic value (for now). It allows us to detect contact in advance by enlarging the beam radius.
+  double radiusextrusion = 1.1;
 
   if(periodicBC_)
   {
-    // note: n shifts means n+1 segments
-    for(int i=0; i<(int)(*numshifts_)[bboxcolid]+1; i++)
+    int numshifts = 0;
+    if(bboxlimits!=Teuchos::null)
+      numshifts = (bboxlimits->M()%6)-1;
+    else
+      numshifts = (int)(*numshifts_)[bboxid1];
+
+    for(int i=0; i<(int)(*numshifts_)[bboxid0]+1; i++)
     {
-      for(int j=0; j<numsegments; j++)
+      for(int j=0; j<numshifts+1; j++)
       {
-        //Intersection Test
-        a_xmin=(*allbboxes_)[i*6][bboxcolid];     a_xmax=(*allbboxes_)[i*6+1][bboxcolid];
-        a_ymin=(*allbboxes_)[i*6+2][bboxcolid];   a_ymax=(*allbboxes_)[i*6+3][bboxcolid];
-        a_zmin=(*allbboxes_)[i*6+4][bboxcolid];   a_zmax=(*allbboxes_)[i*6+5][bboxcolid];
+        // first points and directional vectors of the bounding boxes
+        LINALG::Matrix<3,1> x0;
+        LINALG::Matrix<3,1> x1;
+        LINALG::Matrix<3,1> v;
+        LINALG::Matrix<3,1> w;
 
-        b_xmin=(*bboxlimits)(j*6,0);     b_xmax=(*bboxlimits)(j*6+1,0);
-        b_ymin=(*bboxlimits)(j*6+2,0);   b_ymax=(*bboxlimits)(j*6+3,0);
-        b_zmin=(*bboxlimits)(j*6+4,0);   b_zmax=(*bboxlimits)(j*6+5,0);
-
-        // if intersection exists, return true
-        if (!((a_xmin >= b_xmax || b_xmin >= a_xmax) || (a_ymin >= b_ymax || b_ymin >= a_ymax) || (a_zmin >= b_zmax || b_zmin >= a_zmax)))
+        // angle between the bounding boxes
+        double alpha = 0.0;
+        for(int k=0; k<(int)v.M(); k++) // first BB and direction
         {
-          intersection = true;
-          break;
+          x0(k) = (*allbboxes_)[i*6+k][bboxid0];
+          v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-x0(k);
+        }
+        if(bboxlimits!=Teuchos::null) // second BB and direction
+        {
+          for(int k=0; k<(int)v.M(); k++)
+          {
+            x1(k) = (*bboxlimits)(j*6+k,0);
+            w(k) = (*bboxlimits)(j*6+k+3,0)-x1(k);
+          }
+        }
+        else
+        {
+          for(int k=0; k<(int)v.M(); k++)
+          {
+            x1(k) = (*allbboxes_)[j*6+k][bboxid1];
+            w(k) = (*allbboxes_)[j*6+k+3][bboxid1]-x1(k);
+          }
+        }
+        alpha = acos(v.Dot(w)/(v.Norm2()*w.Norm2()));
+
+        // non-parallel case
+        /* note: We distinguish between a parallel and a non-parallel case because of the singularity
+         * in the calculation of the binormal due to the cross product in the denominator*/
+        if(alpha>1e-10)
+        {
+          //note: d = abs(dot(x0-x1,n))
+          LINALG::Matrix<3,1> deltax = x0;
+          deltax -= x1;
+
+          // binormal vector
+          LINALG::Matrix<3,1> n;
+          n(0) = v(1)*w(2)-v(2)*w(1);
+          n(1) = v(2)*w(0)-v(0)*w(2);
+          n(2) = v(0)*w(1)-v(1)*w(0);
+
+          n.Scale(1.0/n.Norm2());
+
+          // 1. distance criterium
+          double d = fabs(deltax.Dot(n));
+
+          if (d<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+          {
+            // 2. Do the two bounding boxes actually intersect?
+            double lbox0 = v.Norm2();
+            double lbox1 = w.Norm2();
+            v.Scale(1.0/lbox0);
+            w.Scale(1.0/lbox1);
+            // shifting the point on the second line by d*n facilitates the calculation of the lambdas (segment lengths)
+            for(int k=0; k<(int)x1.M(); k++)
+              x1(k) = x1(k) + d * n(k);
+            // line-wise check of the segment lengths
+            double lambda0 = (w(1)*(x0(0)-x1(0))-w(0)*(x0(1)-x1(1)))/(v(1)*w(0)-v(0)*w(1));
+            if(lambda0>=0 && lambda0<=lbox0)
+            {
+              double lambda1 = (x0(0)+lambda0*v(0)-x1(0))/w(0);
+              if(lambda1>=0 && lambda1<=lbox1)
+              {
+                intersection = true;
+                break; // leave j-loop
+              }
+            }
+          }
+        }
+        else // parallel case -> d = abs(cross(v0,(x1-x0))/abs(v0)
+        {
+          LINALG::Matrix<3,1> x0;
+          LINALG::Matrix<3,1> v;
+          LINALG::Matrix<3,1> x0x1;
+          for(int k=0; k<(int)x0.M();k++)
+          {
+            x0(k) = (*allbboxes_)[i*6+k][bboxid0];
+            v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-x0(k);
+          }
+          if(bboxlimits!=Teuchos::null)
+          {
+            for(int k=0; k<(int)x0.M();k++)
+              x0x1(k) = (*bboxlimits)(j*6+k,0)-x0(k);
+          }
+          else
+          {
+            for(int k=0; k<(int)x0.M();k++)
+              x0x1(k) = (*allbboxes_)[j*6+k][bboxid1]-x0(k);
+          }
+
+          double phi = acos(fabs(v.Dot(x0x1)/(v.Norm2()*x0x1.Norm2())));
+          double d = x0x1.Norm2()*sin(phi);
+
+          if(d<radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+          {
+            // distance between first point of first BB and second point of second BB
+            double d2 = 0.0;
+            // length of first and second BB
+            double l0 = v.Norm2();
+            double l1 = 0.0;
+            if(bboxlimits!=Teuchos::null)
+            {
+              for(int k=0; k<(int)x0.M(); k++)
+              {
+                d2 += ((*bboxlimits)(j*6+k,0) - x0(k))*((*bboxlimits)(j*6+k,0) - x0(k));
+                l1 += ((*bboxlimits)(j*6+k+3,0) - (*bboxlimits)(j*6+k,0))*((*bboxlimits)(j*6+k+3,0) - (*bboxlimits)(j*6+k,0));
+              }
+            }
+            else
+            {
+              for(int k=0; k<(int)x0.M(); k++)
+              {
+                d2 += ((*allbboxes_)[j*6+k+3][bboxid1] - x0(k))*((*allbboxes_)[j*6+k+3][bboxid1] - x0(k));
+                l1 += ((*allbboxes_)[j*6+k+3][bboxid1] - (*allbboxes_)[j*6+k][bboxid1])*((*allbboxes_)[j*6+k+3][bboxid1] - (*allbboxes_)[j*6+k][bboxid1]);
+              }
+            }
+            d2 = sqrt(d2);
+            l1 = sqrt(l1);
+            if(d2<=l0+l1)
+            {
+              intersection = true;
+              break; // (leave j-loop)
+            }
+          }
         }
       }
       if(intersection)
-        break;
+        break; // (leave i-loop)
     }
   }
   else  // standard procedure without periodic boundary conditions
   {
-    //Intersection Test
-    a_xmin=(*allbboxes_)[0][bboxcolid];   a_xmax=(*allbboxes_)[1][bboxcolid];
-    a_ymin=(*allbboxes_)[2][bboxcolid];   a_ymax=(*allbboxes_)[3][bboxcolid];
-    a_zmin=(*allbboxes_)[4][bboxcolid];   a_zmax=(*allbboxes_)[5][bboxcolid];
+    // first points and directional vectors of the bounding boxes
+    LINALG::Matrix<3,1> x0;
+    LINALG::Matrix<3,1> x1;
+    LINALG::Matrix<3,1> v;
+    LINALG::Matrix<3,1> w;
 
-    b_xmin=(*bboxlimits)(0,0);   b_xmax=(*bboxlimits)(1,0);
-    b_ymin=(*bboxlimits)(2,0);   b_ymax=(*bboxlimits)(3,0);
-    b_zmin=(*bboxlimits)(4,0);   b_zmax=(*bboxlimits)(5,0);
+    // angle between the bounding boxes
+    double alpha = 0.0;
+    for(int k=0; k<(int)v.M(); k++) // first BB
+    {
+      x0(k) = (*allbboxes_)[k][bboxid0];
+      v(k) = (*allbboxes_)[k+3][bboxid0]-x0(k);
+    }
 
-    // if intersection exists, return true
-    if (!((a_xmin >= b_xmax || b_xmin >= a_xmax) || (a_ymin >= b_ymax || b_ymin >= a_ymax) || (a_zmin >= b_zmax || b_zmin >= a_zmax)))
-      intersection = true;
+    if(bboxlimits!=Teuchos::null) //second BB
+    {
+      for(int k=0; k<(int)v.M(); k++)
+      {
+        x1(k) = (*bboxlimits)(k,0);
+        w(k) = (*bboxlimits)(k+3,0)-x1(k);
+      }
+    }
+    else
+    {
+      for(int k=0; k<(int)v.M(); k++)
+      {
+        x1(k) = (*allbboxes_)[k][bboxid1];
+        w(k) = (*allbboxes_)[k+3][bboxid1]-x1(k);
+      }
+    }
+
+    alpha = acos(v.Dot(w)/(v.Norm2()*w.Norm2()));
+    // non-parallel case
+    if(alpha>1e-10)
+    {
+      LINALG::Matrix<3,1> deltax = x0;
+      deltax -= x1;
+
+      LINALG::Matrix<3,1> n;
+      n(0) = v(1)*w(2)-v(2)*w(1);
+      n(1) = v(2)*w(0)-v(0)*w(2);
+      n(2) = v(0)*w(1)-v(1)*w(0);
+
+      n.Scale(1.0/n.Norm2());
+
+      double d = fabs(deltax.Dot(n));
+
+      if (d<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+      {
+        double lbox0 = v.Norm2();
+        double lbox1 = w.Norm2();
+        v.Scale(1.0/lbox0);
+        w.Scale(1.0/lbox1);
+
+        for(int k=0; k<(int)x1.M(); k++)
+          x1(k) = x1(k) + d * n(k);
+
+        double lambda0 = (w(1)*(x0(0)-x1(0))-w(0)*(x0(1)-x1(1)))/(v(1)*w(0)-v(0)*w(1));
+        if(lambda0>=0 && lambda0<=lbox0)
+        {
+          double lambda1 = (x0(0)+lambda0*v(0)-x1(0))/w(0);
+          if(lambda1>=0 && lambda1<=lbox1)
+            intersection = true;
+        }
+      }
+    }
+    else
+    {
+      LINALG::Matrix<3,1> x0;
+      LINALG::Matrix<3,1> v;
+      LINALG::Matrix<3,1> x0x1;
+      for(int k=0; k<(int)x0.M();k++) // first BB
+      {
+        x0(k) = (*allbboxes_)[k][bboxid0];
+        v(k) = (*allbboxes_)[k+3][bboxid0]-x0(k);
+
+      }
+      if(bboxlimits!=Teuchos::null) //second BB
+      {
+        for(int k=0; k<(int)x0.M();k++)
+          x0x1(k) = (*bboxlimits)(k,0)-x0(k);
+      }
+      else
+      {
+        for(int k=0; k<(int)v.M(); k++)
+          x0x1(k) = (*allbboxes_)[k][bboxid1]-x0(k);
+      }
+
+      double phi = acos(fabs(v.Dot(x0x1)/(v.Norm2()*x0x1.Norm2())));
+      double d = x0x1.Norm2()*sin(phi);
+      if(d<radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+      {
+        double d2 = 0.0;
+        double l0 = v.Norm2();
+        double l1 = 0.0;
+        for(int k=0; k<(int)x0.M(); k++)
+        {
+          d2 += ((*allbboxes_)[k+3][bboxid1] - x0(k))*((*allbboxes_)[k+3][bboxid1] - x0(k));
+          l1 += ((*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1]) * ((*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1]);
+        }
+        d2 = sqrt(d2);
+        l1 = sqrt(l1);
+        if(d2<=l0+l1)
+          intersection = true;
+      }
+    }
   }
-
   return intersection;
 }
 
-/*-----------------------------------------------------------------------------------*
- |  Cylindrical Oriented Bounding Box Intersection function when only one of the     |
- |  bounding boxes represents an actual finite element (private)        mueller 11/11|
- *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IsecCOBBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits)
-{
-  bool intersection = false;
-  return intersection;
-}
 #endif /*CCADISCRET*/

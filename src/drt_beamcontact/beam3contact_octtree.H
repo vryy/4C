@@ -69,13 +69,9 @@ class Beam3ContactOctTree
     // get the dimensions of the root octant
     LINALG::Matrix<1,6> GetRootOctant();
     // create axis aligned bounding boxes
-    void CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid);
+    void CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     // create coylindrical oriented bounding boxes
-    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, const int& elecolid);
-    // create axis aligned bounding boxes
-    RCP<Epetra_SerialDenseMatrix> CreateAABBNoElement(const Epetra_SerialDenseMatrix& coord);
-    // create coylindrical oriented bounding boxes
-    RCP<Epetra_SerialDenseMatrix> CreateCOBBNoElement(const Epetra_SerialDenseMatrix&  coord);
+    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
     // spatial division of 3-dimensional volume
     void locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
@@ -91,14 +87,11 @@ class Beam3ContactOctTree
     void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, std::vector<std::vector<int> >& bboxesinoctants, vector<RCP<Beam3contact> >* contactpairs);
 
     // intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
-    bool IntersectionAABB(std::vector<int>& bboxIDs);
+    bool IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     // intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
-    bool IntersectionCOBB(std::vector<int>& bboxIDs);
-    // intersection method applying axis-aligned bounding boxes when only one of the boxes belongs to an existing element
-    bool IsecAABBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits);
-    // intersection method applying cylindrical oriented bounding boxes when only one of the boxes belongs to an existing element
-    bool IsecCOBBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits);
+    bool IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     
+    //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
     // problem discretization
