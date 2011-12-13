@@ -480,6 +480,7 @@ void TSI::Monolithic::NewtonFull(
   // initialise equilibrium loop
   iter_ = 1;
   normrhs_ = 0.0;
+  normrhsiter0_ = 0.0;
   normstrrhs_ = 0.0;
   normthrrhs_ = 0.0;
   norminc_ = 0.0;
@@ -487,7 +488,7 @@ void TSI::Monolithic::NewtonFull(
   ns_ = (*(StructureField().RHS())).GlobalLength();
   nt_ = (*(ThermoField().RHS())).GlobalLength();
   // get length of all TSI dofs
-  ntsi_ = (*rhs_).GlobalLength();
+  ntsi_ = ns_ + nt_;
 
   Epetra_Time timerthermo(Comm());
   timerthermo.ResetStartTime();
@@ -1088,11 +1089,11 @@ bool TSI::Monolithic::Converged()
   case INPAR::TSI::convnorm_rel:
     convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normthrrhs_/nt_) < tolfres_) );
     break;
-  case INPAR::TSI::convnorm_mix:
-    convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
-    break;
   case INPAR::TSI::convnorm_reliter0:
     convfres = (normrhs_/normrhsiter0_ < tolfres_);
+    break;
+  case INPAR::TSI::convnorm_mix:
+    convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -1161,6 +1162,9 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   case INPAR::TSI::convnorm_rel :
     oss <<std::setw(18)<< "rel-res-norm";
     break;
+  case INPAR::TSI::convnorm_reliter0 :
+    oss <<std::setw(18)<< "reliter0-res-norm";
+    break;
   case INPAR::TSI::convnorm_mix :
     oss <<std::setw(18)<< "mix-res-norm";
     break;
@@ -1218,8 +1222,11 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   case INPAR::TSI::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_/ns_), (normthrrhs_/nt_) );
     break;
+  case INPAR::TSI::convnorm_reliter0 :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_/normrhsiter0_);
+    break;
   case INPAR::TSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_/ns_), (normthrrhs_/nt_) );
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_), (normthrrhs_) );
     break;
   default:
     dserror("You should not turn up here.");
