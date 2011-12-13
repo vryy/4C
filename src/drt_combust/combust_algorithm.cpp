@@ -3021,6 +3021,13 @@ void COMBUST::Algorithm::Redistribute()
         cout << "Redistributing ScaTra Discretization                                ... " << flush;
 
       ScaTraField().Redistribute(newnodegraph);
+      // remark: if there are no elements on a processor, in DEBUG mode the error message occurs,
+      // that the map of the redistributed phi vector (FluidNodeColMap) in the FlameFront does not
+      // match the fluid node col map belonging to the redistrubuted discretization any more. The
+      // reason is not clear, but this is prevented by checking if there are elements on each
+      // processor.
+      if (ScaTraField().Discretization()->NumMyRowElements() < 1)
+        dserror("there are no scatra elements on this proc");
 
       if (reinitaction_ == INPAR::COMBUST::reinitaction_sussman)
       {
@@ -3034,6 +3041,13 @@ void COMBUST::Algorithm::Redistribute()
         cout << "done\nRedistributing Fluid Discretization                                 ... " << flush;
 
       FluidField().Redistribute(newnodegraph);
+      // remark: if there are no elements on a processor, in DEBUG mode the error message occurs,
+      // that the map of the redistributed phi vector (FluidNodeColMap) in the FlameFront does not
+      // match the fluid node col map belonging to the redistrubuted discretization any more. The
+      // reason is not clear, but this is prevented by checking if there are elements on each
+      // processor.
+      if (FluidField().Discretization()->NumMyRowElements() < 1)
+        dserror("there are no fluid elements on this proc");
 
       if(Comm().MyPID()==0)
         cout << "done\nUpdating interface                                                  ... " << flush;
