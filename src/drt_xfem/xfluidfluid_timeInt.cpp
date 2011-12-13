@@ -129,25 +129,26 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - Create new map of bg nodes
 // - Gmsh-output
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
+int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
                                                                   XFEM::FluidWizard        wizard)
 {
   // save the old maps and clear the maps for the new cut
   // (all maps are related to the background fluid)
   SaveBgNodeMaps();
 
-//   oldbgdofmap_ = currentbgdofmap_;
-//   currentbgdofmap_ =  bgdis->DofRowMap();
-
   // Create new maps
   CreateBgNodeMaps(bgdis,wizard);
 
-//   if ((oldbgdofmap_->SameAs(*currentbgdofmap_) and  (stdnoden_ == stdnodenp_) and
-//        (enrichednoden_ == enrichednodenp_)))
-//       samemaps_ = true;
-//   else samemaps_ = false;
+  oldbgdofmap_ = currentbgdofmap_;
+  currentbgdofmap_ =  bgdis->DofRowMap();
+  if ((oldbgdofmap_->SameAs(*currentbgdofmap_) and (stdnoden_ == stdnodenp_) and
+       (enrichednoden_ == enrichednodenp_)))
+    samemaps_ = true;
+  else samemaps_ = false;
 
   GmshOutput(bgdis);
+
+  return samemaps_;
 }
 
 // -------------------------------------------------------------------

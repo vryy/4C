@@ -79,6 +79,13 @@ namespace INPAR
       XFFSI_FixedALE_Partitioned
     };
 
+    // xfluidfluid time integration approach
+    enum XFluidFluidTimeInt
+    {
+      Xff_TimeInt_FullProj,
+      Xff_TimeInt_ProjIfMoved
+    };
+
 
   }  // namespace XFEM
 

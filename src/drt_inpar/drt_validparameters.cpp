@@ -3971,6 +3971,16 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    &xfem_general);
 
 
+  // xfluidfluid time integration approach
+  setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT","Xff_TimeInt_FullProj","The xfluidfluid-timeintegration approach",
+                                    tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved"),
+                                    tuple<int>(
+                                      INPAR::XFEM::Xff_TimeInt_FullProj   ,    //always project nodes from embedded to background nodes
+                                      INPAR::XFEM::Xff_TimeInt_ProjIfMoved     //xproject nodes just if the status of background nodes changed
+                                      ),
+                                    &xfem_general);
+
+
   setStringToIntegralParameter<int>("INTERFACE_VEL","interface_vel_by_disp","how to compute or define the interface velocity",
                                tuple<std::string>("interface_vel_by_disp", "interface_vel_by_funct", "interface_vel_zero"),
                                tuple<int>(

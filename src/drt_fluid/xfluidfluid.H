@@ -284,6 +284,8 @@ namespace FLD
     /// statistics
     void StatisticsAndOutput();
 
+    void SetDirichletNeumannBC();
+
     /// determine grid velocity
     void UpdateGridv();
 
@@ -545,6 +547,7 @@ namespace FLD
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_apporach_; // xfluidfluid monolithic approach
+    enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;            // xfluidfluid time integration approach
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
     //@}
@@ -630,7 +633,8 @@ namespace FLD
 
     Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
 
-    bool       monolithicfluidfluidfsi_;
+    bool   monolithicfluidfluidfsi_;
+    bool   samemaps_; // same maps for the current cut and the last cut
 
     // used for monolithic_fixedale_partitioned
     Teuchos::RCP<Epetra_Vector>    toggle_;

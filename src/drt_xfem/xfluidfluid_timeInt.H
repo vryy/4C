@@ -37,10 +37,10 @@ public:
 
   //! constructor
   explicit XFluidFluidTimeIntegration(
-      const RCP<DRT::Discretization> bgdis,
-      const RCP<DRT::Discretization> embdis,
-      XFEM::FluidWizard              wizard,
-      int                            step
+    const RCP<DRT::Discretization> bgdis,
+    const RCP<DRT::Discretization> embdis,
+    XFEM::FluidWizard              wizard,
+    int                            step
     );
 
   //! destructor
@@ -57,7 +57,7 @@ public:
   // Save the old state
   void SaveBgNodeMaps();
 
-  void SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
+  int SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
                                    XFEM::FluidWizard              wizard);
 
   void SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
@@ -105,6 +105,12 @@ public:
 
   const Epetra_Map* currentbgdofmap_;
   const Epetra_Map* oldbgdofmap_;
+
+  // if the status of nodes remains the same don't do any
+  // intrepolation from the embedded fluid
+  bool samemaps_;
+
+  enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
 
   int step_;
 };

@@ -413,7 +413,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
 
     fluidtimeparams->sublist("XFEM").set<int>("MONOLITHIC_XFFSI_APPROACH", DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(xdyn,"MONOLITHIC_XFFSI_APPROACH"));
-
+    fluidtimeparams->sublist("XFEM").set<int>("XFLUIDFLUID_TIMEINT", DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(xdyn, "XFLUIDFLUID_TIMEINT"));
   }
 
   if( genprob.probtyp == prb_fluid_xfem2 or
