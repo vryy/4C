@@ -5,10 +5,10 @@
 \brief tesing of structure calculation results
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15238
 </pre>
 */
 /*----------------------------------------------------------------------*/

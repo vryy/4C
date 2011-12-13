@@ -4,10 +4,10 @@
 \brief Statics analysis
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -18,7 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_statics.H"
-#include "str_aux.H"
+#include "stru_aux.H"
 
 /*======================================================================*/
 /* constructor */

@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_mstep.H
+\brief Multi-step functionalities for structural time integration
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -21,12 +22,9 @@ Maintainer: Burkhard Bornemann
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_io/io.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

@@ -4,10 +4,10 @@
 \brief Structural time integration
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -27,6 +27,9 @@ Maintainer: Burkhard Bornemann
 #include <mpi.h>
 #endif
 
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"

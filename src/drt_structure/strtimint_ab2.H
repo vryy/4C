@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_ab2.H
+\brief Structural time integration with Adams-Bashforth 2nd order (explicit)
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 

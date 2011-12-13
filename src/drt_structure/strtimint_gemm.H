@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_gemm.H
+\brief Structural time integration with generalised energy-momentum method
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -30,7 +31,7 @@ namespace STR
    *
    * <h3>References</h3>
    * - [1] D Kuhl and MA Crisfield, Energy-conserving and decaying algorithms in non-linear structural dynamics, International Journal for Numerical Methods in Engineering, 45(5):569-599, 1999.
-   * - [2] JC Simo and N Tarnow, The discrete energy-momentum method, Conserving algorithms fro nonlinear elastodynamics, Journal of Applied Mathematics and Physics, 43:757-792, 1992.
+   * - [2] JC Simo and N Tarnow, The discrete energy-momentum method, Conserving algorithms for nonlinear elastodynamics, Journal of Applied Mathematics and Physics, 43:757-792, 1992.
    *
    * \author bborn
    * \date 07/08

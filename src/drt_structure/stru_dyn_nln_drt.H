@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
+
 \file stru_dyn_nln_drt.H
-\brief
+
+\brief Control routine for structural dynamics (outsourced to adapter layer)
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -25,9 +27,7 @@ Maintainer: Michael Gee
 #endif
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
+
 
 using namespace std;
 using namespace Teuchos;

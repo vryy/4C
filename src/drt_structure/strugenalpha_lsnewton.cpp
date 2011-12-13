@@ -22,7 +22,6 @@ Maintainer: Michael Gee
 #include "../drt_constraint/constraintsolver.H"
 
 
-
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 06/08|
  *----------------------------------------------------------------------*/

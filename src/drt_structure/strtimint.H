@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint.H
+\brief Time integration for structural dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -38,11 +39,17 @@ Maintainer: Burkhard Bornemann
 #include <nlnml_finelevelnoxinterface.H>
 
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 
 #include "strtimint_mstep.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_io/io.H"
 
 // forward declarations
 namespace UTILS

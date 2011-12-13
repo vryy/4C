@@ -25,7 +25,7 @@ Maintainer: Michael Gee
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
-#include "structure_utils_mapextractor.H"
+#include "stru_aux.H"
 
 
 #include "Epetra_Vector.h"
@@ -485,7 +485,7 @@ public:
   Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /// setup equilibrium with additional external forces
-  virtual void ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
+  virtual void ApplyExternalForce(const STR::AUX::MapExtractor& extractor,
                                   Teuchos::RCP<Epetra_Vector> iforce);
 
   /// introduce (robin) fsi surface extractor object
@@ -493,7 +493,7 @@ public:
     Introduce the FSI surface to the fluid algorithm. This way special case
     algorithms (robin coupling) can work on the surface.
    */
-  void SetFSISurface(const STR::UTILS::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+  void SetFSISurface(const STR::AUX::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
   /// switch structure field to block matrix in fsi simulations
   void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
@@ -625,7 +625,7 @@ protected:
   //@}
 
   /// (robin) fsi coupling row dof map extractor
-  const STR::UTILS::MapExtractor* fsisurface_;
+  const STR::AUX::MapExtractor* fsisurface_;
 
 }; // class StruGenAlpha
 

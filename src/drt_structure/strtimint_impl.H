@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_impl.H
+\brief Implicit time integration for structural dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -29,7 +30,7 @@ Maintainer: Burkhard Bornemann
 namespace STR
 {
 
-  namespace UTILS
+  namespace AUX
   {
     class MapExtractor;
   }
@@ -565,13 +566,13 @@ namespace STR
     //! algorithms (robin coupling) can work on the surface.
     void SetSurfaceFSI
     (
-      const UTILS::MapExtractor* fsisurface  //!< the FSI surface
+      const AUX::MapExtractor* fsisurface  //!< the FSI surface
     );
 
     //! Set forces due to interface with fluid
     void SetForceInterface
     (
-      const UTILS::MapExtractor& extractor,
+      const AUX::MapExtractor& extractor,
       Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
     );
 
@@ -664,7 +665,7 @@ namespace STR
 
     //! @name FSI stuff
     //@{
-    const UTILS::MapExtractor* fsisurface_;  //!< surface of structural
+    const AUX::MapExtractor* fsisurface_;  //!< surface of structural
                                              //!< which is in contact
                                              //!< with fluid
     //@}

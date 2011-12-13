@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_ab2.cpp
-\brief Structural time integration with Adams-Bashforth 2nd order
+\brief Structural time integration with Adams-Bashforth 2nd order (explicit)
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -51,7 +51,7 @@ STR::TimIntAB2::TimIntAB2
   fcmtn_(Teuchos::null),
   frimpn_(Teuchos::null)
 {
-  // info to user : AB2 --- your federal highway "Warschauer Allee"
+  // info to user
   if (myrank_ == 0)
   {
     std::cout << "with Adams-Bashforth 2nd order"

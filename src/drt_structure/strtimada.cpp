@@ -5,10 +5,10 @@
 \brief Time step adaptivity front-end for structural dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -22,7 +22,7 @@ Maintainer: Burkhard Bornemann
 
 #include "../drt_io/io_ostream0.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "str_aux.H"
+#include "stru_aux.H"
 
 #include "strtimada.H"
 

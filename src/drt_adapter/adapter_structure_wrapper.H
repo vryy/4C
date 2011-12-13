@@ -56,7 +56,7 @@ namespace ADAPTER
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
-    virtual const STR::UTILS::MapExtractor& Interface() const
+    virtual const STR::AUX::MapExtractor& Interface() const
     { return structure_->Interface(); }
     virtual double GetTime() const
     { return structure_->GetTime(); }

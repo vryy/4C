@@ -7,6 +7,7 @@
 Maintainer: Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15276
 </pre>
 */
 
@@ -35,7 +36,9 @@ Maintainer: Jonas Biehler
 #include "str_mlmc.H"
 #include "../drt_mlmc/mlmc.H"
 #include "../drt_inpar/inpar_mlmc.H"
-
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_adapter/adapter_structure_timint.H"
 
 #include "strtimint.H"

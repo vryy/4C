@@ -30,7 +30,7 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
-#include "../drt_structure/structure_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
@@ -94,7 +94,7 @@ namespace ADAPTER {
     );
 
     /// communication object at the interface
-    virtual const STR::UTILS::MapExtractor& Interface() const
+    virtual const STR::AUX::MapExtractor& Interface() const
     {
       return interface_;
     }
@@ -154,7 +154,7 @@ namespace ADAPTER {
   private:
 
     /// the interface map setup for interface <-> full translation
-    STR::UTILS::MapExtractor interface_;
+    STR::AUX::MapExtractor interface_;
 
     /// the constraint map setup for full <-> stuct+constr transition
     LINALG::MapExtractor conmerger_;

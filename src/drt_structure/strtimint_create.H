@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_create.H
-\brief
+\brief Creation of structural time integrators in accordance with user's wishes
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -34,13 +34,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "strtimint_expl.H"
-#include "strtimint_genalpha.H"
-#include "strtimint_ost.H"
-#include "strtimint_gemm.H"
-#include "strtimint_ab2.H"
 
-#include "strtimada.H"
-#include "strtimada_zienxie.H"
 
 /*----------------------------------------------------------------------*/
 /* Structural Dynamics */

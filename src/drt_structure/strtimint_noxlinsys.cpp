@@ -1,4 +1,18 @@
 /*----------------------------------------------------------------------*/
+/*!
+\file strtimint_noxlinsys.cpp
+\brief Use #NOX as non-linear solution technique for implicit
+       structureal time integration
+
+<pre>
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 /* macros */
 #ifdef CCADISCRET
 

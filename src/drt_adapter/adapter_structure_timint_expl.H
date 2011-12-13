@@ -32,7 +32,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_structure/stru_resulttest.H"
 
 #include "../drt_structure/strtimint_expl.H"
-#include "../drt_structure/structure_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 #include "adapter_structure.H"
 
 
@@ -171,7 +171,7 @@ namespace ADAPTER {
     //@}
 
     /// communication object at the interface
-    virtual const STR::UTILS::MapExtractor& Interface() const
+    virtual const STR::AUX::MapExtractor& Interface() const
     {
       return interface_;
     }
@@ -347,7 +347,7 @@ namespace ADAPTER {
     Teuchos::RCP<STR::TimIntExpl> structure_;
 
     /// the interface map setup for interface <-> full translation
-    STR::UTILS::MapExtractor interface_;
+    STR::AUX::MapExtractor interface_;
 
     /// @name local copies of input parameters
     //{@

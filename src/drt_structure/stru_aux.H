@@ -1,8 +1,26 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file stru_aux.H
+
+\brief structure-specific utils and auxiliary functions
+
+<pre>
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+
 #ifndef STRUCTURE_UTILS_MAPEXTRACTOR_H
 #define STRUCTURE_UTILS_MAPEXTRACTOR_H
 
 #include "../linalg/linalg_mapextractor.H"
+#include "../drt_inpar/inpar_structure.H"
 
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -10,8 +28,15 @@ namespace DRT
 
 namespace STR
 {
-namespace UTILS
+namespace AUX
 {
+
+  /// Determine norm of force residual
+  double CalculateVectorNorm
+  (
+    const enum INPAR::STR::VectorNorm norm,  ///< norm to use
+    const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
+  );
 
   /// specific MultiMapExtractor to handle the fluid field
   class MapExtractor : public LINALG::MultiMapExtractor

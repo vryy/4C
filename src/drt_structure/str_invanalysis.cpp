@@ -35,7 +35,9 @@ Maintainer: Sophie Rausch
 #include "../drt_inv_analysis/inv_analysis.H"
 #include "../drt_inv_analysis/gen_inv_analysis.H"
 #include "../drt_inpar/inpar_invanalysis.H"
-
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_adapter/adapter_structure_timint.H"
 
 #include "strtimint.H"

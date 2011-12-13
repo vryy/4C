@@ -863,7 +863,7 @@ void StruGenAlpha::ConsistentPredictor()
 /*----------------------------------------------------------------------*
  |  setup equilibrium with additional external forces        u.kue 02/08|
  *----------------------------------------------------------------------*/
-void StruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
+void StruGenAlpha::ApplyExternalForce(const STR::AUX::MapExtractor& extractor,
                                       Teuchos::RCP<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------
@@ -3328,7 +3328,7 @@ void StruGenAlpha::Output()
         {
           for (int j=0; j<patspecstuff->MyLength(); ++j)
             (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
-	  patspecstuff->Scale(maxiltthick);
+          patspecstuff->Scale(maxiltthick);
           output_.WriteVector("thrombus_thickness", patspecstuff, vt);
         }
 

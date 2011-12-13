@@ -4,10 +4,10 @@
 \brief Structural time integration with generalised energy-momentum method
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -18,7 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_gemm.H"
-#include "str_aux.H"
+#include "stru_aux.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -440,6 +440,10 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
@@ -460,6 +464,10 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   discret_->Evaluate(p, stiff, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
+
+  // *********** time measurement ***********
+  dtele_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
 
   // that's it
   return;

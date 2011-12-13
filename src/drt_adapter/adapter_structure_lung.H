@@ -27,7 +27,7 @@ Maintainer: Lena Wiechert
 #include "adapter_structure.H"
 #include "adapter_structure_wrapper.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_structure/structure_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 
 
 namespace ADAPTER {

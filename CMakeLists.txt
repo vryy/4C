@@ -1009,7 +1009,6 @@ set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_node.cpp
 )
 set(OBJS_DRT_STRUCTURE
-  src/drt_structure/str_aux.cpp
   src/drt_structure/strtimada.cpp
   src/drt_structure/strtimada_create.cpp
   src/drt_structure/strtimada_zienxie.cpp
@@ -1025,9 +1024,9 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_noxlinsys.cpp
   src/drt_structure/strtimint_ost.cpp
   src/drt_structure/strtimint_statics.cpp
+  src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
-  src/drt_structure/structure_utils_mapextractor.cpp
   src/drt_structure/strugenalpha.cpp
   src/drt_structure/strugenalpha_lsnewton.cpp
 )

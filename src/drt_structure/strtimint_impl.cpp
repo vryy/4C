@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_impl.cpp
-\brief Implicit time integration for spatial discretised
-       structural dynamics
+\brief Implicit time integration for structural dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Thomas Klöppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15257
 </pre>
 */
 
@@ -21,7 +20,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimint.H"
 #include "strtimint_impl.H"
-#include "str_aux.H"
+#include "stru_aux.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -31,7 +30,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
-#include "structure_utils_mapextractor.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -1797,7 +1795,7 @@ void STR::TimIntImpl::PrintStepText
 /* introduce (robin) fsi surface extractor object */
 void STR::TimIntImpl::SetSurfaceFSI
 (
-  const STR::UTILS::MapExtractor* fsisurface  //!< the FSI surface
+  const STR::AUX::MapExtractor* fsisurface  //!< the FSI surface
 )
 {
   fsisurface_ = fsisurface;
@@ -1807,7 +1805,7 @@ void STR::TimIntImpl::SetSurfaceFSI
 /* Set forces due to interface with fluid */
 void STR::TimIntImpl::SetForceInterface
 (
-  const STR::UTILS::MapExtractor& extractor,
+  const STR::AUX::MapExtractor& extractor,
   Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
 )
 {

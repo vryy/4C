@@ -158,7 +158,7 @@ namespace ADAPTER {
     //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
 
     /// communication object at the interface
-    virtual const STR::UTILS::MapExtractor& Interface() const = 0;
+    virtual const STR::AUX::MapExtractor& Interface() const = 0;
 
     //@}
 

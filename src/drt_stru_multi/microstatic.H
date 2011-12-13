@@ -37,7 +37,7 @@ Maintainer: Lena Wiechert
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure/str_aux.H"
+#include "../drt_structure/stru_aux.H"
 
 
 using namespace Teuchos;

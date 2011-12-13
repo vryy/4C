@@ -5,10 +5,10 @@
 \brief ZienkiewiczXie time step indicator for time adaptivity
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15238
 </pre>
 */
 
@@ -21,7 +21,10 @@ Maintainer: Burkhard Bornemann
 #include <iostream>
 
 #include "strtimada_zienxie.H"
-
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

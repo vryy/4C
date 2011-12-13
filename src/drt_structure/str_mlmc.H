@@ -7,6 +7,7 @@
 Maintainer: Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15276
 </pre>
 */
 
@@ -23,9 +24,7 @@ Maintainer: Jonas Biehler
 #endif
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
+
 
 /*----------------------------------------------------------------------*/
 /* Structural Dynamics */
