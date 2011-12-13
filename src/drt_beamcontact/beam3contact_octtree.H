@@ -69,9 +69,9 @@ class Beam3ContactOctTree
     // get the dimensions of the root octant
     LINALG::Matrix<1,6> GetRootOctant();
     // create axis aligned bounding boxes
-    void CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+    void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     // create coylindrical oriented bounding boxes
-    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+    void CreateCOBB(Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
     // spatial division of 3-dimensional volume
     void locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
@@ -108,6 +108,9 @@ class Beam3ContactOctTree
     
     // maximum tree depth
     int maxtreedepth_;
+
+    // scalar factor for diameters
+    double radfactor_;
 
     // diameters of all beam elements
     RCP<Epetra_Vector> diameter_;
