@@ -480,13 +480,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
         // y=0 is located in the middle of the domain
         if (nsd_ == 2)
         {
-          p = xyzint(1)*gravity + hight/2*gravity;
+          p = -xyzint(1)*gravity + hight/2*gravity;
           u(0) = 0.0;
           u(1) = 0.0;
         }
         if (nsd_ == 3)
         {
-          p = xyzint(1)*gravity + hight/2*gravity;
+          p = -xyzint(1)*gravity + hight/2*gravity;
           u(0) = 0.0;
           u(1) = 0.0;
           u(2) = 0.0;
@@ -505,6 +505,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
         if (nsd_ == 2)
         {
           p = 1.0;
+          //p = -10*xyzint(0)+20;
           u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
           u(1) = 0.0;
         }
@@ -520,13 +521,25 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
     deltap    = preint - p;
     deltavel.Update(1.0, velint_, -1.0, u);
 
-    // add square to L2 error
+    // L2 error
+    // 0: vel_mag
+    // 1: p
+    // 2: vel_mag,analytical
+    // 3: p_analytic
+    // (4: vel_x)
+    // (5: vel_y)
+    // (6: vel_z)
     for (int isd=0;isd<nsd_;isd++)
     {
       elevec1[0] += deltavel(isd)*deltavel(isd)*fac_;
-      //elevec1[isd+2] += deltavel(isd)*deltavel(isd)*fac_;
+      //integrate analytical velocity (computation of relative error)
+      elevec1[2] += u(isd)*u(isd)*fac_;
+      // velocity components
+      //elevec1[isd+4] += deltavel(isd)*deltavel(isd)*fac_;
     }
     elevec1[1] += deltap*deltap*fac_;
+    //integrate analytical pressure (computation of relative error)
+    elevec1[3] += p*p*fac_;
   }
 
   return 0;

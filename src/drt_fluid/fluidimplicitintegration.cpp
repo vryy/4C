@@ -23,6 +23,9 @@ Maintainer: Peter Gamnitzer
 
 #undef WRITEOUTSTATISTICS
 
+// include Gmsh output
+//#define GMSHOUTPUT
+
 #include "fluidimplicitintegration.H"
 #include "time_integration_scheme.H"
 #include "../linalg/linalg_ana.H"
@@ -55,9 +58,8 @@ Maintainer: Peter Gamnitzer
 #endif //ifdef D_RED_AIRWAYS
 #endif // D_ARTNET
 
-#ifdef WRITEOUTSTATISTICS
+// print error file for function EvaluateErrorComparedToAnalyticalSol()
 #include "../drt_io/io_control.H"
-#endif
 
 // for AVM3 solver:
 #include <MLAPI_Workspace.h>
@@ -66,9 +68,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-
-// include Gmsh output
-//#define GMSHOUTPUT
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -360,7 +359,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   strong_redD_3d_coupling_ = false;
   if (params_.get<string>("Strong 3D_redD coupling","no") == "yes")   strong_redD_3d_coupling_ = true;
-  
+
   {
 #ifdef D_ARTNET
     ART_exp_timeInt_ = dyn_art_net_drt(true);
@@ -644,11 +643,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
- 
+
   SetElementGeneralFluidParameter();
   SetElementTimeParameter();
   SetElementTurbulenceParameter();
- 
+
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -676,6 +675,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
     cout << "                             " << stabparams->get<string>("TDS")<< "\n";
     cout << "\n";
     cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
+    cout << "                             " << "Evaluation Tau  = " << stabparams->get<string>("EVALUATION_TAU") <<"\n";
     cout << "\n";
 
     if(stabparams->get<string>("TDS") == "quasistatic")
@@ -692,6 +692,8 @@ void FLD::FluidImplicitTimeInt::Integrate()
     cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
     cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
     cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    cout << endl;
+    cout << "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
     cout << "\n";
   }
 
@@ -1088,7 +1090,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
-      
+
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
       discret_->SetState("hist",hist_);
@@ -1100,7 +1102,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("dispnp", dispnp_);
       }
 #endif // D_ALE_BFLOW
-      
+
 #ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
       // Check if one-dimensional artery network problem exist
@@ -1137,7 +1139,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       trac_residual_->Update(0.0,*residual_,0.0);
       traction_vel_comp_adder_bc_->UpdateResidual(trac_residual_);
 
-      residual_->Update(1.0,*trac_residual_,1.0);      
+      residual_->Update(1.0,*trac_residual_,1.0);
       discret_->ClearState();
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
@@ -1577,7 +1579,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         LINALG::Export(*tmpkspc,*c_);
 
         if(msht_!= INPAR::FLUID::no_meshtying)
+        {
           meshtying_->KrylovProjection(c_);
+          meshtying_->KrylovProjection(w_);
+        }
       }
       else
       {
@@ -2209,7 +2214,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
       vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
       residual_);
 
-    
+
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm);
 
@@ -2394,9 +2399,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   traction_vel_comp_adder_bc_->EvaluateVelocities( velnp_,time_,theta_,dta_);
   traction_vel_comp_adder_bc_->UpdateResidual(residual_);
-    
+
   discret_->ClearState();
-  
+
 
    if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky
     or turbmodel_ == INPAR::FLUID::scale_similarity
@@ -2870,7 +2875,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
         discret_->SetState("dispnp", dispnp_);
       }
 #endif // D_ALE_BFLOW
-      
+
 
 #ifdef D_ARTNET
   // update the 3D-to-reduced_D coupling data
@@ -2905,7 +2910,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   traction_vel_comp_adder_bc_->EvaluateVelocities( velnp_,time_,theta_,dta_);
   traction_vel_comp_adder_bc_->UpdateResidual(residual_);
 
-      
+
   discret_->ClearState();
 
   // create the parameters for the discretization
@@ -3636,7 +3641,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   Wk_optimization_->ReadRestart(reader);
 
   vol_surf_flow_bc_->ReadRestart(reader);
-  
+
   traction_vel_comp_adder_bc_->ReadRestart(reader);
 
 
@@ -4497,12 +4502,16 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     discret_->SetState("u and p at time n+1 (converged)",velnp_);
 
     // get (squared) error values
+    // 0: vel_mag
+    // 1: p
+    // 2: u_mag,analytical
+    // 3: p_analytic
+    // (4: vel_x)
+    // (5: vel_y)
+    // (6: vel_z)
     Teuchos::RCP<Epetra_SerialDenseVector> errors
-#if 0
-      = Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+2));
-#else
-      = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-#endif
+      = Teuchos::rcp(new Epetra_SerialDenseVector(2+2));
+    //  = Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+2+2))
 
     // call loop over elements (assemble nothing)
     discret_->EvaluateScalars(eleparams, errors);
@@ -4511,53 +4520,66 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     double velerr = 0.0;
     double preerr = 0.0;
 
+    // integrated analytic solution in order to compute relative error
+    double velint = 0.0;
+    double pint = 0.0;
+
+    // error in the single velocity components
+    //double velerrx = 0.0;
+    //double velerry = 0.0;
+    //double velerrz = 0.0;
+
     // for the L2 norm, we need the square root
     velerr = sqrt((*errors)[0]);
     preerr = sqrt((*errors)[1]);
 
+    // analytical vel_mag and p_mag
+    velint= sqrt((*errors)[2]);
+    pint = sqrt((*errors)[3]);
+
     if (myrank_ == 0)
     {
-      printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
-             velerr,preerr);
+      {
+        cout.precision(8);
+        cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
+          DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error") <<
+          " ----------" << endl;
+        cout << "| velocity:  " << velerr/velint << endl;
+        cout << "| pressure:  " << preerr/pint << endl;
+        cout << "--------------------------------------------------------------------" << endl << endl;
+      }
 
-#if 0
-      //Write error in a file
-      // following headers need to be included
-      // #include "../drt_io/io.H"
-      // #include "../drt_io/io_control.H"
+      //velerrx = sqrt((*errors)[4]);
+      //velerry = sqrt((*errors)[5]);
+      //if (numdim_==3)
+      //  velerrz = sqrt((*errors)[6]);
 
-      double velerrx = 0.0;
-      double velerry = 0.0;
-      double velerrz = 0.0;
-
-      velerrx = sqrt((*errors)[2]);
-      velerry = sqrt((*errors)[3]);
-      velerrz = sqrt((*errors)[4]);
-
+      // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
         ostringstream temp;
         const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-        const std::string fname = "error.txt";
+        const std::string fname = simulation+".relerror";
 
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
         f << "#| " << simulation << "\n";
-        f << "#| Step | Time | L2-error velocity x | L2-error velocity y  | L2-error pressure|\n";
-        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
+        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
+        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
         f.flush();
         f.close();
       }
 
       ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      const std::string fname = "error_time_"+simulation+".txt";
+      const std::string fname = simulation+"_time.relerror";
 
       if(step_==1)
       {
         std::ofstream f;
         f.open(fname.c_str());
-        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
+        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
+        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
         f.flush();
         f.close();
       }
@@ -4565,11 +4587,10 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
+        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
         f.flush();
         f.close();
       }
-#endif
     }
   }
   break;
