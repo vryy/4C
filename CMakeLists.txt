@@ -1251,6 +1251,7 @@ set(OBJS_DRT_STK
   src/drt_stk/stk_gmsh.cpp
 )
 set(OBJS_DRT_CUT
+  src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_coloredgraph.cpp
@@ -1283,6 +1284,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_volumecellgenerator.cpp
   src/drt_cut/line_integration.cpp
   src/drt_cut/facet_integration.cpp
+  src/drt_cut/boundarycell_integration.cpp
   src/drt_cut/volume_integration.cpp
   src/drt_cut/least_squares.cpp
 )
