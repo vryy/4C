@@ -1217,7 +1217,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   switch ( normtypefres_ )
   {
   case INPAR::TSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normrhs_;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normrhs_/ntsi_;
     break;
   case INPAR::TSI::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_/ns_), (normthrrhs_/nt_) );

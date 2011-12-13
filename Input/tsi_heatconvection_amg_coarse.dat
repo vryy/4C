@@ -111,8 +111,8 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
+ML_MAXCOARSESIZE                1 // 5000
+ML_MAXLEVEL                     3 //5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -285,6 +285,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
+AZPREC                          BGS2x2 // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none  //     none,sym,infnorm
 AZSOLVE                         GMRES //     CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
