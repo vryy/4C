@@ -67,6 +67,8 @@ public:
 
   bool IsValid() const { return points_.size() > 0; }
 
+  virtual DRT::UTILS::GaussIntegration gaussRule()=0;
+
 
   template <DRT::Element::DiscretizationType celldistype>
   void Transform( const LINALG::Matrix<2,1> & eta,
@@ -88,7 +90,6 @@ public:
 
       return;
   }
-
 
 
 protected:
@@ -146,6 +147,8 @@ public:
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 
+  virtual DRT::UTILS::GaussIntegration gaussRule();
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
@@ -171,9 +174,43 @@ public:
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 
+  virtual DRT::UTILS::GaussIntegration gaussRule();
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
+};
+
+/// Irregular boundary cell generated during the cut
+class ArbitraryBoundaryCell : public BoundaryCell
+{
+public:
+
+  ArbitraryBoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points,
+      DRT::UTILS::GaussIntegration gaussRule)
+    : BoundaryCell( xyz, facet, points ),
+      gaussRule_(gaussRule)
+  {
+  }
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const {  return 0; }
+
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
+
+  virtual double Area() { return 0.0;}
+
+  virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
+
+  virtual DRT::UTILS::GaussIntegration gaussRule();
+
+protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
+private:
+  DRT::UTILS::GaussIntegration gaussRule_;
+
 };
 
 }

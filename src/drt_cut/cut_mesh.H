@@ -18,6 +18,8 @@
 #include "cut_boundingbox.H"
 #include "cut_point.H"
 #include "cut_facet.H"
+//#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
 {
@@ -41,6 +43,7 @@ class VolumeCell;
 class BoundaryCell;
 class Tri3BoundaryCell;
 class Quad4BoundaryCell;
+class ArbitraryBoundaryCell;
 
 class IntegrationCell;
 class Hex8IntegrationCell;
@@ -96,6 +99,9 @@ public:
   Tri3BoundaryCell* NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
   Quad4BoundaryCell* NewQuad4Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
+
+  ArbitraryBoundaryCell* NewArbitraryCell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points,
+      const DRT::UTILS::GaussIntegration& gaussRule );
 
   Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 

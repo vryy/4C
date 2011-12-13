@@ -6,36 +6,36 @@
 //the source terms also get multiplied
 Epetra_SerialDenseMatrix GEO::CUT::LeastSquares::get_square_matrix(Epetra_SerialDenseVector &rhs)
 {
-        Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
+  Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
 
-        for(unsigned i=0;i<matri_[0].size();i++)
-        {
-                for(unsigned j=0;j<matri_[0].size();j++)
-                {
-                        sqr(j,i) = 0.0;
+  for(unsigned i=0;i<matri_[0].size();i++)
+  {
+    for(unsigned j=0;j<matri_[0].size();j++)
+    {
+      sqr(j,i) = 0.0;
 //it is sqr(j,i) because the Epetra elements are column ordered first
-                        for(unsigned k=0;k<matri_.size();k++)
-                                sqr(j,i) += matri_[k][i]*matri_[k][j]; 
-                }
-        }
+      for(unsigned k=0;k<matri_.size();k++)
+        sqr(j,i) += matri_[k][i]*matri_[k][j];
+    }
+  }
 
 /*      for(unsigned i=0;i<matri_[0].size();i++)
-        {
-                for(unsigned j=0;j<matri_[0].size();j++)
-                        std::cout<<sqr[i][j]<<"\t";
-                std::cout<<"\n";
-        }*/
+  {
+          for(unsigned j=0;j<matri_[0].size();j++)
+                  std::cout<<sqr[i][j]<<"\t";
+          std::cout<<"\n";
+  }*/
 
-        for(unsigned i=0;i<matri_[0].size();i++)
-        {
-                rhs(i) = 0.0;
-                for(unsigned j=0;j<matri_.size();j++)
-                        rhs(i) += matri_[j][i]*sourc_(j);
-        }
+  for(unsigned i=0;i<matri_[0].size();i++)
+  {
+    rhs(i) = 0.0;
+    for(unsigned j=0;j<matri_.size();j++)
+      rhs(i) += matri_[j][i]*sourc_(j);
+  }
 
 /*      for(unsigned i=0;i<matri_[0].size();i++)
-                std::cout<<rhs[i]<<std::endl;*/
-        return sqr;
+          std::cout<<rhs[i]<<std::endl;*/
+  return sqr;
 }
 
 //solves the system of equations using conjugate gradient method
@@ -91,32 +91,33 @@ Epetra_SerialDenseMatrix GEO::CUT::LeastSquares::get_square_matrix(Epetra_Serial
 //multiply a n*n matrix and a n vector
 std::vector<double> GEO::CUT::LeastSquares::multiply(std::vector<std::vector<double> > mat, std::vector<double> ve)
 {
-        std::vector<double> resu(ve.size());
-        for(unsigned i=0;i<ve.size();i++)
-        {
-                resu[i] = 0.0;
-                for(unsigned j=0;j<ve.size();j++)
-                        resu[i] += mat[i][j]*ve[j];
-        }
-        return resu;
+  std::vector<double> resu(ve.size());
+  for(unsigned i=0;i<ve.size();i++)
+  {
+    resu[i] = 0.0;
+    for(unsigned j=0;j<ve.size();j++)
+      resu[i] += mat[i][j]*ve[j];
+  }
+  return resu;
 }
 
 //multiply two vectors
 double GEO::CUT::LeastSquares::multi_vec(std::vector<double> mm1, std::vector<double> mm2)
 {
-        double resu = 0.0;
-        for(unsigned i=0;i<mm1.size();i++)
-                resu += mm1[i]*mm2[i];
-        return resu;
+  double resu = 0.0;
+  for(unsigned i=0;i<mm1.size();i++)
+    resu += mm1[i]*mm2[i];
+  return resu;
 }
 
 //solve the rectangular system with linear least squares
 Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
 {
-        Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
-        Epetra_SerialDenseVector rhs(matri_[0].size());
-        sqr = get_square_matrix(rhs);
-        unknown_.Size(matri_[0].size());
+  Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
+  Epetra_SerialDenseVector rhs(matri_[0].size());
+  sqr = get_square_matrix(rhs);
+  unknown_.Size(matri_[0].size());
+
 
 /*	Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());//blockkk
 	Epetra_SerialDenseVector unn(sqr.size());//blockkk
@@ -142,7 +143,7 @@ Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
 /*	for(unsigned i=0;i<unknown_.size();i++)
 		std::cout<<"error = "<<unn(i,0)<<"\t"<<unknown_[i]<<"\n";*/
 
-        return unknown_;
+  return unknown_;
 }
 
 double GEO::CUT::LeastSquares::maxAbsolute(std::vector<double>a)

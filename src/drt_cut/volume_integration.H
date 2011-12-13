@@ -13,16 +13,16 @@
 
 namespace GEO
 {
-    namespace CUT
-    {
-        class Element;
-        class Facet;
-        class VolumeCell;
+  namespace CUT
+  {
+    class Element;
+    class Facet;
+    class VolumeCell;
 //While performing the volume integration, the points of the facet should be arranged in anti-clockwise manner when looking the surface away from the body
 //this ensures outward normal vector
-class VolumeIntegration
-{
-    public:
+    class VolumeIntegration
+    {
+      public:
         VolumeIntegration(VolumeCell* volcell, Element* elem, const GEO::CUT::Point::PointPosition posi, int num_func)
             :volcell_(volcell),
             elem1_(elem),
@@ -33,9 +33,9 @@ class VolumeIntegration
 
         ~VolumeIntegration(){};
         Epetra_SerialDenseVector compute_weights();
-        std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;} 
+        std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;}
 
-    private:
+      private:
         VolumeCell* volcell_;
         Element* elem1_;
         const GEO::CUT::Point::PointPosition position_;
@@ -44,7 +44,7 @@ class VolumeIntegration
         std::vector<std::vector<double> > gaus_pts_;
         std::vector<std::vector<double> > eqn_facets_;
         bool compute_Gaussian_points(int numeach);
-        void moment_fitting_matrix(std::vector<std::vector<double> >&mom);
+        void moment_fitting_matrix(std::vector<std::vector<double> >&mom,std::vector<std::vector<double> >gauspts);
         bool IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
                         vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
         bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
@@ -61,8 +61,8 @@ class VolumeIntegration
         void FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
         void SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
         void ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,Epetra_SerialDenseVector weights,int numeach);
-};
-}
+    };
+  }
 }
 
 #endif

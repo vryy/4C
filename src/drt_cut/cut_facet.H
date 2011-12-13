@@ -12,6 +12,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_lib/drt_element.H"
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 // #include "../drt_lib/drt_element.H"
 
@@ -150,6 +151,9 @@ public:
 //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
 
   void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
+
+  void NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells,
+      const DRT::UTILS::GaussIntegration& gp );
 
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 

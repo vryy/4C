@@ -808,6 +808,13 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std:
   }
 }
 
+void GEO::CUT::Facet::NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points,
+    plain_boundarycell_set & bcells, const DRT::UTILS::GaussIntegration& gp )
+{
+  BoundaryCell* bc = mesh.NewArbitraryCell(volume, this, points, gp);
+  bcells.insert( bc );
+}
+
 void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
   if ( cells_.size()==0 )

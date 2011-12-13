@@ -8,6 +8,7 @@
 #include "cut_options.H"
 #include "cut_kernel.H"
 #include "volume_integration.H"
+#include "boundarycell_integration.H"
 
 #include<algorithm>
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
@@ -284,6 +285,12 @@ void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const std::vecto
 void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewQuad4Cell( mesh, this, x, bcells_ );
+}
+
+void GEO::CUT::VolumeCell::NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x,
+    const DRT::UTILS::GaussIntegration& gp )
+{
+  f->NewArbitraryCell( mesh, this, x, bcells_, gp );
 }
 
 double GEO::CUT::VolumeCell::Volume()
@@ -655,61 +662,40 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPoints(const std::vector<std::vector<dou
     file.close();
 }
 
+//convert the Gaussian points and weights into appropriate Gauss rule as per BACI implementation
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
-//void GEO::CUT::VolumeCell::GaussPointsFitting()
 {
-    Element *ele1 =ParentElement();
-//    const DRT::Element::DiscretizationType distyp = ele1->Shape();
-//    std::cout<<"distype"<<distyp<<std::endl;
-//    const int nsd = DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim;
-    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-    LINALG::Matrix<3,nen> xyze;
-    ele1->Coordinates(xyze.A());
+  int numGausPts = gausPts_.size();
+  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
+                      DRT::UTILS::CollectedGaussPoints( numGausPts ) );
 
-    Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::hex8, 
-                    5/*DRT::UTILS::CubatureDegree(DRT::Element::hex8) */);
-    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new 
-                    DRT::UTILS::CollectedGaussPoints( gp->NumPoints() ) );
+  for(unsigned i=0;i<gausPts_.size();i++)
+  {
+    LINALG::Matrix<3,1> xe,xei;
+    xe(0,0) = gausPts_[i][0];
+    xe(1,0) = gausPts_[i][1];
+    xe(2,0) = gausPts_[i][2];
 
-    for(unsigned i=0;i<gausPts_.size();i++)
-    {
-        LINALG::Matrix<3,1> xe,xei;
-        xe(0,0) = gausPts_[i][0];
-        xe(1,0) = gausPts_[i][1];
-        xe(2,0) = gausPts_[i][2];
+    cgp->Append( xe, weights_(i) );
+  }
 
- /*       ele1->LocalCoordinates( xe, xei );
-
-//transformation from global to element local coordinate system
-        LINALG::Matrix<nsd,nen> deriv;
-        LINALG::Matrix<nsd,nsd> xjm;
-        DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xei,deriv);
-
-        xjm.MultiplyNT( deriv, xyze );
-
-        double det = xjm.Determinant();
- //       std::cout<<weights_[i]<<"\t"<<weights_[i]/det<<"\n";
-        double wei = weights_(i)/det; 
-//      std::cout<<xei(0,0)<<"\t"<<xei(1,0)<<"\t"<<xei(2,0)<<"\n";*/
-//
-        cgp->Append( xe, weights_(i) );
-    }
 /*    double sum=0.0;
-    for(unsigned i=0;i<weights_.size();i++)
-            sum += weights_[i];
-    std::cout<<"volume"<<sum<<"\n";*/
-    return cgp;
+  for(unsigned i=0;i<weights_.size();i++)
+          sum += weights_[i];
+  std::cout<<"volume"<<sum<<"\n";*/
+  return cgp;
 }
 
 //generate boundary cells for the volumecell
-void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi)
+void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,
+    int BaseNos)
 {
 //    std::cout<<"boundary cell size in this volume = "<<bcells_.size()<<"\n";
 	const plain_facet_set & facete = Facets();
 	for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
 	{
 		Facet *fac = *i;
-		const Side* parside = fac->ParentSide();//order checking
+		const Side* parside = fac->ParentSide();  //to check the normal direction for this cell
 		const std::vector<Node*> &par_nodes = parside->Nodes();
 		std::vector<Point*> parpts(3);
 		int ptscount=0;
@@ -728,8 +714,8 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Poi
 		if(fac->OnCutSide())
 		{
 			std::vector<Point*> corners = fac->CornerPoints();
-//            std::cout<<"no of corners = "<<corners.size()<<"\n";
-//if no of corners are 3 or 4, strightforward
+
+//if no of corners are 3 or 4, just add them as boundary integrationcells directly
 			if(corners.size()==3)
 			{
 				OrientationFacet(corners,sideOri);
@@ -748,9 +734,9 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Poi
 					std::reverse(corners.begin(),corners.end());
 				NewQuad4Cell(mesh,fac,corners);
 			}
-//for more than four corners, the facet is triangulated to generate boundary cells
 			else
 			{
+#if 1 //generate boundarycell gausspoints by triangulation
 				if(!fac->IsTriangulated())
 					fac->DoTriangulation( mesh, corners );
 				const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
@@ -769,34 +755,58 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Poi
 					else
 						dserror("Triangulation created neither tri3 or quad4");
 				}
+#endif
+
+#if 0 //generate boundarycell gausspoints by solving moment fitting equations
+				BoundarycellIntegration bcell_inte(elem,fac,posi,BaseNos);
+				Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
+				BcellgausPts_ = bcell_inte.getBcellGaussPointLocation();
+
+				int numBcellpts = BcellgausPts_.size();
+				Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( numBcellpts ) );
+
+				for(unsigned i=0;i<BcellgausPts_.size();i++)
+        {
+          LINALG::Matrix<3,1> xe;
+          xe(0,0) = BcellgausPts_[i][0];
+          xe(1,0) = BcellgausPts_[i][1];
+          xe(2,0) = BcellgausPts_[i][2];
+
+          cgp->Append( xe, Bcellweights_(i) );
+//          std::cout<<"int pt = "<<xe(0,0)<<"\t"<<xe(1,0)<<"\t"<<xe(2,0)<<"\t"<<Bcellweights_(i)<<"\n";
+        }
+				DRT::UTILS::GaussIntegration gi(cgp);
+				NewArbitraryCell(mesh, fac, corners, gi);
+#endif
 			}
 		}
 	}
 }
 
+//This is to check whether the corner points of the cut side facet is aligned to give outward normal
 bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,double* parOri,double* sideOri)
 {
 	bool rever = false;
 	if(posi==-3)
 	{
 		if(fabs(sideOri[0])>0.0000001 && sideOri[0]*parOri[0]>0.0)
-				rever = true;
+      rever = true;
 		else if(fabs(sideOri[1])>0.0000001 && sideOri[1]*parOri[1]>0.0)
-				rever = true;
+      rever = true;
 		else if(fabs(sideOri[2])>0.0000001 && sideOri[2]*parOri[2]>0.0)
-				rever = true;
+      rever = true;
 		else
 			//dserror("Point is given instead of side");
-			rever = false;
+    rever = false;
 	}
 	if(posi==-2)
 	{
 		if(fabs(sideOri[0])>0.0000001 && sideOri[0]*parOri[0]<0.0)
-				rever = true;
+      rever = true;
 		else if(fabs(sideOri[1])>0.0000001 && sideOri[1]*parOri[1]<0.0)
-				rever = true;
+      rever = true;
 		else if(fabs(sideOri[2])>0.0000001 && sideOri[2]*parOri[2]<0.0)
-				rever = true;
+      rever = true;
 		else
 			//dserror("Point is given instead of side");
 			rever = false;
@@ -829,11 +839,11 @@ void GEO::CUT::VolumeCell::OrientationFacet(const std::vector<Point*>pts, double
 //Find Gaussian points and weights by moment fitting equations
 void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner)
 {
-//        std::cout<<"volume"<<std::endl;
-//
-//        static int k=0; //blockkk or remove
-//if(k>0)        //blockkk or remove
+
+//static int k=0; //blockkk or remove
+//if(k!=0)        //blockkk or remove
 //	return;//blockkk or remove
+//k++;//remove
 //const GEO::CUT::Point::PointPosition posu = Position();//blockkk or remove
 //if(posu==-3)//blokkk or remove
 //	k++;//blockkk or remove*/
@@ -841,79 +851,34 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
 	//position is used to decide whether the ordering of points are in clockwise or not
 	const GEO::CUT::Point::PointPosition posi = Position();
 	std::cout<<"position = "<<posi<<"\n";
+
 //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
 //as this vc will never be computed in xfem algorithm
-	if(posi==-2 && include_inner==false)//unblockkk
+	if(posi==-2 && include_inner==false)
 		return;
-    VolumeIntegration vc_inte(this,elem,posi,84); //change the number of equations
 
-    weights_ = vc_inte.compute_weights();
-    gausPts_ = vc_inte.getGaussPointLocation(); 
+	int BaseNos=84; //number of base functions to be used in the integration
+  VolumeIntegration vc_inte(this,elem,posi,BaseNos); //change the number of equations
+
+  weights_ = vc_inte.compute_weights();
+  gausPts_ = vc_inte.getGaussPointLocation();
 
 //generate boundary cells. if Tessellation option is used instead of MomentFitting,
 //this happens inside "createintegrationcells"
-    GenerateBoundaryCells(mesh,posi);
+  GenerateBoundaryCells(mesh,posi,elem,BaseNos);
 
-    /*static int kk=1;
-    std::ofstream file; //blockkk this group
-    std::stringstream out;
-    out <<"volume"<<kk<<".pos";
-    std::string filename = out.str();
-    file.open(filename.c_str());
-    DumpGmsh(file);
-    file.close();
-    kk++;*/
-
-//    k++;               //blockkk or remove
-//}
-    
-    /*std::cout<<"volume"<<"\n";
-    const plain_facet_set & facete = Facets();
-    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-    {
-        Facet *fac = *i;
-        const std::vector<vector<double> > corners = fac->CornerPointsLocal(elem,0);
-        std::cout<<"facet"<<std::endl;
-        for(std::vector<vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
-        {
-            vector<double> coords = *k;
-            std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
-        }
-    }*/
-
-//}                      //blockkk or remove 
-
-
-/*    std::cout<<"volume"<<std::endl;
-    for(unsigned i=0;i<weights_.size();i++)
-    {
-            std::cout<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
-    }*/
-
-/*  const plain_facet_set & facete = Facets();
-    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-    {
-        Facet *fe = *i;
-        FacetIntegration faee1(fe,elem,posi);
-        double dee = faee1.integrate_facet();
-        std::cout<<dee<<std::endl;
-    //  break;
-    }*/
-
-
-	  /*static int sideno = 0;
-          sideno++;
-	  std::string filename="wrong";
-   	  std::ofstream file;
-
-          std::stringstream out;
-          out <<"parent"<<sideno<<".dat";
-          filename = out.str();
-          file.open(filename.c_str());
-	  for (unsigned i=0;i<gausPts_.size();i++)
-	  { 
-		  file<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
-	  }
-	  file.close();*/
+  /*std::cout<<"volume"<<"\n";
+  const plain_facet_set & facete = Facets();
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+      Facet *fac = *i;
+      const std::vector<vector<double> > corners = fac->CornerPointsLocal(elem,0);
+      std::cout<<"facet"<<std::endl;
+      for(std::vector<vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
+      {
+          vector<double> coords = *k;
+          std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
+      }
+  }*/
 
 }

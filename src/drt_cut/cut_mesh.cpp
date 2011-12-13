@@ -874,6 +874,25 @@ GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( VolumeCell * volume, 
   return bc;
 }
 
+GEO::CUT::ArbitraryBoundaryCell* GEO::CUT::Mesh::NewArbitraryCell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points,
+    const DRT::UTILS::GaussIntegration& gaussRule)
+{
+#ifdef DEBUGCUTLIBRARY
+  plain_point_set pointtest;
+  pointtest.insert( points.begin(), points.end() );
+  if ( points.size()!=pointtest.size() )
+  {
+    throw std::runtime_error( "point used more than once in boundary cell" );
+  }
+#endif
+  Epetra_SerialDenseMatrix xyz( 3, points.size() );
+  for ( unsigned i=0; i<points.size(); ++i )
+    points[i]->Coordinates( &xyz( 0, i ) );
+  ArbitraryBoundaryCell * bc = new ArbitraryBoundaryCell( xyz, facet, points, gaussRule );
+  boundarycells_.push_back( Teuchos::rcp( bc ) );
+  return bc;
+}
+
 GEO::CUT::Hex8IntegrationCell* GEO::CUT::Mesh::NewHex8Cell( Point::PointPosition position,
                                                             const std::vector<Point*> & points,
                                                             VolumeCell * cell )

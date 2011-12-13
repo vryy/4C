@@ -17,10 +17,11 @@ namespace GEO
 class FacetIntegration
 {
     public:
-        FacetIntegration(Facet *face1,Element *element1,const GEO::CUT::Point::PointPosition posi)
+        FacetIntegration(Facet *face1,Element *element1,const GEO::CUT::Point::PointPosition posi,bool bcellInt)
             :face1_(face1),
              elem1_(element1),
-             position_(posi)
+             position_(posi),
+             bcellInt_(bcellInt)
         {
         }
 
@@ -28,18 +29,22 @@ class FacetIntegration
         void set_integ_number(int inte_num){inte_num_ = inte_num;}
         double integrate_facet();
         std::vector<double> get_equation() {return eqn_plane_;}
+        bool IsClockwiseOrdering(){return clockwise_;}
 //      std::vector<std::pair<int,int> > get_connectivity(){return connecti_;};
 
     private:
         Facet *face1_;
         Element *elem1_;
         const GEO::CUT::Point::PointPosition position_;
+        bool bcellInt_;
         int inte_num_;
         bool clockwise_;
         std::vector<double> eqn_plane_;
         std::vector<double> equation_plane(const std::vector<std::vector<double> > cornersLocal);
         void IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal);
-        std::vector<double> compute_alpha(std::vector<double> eqn_plane);
+        std::vector<double> compute_alpha(std::vector<double> eqn_plane,std::string intType);
+        void BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,double& facet_integ,
+        		std::string intType);
         
     };
 }

@@ -65,7 +65,7 @@ public:
 
   void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner );
 
-  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi);
+  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos);
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
@@ -106,6 +106,8 @@ public:
   void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
+
+  void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp );
 
   void SimplifyIntegrationCells( Mesh & mesh );
 
@@ -161,10 +163,15 @@ private:
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
 
- //store the Gauss point weights and location when moment fitting equations are
+ //store the Gauss point weights and location for volumecells when moment fitting equations are
  //used to arrive at them
   Epetra_SerialDenseVector weights_;
   std::vector<std::vector<double> > gausPts_;
+
+  //store the Gauss point weights and location for boundarycells when moment fitting equations are
+  //used to arrive at them
+  Epetra_SerialDenseVector Bcellweights_;
+  std::vector<std::vector<double> > BcellgausPts_;
 };
 
 

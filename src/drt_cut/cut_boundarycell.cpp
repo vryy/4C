@@ -148,6 +148,12 @@ void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
   file << "};\n";
 }
 
+void GEO::CUT::ArbitraryBoundaryCell::DumpGmsh( std::ofstream & file, int * value )
+{
+  //TO DO: implement gmsh output for arbitrarily shaped bcell
+//  dserror("not implemented");
+}
+
 void GEO::CUT::Tri3BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
 {
 #if 1
@@ -205,4 +211,36 @@ void GEO::CUT::Quad4BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINAL
 
 //   double norm = normal.Norm2();
 //   normal.Scale( 1./norm );
+}
+
+void GEO::CUT::ArbitraryBoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
+{
+
+
+  dserror("Normal unavailable for this type of boundarycell");
+  exit(1);
+  /*// cross product to get the normal at the point
+  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );*/
+
+//   double norm = normal.Norm2();
+//   normal.Scale( 1./norm );
+}
+
+DRT::UTILS::GaussIntegration GEO::CUT::Tri3BoundaryCell::gaussRule()
+{
+  DRT::UTILS::GaussIntegration gi( DRT::Element::tri3, CubatureDegree( DRT::Element::tri3 ) );
+  return gi;
+}
+
+DRT::UTILS::GaussIntegration GEO::CUT::Quad4BoundaryCell::gaussRule()
+{
+  DRT::UTILS::GaussIntegration gi( DRT::Element::quad4, CubatureDegree( DRT::Element::quad4 ) );
+  return gi;
+}
+
+DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule()
+{
+  return gaussRule_;
 }

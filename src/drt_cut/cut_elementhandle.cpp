@@ -50,7 +50,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   intpoints.clear();
   intpoints.reserve( cells.size() );
 
-  if(gausstype == "Tessellation" || cells.size()==1)//unblockkk
+  if(gausstype == "Tessellation" || cells.size()==1)
   {
 
         for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -117,7 +117,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   {
 	  static int eeno=0;
 	  eeno++;
-	  if(eeno==1 || eeno==2 || eeno==3) //unblockkk
+	  if(eeno==1 || eeno==2 || eeno==3)
 	  {
   for(std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin();i!=intpoints.end();i++)
   {
@@ -601,78 +601,45 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mes
 
       // Create (unmodified) gauss points for integration cell with requested
       // polynomial order. This is supposed to be fast, since there is a cache.
-      DRT::UTILS::GaussIntegration gi( bc->Shape(), bc->CubatureDegree( bc->Shape() ) );
-      cell_points.push_back( DRT::UTILS::GaussIntegration( gi ) );
-
+      cell_points.push_back(bc->gaussRule());
     }
   }
-/*************blockkk this*******************************************************/
-	  static int eeno=0;
-	  eeno++;
-	  if(eeno<5) //unblockkk
-	  {
-		  std::string filename="wrong";
-		     	  std::ofstream file;
 
-		            std::stringstream out;
-		            out <<"boundary"<<eeno<<".dat";
-		            filename = out.str();
-		            file.open(filename.c_str());
-  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+/*static int eeno=0;//blockkk
+  eeno++;
+  if(eeno<5)
   {
-	  int sid = i->first;
-	  std::vector<DRT::UTILS::GaussIntegration> ga1 = intpoints[sid];
+    std::string filename="wrong";
+    std::ofstream file;
 
-          const std::vector<GEO::CUT::BoundaryCell*> cells = i->second;
-          int m=0;
-          for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-              {
-                GEO::CUT::BoundaryCell * bc = *i;
-                file<<"boundary cell type = "<<bc->Shape()<<"\n";
-                DRT::UTILS::GaussIntegration ga = ga1[m];
-                for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
-                	  {
-                		  const double* gpp = iquad.Point();
-                		  file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
-                		  file<<iquad.Weight()<<std::endl;
-                	  }
-                m++;
-              }
+    std::stringstream out;
+    out <<"boundary"<<eeno<<".dat";
+    filename = out.str();
+    file.open(filename.c_str());
+    for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+    {
+      int sid = i->first;
+      std::vector<DRT::UTILS::GaussIntegration> ga1 = intpoints[sid];
 
-  }
-  file.close();
+      const std::vector<GEO::CUT::BoundaryCell*> cells = i->second;
+      int m=0;
+      for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::BoundaryCell * bc = *i;
+        file<<"boundary cell type = "<<bc->Shape()<<"\n";
+        DRT::UTILS::GaussIntegration ga = ga1[m];
+        for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
+        {
+          const double* gpp = iquad.Point();
+          file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
+          file<<iquad.Weight()<<std::endl;
+        }
+        m++;
+      }
 
-	  std::string filename1="wrong";
-	  	      std::ofstream file1;
-
-	  		std::stringstream out1;
-	  		out1 <<"coors_boun"<<eeno<<".dat";
-	  		filename1 = out1.str();
-	  		file1.open(filename1.c_str());
-	  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
-	    {
-
-		const std::vector<GEO::CUT::BoundaryCell*> cells = i->second;
-		int m=0;
-		for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-		{
-			file1<<"cell no = "<<m<<"\n";
-		  GEO::CUT::BoundaryCell * bc = *i;
-		  const std::vector<GEO::CUT::Point*> & cpoints = bc->Points();
-		  for(std::vector<GEO::CUT::Point*>::const_iterator j=cpoints.begin();j!=cpoints.end();j++)
-		  {
-			  const GEO::CUT::Point *p1 = *j;
-			  const double * pt = p1->X();
-			  file1<<pt[0]<<"\t"<<pt[1]<<"\t"<<pt[2]<<"\n";
-		  }
-		  m++;
-		}
-
-	    }
-	  file1.close();
-   }
-	  /*****************unitl this**************************************************/
-
+    }
+    file.close();
+  }*/
 }
 
 void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( LevelSetIntersection & mesh,
