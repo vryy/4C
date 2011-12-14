@@ -17,45 +17,15 @@ Maintainer: Jonas Biehler
 #ifdef HAVE_FFTW
 
 /*----------------------------------------------------------------------*/
-/* headers */
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+/* headers */
 
-
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "stru_resulttest.H"
 #include "str_mlmc.H"
 #include "../drt_mlmc/mlmc.H"
-#include "../drt_inpar/inpar_mlmc.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
 #include "../drt_adapter/adapter_structure_timint.H"
-
-#include "strtimint.H"
-#include "strtimint_impl.H"
-#include "strtimint_expl.H"
-#include "strtimint_genalpha.H"
-#include "strtimint_ost.H"
-#include "strtimint_gemm.H"
-#include "strtimint_ab2.H"
-
-#include "strtimada.H"
-#include "strtimada_zienxie.H"
-#include "strtimada_joint.H"
-
-#include "strtimint_create.H"
-#include "strtimada_create.H"
-
 
 /*----------------------------------------------------------------------*/
 //! General problem data
