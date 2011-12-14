@@ -51,6 +51,8 @@ ADAPTER::FluidImpl::FluidImpl(
     // mark all interface velocities as dirichlet values
     fluid_.AddDirichCond(interface_.FSICondMap());
   }
+
+  interfaceforcen_ = rcp(new Epetra_Vector(*(interface_.FSICondMap())));
 }
 
 
@@ -320,6 +322,10 @@ void ADAPTER::FluidImpl::IterUpdate(const Teuchos::RCP<const Epetra_Vector> incr
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::Update()
 {
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(fluid_.TrueResidual());
+
+  interfaceforcen_ = fluid_.ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
+
   fluid_.TimeUpdate();
 }
 
@@ -482,7 +488,9 @@ void ADAPTER::FluidImpl::LiftDrag()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForces()
 {
-  return interface_.ExtractFSICondVector(fluid_.TrueResidual());
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(fluid_.TrueResidual());
+
+  return fluid_.ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
 }
 
 

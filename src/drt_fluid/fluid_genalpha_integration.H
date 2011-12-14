@@ -436,7 +436,7 @@ public:
 
   /*!
   \brief return the forces on Dirichlet nodes --- correct
-  density scaling has tobe provided by the fluid implementation
+  density scaling has to be provided by the fluid implementation
 
   */
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return force_; }
@@ -712,6 +712,14 @@ public:
 
   /// provide access to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+
+  //! @name methods for fsi
+  /// Extrapolation of vectors from mid-point to end-point t_{n+1}
+  Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
+      Teuchos::RCP<Epetra_Vector> vecn, ///< vector at time level t_n
+      Teuchos::RCP<Epetra_Vector> vecm ///< vector at time level of equilibrium
+      );
+  //@}
 
 private:
 

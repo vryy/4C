@@ -5736,4 +5736,24 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
   return;
 }
 
+// -------------------------------------------------------------------
+// extrapolate from time mid-point to end-point         (mayr 12/2011)
+// -------------------------------------------------------------------
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
+(
+  Teuchos::RCP<Epetra_Vector> vecn,
+  Teuchos::RCP<Epetra_Vector> vecm
+)
+{
+  Teuchos::RCP<Epetra_Vector> vecnp = rcp(new Epetra_Vector(*vecm));
+
+  // For gen-alpha extrapolate mid-point quantities to end-point.
+  // Otherwise, equilibrium time level is already end-point.
+  if (is_genalpha_)
+    vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);
+
+  return vecnp;
+}
+
+
 #endif /* CCADISCRET       */

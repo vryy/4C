@@ -239,6 +239,7 @@ namespace ADAPTER {
 
     /// the interface map setup for fsi interface, free surface, interior translation
     FLD::UTILS::MapExtractor               interface_;
+    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
 
     /// ALE dof map
     LINALG::MapExtractor                   meshmap_;

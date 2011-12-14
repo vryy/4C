@@ -41,6 +41,8 @@ ADAPTER::FluidGenAlpha::FluidGenAlpha(
   maps.push_back(interface_.OtherMap());
   maps.push_back(dbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+
+  interfaceforcen_ = rcp(new Epetra_Vector(*(interface_.FSICondMap())));
 }
 
 
@@ -209,6 +211,10 @@ void ADAPTER::FluidGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> accstepi
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidGenAlpha::Update()
 {
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(fluid_.TrueResidual());
+
+  interfaceforcen_ = fluid_.ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
+
   fluid_.GenAlphaTimeUpdate();
 }
 
@@ -330,7 +336,9 @@ void ADAPTER::FluidGenAlpha::LiftDrag()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractInterfaceForces()
 {
-  return interface_.ExtractFSICondVector(fluid_.TrueResidual());
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(fluid_.TrueResidual());
+
+  return fluid_.ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
 }
 
 

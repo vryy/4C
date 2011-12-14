@@ -479,7 +479,15 @@ public:
                            Teuchos::RCP<Epetra_Vector> fsoutvec);
 
   void PrintTurbulenceModel();
+  //@}
 
+  //! @name methods for fsi
+  /// Extrapolation of vectors from mid-point to end-point t_{n+1}
+  Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
+      Teuchos::RCP<Epetra_Vector> vecn, ///< vector at time level t_n
+      Teuchos::RCP<Epetra_Vector> vecm ///< vector at time level of equilibrium
+      );
+  //@}
 
 protected:
 
