@@ -5,10 +5,11 @@
 \brief Internal implementation of Fluid3 element
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Volker Gravemeier / Andreas Ehrl
+            vgravem@lnm.mw.tum.de
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -1363,6 +1364,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //     excluding viscous part for low-Mach-number flow)
     LINALG::Matrix<nsd_,nsd_> viscstress(true);
     ViscousGalPart(estif_u,
+                  velforce,
                    viscstress,
                    timefacfac,
                    rhsfac);
@@ -1370,13 +1372,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
-    ContStab_and_ViscousTermRhs(estif_u,
-                                velforce,
-                                viscstress,
-                                f3Parameter_->timefac_,
-                                timefacfac,
-                                timefacfacpre,
-                                rhsfac);
+    if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes or
+        f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+      ContStab( estif_u,
+                velforce,
+                f3Parameter_->timefac_,
+                timefacfac,
+                timefacfacpre,
+                rhsfac);
 
 
     // 4) standard Galerkin pressure term
@@ -5109,6 +5112,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaConvectionReactionGalPart(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
+    LINALG::Matrix<nsd_,nen_> &             velforce,
     LINALG::Matrix<nsd_,nsd_> &             viscstress,
     const double &                          timefacfac,
     const double &                          rhsfac)
@@ -5178,14 +5182,27 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
     }
   }
 
+  // computation of right-hand-side viscosity term
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    for (int idim = 0; idim < nsd_; ++idim)
+    {
+      for (int jdim = 0; jdim < nsd_; ++jdim)
+      {
+        /* viscosity term on right-hand side */
+        velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
+      }
+    }
+  }
+
+
   return;
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab_and_ViscousTermRhs(
+void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
     LINALG::Matrix<nsd_,nen_> &               velforce,
-    LINALG::Matrix<nsd_,nsd_> &               viscstress,
     const double &                            timefac,
     const double &                            timefacfac,
     const double &                            timefacfacpre,
@@ -5249,21 +5266,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab_and_ViscousTermRhs(
     } // end for(idim)
   }
 
-  for(int idim=0;idim<nsd_;++idim)
-  {
-    viscstress(idim,idim)-=conti_stab_and_vol_visc_rhs;
-  }
-
   // computation of right-hand-side viscosity term
   for (int vi=0; vi<nen_; ++vi)
   {
     for (int idim = 0; idim < nsd_; ++idim)
     {
-      for (int jdim = 0; jdim < nsd_; ++jdim)
-      {
-        /* viscosity term on right-hand side */
-        velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
-      }
+      /* viscosity term on right-hand side */
+      velforce(idim,vi)+= conti_stab_and_vol_visc_rhs*derxy_(idim,vi);
     }
   }
 

@@ -4,10 +4,11 @@
 \brief Internal implementation of Fluid3 element
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Volker Gravemeier / Andreas Ehrl
+            vgravem@lnm.mw.tum.de
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15245
 </pre>
 */
 
@@ -689,16 +690,16 @@ namespace ELEMENTS
     //! Compute element matrix entries: for the viscous terms of the Galerkin part
     void ViscousGalPart(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nen_> &             velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_,nsd_> &             viscstress,     ///< viscous stresses
         const double &                          timefacfac,     ///< = timefac x fac
         const double &                          rhsfac          ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: div-grad stabilization and the rhs of the viscous term
-    void ContStab_and_ViscousTermRhs(
+    void ContStab(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
-        LINALG::Matrix<nsd_,nsd_> &               viscstress,     ///< viscous stresses
         const double &                            timefac,        ///< time factor
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,     ///< = timefac x fac
