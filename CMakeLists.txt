@@ -120,6 +120,9 @@ find_package(Qhull REQUIRED)
 if (QHULL_FOUND)
   include_directories(${QHULL_INCLUDE_DIRS})
   link_directories(${QHULL_LIBRARY_DIRS})
+  #MESSAGE("QHULL includes: ${QHULL_INCLUDE_DIRS}")
+  #MESSAGE("QHULL library: ${QHULL_LIBRARY}")
+  #MESSAGE("QHULL libraries: ${QHULL_LIBRARIES}")
   set(LIBRARIES
     ${LIBRARIES}
     ${QHULL_LIBRARIES}
