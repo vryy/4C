@@ -328,7 +328,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax()
   EvaluateForceStiffResidual();
 
   // overwrite the residual forces #fres_ with interface load
-  fres_->Update(-0.5, *fifc_, 0.0);
+  fres_->Update(-1+alphaf_, *fifc_, 0.0);
 
   // oh gosh
   return;
