@@ -193,7 +193,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
   bool intersection = false;
 
   // determine bounding box limits
-  RCP<Epetra_SerialDenseMatrix> bboxlimits;
+  RCP<Epetra_SerialDenseMatrix> bboxlimits = rcp(new Epetra_SerialDenseMatrix(1,1));
 
   // build bounding box according to given type
   switch(boundingbox_)
