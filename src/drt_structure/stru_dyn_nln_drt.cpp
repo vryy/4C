@@ -43,7 +43,6 @@ Maintainer: Thomas Klöppel
 
 #ifdef HAVE_FFTW
 #include "str_mlmc.H"
-#include "../drt_mlmc/mlmc.H"
 #endif
 
 /*----------------------------------------------------------------------*
