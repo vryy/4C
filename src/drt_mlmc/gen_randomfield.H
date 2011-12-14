@@ -34,7 +34,7 @@ Maintainer: Jonas Biehler
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include <math.h>
-#include "../drt_adapter/adapter_structure.H"
+//#include "../drt_adapter/adapter_structure.H"
 
 #include <cmath>
 #include <ctime>
@@ -60,6 +60,7 @@ private:
   enum correlation_structure_
   {
     exponential,
+    gaussian,
     whatever,
   };
   double d_; //correlation length
@@ -96,29 +97,37 @@ private:
 
 public:
   // Standard constructor
-   GenRandomField(unsigned int seed,double sigma_0, double corr_length);
-   // Compute Bounding Box of random field from discretization
-   void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
-   double EvalFieldAtLocation(vector<double> location);
+   GenRandomField(unsigned int seed,double sigma_0, double corr_length,Teuchos::RCP<DRT::Discretization> discret);
 
+   // generates new realization
+   void CreateNewSample(unsigned int seed);
+
+   // Get Value of Random Field at a specific location
+   double EvalFieldAtLocation(vector<double> location, bool writetofile);
+
+
+   // Write Random Field To file
+   void WriteRandomFieldToFile();
+
+
+
+private:
   // generates new random Phase vector Phi_
-  void CreateNewSample(unsigned int seed);
-  // funtion to call EvalRandomfield depending on dimension
-  double EvalRandomField(double x, double y, double z);
-  // Evaluate RandomField at specific location
-  double EvalRandomField2D( double x, double y, double z);
-  double EvalRandomField3D( double x, double y, double z);
-
-  double EvalRandomFieldCylinder( double x,double y, double z);
-  //double EvalQuadrantRandomField( double x, double y, double z);
-
-  // Calculate Power Spectral Density
-  //double  PowerSpectralDensity2D( double kappa_x, double kappa_y );
-  //double  PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z );
-
-  // FFT Stuff
+  void CreateNewPhaseAngles(unsigned int seed);
+  // Calculate Discrete Power Spectral Density based on correlation structure
   void CalcDiscretePSD();
-  double EvalRandomFieldFFT(double x, double y, double z);
+  // Perform Spectral Matching if RF non-gaussian
+  void SpectralMatching();
+  // simulate RandomField using FFT technique
+  void SimGaussRandomFieldFFT();
+  // Create Translation field with prescribed marginal distribution
+  void TranslateToNonGaussian();
+  // Helper Functions for spectral matching
+  double Integrate(double xmin, double xmax, double ymin, double ymax, double rho);
+  double Testfunction(double argument_x, double argument_y, double rho);
+
+  // Compute Bounding Box of random field from discretization
+  void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
 
 
 }; // class GenRandomField
