@@ -14,17 +14,42 @@ Maintainer: Jonas Biehler
 #ifdef HAVE_FFTW
 #ifndef MLMC_H
 #define MLMC_H
-
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_Vector.h"
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_adapter/adapter_structure.H"
+#include "Teuchos_RCP.hpp"
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include "Epetra_FECrsMatrix.h"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+using namespace std;
+
+namespace DRT
+{
+  class Discretization;
+  class Node;
+  class Element;
+}
+
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+}
+
+namespace IO
+
+{
+  class DiscretizationWriter;
+  class OutputControl;
+}
 
 namespace STR
 {
 
 /// Multi Level Monte Carlo Simulation of Structures with
 /// some sort of stochastic property
-
-
 class MLMC {
 
 private:
@@ -44,18 +69,15 @@ private:
   // init writer
   Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
 
-  ///  time integrator for structural dynamics
-  Teuchos::RCP<STR::TimInt> sti_;
 
   // prolongator which maps all nodal results to finest grid
-
   Teuchos::RCP<Epetra_MultiVector> prolongator_disp_;
   // for stresses
   Teuchos::RCP<Epetra_MultiVector> prolongator_stress_;
 
   // prolongators based on crs
-   RCP<Epetra_FECrsMatrix> prolongator_disp_crs_;
-   RCP<Epetra_FECrsMatrix> prolongator_stress_crs_;
+   Teuchos::RCP<Epetra_FECrsMatrix> prolongator_disp_crs_;
+   Teuchos::RCP<Epetra_FECrsMatrix> prolongator_stress_crs_;
 
   // Vetors to store mean stresses and disp
   Teuchos::RCP<Epetra_MultiVector> mean_stress_;
@@ -142,7 +164,7 @@ private:
   Teuchos::RCP<DRT::Discretization> actdis_fine_;
   Teuchos::RCP<DRT::Discretization> actdis_coarse_;
   // output
- // Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
+  // Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
 
   ;
 
@@ -177,11 +199,11 @@ public:
 
   void ReadResultsFromLowerLevel();
 
-  void CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp);
+  void CalcDifferenceToLowerLevel(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
   // setup stoch mat law
   void SetupStochMat(unsigned int random_seed);
 
-  void CalcStatStressDisp(RCP<Epetra_MultiVector> curr_stress,RCP<Epetra_MultiVector> curr_strain,RCP<Epetra_MultiVector> curr_disp);
+  void CalcStatStressDisp(Teuchos::RCP<Epetra_MultiVector> curr_stress,Teuchos::RCP<Epetra_MultiVector> curr_strain,Teuchos::RCP<Epetra_MultiVector> curr_disp);
 
   void WriteStatOutput();
 
@@ -191,8 +213,8 @@ public:
   void HelperForDebuggin();
 
   // Funtion that writes the disp and sigma values of specific DOF to a seperate outputfile
-  void HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp);
-  void HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp);
+  void HelperFunctionOutput(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
+  void HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
 
 };  // class MLMC
 

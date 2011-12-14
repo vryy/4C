@@ -19,23 +19,13 @@ Maintainer: Jonas Biehler
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
 #include "../drt_lib/global_inp_control2.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_io/io_hdf.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
-#include "../drt_structure/strtimint_create.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_io/io_control.H"
-
-using namespace std;
-using namespace DRT;
-using namespace MAT;
-
 #include "randomfield.H"
 #include "gen_randomfield.H"
-#include "../drt_structure/stru_resulttest.H"
+
 
 //for file output
 #include <fstream>
@@ -48,8 +38,8 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
                                     Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(dis),
     solver_(solver),
-    output_(output),
-    sti_(Teuchos::null)
+    output_(output)
+    //sti_(Teuchos::null)
 {
 
   // get coarse and fine discretizations
@@ -892,17 +882,27 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
           }
   // get elements on proc use col map to init ghost elements as well
   Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  GenRandomField field(random_seed,sigma,corrlength);
-  field.ComputeBoundingBox(discret_);
-  vector<double> test;
-  test.push_back(10.0);
-  test.push_back(11.0);
-  test.push_back(11.0);
+  GenRandomField field(random_seed,sigma,corrlength,discret_);
+  field.WriteRandomFieldToFile();
+
+  for(int i=0;i<5000;i++)
+  {
+    field.CreateNewSample(i);
+    vector <double> loc(3,12.45);
+    field.EvalFieldAtLocation(loc,true);
+    if(i%100==0)
+      cout << "Num Run:  " << i << endl;
+  }
+  //dserror("stop right here");
+  //field.ComputeBoundingBox(discret_);
+
   //double test2 = field.EvalFieldAtLocation(test);
 
-  field.CalcDiscretePSD();
-  field.EvalRandomFieldFFT(3.4, 3.3 ,3.3);
-  cout << "debugging in FILE "<< __FILE__ << "LINE  " << __LINE__ << endl;
+  //field.CalcDiscretePSD();
+  //field.EvalRandomFieldFFT(3.4, 3.3 ,3.3);
+  //field.Integrate(-4.0,4.0,-4.0,4.0,0.3);
+  //field.TranslateToNonGaussian();
+
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
@@ -913,21 +913,19 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
 
-      //beta = beta_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
-      //youngs = youngs_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
-      // HACK instead of circular field use pseudo 3D Field
-      // cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
+      //special hack here assuming circular geometry with r=25 mm
+      double phi= acos(ele_center[0]/25);
+      //compute x coord
+      ele_center[0]=phi*25;
+      ele_center[1]=ele_center[2];
       //beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
       // there is a lower threshold
       // call FFT Field from here for testing reasons
      // cout << "calling FFT Routine " << endl;
       //youngs = youngs_mean+field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
       //youngs = field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
-      youngs = field.EvalFieldAtLocation(ele_center);
-      //cout << "called FFT Routine YOUNGS: "<< youngs << endl;
-      //dserror("STOP RIGHT HERE");
-      //if(youngs<500000)
-       // youngs= 500000;
+      youngs = field.EvalFieldAtLocation(ele_center,false)+2.0;
+
 
       aaa_stopro->Init(youngs,"youngs");
 
