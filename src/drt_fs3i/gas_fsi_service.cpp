@@ -53,7 +53,10 @@ Teuchos::RCP<Epetra_Vector> FS3I::GasFSI::Scatra1ToScatra2(Teuchos::RCP<Epetra_V
 void FS3I::GasFSI::CheckInterfaceDirichletBC()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(scatravec_[0]->ScaTraField().Discretization()->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -191,7 +194,10 @@ void FS3I::GasFSI::SetMeshDisp()
 bool FS3I::GasFSI::AbortScatraNonlinIter(const int itnum)
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(scatravec_[0]->ScaTraField().Discretization()->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif

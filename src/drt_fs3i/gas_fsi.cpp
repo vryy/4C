@@ -462,13 +462,7 @@ void FS3I::GasFSI::DoFsiStep()
 /*----------------------------------------------------------------------*/
 void FS3I::GasFSI::DoScatraStep()
 {
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
-  if (comm.MyPID()==0)
+  if (Comm().MyPID()==0)
   {
     cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
   }

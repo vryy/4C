@@ -44,7 +44,10 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
 {
   // create a communicator
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif

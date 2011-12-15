@@ -45,11 +45,6 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 
     aleproj_ = DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
 
-  #ifdef PARALLEL
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
-  #else
-    Epetra_SerialComm comm;
-  #endif
     SetDefaultParameters(fsidyn,NOXParameterList());
 
     // we use non-matching meshes at the interface

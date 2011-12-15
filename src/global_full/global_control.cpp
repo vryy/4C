@@ -44,18 +44,19 @@ void ntacal();
  *----------------------------------------------------------------------*/
 void ntam(
     int                 argc,
-    char               *argv[]
+    char               *argv[],
+    MPI_Comm            mpi_local_comm
     )
 {
   double   t0,ti,tc;
 
-  ntaini_ccadiscret(argc,argv);
+  ntaini_ccadiscret(argc,argv,mpi_local_comm);
 
   /* input phase, input of all information */
 
   t0=cputime();
 
-  ntainp_ccadiscret();
+  ntainp_ccadiscret(mpi_local_comm);
 
   ti=cputime()-t0;
   if (par.myrank==0)

@@ -44,14 +44,12 @@ extern struct _GENPROB  genprob;
   here.
  */
 /*----------------------------------------------------------------------*/
-void ntaini_ccadiscret(int argc, char** argv)
+void ntaini_ccadiscret(int argc, char** argv, MPI_Comm mpi_local_comm)
 {
   int myrank = 0;
 
 #ifdef PARALLEL
-  int nproc  = 1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+  MPI_Comm_rank(mpi_local_comm, &myrank);
 #endif
 
   if (argc <= 1)

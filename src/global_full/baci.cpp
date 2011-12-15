@@ -51,7 +51,8 @@ struct _PAR     par;
 
 void ntam(
     int                 argc,
-    char               *argv[]
+    char               *argv[],
+    MPI_Comm            mpi_local_comm
   );
 
 /*!
@@ -70,9 +71,17 @@ int main(int argc, char *argv[])
 #ifdef PARALLEL
   char *buff,*dbuff;
   int   buffsize=MPIBUFFSIZE;
+
+  int proc;
   MPI_Init(&argc,&argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &proc);
+
+  // color = 1 for BACI and color = 0 for other programs
+  int color = 1;
+  MPI_Comm  mpi_local_comm;
+  MPI_Comm_split(MPI_COMM_WORLD,color,proc,&mpi_local_comm);
+  MPI_Comm_rank(mpi_local_comm, &par.myrank);
+  MPI_Comm_size(mpi_local_comm, &par.nprocs);
 
   /*------------------------------------------------ attach buffer to mpi */
   buff = (char*)malloc(buffsize);
@@ -202,11 +211,11 @@ int main(int argc, char *argv[])
 
 /*----------------------------------------------- everything is in here */
 #ifdef DSERROR_DUMP
-      ntam(argc,argv);
+      ntam(argc,argv,mpi_local_comm);
 #else
     try
     {
-      ntam(argc,argv);
+      ntam(argc,argv,mpi_local_comm);
     }
     catch ( std::runtime_error & err )
     {
@@ -221,7 +230,7 @@ int main(int argc, char *argv[])
       DRT::Problem::Done();
 
 #ifdef PARALLEL
-      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+      MPI_Abort(mpi_local_comm,EXIT_FAILURE);
 #else
       exit(1);
 #endif
@@ -233,7 +242,7 @@ int main(int argc, char *argv[])
   DRT::Problem::Done();
 
 #ifdef PARALLEL
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(mpi_local_comm);
   printf("processor %d finished normally\n",par.myrank);
   MPI_Buffer_detach(&dbuff,&buffsize);
   if (dbuff!=buff || buffsize != MPIBUFFSIZE)

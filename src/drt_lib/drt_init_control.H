@@ -15,12 +15,16 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void ntaini_ccadiscret(int argc, char** argv);
+void ntaini_ccadiscret(int argc, char** argv, MPI_Comm mpi_local_comm);
 
 #ifdef __cplusplus
 }

@@ -55,10 +55,10 @@ extern struct _FILES  allfiles;
   | This version of the routine uses the new discretization subsystem   |
   | ccadiscret                                                          |
  *----------------------------------------------------------------------*/
-void ntainp_ccadiscret()
+void ntainp_ccadiscret(MPI_Comm mpi_local_comm)
 {
 #ifdef PARALLEL
-  Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
+  Epetra_MpiComm* com = new Epetra_MpiComm(mpi_local_comm);
   Teuchos::RCP<Epetra_Comm> comm = rcp(com);
 #else
   Epetra_SerialComm* com = new Epetra_SerialComm();

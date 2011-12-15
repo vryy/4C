@@ -73,7 +73,10 @@ extern struct _GENPROB     genprob;
 void fluid_ale_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -125,7 +128,10 @@ void fluid_ale_drt()
 void fluid_xfem_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -154,7 +160,10 @@ void fluid_xfem_drt()
 void fluid_xfem2_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -239,7 +248,7 @@ void fluid_fluid_ale_drt()
 {
   // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
@@ -480,7 +489,7 @@ void fluid_fluid_fsi_drt()
 {
  // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
@@ -783,7 +792,10 @@ void fluid_fluid_fsi_drt()
 void fluid_freesurf_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -873,7 +885,10 @@ void fluid_freesurf_drt()
 void fsi_ale_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif
@@ -1058,7 +1073,10 @@ void fsi_ale_drt()
 void xfsi_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm());
+  if (!(&epetrampicomm))
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
 #else
   Epetra_SerialComm comm;
 #endif

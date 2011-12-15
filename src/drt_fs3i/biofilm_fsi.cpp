@@ -61,7 +61,8 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmFSI::BiofilmFSI(
 	Epetra_Comm& comm)
-:GasFSI(comm)/*,
+:GasFSI(comm),
+ comm_(comm)/*,
  ADAPTER::StructureBio(comm,	///< communicator
 					   prbdyn, 	///< problem-specific parameters
 					   1,  		///< we need an ALE formulation of the structure
@@ -126,7 +127,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  /// do we need this. What's for???
 	  fsi_->FluidField().SetMeshMap(coupfa_.MasterDofMap());
 
-	  Teuchos::RCP<ADAPTER::StructureBio> structbio = Teuchos::rcp(new ADAPTER::StructureBio(comm, fsidyn, 1, 0, "FSICoupling"));
+	  Teuchos::RCP<ADAPTER::StructureBio> structbio = Teuchos::rcp(new ADAPTER::StructureBio(Comm(), fsidyn, 1, 0, "FSICoupling"));
 
 }
 
@@ -135,12 +136,6 @@ FS3I::BiofilmFSI::BiofilmFSI(
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::Timeloop()
 {
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
   //outer loop for surface growth
   while (step_bio < nstep_bio)
   {
@@ -229,13 +224,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::DoScatraStep()
 {
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
-  if (comm.MyPID()==0)
+  if (Comm().MyPID()==0)
   {
     cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
   }
