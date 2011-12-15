@@ -16,19 +16,20 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_discret.H"
+#include "Epetra_Comm.h"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 namespace LINALG
 {
   class SparseMatrix;
-  class TMatrix<class value_type,3,1>;
 }
 
 namespace DRT
 {
   class Discretization;
+  class Element;
 }
 
 class Beam3ContactOctTree;
@@ -106,7 +107,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return pdiscret_.Comm(); }
+  virtual const Epetra_Comm& Comm() const { return pdiscomm_; }
 
   /*!
   \brief Get different node or element maps
@@ -282,6 +283,9 @@ private:
 
   //! contact discretization (basically a copy)
   RCP<DRT::Discretization> cdiscret_;
+
+  //! the Comm interface of the problem discretization
+  const Epetra_Comm& pdiscomm_;
 
   //! dof offset between pdicsret and cdiscret
   int dofoffset_;

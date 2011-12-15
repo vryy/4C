@@ -785,6 +785,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   }
   else
   {
+    unshift = coord;
     if(bboxlimits!=Teuchos::null)
       bboxlimits = rcp(new Epetra_SerialDenseMatrix(6,1));
   }
@@ -946,9 +947,9 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
     // last entry: element GID
     (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
   }
-  //for(int i=0; i<allbboxes_->NumVectors(); i++)
-  //  cout<<(*allbboxes_)[i][elecolid]<<" ";
-  //cout<<endl;
+  for(int i=0; i<allbboxes_->NumVectors(); i++)
+    cout<<(*allbboxes_)[i][elecolid]<<" ";
+  cout<<endl;
   return;
 }
 

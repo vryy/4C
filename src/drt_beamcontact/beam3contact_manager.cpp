@@ -18,6 +18,7 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 
@@ -36,6 +37,7 @@ Maintainer: Alexander Popp, Christian Cyron
  *----------------------------------------------------------------------*/
 CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alphaf):
 pdiscret_(discret),
+pdiscomm_(discret.Comm()),
 alphaf_(alphaf)
 {
   // create new (basically copied) discretization for contact
