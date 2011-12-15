@@ -79,17 +79,18 @@ radfactor_(1.0)
   else
     dserror("No Octree declared in your Input file!");
 
-  // initialize beam diameter
-  diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
+  // get line conditions
+  bbox2line_ = rcp(new Epetra_Vector(*(searchdis_.NodeColMap())));
+  bbox2line_->PutScalar(-1.0);
+  std::vector<DRT::Condition*> lines;
+  discret_.GetCondition("FilamentNumber", lines);
 
-  // initialize vector mapping bounding boxes to octants with -1.0 for empty
-  // initialize with 4 columns (the maximum number of octants a single bounding box can belong to
-  bbox2octant_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4));
-  bbox2octant_->PutScalar(-1.0);
-  // initialize vector counting the number of shifts across volume boundaries in case of periodic boundary conditions
-  // used to optimize bounding box intersection
-  if(periodicBC_)
-    numshifts_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap()),true));
+  if((int)lines.size()==0)
+    dserror("For octree-based search,define line conditions in input file section FILAMENT NUMBERS.");
+
+  for(int i=0; i<(int)lines.size(); i++)
+    for(int j=0; j<(int)lines[i]->Nodes()->size(); j++)
+      (*bbox2line_)[searchdis_.NodeColMap()->LID( lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
 
   return;
 }
@@ -122,7 +123,10 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
 
   #ifdef D_BEAM3
     if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+    {
       (*diameter_)[i] = radfactor_*2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
+      (*diameter_)[i] = 2.0*0.3;
+    }
   #endif // #ifdef BEAM3II
 
   #ifdef D_BEAM3II
@@ -947,9 +951,9 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
     // last entry: element GID
     (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
   }
-  for(int i=0; i<allbboxes_->NumVectors(); i++)
-    cout<<(*allbboxes_)[i][elecolid]<<" ";
-  cout<<endl;
+  //for(int i=0; i<allbboxes_->NumVectors(); i++)
+  //  cout<<(*allbboxes_)[i][elecolid]<<" ";
+  //cout<<endl;
   return;
 }
 
@@ -1328,16 +1332,16 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
           considerpair = true;
           DRT::Element* element1 = searchdis_.gElement(bboxIDs[0]);
           DRT::Element* element2 = searchdis_.gElement(bboxIDs[1]);
+
           for(int k=0; k<element1->NumNode(); k++)
           {
             for(int l=0; l<element2->NumNode(); l++)
-              if(element1->NodeIds()[k]==element2->NodeIds()[l])
+              if((*bbox2line_)[searchdis_.NodeColMap()->LID(element1->NodeIds()[k])]==
+                 (*bbox2line_)[searchdis_.NodeColMap()->LID(element2->NodeIds()[l])])
               {
                 considerpair = false;
                 break;
               }
-
-            // break after first found match
             if(!considerpair)
               break;
           }
@@ -1345,6 +1349,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
 
         if (considerpair)
         {
+          //cout<<"IDs: "<<bboxIDs[0]<<", "<< bboxIDs[1]<<endl;
           // apply different bounding box intersection schemes
           bool intersection = false;
           switch(boundingbox_)
@@ -1800,11 +1805,20 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
         }
         d2 = sqrt(d2);
         l1 = sqrt(l1);
+
+        /*/debug block
+        cout<<"IDs: "<<bboxid0<<","<<bboxid1<<"; gap: "<<d<<", "<<"d2: "<<d2<<", isec: ";
+        if(d2<=l0+l1)
+          cout<<"yes"<<endl;
+        else
+          cout<<"no"<<endl;*/
+
         if(d2<=l0+l1)
           intersection = true;
       }
     }
   }
+
   return intersection;
 }
 

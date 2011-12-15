@@ -127,6 +127,9 @@ class Beam3ContactOctTree
     // vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
     RCP<Epetra_Vector> numshifts_;
 
+    // vector holding information to which line (design line) a bounding box belongs
+    RCP<Epetra_Vector> bbox2line_;
+
     // Bounding Box type
     Beam3ContactOctTree::BboxType boundingbox_;
 };
