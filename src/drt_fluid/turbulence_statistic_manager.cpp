@@ -7,10 +7,10 @@ cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 
 */
 #ifdef CCADISCRET
@@ -69,6 +69,9 @@ namespace FLD
     // activate the computation of subgrid dissipation,
     // residuals etc
     subgrid_dissipation_=true;
+
+    // toogle statistics output for turbulent inflow
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -134,7 +137,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
         dserror("Sorry, no inflow generation for gammi-style fluid!");
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
@@ -147,7 +150,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
         dserror("Sorry, no inflow generation for gammi-style fluid!");
     }
     else if(fluid.special_flow_=="combust_oracles")
@@ -299,6 +302,9 @@ namespace FLD
     //why: read comment in CalcDissipation() (fluid3_impl.cpp)
     subgrid_dissipation_=false;
 
+    // toogle statistics output for turbulent inflow
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
+
     // the flow parameter will control for which geometry the
     // sampling is done
     if(fluid.special_flow_=="channel_flow_of_height_2")
@@ -365,7 +371,7 @@ namespace FLD
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
 
       // build statistics manager for inflow channel flow
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
       {
         if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
@@ -390,7 +396,7 @@ namespace FLD
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
 
       // build statistics manager for inflow channel flow
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
       {
         if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
          or params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
@@ -419,7 +425,7 @@ namespace FLD
       statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES",false));
 
       // build statistics manager for inflow channel flow
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
       {
         if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
@@ -556,6 +562,8 @@ namespace FLD
     subgrid_dissipation_ = false;
     // boolean for statistics of transported scalar
     bool withscatra = false;
+    // toogle statistics output for turbulent inflow
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -588,7 +596,7 @@ namespace FLD
       statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES",withscatra));
 
       // build statistics manager for inflow channel flow
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      if (inflow_)
       {
         if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
@@ -920,7 +928,7 @@ namespace FLD
         statistics_bfs_->DoTimeSample(myvelnp_);
 
         // do time sample for inflow channel flow
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        if (inflow_)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
@@ -940,7 +948,7 @@ namespace FLD
           statistics_bfs_->DoTimeSample(myvelnp_);
 
           // do time sample for inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          if (inflow_)
           {
             if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
             {
@@ -953,7 +961,7 @@ namespace FLD
           statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
 
           // do time sample for inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          if (inflow_)
           {
             if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
@@ -973,7 +981,7 @@ namespace FLD
         statistics_oracles_->DoTimeSample(myvelnp_,myforce_,Teuchos::null,Teuchos::null);
 
         // build statistics manager for inflow channel flow
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        if (inflow_)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
@@ -1199,7 +1207,7 @@ namespace FLD
         statistics_oracles_->DoTimeSample(velnp,force,phi,stddofset);
 
         // build statistics manager for inflow channel flow
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        if (inflow_)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
@@ -1247,6 +1255,7 @@ namespace FLD
       enum format {write_single_record   ,
                    write_multiple_records,
                    do_not_write          } outputformat=do_not_write;
+      bool output_inflow = false;
 
       // sampling a la Volker --- single record is constantly updated
       if(dumperiod_!=0)
@@ -1269,6 +1278,15 @@ namespace FLD
         // dump in combination with a restart/output
         if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>samstart_)
           outputformat=write_multiple_records;
+      }
+      if(inflow_)
+      {
+        int upres    =params_.get<int>("write solution every");
+        int uprestart=params_.get<int>("write restart every" );
+
+        // dump in combination with a restart/output
+        if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>samstart_)
+          output_inflow=true;
       }
 
       if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
@@ -1344,12 +1362,15 @@ namespace FLD
           statistics_bfs_->DumpStatistics(step);
 
         //write statistics of inflow channel flow
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        if (inflow_)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
-            statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
-            statistics_channel_->ClearStatistics();
+            if(output_inflow)
+            {
+              statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+              statistics_channel_->ClearStatistics();
+            }
           }
         }
         break;
@@ -1365,12 +1386,15 @@ namespace FLD
             statistics_bfs_->DumpStatistics(step);
 
           // write statistics of inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          if (inflow_)
           {
             if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
             {
+              if(output_inflow)
+              {
                 statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
                 statistics_channel_->ClearStatistics();
+              }
             }
           }
         }
@@ -1380,10 +1404,11 @@ namespace FLD
             statistics_bfs_->DumpLomaStatistics(step);
 
           // write statistics of inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          if (inflow_)
           {
             if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
+              if(outputformat == write_single_record)
                 statistics_channel_->DumpLomaStatistics(step);
             }
           }
@@ -1402,7 +1427,7 @@ namespace FLD
         }
 
         // build statistics manager for inflow channel flow
-        if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        if (inflow_)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {

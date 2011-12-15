@@ -10,10 +10,10 @@ overhead as possible from the time integration method.
 
 <pre>
 
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 
 </pre>
 */
@@ -300,6 +300,9 @@ private:
   //! this is only possible for the genalpha implementation since
   //! we need a corresponding element implementation
   bool                                 subgrid_dissipation_;
+
+  //! toggle statistics output of additional inflow
+  bool                                 inflow_;
 
   //! mean values of velocity and pressure, independent of special flow
   //! averaging takes place in time, if hom. directions have been specified
