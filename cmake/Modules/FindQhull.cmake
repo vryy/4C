@@ -1,3 +1,4 @@
+
 #
 # Find the QHULL includes and libraries
 #
@@ -20,9 +21,10 @@ FIND_PATH(QHULL_INCLUDE_DIR qhull/qhull.h
 FIND_LIBRARY(QHULL_LIBRARY libqhull.so
   ${LIB_INSTALL_DIR}
   ${QHULL_LIBRARY_DIR}
-  /usr/local/lib
-  /usr/lib
+  NO_DEFAULT_PATH
 )
+
+MESSAGE("II use QHULL in ${QHULL_LIBRARY}")
 
 SET( QHULL_INCLUDE_DIRS ${QHULL_INCLUDE_DIR})
 SET( QHULL_LIBRARIES    ${QHULL_LIBRARY})
