@@ -24,17 +24,21 @@
 #include <fstream>
 #include <string>
 
-#include "../post_drt_common/post_drt_common.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_element.H"
-#include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_element.H" // due to DiscretizationType
+
+//class PostProblem;
+class PostField;
+class PostResult;
+
 
 using namespace std;
 
 //forward declaration
 namespace DRT
 {
+class Discretization;
+class Node;
+
   namespace NURBS
   {
     class NurbsDiscretization;
@@ -77,10 +81,10 @@ typedef map<DRT::Element::DiscretizationType, vector<int> > EleGidPerDisType;
 enum ResultType
 {
   no_restype,          // unknown result type
-  dofbased,            // dof-based result values
-  nodebased,           // node-based result values
-  elementbased,        // element-based result values
-  elementdof,          // element degree of freedom values
+  dofbased,            // result values based on dofrowmap
+  nodebased,           // result values based on noderowmap
+  elementbased,        // result values based on elementrowmap
+  elementdof,          // result values based on elementdofrowmap (unused)
   max_restype          // end marker. must be the last entry
 };
 

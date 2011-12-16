@@ -15,9 +15,11 @@
 #ifdef CCADISCRET
 
 #include "post_drt_ensight_writer.H"
+#include "../post_drt_common/post_drt_common.H"
 #include <string>
 #include "post_drt_ensight_single_field_writers.H"
 #include "../drt_lib/drt_utils.H"
+#include "../linalg/linalg_utils.H"
 
 using namespace std;
 

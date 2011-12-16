@@ -35,41 +35,31 @@ The new filters can be used in parallel.
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
 #endif
-
-#include "../drt_lib/drt_discret.H"
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_CommandLineProcessor.hpp>
 
 extern "C" {
 #include "../pss_full/pss_table.h"
 #include "../pss_full/pss_table_iter.h"
 }
 
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#endif
-#include <Epetra_SerialComm.h>
-
-
-#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_CommandLineProcessor.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Epetra_SerialDenseMatrix.h>
 
-class PostProblem;
 class PostField;
-class PostResult;
-class PostChunk;
 
-using namespace std;
-using namespace Teuchos;
-
-// external declarations not found otherwise
-extern "C"
+namespace DRT
 {
-void distribute_drt_grids();
+class Discretization;
 }
 
+using namespace std;
+using Teuchos::RCP;
 
 /*!
   \brief Foundation class of the filter
@@ -270,7 +260,7 @@ public:
   void set_num_output_procs(const int num) { num_output_procs_ = num; }
 
   //! returns the number of global Dof-Ids
-  int global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
+  int global_id_num() const;
 
   //! returns the PostProbem instance
   PostProblem* problem() { return problem_; }

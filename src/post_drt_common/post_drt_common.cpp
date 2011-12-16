@@ -28,19 +28,16 @@ Maintainer: Ulrich Kuettler
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include "../drt_lib/drt_parobjectregister.H"
 
-#if 1
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#endif
 
 /*----------------------------------------------------------------------*
  * Some functions and global variables, most of them are only
  * important for linking.
  *----------------------------------------------------------------------*/
-
 
 
 /* There are some global variables in ccarat that are needed by the
@@ -49,10 +46,6 @@ Maintainer: Ulrich Kuettler
 extern struct _FILES   allfiles;
 extern struct _PAR     par;
 extern struct _GENPROB genprob;
-
-// not actually used here, but referenced by global problem
-//struct _SOLVAR  *solv;
-
 
 
 /*----------------------------------------------------------------------*
@@ -1069,5 +1062,9 @@ RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
   }
   return file_.ReadResultData(id_path, value_path, columns, *comm);
 }
+
+
+//! returns the number of global Dof-Ids
+int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
 
 #endif

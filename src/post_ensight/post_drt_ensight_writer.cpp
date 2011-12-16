@@ -15,8 +15,11 @@
 #ifdef CCADISCRET
 
 #include "post_drt_ensight_writer.H"
+#include "../post_drt_common/post_drt_common.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
+#include "../linalg/linalg_utils.H"
+
 #include <string>
 
 using namespace std;

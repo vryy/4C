@@ -17,7 +17,6 @@
 #define POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
 
 #include "post_drt_ensight_writer.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 /*!
  \brief Writer for structural problems

@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_CommandLineProcessor.hpp>
 
 #include "post_drt_gid.H"
+#include "../drt_lib/drt_discret.H"
 
 extern "C" {
 #include "gid_out.h"

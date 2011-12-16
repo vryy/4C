@@ -14,9 +14,9 @@
 
 #ifdef CCADISCRET
 
-#include "post_drt_ensight_writer.H"
 #include "post_drt_ensight_single_field_writers.H"
-
+#include "../post_drt_common/post_drt_common.H"
+#include "../drt_lib/drt_dserror.H"
 /*!
  \brief filter main routine
 
