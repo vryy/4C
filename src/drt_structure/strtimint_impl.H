@@ -25,6 +25,12 @@ Maintainer: Thomas Klöppel
 
 #include "strtimint.H"
 
+// forward declarations
+namespace LINALG
+{
+  class MultiMapExtractor;
+}
+
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
@@ -195,6 +201,15 @@ namespace STR
       bool predict                        //!< flag indicating predictor step
     );
 
+    //! Evaluate forces and stiffness due to beam contact
+    void ApplyForceStiffBeamContact
+    (
+      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector>& fres,  //!< residual forces are modified
+      Teuchos::RCP<Epetra_Vector>& dis,   //!< current displacement state
+      bool predict                        //!< flag indicating predictor step
+    );
+
     //@}
 
     //! @name Solution
@@ -239,8 +254,6 @@ namespace STR
     //! is increased by Uzawa_param*(Vol_err)
     //!
     //! \author tk (originally)
-    //!
-    //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
     void UzawaNonLinearNewtonFull();
 
     //! do full Newton iteration respecting volume constraint
@@ -250,8 +263,6 @@ namespace STR
     //! Linear problem is solved with Uzawa algorithm.
     //!
     //! \author tk (originally) \date 11/07
-    //!
-    //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
     void UzawaLinearNewtonFull();
 
     //! Do non-linear CG iteration using NOX ?
@@ -282,6 +293,11 @@ namespace STR
     //!
     //! \author popp (originally) \date 03/10
     void CmtLinearSolve();
+
+    //! Do nonlinear iteration for beam contact
+    //!
+    //! \author popp (originally) \date 11/11
+    void BeamContactNonlinearSolve();
 
     //@}
 
@@ -449,10 +465,7 @@ namespace STR
     virtual void UpdateStepElement() = 0;
 
     //! Update step for surface stress
-    void UpdateStepSurfstress()
-    {
-      if (surfstressman_ -> HaveSurfStress()) surfstressman_->Update();
-    }
+    void UpdateStepSurfstress();
 
     //! Update step for constraints
     void UpdateStepConstraint();

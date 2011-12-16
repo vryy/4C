@@ -24,6 +24,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

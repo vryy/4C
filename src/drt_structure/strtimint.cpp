@@ -24,11 +24,15 @@ Maintainer: Thomas Klöppel
 #include "strtimint_mstep.H"
 #include "strtimint.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
 
+#include "../drt_lib/drt_locsys.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_mortar/mortar_manager_base.H"
@@ -41,6 +45,9 @@ Maintainer: Thomas Klöppel
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
+
+#include "../linalg/linalg_sparsematrix.H"
 
 #include "../drt_so3/so_sh8p8.H"
 
@@ -103,6 +110,7 @@ STR::TimInt::TimInt
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
   cmtman_(Teuchos::null),
+  beamcman_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
   time_(Teuchos::null),
@@ -213,11 +221,19 @@ STR::TimInt::TimInt
                                                         sdynparams));
   }
 
-  // check for contact or meshtying conditions
+  // check for beam contact
   {
-    // If contact or meshtying conditions are detected, then a corresponding
-    // manager object stored via #cmtman_ is created and all relevant stuff is
-    // initialized. Else, #cmtman_ remains a Teuchos::null pointer.
+    // If beam contact (no statistical mechanics) is chosen in the input file, then a
+    // corresponding manager object stored via #beamcman_ is created and all relevant
+    // stuff is initialized. Else, #beamcman_ remains a Teuchos::null pointer.
+    PrepareBeamContact(sdynparams);
+  }
+
+  // check for mortar contact or meshtying
+  {
+    // If mortar contact or meshtying is chosen in the input file, then a
+    // corresponding manager object stored via #cmtman_ is created and all relevant
+    // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams);
   }
 
@@ -308,7 +324,38 @@ void STR::TimInt::SetInitialFields()
 }
 
 /*----------------------------------------------------------------------*/
-/* Check for contact or meshtying conditions and do preparations */
+/* Check for beam contact and do preparations */
+void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
+{
+  // some parameters
+  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+
+  // only continue if beam contact unmistakably chosen in input file
+  if (apptype == INPAR::CONTACT::app_beamcontact)
+  {
+    // store integration parameter alphaf into beamcman_ as well
+    // (for all cases except OST, GenAlpha and GEMM this is zero)
+    // (note that we want to hand in theta in the OST case, which
+    // is defined just the other way round as alphaf in GenAlpha schemes.
+    // Thus, we have to hand in 1.0-theta for OST!!!)
+    double alphaf = 0.0;
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
+      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+
+    // create beam contact manager
+    beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Check for contact or meshtying and do preparations */
 void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
@@ -322,9 +369,13 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   vector<DRT::Condition*> contactconditions(0);
   discret_->GetCondition("Contact",contactconditions);
 
-  // only continue if contact unmistakably chosen in input file
-  if (contactconditions.size() && apptype != INPAR::CONTACT::app_none)
+  // only continue if mortar contact / meshtying unmistakably chosen in input file
+  if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarmeshtying)
   {
+    // double-check for contact conditions
+    if ((int)contactconditions.size()==0)
+      dserror("ERROR: No contact conditions provided, check your input file!");
+
     // store integration parameter alphaf into cmtman_ as well
     // (for all cases except OST, GenAlpha and GEMM this is zero)
     // (note that we want to hand in theta in the OST case, which
@@ -640,6 +691,17 @@ void STR::TimInt::UpdateStepContactMeshtying()
 {
    if (HaveContactMeshtying())
      cmtman_->GetStrategy().Update(stepn_,disn_);
+
+   // ciao
+   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update beam contact */
+void STR::TimInt::UpdateStepBeamContact()
+{
+   if (HaveBeamContact())
+     beamcman_->Update(*disn_,stepn_,99);
 
    // ciao
    return;
@@ -1692,6 +1754,41 @@ void STR::TimInt::ApplyDisMat(
    }
    return;
  }
+
+/*----------------------------------------------------------------------*/
+/* Attach file handle for energy file #energyfile_                      */
+void STR::TimInt::AttachEnergyFile()
+{
+  if (not energyfile_)
+  {
+    std::string energyname
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()
+      + ".energy";
+    energyfile_ = new std::ofstream(energyname.c_str());
+    *energyfile_ << "# timestep time total_energy"
+                 << " kinetic_energy internal_energy external_energy"
+                 << std::endl;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Return (rotatory) transformation matrix of local co-ordinate systems */
+Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
+{
+  if (locsysman_ != Teuchos::null)
+    return locsysman_->Trafo();
+
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/* Return domain map of mass matrix                                     */
+const Epetra_Map& STR::TimInt::GetDomainMap()
+{
+  return mass_->DomainMap();
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

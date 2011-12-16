@@ -24,6 +24,7 @@ Maintainer: Thomas Klöppel
 #include "strtimint_noxgroup.H"
 #include "strtimint_noxlinsys.H"
 #include "../drt_inpar/drt_boolifyparameters.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 
 /*----------------------------------------------------------------------*/

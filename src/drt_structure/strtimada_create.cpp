@@ -27,27 +27,11 @@ Maintainer: Alexander Popp
 #include <mpi.h>
 #endif
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "stru_resulttest.H"
-
-#include "strtimint.H"
-#include "strtimint_impl.H"
-#include "strtimint_expl.H"
-#include "strtimint_genalpha.H"
-#include "strtimint_ost.H"
-#include "strtimint_gemm.H"
-#include "strtimint_ab2.H"
-
-#include "strtimada.H"
+#include "strtimada_create.H"
 #include "strtimada_zienxie.H"
 #include "strtimada_joint.H"
-
-#include "strtimada_create.H"
+#include "strtimint_ab2.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 
 /*======================================================================*/

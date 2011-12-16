@@ -19,6 +19,9 @@ Maintainer: Alexander Popp
 /* headers */
 #include "strtimint_gemm.H"
 #include "stru_aux.H"
+#include "../drt_lib/drt_locsys.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

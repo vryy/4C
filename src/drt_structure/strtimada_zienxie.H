@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 #include "nlnml_finelevelnoxinterface.H"
 
 #include "strtimada.H"
-#include "strtimint_genalpha.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure namespace */

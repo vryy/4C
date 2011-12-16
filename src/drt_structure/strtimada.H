@@ -1,6 +1,7 @@
 /*======================================================================*/
 /*!
 \file strtimada.H
+\brief Time step adaptivity front-end for structural dynamics
 
 <pre>
 Maintainer: Alexander Popp
@@ -21,14 +22,6 @@ Maintainer: Alexander Popp
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_ostream0.H"
-
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
@@ -41,13 +34,31 @@ Maintainer: Alexander Popp
 #include "nlnml_finelevelnoxinterface.H"
 
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_io/io_ostream0.H"
 
-#include "strtimint.H"
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure dynamics namespace */
 namespace STR
 {
+  // forward declarations
+  class TimInt;
 
   /*====================================================================*/
   /*!
@@ -175,10 +186,7 @@ namespace STR
     void SizeForOutput();
 
     //! Prepare output to file(s)
-    void PrepareOutputPeriod()
-    {
-      sti_->PrepareOutput();
-    }
+    void PrepareOutputPeriod();
 
     //! Output to file(s)
     void OutputPeriod();
@@ -194,18 +202,7 @@ namespace STR
     }
 
     //! Attach file handle for step size file #outsizefile_
-    void AttachFileStepSize()
-    {
-      if (not outsizefile_)
-      {
-        std::string filename
-          = DRT::Problem::Instance()->OutputControlFile()->FileName()
-          + ".stepsize";
-        outsizefile_ = new std::ofstream(filename.c_str());
-        *outsizefile_ << "# timestep time step-size adaptations"
-                      << std::endl;
-      }
-    }
+    void AttachFileStepSize();
 
     //! Detach file handle for step size file #outsizefile_
     void DetachFileStepSize()

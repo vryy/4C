@@ -19,6 +19,9 @@ Maintainer: Thomas Klöppel
 /* headers */
 #include "strtimint_genalpha.H"
 #include "stru_aux.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_locsys.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
@@ -312,6 +315,9 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
+  // apply forces and stiffness due to beam contact
+  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
   // close stiffness matrix
   stiff_->Complete();
 
@@ -508,8 +514,11 @@ void STR::TimIntGenAlpha::UpdateStepState()
   // update constraints
   UpdateStepConstraint();
 
-  // update contact  /meshtying
+  // update contact / meshtying
   UpdateStepContactMeshtying();
+
+  // update beam contact
+  UpdateStepBeamContact();
 
   // look out
   return;

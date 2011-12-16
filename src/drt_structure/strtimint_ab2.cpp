@@ -20,7 +20,9 @@ Maintainer: Alexander Popp
 #include "strtimint_ab2.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
-
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

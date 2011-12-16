@@ -19,6 +19,8 @@ Maintainer: Thomas Klöppel
 /* headers */
 #include "strtimint_statics.H"
 #include "stru_aux.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 /*======================================================================*/
 /* constructor */

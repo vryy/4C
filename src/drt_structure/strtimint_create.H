@@ -27,19 +27,33 @@ Maintainer: Thomas Klöppel
 #endif
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
+#include "Teuchos_ParameterList.hpp"
 
-#include "strtimint.H"
-#include "strtimint_impl.H"
-#include "strtimint_expl.H"
 
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 /*----------------------------------------------------------------------*/
 /* Structural Dynamics */
 namespace STR
 {
+  // forward declarations
+  class TimInt;
+  class TimIntImpl;
+  class TimIntExpl;
 
   /*====================================================================*/
   //! Create marching time integrator convenience routine

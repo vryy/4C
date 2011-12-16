@@ -27,22 +27,16 @@ Maintainer: Alexander Popp
 #endif
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_ParameterList.hpp"
 
-#include "strtimint.H"
-#include "strtimint_impl.H"
-#include "strtimint_expl.H"
-#include "strtimint_genalpha.H"
-#include "strtimint_ost.H"
-#include "strtimint_gemm.H"
-#include "strtimint_ab2.H"
-
-#include "strtimada.H"
-#include "strtimada_zienxie.H"
 
 /*----------------------------------------------------------------------*/
 /* Structural Dynamics */
 namespace STR
 {
+  // forward declarations
+  class TimInt;
+  class TimAda;
 
   /*====================================================================*/
   //! Create auxiliar time integrator convenience routine

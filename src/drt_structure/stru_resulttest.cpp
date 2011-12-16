@@ -15,22 +15,23 @@ Maintainer: Alexander Popp
 
 #ifdef CCADISCRET
 
-#include <string>
-
-#include "stru_resulttest.H"
-#include "../drt_lib/drt_linedefinition.H"
-
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
+#include <string>
+#include "stru_resulttest.H"
+#include "strugenalpha.H"
+#include "strtimint.H"
+#include "../drt_lib/drt_linedefinition.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(RCP<DRT::Discretization> strudis_in,
-                               RCP<Epetra_Vector> dis,
-                               RCP<Epetra_Vector> vel,
-                               RCP<Epetra_Vector> acc)
+StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
+                               Teuchos::RCP<Epetra_Vector> dis,
+                               Teuchos::RCP<Epetra_Vector> vel,
+                               Teuchos::RCP<Epetra_Vector> acc)
 {
   strudisc_ = strudis_in;
   dis_ = dis;

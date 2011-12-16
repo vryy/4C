@@ -28,10 +28,17 @@ Maintainer: Thomas Klöppel
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_potential/drt_potential_manager.H"
+#include "../drt_lib/drt_locsys.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -607,6 +614,40 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 }
 
 /*----------------------------------------------------------------------*/
+/* evaluate forces and stiffness due to beam contact */
+void STR::TimIntImpl::ApplyForceStiffBeamContact
+(
+  Teuchos::RCP<LINALG::SparseOperator>& stiff,
+  Teuchos::RCP<Epetra_Vector>& fresm,
+  Teuchos::RCP<Epetra_Vector>& dis,
+  bool predict
+)
+{
+  if (HaveBeamContact())
+  {
+    // *********** time measurement ***********
+    double dtcpu = timer_->WallTime();
+    // *********** time measurement ***********
+
+    // contact / meshtying modifications need -fres
+    fresm->Scale(-1.0);
+
+    // make contact / meshtying modifications to lhs and rhs
+    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis);
+
+    // scaling back
+    fresm->Scale(-1.0);
+
+    // *********** time measurement ***********
+    dtcmt_ = timer_->WallTime() - dtcpu;
+    // *********** time measurement ***********
+  }
+
+  // wotcha
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 bool STR::TimIntImpl::Converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
@@ -749,6 +790,13 @@ void STR::TimIntImpl::Solve()
   {
     // choose solution technique in accordance with user's will
     CmtNonlinearSolve();
+  }
+
+  // special nonlinear iterations for beam contact
+  else if (HaveBeamContact())
+  {
+    // choose solution technique in accordance with user's will
+    BeamContactNonlinearSolve();
   }
 
   // all other cases
@@ -1002,7 +1050,16 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 /*----------------------------------------------------------------------*/
 void STR::TimIntImpl::UpdateStepConstraint()
 {
-  if (conman_ -> HaveConstraint()) conman_->Update();
+  if (conman_ -> HaveConstraint())
+    conman_->Update();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateStepSurfstress()
+{
+  if (surfstressman_ -> HaveSurfStress())
+    surfstressman_->Update();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1415,6 +1472,16 @@ void STR::TimIntImpl::CmtLinearSolve()
 
   // reset tolerance for contact solver
   contactsolver_->ResetTolerance();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* solution with nonlinear iteration for beam contact */
+void STR::TimIntImpl::BeamContactNonlinearSolve()
+{
+  // TODO: needs to be filled
+  dserror("ERROR: Beam contact implementation in new STI not yet finished");
 
   return;
 }

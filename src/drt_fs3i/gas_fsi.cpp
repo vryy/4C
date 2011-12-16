@@ -3,7 +3,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_utils_createdis.H"
-
+#include "../drt_io/io_control.H"
 #include "../drt_fsi/fsi_partitionedmonolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_fsi/fsi_monolithiclagrange.H"

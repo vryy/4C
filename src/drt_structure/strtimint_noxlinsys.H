@@ -40,12 +40,12 @@ Maintainer: Thomas Klöppel
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RefCountPtr.hpp>
 
-#include "../linalg/linalg_blocksparsematrix.H"
-
 /*----------------------------------------------------------------------*/
 /* forward declarations */
-class SparseMatrix;
-class BlockSparseMatrix;
+namespace LINALG
+{
+  class Solver;
+}
 
 namespace NOX {
 namespace STR {

@@ -29,11 +29,10 @@ Maintainer: Thomas Klöppel
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "../linalg/linalg_sparsematrix.H"
+#include "strtimint_noxlinsys.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
-
-#include "strtimint_noxlinsys.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 
 /*----------------------------------------------------------------------*

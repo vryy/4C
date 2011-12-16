@@ -21,10 +21,12 @@ Maintainer: Alexander Popp
 #include <iostream>
 
 #include "strtimada_zienxie.H"
+#include "strtimint.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_ostream0.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

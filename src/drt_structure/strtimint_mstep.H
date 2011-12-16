@@ -19,12 +19,11 @@ Maintainer: Thomas Klöppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <vector>
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
 
-#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

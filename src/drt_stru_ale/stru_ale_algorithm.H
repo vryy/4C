@@ -33,6 +33,12 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_element.H"
 #include "../drt_ale/ale.H"
 
+// forward declarations
+namespace MORTAR
+{
+  class ManagerBase;
+}
+
 /*----------------------------------------------------------------------*
  |                                                           mgit 04/11 |
  *----------------------------------------------------------------------*/

@@ -38,24 +38,25 @@ Maintainer: Thomas Klöppel
 #include <nlnml_linearsystem.H>
 #include <nlnml_finelevelnoxinterface.H>
 
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_locsys.H"
-#include "../drt_surfstress/drt_surfstress_manager.H"
-#include "../drt_potential/drt_potential_manager.H"
-
 #include "strtimint_mstep.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_io/io.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
+namespace DRT
+{
+  class Discretization;
+
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}
+
 namespace UTILS
 {
   class ConstrManager;
   class ConstraintSolver;
+  class SurfStressManager;
 }
 
 namespace MORTAR
@@ -63,10 +64,28 @@ namespace MORTAR
   class ManagerBase;
 }
 
+namespace CONTACT
+{
+  class Beam3cmanager;
+}
+
+namespace POTENTIAL
+{
+  class PotentialManager;
+}
+
 namespace LINALG
 {
   class Solver;
   class MapExtractor;
+  class SparseMatrix;
+  class SparseOperator;
+  class BlockSparseMatrixBase;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
 }
 
 /*----------------------------------------------------------------------*/
@@ -223,6 +242,9 @@ namespace STR
     //! Update step for contact / meshtying
     void UpdateStepContactMeshtying();
 
+    //! Update step for beam contact
+    void UpdateStepBeamContact();
+
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor
@@ -315,19 +337,7 @@ namespace STR
     }
 
     //! Attach file handle for energy file #energyfile_
-    void AttachEnergyFile()
-    {
-      if (not energyfile_)
-      {
-        std::string energyname
-          = DRT::Problem::Instance()->OutputControlFile()->FileName()
-          + ".energy";
-        energyfile_ = new std::ofstream(energyname.c_str());
-        *energyfile_ << "# timestep time total_energy"
-                     << " kinetic_energy internal_energy external_energy"
-                     << std::endl;
-      }
-    }
+    void AttachEnergyFile();
 
     //! Detach file handle for energy file #energyfile_
     void DetachEnergyFile()
@@ -381,23 +391,6 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
-
-    //@}
-
-    //! @name Meshtying and contact
-    //@{
-
-    //! Check if contact / meshtying conditions are present and
-    //! create manager object + initialize all relevant stuff if so
-    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
-
-    //! Prepare contact at the beginning of each new time step
-    //! (call dynamic redistribution of contact interface(s) AND
-    //! evaluate reference state for frictional contact at t=0)
-    void PrepareStepContact();
-
-    //! Only evaluate reference state for frictional contact at t=0
-    void EvaluateReferenceState();
 
     //@}
 
@@ -552,13 +545,11 @@ namespace STR
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_); }
 
-
-    //! Return domain map
-    const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
+    //! Return domain map of mass matrix
+    const Epetra_Map& GetDomainMap();
 
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
-
 
     //! Sets the current time needed for the inverse analysis
     void SetTime(double time) const { (*time_)[0]=time; }
@@ -583,10 +574,7 @@ namespace STR
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const
-    {
-      return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
-    }
+    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Return locsys manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
@@ -607,6 +595,33 @@ namespace STR
 
     //! return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
+
+    //! Check if contact / meshtying is chosen in input file and
+    //! create manager object + initialize all relevant stuff if so
+    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
+
+    //! Prepare contact at the beginning of each new time step
+    //! (call dynamic redistribution of contact interface(s) AND
+    //! evaluate reference state for frictional contact at t=0)
+    void PrepareStepContact();
+
+    //! Only evaluate reference state for frictional contact at t=0
+    void EvaluateReferenceState();
+
+    //@}
+
+    //! @name Beam contact specific methods
+    //@{
+
+    //! return bool indicating if beam contact is defined
+    bool HaveBeamContact() { return (beamcman_ != Teuchos::null); }
+
+    //! return beam contact manager
+    Teuchos::RCP<CONTACT::Beam3cmanager> BeamContactManager() {return beamcman_;}
+
+    //! Check if beam contact is chosen in input file and
+    //! create manager object + initialize all relevant stuff if so
+    void PrepareBeamContact(const Teuchos::ParameterList& sdynparams);
 
     //@}
 
@@ -684,17 +699,20 @@ namespace STR
     //@{
 
     //! whatever constraints
-    Teuchos::RCP< ::UTILS::ConstrManager> conman_;  //!< constraint manager
-    Teuchos::RCP< ::UTILS::ConstraintSolver> consolv_;  //!< constraint solver
+    Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
+    Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
     //! surface stresses
-    Teuchos::RCP< ::UTILS::SurfStressManager> surfstressman_;
+    Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
 
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
 
     //! contact / meshtying
     Teuchos::RCP<MORTAR::ManagerBase>   cmtman_;
+
+    //! beam contact
+    Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

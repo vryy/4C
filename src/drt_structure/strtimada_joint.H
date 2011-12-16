@@ -22,11 +22,6 @@ Maintainer: Alexander Popp
 /* headers */
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
-
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
@@ -40,7 +35,23 @@ Maintainer: Alexander Popp
 
 #include "strtimada.H"
 #include "strtimint.H"
-#include "strtimint_ab2.H"
+
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure namespace */

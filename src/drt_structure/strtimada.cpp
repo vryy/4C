@@ -20,11 +20,18 @@ Maintainer: Alexander Popp
 /* headers */
 #include <iostream>
 
-#include "../drt_io/io_ostream0.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "stru_aux.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 
 #include "strtimada.H"
+#include "strtimint.H"
+#include "stru_aux.H"
+
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -354,6 +361,13 @@ void STR::TimAda::SizeForOutput()
 }
 
 /*----------------------------------------------------------------------*/
+/* Prepare output to file(s)                                            */
+void STR::TimAda::PrepareOutputPeriod()
+{
+  sti_->PrepareOutput();
+}
+
+/*----------------------------------------------------------------------*/
 /* Output to file(s) */
 void STR::TimAda::OutputPeriod()
 {
@@ -475,6 +489,21 @@ void STR::TimAda::Print
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* Attach file handle for step size file #outsizefile_                  */
+void STR::TimAda::AttachFileStepSize()
+{
+  if (not outsizefile_)
+  {
+    std::string filename
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()
+      + ".stepsize";
+    outsizefile_ = new std::ofstream(filename.c_str());
+    *outsizefile_ << "# timestep time step-size adaptations"
+                  << std::endl;
+  }
+  return;
+}
 
 /*======================================================================*/
 /* Out stream */

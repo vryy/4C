@@ -18,12 +18,32 @@ Maintainer: Alexander Popp
 
 #ifdef CCADISCRET
 
-#include "strugenalpha.H"
-#include "strtimint.H"
+#include <Epetra_Vector.h>
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
 
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace STR
+{
+  class TimInt;
+}
+
+class StruGenAlpha;
 
 /*!
   \brief Structure specific result test class
@@ -33,10 +53,10 @@ class StruResultTest : public DRT::ResultTest
 public:
   //! constructor
   StruResultTest(
-    RCP<DRT::Discretization> strudis_in,  //!< structure discretisation
-    RCP<Epetra_Vector> dis,  //!< displacements to test
-    RCP<Epetra_Vector> vel,  //!< velocities to test
-    RCP<Epetra_Vector> acc  //!< accelerations to test
+    Teuchos::RCP<DRT::Discretization> strudis_in,  //!< structure discretisation
+    Teuchos::RCP<Epetra_Vector> dis,  //!< displacements to test
+    Teuchos::RCP<Epetra_Vector> vel,  //!< velocities to test
+    Teuchos::RCP<Epetra_Vector> acc  //!< accelerations to test
   );
 
   //! constructor to use when timeintegrator is generalized alpha!
@@ -59,14 +79,14 @@ public:
 private:
 
   //! our discretisation
-  RCP<DRT::Discretization> strudisc_;
+  Teuchos::RCP<DRT::Discretization> strudisc_;
   // our solution
   //! global displacement DOFs
-  RCP<Epetra_Vector> dis_;
+  Teuchos::RCP<Epetra_Vector> dis_;
   //! global velocity DOFs
-  RCP<Epetra_Vector> vel_;
+  Teuchos::RCP<Epetra_Vector> vel_;
   //! global acceleration DOFs
-  RCP<Epetra_Vector> acc_;
+  Teuchos::RCP<Epetra_Vector> acc_;
   /* NOTE: these have to be present explicitly
    * as they are not part of the problem instance like in fluid3
    */
