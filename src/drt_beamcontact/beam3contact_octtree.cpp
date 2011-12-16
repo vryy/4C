@@ -121,18 +121,18 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
     DRT::Element* beamelement = searchdis_.lColElement(i);
     const DRT::ElementType & eot = beamelement->ElementType();
 
-  #ifdef D_BEAM3
+#ifdef D_BEAM3
     if (eot == DRT::ELEMENTS::Beam3Type::Instance())
     {
       (*diameter_)[i] = radfactor_*2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
-      (*diameter_)[i] = 2.0*0.3;
+      (*diameter_)[i] = 0.5;
     }
-  #endif // #ifdef BEAM3II
+#endif // #ifdef BEAM3II
 
-  #ifdef D_BEAM3II
+#ifdef D_BEAM3II
     if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
       (*diameter_)[i] = radfactor_*2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
-  #endif
+#endif
 
     // feasibility check
     if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
@@ -734,7 +734,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
-  const double extrusionfactor = 1.05;
+  const double extrusionfactor = 1.1;
   RCP<double> PeriodLength = Teuchos::null;
   const int ndim = 3;
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
@@ -1001,6 +1001,8 @@ void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vec
   bbox2octantrow.Export(*bbox2octant_, exporter, Add);
   bbox2octant_->Import(bbox2octantrow, importer, Insert);
 
+  //cout<<*bbox2octant_<<endl;
+
   /*// Write allbboxesstdvec to .dat-file allBBoxesstdvec.dat
   std::ostringstream filename;
   filename << "allbboxesstdvec.dat";
@@ -1143,11 +1145,42 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
           if(allbboxesstdvec[i][1+6*isub]!=-1e9)
           {
             // check for intersection. if yes, there's no need to check further segments ->break
-            if(!((limits[oct](0) >= allbboxesstdvec[i][6*isub+2]) || (allbboxesstdvec[i][6*isub+1] >= limits[oct](1)) || (limits[oct](2) >= allbboxesstdvec[i][6*isub+4]) || (allbboxesstdvec[i][6*isub+3] >= limits[oct](3)) || (limits[oct](4) >= allbboxesstdvec[i][6*isub+6]) || (allbboxesstdvec[i][6*isub+5] >= limits[oct](5))))
+            bool inoctant = false;
+            switch(boundingbox_)
             {
-              bboxsubset.push_back(allbboxesstdvec[i]);
+              case Beam3ContactOctTree::axisaligned:
+              {
+                if(!((limits[oct](0) >= allbboxesstdvec[i][6*isub+2]) || (allbboxesstdvec[i][6*isub+1] >= limits[oct](1)) || (limits[oct](2) >= allbboxesstdvec[i][6*isub+4]) || (allbboxesstdvec[i][6*isub+3] >= limits[oct](3)) || (limits[oct](4) >= allbboxesstdvec[i][6*isub+6]) || (allbboxesstdvec[i][6*isub+5] >= limits[oct](5))))
+                {
+                  bboxsubset.push_back(allbboxesstdvec[i]);
+                  inoctant = true;
+                }
+              }
               break;
+              case Beam3ContactOctTree::cyloriented:
+              {
+                for(int j=0; j<2; j++) // loop over endpoints
+                {
+                  inoctant = true;
+                  for(int k=0; k<3; k++) // loop over components
+                    if(!(limits[oct](2*k)<=allbboxesstdvec[i][6*isub+3*j+k] && limits[oct](2*k+1)>=allbboxesstdvec[i][6*isub+3*j+k]))
+                    {
+                      inoctant = false;
+                      break; // j-loop
+                    }
+                  if(inoctant)
+                  {
+                    bboxsubset.push_back(allbboxesstdvec[i]);
+                    break; // i-loop
+                  }
+                }
+              }
+              break;
+              default: dserror("No or an invalid Octree type was chosen. Check your input file!");
             }
+
+            if(inoctant)
+              break;
           }
           else
             break;
@@ -1158,8 +1191,35 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
         // Processes colums indices 1 to 6
         // 2)loop over the limits of the current octant and check if the current bounding box lies within this octant.
         // 3)Then, check componentwise and leave after first "hit"
-        if(!((limits[oct](0) >= allbboxesstdvec[i][2]) || (allbboxesstdvec[i][1] >= limits[oct](1)) || (limits[oct](2) >= allbboxesstdvec[i][4]) || (allbboxesstdvec[i][3] >= limits[oct](3)) || (limits[oct](4) >= allbboxesstdvec[i][6]) || (allbboxesstdvec[i][5] >= limits[oct](5))))
-          bboxsubset.push_back(allbboxesstdvec[i]);
+        switch(boundingbox_)
+        {
+          case Beam3ContactOctTree::axisaligned:
+          {
+            if(!((limits[oct](0) >= allbboxesstdvec[i][2]) || (allbboxesstdvec[i][1] >= limits[oct](1)) || (limits[oct](2) >= allbboxesstdvec[i][4]) || (allbboxesstdvec[i][3] >= limits[oct](3)) || (limits[oct](4) >= allbboxesstdvec[i][6]) || (allbboxesstdvec[i][5] >= limits[oct](5))))
+              bboxsubset.push_back(allbboxesstdvec[i]);
+          }
+          break;
+          case Beam3ContactOctTree::cyloriented:
+          {
+            for(int j=0; j<2; j++)
+            {
+              bool inoctant = true;
+              for(int k=0; k<3; k++)
+                if(!(limits[oct](2*k)<=allbboxesstdvec[i][3*j+k] && limits[oct](2*k+1)>=allbboxesstdvec[i][3*j+k]))
+                {
+                  inoctant = false;
+                  break;
+                }
+              if(inoctant)
+              {
+                bboxsubset.push_back(allbboxesstdvec[i]);
+                break;
+              }
+            }
+          }
+          break;
+          default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+        }
       }
 
     }// end of for-loop which goes through all elements of input
@@ -1567,33 +1627,22 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
       for(int j=0; j<numshifts+1; j++)
       {
         // first points and directional vectors of the bounding boxes
-        LINALG::Matrix<3,1> x0;
-        LINALG::Matrix<3,1> x1;
         LINALG::Matrix<3,1> v;
         LINALG::Matrix<3,1> w;
 
         // angle between the bounding boxes
         double alpha = 0.0;
-        for(int k=0; k<(int)v.M(); k++) // first BB and direction
-        {
-          x0(k) = (*allbboxes_)[i*6+k][bboxid0];
-          v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-x0(k);
-        }
-        if(bboxlimits!=Teuchos::null) // second BB and direction
+        for(int k=0; k<(int)v.M(); k++) // first BB point and direction
+          v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-(*allbboxes_)[i*6+k][bboxid0];
+        if(bboxlimits!=Teuchos::null) // second BB point and direction
         {
           for(int k=0; k<(int)v.M(); k++)
-          {
-            x1(k) = (*bboxlimits)(j*6+k,0);
-            w(k) = (*bboxlimits)(j*6+k+3,0)-x1(k);
-          }
+            w(k) = (*bboxlimits)(j*6+k+3,0)-(*bboxlimits)(j*6+k,0);
         }
         else
         {
           for(int k=0; k<(int)v.M(); k++)
-          {
-            x1(k) = (*allbboxes_)[j*6+k][bboxid1];
-            w(k) = (*allbboxes_)[j*6+k+3][bboxid1]-x1(k);
-          }
+            w(k) = (*allbboxes_)[j*6+k+3][bboxid1]-(*allbboxes_)[j*6+k][bboxid1];
         }
         alpha = acos(v.Dot(w)/(v.Norm2()*w.Norm2()));
 
@@ -1602,37 +1651,52 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
          * in the calculation of the binormal due to the cross product in the denominator*/
         if(alpha>1e-10)
         {
-          //note: d = abs(dot(x0-x1,n))
-          LINALG::Matrix<3,1> deltax = x0;
-          deltax -= x1;
+          // first points of both BBs
+          LINALG::Matrix<3,1> x;
+          LINALG::Matrix<3,1> y;
+          for(int k=0; k<(int)v.M(); k++)
+            x(k) = (*allbboxes_)[i*6+k][bboxid0];
+          if(bboxlimits!=Teuchos::null)
+          {
+            for(int k=0; k<(int)v.M(); k++)
+              y(k) = (*bboxlimits)(j*6+k,0);
+          }
+          else
+          {
+            for(int k=0; k<(int)v.M(); k++)
+              y(k) = (*allbboxes_)[j*6+k][bboxid1];
+          }
+
+          //note: d = abs(dot(y-x,n))
+          LINALG::Matrix<3,1> yminusx = y;
+          yminusx -= x;
 
           // binormal vector
           LINALG::Matrix<3,1> n;
           n(0) = v(1)*w(2)-v(2)*w(1);
           n(1) = v(2)*w(0)-v(0)*w(2);
           n(2) = v(0)*w(1)-v(1)*w(0);
-
           n.Scale(1.0/n.Norm2());
 
           // 1. distance criterium
-          double d = fabs(deltax.Dot(n));
+          double d = yminusx.Dot(n);
 
-          if (d<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+          if (fabs(d)<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
           {
             // 2. Do the two bounding boxes actually intersect?
-            double lbox0 = v.Norm2();
-            double lbox1 = w.Norm2();
-            v.Scale(1.0/lbox0);
-            w.Scale(1.0/lbox1);
-            // shifting the point on the second line by d*n facilitates the calculation of the lambdas (segment lengths)
-            for(int k=0; k<(int)x1.M(); k++)
-              x1(k) = x1(k) + d * n(k);
+            double lbb0 = v.Norm2();
+            double lbb1 = w.Norm2();
+            v.Scale(1.0/lbb0);
+            w.Scale(1.0/lbb1);
+            // shifting the point on the second line by d*n facilitates the calculation of the mu and lambda (segment lengths)
+            for(int k=0; k<(int)y.M(); k++)
+              y(k) = y(k) - d * n(k);
             // line-wise check of the segment lengths
-            double lambda0 = (w(1)*(x0(0)-x1(0))-w(0)*(x0(1)-x1(1)))/(v(1)*w(0)-v(0)*w(1));
-            if(lambda0>=0 && lambda0<=lbox0)
+            double mu = (v(1)*(y(0)-x(0))-v(0)*(y(1)-x(1)))/(v(0)*w(1)-v(1)*w(0));
+            if(mu>=0 && mu<=lbb0)
             {
-              double lambda1 = (x0(0)+lambda0*v(0)-x1(0))/w(0);
-              if(lambda1>=0 && lambda1<=lbox1)
+              double lambda = (y(0)-x(0)+w(0)*mu)/v(0);
+              if(lambda>=0 && lambda<=lbb1)
               {
                 intersection = true;
                 break; // leave j-loop
@@ -1642,27 +1706,27 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
         }
         else // parallel case -> d = abs(cross(v0,(x1-x0))/abs(v0)
         {
-          LINALG::Matrix<3,1> x0;
+          LINALG::Matrix<3,1> x;
           LINALG::Matrix<3,1> v;
-          LINALG::Matrix<3,1> x0x1;
-          for(int k=0; k<(int)x0.M();k++)
+          LINALG::Matrix<3,1> yminusx;
+          for(int k=0; k<(int)x.M();k++)
           {
-            x0(k) = (*allbboxes_)[i*6+k][bboxid0];
-            v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-x0(k);
+            x(k) = (*allbboxes_)[i*6+k][bboxid0];
+            v(k) = (*allbboxes_)[i*6+k+3][bboxid0]-x(k);
           }
           if(bboxlimits!=Teuchos::null)
           {
-            for(int k=0; k<(int)x0.M();k++)
-              x0x1(k) = (*bboxlimits)(j*6+k,0)-x0(k);
+            for(int k=0; k<(int)x.M();k++)
+              yminusx(k) = (*bboxlimits)(j*6+k,0)-x(k);
           }
           else
           {
-            for(int k=0; k<(int)x0.M();k++)
-              x0x1(k) = (*allbboxes_)[j*6+k][bboxid1]-x0(k);
+            for(int k=0; k<(int)x.M();k++)
+              yminusx(k) = (*allbboxes_)[j*6+k][bboxid1]-x(k);
           }
 
-          double phi = acos(fabs(v.Dot(x0x1)/(v.Norm2()*x0x1.Norm2())));
-          double d = x0x1.Norm2()*sin(phi);
+          double phi = acos(fabs(v.Dot(yminusx)/(v.Norm2()*yminusx.Norm2())));
+          double d = yminusx.Norm2()*sin(phi);
 
           if(d<radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
           {
@@ -1673,17 +1737,17 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
             double l1 = 0.0;
             if(bboxlimits!=Teuchos::null)
             {
-              for(int k=0; k<(int)x0.M(); k++)
+              for(int k=0; k<(int)x.M(); k++)
               {
-                d2 += ((*bboxlimits)(j*6+k,0) - x0(k))*((*bboxlimits)(j*6+k,0) - x0(k));
+                d2 += ((*bboxlimits)(j*6+k,0) - x(k))*((*bboxlimits)(j*6+k,0) - x(k));
                 l1 += ((*bboxlimits)(j*6+k+3,0) - (*bboxlimits)(j*6+k,0))*((*bboxlimits)(j*6+k+3,0) - (*bboxlimits)(j*6+k,0));
               }
             }
             else
             {
-              for(int k=0; k<(int)x0.M(); k++)
+              for(int k=0; k<(int)x.M(); k++)
               {
-                d2 += ((*allbboxes_)[j*6+k+3][bboxid1] - x0(k))*((*allbboxes_)[j*6+k+3][bboxid1] - x0(k));
+                d2 += ((*allbboxes_)[j*6+k+3][bboxid1] - x(k))*((*allbboxes_)[j*6+k+3][bboxid1] - x(k));
                 l1 += ((*allbboxes_)[j*6+k+3][bboxid1] - (*allbboxes_)[j*6+k][bboxid1])*((*allbboxes_)[j*6+k+3][bboxid1] - (*allbboxes_)[j*6+k][bboxid1]);
               }
             }
@@ -1704,115 +1768,124 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
   else  // standard procedure without periodic boundary conditions
   {
     // first points and directional vectors of the bounding boxes
-    LINALG::Matrix<3,1> x0;
-    LINALG::Matrix<3,1> x1;
     LINALG::Matrix<3,1> v;
     LINALG::Matrix<3,1> w;
 
     // angle between the bounding boxes
     double alpha = 0.0;
     for(int k=0; k<(int)v.M(); k++) // first BB
-    {
-      x0(k) = (*allbboxes_)[k][bboxid0];
-      v(k) = (*allbboxes_)[k+3][bboxid0]-x0(k);
-    }
-
+      v(k) = (*allbboxes_)[k+3][bboxid0]-(*allbboxes_)[k][bboxid0];
     if(bboxlimits!=Teuchos::null) //second BB
     {
       for(int k=0; k<(int)v.M(); k++)
-      {
-        x1(k) = (*bboxlimits)(k,0);
-        w(k) = (*bboxlimits)(k+3,0)-x1(k);
-      }
+        w(k) = (*bboxlimits)(k+3,0)-(*bboxlimits)(k,0);
     }
     else
     {
       for(int k=0; k<(int)v.M(); k++)
-      {
-        x1(k) = (*allbboxes_)[k][bboxid1];
-        w(k) = (*allbboxes_)[k+3][bboxid1]-x1(k);
-      }
+        w(k) = (*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1];
     }
 
     alpha = acos(v.Dot(w)/(v.Norm2()*w.Norm2()));
     // non-parallel case
     if(alpha>1e-10)
     {
-      LINALG::Matrix<3,1> deltax = x0;
-      deltax -= x1;
+      LINALG::Matrix<3,1> x;
+      LINALG::Matrix<3,1> y;
 
+      for(int k=0; k<(int)v.M(); k++)
+        x(k) = (*allbboxes_)[k][bboxid0];
+      if(bboxlimits!=Teuchos::null)
+      {
+        for(int k=0; k<(int)v.M(); k++)
+          y(k) = (*bboxlimits)(k,0);
+      }
+      else
+      {
+        for(int k=0; k<(int)v.M(); k++)
+          y(k) = (*allbboxes_)[k][bboxid1];
+      }
+
+      //note: d = abs(dot(y-x,n))
+      LINALG::Matrix<3,1> yminusx = y;
+      yminusx -= x;
+
+      // binormal vector
       LINALG::Matrix<3,1> n;
       n(0) = v(1)*w(2)-v(2)*w(1);
       n(1) = v(2)*w(0)-v(0)*w(2);
       n(2) = v(0)*w(1)-v(1)*w(0);
-
       n.Scale(1.0/n.Norm2());
 
-      double d = fabs(deltax.Dot(n));
+      // 1. distance criterium
+      double d = yminusx.Dot(n);
 
-      if (d<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+      if (fabs(d)<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
       {
-        double lbox0 = v.Norm2();
-        double lbox1 = w.Norm2();
-        v.Scale(1.0/lbox0);
-        w.Scale(1.0/lbox1);
-
-        for(int k=0; k<(int)x1.M(); k++)
-          x1(k) = x1(k) + d * n(k);
-
-        double lambda0 = (w(1)*(x0(0)-x1(0))-w(0)*(x0(1)-x1(1)))/(v(1)*w(0)-v(0)*w(1));
-        if(lambda0>=0 && lambda0<=lbox0)
+        double lbb0 = v.Norm2();
+        double lbb1 = w.Norm2();
+        v.Scale(1.0/lbb0);
+        w.Scale(1.0/lbb1);
+        for(int k=0; k<(int)y.M(); k++)
+          y(k) = y(k) - d * n(k);
+        double mu = (v(1)*(y(0)-x(0))-v(0)*(y(1)-x(1)))/(v(0)*w(1)-v(1)*w(0));
+        if(mu>=0 && mu<=lbb0)
         {
-          double lambda1 = (x0(0)+lambda0*v(0)-x1(0))/w(0);
-          if(lambda1>=0 && lambda1<=lbox1)
+          double lambda = (y(0)-x(0)+w(0)*mu)/v(0);
+          if(lambda>=0 && lambda<=lbb1)
             intersection = true;
         }
       }
     }
     else
     {
-      LINALG::Matrix<3,1> x0;
+      LINALG::Matrix<3,1> x;
       LINALG::Matrix<3,1> v;
-      LINALG::Matrix<3,1> x0x1;
-      for(int k=0; k<(int)x0.M();k++) // first BB
+      LINALG::Matrix<3,1> yminusx;
+      for(int k=0; k<(int)x.M();k++)
       {
-        x0(k) = (*allbboxes_)[k][bboxid0];
-        v(k) = (*allbboxes_)[k+3][bboxid0]-x0(k);
-
+        x(k) = (*allbboxes_)[k][bboxid0];
+        v(k) = (*allbboxes_)[k+3][bboxid0]-x(k);
       }
-      if(bboxlimits!=Teuchos::null) //second BB
+      if(bboxlimits!=Teuchos::null)
       {
-        for(int k=0; k<(int)x0.M();k++)
-          x0x1(k) = (*bboxlimits)(k,0)-x0(k);
+        for(int k=0; k<(int)x.M();k++)
+          yminusx(k) = (*bboxlimits)(k,0)-x(k);
       }
       else
       {
-        for(int k=0; k<(int)v.M(); k++)
-          x0x1(k) = (*allbboxes_)[k][bboxid1]-x0(k);
+        for(int k=0; k<(int)x.M();k++)
+          yminusx(k) = (*allbboxes_)[k][bboxid1]-x(k);
       }
 
-      double phi = acos(fabs(v.Dot(x0x1)/(v.Norm2()*x0x1.Norm2())));
-      double d = x0x1.Norm2()*sin(phi);
+      double phi = acos(fabs(v.Dot(yminusx)/(v.Norm2()*yminusx.Norm2())));
+      double d = yminusx.Norm2()*sin(phi);
+
       if(d<radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
       {
+        // distance between first point of first BB and second point of second BB
         double d2 = 0.0;
+        // length of first and second BB
         double l0 = v.Norm2();
         double l1 = 0.0;
-        for(int k=0; k<(int)x0.M(); k++)
+        if(bboxlimits!=Teuchos::null)
         {
-          d2 += ((*allbboxes_)[k+3][bboxid1] - x0(k))*((*allbboxes_)[k+3][bboxid1] - x0(k));
-          l1 += ((*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1]) * ((*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1]);
+          for(int k=0; k<(int)x.M(); k++)
+          {
+            d2 += ((*bboxlimits)(k,0) - x(k))*((*bboxlimits)(k,0) - x(k));
+            l1 += ((*bboxlimits)(k+3,0) - (*bboxlimits)(k,0))*((*bboxlimits)(k+3,0) - (*bboxlimits)(k,0));
+          }
+        }
+        else
+        {
+          for(int k=0; k<(int)x.M(); k++)
+          {
+            d2 += ((*allbboxes_)[k+3][bboxid1] - x(k))*((*allbboxes_)[k+3][bboxid1] - x(k));
+            l1 += ((*allbboxes_)[k+3][bboxid1] - (*allbboxes_)[k][bboxid1])*((*allbboxes_)[k+3][bboxid1] - (*allbboxes_)[k][bboxid1]);
+          }
         }
         d2 = sqrt(d2);
         l1 = sqrt(l1);
-
-        /*/debug block
-        cout<<"IDs: "<<bboxid0<<","<<bboxid1<<"; gap: "<<d<<", "<<"d2: "<<d2<<", isec: ";
-        if(d2<=l0+l1)
-          cout<<"yes"<<endl;
-        else
-          cout<<"no"<<endl;*/
-
         if(d2<=l0+l1)
           intersection = true;
       }

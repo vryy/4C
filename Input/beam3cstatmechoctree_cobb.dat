@@ -87,6 +87,7 @@ ALPHAPTC            6.0
 DYN_CROSSLINKERS    No
 OUTPUTINTERVALS     1000
 GMSHOUTINTERVALS    1
+PlotFactorThick     1
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Amesos_KLU_nonsym
 ----------------------------------------------------CONTACT SOLVER
@@ -241,7 +242,7 @@ MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 100000 NUE 0 DENS 0.001 THEXPANS
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.344352776e-01 TOLERANCE 4e-5
+STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.344352776e-01 TOLERANCE 7e-5
 STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE  8.078205550e-02 TOLERANCE 4e-5
 STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.646981599e+00 TOLERANCE 4e-5
 ---------------------------------------------------------------END
