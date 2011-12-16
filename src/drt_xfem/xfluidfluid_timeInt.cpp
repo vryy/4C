@@ -173,15 +173,25 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
     if ((iterstn != stdnoden_.end() and iterstnp != stdnodenp_.end()) or
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
+      int numsets = bgdis->NumDof(bgnode)/4;
       vector<int> gdofsn = iterstn->second;
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] =
-        (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] =
-        (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] =
-        (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
-      (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] =
-        (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+      //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehere
+      //dofsets vorhanden sind
+
+      int offset = 0;
+      for (int set=0; set<numsets; set++)
+      {
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+        offset += 4;
+      }
+
     }
     // Project dofs from embdis to bgdis:
     // n:void -> n+1:std, n:enriched -> n+1:enriched,
@@ -191,6 +201,8 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
              (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end()) or
              ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end()))
     {
+      int numsets = bgdis->NumDof(bgnode)/4;
+
       LINALG::Matrix<3,1> bgnodecords(true);
       bgnodecords(0,0) = bgnode->X()[0];
       bgnodecords(1,0) = bgnode->X()[1];
@@ -239,11 +251,15 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
         insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,*embstatevn,aledispn,embdis_);
         if (insideelement)
         {
-          // hier set state
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] = interpolatedvec(0);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] = interpolatedvec(1);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] = interpolatedvec(2);
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] = interpolatedvec(3);
+          int offset = 0;
+          for (int set=0; set<numsets; set++)
+          {
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] = interpolatedvec(0);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] = interpolatedvec(1);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] = interpolatedvec(2);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] = interpolatedvec(3);
+             offset += 4;
+          }
           break;
         }
         count ++;
@@ -254,15 +270,21 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
         if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
             or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
         {
+          cout << "Take enriched values !!" << endl;
           vector<int> gdofsn = iteren->second;
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[0])] =
-            (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[1])] =
-            (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[2])] =
-            (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
-          (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[3])] =
-            (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+          int offset = 0;
+          for (int set=0; set<numsets; set++)
+          {
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+            offset += 4;
+          }
         }
         else
         {
