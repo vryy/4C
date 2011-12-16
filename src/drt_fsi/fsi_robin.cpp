@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::Robin::Robin(Epetra_Comm& comm)
+FSI::Robin::Robin(const Epetra_Comm& comm)
   : Partitioned(comm)
 {
    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

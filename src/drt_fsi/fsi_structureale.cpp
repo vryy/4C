@@ -38,7 +38,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::StructureALE::StructureALE(Epetra_Comm& comm)
+FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   : Algorithm(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

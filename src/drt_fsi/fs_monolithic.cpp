@@ -42,7 +42,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBaseFS::MonolithicBaseFS(Epetra_Comm& comm)
+FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
     FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
     AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams())
@@ -124,7 +124,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicMainFS::MonolithicMainFS(Epetra_Comm& comm)
+FSI::MonolithicMainFS::MonolithicMainFS(const Epetra_Comm& comm)
   : MonolithicBaseFS(comm)
 {
 }
@@ -487,7 +487,7 @@ bool FSI::MonolithicMainFS::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::BlockMonolithicFS::BlockMonolithicFS(Epetra_Comm& comm)
+FSI::BlockMonolithicFS::BlockMonolithicFS(const Epetra_Comm& comm)
   : MonolithicMainFS(comm),
     precondreusecount_(0)
 {
@@ -545,7 +545,7 @@ void FSI::BlockMonolithicFS::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
+FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm)
   : BlockMonolithicFS(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

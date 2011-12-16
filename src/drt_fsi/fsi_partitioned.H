@@ -68,7 +68,7 @@ class Partitioned : public Algorithm,
 public:
 
   /// setup FSI algorithm
-  explicit Partitioned(Epetra_Comm& comm);
+  explicit Partitioned(const Epetra_Comm& comm);
 
   /// outer level FSI time loop
   void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);

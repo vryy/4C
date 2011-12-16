@@ -8,7 +8,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
+FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
   : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     comm_(comm)
 {

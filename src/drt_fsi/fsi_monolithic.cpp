@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------*/
 // constructor (public)
 /*----------------------------------------------------------------------*/
-FSI::Monolithic::Monolithic(Epetra_Comm& comm)
+FSI::Monolithic::Monolithic(const Epetra_Comm& comm)
   : MonolithicBase(comm),
     cout0_(StructureField().Discretization()->Comm(), std::cout),
     zeros_(Teuchos::null)

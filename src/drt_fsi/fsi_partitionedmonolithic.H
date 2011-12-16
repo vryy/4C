@@ -36,7 +36,7 @@ namespace FSI
     friend class NOX::FSI::LinearPartitioned;
 
   public:
-    explicit PartitionedMonolithic(Epetra_Comm& comm);
+    explicit PartitionedMonolithic(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

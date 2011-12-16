@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(Epetra_Comm& comm)
+FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(const Epetra_Comm& comm)
   : LungMonolithic(comm)
 {
   return;

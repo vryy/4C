@@ -16,7 +16,7 @@ extern struct _GENPROB genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(Epetra_Comm& comm)
+FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
   : DirichletNeumann(comm)
 {
   

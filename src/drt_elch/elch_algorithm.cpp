@@ -29,7 +29,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),

@@ -18,7 +18,7 @@ namespace FSI
   class ConstrMonolithicStructureSplit : public ConstrMonolithic
   {
   public:
-    explicit ConstrMonolithicStructureSplit(Epetra_Comm& comm);
+    explicit ConstrMonolithicStructureSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
     <pre>

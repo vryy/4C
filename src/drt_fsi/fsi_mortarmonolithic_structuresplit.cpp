@@ -26,7 +26,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(Epetra_Comm& comm)
+FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra_Comm& comm)
   : BlockMonolithic(comm),
     comm_(comm)
 {

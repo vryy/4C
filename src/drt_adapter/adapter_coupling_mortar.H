@@ -63,7 +63,7 @@ namespace ADAPTER
     void Setup( DRT::Discretization& masterdis,
                 DRT::Discretization& slavedis,
                 DRT::Discretization& aledis, ///> we need this for mesh initialization
-                Epetra_Comm& comm,
+                const Epetra_Comm& comm,
                 bool structslave = false);
 
     /// setup the machinery
@@ -81,7 +81,7 @@ namespace ADAPTER
                    DRT::Discretization& aledis,
                    RCP<Epetra_Map> masterdofrowmap,
                    RCP<Epetra_Map> slavedofrowmap,
-                   Epetra_Comm& comm,
+                   const Epetra_Comm& comm,
                    bool structslave);
 
     ///filling matrices (standard case)

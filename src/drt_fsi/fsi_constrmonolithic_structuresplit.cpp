@@ -15,7 +15,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(Epetra_Comm& comm)
+FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(const Epetra_Comm& comm)
   : ConstrMonolithic(comm)
 {
   return;

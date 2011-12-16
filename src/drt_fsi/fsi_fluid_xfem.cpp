@@ -10,7 +10,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(Epetra_Comm& comm)
+FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
   : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams(),"FSICoupling"),
     comm_(comm)
 {

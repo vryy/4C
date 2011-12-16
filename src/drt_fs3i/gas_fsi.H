@@ -14,7 +14,7 @@ namespace FS3I
   {
   public:
 
-    GasFSI(Epetra_Comm& comm);
+    GasFSI(const Epetra_Comm& comm);
 
     virtual ~GasFSI(){};
 
@@ -94,7 +94,7 @@ namespace FS3I
   private:
 
     /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
     std::vector<LINALG::MultiMapExtractor> scatrafieldexvec_;

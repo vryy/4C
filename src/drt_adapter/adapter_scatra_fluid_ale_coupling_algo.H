@@ -46,7 +46,7 @@ namespace ADAPTER
 
     /// constructor using a Epetra_Comm
     explicit ScaTraFluidAleCouplingAlgorithm(
-        Epetra_Comm& comm,              ///< communicator
+        const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
         const std::string condname ///< name of condition that defines fluid-ale coupling
         );

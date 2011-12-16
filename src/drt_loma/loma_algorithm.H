@@ -46,7 +46,7 @@ namespace LOMA
 
     /// constructor
     explicit Algorithm(
-        Epetra_Comm& comm,                   ///< communicator
+        const Epetra_Comm& comm,             ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 

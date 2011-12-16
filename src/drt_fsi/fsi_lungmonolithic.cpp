@@ -26,7 +26,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
+FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
   //-----------------------------------------------------------------------------

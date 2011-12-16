@@ -30,7 +30,7 @@ class TurbulentFlowAlgorithm
 public:
 
   /// constructor
-  explicit TurbulentFlowAlgorithm(Epetra_Comm& comm,
+  explicit TurbulentFlowAlgorithm(const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& fdyn);
 
   /// virtual destructor

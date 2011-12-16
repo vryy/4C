@@ -193,7 +193,7 @@ namespace UTILS
   public:
 
     /// create using a Epetra_Comm
-    explicit MonolithicBaseFS(Epetra_Comm& comm);
+    explicit MonolithicBaseFS(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
     virtual ~MonolithicBaseFS();
@@ -250,7 +250,7 @@ namespace UTILS
                            public NOX::Direction::UserDefinedFactory
   {
   public:
-    explicit MonolithicMainFS(Epetra_Comm& comm);
+    explicit MonolithicMainFS(const Epetra_Comm& comm);
 
     /// outer level FSI time loop
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
@@ -391,7 +391,7 @@ namespace UTILS
   class BlockMonolithicFS : public MonolithicMainFS
   {
   public:
-    explicit BlockMonolithicFS(Epetra_Comm& comm);
+    explicit BlockMonolithicFS(const Epetra_Comm& comm);
 
     //! @name NOX methods
 
@@ -454,7 +454,7 @@ namespace UTILS
   class MonolithicFS : public BlockMonolithicFS
   {
   public:
-    explicit MonolithicFS(Epetra_Comm& comm);
+    explicit MonolithicFS(const Epetra_Comm& comm);
 
     //! @name Apply current field state to system
 

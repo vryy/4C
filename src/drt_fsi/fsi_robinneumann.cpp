@@ -11,7 +11,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::RobinNeumann::RobinNeumann(Epetra_Comm& comm)
+FSI::RobinNeumann::RobinNeumann(const Epetra_Comm& comm)
   : Partitioned(comm)
 {
 }

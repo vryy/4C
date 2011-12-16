@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DirichletNeumann::DirichletNeumann(Epetra_Comm& comm)
+FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
   : Partitioned(comm)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

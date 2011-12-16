@@ -22,7 +22,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(Epetra_Comm& comm)
+FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& comm)
   : BlockMonolithic(comm),
     comm_(comm)
 {

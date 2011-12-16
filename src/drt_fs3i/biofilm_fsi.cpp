@@ -60,7 +60,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmFSI::BiofilmFSI(
-	Epetra_Comm& comm)
+	const Epetra_Comm& comm)
 :GasFSI(comm),
  comm_(comm)/*,
  ADAPTER::StructureBio(comm,	///< communicator

@@ -31,7 +31,7 @@ class RobinNeumann : public Partitioned
 {
 public:
 
-  explicit RobinNeumann(Epetra_Comm& comm);
+  explicit RobinNeumann(const Epetra_Comm& comm);
 
 protected:
 

@@ -43,7 +43,7 @@ ADAPTER::CouplingMortar::CouplingMortar()
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
     DRT::Discretization& slavedis, DRT::Discretization& aledis,
-    Epetra_Comm& comm, bool structslave)
+    const Epetra_Comm& comm, bool structslave)
 {
   // initialize maps for row nodes
   map<int, DRT::Node*> masternodes;
@@ -881,7 +881,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
 void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
     DRT::Discretization& slavedis, DRT::Discretization& aledis,
     RCP<Epetra_Map> masterdofrowmap, RCP<Epetra_Map> slavedofrowmap,
-    Epetra_Comm& comm, bool structslave)
+    const Epetra_Comm& comm, bool structslave)
 {
   // problem dimension
   int dim = genprob.ndim;

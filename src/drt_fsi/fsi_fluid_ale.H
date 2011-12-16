@@ -12,7 +12,7 @@ namespace FSI
   class FluidAleAlgorithm : public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
-    explicit FluidAleAlgorithm(Epetra_Comm& comm);
+    explicit FluidAleAlgorithm(const Epetra_Comm& comm);
 
     virtual ~FluidAleAlgorithm();
 
@@ -55,7 +55,7 @@ namespace FSI
   private:
 
     /// comunication (mainly for screen output)
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     //! @name Time stepping variables
     int step_;

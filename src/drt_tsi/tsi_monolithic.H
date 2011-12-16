@@ -72,7 +72,7 @@ namespace TSI
   public:
 
     /// create using a Epetra_Comm
-    explicit MonolithicBase(Epetra_Comm& comm);
+    explicit MonolithicBase(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
     virtual ~MonolithicBase();
@@ -116,7 +116,7 @@ namespace TSI
 
   public:
     explicit Monolithic(
-      Epetra_Comm& comm,
+      const Epetra_Comm& comm,
       const Teuchos::ParameterList& sdynparams
       );
 

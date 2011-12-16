@@ -26,7 +26,7 @@ namespace FSI
   class MortarMonolithicFluidSplit : public BlockMonolithic
   {
   public:
-    explicit MortarMonolithicFluidSplit(Epetra_Comm& comm);
+    explicit MortarMonolithicFluidSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 
@@ -116,7 +116,7 @@ namespace FSI
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     ///communicator
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

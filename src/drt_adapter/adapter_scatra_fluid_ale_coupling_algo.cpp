@@ -29,7 +29,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     const std::string condname
 )

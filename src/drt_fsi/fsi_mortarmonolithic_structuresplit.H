@@ -26,7 +26,7 @@ namespace FSI
   class MortarMonolithicStructureSplit : public BlockMonolithic
   {
   public:
-    explicit MortarMonolithicStructureSplit(Epetra_Comm& comm);
+    explicit MortarMonolithicStructureSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 
@@ -122,7 +122,7 @@ namespace FSI
     ADAPTER::CouplingMortar               coupsfm_;
 
     ///communicator
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

@@ -31,7 +31,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBio::StructureBio(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     bool isale,
     const int disnum,

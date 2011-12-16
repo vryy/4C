@@ -24,7 +24,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),

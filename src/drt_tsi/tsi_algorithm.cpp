@@ -45,7 +45,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
-TSI::Algorithm::Algorithm(Epetra_Comm& comm)
+TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
     ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),

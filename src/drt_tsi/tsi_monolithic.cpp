@@ -50,7 +50,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 11/10 |
  *----------------------------------------------------------------------*/
-TSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
+TSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
     ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams())
@@ -141,7 +141,7 @@ void TSI::MonolithicBase::Update()
  | monolithic                                                dano 11/10 |
  *----------------------------------------------------------------------*/
 TSI::Monolithic::Monolithic(
-  Epetra_Comm& comm,
+  const Epetra_Comm& comm,
   const Teuchos::ParameterList& sdynparams
   )
 : MonolithicBase(comm),

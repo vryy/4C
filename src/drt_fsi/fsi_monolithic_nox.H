@@ -70,7 +70,7 @@ namespace UTILS
   public:
 
     /// create using a Epetra_Comm
-    explicit MonolithicBase(Epetra_Comm& comm);
+    explicit MonolithicBase(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
     virtual ~MonolithicBase();
@@ -160,7 +160,7 @@ namespace UTILS
   {
     friend class FSI::UTILS::MonolithicDebugWriter;
   public:
-    explicit MonolithicNOX(Epetra_Comm& comm);
+    explicit MonolithicNOX(const Epetra_Comm& comm);
 
     ///
     /*! do the setup for the monolithic system
@@ -328,7 +328,7 @@ namespace UTILS
   class BlockMonolithic : public MonolithicNOX
   {
   public:
-    explicit BlockMonolithic(Epetra_Comm& comm);
+    explicit BlockMonolithic(const Epetra_Comm& comm);
 
     //! @name NOX methods
 

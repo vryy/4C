@@ -15,7 +15,7 @@ namespace FS3I
   public:
 
     BiofilmFSI(
-      Epetra_Comm& comm                   	///< communicator
+      const Epetra_Comm& comm                   	///< communicator
       );
 
     ~BiofilmFSI(){};
@@ -36,13 +36,13 @@ namespace FS3I
 
     void UpdateAndOutput();
 
-    Epetra_Comm& Comm() { return comm_; }
+    const Epetra_Comm& Comm() { return comm_; }
 
 
   private:
 
     /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
     ADAPTER::Coupling icoupfa_;

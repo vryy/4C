@@ -20,7 +20,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
+FSI::MonolithicLagrange::MonolithicLagrange(const Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
 }

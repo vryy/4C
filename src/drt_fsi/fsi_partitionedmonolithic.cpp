@@ -16,7 +16,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::PartitionedMonolithic::PartitionedMonolithic(Epetra_Comm& comm)
+FSI::PartitionedMonolithic::PartitionedMonolithic(const Epetra_Comm& comm)
   : MonolithicNOX(comm)
 {
 }

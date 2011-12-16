@@ -56,7 +56,7 @@ class StructureALE : public Algorithm
 public:
 
   /// setup FSI algorithm
-  StructureALE(Epetra_Comm& comm);
+  StructureALE(const Epetra_Comm& comm);
 
   /// outer level FSI time loop
   void Timeloop();

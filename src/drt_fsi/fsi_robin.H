@@ -27,7 +27,7 @@ class Robin : public Partitioned
 {
 public:
 
-  explicit Robin(Epetra_Comm& comm);
+  explicit Robin(const Epetra_Comm& comm);
 
 protected:
 

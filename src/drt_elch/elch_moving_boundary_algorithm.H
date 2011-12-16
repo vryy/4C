@@ -42,7 +42,7 @@ namespace ELCH
 
     /// constructor
     explicit MovingBoundaryAlgorithm(
-        Epetra_Comm& comm,                   ///< communicator
+        const Epetra_Comm& comm,             ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
         );
 

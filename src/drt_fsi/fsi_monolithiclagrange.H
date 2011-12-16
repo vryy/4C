@@ -15,7 +15,7 @@ namespace FSI
   class MonolithicLagrange : public BlockMonolithic
   {
   public:
-    explicit MonolithicLagrange(Epetra_Comm& comm);
+    explicit MonolithicLagrange(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

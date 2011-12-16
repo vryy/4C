@@ -25,7 +25,7 @@ namespace FSI
   class ConstrMonolithic : public BlockMonolithic
   {
   public:
-    explicit ConstrMonolithic(Epetra_Comm& comm);
+    explicit ConstrMonolithic(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
     <pre>

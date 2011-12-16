@@ -50,7 +50,7 @@ namespace FSI
   public:
 
     /// create using a Epetra_Comm
-    explicit MonolithicBaseXFEM(Epetra_Comm& comm);
+    explicit MonolithicBaseXFEM(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
     virtual ~MonolithicBaseXFEM();
@@ -113,7 +113,7 @@ namespace FSI
   class MonolithicXFEM : public MonolithicBaseXFEM
   {
   public:
-    explicit MonolithicXFEM(Epetra_Comm& comm);
+    explicit MonolithicXFEM(const Epetra_Comm& comm);
 
     /// outer level FSI time loop
     void Timeloop();

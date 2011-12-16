@@ -19,7 +19,7 @@ namespace FSI
   class LungMonolithicStructureSplit : public LungMonolithic
   {
   public:
-    explicit LungMonolithicStructureSplit(Epetra_Comm& comm);
+    explicit LungMonolithicStructureSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
     <pre>

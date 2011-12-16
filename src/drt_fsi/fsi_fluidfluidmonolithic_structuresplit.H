@@ -24,7 +24,7 @@ namespace FSI
   class FluidFluidMonolithicStructureSplit : public Monolithic
   {
   public:
-    explicit FluidFluidMonolithicStructureSplit(Epetra_Comm& comm);
+    explicit FluidFluidMonolithicStructureSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

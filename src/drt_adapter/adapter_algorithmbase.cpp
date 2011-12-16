@@ -10,7 +10,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AlgorithmBase::AlgorithmBase(Epetra_Comm& comm,
+ADAPTER::AlgorithmBase::AlgorithmBase(const Epetra_Comm& comm,
                                       const Teuchos::ParameterList& timeparams)
   : comm_(comm)
 {

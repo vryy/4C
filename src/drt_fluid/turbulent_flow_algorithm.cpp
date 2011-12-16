@@ -31,7 +31,7 @@ FLD::TurbulentFlowAlgorithm::~TurbulentFlowAlgorithm()
 /*----------------------------------------------------------------------*
  | Constructor (public)                                  rasthofer 06/11|
  *----------------------------------------------------------------------*/
-FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(Epetra_Comm& comm,
+FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(const Epetra_Comm& comm,
                                                     const Teuchos::ParameterList& fdyn):
 step_(0)
 {

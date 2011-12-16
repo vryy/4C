@@ -49,7 +49,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::Partitioned::Partitioned(Epetra_Comm& comm)
+FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   : Algorithm(comm),
     counter_(7)
 {

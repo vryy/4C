@@ -40,7 +40,7 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | constructor (public)                                      mgit 05/11 |
  *----------------------------------------------------------------------*/
-STRU_ALE::Algorithm::Algorithm(Epetra_Comm& comm)
+STRU_ALE::Algorithm::Algorithm(const Epetra_Comm& comm)
  : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams()),
    StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams()),
    AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams())

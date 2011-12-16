@@ -64,7 +64,7 @@ namespace TSI
   public:
 
     /// create using a Epetra_Comm
-    explicit Algorithm(Epetra_Comm& comm);
+    explicit Algorithm(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();

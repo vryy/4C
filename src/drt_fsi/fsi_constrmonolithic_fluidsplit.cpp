@@ -16,7 +16,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(Epetra_Comm& comm)
+FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& comm)
   : ConstrMonolithic(comm)
 {
   sconT_ = rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(),81,false,true));

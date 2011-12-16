@@ -18,7 +18,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(Epetra_Comm& comm)
+FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(const Epetra_Comm& comm)
   : LungMonolithic(comm)
 {
   return;

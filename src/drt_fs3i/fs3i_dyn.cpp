@@ -21,10 +21,7 @@ extern struct _GENPROB     genprob;
 void fs3i_dyn()
 {
 #ifdef PARALLEL
-  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm());
-  if (!(&epetrampicomm))
-    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-  Epetra_MpiComm& comm = const_cast<Epetra_MpiComm&>(epetrampicomm);
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
 #else
   Epetra_SerialComm comm;
 #endif

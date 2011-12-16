@@ -98,7 +98,7 @@ class DirichletNeumannSlideale : public DirichletNeumann
 public:
 
 	///almost empty ctor within saving of important things
-  explicit DirichletNeumannSlideale(Epetra_Comm& comm);
+  explicit DirichletNeumannSlideale(const Epetra_Comm& comm);
   
   ///computation of rotation free ALE displacement values, remeshing 
   ///of the fluid field and reevaluation of the Mortar interface

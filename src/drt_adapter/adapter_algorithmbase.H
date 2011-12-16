@@ -20,7 +20,7 @@ namespace ADAPTER
   public:
 
     /// create using a Epetra_Comm
-    explicit AlgorithmBase(Epetra_Comm& comm,
+    explicit AlgorithmBase(const Epetra_Comm& comm,
                            const Teuchos::ParameterList& timeparams);
 
     /// virtual destruction
@@ -84,7 +84,7 @@ namespace ADAPTER
   private:
 
     /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
+    const Epetra_Comm& comm_;
 
     /// method name prepared for output
     std::string method_;

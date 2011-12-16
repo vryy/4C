@@ -22,7 +22,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(Epetra_Comm& comm)
+FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(const Epetra_Comm& comm)
   : Monolithic(comm)
 {
 

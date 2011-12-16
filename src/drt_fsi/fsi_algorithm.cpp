@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 // define the order in which the filters handle the Discretizations, which in
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
-FSI::Algorithm::Algorithm(Epetra_Comm& comm)
+FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")

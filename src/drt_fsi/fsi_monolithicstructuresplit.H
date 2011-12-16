@@ -24,7 +24,7 @@ namespace FSI
   class MonolithicStructureSplit : public BlockMonolithic
   {
   public:
-    explicit MonolithicStructureSplit(Epetra_Comm& comm);
+    explicit MonolithicStructureSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

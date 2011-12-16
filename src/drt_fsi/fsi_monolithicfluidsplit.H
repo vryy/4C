@@ -47,7 +47,7 @@ namespace FSI
   class MonolithicFluidSplit : public BlockMonolithic
   {
   public:
-    explicit MonolithicFluidSplit(Epetra_Comm& comm);
+    explicit MonolithicFluidSplit(const Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

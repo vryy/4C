@@ -19,7 +19,7 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn, const int disnum)
+SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn, const int disnum)
   :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,disnum),
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))

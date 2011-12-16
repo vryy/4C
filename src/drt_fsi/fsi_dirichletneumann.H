@@ -79,7 +79,7 @@ class DirichletNeumann : public Partitioned
 {
 public:
 
-  explicit DirichletNeumann(Epetra_Comm& comm);
+  explicit DirichletNeumann(const Epetra_Comm& comm);
 
 protected:
 

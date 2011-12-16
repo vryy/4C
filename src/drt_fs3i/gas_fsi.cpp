@@ -42,7 +42,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::GasFSI::GasFSI(Epetra_Comm& comm)
+FS3I::GasFSI::GasFSI(const Epetra_Comm& comm)
   :FS3I_Base(),
    comm_(comm)
 {

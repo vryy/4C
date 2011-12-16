@@ -26,7 +26,7 @@
 // Discretizations, which in turn defines the dof number ordering of the
 // Discretizations.
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
+FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
@@ -129,7 +129,7 @@ void FSI::MonolithicXFEM::SetupExtractor()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicXFEM::MonolithicXFEM(Epetra_Comm& comm)
+FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm)
   : MonolithicBaseXFEM(comm)
 {
 }
