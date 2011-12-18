@@ -171,6 +171,10 @@ endif(THROWELEMENTERRORS)
 
 # these are the fedora 8 with openmpi paths
 
+if (NOT MPI_DIR)
+  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
+endif (NOT MPI_DIR)
+
 if (NOT INCLUDE_INSTALL_DIR)
   set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
 endif (NOT INCLUDE_INSTALL_DIR)
@@ -1736,11 +1740,11 @@ endif (STKADAPTIVE)
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
-    COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+    COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+      COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
   endif (${restart})
 
   set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000 )
@@ -1750,11 +1754,11 @@ endmacro (baci_test)
 # are known to fail for a good reason.  
 macro (passive_baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
-    COMMAND bash -c "mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx || true")
+    COMMAND bash -c "${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx || true")
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND bash -c "mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart} || true")
+      COMMAND bash -c "${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart} || true")
   endif (${restart})
 endmacro (passive_baci_test)
 
