@@ -43,6 +43,7 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D Trilinos_DIR:FILEPATH="/lnm/lib/Trilinos_dev_10022010/cluster_openmpi" \
     -D BLAS_LIBRARIES:STRING="/lnm/lib/libacml_goto.a" \
     -D LAPACK_LIBRARIES:STRING="/lnm/lib/libacml_goto.a" \
+    -D MPI_DIR:FILEPATH=$MPIDIR \
     $EXTRA_ARGS \
     ${BACI_HOME}
 

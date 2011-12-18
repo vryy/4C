@@ -61,6 +61,7 @@ Trilinos_DIR="$PREFIX/trilinos"
     -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
     -D BOOST_INCLUDEDIR:FILEPATH="/usr/include/boost141" \
     -D BOOST_LIBRARYDIR:FILEPATH="/usr/lib64/boost141" \
+    -D MPI_DIR:FILEPATH=$MPIDIR \
     $EXTRA_ARGS \
     ${BACI_HOME}
 
