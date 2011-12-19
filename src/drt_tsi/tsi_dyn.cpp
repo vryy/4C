@@ -32,10 +32,6 @@ Maintainer: Caroline Danowski
 #include "tsi_monolithic.H"
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
-// 19.12.11 TODO header "drt_utils_createdis.H" not needed in case of new implementation: TSISetup()
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -65,42 +61,8 @@ void tsi_dyn_drt()
   // print TSI-Logo to screen
   if (comm.MyPID()==0) TSI::printlogo();
 
-  // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-  // set degrees of freedom in the discretization
-  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
-
-  // access the thermo discretization
-  Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
-  thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
-  if (!thermdis->Filled()) thermdis->FillComplete();
-
-   // we use the structure discretization as layout for the temperature discretization
-  if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
-
-  // create thermo elements if the temperature discretization is empty
-  if (thermdis->NumGlobalNodes()==0)
-  {
-    Epetra_Time time(comm);
-
-    // fetch the desired material id for the thermo elements
-    const int matid = -1;
-
-    // create the thermo discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard
-        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy>() );
-
-      clonewizard->CreateMatchingDiscretization(structdis,thermdis,matid);
-    }
-
-    if (comm.MyPID()==0)
-      cout<<"Created thermo discretization from structure field in...."
-      <<time.ElapsedTime() << " secs\n\n";
-  }
-  else
-      dserror("Structure AND Thermo discretization present. This is not supported.");
+  // setup of the discretizations, including clone strategy
+  TSI::UTILS::SetupTSI(comm);
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn

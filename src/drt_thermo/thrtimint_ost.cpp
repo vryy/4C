@@ -349,11 +349,15 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
   IO::DiscretizationReader reader(discret_, step_);
   // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
+  tang_->Zero();
   fint_->PutScalar(0.0);
-  // set 'initial' internal force vector
+  fcap_->PutScalar(0.0);
+  // set 'initial' internal force vector and capacity
   // Set dt to 0, since we do not propagate in time.
-  ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
-
+  ApplyForceTangInternal(timen_, 0.0, tempn_, zeros_, fcap_, fint_,
+                         tang_);
+  tang_->Reset();
+  
   return;
 }
 

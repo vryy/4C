@@ -344,8 +344,6 @@ void THR::TimInt::ReadRestartState()
   reader.ReadVector(raten_, "rate");
   rate_->UpdateSteps(*raten_);
   reader.ReadMesh(step_);
-
-  cout << "ReadRestartState tempn_" << *(*tempn_)(0) << endl;
   return;
 }
 
@@ -407,8 +405,6 @@ void THR::TimInt::OutputRestart(bool& datawritten)
   output_->WriteVector("temperature", (*temp_)(0));
   output_->WriteVector("rate", (*rate_)(0));
   output_->WriteVector("fexternal", Fext());
-
-  cout << "THR OutputRestart *(*temp_)(0)" << *(*temp_)(0) << endl;
 
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_)
@@ -891,15 +887,10 @@ void THR::TimInt::ApplyForceInternal(
   if(disn_!=Teuchos::null)
   {
     discret_->SetState(1,"displacement",disn_);
-
-//    // 14.12.11
-//    cout << "THR ApplyForceInternal disn_" << *disn_ << endl;
   }
   if(veln_!=Teuchos::null)
   {
     discret_->SetState(1,"velocity",veln_);
-    // 14.12.11
-    cout << "THR ApplyForceInternal veln_" << *(*veln_)(0) << endl;
   }
   // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -939,9 +930,6 @@ void THR::TimInt::ApplyStructVariables(
     veln_ = vel;
   }
   else dserror("no velocities available for TSI");
-
-//  cout << "THR ApplyStructVariables disn_" << *disn_ << endl;
-  cout << "THR ApplyStructVariables veln_" << *(*veln_)(0) << endl;
 
   // where the fun starts
   return;
