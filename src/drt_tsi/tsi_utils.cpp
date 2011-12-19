@@ -34,10 +34,10 @@ Maintainer: Caroline Danowski
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_thermo/thermo_element.H"
 
-// 19.12.11 TODO following 3 headers needed for new implementation: TSISetup()
-//#include "../drt_lib/drt_utils_createdis.H"
-//#include "../drt_lib/drt_condition_utils.H"
-//#include <Epetra_Time.h>
+//19.12.11 TODO following 3 headers needed for new implementation: TSISetup()
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
