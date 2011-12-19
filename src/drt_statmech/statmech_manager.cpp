@@ -3128,7 +3128,7 @@ void StatMechManager::SetInitialCrosslinkers()
   CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
   CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
 
-  // 2. Now, parallely search for neighbour nodes
+  /*/ 2. Now, parallely search for neighbour nodes
   RCP<Epetra_MultiVector> neighbourslid;
   if(statmechparams_.get<int>("SEARCHRES",1)>0)
     PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
@@ -3300,9 +3300,9 @@ void StatMechManager::SetInitialCrosslinkers()
 
   //couts
   if(!discret_.Comm().MyPID())
-    cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;
-  #endif
-  #endif
+    cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;*/
+#endif
+#endif
   return;
 }
 

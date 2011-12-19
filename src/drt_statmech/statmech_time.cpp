@@ -183,6 +183,10 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
+    /* We need "buildoctree" due to the fact that in case a time step is redone, we have to rebuild
+     * the octree in beamcmanager. Otherwise, the query methods in statmechmanager_->SearchAndSetCrosslinkers()
+     * does not work.*/
+    bool buildoctree = false;
     // Initialization of Output and Beam Contact Manager
     if(i == step)
     {
@@ -204,17 +208,19 @@ void StatMechTime::Integrate()
        * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
        * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
        * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
-       * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.
-       */
+       * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.*/
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
+        /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
+         * even before the first statmechmanager_->Update() call because the octree is needed to decide
+         * whether links can be set...*/
+        if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+          buildoctree = true;
         if(!discret_.Comm().MyPID())
           cout<<"====== employing beam contact ======"<<endl;
         // store integration parameter alphaf into beamcmanager_ as well
         double alphaf = params_.get<double>("alpha f",0.459);
         beamcmanager_ = rcp(new CONTACT::Beam3cmanager(discret_,alphaf));
-        if(!discret_.Comm().MyPID())
-          cout<<"===================================="<<endl;
         //defining solution strategy for beam contact
         if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
         {
@@ -224,6 +230,24 @@ void StatMechTime::Integrate()
           {
             //cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
           }
+        }
+        if(!discret_.Comm().MyPID())
+        {
+          cout<<"Sol. strategy: ";
+          switch(soltype)
+          {
+            case INPAR::CONTACT::solution_penalty:
+              cout<<"Penalty"<<endl;
+            break;
+            case INPAR::CONTACT::solution_auglag:
+              cout<<"Augmented Lagrange"<<endl;
+            break;
+            case INPAR::CONTACT::solution_lagmult:
+              cout<<"Lagrange Multipliers"<<endl;
+            break;
+            default: dserror("No solution strategy specified for beam contact!");
+          }
+          cout<<"===================================="<<endl;
         }
       }
     }
@@ -256,10 +280,6 @@ void StatMechTime::Integrate()
 
     RCP<Epetra_MultiVector> randomnumbers = Teuchos::null;
     //redo time step in case of bad random configuration
-    /* We need "firstupdate" due to the fact that in case a time step is redone, we have to rebuild
-     * the octree in beamcmanager. Otherwise, the query methods in statmechmanager_->SearchAndSetCrosslinkers()
-     * does not work.*/
-    bool firstupdate = true;
     do
     {
       //set and delete crosslinkers compared to converged configuration of last time step
@@ -267,10 +287,10 @@ void StatMechTime::Integrate()
 
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
-        if(firstupdate)
-          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
-        else
+        if(buildoctree)
           statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_,true);
+        else
+          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
       }
       else
         statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
@@ -384,7 +404,7 @@ void StatMechTime::Integrate()
         p.set("action","calc_struct_reset_istep");
         discret_.Evaluate(p,null,null,null,null,null);
         statmechmanager_->RestoreConv(stiff_, beamcmanager_);
-        firstupdate = false;
+        buildoctree = true;
       }
 
     }

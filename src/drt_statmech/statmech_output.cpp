@@ -939,7 +939,10 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         }
         else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
           for(int n=0; n<(int)lambdaorder.N(); n++)
-            lambdaorder(0,n) = lambdaorder(shiftdof,n);
+          {
+            double tmp = lambdaorder(shiftdof,n);
+            lambdaorder(0,n) = tmp;
+          }
 
         // calculate segment lambdas
         for(int dof=numshifts-1; dof>0; dof--)
