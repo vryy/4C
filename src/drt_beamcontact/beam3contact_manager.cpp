@@ -215,7 +215,8 @@ void CONTACT::Beam3cmanager::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Epetra_Vector& fres,
-                                      const Epetra_Vector& disrow)
+                                      const Epetra_Vector& disrow,
+                                      bool newsti)
 {
   // map linking node numbers and current node positions
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
@@ -318,6 +319,16 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   if(!pdiscret_.Comm().MyPID())
     cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
 
+  // determine contact stiffness matrix scaling factor (new STI)
+  // (this is due to the fact that in the new STI, we hand in the
+  // already appropriately scaled effective stiffness matrix. Thus,
+  // the additional contact stiffness terms must be equally scaled
+  // here, as well. In the old STI, the complete scaling operation
+  // is done after contact evaluation within the time integrator,
+  // therefore no special scaling needs to be applied here.)
+  double scalemat = 1.0;
+  if (newsti) scalemat = 1.0 - alphaf_;
+
   // print current pair vector on the screen
   for (int i=0;i<(int)pairs_.size();++i)
   {
@@ -361,7 +372,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     if (firstisincolmap || secondisincolmap)
     {
       bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
-      pairs_[i]->Evaluate(stiffmatrix,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing);
+      pairs_[i]->Evaluate(stiffmatrix,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing,scalemat);
     }
   }
 

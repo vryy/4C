@@ -633,7 +633,10 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
     fresm->Scale(-1.0);
 
     // make contact / meshtying modifications to lhs and rhs
-    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis);
+    // (set boolean flag 'newsti' to true, which activates
+    // sclaing of contact stiffness with appropriate scaling
+    // factor, e.g. (1.0-alphaf), internally)
+    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis,true);
 
     // scaling back
     fresm->Scale(-1.0);
@@ -1480,8 +1483,41 @@ void STR::TimIntImpl::CmtLinearSolve()
 /* solution with nonlinear iteration for beam contact */
 void STR::TimIntImpl::BeamContactNonlinearSolve()
 {
-  // TODO: needs to be filled
-  dserror("ERROR: Beam contact implementation in new STI not yet finished");
+  //********************************************************************
+  // get some parameters
+  //********************************************************************
+  // strategy type
+  INPAR::CONTACT::SolvingStrategy soltype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+
+  // unknown types of nonlinear iteration schemes
+  if (itertype_ != INPAR::STR::soltech_newtonfull)
+    dserror("Unknown type of equilibrium iteration");
+
+  //**********************************************************************
+  // solving strategy using regularization with penalty method
+  // (nonlinear solution approach: ordinary NEWTON)
+  //**********************************************************************
+  if (soltype == INPAR::CONTACT::solution_penalty)
+  {
+     // nonlinear iteration (Newton)
+    NewtonFull();
+
+    // update constraint norm
+    beamcman_->UpdateConstrNorm();
+  }
+  //**********************************************************************
+
+  //**********************************************************************
+  // solving strategy using regularization with augmented Lagrange method
+  // (nonlinear solution approach: nested UZAWA NEWTON)
+  //**********************************************************************
+  else
+  {
+    // TODO: needs to be filled
+    dserror("ERROR: Beam contact implementation in new STI not yet finished");
+
+  }
 
   return;
 }

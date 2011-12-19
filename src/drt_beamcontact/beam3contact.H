@@ -216,7 +216,8 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint, double& pp, bool ngf,
-                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap, int beams_smoothing);
+                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap,
+                int beams_smoothing, double scalemat);
   
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -434,7 +435,8 @@ private:
                              const Epetra_SerialDenseMatrix& secondderiv2, 
                              const int numnode1, const int numnode2,
                              const vector<double>& XiContact,
-                             int beams_smoothing);
+                             int beams_smoothing,
+                             double scalemat);
   
 
    /*!

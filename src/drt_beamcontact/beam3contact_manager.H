@@ -155,7 +155,7 @@ public:
 
   */
   void Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                const Epetra_Vector& disrow);
+                const Epetra_Vector& disrow, bool newsti = false);
 
   /*!
   \brief Update beam contact
