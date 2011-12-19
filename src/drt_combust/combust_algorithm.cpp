@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 #include "combust_reinitializer.H"
 #include "combust_utils.H"
 #include "combust_fluidimplicitintegration.H"
+#include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_globalproblem.H"

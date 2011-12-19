@@ -15,26 +15,26 @@ Maintainer: Florian Henke
 #ifndef COMBUST_FLUIDIMPLICITINTEGRATION_H
 #define COMBUST_FLUIDIMPLICITINTEGRATION_H
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
+
 #include "../drt_io/io_ostream0.H"
-#include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/timeInt_std_SemiLagrange.H"
-#include "../drt_xfem/timeInt_std_extrapolation.H"
-#include "../drt_xfem/timeInt_enr.H"
-#include "../drt_inpar/inpar_combust.H"
+
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_dofset_pbc.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_fluid/drt_transfer_turb_inflow.H"
-#include "../drt_fluid/turbulence_statistic_manager.H"
-#include "combust_flamefront.H"
-#include "combust_interface.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+
 // forward declarations
-class PeriodicBoundaryConditions;
+namespace XFEM
+{
+  class TIMEINT;
+  class STD;
+  class ENR;
+  class SemiLagrange;
+  class Extrapolation;
+  class EnrichmentProjection;
+}
 
 // forward declarations
 class PeriodicBoundaryConditions;

@@ -41,6 +41,9 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/timeInt_std_SemiLagrange.H"
+#include "../drt_xfem/timeInt_std_extrapolation.H"
+#include "../drt_xfem/timeInt_enr.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_control.H"
@@ -54,6 +57,11 @@ Maintainer: Florian Henke
 #include "../linalg/linalg_ana.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+
+
+
+#include "../drt_io/io.H"
 
 
 
