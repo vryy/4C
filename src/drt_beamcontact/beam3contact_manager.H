@@ -2,10 +2,10 @@
 \file beam3contact_manager.H
 
 <pre>
-Maintainer: Alexander Popp, Christian Cyron
-            {popp,cyron}@lnm.mw.tum.de
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15262
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET

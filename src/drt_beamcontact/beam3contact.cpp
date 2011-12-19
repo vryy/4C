@@ -3,10 +3,9 @@
 \brief One beam contact pair (two beam elements)
 
 <pre>
-Maintainer: Alexander Popp, Christian Cyron, Christoph Meier
-            {popp,cyron,meier}@lnm.mw.tum.de
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
             089 - 289-15262
 </pre>
 
