@@ -87,7 +87,7 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
 
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
-  
+
   // set initial external force vector of convective heat transfer boundary
   // conditions
   ApplyForceExternalConv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
@@ -349,6 +349,7 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
   IO::DiscretizationReader reader(discret_, step_);
   // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
+  fint_->PutScalar(0.0);
   // set 'initial' internal force vector
   // Set dt to 0, since we do not propagate in time.
   ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);

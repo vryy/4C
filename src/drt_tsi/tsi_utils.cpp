@@ -34,9 +34,10 @@ Maintainer: Caroline Danowski
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_thermo/thermo_element.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
+// 19.12.11 TODO following 3 headers needed for new implementation: TSISetup()
+//#include "../drt_lib/drt_utils_createdis.H"
+//#include "../drt_lib/drt_condition_utils.H"
+//#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -96,7 +97,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
 
   RCP<MAT::Material > mat = oldele->Material();
   const int matnr = (mat->Parameter()->Id())+1;
-  
+
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
       DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
@@ -126,6 +127,56 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
 
   return true; // yes, we copy EVERY element (no submeshes)
 }
+
+
+/*----------------------------------------------------------------------*
+ | setup TSI                                                 dano 12/11 |
+ *----------------------------------------------------------------------*/
+void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
+{
+  // access the structure discretization, make sure it is filled
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  // set degrees of freedom in the discretization
+  if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
+
+  // access the thermo discretization
+  Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
+  thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
+  if (!thermdis->Filled()) thermdis->FillComplete();
+
+   // we use the structure discretization as layout for the temperature discretization
+  if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
+
+  // create thermo elements if the temperature discretization is empty
+  if (thermdis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    // fetch the desired material id for the thermo elements
+    const int matid = -1;
+
+    // create the thermo discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard
+        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy>() );
+
+      clonewizard->CreateMatchingDiscretization(structdis,thermdis,matid);
+    }
+
+    if (comm.MyPID()==0)
+      cout<<"Created thermo discretization from structure field in...."
+      <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+      dserror("Structure AND Thermo discretization present. This is not supported.");
+}
+
+
+
+
+
+
 
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |
@@ -164,6 +215,7 @@ void TSI::printlogo()
   <<"         .\n"
   <<"\n"<<std::endl;
 }
+
 
 /*----------------------------------------------------------------------*/
 #endif // CCADISCRET

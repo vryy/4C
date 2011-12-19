@@ -1637,6 +1637,9 @@ void STR::TimInt::ApplyForceInternal
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
+  // set the temperature for the coupled problem
+  if(tempn_!=Teuchos::null)
+    discret_->SetState(1,"temperature",tempn_);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,

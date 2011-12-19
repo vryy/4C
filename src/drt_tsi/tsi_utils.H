@@ -77,6 +77,9 @@ namespace UTILS
 
   }; // class ThermoStructureCloneStrategy
 
+  /// setup TSI, clone the structural discretization
+  void SetupTSI(const Epetra_Comm& comm);
+
 } // namespace UTILS
 
   /*! prints the BACI tsi-logo on the screen */

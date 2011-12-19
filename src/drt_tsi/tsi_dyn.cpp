@@ -32,7 +32,7 @@ Maintainer: Caroline Danowski
 #include "tsi_monolithic.H"
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
-
+// 19.12.11 TODO header "drt_utils_createdis.H" not needed in case of new implementation: TSISetup()
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -166,6 +166,7 @@ void tsi_dyn_drt()
     DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField().CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
     break;
+
   }  // partitioned case
   default:
      dserror("Unknown solutiontype for thermo-structure interaction: %d",coupling);

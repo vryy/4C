@@ -35,6 +35,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 namespace LINALG
 {
+  // forward declaration
   class SparseMatrix;
   class MapExtractor;
 
@@ -45,6 +46,12 @@ namespace LINALG
 /// TSI: Thermo-Structure Interaction
 namespace TSI
 {
+  namespace UTILS
+  {
+    // forward declaration of clone strategy
+    class ThermoStructureCloneStrategy;
+  }
+
   /// monolithic TSI algorithm base
   //!
   //!

@@ -28,6 +28,8 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_monolithic.H"
 #include "tsi_defines.H"
+// 19.12.11 TODO header "tsi_utils.H" needed in case of new implementation: TSISetup()
+//#include "tsi_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton
@@ -101,8 +103,18 @@ TSI::MonolithicBase::~MonolithicBase()
  *----------------------------------------------------------------------*/
 void TSI::MonolithicBase::ReadRestart(int step)
 {
+
   ThermoField().ReadRestart(step);
   StructureField().ReadRestart(step);
+
+  // pass the current coupling varibles to the respective field
+  ThermoField().ApplyStructVariables(StructureField().Dispnp(),
+                                     StructureField().ExtractVelnp());
+  StructureField().ApplyTemperatures(ThermoField().Tempnp());
+
+  ThermoField().ReadRestart(step);
+  StructureField().ReadRestart(step);
+
   SetTimeStep(ThermoField().GetTime(),step);
 
   return;
@@ -155,6 +167,10 @@ TSI::Monolithic::Monolithic(
   strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
   veln_(Teuchos::null)
 {
+  // 19.12.11 output for bugfix in restart
+//  // TSI setup
+//  TSI::UTILS::SetupTSI(comm);
+
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
     = Teuchos::rcp(new Teuchos::ParameterList());
@@ -311,9 +327,23 @@ void TSI::Monolithic::TimeLoop(
   // time loop
   while (NotFinished())
   {
+    // 14.12.11 output for bugfix in restart
+    cout << "Timeloop dispnp\n" << *(StructureField().Dispn()) << endl;
+    cout << "Timeloop velnpnp\n" << *(StructureField().ExtractVeln()) << endl;
+    cout << "Timeloop tempnp\n" << *(ThermoField().Tempn()) << endl;
+
     // counter and print header
     // predict solution of both field (call the adapter)
     PrepareTimeStep();
+
+    // 14.12.11 output for bugfix in restart
+    cout << "Timeloop nach PrepareTimeStep dispn\n" << *(StructureField().Dispn()) << endl;
+    cout << "Timeloop nach PrepareTimeStep velnpn\n" << *(StructureField().ExtractVeln()) << endl;
+    cout << "Timeloop nach PrepareTimeStep dispnp\n" << *(StructureField().Dispnp()) << endl;
+    cout << "Timeloop nach PrepareTimeStep velnpnp\n" << *(StructureField().ExtractVelnp()) << endl;
+    cout << "Timeloop nach PrepareTimeStep tempn\n" << *(ThermoField().Tempn()) << endl;
+    cout << "Timeloop nach PrepareTimeStep tempnp\n" << *(ThermoField().Tempnp()) << endl;
+
 
     // Newton-Raphson iteration
     NewtonFull(sdynparams);
@@ -939,6 +969,10 @@ void TSI::Monolithic::SetupRHS()
     StructureField().RHS(),
     ThermoField().RHS()
     );
+
+  // 14.12.11 output for bugfix in restart
+  cout << " SetupRHS(): StructureField().RHS() "  << *StructureField().RHS() << endl;
+  cout << " SetupRHS(): ThermoField().RHS() " << *ThermoField().RHS()<< endl;
 
 }  // SetupRHS()
 
