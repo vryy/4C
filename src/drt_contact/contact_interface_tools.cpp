@@ -30,9 +30,9 @@ http://www.lnm.mw.tum.de
 
 <pre>
 Maintainer: Alexander Popp
-            gee@lnm.mw.tum.de
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15238
 </pre>
 
 *----------------------------------------------------------------------*/
