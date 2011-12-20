@@ -1143,7 +1143,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
         }
       }
 
-      if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 | abs(newtxi[2]-reftxi[2])>1e-12)
+      if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 || abs(newtxi[2]-reftxi[2])>1e-12)
       {
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
         cout << "Tangent txi derivative (FD):" << endl;
@@ -1169,7 +1169,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
         }
       }
 
-      if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 | abs(newteta[2]-refteta[2])>1e-12)
+      if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 || abs(newteta[2]-refteta[2])>1e-12)
       {
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
         cout << "Tangent teta derivative (FD):" << endl;
