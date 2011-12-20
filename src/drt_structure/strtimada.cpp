@@ -197,10 +197,10 @@ void STR::TimAda::Integrate()
     // printing and output
     PrepareOutputPeriod();
     sti_->UpdateStepState();
-    sti_->PrintStep();
+    sti_->UpdateStepElement();
     OutputPeriod();
     OutputStepSize();
-    sti_->UpdateStepElement();
+    sti_->PrintStep();
 
     // update
     sti_->stepn_ = timestep_ += 1;
