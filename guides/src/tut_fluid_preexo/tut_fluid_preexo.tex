@@ -233,14 +233,19 @@ Open the previously created \head 'default.head' and edit the following entries 
  \verb|PROBLEMTYP Fluid|
  \item \verb|FLUID DYNAMIC|
 
- \verb|NUMSTEP 10|
+ \verb|NUMSTEP 20|
 
  \verb|TIMESTEP 0.01|
 
  \item \verb|MATERIALS|
 
- insert the following line to define your material parameters: \newline
+ insert the following line after \verb|------MATERIALS| in order to define your material parameters: \newline
  \verb|MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0|
+
+ \item \verb|CURVE 1|
+
+ insert the following line after \verb|------CURVE 1| in order to define a time curve: \\
+ \verb|CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5  t1 0.0 t2 0.1|
  
 \end{itemize}
 Save the file under a different name of your choice.
@@ -263,7 +268,7 @@ Property Name: none
 has 23 Nodes
 *ns1="CONDITION"
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
 
 Node Set, named: top
 Property Name: none
@@ -339,7 +344,7 @@ the call (inside the \baci{} directory): \texttt{./post\_drt\_ensight -\,-file=[
 \item \emph{File$\to$Open} and select the filtered \emph{*.case}
 file: \emph{outputprefix.case}
 \item choose \emph{LittleEndian} instead of \emph{LittleEndian} and press \emph{Apply} to activate the display.
-\item choose time step $9$ ($=0.1$) in the top menu bar 
+\item choose time step $19$ ($=0.2$) in the top menu bar 
 \item At \emph{Color by} you can choose now between \emph{pressure} and \emph{velocity (Magnitude, X, ...)}. Choose \emph{velocity (X)}!
 \item in the \emph{Display} tab (section \emph{Color}) press \emph{Rescale to Data Range}. 
 \item For the scale, press \emph{Edit Color Map}, choose the tab \emph{Color legend} and activate \emph{Show color legend}.
