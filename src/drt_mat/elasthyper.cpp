@@ -13,14 +13,14 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <vector>
+// unnecessary
+//#include <vector>
 #include "elasthyper.H"
 #include "../drt_matelast/elast_summand.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -31,7 +31,8 @@ MAT::PAR::ElastHyper::ElastHyper(
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
   density_(matdata->GetDouble("DENS")),
-  gamma_(matdata->GetDouble("GAMMA"))
+  gamma_(matdata->GetDouble("GAMMA")),
+  init_mode_(matdata->GetInt("INIT_MODE"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
@@ -47,7 +48,6 @@ MAT::PAR::ElastHyper::ElastHyper(
     potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELASTIC::Summand> >(matid,potsum));
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -245,8 +245,8 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   {
     HU_ = -999.0;
   }
-
   anisotropic_ = true;
+
   // fibers aligned in local element cosy with gamma_i around circumferential direction
   vector<double> rad;
   vector<double> axi;
@@ -262,38 +262,65 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   else
   {
     // read local (cylindrical) cosy-directions at current element
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    LINALG::Matrix<3,3> locsys(true);
     linedef->ExtractDoubleVector("RAD",rad);
     linedef->ExtractDoubleVector("AXI",axi);
     linedef->ExtractDoubleVector("CIR",cir);
-    Epetra_SerialDenseMatrix locsys(3,3);
-    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-    for (int i = 0; i < 3; ++i) {
+
+    for (int i = 0; i < 3; ++i)
+    {
       radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
     }
     radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+
     for (int i=0; i<3; ++i)
     {
       locsys(i,0) = rad[i]/radnorm;
       locsys(i,1) = axi[i]/axinorm;
       locsys(i,2) = cir[i]/cirnorm;
     }
+    // INIT_MODE = 0 : Fiber direction derived from local cosy
+    if( 0 == params_->init_mode_)
+    {
+      // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
+      if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
+      //convert
+      const double gamma = (params_->gamma_*PI)/180.;
 
-    // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-    const double gamma = (params_->gamma_*PI)/180.; //convert
-
-    for (int i = 0; i < 3; ++i) {
-      // a1 = cos gamma e3 + sin gamma e2
-      a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-      // a2 = cos gamma e3 - sin gamma e2
-      a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+      for (int i = 0; i < 3; ++i)
+      {
+        // a1 = cos gamma e3 + sin gamma e2
+        a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+        // a2 = cos gamma e3 - sin gamma e2
+        a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+      }
+    }
+    // INIT_MODE = 1 : Fiber direction aligned to local cosy
+    else if (1 == params_->init_mode_)
+    {
+      for (int i = 0; i < 3; ++i)
+      {
+        a1_(i) = locsys(i,0);
+        a2_(i) = locsys(i,1);
+      }
+    }
+    // INIT_MODE = -1 = default value; usage of fiber direction without initialization mode
+    else if (-1 == params_->init_mode_)
+    {
+      dserror("Forgotten to give INIT_MODE in .dat-file");
+    }
+    else
+    {
+      dserror("Problem with fiber initialization");
     }
     for (int i = 0; i < 3; ++i) {
       A1_(i) = a1_(i)*a1_(i);
       A2_(i) = a2_(i)*a2_(i);
       for (int j=0; j<3; j++)
       {
-	  A1A2_(j,i) = a1_(j)*a2_(i);
+        A1A2_(j,i) = a1_(j)*a2_(i);
       }
     }
     A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
@@ -734,7 +761,7 @@ void MAT::ElastHyper::Evaluate(
       // contribution: A2_ \otimes Cinv + Cinv \otimes A2_
       cmat.MultiplyNT(anisodelta(7), A2_, icg, 1.0);
       cmat.MultiplyNT(anisodelta(7), icg, A2_, 1.0);
-      // contribution: A1_ \otimes A2 + Cinv \otimes A2_
+      // contribution: A1_ \otimes A2_ + A2_ \otimes A1_
       cmat.MultiplyNT(anisodelta(8), A1_, A2_, 1.0);
       cmat.MultiplyNT(anisodelta(8), A2_, A1_, 1.0);
       // contribution: A1A2sym \otimes Id + Id \otimes A1A2sym

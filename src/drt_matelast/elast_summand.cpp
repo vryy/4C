@@ -14,11 +14,14 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/elasthyper.H"
+// included in elast_summand
+//#include "../drt_mat/matpar_parameter.H"
+//not necessary
+//#include "../drt_mat/elasthyper.H"
+//#include "../drt_mat/material.H"
 #include "elast_couplogneohooke.H"
 #include "elast_coupblatzko.H"
+#include "elast_holzapfel_cardiac.H"
 #include "elast_isoneohooke.H"
 #include "elast_varisoneohooke.H"
 #include "elast_isoyeoh.H"
@@ -40,7 +43,6 @@ Maintainer: Burkhard Bornemann
 #include "elast_isovolaaagasser.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -77,6 +79,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupBlatzKo(curmat));
     MAT::ELASTIC::PAR::CoupBlatzKo* params = static_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupBlatzKo(params));
+  }
+  case INPAR::MAT::mes_holzapfel_cardiac:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Holzapfel_Cardiac(curmat));
+    MAT::ELASTIC::PAR::Holzapfel_Cardiac* params = static_cast<MAT::ELASTIC::PAR::Holzapfel_Cardiac*>(curmat->Parameter());
+    return Teuchos::rcp(new Holzapfel_Cardiac(params));
   }
   case INPAR::MAT::mes_isoneohooke:
   {
@@ -214,7 +223,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   default:
     dserror("cannot deal with type %d", curmat->Type());
   }
-
   return Teuchos::null;
 }
 

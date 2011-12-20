@@ -1084,6 +1084,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
     AddNamedReal(m,"GAMMA","fiber angle");
+    // optional
+    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement", -1, true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1116,6 +1118,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MUE","Shear modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"F","interpolation parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // anisotropic cardiac material acc. to Holzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Holzapfel_Cardiac",
+                                            "Anisotropic cardiac material  acc. to Holtzapfel",
+                                            INPAR::MAT::mes_holzapfel_cardiac));
+
+    AddNamedReal(m,"A","linear isotropic constant");
+    AddNamedReal(m,"B","exponential isotropic constant");
+    AddNamedReal(m,"A4","linear anisotropic constant for fiber 1");
+    AddNamedReal(m,"B4","exponential anisotropic constant for fiber 1");
+    AddNamedReal(m,"A6","linear anisotropic constant for fiber 2");
+    AddNamedReal(m,"B6","exponential anisotropic constant for fiber 2");
+    AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
+    AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
 
     AppendMaterialDefinition(matlist,m);
   }

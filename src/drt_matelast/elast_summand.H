@@ -15,9 +15,12 @@ Maintainer: Burkhard Bornemann
 
 #ifdef CCADISCRET
 
+// not necessary
+//#include "../drt_mat/matpar_parameter.H"
+//#include "../drt_mat/material.H"
+
 #include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/material.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace MAT
 {
@@ -41,6 +44,7 @@ namespace MAT
     /// <h3>References</h3>
     /// <ul>
     /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+    /// <li> [2] C Sansour, "On the physical assumptions underlying the volumatric-isochoric split and the case of anisotropy", European Journal of Mechanics 2007
     /// </ul>
     ///
     /// \author rausch,tk,bborn
@@ -86,6 +90,9 @@ namespace MAT
       ///
       /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
       ///\f[
+      ///  \bold{S} = \gamma_1 \ \bold{Id} + \gamma_2 \ \bold{C} + \gamma_3 \ \bold{C}^{-1}
+      ///\f]
+      ///\f[
       /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
       ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
       ///\f]
@@ -98,6 +105,12 @@ namespace MAT
       ///
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
+      ///\f[
+      ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
+      ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right) + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
+      ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+      ///  + \delta_7 \mathbb{P}
+      ///\f]
       ///\f[
       /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
       ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
@@ -168,7 +181,7 @@ namespace MAT
       /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3} \boldsymbol{C}\f$
       /// are the arguments, cf. Holzapfel [1],
       ///\f[
-      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} C_{AA},
+      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} \bold{C},
       ///  \quad
       ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) -
       ///         \mathrm{trace}(\boldsymbol{C}^2) \big),
@@ -177,6 +190,13 @@ namespace MAT
       ///\f]
       ///
       /// cf. Holzapfel [1], p. 234 and p. 262
+      ///
+      ///\f[
+      /// \bold{S} = \bold{S}_{iso} + \bold{S}_{vol} = J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) + J p \bold{C}^{-1}
+      ///\f]
+      ///\f[
+      ///  \bar{\bold{S}} = \bar{\gamma}_1 \ \bold{Id} + \bar{\gamma}_2 \ \bold{C}
+      ///\f]
       ///\f[
       /// \bar\gamma_1 = 2\left( \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}}
       ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} \right);
@@ -190,6 +210,13 @@ namespace MAT
       ///
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
+      ///\f[
+      /// \mathbb{C} = \mathbb{C}_{iso} + \mathbb{C}_{vol} = \left[ \mathbb{P}: \bar{\mathbb{C}} : \mathbb{P}^T + \frac{2}{3} Tr(J^{-\frac{2}{3} } \bar{\bold{S}} ) \tilde{\mathbb{P}} - \frac{2}{3} \left( \bold{C}^{-1} \otimes J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) + J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) \otimes \bold{C}^{-1} \right) \right] + \left[ J \tilde{p} \bold{C}^{-1} \otimes \bold{C}^{-1} - 2 p J \bold{C}^{-1} \odot \bold{C}^{-1} \right]
+      ///\f]
+      ///\f[
+      ///  \bar{\mathbb{C}} = \bar\delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \bar\delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
+      ///  + \bar\delta_3 \left( \bold{C} \otimes \bold{C} \right) + \bar\delta_4 \mathbb{P}
+      ///\f]
       ///\f[
       /// \bar\delta_1 = 4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2}
       ///          + 2 \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
@@ -224,7 +251,7 @@ namespace MAT
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
       /// are the arguments,
       ///\f[
-      ///  I_{\boldsymbol{C}} = C_{AA},
+      ///  I_{\boldsymbol{C}} = \mathbf{C},
       ///  \quad
       ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
       ///  \quad
@@ -238,10 +265,12 @@ namespace MAT
       ///  VIII_{\boldsymbol{C}} = \boldsymbol{a}_1*\boldsymbol{C}\boldsymbol{a}_2
       ///\f]
       ///
-      ///where \f$ \boldsymbol{a}_i \f$ is one fiber direction and \f$ \boldsymbol A_i= \boldsymbol a_i \otimes \boldsymbol a_i\f$.
+      ///where \f$ \boldsymbol{a}_i \f$ is one fiber direction and \f$ \boldsymbol A_i= \boldsymbol a_i \otimes \boldsymbol a_i\f$,
+      ///\f$ \boldsymbol{A}_1\boldsymbol{A}_2 = \left( \boldsymbol a_1 \otimes \boldsymbol a_2 + \boldsymbol a_2 \otimes \boldsymbol a_1 \right) \f$, cf. Holzapfel [1], p. 274
       ///
-      ///
-      /// cf. Holzapfel [1], p. 274
+      ///\f[
+      /// \bold{S} = \gamma^{aniso}_1 \ \boldsymbol{A}_1 + \gamma^{aniso}_2 \ \boldsymbol{A}_2 + \gamma^{aniso}_3 \ \boldsymbol{A}_1\boldsymbol{A}_2
+      ///\f]
       ///\f[
       /// \gamma^{aniso}_1 = 2\frac{\partial \Psi}{\partial IV_{\boldsymbol{C}}}
       ///\f]
@@ -249,11 +278,27 @@ namespace MAT
       /// \gamma^{aniso}_2 = 2\frac{\partial \Psi}{\partial VI_{\boldsymbol{C}}};
       ///\f]
       ///\f[
-      /// \gamma^{aniso}_3 = 2\frac{\partial \Psi}{\partial VIII_{\boldsymbol{C}}};
+      /// \gamma^{aniso}_3 = \frac{\partial \Psi}{\partial VIII_{\boldsymbol{C}}};
       ///\f]
       ///
       /// material constitutive tensor coefficients
       /// cf. Holzapfel [1], p. 261
+      ///\f[
+      ///  \mathbb{C} = \delta^{aniso}_1 \left( \bold{A}_1 \otimes \bold{A}_1 \right) + \delta^{aniso}_2 \left( \bold{A}_2 \otimes \bold{A}_2 \right)
+      ///  + \delta^{aniso}_3 \left( \bold{Id} \otimes \bold{A}_1 + \bold{A}_1 \otimes \bold{Id} \right) + \delta^{aniso}_4 \left( \bold{Id} \otimes \bold{A}_2 + \bold{A}_2 \otimes \bold{Id} \right)
+      ///  + \delta^{aniso}_5 \left( \bold{C} \otimes \bold{A}_1 + \bold{A}_1 \otimes \bold{C} \right) + \delta^{aniso}_6 \left( \bold{C} \otimes \bold{A}_2 + \bold{A}_2 \otimes \bold{C} \right)
+      ///  + \delta^{aniso}_7 \left( \bold{C}^{-1} \otimes \bold{A}_1 + \bold{A}_1 \otimes \bold{C}^{-1} \right)
+      ///\f]
+      ///\f[
+      ///  + \delta^{aniso}_8 \left( \bold{C}^{-1} \otimes \bold{A}_2 + \bold{A}_2 \otimes \bold{C}^{-1} \right)
+      ///  + \delta^{aniso}_9 \left( \bold{A}_1 \otimes \bold{A}_2 + \bold{A}_2 \otimes \bold{A}_1 \right)
+      ///  + \delta^{aniso}_{10} \left( \bold{Id} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1 \bold{A}_2 \otimes \bold{Id} \right)
+      ///  + \delta^{aniso}_{11} \left( \bold{C} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1 \bold{A}_2 \otimes \bold{C} \right)
+      ///  + \delta^{aniso}_{12} \left( \bold{C}^{-1} \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1 \bold{A}_2 \otimes \bold{C}^{-1} \right)
+      ///  + \delta^{aniso}_{13} \left( \bold{A}_1 \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1 \bold{A}_2 \otimes \bold{A}_1 \right)
+      ///  + \delta^{aniso}_{14} \left( \bold{A}_2 \otimes \bold{A}_1 \bold{A}_2 + \bold{A}_1 \bold{A}_2 \otimes \bold{A}_2 \right)
+      ///  + \delta^{aniso}_{15} \left( \bold{A}_1 \bold{A}_2 \otimes \bold{A}_1 \bold{A}_2 \right)
+      ///\f]
       ///\f[
       /// \delta^{aniso}_1 = 4\frac {\partial^2\Psi}{\partial IV_{\boldsymbol C}^2}
       ///\f]
@@ -302,6 +347,8 @@ namespace MAT
       ///\f[
       /// \delta^{aniso}_{15} = \frac {\partial^2\Psi}{\partial VIII_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
       ///\f]
+      ///
+      /// Due [2] the anisotropic part will \bold(not) be calculated via the decoupling
       virtual void AddCoefficientsPrincipalAniso(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
@@ -309,13 +356,13 @@ namespace MAT
         const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
       ) = 0;
 
-      /// To be done and commented by Moritz :-)
-      virtual void AddCoefficientsModifiedAniso(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-        LINALG::Matrix<3,1>& gamma,  ///< see above
-        LINALG::Matrix<15,1>& delta,  ///< see above
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-      ) = 0;
+      // Since in the paper of Sansour is deducted that the decoupling of the anisotropic part should be avoided the corresponding parts of the code are commented
+      // virtual void AddCoefficientsModifiedAniso(
+      //  bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+      //  LINALG::Matrix<3,1>& gamma,  ///< see above
+      //  LINALG::Matrix<15,1>& delta,  ///< see above
+      //  const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+      //) = 0;
 
       /// Answer if coefficients with respect to principal stretches are provided
       virtual bool HaveCoefficientsStretchesPrincipal()

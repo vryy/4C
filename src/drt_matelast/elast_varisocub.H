@@ -16,10 +16,13 @@ Maintainer: Sophie Rausch
 #define ELAST_IOSCUB_H_
 #ifdef CCADISCRET
 
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
+// included in elast_summand -> elasthyper.H
+//#include "../drt_mat/matpar_parameter.H"
+// included in elast_summand.H
+//#include "../drt_inpar/inpar_material.H"
+//#include "../linalg/linalg_fixedsizematrix.H"
 #include "elast_summand.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_mat/matpar_parameter.H"
 
 namespace MAT
 {
@@ -120,18 +123,6 @@ namespace ELASTIC
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-    )
-    {
-      havecoefficients = havecoefficients or false;
-    };
-
-    /// Add anisotropic modified coeffiencts.
-    /// Nothing to do for this (isotropic) material!
-    void AddCoefficientsModifiedAniso(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative

@@ -99,6 +99,7 @@ namespace INPAR
       m_elasthyper,    ///< collection of hyperelastic materials
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
+      mes_holzapfel_cardiac, /// anisotropic cardiac material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
       mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)

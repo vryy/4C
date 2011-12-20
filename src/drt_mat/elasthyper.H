@@ -18,14 +18,22 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_matelast/elast_summand.H"
-#include <Teuchos_ParameterList.hpp>
+// included in matpar_parameter.H -> matpar_material.H
+//#include "../drt_lib/drt_parobjectfactory.H"
+// avoided by forward declaration
+//#include "../drt_matelast/elast_summand.H"
+// included in material.h -> inpar_material.H -> inpar_parameterlist.H
+//#include <Teuchos_ParameterList.hpp>
 
 using namespace Teuchos;
 
+// forward declaration due to avoid header definition
 namespace MAT
 {
+  namespace ELASTIC
+  {
+    class Summand;
+  }
 
   // forward declaration
   class ElastHyper;
@@ -39,6 +47,7 @@ namespace MAT
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
+
     class ElastHyper : public Parameter
     {
 
@@ -74,7 +83,12 @@ namespace MAT
       /// material mass density
       const double density_;
 
+      /// fiber angle
       double gamma_;
+
+      /// initalization modus;
+      /// default = -1, Initmodus derived from locsys = 0, Initmodus aligned to locsys = 1
+      const int init_mode_;
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -133,6 +147,8 @@ private:
   ///
   /// \author rausch,tk,bborn
   /// \date 05/09
+  class Material;
+
   class ElastHyper : public Material
   {
   public:
