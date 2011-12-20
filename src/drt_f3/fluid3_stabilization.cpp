@@ -259,6 +259,7 @@ void FLD::UTILS::computeStabilizationParams(
                           + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(hk)
                           + c3*DSQR(dynvisc)/(DSQR(hk)*DSQR(hk))));
   }
+  break;
 
   case INPAR::FLUID::tau_codina:
   case INPAR::FLUID::tau_codina_wo_dt:
@@ -294,6 +295,7 @@ void FLD::UTILS::computeStabilizationParams(
                           + c2*dens*vel_norm/hk
                           + c3*dynvisc/DSQR(hk)));
   }
+  break;
 
   default: dserror("unknown definition for tau_M\n %i  ", tautype);
   }  // end switch (tautype)
