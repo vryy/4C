@@ -58,8 +58,8 @@ namespace COMBUST
     /// constructor
     explicit FlameFront(
              const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
-             Teuchos::RCP<DRT::Discretization>  gfuncdis,             ///< G-function discretization (condif3 elements) describing the level set function
-             const Teuchos::RCP<map<int,vector<int> > > pbcmap        ///< map holding nodes with periodic boundary conditions
+             Teuchos::RCP<DRT::Discretization>              gfuncdis, ///< G-function discretization (condif3 elements) describing the level set function
+             const Teuchos::RCP<map<int,vector<int> > >     pbcmap    ///< map holding nodes with periodic boundary conditions
     );
 
     /// destructor
