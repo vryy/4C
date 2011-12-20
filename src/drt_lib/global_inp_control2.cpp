@@ -110,8 +110,8 @@ void ntainp_ccadiscret(MPI_Comm mpi_local_comm)
     problem->WriteInputParameters();
 
   // before we destroy the reader we want to know about unused sections  
-  bool unknsec = reader.PrintUnknownSections();
-  dsassert(!unknsec,"Unknown sections detected. Correct this!");
+  if(reader.PrintUnknownSections())
+    dserror("Unknown sections detected. Correct this!");
 
   return;
 } // end of ntainp_ccadiscret()
