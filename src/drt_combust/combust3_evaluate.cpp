@@ -301,7 +301,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
             tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
             tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
             tautype == INPAR::FLUID::tau_shakib_hughes_codina or
-            tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt))
+            tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+            tautype == INPAR::FLUID::tau_codina or
+            tautype == INPAR::FLUID::tau_codina_wo_dt))
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
