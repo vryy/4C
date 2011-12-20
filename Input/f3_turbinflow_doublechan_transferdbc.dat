@@ -40,13 +40,13 @@ FLUID_SOLVER                    Implicit
 GRIDVEL                         1
 INITIALFIELD                    field_by_function //zero_field
 INITSTATITEMAX                  5
-ITEMAX                          5
+ITEMAX                          2
 LIFTDRAG                        No
 MAXTIME                         1000
 NEUMANNINFLOW                   yes
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
-NUMSTEP                         5 //7 //10
+NUMSTEP                         3
 TIMESTEP                        0.2
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       default
@@ -124,7 +124,6 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid         DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
 ------------------------------------------------------------CURVE2
@@ -144,10 +143,6 @@ NDPOINT 1
 NDLINE  0
 NDSURF  14
 NDVOL   3
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // outflow
@@ -23330,7 +23325,6 @@ NODE 9823  	COORD	-5.0000000000000000e-01	1.0000000000000000e+00	-6.544984693750
 NODE 9824  	COORD	-5.0000000000000000e-01	1.0000000000000000e+00	-7.8539816325000000e-01	
 NODE 9825  	COORD	-5.0000000000000000e-01	1.0000000000000000e+00	-9.1629785712500000e-01	
 NODE 9826  	COORD	-5.0000000000000000e-01	1.0000000000000000e+00	-1.0471975510000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 FLUID3 HEX8  1 2 3 4 5 6 7 8    MAT 1 NA Euler GP_TET 4 GP_ALT standard
@@ -31530,14 +31524,14 @@ NODE 9826  	COORD	-5.0000000000000000e-01	1.0000000000000000e+00	-1.047197551000
 ---------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
 // node in main problem domain
-FLUID DIS 1 NODE 2385 POSITION velx     NAME velx     VALUE  7.48409122839696850e-01        TOLERANCE 1e-5  //7.500000000000e-01
+FLUID DIS 1 NODE 2385 POSITION velx     NAME velx     VALUE  7.48258881235568274e-01        TOLERANCE 1e-5  //7.500000000000e-01
 FLUID DIS 1 NODE 2385 POSITION vely     NAME vely     VALUE  0.0000000000000e+00         TOLERANCE 1e-5
 FLUID DIS 1 NODE 2385 POSITION velz     NAME velz     VALUE  0.0000000000000e+00         TOLERANCE 1e-10
-FLUID DIS 1 NODE 2385 POSITION pressure     NAME pressure     VALUE  6.40931234678104023e+00         TOLERANCE 1e-5
-FLUID DIS 1 NODE 2457 POSITION velx     NAME velx     VALUE  9.97845236143644398e-01         TOLERANCE 1e-7  //1.000000000000e+00
+FLUID DIS 1 NODE 2385 POSITION pressure     NAME pressure     VALUE  6.95871655882470730e+00         TOLERANCE 1e-5
+FLUID DIS 1 NODE 2457 POSITION velx     NAME velx     VALUE  9.97733968807663740e-01         TOLERANCE 1e-7  //1.000000000000e+00
 FLUID DIS 1 NODE 2457 POSITION vely     NAME vely     VALUE  0.0000000000000e+00         TOLERANCE 1e-5
 FLUID DIS 1 NODE 2457 POSITION velz     NAME velz     VALUE  0.0000000000000e+00         TOLERANCE 1e-10
-FLUID DIS 1 NODE 1305 POSITION pressure     NAME pressure     VALUE  9.60312112181727251e+00         TOLERANCE 1e-5
+FLUID DIS 1 NODE 1305 POSITION pressure     NAME pressure     VALUE  1.04261942066829150e+01         TOLERANCE 1e-5
 // transfer nodes
 FLUID DIS 1 NODE 97 POSITION velx     NAME velx     VALUE  4.375000000000e-01         TOLERANCE 1e-10
 FLUID DIS 1 NODE 97 POSITION vely     NAME vely     VALUE  0.0000000000000e+00         TOLERANCE 1e-10
