@@ -1512,11 +1512,58 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
   // solving strategy using regularization with augmented Lagrange method
   // (nonlinear solution approach: nested UZAWA NEWTON)
   //**********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_auglag)
+  {
+    // get tolerance and maximum number of Uzawa steps from input file
+    double eps = beamcman_->InputParameters().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = beamcman_->InputParameters().get<int>("UZAWAMAXSTEPS");
+
+    // outer Augmented Lagrangian iteration (Uzawa)
+    beamcman_->ResetUzawaIter();
+    do
+    {
+      // increase iteration index by one
+      beamcman_->UpdateUzawaIter();
+      if (beamcman_->GetUzawaIter() > maxuzawaiter)
+        dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+
+      if (!myrank_)
+        cout << endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << endl;
+
+      // for second, third,... Uzawa step: out-of-balance force
+      if (beamcman_->GetUzawaIter() > 1)
+      {
+        // beam contact modifications need -fres
+        fres_->Scale(-1.0);
+
+        // make contact modifications to lhs and rhs
+        beamcman_->InitializeUzawa(*SystemMatrix(),*fres_,*disn_,true);
+
+        // scaling back
+        fres_->Scale(-1.0);
+      }
+
+      // inner nonlinear iteration (Newton)
+      NewtonFull();
+
+      // update constraint norm and penalty parameter
+      beamcman_->UpdateConstrNorm();
+
+      // update Uzawa Lagrange multipliers
+      beamcman_->UpdateAlllmuzawa();
+
+    } while (abs(beamcman_->GetConstrNorm()) >= eps);
+
+    // reset penalty parameter
+    beamcman_->ResetCurrentpp();
+  }
+
+  //**********************************************************************
+  // unknown solving strategy
+  //**********************************************************************
   else
   {
-    // TODO: needs to be filled
-    dserror("ERROR: Beam contact implementation in new STI not yet finished");
-
+    dserror("ERROR: Chosen strategy not yet available for beam contact");
   }
 
   return;

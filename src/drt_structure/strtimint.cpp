@@ -330,6 +330,7 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
   // some parameters
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
 
   // only continue if beam contact unmistakably chosen in input file
   if (apptype == INPAR::CONTACT::app_beamcontact)
@@ -349,6 +350,15 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 
     // create beam contact manager
     beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
+
+    // output of strategy type to screen
+    if (!myrank_)
+    {
+      if (soltype == INPAR::CONTACT::solution_penalty )
+        cout << "===== Penalty strategy =========================================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_auglag)
+        cout << "===== Augmented Lagrange strategy ==============================\n" << endl;
+    }
   }
 
   return;

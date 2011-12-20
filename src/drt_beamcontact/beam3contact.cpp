@@ -162,7 +162,7 @@ bool CONTACT::Beam3contact::PreEvaluation(int beams_smoothing, std::map<int,LINA
 bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                      Epetra_Vector& fint, double& pp, bool ngf,
                                      std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap,
-                                     int beams_smoothing, double scalemat)
+                                     int beams_smoothing)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -293,7 +293,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,dx2,
                         ddx1,ddx2,funct1,funct2,deriv1,deriv2,
                         secondderiv1,secondderiv2,numnode1,numnode2,XiContact,
-                        beams_smoothing,scalemat);
+                        beams_smoothing);
   return true;
 }
 /*----------------------------------------------------------------------*
@@ -768,7 +768,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
      const Epetra_SerialDenseMatrix& deriv1,  const Epetra_SerialDenseMatrix& deriv2,  
      const Epetra_SerialDenseMatrix& secondderiv1,const Epetra_SerialDenseMatrix& secondderiv2, 
      const int numnode1, const int numnode2, const vector<double>& XiContact,
-     int beams_smoothing, double scalemat)
+     int beams_smoothing)
 {
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs 
   Epetra_SerialDenseMatrix stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
@@ -1092,9 +1092,9 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
   for (int j=0;j<NDIM*(numnode1+numnode2);j++)
   {
     for (int i=0;i<NDIM*numnode1;i++)
-      stiffc1(i,j) = stiffc1(i,j) * (-1) * scalemat;
+      stiffc1(i,j) = stiffc1(i,j) * (-1);
     for (int i=0;i<NDIM*numnode2;i++)
-      stiffc2(i,j) = stiffc2(i,j) * (-1) * scalemat;
+      stiffc2(i,j) = stiffc2(i,j) * (-1);
   }
     
   // now finally assemble stiffc1 and stiffc2

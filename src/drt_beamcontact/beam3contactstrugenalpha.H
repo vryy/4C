@@ -80,15 +80,6 @@ public:
   void FullNewton();
 
   /*!
-  \brief initialize full Newton iteration for Uzawa
-
-  This method is called at the beginning of the Newton scheme in the second, third
-  and so on Uzawa iterarion in order to create an of an out-of-balance force again.
-
-  */
-  void InitializeNewtonUzawa();
-
-  /*!
   \brief integration control routine
 
   */

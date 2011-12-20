@@ -314,22 +314,13 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   fc_ = rcp(new Epetra_Vector(fres.Map()));
   if (fcold_==Teuchos::null) fcold_ = rcp(new Epetra_Vector(fres.Map()));
   
-  // uncomplete stiffness matrix
+  // initialize contact stiffness and uncomplete global stiffness
+  stiffc_ = rcp(new LINALG::SparseMatrix(fres.Map(),100));
   stiffmatrix.UnComplete();
-  if(!pdiscret_.Comm().MyPID())
-    cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
-
-  // determine contact stiffness matrix scaling factor (new STI)
-  // (this is due to the fact that in the new STI, we hand in the
-  // already appropriately scaled effective stiffness matrix. Thus,
-  // the additional contact stiffness terms must be equally scaled
-  // here, as well. In the old STI, the complete scaling operation
-  // is done after contact evaluation within the time integrator,
-  // therefore no special scaling needs to be applied here.)
-  double scalemat = 1.0;
-  if (newsti) scalemat = 1.0 - alphaf_;
 
   // print current pair vector on the screen
+  if (!pdiscret_.Comm().MyPID())
+    cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
   for (int i=0;i<(int)pairs_.size();++i)
   {
     //cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << endl;
@@ -372,7 +363,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     if (firstisincolmap || secondisincolmap)
     {
       bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
-      pairs_[i]->Evaluate(stiffmatrix,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing,scalemat);
+      pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing);
     }
   }
 
@@ -380,8 +371,19 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   fres.Update(1.0-alphaf_,*fc_,1.0);
   fres.Update(alphaf_,*fcold_,1.0);
   
-  // complete stiffness matrix again (contact pair contributions
-  // have already been assembled inside pairs_[i]->Evaluate)
+  // determine contact stiffness matrix scaling factor (new STI)
+  // (this is due to the fact that in the new STI, we hand in the
+  // already appropriately scaled effective stiffness matrix. Thus,
+  // the additional contact stiffness terms must be equally scaled
+  // here, as well. In the old STI, the complete scaling operation
+  // is done after contact evaluation within the time integrator,
+  // therefore no special scaling needs to be applied here.)
+  double scalemat = 1.0;
+  if (newsti) scalemat = 1.0 - alphaf_;
+
+  // assemble contact stiffness into global stiffness matrix
+  stiffc_->Complete();
+  stiffmatrix.Add(*stiffc_,false,scalemat,1.0);
   stiffmatrix.Complete();
     
   // debug output
@@ -1114,6 +1116,42 @@ void CONTACT::Beam3cmanager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
   spin(2,1) = rotationangle[0];
   spin(2,2) = 0;
   
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  intialize second, third, ... Uzawa step                   popp 12/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
+                                             Epetra_Vector& fres,
+                                             const Epetra_Vector& disrow,
+                                             bool newsti)
+{
+  // since we will modify the graph of stiffmatrix by adding additional
+  // contact tiffness entries, we have to uncomplete it
+  stiffmatrix.UnComplete();
+
+  // determine contact stiffness matrix scaling factor (new STI)
+  // (this is due to the fact that in the new STI, we hand in the
+  // already appropriately scaled effective stiffness matrix. Thus,
+  // the additional contact stiffness terms must be equally scaled
+  // here, as well. In the old STI, the complete scaling operation
+  // is done after contact evaluation within the time integrator,
+  // therefore no special scaling needs to be applied here.)
+  double scalemat = 1.0;
+  if (newsti) scalemat = 1.0 - alphaf_;
+
+  // remove contact stiffness terms from stiffmatrix
+  stiffmatrix.Add(*stiffc_, false, -scalemat, 1.0);
+
+  // remove old contact force terms from fres
+  fres.Update(-(1.0-alphaf_),*fc_,1.0);
+  fres.Update(-alphaf_,*fcold_,1.0);
+
+  // now redo Evaluate()
+  RCP<Epetra_Vector> nullvec = Teuchos::null;
+  Evaluate(stiffmatrix,fres,disrow,newsti);
+
   return;
 }
 

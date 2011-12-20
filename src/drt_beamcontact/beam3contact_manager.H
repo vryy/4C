@@ -168,6 +168,19 @@ public:
   void Update(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep);
 
   /*!
+  \brief Initialize second, third, ... Uzawa step
+
+  This method is called at the beginning of the second, third, ... Uzawa
+  iterarion in order to create an of an out-of-balance force again. First,
+  the contact force and stiffness terms are removed from stiff and fres.
+  Then the new contact forces and contact stiffness terms for the updated LM
+  (AugmentedLagrange) are created by calling Evaluate().
+
+  */
+  void InitializeUzawa(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+                       const Epetra_Vector& disrow, bool newsti = false);
+
+  /*!
   \brief Rest Lagrange Multipliers
 
   Reset all Lagrange multipliers of each contact pair to zero at the beginning
@@ -320,6 +333,9 @@ private:
 
   //! contact forces of previous time step (for generalized alpha)
   RCP<Epetra_Vector> fcold_;
+
+  //! contact stiffness matrix of current time step
+  RCP<LINALG::SparseMatrix> stiffc_;
 
   //! time integration parameter (0.0 for statics)
   double alphaf_;
