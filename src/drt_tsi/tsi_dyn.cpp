@@ -53,7 +53,7 @@ void tsi_dyn_drt()
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
