@@ -38,6 +38,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <math.h>
 #include "mortar_analytical.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_globalproblem.H"

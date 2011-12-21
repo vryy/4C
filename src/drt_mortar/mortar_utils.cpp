@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #include "mortar_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 /*!
 \brief Sort vector in ascending order

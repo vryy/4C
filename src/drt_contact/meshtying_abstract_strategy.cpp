@@ -46,6 +46,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_io/io.H"
@@ -265,6 +266,32 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     trafo_->Complete();
     invtrafo_->Complete();
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | global evaluation method called from time integrator      popp 06/09 |
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(RCP<Epetra_Vector> dis,
+     RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, bool predictor)
+{
+  // mortar initialization and evaluation
+  SetState("displacement",dis);
+  InitEvalInterface();
+  InitEvalMortar();
+
+  // evaluate relative movement for friction
+  if (predictor) EvaluateRelMovPredict();
+  else           EvaluateRelMov();
+
+  // update active set
+  UpdateActiveSetSemiSmooth();
+
+  // apply contact forces and stiffness
+  Initialize();
+  Evaluate(kt,f,dis);
+  InterfaceForces();
 
   return;
 }

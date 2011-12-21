@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_ANALYTICAL_H
 #define MORTAR_ANALYTICAL_H
 
-#include <math.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
 /*!

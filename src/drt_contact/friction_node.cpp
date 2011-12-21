@@ -38,11 +38,11 @@ Maintainer: Markus Gitterle
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "contact_node.H"
 #include "friction_node.H"
-#include "../drt_lib/drt_dserror.H"
 #include "contact_element.H"
 #include "contact_defines.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dserror.H"
 
 CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
 

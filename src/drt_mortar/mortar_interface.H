@@ -40,13 +40,23 @@ Maintainer: Alexander Popp
 #define MORTAR_INTERFACE_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_discret.H"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_lib/drt_dserror.H"
 
 using namespace std;
 using namespace Teuchos;
 
 // forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -104,6 +114,12 @@ public:
   virtual void Print(ostream& os) const;
 
   /*!
+  \brief Check whether interface was called FillComplete
+
+  */
+  virtual bool Filled() const;
+
+  /*!
   \brief Print parallel distribution of this Interface
 
   */
@@ -129,12 +145,6 @@ public:
   virtual map<int,int>& Procmap(){ return procmap_;}
 
   //! @name Access methods
-
-  /*!
-  \brief Check whether interface was called FillComplete
-
-  */
-  virtual bool Filled() const { return idiscret_->Filled();}
 
   /*!
   \brief Get discretization of this interface

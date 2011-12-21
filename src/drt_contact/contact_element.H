@@ -40,7 +40,6 @@ Maintainer: Alexander Popp
 #define CONTACT_ELEMENT_H
 
 #include "../drt_mortar/mortar_element.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 
 using namespace std;
 using namespace Teuchos;

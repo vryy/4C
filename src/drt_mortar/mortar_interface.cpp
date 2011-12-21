@@ -55,6 +55,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_Time.hpp>
 
@@ -111,6 +112,14 @@ void MORTAR::MortarInterface::Print(ostream& os) const
   }
   os << Discret();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  check if interface is FillComplete (public)              mwgee 10/07|
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarInterface::Filled() const
+{
+  return idiscret_->Filled();
 }
 
 /*----------------------------------------------------------------------*

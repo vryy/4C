@@ -42,7 +42,6 @@ Maintainer: Alexander Popp
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
@@ -66,8 +65,6 @@ namespace LINALG
 
 namespace CONTACT
 {
-
-// forward declarations
 
 /*!
 \brief Main abstract class for meshtying solution strategies
@@ -127,12 +124,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Return Lagrange multiplier vector from last Uzawa step
      
     */
-    RCP<Epetra_Vector> LagrMultUzawa()
-    {
-      INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-      if (soltype != INPAR::CONTACT::solution_auglag) dserror("LagrMultUzawa() only defined for augmented strategy");
-      return zuzawa_;
-    }  
+    RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
     
     /*!
     \brief Return mortar matrix D
@@ -203,27 +195,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     
     */
     void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt,
-                            RCP<Epetra_Vector>& f, bool predictor = false)
-    {
-      // mortar initialization and evaluation
-      SetState("displacement",dis);
-      InitEvalInterface();
-      InitEvalMortar();
-      
-      // evaluate relative movement for friction
-      if (predictor) EvaluateRelMovPredict();
-      else           EvaluateRelMov();
-      
-      // update active set
-      UpdateActiveSetSemiSmooth();
-      
-      // apply contact forces and stiffness
-      Initialize();
-      Evaluate(kt,f,dis);
-      InterfaceForces();
-        
-      return;
-    }
+                            RCP<Epetra_Vector>& f, bool predictor = false);
     
     /*!
     \brief Set current deformation state

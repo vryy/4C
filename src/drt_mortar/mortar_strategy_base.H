@@ -44,7 +44,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_dserror.H"
 
 using namespace std;
 using namespace Teuchos;

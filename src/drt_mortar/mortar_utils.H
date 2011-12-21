@@ -47,11 +47,15 @@ Maintainer: Alexander Popp
 #include <Epetra_Import.h>
 #include <Epetra_Export.h>
 #include <Epetra_CrsMatrix.h>
-#include "../linalg/linalg_sparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;
 
+// forward declarations
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms

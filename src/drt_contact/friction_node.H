@@ -40,8 +40,6 @@ Maintainer: Markus Gitterle
 #define FRICTION_NODE_H
 
 #include "contact_node.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 using namespace std;
 using namespace Teuchos;

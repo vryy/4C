@@ -42,7 +42,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
