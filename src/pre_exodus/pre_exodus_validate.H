@@ -26,11 +26,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include <Epetra_SerialDenseMatrix.h>
 #include "../drt_lib/drt_element.H"
 
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 using namespace std;
 

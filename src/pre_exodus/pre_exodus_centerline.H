@@ -25,23 +25,23 @@ map<int,double> NdCenterlineThickness(string cline,const set<int>& nodes, const 
 class Centerline
 {
 private:
-	RCP<map<int,vector<double> > > points_; /// centerline points
-	RCP<map<int,double> > diam_; /// diameter of the best fit circle in centerline point
+  RCP<map<int,vector<double> > > points_; /// centerline points
+  RCP<map<int,double> > diam_; /// diameter of the best fit circle in centerline point
 
 public:
-	//ctor
-	Centerline(string,vector<double> coordcorr);
-	Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes);
-	//dtor
-	~Centerline();
-	//returns points_
-	RCP<map<int,vector<double> > > GetPoints() const {return points_;};
-	//returns diam_
-	RCP<map<int,double> > GetDiams() const {return diam_;};
-	//displays points_ on console
-	void PrintPoints();
-	//creates gmsh-file to visualize points
-	void PlotCL_Gmsh();
+  //ctor
+  Centerline(string,vector<double> coordcorr);
+  Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes);
+  //dtor
+  ~Centerline();
+  //returns points_
+  RCP<map<int,vector<double> > > GetPoints() const {return points_;};
+  //returns diam_
+  RCP<map<int,double> > GetDiams() const {return diam_;};
+  //displays points_ on console
+  void PrintPoints();
+  //creates gmsh-file to visualize points
+  void PlotCL_Gmsh();
 
 };
 

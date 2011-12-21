@@ -23,27 +23,27 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 
 
-using namespace DRT;
+//using namespace DRT;
 
-ResultTest::ResultTest()
+DRT::ResultTest::ResultTest()
 {
 }
 
-ResultTest::~ResultTest()
+DRT::ResultTest::~ResultTest()
 {
 }
 
-void ResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no element test available");
 }
 
-void ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no node test available");
 }
 
-void ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   dserror("no special case test available");
 }
@@ -64,7 +64,7 @@ void ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& te
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
+int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   int ret = 0;
@@ -97,7 +97,7 @@ int ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
+void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
@@ -105,7 +105,7 @@ void ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ResultTestManager::TestAll(const Epetra_Comm& comm)
+void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   INT nerr = 0;
@@ -168,7 +168,7 @@ void ResultTestManager::TestAll(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
+Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 {
   DRT::INPUT::LineDefinition structure;
   structure
@@ -268,7 +268,7 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
+void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   Teuchos::RCP<DRT::INPUT::Lines> lines = ValidResultLines();
   results_ = lines->Read(reader);

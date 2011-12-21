@@ -23,6 +23,8 @@ is handed to a c++ object mesh.
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "pre_exodus_soshextrusion.H" //for gmsh plot
 
+#include <exodusII.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -389,6 +391,15 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
       it3->second.Print(os);
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string EXODUS::Mesh::GetTitle() const
+{
+  string title(title_,int(MAX_LINE_LENGTH+1));
+  return title;
 }
 
 /*----------------------------------------------------------------------*/

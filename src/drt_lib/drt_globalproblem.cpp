@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"
 #include "drt_utils.H"
+#include "drt_resulttest.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -40,13 +41,13 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_io/io_control.H"
 
-
+/*
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #endif
 
 #include <Epetra_SerialComm.h>
-
+*/
 
 
 /*----------------------------------------------------------------------*
@@ -563,11 +564,11 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   }
 
   /*---------------------------------------------- input of time curves */
-  timecurvemanager_.ReadInput(reader);
+  timecurvemanager_->ReadInput(reader);
   /*---------------------------------------- input of spatial functions */
-  functionmanager_.ReadInput(reader);
+  functionmanager_->ReadInput(reader);
   /*-------------------------------------- input of result descriptions */
-  resulttest_.ReadInput(reader);
+  resulttest_->ReadInput(reader);
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   const Teuchos::ParameterList& design = DesignDescriptionParams();
@@ -648,7 +649,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         dserror("geometry type unspecified");
       }
 
-      // Iterate through all discretizations and sort the appropiate condition
+      // Iterate through all discretizations and sort the appropriate condition
       // into the correct discretization it applies to
       for (unsigned i=0; i<NumFields(); ++i)
       {
@@ -746,7 +747,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
           dserror("Knotvector read failed in Nurbs discretisation\n");
         }
 
-        // make sure atdis is fillcompleted, to be able to call
+        // make sure actdis is fillcompleted, to be able to call
         // ElementRowMap() on it
         // do not initialize elements, since this would require knot
         // vector values
@@ -1539,7 +1540,7 @@ void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
 /*----------------------------------------------------------------------*/
 DRT::UTILS::Function& DRT::Problem::Funct(int num)
 {
-  return functionmanager_.Funct(num);
+  return functionmanager_->Funct(num);
 }
 
 
@@ -1547,9 +1548,20 @@ DRT::UTILS::Function& DRT::Problem::Funct(int num)
 /*----------------------------------------------------------------------*/
 DRT::UTILS::TimeCurve& DRT::Problem::Curve(int num)
 {
-  return timecurvemanager_.Curve(num);
+  return timecurvemanager_->Curve(num);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::TestAll(const Epetra_Comm& comm)
+{ resulttest_->TestAll(comm); }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::AddFieldTest(Teuchos::RCP<ResultTest> test)
+{ resulttest_->AddFieldTest(test); }
 
 #endif
 

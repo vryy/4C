@@ -29,6 +29,7 @@ its parameters and conditions.
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_resulttest.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -43,9 +44,14 @@ its parameters and conditions.
 #include "pre_exodus_centerline.H"
 
 
-using namespace std;
-using namespace Teuchos;
+//using namespace std;
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

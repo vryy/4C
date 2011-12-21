@@ -26,11 +26,6 @@ or the well-known .dat file is created.
 
 #ifdef CCADISCRET
 
-#include <mpi.h>
-
-#include <exodusII.h>
-
-using namespace std;
 
 //! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
 namespace EXODUS

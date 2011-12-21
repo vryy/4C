@@ -25,8 +25,6 @@ is handed to a c++ object mesh.
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
 
-#include <exodusII.h>
-
 using namespace std;
 using namespace Teuchos;
 
@@ -85,7 +83,7 @@ public:
   int GetExoId() const {return exoid_;}
 
   //! Get mesh title
-  string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;}
+  string GetTitle() const;
 
   //! Get ElementBlock map
   map<int,RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
