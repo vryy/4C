@@ -26,7 +26,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
       Facet *fe = *i;
-      FacetIntegration faee1(fe,elem1_,position_,false);
+      FacetIntegration faee1(fe,elem1_,position_,false,false);
       faee1.set_integ_number(fnc);
       mome += faee1.integrate_facet();
       if(fnc==1)

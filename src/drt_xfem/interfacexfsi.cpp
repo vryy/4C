@@ -84,6 +84,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
                        elementalBoundaryIntCells_,
                        labelPerBoundaryElementId_,
                        MovingFluideleGIDs,
+                       "Tessellation",    //At present we do not use this file. If it is, this should be
+                       "Tessellation",    //replaced with VolumeCellGaussPointBy_ and BoundCellGaussPointBy_ (see xfluid.cpp)
                        false );
   }
 

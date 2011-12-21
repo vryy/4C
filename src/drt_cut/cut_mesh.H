@@ -101,7 +101,7 @@ public:
   Quad4BoundaryCell* NewQuad4Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
   ArbitraryBoundaryCell* NewArbitraryCell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points,
-      const DRT::UTILS::GaussIntegration& gaussRule );
+      const DRT::UTILS::GaussIntegration& gaussRule, const LINALG::Matrix<3,1>& normal );
 
   Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
@@ -139,7 +139,7 @@ public:
 
   void CreateIntegrationCells( int count, bool levelset );
 
-  void MomentFitGaussWeights(bool include_inner);
+  void MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype);
 
   void RemoveEmptyVolumeCells();
 

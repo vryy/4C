@@ -48,7 +48,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
-  wizard_->Cut( false, idispcol, xfluid_.GaussPointType() );
+  wizard_->Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
 
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
@@ -227,7 +227,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
           std::vector< std::vector<int> > nds_sets;
           std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
 
-          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.GaussPointType() );
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
           if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
           if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -363,7 +363,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
 
-        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.GaussPointType());
+        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.VolumeCellGaussPointBy_));
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -1138,11 +1138,12 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
 
 
-  gaussPointType_ = params_.sublist("XFEM").get<std::string>("GAUSSPOINTSBY");
+  VolumeCellGaussPointBy_ = params_.sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_ = params_.sublist("XFEM").get<std::string>("BOUNDARY_GAUSS_POINTS_BY");
 
   if(myrank_ == 0)
   {
-    std::cout<<"\nGauss point generating method = "<< gaussPointType_ << "\n\n";
+    std::cout<<"\nGauss point generating method = "<< VolumeCellGaussPointBy_ << "\n\n";
   }
 
   // load GMSH output flags

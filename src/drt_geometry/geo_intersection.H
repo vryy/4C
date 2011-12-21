@@ -71,13 +71,14 @@ namespace GEO
 
     GEO::CUT::Node * GetNode( int nid );
 
-    void Cut( bool include_inner, std::string gausstype );
+    void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
 
     void CreateNodalDofSet ( bool include_inner, DRT::Discretization & dis );
 
     void Cut( std::map< int, DomainIntCells >& domainintcells,
               std::map< int, BoundaryIntCells >& boundaryintcells,
-              std::string gausstype );
+              std::string VCellgausstype,
+              std::string BCellgausstype);
 
 //     Teuchos::RCP<CutDofSet> CreateDofSet();
 
@@ -122,7 +123,8 @@ namespace GEO
     std::map< int, BoundaryIntCells >&               boundaryintcells,        ///< boundaryintegrationcells for each intersected element
     const std::map<int,int>&                       labelPerElementId,
     const std::vector<int>&                        MovingFluideleGIDs,
-    std::string gausstype
+    std::string VCellgausstype,                                          //volumecell gauss points generation
+    std::string BCellgausstype                                          //boundarycell gauss points generation
     );
 
 }

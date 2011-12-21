@@ -69,6 +69,8 @@ public:
 
   virtual DRT::UTILS::GaussIntegration gaussRule()=0;
 
+  virtual LINALG::Matrix<3,1> GetNormalVector()=0;
+
 
   template <DRT::Element::DiscretizationType celldistype>
   void Transform( const LINALG::Matrix<2,1> & eta,
@@ -149,6 +151,8 @@ public:
 
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
+  virtual LINALG::Matrix<3,1> GetNormalVector();
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
@@ -176,6 +180,8 @@ public:
 
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
+  virtual LINALG::Matrix<3,1> GetNormalVector();
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
@@ -187,9 +193,10 @@ class ArbitraryBoundaryCell : public BoundaryCell
 public:
 
   ArbitraryBoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points,
-      DRT::UTILS::GaussIntegration gaussRule)
+      const DRT::UTILS::GaussIntegration& gaussRule, const LINALG::Matrix<3,1>& normal )
     : BoundaryCell( xyz, facet, points ),
-      gaussRule_(gaussRule)
+      gaussRule_(gaussRule),
+      normal_(normal)
   {
   }
 
@@ -205,11 +212,14 @@ public:
 
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
+  virtual LINALG::Matrix<3,1> GetNormalVector();
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
 private:
   DRT::UTILS::GaussIntegration gaussRule_;
+  LINALG::Matrix<3,1> normal_;
 
 };
 

@@ -11762,44 +11762,53 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
       for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
       {
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-        double drs = 0;
-
-        si->Evaluate(eta,x_side,normal,drs);
-
-        const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
-
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
-        pos.Compute();
-        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-#else
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
-
-        double drs = 0; // transformation factor between reference cell and linearized boundary cell
-
+        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-        normal.Clear();
+        if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+        {
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+          const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-        switch ( bc->Shape() )
-        {
-        case DRT::Element::tri3:
-        {
-            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        case DRT::Element::quad4:
-        {
-            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        default:
-          throw std::runtime_error( "unsupported integration cell type" );
-        }
+          si->Evaluate(eta,x_side,normal,drs);
 
+          const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
+
+          // find element local position of gauss point at interface
+          GEO::CUT::Position<distype> pos( xyze_, x_side );
+          pos.Compute();
+          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+  #else
+          const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+          normal.Clear();
+
+          // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+          switch ( bc->Shape() )
+          {
+          case DRT::Element::tri3:
+          {
+              bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+            break;
+          }
+          case DRT::Element::quad4:
+          {
+              bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+            break;
+          }
+          default:
+            throw std::runtime_error( "unsupported integration cell type" );
+          }
+        }
+        else if(bc->Shape()==DRT::Element::dis_none)
+        {
+          drs = 1.0;
+          normal = bc->GetNormalVector();
+          const double* gpcord = iquad.Point();
+          for (int idim=0;idim<3;idim++)
+          {
+             x_gp_lin(idim,0) = gpcord[idim];
+          }
+        }
 
         const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
 
@@ -11807,7 +11816,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         GEO::CUT::Position<distype> pos( xyze_, x_gp_lin );
         pos.Compute();
         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-
 
         // project gaussian point from linearized interface to warped side (get local side coordinates)
         LINALG::Matrix<2,1> xi_side(true);
@@ -12633,43 +12641,55 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
        // TODO: do this transformation not twice!!!
        for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
        {
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-         double drs = 0;
-
-         si->Evaluate(eta,x_side,normal,drs);
-
-         const double fac = drs*iquad.Weight();
-
-         // find element local position of gauss point at interface
-         GEO::CUT::Position<distype> pos( xyze_, x_side );
-         pos.Compute();
-         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-
-#else
-         const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
-
-         double drs = 0; // transformation factor between reference cell and linearized boundary cell
-
+         double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
          LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-         normal.Clear();
+         if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+         {
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+           const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-         // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-         switch ( bc->Shape() )
-         {
-         case DRT::Element::tri3:
-         {
-           bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-           break;
+           double drs = 0;
+
+           si->Evaluate(eta,x_side,normal,drs);
+
+           const double fac = drs*iquad.Weight();
+
+           // find element local position of gauss point at interface
+           GEO::CUT::Position<distype> pos( xyze_, x_side );
+           pos.Compute();
+           const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+  #else
+           const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+           normal.Clear();
+
+           // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+           switch ( bc->Shape() )
+           {
+           case DRT::Element::tri3:
+           {
+             bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+             break;
+           }
+           case DRT::Element::quad4:
+           {
+             bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+             break;
+           }
+           default:
+             throw std::runtime_error( "unsupported integration cell type" );
+           }
          }
-         case DRT::Element::quad4:
+         else if(bc->Shape()==DRT::Element::dis_none)
          {
-           bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-           break;
-         }
-         default:
-           throw std::runtime_error( "unsupported integration cell type" );
+           drs = 1.0;
+           normal = bc->GetNormalVector();
+           const double* gpcord = iquad.Point();
+           for (int idim=0;idim<3;idim++)
+           {
+              x_gp_lin(idim,0) = gpcord[idim];
+           }
          }
 #endif
 
@@ -12711,44 +12731,56 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
         for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
         {
+          double drs = 0; // transformation factor between reference cell and linearized boundary cell
+          LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+          if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+          {
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-        double drs = 0;
+            double drs = 0;
 
-        si->Evaluate(eta,x_side,normal,drs);
+            si->Evaluate(eta,x_side,normal,drs);
 
-        const double fac = drs*iquad.Weight();
+            const double fac = drs*iquad.Weight();
 
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
-        pos.Compute();
-        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+            // find element local position of gauss point at interface
+            GEO::CUT::Position<distype> pos( xyze_, x_side );
+            pos.Compute();
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
-#else
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+    #else
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
-        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+            normal.Clear();
 
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-        normal.Clear();
-
-        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-        switch ( bc->Shape() )
-        {
-        case DRT::Element::tri3:
-        {
-            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        case DRT::Element::quad4:
-        {
-            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        default:
-          throw std::runtime_error( "unsupported integration cell type" );
-        }
+            // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+            switch ( bc->Shape() )
+            {
+            case DRT::Element::tri3:
+            {
+                bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+              break;
+            }
+            case DRT::Element::quad4:
+            {
+                bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+              break;
+            }
+            default:
+              throw std::runtime_error( "unsupported integration cell type" );
+            }
+          }
+          else if(bc->Shape()==DRT::Element::dis_none)
+          {
+            drs = 1.0;
+            normal = bc->GetNormalVector();
+            const double* gpcord = iquad.Point();
+            for (int idim=0;idim<3;idim++)
+            {
+               x_gp_lin(idim,0) = gpcord[idim];
+            }
+          }
 
 
         const double fac = drs*iquad.Weight();
@@ -12896,14 +12928,9 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
       }
 
-
-
       }
     }
   }
-
-
-
 
   if ( fluidfluidcoupling )
   {
@@ -13298,43 +13325,55 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
           // TODO: do this transformation not twice!!!
           for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
           {
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-            double drs = 0;
-
-            si->Evaluate(eta,x_side,normal,drs);
-
-            const double fac = drs*iquad.Weight();
-
-            // find element local position of gauss point at interface
-            GEO::CUT::Position<distype> pos( xyze_, x_side );
-            pos.Compute();
-            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-
-#else
-            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
-
-            double drs = 0; // transformation factor between reference cell and linearized boundary cell
-
+            double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
             LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-            normal.Clear();
+            if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+            {
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+              const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-            // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-            switch ( bc->Shape() )
-            {
-            case DRT::Element::tri3:
-            {
-              bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-              break;
+              double drs = 0;
+
+              si->Evaluate(eta,x_side,normal,drs);
+
+              const double fac = drs*iquad.Weight();
+
+              // find element local position of gauss point at interface
+              GEO::CUT::Position<distype> pos( xyze_, x_side );
+              pos.Compute();
+              const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+  #else
+              const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+              normal.Clear();
+
+              // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+              switch ( bc->Shape() )
+              {
+              case DRT::Element::tri3:
+              {
+                bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+                break;
+              }
+              case DRT::Element::quad4:
+              {
+                bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+                break;
+              }
+              default:
+                throw std::runtime_error( "unsupported integration cell type" );
+              }
             }
-            case DRT::Element::quad4:
+            else if(bc->Shape()==DRT::Element::dis_none)
             {
-              bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-              break;
-            }
-            default:
-              throw std::runtime_error( "unsupported integration cell type" );
+              drs = 1.0;
+              normal = bc->GetNormalVector();
+              const double* gpcord = iquad.Point();
+              for (int idim=0;idim<3;idim++)
+              {
+                 x_gp_lin(idim,0) = gpcord[idim];
+              }
             }
 #endif
 
@@ -13409,43 +13448,58 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 
         for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
         {
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-          const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-          double drs = 0;
-
-          si->Evaluate(eta,x_side,normal,drs);
-
-          const double fac = drs*iquad.Weight();
-
-          // find element local position of gauss point at interface
-          GEO::CUT::Position<distype> pos( xyze_, x_side );
-          pos.Compute();
-          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-
-#else
-          const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
-
-          double drs = 0; // transformation factor between reference cell and linearized boundary cell
-
+          double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
           LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-          normal.Clear();
+          if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+          {
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-          // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-          switch ( bc->Shape() )
-          {
-          case DRT::Element::tri3:
-          {
-            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-            break;
+            double drs = 0;
+
+            si->Evaluate(eta,x_side,normal,drs);
+
+            const double fac = drs*iquad.Weight();
+
+            // find element local position of gauss point at interface
+            GEO::CUT::Position<distype> pos( xyze_, x_side );
+            pos.Compute();
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+  #else
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+            double drs = 0; // transformation factor between reference cell and linearized boundary cell
+
+            LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+            normal.Clear();
+
+            // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+            switch ( bc->Shape() )
+            {
+            case DRT::Element::tri3:
+            {
+              bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+              break;
+            }
+            case DRT::Element::quad4:
+            {
+              bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+              break;
+            }
+            default:
+              throw std::runtime_error( "unsupported integration cell type" );
+            }
           }
-          case DRT::Element::quad4:
+          else if(bc->Shape()==DRT::Element::dis_none)
           {
-            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-            break;
-          }
-          default:
-            throw std::runtime_error( "unsupported integration cell type" );
+            drs = 1.0;
+            normal = bc->GetNormalVector();
+            const double* gpcord = iquad.Point();
+            for (int idim=0;idim<3;idim++)
+            {
+               x_gp_lin(idim,0) = gpcord[idim];
+            }
           }
 
 
@@ -13900,44 +13954,56 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNeumann(
 
 	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
 	      {
+	        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
+          LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+          if(bc->Shape()==DRT::Element::tri3 || bc->Shape()==DRT::Element::quad4)
+          {
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-        double drs = 0;
+            double drs = 0;
 
-        si->Evaluate(eta,x_side,normal,drs);
+            si->Evaluate(eta,x_side,normal,drs);
 
-        const double fac = drs*iquad.Weight();
+            const double fac = drs*iquad.Weight();
 
-        // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
-        pos.Compute();
-        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+            // find element local position of gauss point at interface
+            GEO::CUT::Position<distype> pos( xyze_, x_side );
+            pos.Compute();
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
-#else
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+    #else
+            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
-        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+            normal.Clear();
 
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-        normal.Clear();
-
-        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-        switch ( bc->Shape() )
-        {
-        case DRT::Element::tri3:
-        {
-            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        case DRT::Element::quad4:
-        {
-            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-          break;
-        }
-        default:
-          throw std::runtime_error( "unsupported integration cell type" );
-        }
+            // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+            switch ( bc->Shape() )
+            {
+              case DRT::Element::tri3:
+              {
+                  bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+                break;
+              }
+              case DRT::Element::quad4:
+              {
+                  bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+                break;
+              }
+              default:
+                throw std::runtime_error( "unsupported integration cell type" );
+            }
+          }
+          else if(bc->Shape()==DRT::Element::dis_none)
+          {
+            drs = 1.0;
+            normal = bc->GetNormalVector();
+            const double* gpcord = iquad.Point();
+            for (int idim=0;idim<3;idim++)
+            {
+               x_gp_lin(idim,0) = gpcord[idim];
+            }
+          }
 
 
         const double fac = drs*iquad.Weight();

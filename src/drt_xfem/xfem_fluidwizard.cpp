@@ -14,7 +14,11 @@
 
 #include "../drt_io/io_control.H"
 
-void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol, std::string gausstype, bool positions )
+void XFEM::FluidWizard::Cut(  bool include_inner,
+                              const Epetra_Vector & idispcol,
+                              std::string VCellgausstype,     //Gauss point generation method for Volumecell
+                              std::string BCellgausstype,     //Gauss point generation method for Boundarycell
+                              bool positions )
 {
 #ifdef QHULL
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
@@ -101,7 +105,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   }
 
   // run the Cut
-  cw.Cut( include_inner, gausstype );
+  cw.Cut( include_inner, VCellgausstype, BCellgausstype );
 
   cw.CreateNodalDofSet( include_inner, backdis_ );
 
@@ -130,7 +134,8 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
                              std::map< int, GEO::BoundaryIntCells > & boundaryintcells,
                              const std::map<int,int>& labelPerElementId,
                              const std::vector<int>& MovingFluideleGIDs,
-                             std::string gausstype,
+                             std::string VCellgausstype,
+                             std::string BCellgausstype,
                              bool positions )
 {
 #ifdef QHULL
@@ -212,7 +217,7 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
   domainintcells.clear();
   boundaryintcells.clear();
 
-  cw.Cut( domainintcells, boundaryintcells, gausstype );
+  cw.Cut( domainintcells, boundaryintcells, VCellgausstype, BCellgausstype );
 
 //   fieldset_.clear();
 //   fieldset_.insert(XFEM::PHYSICS::Velx);

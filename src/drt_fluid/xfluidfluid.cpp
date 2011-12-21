@@ -46,7 +46,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 {
 
   // do the cut for the 0 timestep and find the fluid dofset
-  wizard_.Cut( false, idispcol, xfluid_.gaussPointType_ );//modify gausstype
+  wizard_.Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_.DofSet(maxNumMyReservedDofs);
@@ -141,6 +141,9 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   fluidfluidvelnp_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
   fluidfluidveln_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
   fluidfluidzeros_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
+
+  //cout << *xfluid_.bgdis_ << endl;
+  //cout << *xfluid_.embdis_ << endl;
 }
 
 // -------------------------------------------------------------------
@@ -269,7 +272,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         std::vector< std::vector<int> > nds_sets;
         std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.gaussPointType_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -466,7 +469,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 #else
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
+        e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -841,7 +844,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid_TwoSidedMortaring( T
         std::vector< std::vector<int> > nds_sets;
         std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.gaussPointType_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -1043,7 +1046,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid_TwoSidedMortaring( T
 
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
+        e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -1412,7 +1415,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -1488,7 +1491,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -1930,9 +1933,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   numdim_            = genprob.ndim; //params_.get<int>("DIM");
 
   maxnumdofsets_     = params_.sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
-  gaussPointType_    = params_.sublist("XFEM").get<string>("GAUSSPOINTSBY");
-//  gaussPointType_ = "Tessellation";
-  gaussPointType_ = params_.sublist("XFEM").get<string>("GAUSSPOINTSBY");
+  VolumeCellGaussPointBy_    = params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_ = params_.sublist("XFEM").get<string>("BOUNDARY_GAUSS_POINTS_BY");
 
   // get XFEM Couping specific input parameters
   boundIntType_       = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_.sublist("XFEM"),"EMBEDDED_BOUNDARY");
@@ -2383,6 +2385,7 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::TimeLoop()
 {
+	TEUCHOS_FUNC_TIME_MONITOR("Time Loop");
   cout << "TimeLoop() " << endl;
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -3590,6 +3593,16 @@ void FLD::XFluidFluid::Output()
 
   if (step_%upres_ == 0)
   {
+	//Velnp()->Print(cout);
+	/*vector<int> lm;
+	lm.push_back(217957);
+	lm.push_back(217958);
+	lm.push_back(217959);
+	lm.push_back(217960);
+	Epetra_SerialDenseVector result(lm.size());
+	DRT::UTILS::ExtractMyValues(*Velnp(),result,lm);
+	result.Print(cout);*/
+
     // step number and time
     output_->NewStep(step_,time_);
 
@@ -4198,6 +4211,11 @@ void FLD::XFluidFluid::SetInitialFlowField(
       // the set of degrees of freedom associated with the node
       vector<int> nodedofset = bgdis_->Dof(lnode);
 
+      //there wont be any dof for nodes which are inside the structure
+      //the cut algorithm erases these dofs
+      if(nodedofset.size()==0)
+    	  continue;
+
       // set node coordinates
       for(int dim=0;dim<numdim_;dim++)
       {
@@ -4222,7 +4240,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
           + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
           );
 
-      // set initial velocity components
+       // set initial velocity components
       for(int nveldof=0;nveldof<numdim_;nveldof++)
       {
         const int gid = nodedofset[nveldof];
@@ -4238,9 +4256,83 @@ void FLD::XFluidFluid::SetInitialFlowField(
       err += state_->velnp_->ReplaceMyValues(1,&p,&lid);
       err += state_->veln_ ->ReplaceMyValues(1,&p,&lid);
       err += state_->velnm_->ReplaceMyValues(1,&p,&lid);
+
     } // end loop nodes lnodeid
 
+//    state_->veln_->Print(std::cout);
+//    state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "initial", -1, step_, state_->veln_, aleveln_, aledispnp_);
+
     if (err!=0) dserror("dof not on proc");
+
+
+		const Epetra_Map* dofrowmap1 = embdis_->DofRowMap();
+
+        int err1 = 0;
+
+        // check whether present flow is indeed three-dimensional
+        if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
+
+        // loop all nodes on the processor
+        for(int lnodeid=0;lnodeid<embdis_->NumMyRowNodes();lnodeid++)
+        {
+          // get the processor local node
+          DRT::Node*  lnode      = embdis_->lRowNode(lnodeid);
+
+          // the set of degrees of freedom associated with the node
+          vector<int> nodedofset = embdis_->Dof(lnode);
+
+          //there wont be any dof for nodes which are inside the structure
+          //the cut algorithm erases these dofs
+          if(nodedofset.size()==0)
+        	  continue;
+
+          // set node coordinates
+          for(int dim=0;dim<numdim_;dim++)
+          {
+            xyz[dim]=lnode->X()[dim];
+          }
+
+          // compute initial velocity components
+          u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                        exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+          u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                        exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+          u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                        exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
+
+          // compute initial pressure
+          p = -a*a/2.0 *
+            ( exp(2.0*a*xyz[0])
+              + exp(2.0*a*xyz[1])
+              + exp(2.0*a*xyz[2])
+              + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
+              + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
+              + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+              );
+
+           // set initial velocity components
+          for(int nveldof=0;nveldof<numdim_;nveldof++)
+          {
+            const int gid = nodedofset[nveldof];
+            int lid = dofrowmap1->LID(gid);
+            err1 += alevelnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+            err1 += alevelaf_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+            err1 += aleveln_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+          }
+
+          // set initial pressure
+          const int gid = nodedofset[npredof];
+          int lid = dofrowmap1->LID(gid);
+          err1 += alevelnp_->ReplaceMyValues(1,&p,&lid);
+          err1 += alevelaf_ ->ReplaceMyValues(1,&p,&lid);
+          err1 += aleveln_->ReplaceMyValues(1,&p,&lid);
+
+        } // end loop nodes lnodeid
+
+    //    state_->veln_->Print(std::cout);
+    //    state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "initial", -1, step_, state_->veln_, aleveln_, aledispnp_);
+
+        if (err1!=0) dserror("dof not on proc");
   }
 
   else

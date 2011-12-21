@@ -244,3 +244,22 @@ DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule()
 {
   return gaussRule_;
 }
+
+LINALG::Matrix<3,1> GEO::CUT::Tri3BoundaryCell::GetNormalVector()
+{
+  LINALG::Matrix<3,1> normal;
+  dserror("Call Transform function to get normal for Tri3 boundarycell");
+  return normal;
+}
+
+LINALG::Matrix<3,1> GEO::CUT::Quad4BoundaryCell::GetNormalVector()
+{
+  LINALG::Matrix<3,1> normal;
+  dserror("Call Transform function to get normal for Quad4 boundarycell");
+  return normal;
+}
+
+LINALG::Matrix<3,1> GEO::CUT::ArbitraryBoundaryCell::GetNormalVector()
+{
+  return normal_;
+}

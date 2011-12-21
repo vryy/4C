@@ -17,11 +17,12 @@ namespace GEO
 class FacetIntegration
 {
     public:
-        FacetIntegration(Facet *face1,Element *element1,const GEO::CUT::Point::PointPosition posi,bool bcellInt)
-            :face1_(face1),
-             elem1_(element1),
-             position_(posi),
-             bcellInt_(bcellInt)
+        FacetIntegration(Facet *face1,Element *element1,const GEO::CUT::Point::PointPosition posi,bool bcellInt,bool global)
+            :face1_(face1),               //facet under consideration
+             elem1_(element1),            //the element for which the facet is a part of
+             position_(posi),             //position
+             bcellInt_(bcellInt),         //"true" of it is boundarycell integration
+             global_(global)              //"true" for performing integration in global coordinates
         {
         }
 
@@ -37,6 +38,7 @@ class FacetIntegration
         Element *elem1_;
         const GEO::CUT::Point::PointPosition position_;
         bool bcellInt_;
+        bool global_;
         int inte_num_;
         bool clockwise_;
         std::vector<double> eqn_plane_;

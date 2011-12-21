@@ -875,7 +875,7 @@ GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( VolumeCell * volume, 
 }
 
 GEO::CUT::ArbitraryBoundaryCell* GEO::CUT::Mesh::NewArbitraryCell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points,
-    const DRT::UTILS::GaussIntegration& gaussRule)
+    const DRT::UTILS::GaussIntegration& gaussRule, const LINALG::Matrix<3,1>& normal )
 {
 #ifdef DEBUGCUTLIBRARY
   plain_point_set pointtest;
@@ -888,7 +888,7 @@ GEO::CUT::ArbitraryBoundaryCell* GEO::CUT::Mesh::NewArbitraryCell( VolumeCell * 
   Epetra_SerialDenseMatrix xyz( 3, points.size() );
   for ( unsigned i=0; i<points.size(); ++i )
     points[i]->Coordinates( &xyz( 0, i ) );
-  ArbitraryBoundaryCell * bc = new ArbitraryBoundaryCell( xyz, facet, points, gaussRule );
+  ArbitraryBoundaryCell * bc = new ArbitraryBoundaryCell( xyz, facet, points, gaussRule, normal );
   boundarycells_.push_back( Teuchos::rcp( bc ) );
   return bc;
 }
@@ -2398,7 +2398,7 @@ void GEO::CUT::Mesh::TestFacetArea()
   }
 }
 
-void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner)
+void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype)
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -2409,7 +2409,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner)
     try
     {
 #endif
-      e.MomentFitGaussWeights( *this, include_inner );
+      e.MomentFitGaussWeights( *this, include_inner, Bcellgausstype );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -2428,7 +2428,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner)
     try
     {
 #endif
-      e.MomentFitGaussWeights( *this, include_inner );
+      e.MomentFitGaussWeights( *this, include_inner, Bcellgausstype );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )

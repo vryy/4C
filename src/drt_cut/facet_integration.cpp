@@ -41,7 +41,7 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
       if(mm==3)
         break;
       if(mm==cornersLocal.size())
-        dserror("All points are on a line");
+        dserror("All points of a facet are on a line");
   }
   eqn_plane[0] = y1[0]*(z1[1]-z1[2])+y1[1]*(z1[2]-z1[0])+y1[2]*(z1[0]-z1[1]);
   eqn_plane[1] = z1[0]*(x1[1]-x1[2])+z1[1]*(x1[2]-x1[0])+z1[2]*(x1[0]-x1[1]);
@@ -144,44 +144,44 @@ void GEO::CUT::FacetIntegration::IsClockwise(const std::vector<double> eqn_plane
     {
 			if(position_==-2)
 			{
-					if(eqn_plane[0]*eqn_par[0]<0.0)
-							clockwise_ = 1;
+        if(eqn_plane[0]*eqn_par[0]<0.0)
+          clockwise_ = 1;
 			}
 			else
 			{
-					if(eqn_plane[0]*eqn_par[0]>0.0)
-							clockwise_ = 1;
+        if(eqn_plane[0]*eqn_par[0]>0.0)
+          clockwise_ = 1;
 			}
     }
     else
     {
 			const std::vector<Side*> &ele_sides = elem1_->Sides();
-//				std::cout<<"element nodes"<<"\n";//blockkk or remove until the next comment
+//		std::cout<<"element nodes"<<"\n";//blockkk or remove until the next comment
 			int parentSideno = 0;
 			for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
 			{
-					Side*sss = *i;
-					if(sss==parent)
-					{
-						break;	//unblockkk
-					}
-					parentSideno++;
+        Side*sss = *i;
+        if(sss==parent)
+        {
+          break;	//unblockkk
+        }
+        parentSideno++;
 /*						std::cout<<"side nodes"<<"\n";//blockkk
-					const std::vector<Node*> &nnn = sss->Nodes();
-					for(std::vector<Node*>::const_iterator j=nnn.begin();j!=nnn.end();j++)
-					{
-						Node *nn = *j;
-						double*chh;
-						nn->Coordinates( chh );
-						LINALG::Matrix<3,1> glo,loc;
-						glo(0,0) = chh[0];
-						glo(1,0) = chh[1];
-						glo(2,0) = chh[2];
-						elem1_->LocalCoordinates(glo,loc);
+        const std::vector<Node*> &nnn = sss->Nodes();
+        for(std::vector<Node*>::const_iterator j=nnn.begin();j!=nnn.end();j++)
+        {
+          Node *nn = *j;
+          double*chh;
+          nn->Coordinates( chh );
+          LINALG::Matrix<3,1> glo,loc;
+          glo(0,0) = chh[0];
+          glo(1,0) = chh[1];
+          glo(2,0) = chh[2];
+          elem1_->LocalCoordinates(glo,loc);
 //						std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";//blockkk or remove
-						std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
+          std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
 //                       std::cout<<chh[0]<<"\t"<<chh[1]<<"\t"<<chh[2]<<std::endl;
-					}*/
+        }*/
 			}
 
 //should check whether this is sufficient or do we need to find the number of side in the element and
@@ -250,32 +250,29 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha(std::vector<double
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
 //		std::cout<<"face"<<"\n";
-		const std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_,1);//blockkk !!!!remve the const
-		/*if(bcellInt_==true)//blockkk
+		std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_,1);//unblockkk const if possible
+		if(global_==true)
 		{
-			cornersLocal.clear();
-			const std::vector<Point*> c1 = face1_->CornerPoints();
-			for(std::vector<Point*>::const_iterator mm=c1.begin();mm!=c1.end();mm++)
-			{
-				Point* p1 = *mm;
-				double x3[3];
-				p1->Coordinates(x3);
-				std::vector<double> dd;
-				dd.push_back(x3[0]);
-				dd.push_back(x3[1]);
-				dd.push_back(x3[2]);
-				cornersLocal.push_back(dd);
-			}
-		}//blockkk until this*/
-        eqn_plane_ = equation_plane(cornersLocal);
+		  std::vector<Point*>co =  face1_->CornerPoints();
+      for(std::vector<Point*>::iterator i=co.begin();i!=co.end();i++)
+      {
+        Point* po = *i;
+        double xo[3];
+        po->Coordinates(xo);
+        for(unsigned j=0;j<3;j++)
+          cornersLocal[i-co.begin()][j] = xo[j];
+      }
+		}
+
+    eqn_plane_ = equation_plane(cornersLocal);
 //        std::cout<<"equation "<<eqn_plane_[0]<<"\t"<<eqn_plane_[1]<<"\t"<<eqn_plane_[2]<<"\t"<<eqn_plane_[3]<<std::endl;
 
 // the face is in the x-y or in y-z plane which gives zero facet integral
-        if(fabs(eqn_plane_[0])<0.0000001 && bcellInt_==false)
-                return 0.0;
+    if(fabs(eqn_plane_[0])<0.0000001 && bcellInt_==false)
+      return 0.0;
 //x=0 plane which again do not contribute to facet integral
-        if(fabs(eqn_plane_[1])<0.0000001 && fabs(eqn_plane_[2])<0.0000001 && fabs(eqn_plane_[3])<0.0000001 && bcellInt_==false)
-                return 0.0;
+    if(fabs(eqn_plane_[1])<0.0000001 && fabs(eqn_plane_[2])<0.0000001 && fabs(eqn_plane_[3])<0.0000001 && bcellInt_==false)
+      return 0.0;
 
 /*        std::cout<<"facet points"<<"\n";
 		for(unsigned i=0;i<cornersLocal.size();i++)
@@ -283,19 +280,21 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 			std::cout<<cornersLocal[i][0]<<"\t"<<cornersLocal[i][1]<<"\t"<<cornersLocal[i][2]<<"\n";
 		}*/
 
-        IsClockwise(eqn_plane_,cornersLocal);
+    if(bcellInt_==true) // the integral value of boundarycell will not change w.r.t the ordering of vertices
+      clockwise_ = false;
+    else
+      IsClockwise(eqn_plane_,cornersLocal);
 //        std::cout<<"equation "<<eqn_plane_[0]<<"\t"<<eqn_plane_[1]<<"\t"<<eqn_plane_[2]<<"\t"<<eqn_plane_[3]<<std::endl;
-  //      std::cout<<"clockwise = "<<clockwise_<<std::endl;
 
 
 //        std::cout<<"alpha "<<alpha[0]<<"\t"<<alpha[1]<<"\t"<<alpha[2]<<std::endl;//blockkkk
 
-        //integrating over each line of the facet
-        double facet_integ = 0.0;
-        if(bcellInt_==false)
-        {
-        	std::vector<double> alpha;
-        	alpha = compute_alpha(eqn_plane_,"x");
+    //integrating over each line of the facet
+    double facet_integ = 0.0;
+    if(bcellInt_==false)
+    {
+      std::vector<double> alpha;
+      alpha = compute_alpha(eqn_plane_,"x");
 			for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
 			{
 				const std::vector<double> coords1 = *k;
@@ -322,12 +321,12 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 				LineIntegration line1(coord1,coord2,inte_num_,alpha,bcellInt_);
 				facet_integ += line1.integrate_line();
 			}
-        }
-        else
-        {
+    }
+    else
+    {
 //to reduce the truncation error introduced during the projection of plane,
 //the plane, along which the normal component is maximum, is chosen
-        	std::string projType;
+      std::string projType;
 			if(fabs(eqn_plane_[0])<1e-8)
 			{
 				if(fabs(eqn_plane_[1])<1e-8)
@@ -380,17 +379,17 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 			BoundaryFacetIntegration(cornersLocal,facet_integ,projType);
 
   //      	dserror("not yet implemented");
-        }
+    }
 
 //this condition results in negative normal for all the lines in the line integral
-        if(clockwise_)
-        {
-                facet_integ = -1.0*facet_integ;
-                for(int i=0;i<4;i++)
-                       eqn_plane_[i] = -1.0*eqn_plane_[i];
-        }
+    if(clockwise_ && bcellInt_==false)
+    {
+      facet_integ = -1.0*facet_integ;
+      for(int i=0;i<4;i++)
+        eqn_plane_[i] = -1.0*eqn_plane_[i];
+    }
 //	std::cout<<"facet_in"<<facet_integ<<"\n";
-        return facet_integ;
+    return facet_integ;
 }
 
 void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,double &facet_integ,
@@ -399,7 +398,7 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 	std::vector<double> alpha;
 	double abs_normal=0.0,normalScale=0.0;//define this correspondingly
 	for(unsigned i=0;i<3;i++)
-		normalScale += eqn_plane_[i]*eqn_plane_[i];
+  normalScale += eqn_plane_[i]*eqn_plane_[i];
 	normalScale = sqrt(normalScale);
 	for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
 	{
@@ -407,9 +406,9 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 		std::vector<double> coords2;
 		//for the last line the end point is the first point of the facet
 		if(k!=(cornersLocal.end()-1))
-				coords2 = *(k+1);
+      coords2 = *(k+1);
 		else
-				coords2= *(cornersLocal.begin());
+      coords2= *(cornersLocal.begin());
 
 //		std::cout<<coords1[0]<<"\t"<<coords1[1]<<"\t"<<coords1[2]<<"\t"<<coords2[0]<<"\t"<<coords2[1]<<"\t"<<coords2[2]<<"\n";//blockkk
 

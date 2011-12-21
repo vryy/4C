@@ -9,7 +9,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 {
   std::vector<std::vector<double> > corners1 = bcell_->CornerPointsLocal(elem1_,1);
   Epetra_SerialDenseVector rhs_bcell_temp(num_func_);
-  FacetIntegration faee1(bcell_,elem1_,position_,true);
+  FacetIntegration faee1(bcell_,elem1_,position_,true,false);
   for(int fnc=1;fnc<=num_func_;fnc++)
   {
     faee1.set_integ_number(fnc);
@@ -130,7 +130,8 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 /*    for(int i=0;i<err.Length();i++)
       std::cout<<err(i)<<"\n";*/
     double maxerr = err.InfNorm();
-//    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
+    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";//blockkk
+    std::cout<<"area = "<<rhs_bcell(0)<<"\n";//blockkk
     if(maxerr<1e-10 || ptsEachLine>25)
       break;
     else
@@ -142,11 +143,13 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 //      break;//blockkk
   }
 
-  return Bcellweights;
-
 #ifdef DEBUGCUTLIBRARY
     BcellGaussPointGmsh(BcellgausPts_,corners1);
 #endif
+
+  return Bcellweights;
+
+
 //    break;//blockkk
 }
 

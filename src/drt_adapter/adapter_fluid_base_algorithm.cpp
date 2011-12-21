@@ -403,7 +403,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab", xdyn.get<double>("Nitsche_stab"));
     fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab_conv", xdyn.get<double>("Nitsche_stab_conv"));
     fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
-    fluidtimeparams->sublist("XFEM").set<string>("GAUSSPOINTSBY", xdyn.get<string>("GAUSSPOINTSBY"));
+    fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<string>("VOLUME_GAUSS_POINTS_BY"));
+    fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<string>("BOUNDARY_GAUSS_POINTS_BY"));
 
     // GMSH solution output
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT",        DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT"));

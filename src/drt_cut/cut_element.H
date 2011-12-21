@@ -69,7 +69,7 @@ public:
 
   void CreateIntegrationCells( Mesh & mesh, int count, bool levelset );
 
-  void MomentFitGaussWeights( Mesh & mesh, bool include_inner );
+  void MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
   /// After the integration and boundary cells have been created, there might
   /// still be some empty volume cells. Those are artificial cells with zero
   /// volume and need to be removed from their elements, before we count nodal

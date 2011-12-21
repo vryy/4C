@@ -94,7 +94,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
   return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
-void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype )
+void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
 {
   Status();
 
@@ -126,7 +126,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
   }
 
 
-  if(gausstype=="Tessellation")
+  if(VCellgausstype=="Tessellation")
   {
 	  TEUCHOS_FUNC_TIME_MONITOR( "Tessellation time" );
 	  m.CreateIntegrationCells( 0, false );
@@ -143,12 +143,12 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
 #endif
   }
 
-  if(gausstype=="MomentFitting")
+  if(VCellgausstype=="MomentFitting")
   {
 	  TEUCHOS_FUNC_TIME_MONITOR( "MomentFitting time" );
-	  m.MomentFitGaussWeights(include_inner);
+	  m.MomentFitGaussWeights(include_inner, BCellgausstype);
   }
-  Status(gausstype);
+  Status(VCellgausstype);
 }
 
 

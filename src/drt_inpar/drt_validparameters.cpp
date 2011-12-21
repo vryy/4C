@@ -4024,10 +4024,15 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 
   // Integration options
-  setStringToIntegralParameter<int>("GAUSSPOINTSBY","Tessellation","how to find Gauss Points for the cut volumes",
+  setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting"),
                                tuple<int>(0,1),
                                &xfem_general);
+
+  setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the boundary cells",
+                                 tuple<std::string>("Tessellation","MomentFitting"),
+                                 tuple<int>(0,1),
+                                 &xfem_general);
 
 
 

@@ -63,9 +63,9 @@ public:
 
   void GetIntegrationCells( plain_integrationcell_set & cells );
 
-  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner );
+  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner,   std::string BCellgausstype );
 
-  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos);
+  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos, std::string BCellgausstype);
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
@@ -107,7 +107,8 @@ public:
 
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
-  void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp );
+  void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp,
+      const LINALG::Matrix<3,1>& normal );
 
   void SimplifyIntegrationCells( Mesh & mesh );
 
@@ -172,6 +173,7 @@ private:
   //used to arrive at them
   Epetra_SerialDenseVector Bcellweights_;
   std::vector<std::vector<double> > BcellgausPts_;
+
 };
 
 

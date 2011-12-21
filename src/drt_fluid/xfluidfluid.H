@@ -643,7 +643,8 @@ namespace FLD
     int maxnumdofsets_;
 
     //gauss integration rule
-    std::string gaussPointType_;
+    std::string VolumeCellGaussPointBy_;
+    std::string BoundCellGaussPointBy_;
   };
 }
 

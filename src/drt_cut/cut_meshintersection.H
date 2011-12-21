@@ -47,7 +47,7 @@ public:
 
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
-  void Cut( bool include_inner, std::string gausstype="Tessellation" );
+  void Cut( bool include_inner, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation" );
 
   void CreateNodalDofSet ( bool include_inner );
 

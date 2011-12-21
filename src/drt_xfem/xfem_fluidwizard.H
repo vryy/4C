@@ -30,14 +30,16 @@ public:
   {
   }
 
-  void Cut(  bool include_inner, const Epetra_Vector & idispcol, std::string gausstype, bool positions=true  );
+  void Cut(  bool include_inner, const Epetra_Vector & idispcol, std::string VCellgausstype,
+      std::string BCellgausstype, bool positions=true  );
 
   void Cut( const Epetra_Vector & idispcol,
             std::map< int, GEO::DomainIntCells > & domainintcells,
             std::map< int, GEO::BoundaryIntCells > & boundaryintcells,
             const std::map<int,int>& labelPerElementId,
             const std::vector<int>& MovingFluideleGIDs,
-            std::string gausstype,
+            std::string VCellgausstype,
+            std::string Bcellgausstype,
             bool positions=true );
 
   void CreateDofMap( std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,    ///< enriched fields per node

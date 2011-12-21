@@ -359,7 +359,6 @@ namespace FLD
 
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
-    const std::string GaussPointType() const {return gaussPointType_;} //block or remove
 
     double Dt() const { return dta_; }
 
@@ -507,7 +506,8 @@ namespace FLD
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
 
-    std::string gaussPointType_; //blockk or remove
+    std::string VolumeCellGaussPointBy_;
+    std::string BoundCellGaussPointBy_;
 
     bool gmsh_debug_out_;
     bool gmsh_debug_out_screen_;

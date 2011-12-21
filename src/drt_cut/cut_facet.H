@@ -153,7 +153,7 @@ public:
   void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
   void NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells,
-      const DRT::UTILS::GaussIntegration& gp );
+      const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal );
 
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 

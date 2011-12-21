@@ -713,7 +713,7 @@ void GEO::CUT::Element::DumpFacets()
   }
 }
 
-void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner )
+void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype )
 {
   if ( not active_ )
     return;
@@ -739,6 +739,6 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner )
                            i!=cells_.end();i++)
   {
           VolumeCell *cell1 = *i;
-          cell1->MomentFitGaussWeights(this, mesh, include_inner);
+          cell1->MomentFitGaussWeights(this, mesh, include_inner, Bcellgausstype);
   }
 }
