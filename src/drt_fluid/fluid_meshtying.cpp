@@ -194,14 +194,14 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
         string inv="Inverse1";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace(inv.c_str(),oldmap, newmap, solver_.Params().sublist("Inverse1"));
+        solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params().sublist("Inverse1"));
       }
       // fixing length of Inverse2 nullspace
       {
         string inv="Inverse2";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace(inv.c_str(),oldmap, newmap, solver_.Params().sublist("Inverse2"));
+        solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params().sublist("Inverse2"));
       }
     }
 #ifdef BLOCKMATRIX_2x2

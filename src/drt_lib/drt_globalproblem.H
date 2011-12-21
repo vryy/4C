@@ -25,6 +25,7 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_function.H"
 #include "drt_timecurve.H"
+#include "drt_resulttest.H"
 
 using namespace std;
 using Teuchos::RCP;
@@ -50,8 +51,6 @@ namespace DRT
 {
 class Discretization;
 class SingletonDestruction;
-class ResultTestManager;
-class ResultTest;
 
 namespace INPUT
 {
@@ -333,7 +332,7 @@ public:
 
   //@}
 
-  /// @name Time Curves
+  /// @name Spatial Functions
 
   /// return a specified time curve
   DRT::UTILS::TimeCurve& Curve(int num);
@@ -343,10 +342,10 @@ public:
   /// @name Result Tests
 
   /// Do the testing
-  void TestAll(const Epetra_Comm& comm);
+  void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
 
   /// add field specific result test object
-  void AddFieldTest(Teuchos::RCP<ResultTest> test);
+  void AddFieldTest(Teuchos::RCP<ResultTest> test) { resulttest_.AddFieldTest(test); }
 
   //@}
 
@@ -374,13 +373,13 @@ private:
   Teuchos::RCP<MAT::PAR::Bundle> materials_;
 
   /// basket of spatial function
-  Teuchos::RCP<DRT::UTILS::FunctionManager> functionmanager_;
+  DRT::UTILS::FunctionManager functionmanager_;
 
   /// basket of time curves
-  Teuchos::RCP<DRT::UTILS::TimeCurveManager> timecurvemanager_;
+  DRT::UTILS::TimeCurveManager timecurvemanager_;
 
   /// all test values we might have
-  Teuchos::RCP<DRT::ResultTestManager> resulttest_;
+  DRT::ResultTestManager resulttest_;
 
   /// map of coupled fields and corresponding material IDs (needed for cloning
   /// of discretizations)
