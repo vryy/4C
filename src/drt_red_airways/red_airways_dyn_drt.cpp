@@ -110,7 +110,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
