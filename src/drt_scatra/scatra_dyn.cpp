@@ -13,14 +13,6 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#include <iostream>
-
 #include "scatra_dyn.H"
 #include "passive_scatra_algorithm.H"
 #include "scatra_utils.H"
@@ -28,14 +20,16 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "scatra_resulttest.H"
+#include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*
- * Main control routine for scalar transport problems, icl. various solvers
+ * Main control routine for scalar transport problems, incl. various solvers
  *
  *        o Laplace-/ Poisson equation (zero velocity field)
- *          (with linear and nonlinear boundary conditons)
+ *          (with linear and nonlinear boundary conditions)
  *        o transport of passive scalar in velocity field given by spatial function
  *        o transport of passive scalar in velocity field given by Navier-Stokes
  *          (one-way coupling)
@@ -43,12 +37,8 @@ Maintainer: Volker Gravemeier
  *----------------------------------------------------------------------*/
 void scatra_dyn(int disnumff, int disnumscatra, int restart)
 {
-  // create a communicator
-#ifdef PARALLEL
+  // access the communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(disnumff,0)->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();

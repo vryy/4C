@@ -16,12 +16,6 @@ Maintainer: Georg Bauer
 #ifndef ELCH_DYN_H
 #define ELCH_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-/* headers and prototypes of functions also accessible from c */
-
 /*! entry point for the solution of electrochemistry problems */
 void elch_dyn(
     int disnumff,      /* fluid  discretization number, typically 0 */
@@ -33,10 +27,6 @@ void elch_dyn(
 /*! prints the BACI electrochemistry-module logo on the screen */
 void printlogo();
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* #ifndef ELCH_DYN_H */
-
 #endif /* #ifdef CCADISCRET */

@@ -22,8 +22,6 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-using namespace DRT::UTILS;
-
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 

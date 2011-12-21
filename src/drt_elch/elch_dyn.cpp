@@ -14,14 +14,6 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
-
-#ifdef PARALLEL
-#include <mpi.h>
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
@@ -32,7 +24,6 @@ Maintainer: Georg Bauer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_ale/ale_resulttest.H"
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
@@ -43,12 +34,8 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 {
-  // create a communicator
-#ifdef PARALLEL
+  // access the communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(disnumff,0)->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // print ELCH-Logo to screen
   if (comm.MyPID()==0) printlogo();
