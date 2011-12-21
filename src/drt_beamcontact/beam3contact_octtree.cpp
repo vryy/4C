@@ -55,7 +55,7 @@ dofoffset_(dofoffset),
 radfactor_(1.0)
 {
   // define max tree depth (maybe, set this as input file parameter)
-  maxtreedepth_ = 5;
+  maxtreedepth_ = 6;
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
   if(statmechparams.get<double>("PeriodLength",0.0)>0.0)
@@ -182,7 +182,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
  |  Intersect the bounding boxes of a certain octant with a given       |
  |  bounding box (public)                                  mueller 01/11|
  *----------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID)
+bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID)
 {
   /* notes:
    * 1) do not apply this before having constructed the octree. This is merely a query tool
@@ -215,8 +215,8 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
   std::vector<std::vector<int> > octants;
   octants.clear();
   // get the octants for two bounding boxe (element) GIDs adjacent to each given node LID
-  for(int i=0; i<(int)nodeLID.M(); i++)
-    octants.push_back(InWhichOctantLies(searchdis_.lColNode((int)nodeLID(i))->Elements()[0]->Id()));
+  for(int i=0; i<nodeLID.M(); i++)
+    octants.push_back(InWhichOctantLies(searchdis_.lColNode((int)nodeLID(i,0))->Elements()[0]->Id()));
 
   // intersection of given bounding box with all other bounding boxes in given octant
   for(int ibox=0; ibox<(int)octants.size(); ibox++)
@@ -241,7 +241,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
             {
               for(int k=0; k<(int)nodeLID.M(); k++)
               {
-                if(searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct[0])->NodeIds()[j])==(int)nodeLID(k))
+                if(searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct[0])->NodeIds()[j])==(int)nodeLID(k,0))
                 {
                   sharednode = true;
                   break;
@@ -393,7 +393,9 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
   // factor by which the box is extruded in each dimension (->input file parameter??)
-  const double extrusionfactor = 1.05;
+  double extrusionfactor = 1.05;
+  if(bboxlimits!=Teuchos::null)
+    extrusionfactor = 1.0;
 
   //Decision if periodic boundary condition is applied....................
   //number of spatial dimensions
@@ -734,7 +736,10 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
-  const double extrusionfactor = 1.1;
+  double extrusionfactor = 1.05;
+  // Since the hypothetical bounding box stands for a crosslinker to be set, we just need the exact dimensions of the element
+  if(bboxlimits!=Teuchos::null)
+    extrusionfactor = 1.0;
   RCP<double> PeriodLength = Teuchos::null;
   const int ndim = 3;
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
@@ -1611,8 +1616,8 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
 
   // A heuristic value (for now). It allows us to detect contact in advance by enlarging the beam radius.
   double radiusextrusion = 1.1;
-  //if(bboxlimits==Teuchos::null)
-    //radiusextrusion = 37.0;
+  if(bboxlimits!=Teuchos::null)
+    radiusextrusion = 1.0;
 
   if(periodicBC_)
   {
@@ -1678,6 +1683,17 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
           n(2) = v(0)*w(1)-v(1)*w(0);
           n.Scale(1.0/n.Norm2());
 
+          int index0 = 1;
+          int index1 = 2;
+          for(int k=0; k<(int)n.M(); k++)
+          {
+            if(n(k)>1e-12)
+              break;
+            else
+              index0 = (k+1)%3;
+          }
+          index1 = (index0+1)%3;
+
           // 1. distance criterium
           double d = yminusx.Dot(n);
 
@@ -1692,10 +1708,10 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
             for(int k=0; k<(int)y.M(); k++)
               y(k) = y(k) - d * n(k);
             // line-wise check of the segment lengths
-            double mu = (v(1)*(y(0)-x(0))-v(0)*(y(1)-x(1)))/(v(0)*w(1)-v(1)*w(0));
+            double mu = (v(index1)*(y(index0)-x(index0))-v(index0)*(y(index1)-x(index1)))/(v(index0)*w(index1)-v(index1)*w(index0));
             if(mu>=0 && mu<=lbb0)
             {
-              double lambda = (y(0)-x(0)+w(0)*mu)/v(0);
+              double lambda = (y(index0)-x(index0)+w(index0)*mu)/v(index0);
               if(lambda>=0 && lambda<=lbb1)
               {
                 intersection = true;
@@ -1817,21 +1833,35 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
       n(2) = v(0)*w(1)-v(1)*w(0);
       n.Scale(1.0/n.Norm2());
 
+      int index0 = 1;
+      int index1 = 2;
+      for(int k=0; k<(int)n.M(); k++)
+      {
+        if(n(k)>1e-12)
+          break;
+        else
+          index0 = (k+1)%3;
+      }
+      index1 = (index0+1)%3;
+
       // 1. distance criterium
       double d = yminusx.Dot(n);
 
       if (fabs(d)<=radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
       {
+        // 2. Do the two bounding boxes actually intersect?
         double lbb0 = v.Norm2();
         double lbb1 = w.Norm2();
         v.Scale(1.0/lbb0);
         w.Scale(1.0/lbb1);
+        // shifting the point on the second line by d*n facilitates the calculation of the mu and lambda (segment lengths)
         for(int k=0; k<(int)y.M(); k++)
           y(k) = y(k) - d * n(k);
-        double mu = (v(1)*(y(0)-x(0))-v(0)*(y(1)-x(1)))/(v(0)*w(1)-v(1)*w(0));
+        // line-wise check of the segment lengths
+        double mu = (v(index1)*(y(index0)-x(index0))-v(index0)*(y(index1)-x(index1)))/(v(index0)*w(index1)-v(index1)*w(index0));
         if(mu>=0 && mu<=lbb0)
         {
-          double lambda = (y(0)-x(0)+w(0)*mu)/v(0);
+          double lambda = (y(index0)-x(index0)+w(index0)*mu)/v(index0);
           if(lambda>=0 && lambda<=lbb1)
             intersection = true;
         }

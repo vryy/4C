@@ -12,19 +12,24 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "statmech_manager.H"
+
 #include <Teuchos_Time.hpp>
 
-#include "statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
-#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_octtree.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_discret.H"
 
 
 #ifdef D_BEAM3
@@ -147,7 +152,7 @@ initialset_(false)
    * complete information gathered by all force sensors into a file of its own without any additional communication
    * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
   forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
-  forcesensor_->PutScalar(-1);
+  forcesensor_->PutScalar(-1.0);
 
   /*since crosslinkers should be established only between different filaments the number of the filament
    * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
@@ -1186,30 +1191,30 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                 case 1:
                 {
                   //Col map LIDs of nodes to be crosslinked
-                  LINALG::Matrix<2,1> LID;
-                  LID(0) = nodecolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
+                  Epetra_SerialDenseMatrix LID(2,1);
+                  LID(0,0) = nodecolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
                   // distinguish between a real nodeLID and the entry '-1', which indicates a passive crosslink molecule
                   if(nodeLID>=0)
-                    LID(1) = nodeLID;
+                    LID(1,0) = nodeLID;
                   else // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
                   {
-                    int currfilament = (int)(*filamentnumber_)[(int)LID(0)];
-                    if((int)LID(0)<basisnodes_-1)
-                      if((int)(*filamentnumber_)[(int)LID(0)+1]==currfilament)
-                        LID(1) = LID(0) + 1.0;
+                    int currfilament = (int)(*filamentnumber_)[(int)LID(0,0)];
+                    if((int)LID(0,0)<basisnodes_-1)
+                      if((int)(*filamentnumber_)[(int)LID(0,0)+1]==currfilament)
+                        LID(1,0) = LID(0,0) + 1.0;
                       else
-                        LID(1) = LID(0) - 1.0;
-                    if((int)LID(0)==basisnodes_-1)
-                      if((int)(*filamentnumber_)[(int)LID(0)-1]==currfilament)
-                        LID(1) = LID(0) - 1.0;
+                        LID(1,0) = LID(0,0) - 1.0;
+                    if((int)LID(0,0)==basisnodes_-1)
+                      if((int)(*filamentnumber_)[(int)LID(0,0)-1]==currfilament)
+                        LID(1,0) = LID(0,0) - 1.0;
                   }
 
                   // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
-                  if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[(int)LID(1)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                  if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                     break;
                   //unit direction vector between currently considered two nodes
-                  LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0)))->second);
-                  direction -= (currentpositions.find((int)LID(1)))->second;
+                  LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0,0)))->second);
+                  direction -= (currentpositions.find((int)LID(1,0)))->second;
                   direction.Scale(1.0/direction.Norm2());
 
                   /* In case of beam contact, evaluate whether a crosslinker would intersect with any exisiting elements
@@ -1220,8 +1225,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                     Epetra_SerialDenseMatrix nodecoords(3,2);
                     for(int k=0; k<nodecoords.M(); k++)
                     {
-                      nodecoords(k,0) = ((currentpositions.find((int)LID(0)))->second)(k);
-                      nodecoords(k,1) = ((currentpositions.find((int)LID(1)))->second)(k);
+                      nodecoords(k,0) = ((currentpositions.find((int)LID(0,0)))->second)(k);
+                      nodecoords(k,1) = ((currentpositions.find((int)LID(1,0)))->second)(k);
                     }
                     for(int k=0; k<(int)LID.M(); k++)
                     {
@@ -1238,9 +1243,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                   if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
                   {
                     numsetelements++;
-                    LINALG::SerialDenseMatrix lid(2,1,true);
-                    lid(0,0) = LID(0);
-                    lid(1,0) = LID(1);
 
                     ((*numbond_)[irandom]) = 2.0;
                     // actually existing two bonds
@@ -1251,17 +1253,17 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                       // set flag at irandom-th crosslink molecule that an element is to be added
                       addcrosselement[irandom] = 1.0;
                       // update molecule positions
-                      CrosslinkerIntermediateUpdate(currentpositions, lid, irandom, bspottriadscol);
+                      CrosslinkerIntermediateUpdate(currentpositions, LID, irandom, bspottriadscol);
 
                       // consider crosslinkers covering two binding spots of one filament
-                      if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[nodeLID])
+                      if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[nodeLID])
                         (*crosslinkonsamefilament_)[irandom] = 1.0;
                     }
                     else // passive crosslink molecule
                     {
                       (*searchforneighbours_)[irandom] = 0.0;
                       LINALG::SerialDenseMatrix oneLID(1,1,true);
-                      oneLID(0,0) = LID(0);
+                      oneLID(0,0) = LID(0,0);
                       CrosslinkerIntermediateUpdate(currentpositions, oneLID, irandom, bspottriadscol);
                     }
                     bondestablished = true;
@@ -1403,9 +1405,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
   {
     beamcmanager->ContactDiscret().CheckFilledGlobally();
-    beamcmanager->ContactDiscret().FillComplete();
+    beamcmanager->ContactDiscret().FillComplete(true, false, false);
   }
-
   //couts
   if(!discret_.Comm().MyPID())
     cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
@@ -1418,7 +1419,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
  | create a new crosslinker element and add it to your discretization of|
  | choice (public) 				  														 mueller (11/11)|
  *----------------------------------------------------------------------*/
-void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret)
+void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks)
 {
 #ifdef D_BEAM3II
 #ifdef D_BEAM3
@@ -1446,12 +1447,14 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
 
     //add element to discretization
-    // beam contact discretization
-    if(mydiscret.Name()=="beam contact")
-      addedcelements_.push_back(crossgid);
-    else // "standard" problem discretization
-      addedelements_.push_back(crossgid);
-
+    if(!addinitlinks)
+    {
+      // beam contact discretization
+      if(mydiscret.Name()=="beam contact")
+        addedcelements_.push_back(crossgid);
+      else// "standard" problem discretization
+        addedelements_.push_back(crossgid);
+    }
     mydiscret.AddElement(newcrosslinker);
   }
   else	// crosslinker is a truss element
@@ -1470,7 +1473,8 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     newcrosslinker->SetUpReferenceGeometry(xrefe);
 
     //add element to discretization
-    addedelements_.push_back(crossgid);
+    if(!addinitlinks)
+      addedelements_.push_back(crossgid);
     mydiscret.AddElement(newcrosslinker);
   }
 #endif
@@ -2410,6 +2414,8 @@ void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
       (*forcesensor_)[collid] = 1.0;
     }
   }
+
+  initialset_ = true;
 } // StatMechManager::UpdateForceSensors
 
 /*----------------------------------------------------------------------*
@@ -2489,12 +2495,15 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
 
-bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2, 1>& LID, RCP<double> phifil)
+bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil)
 {
 
   //if orientation is not to be checked explicitly, this function always returns true
   if (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
     return true;
+
+  if(LID.M()!=2 && LID.N()!=1)
+    dserror("LID has wrong dimensions %d x %d", LID.M(),LID.M());
 
   //triads on filaments at the two nodes connected by crosslinkers
   LINALG::Matrix<3, 3> T1;
@@ -2511,12 +2520,12 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 
   //triad of node on first filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = nodaltriadscol[j][(int) LID(0)];
+    qnode(j) = nodaltriadscol[j][(int) LID(0,0)];
   LARGEROTATIONS::quaterniontotriad(qnode, T1);
 
   //triad of node on second filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = nodaltriadscol[j][(int) LID(1)];
+    qnode(j) = nodaltriadscol[j][(int) LID(1,0)];
   LARGEROTATIONS::quaterniontotriad(qnode, T2);
 
   //auxiliary variable
@@ -2543,17 +2552,17 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 
   //crosslinker has to pass three probability checks with respect to orientation
   return(uniformclosedgen_.random() < pPhi);
-  } // StatMechManager::CheckOrientation
+} // StatMechManager::CheckOrientation
 
-  /*----------------------------------------------------------------------*
-  | simulation of crosslinker diffusion		        (public) mueller 07/10|
-  *----------------------------------------------------------------------*/
-  void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean, double standarddev, const double &dt)
-  {
-  /* Here, the diffusion of crosslink molecules is handled.
-   * Depending on the number of occupied binding spots of the molecule, its motion
-   * is calculated differently.
-   */
+/*----------------------------------------------------------------------*
+| simulation of crosslinker diffusion		        (public) mueller 07/10|
+*----------------------------------------------------------------------*/
+void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean, double standarddev, const double &dt)
+{
+/* Here, the diffusion of crosslink molecules is handled.
+ * Depending on the number of occupied binding spots of the molecule, its motion
+ * is calculated differently.
+ */
 
   // export row displacement to column map format
   Epetra_Vector discol(*(discret_.DofColMap()), true);
@@ -3040,10 +3049,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
   searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
   searchforneighbours_->PutScalar(1.0);
 
-  if(statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
-    SetInitialCrosslinkers();
-
-
   return;
 }//StatMechManager::CrosslinkerMoleculeInit
 
@@ -3051,7 +3056,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 | Set crosslinkers whereever possible before the first time step        |
 |                                                (private) mueller 11/11|
 *----------------------------------------------------------------------*/
-void StatMechManager::SetInitialCrosslinkers()
+void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
@@ -3069,12 +3074,16 @@ void StatMechManager::SetInitialCrosslinkers()
   Epetra_Vector disrow(*discret_.DofRowMap(), true);
   Epetra_Vector discol(*discret_.DofColMap(), true);
   GetNodePositions(disrow, discol, currentpositions, currentrotations);
+  // do initial octree build
+  if(beamcmanager!=Teuchos::null)
+    beamcmanager->OcTree()->OctTreeSearch(currentpositions);
 
   // generate a random order of binding spots and crosslinkers (only on Proc 0)
   std::vector<int> randbspot;
   std::vector<int> randlink;
 
   //1. set singly bound linkers
+  int numsinglybound = 0;
   if(discret_.Comm().MyPID()==0)
   {
     randbspot = Permutation(bspotcolmap_->NumMyElements());
@@ -3100,6 +3109,7 @@ void StatMechManager::SetInitialCrosslinkers()
           if((*crosslinkerbond_)[j][currlink]<0.1)
           {
             (*crosslinkerbond_)[j][currlink] = bspotcolmap_->GID(firstbspot);
+            numsinglybound++;
             break;
           }
 
@@ -3128,7 +3138,9 @@ void StatMechManager::SetInitialCrosslinkers()
   CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
   CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
 
-  /*/ 2. Now, parallely search for neighbour nodes
+  /*/ this section creates crosslinker finite elements
+  // Commented because of performance issues  when adding a large number of elements at once.
+  // 2. Now, parallely search for neighbour nodes
   RCP<Epetra_MultiVector> neighbourslid;
   if(statmechparams_.get<int>("SEARCHRES",1)>0)
     PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
@@ -3174,12 +3186,32 @@ void StatMechManager::SetInitialCrosslinkers()
               else
                 LID(k,0) = (*crosslinkerbond_)[k][currlink];
 
-            //update crosslinker position
-            CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
-            // update visualization
-            for (int k=0; k<visualizepositions_->NumVectors(); k++)
-              (*visualizepositions_)[k][currlink] = (*crosslinkerpositions_)[k][currlink];
-            break;
+            bool intersection = false;
+            if(beamcmanager!=Teuchos::null)
+            {
+              Epetra_SerialDenseMatrix nodecoords(3,2);
+              for(int k=0; k<nodecoords.M(); k++)
+              {
+                nodecoords(k,0) = ((currentpositions.find((int)LID(0,0)))->second)(k);
+                nodecoords(k,1) = ((currentpositions.find((int)LID(1,0)))->second)(k);
+              }
+              for(int k=0; k<(int)LID.M(); k++)
+              {
+                intersection = beamcmanager->OcTree()->IntersectBBoxesWith(nodecoords, LID);
+                if(intersection)
+                  break;
+              }
+            }
+
+            if(!intersection)
+            {
+              //update crosslinker position
+              CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
+              // update visualization
+              for (int k=0; k<visualizepositions_->NumVectors(); k++)
+                (*visualizepositions_)[k][currlink] = (*crosslinkerpositions_)[k][currlink];
+              break;
+            }
           }
         }
       }
@@ -3282,13 +3314,21 @@ void StatMechManager::SetInitialCrosslinkers()
       // we do not need to worry about contact yet: if enabled, the contact discretization is initialized
       // after the statmechmanager...
       if(noderowmap.LID(nodeGID[0]) > -1 || noderowmap.LID(nodeGID[1]) > -1)
-        AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,discret_);
+        AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,discret_, true);
+      if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+        AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,xrefe,beamcmanager->ContactDiscret(), true);
     }
   }
 
   // synchronization for problem discretization
   discret_.CheckFilledGlobally();
   discret_.FillComplete(true, false, false);
+
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+  {
+    beamcmanager->ContactDiscret().CheckFilledGlobally();
+    beamcmanager->ContactDiscret().FillComplete(true, false, false);
+  }*/
 
   //Gmsh output
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
@@ -3297,10 +3337,10 @@ void StatMechManager::SetInitialCrosslinkers()
     filename << "./GmshOutput/InitLinks.pos";
     GmshOutput(disrow,filename,0);
   }
-
   //couts
   if(!discret_.Comm().MyPID())
-    cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;*/
+    cout<<"\n\n"<<numsinglybound<<" initial singly-bound crosslinkers set!"<<endl;
+   // cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;
 #endif
 #endif
   return;

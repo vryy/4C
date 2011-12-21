@@ -53,7 +53,7 @@ class Beam3ContactOctTree
 
     std::vector<int> InWhichOctantLies(const int& thisBBoxID);
     // intersection test of all elements in the octant in which a given bounding box lies
-    bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID);
+    bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID);
 
   private:
     // Bounding Box Types

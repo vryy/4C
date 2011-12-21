@@ -13,10 +13,17 @@ Maintainer: Christian Cyron
 #ifndef STATMECH_MANAGER_H
 #define STATMECH_MANAGER_H
 
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+//#include "../drt_lib/drt_globalproblem.H"
+#include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_Vector.h"
+#include "Epetra_MultiVector.h"
+#include "Epetra_Map.h"
 
 //including random number library of blitz for statistical forces
 #include <random/uniform.h>
@@ -26,17 +33,36 @@ Maintainer: Christian Cyron
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
 */
+
+using namespace std;
+using Teuchos::ParameterList;
+using Teuchos::RCP;
+
 // forward declarations
+namespace DRT
+{
+  class Element;
+  class Discretization;
+}
 namespace CONTACT
 {
   class Beam3cmanager;
 }
 
-/*namespace IO
+namespace IO
 {
+  class InputControl;
+  class OutputControl;
   class DiscretizationWriter;
   class DiscretizationReader;
-}*/
+}
+
+namespace LINALG
+{
+  class SparseOperator;
+  class SparseMatrix;
+  class SerialDenseMatrix;
+}
 
 class StatMechManager
 {
@@ -79,6 +105,9 @@ public:
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int ndim, const double& dt);
 
+  //! \brief sets crosslinkers  whereever possible before the first time step
+  void SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
+
   //! \brief seed all random generators of this object properly
   void SeedRandomGenerators(const int seedparameter);
 
@@ -116,13 +145,13 @@ public:
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID, RCP<double> phifil = Teuchos::null);
+  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil = Teuchos::null);
 
 	//! \brief counts the number of possible crosslinking spots and does an Orientation Check
 	void OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
 
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret);
+  void AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks=false);
 
   //! \brief remove crosslinker element from a chosen discretization
   void RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements);
@@ -164,9 +193,6 @@ protected:
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
 
-  //! \brief Get current binding spot positions
-  void GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations);
-
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
   void SearchAndSetCrosslinkers(const int& istep,
                                 const double& dt,
@@ -190,6 +216,8 @@ protected:
     \param broken (in/out)  continuous==false, broken==true*/
   void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
 
+  //! \brief Get current binding spot positions
+   void GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations);
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
      \param dis     (in)      current displacement vector
@@ -231,9 +259,6 @@ protected:
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();
-
-  //! \brief sets crosslinkers  whereever possible before the first time step
-  void SetInitialCrosslinkers();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
 	void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
@@ -486,7 +511,6 @@ protected:
   std::vector<int> fixednodes_;
   std::vector<int> freenodes_;
   bool initialset_;
-
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/

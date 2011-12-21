@@ -4091,12 +4091,12 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
               {
                 combicount++;
 
-                LINALG::Matrix<2,1> LID;
-                LID(0) = i;
-                LID(1) = j;
+                Epetra_SerialDenseMatrix LID(2,1);
+                LID(0,0) = i;
+                LID(1,0) = j;
 
-                LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0)))->second);
-                distance -= (currentpositions.find((int)LID(1)))->second;
+                LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0,0)))->second);
+                distance -= (currentpositions.find((int)LID(1,0)))->second;
 
                 // current distance bin
                 int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);

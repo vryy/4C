@@ -190,19 +190,6 @@ void StatMechTime::Integrate()
     // Initialization of Output and Beam Contact Manager
     if(i == step)
     {
-      if(i == 0)
-      {
-        statmechmanager_->InitOutput(ndim,dt);
-        // handling gmsh output seperately
-        if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
-        {
-          std::ostringstream filename;
-            filename << "./GmshOutput/networkInit.pos";
-          //calling method for writing Gmsh output
-          statmechmanager_->GmshOutput(*dis_,filename,step);
-        }
-      }
-
       // (re)build beamcmanager_ with restored discretization during the very first step after entering the integration loop
       /* Why here and not within the constructor? If called in the constructur, beamcmanager_ receives the intial discretization @t=0,
        * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
@@ -214,7 +201,7 @@ void StatMechTime::Integrate()
         /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
          * even before the first statmechmanager_->Update() call because the octree is needed to decide
          * whether links can be set...*/
-        if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+        if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0 && i==0)
           buildoctree = true;
         if(!discret_.Comm().MyPID())
           cout<<"====== employing beam contact ======"<<endl;
@@ -248,6 +235,21 @@ void StatMechTime::Integrate()
             default: dserror("No solution strategy specified for beam contact!");
           }
           cout<<"===================================="<<endl;
+        }
+      }
+
+      if(i == 0)
+      {
+        if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+          statmechmanager_->SetInitialCrosslinkers(beamcmanager_);
+
+        statmechmanager_->InitOutput(ndim,dt);
+        if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
+        {
+          std::ostringstream filename;
+            filename << "./GmshOutput/networkInit.pos";
+          //calling method for writing Gmsh output
+          statmechmanager_->GmshOutput(*dis_,filename,step);
         }
       }
     }
@@ -288,7 +290,7 @@ void StatMechTime::Integrate()
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
         if(buildoctree)
-          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_,true);
+          statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_,buildoctree);
         else
           statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
       }

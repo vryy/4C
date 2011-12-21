@@ -106,7 +106,7 @@ public:
   friend class Beam3Type;
   friend class StatMechManager;
   friend void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* nodaltriadscol);
-  friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret);
+  friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
   friend void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element);
   friend void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step,RCP<CONTACT::Beam3cmanager> beamcmanager);
   friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid);
@@ -114,7 +114,7 @@ public:
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-  friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID, RCP<double> phifil);
+  friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil);
   friend void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
 #endif
 #endif
