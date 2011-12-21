@@ -6,9 +6,9 @@ baby arterial network
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS        2
 NODES           3
-DIM                1
-MATERIALS          1
-NUMDF        2
+DIM             1
+MATERIALS       1
+NUMDF           2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   ArterialNetwork
 NUMFIELD     1
@@ -282,7 +282,7 @@ DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0 
------------------------------------DESIGN NODE IMPEDANCE CONDITIONS
+//-----------------------------------DESIGN NODE IMPEDANCE CONDITIONS
 //DNODE               2
 // E 5 - 1 timeperiod 1.050 windkessel  termradius 5.0  16.6  278.73  0.002800
 // E 6 - 1 timeperiod 1.050 windkessel  termradius 5.0  16.6  278.73  0.002800

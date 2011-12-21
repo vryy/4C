@@ -86,7 +86,7 @@ HOMDIR                xz
 SAMPLING_START        0
 SAMPLING_STOP         0
 DUMPING_PERIOD        0
-------------------------------------FLUID DYNAMIC/SUBGRID VSICOSITY
+------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY         0.17
 CHANNEL_L_TAU         0.0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
