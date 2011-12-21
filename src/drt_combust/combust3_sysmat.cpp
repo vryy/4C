@@ -745,10 +745,31 @@ void Sysmat(
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
 #ifndef COMBUST_NORMAL_ENRICHMENT
-    COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
-        ele_meas_plus, ele_meas_minus);
+//    if (ele->Bisected())
+//    {
+//      COMBUST::SysmatDomainNitscheGalerkin<DISTYPE,ASSTYPE,NUMDOF>(
+//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          ele_meas_plus, ele_meas_minus);
+//
+//      // plus call
+//      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
+//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          true);
+//      // minus call
+//      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
+//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          false);
+//    }
+//    else
+    {
+      COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+          ele_meas_plus, ele_meas_minus);
+    }
 #else
         LINALG::Matrix<3,numnode> egradphi(true);
         LINALG::Matrix<numnode,1> ecurv(true);
@@ -927,7 +948,7 @@ void Sysmat(
   // symmetry check for element matrix
   // TODO: remove symmetry check
   //----------------------------------
-//if(ele->Id()==56)
+//if(ele->Id()==328)
 //{
 //  cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
 //  bool sym = true;

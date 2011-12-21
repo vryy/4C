@@ -511,6 +511,493 @@ void SysmatDomainNitsche(
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
+      //----------------------------------------
+      // build stiffness matrix standard entries
+      //----------------------------------------
+      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
+          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+
+      COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
+          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+
+    } // end loop over gauss points
+  } // end loop over integration cells
+
+  return;
+}
+
+
+/*!
+  Calculate domain integrals in matrix and rhs for combustion problem formulation
+ */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          int NUMDOF,
+          class M1, class V1, class V2>
+void SysmatDomainNitscheGalerkin(
+    const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
+    const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
+    const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
+    const M1&                      eveln,        ///< nodal velocity n   values for this element
+    const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
+    const M1&                      eaccn,        ///< nodal acceleration n values for this element
+    const M1&                      eaccam,       ///< nodal acceleration n values for this element
+    const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
+    const V2&                      ephi,         ///< nodal G-function values for this element
+    Teuchos::RCP<const MAT::Material> material,  ///< fluid material
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
+    const double                   time,         ///< current time
+    const double                   dt,           ///< delta t (time step size)
+    const double                   theta,        ///< parameter for one step theta scheme
+    const double                   ga_alphaF,
+    const double                   ga_alphaM,
+    const double                   ga_gamma,
+    const bool                     newton,       ///< full Newton or fixed-point-like
+    const bool                     pstab,        ///< turn on/off PSPG stabilization
+    const bool                     supg,         ///< turn on/off SUPG stabilization
+    const bool                     cstab,        ///< turn on/off BV   stabilization
+    const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
+    const bool                     instationary, ///< switch between stationary and instationary formulation
+    const bool                     genalpha,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    double&                        ele_meas_plus,      // set measure of element in plus domain
+    double&                        ele_meas_minus      // set measure of element in minus domain
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
+
+  // number space dimensions for 3d combustion element
+  const size_t nsd = 3;
+
+  // number of nodes of this element
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // time integration factor
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+
+  // get node coordinates of this element
+  static LINALG::Matrix<nsd,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+  // read body force (dead load) from input file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> edead(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "DeadOrLive", edead);
+
+  // read the pressure gradient (body force w/out scaling w/ density)
+  // from inut file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> epgrad(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "neum_pgrad", epgrad);
+
+  // flag for higher order elements
+  const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
+
+  // get number of parameters (dofs) for each field
+  // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+  dsassert(numparamvelx == numparampres, "assumption violation");
+
+  // stabilization parameter
+  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double mk = FLD::UTILS::MK<DISTYPE>();
+
+  // get domain integration cells for this element
+  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+
+  //-----------------------------------
+  // loop over domain integration cells
+  //-----------------------------------
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    //--------------------------------------------------
+    // get material parameters for this integration cell
+    //--------------------------------------------------
+    // density \rho^{n+1}
+    double densaf  = -1.0;
+    // dynamic viscosity \mu^{n+1}
+    double dynvisc = -1.0;
+    // set density and dynamic viscosity
+    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
+
+    // blend smoothly to plus (burnt) domain
+    if (cell->getDomainPlus())
+    {
+      double densminus = -1.0;
+      double dynviscminus = -1.0;
+      COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
+
+      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+    }
+    // density \rho^{n}
+    // TODO until the XFEM time integration is done properly, densities from previous and
+    // current time steps are identical
+    const double densn = densaf;
+
+    //-----------------------------------------------------------
+    // evaluate the enrichment function for this integration cell
+    //-----------------------------------------------------------
+    const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
+
+    //----------------------------------------------
+    // get Gaussian points for this integration cell
+    //----------------------------------------------
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+    //--------------------------------------
+    // integration loop over Gaussian points
+    //--------------------------------------
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      //---------------------------------------------
+      // transform coordinates of this Gaussian point
+      //---------------------------------------------
+      // coordinates of the current integration point in cell coordinates \eta^domain
+      const LINALG::Matrix<nsd,1> pos_eta_domain(intpoints.qxg[iquad]);
+
+      // coordinates of the current integration point in element coordinates \xi
+      static LINALG::Matrix<nsd,1> posXiDomain;
+      GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+#ifdef DEBUG
+      if (detcell < 0.0)
+      {
+        cout << "detcell :  " << detcell << endl;
+        dserror("negative detcell!");
+      }
+#endif
+      //----------------------------------------------------------------------------
+      // evaluate shape functions and their first derivatives at this Gaussian point
+      //----------------------------------------------------------------------------
+      static LINALG::Matrix<numnode,1> funct;
+      static LINALG::Matrix<nsd,numnode> deriv;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      //-------------------------------------
+      // procedures involving Jacobian matrix
+      //-------------------------------------
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      static LINALG::Matrix<nsd,nsd> xjm;
+      xjm.MultiplyNT(deriv,xyze);
+
+      const double det = xjm.Determinant();
+      const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+      if (det < 0.0)
+      {
+        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+      }
+
+      // inverse of jacobian
+      static LINALG::Matrix<nsd,nsd> xji;
+      xji.Invert(xjm);
+
+      //-------------------------------------------------------------------
+      // compute global derivates of shape functions at this Gaussian point
+      //-------------------------------------------------------------------
+      static LINALG::Matrix<3,numnode> derxy;
+      // derxy(i,j) = xji(i,k) * deriv(k,j)
+      derxy.Multiply(xji,deriv);
+
+      // compute second global derivative
+      static LINALG::Matrix<6,numnode> derxy2;
+      if (higher_order_ele)
+      {
+        static LINALG::Matrix<6,numnode> deriv2;
+        DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      }
+      else
+      {
+        derxy2.Clear();
+      }
+
+      //--------------------------------------------------------------------------------
+      // rearrange (enriched) shape functions and derivatives as approximation functions
+      //--------------------------------------------------------------------------------
+      const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+      // (enriched) shape functions = approximation functions (P = N * \Psi)
+      static XFEM::ApproxFunc<2,shpVecSize> shp;
+
+      if (ASSTYPE == XFEM::xfem_assembly)
+      {
+        // temporary arrays holding enriched shape functions (N * \Psi)
+        static LINALG::Matrix<shpVecSize,1> enr_funct;
+        enr_funct.Clear();
+        static LINALG::Matrix<3,shpVecSize> enr_derxy;
+        enr_derxy.Clear();
+        static LINALG::Matrix<6,shpVecSize> enr_derxy2;
+        enr_derxy2.Clear();
+
+        // shape functions and derivatives for nodal parameters (dofs)
+        enrvals.ComputeModifiedEnrichedNodalShapefunction(
+            Velx,
+            funct,
+            derxy,
+            derxy2,
+            enr_funct,
+            enr_derxy,
+            enr_derxy2);
+
+        // fill approximation functions for XFEM
+        for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+        {
+          shp.d0(iparam) = enr_funct(iparam);
+          shp.dx(iparam) = enr_derxy(0,iparam);
+          shp.dy(iparam) = enr_derxy(1,iparam);
+          shp.dz(iparam) = enr_derxy(2,iparam);
+          shp.dxdx(iparam) = enr_derxy2(0,iparam);
+          shp.dxdy(iparam) = enr_derxy2(3,iparam);
+          shp.dxdz(iparam) = enr_derxy2(4,iparam);
+          shp.dydx(iparam) = shp.dxdy(iparam);
+          shp.dydy(iparam) = enr_derxy2(1,iparam);
+          shp.dydz(iparam) = enr_derxy2(5,iparam);
+          shp.dzdx(iparam) = shp.dxdz(iparam);
+          shp.dzdy(iparam) = shp.dydz(iparam);
+          shp.dzdz(iparam) = enr_derxy2(2,iparam);
+        }
+      }
+      else // not xfem_assembly i.e. standard assembly
+      {
+        // fill approximation functions for standard FEM
+        // remark: numparamvelx == numnode, for standard FEM
+        for (size_t iparam = 0; iparam < numnode; ++iparam)
+        {
+          shp.d0(iparam) = funct(iparam);
+          shp.dx(iparam) = derxy(0,iparam);
+          shp.dy(iparam) = derxy(1,iparam);
+          shp.dz(iparam) = derxy(2,iparam);
+          shp.dxdx(iparam) = derxy2(0,iparam);
+          shp.dxdy(iparam) = derxy2(3,iparam);
+          shp.dxdz(iparam) = derxy2(4,iparam);
+          shp.dydx(iparam) = shp.dxdy(iparam);
+          shp.dydy(iparam) = derxy2(1,iparam);
+          shp.dydz(iparam) = derxy2(5,iparam);
+          shp.dzdx(iparam) = shp.dxdz(iparam);
+          shp.dzdy(iparam) = shp.dydz(iparam);
+          shp.dzdz(iparam) = derxy2(2,iparam);
+        }
+      }
+      // set measure of element in plus and minus domain
+      if(cell->getDomainPlus() == true) {ele_meas_plus  += fac;}
+      else  {ele_meas_minus += fac;}
+      //------------------------------------------------------
+      // get velocities and accelerations at integration point
+      //------------------------------------------------------
+      const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shp.d0, numparamvelx);
+
+      //----------------------------------------------
+      // get velocity derivatives at integration point
+      //----------------------------------------------
+      static LINALG::Matrix<3,nsd> vderxy;
+      vderxy.Clear();
+      // vderxy = enr_derxy(j,k)*evelnp(i,k);
+      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+        {
+          vderxy(isd,0) += evelnp(isd,iparam) * shp.dx(iparam);
+          vderxy(isd,1) += evelnp(isd,iparam) * shp.dy(iparam);
+          vderxy(isd,2) += evelnp(isd,iparam) * shp.dz(iparam);
+        }
+      }
+
+      //-----------------------------------------------------
+      // get second velocity derivatives at integration point
+      //-----------------------------------------------------
+      static LINALG::Matrix<3,6> vderxy2;
+      vderxy2.Clear();
+      //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
+      if (higher_order_ele)
+      {
+        for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+        {
+          for (size_t isd = 0; isd < nsd; ++isd)
+          {
+            vderxy2(isd,0) += evelnp(isd,iparam) * shp.dxdx(iparam);
+            vderxy2(isd,1) += evelnp(isd,iparam) * shp.dydy(iparam);
+            vderxy2(isd,2) += evelnp(isd,iparam) * shp.dzdz(iparam);
+            vderxy2(isd,3) += evelnp(isd,iparam) * shp.dxdy(iparam);
+            vderxy2(isd,4) += evelnp(isd,iparam) * shp.dxdz(iparam);
+            vderxy2(isd,5) += evelnp(isd,iparam) * shp.dydz(iparam);
+          }
+        }
+      }
+
+      //----------------------------------
+      // get pressure at integration point
+      //----------------------------------
+      double pres = 0.0;
+      for (size_t iparam = 0; iparam != numparampres; ++iparam)
+        pres += eprenp(iparam) * shp.d0(iparam);
+
+      //--------------------------------------------
+      // get pressure gradients at integration point
+      //--------------------------------------------
+      static LINALG::Matrix<nsd,1> gradp;
+      gradp.Clear();
+      // gradp = enr_derxy(i,j)*eprenp(j);
+      for (size_t iparam = 0; iparam != numparampres; ++iparam)
+      {
+        gradp(0) += eprenp(iparam) * shp.dx(iparam);
+        gradp(1) += eprenp(iparam) * shp.dy(iparam);
+        gradp(2) += eprenp(iparam) * shp.dz(iparam);
+      }
+
+      //------------------------------------------
+      // compute stabilization parameters (3 taus)
+      //------------------------------------------
+      const double vel_norm = gpvelnp.Norm2();
+      //const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
+      double tau_stab_Mu = 0.0;
+      double tau_stab_Mp = 0.0;
+      double tau_stab_C  = 0.0;
+      // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
+      //         'hk' instead of using the streamlength for 'tau_stab_Mu'
+      FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+          instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
+          tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+
+      //------------------------------------------------------------------------
+      // build RHS vector at integration point (scaled with timefac and density)
+      //------------------------------------------------------------------------
+      static LINALG::Matrix<nsd,1> rhsint;
+      rhsint.Clear();
+
+      // time RHS vector from previous time step
+      // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
+          gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
+      histvec.Scale(densn);
+
+      // body force vector
+      // remark: unit is acceleration (not density weighted)
+      static LINALG::Matrix<nsd,1> bodyforce;
+      bodyforce.Clear();
+      static LINALG::Matrix<nsd,1> noscalebodyforce;
+      noscalebodyforce.Clear();
+      for (std::size_t isd = 0; isd < nsd; isd++)
+      {
+        for (std::size_t inode = 0; inode < numnode; inode++)
+        {
+          bodyforce(isd) += edead(isd,inode) * funct(inode);
+          noscalebodyforce(isd) += epgrad(isd,inode) * funct(inode);
+        }
+      }
+      // scale body force: body force * density^{n+1}
+      bodyforce.Scale(densaf);
+
+      for (size_t isd = 0; isd < nsd; ++isd)
+        rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+
+      //-----------------------------------------------------------------------
+      // compute numerical representation of some single operators (not scaled)
+      //-----------------------------------------------------------------------
+
+      // convective term:  u_old * grad u_old:
+      // remark: conv_old = vderxy(i,j)*gpvelnp(j);
+      LINALG::Matrix<nsd,1> conv_old(true);
+      conv_old.Multiply(vderxy,gpvelnp);
+
+      // viscous term:  div epsilon(u_old)
+      LINALG::Matrix<nsd,1> visc_old;
+      visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
+      visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
+      visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
+
+      // convective part of linearized convective term: u_old * grad (funct)
+      // remark: u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
+      static LINALG::Matrix<shpVecSize,1> enr_conv_c;
+      enr_conv_c.Clear();
+      for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+      {
+        enr_conv_c(iparam) += shp.dx(iparam)*gpvelnp(0);
+        enr_conv_c(iparam) += shp.dy(iparam)*gpvelnp(1);
+        enr_conv_c(iparam) += shp.dz(iparam)*gpvelnp(2);
+      }
+
+      // viscous term  - grad * epsilon(u)
+      /*    /                                              \
+                 |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+               1 |                                                |
+               - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+               2 |                                                |
+                 |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+                  \                                              /
+       */
+      static COMBUST::EnrViscs2<shpVecSize> enr_viscs2;
+      //            enr_viscs2.Clear();
+      for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+      {
+        enr_viscs2.xx(iparam) = 0.5 * (2.0 * shp.dxdx(iparam) + shp.dydy(iparam) + shp.dzdz(iparam));
+        enr_viscs2.xy(iparam) = 0.5 *  shp.dydx(iparam);
+        enr_viscs2.xz(iparam) = 0.5 *  shp.dzdx(iparam);
+        enr_viscs2.yx(iparam) = 0.5 *  shp.dxdy(iparam);
+        enr_viscs2.yy(iparam) = 0.5 * (shp.dxdx(iparam) + 2.0 * shp.dydy(iparam) + shp.dzdz(iparam));
+        enr_viscs2.yz(iparam) = 0.5 *  shp.dzdy(iparam);
+        enr_viscs2.zx(iparam) = 0.5 *  shp.dxdz(iparam);
+        enr_viscs2.zy(iparam) = 0.5 *  shp.dydz(iparam);
+        enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
+      }
+
+      //----------------------------------------------------
+      // evaluate residual (scaled with timefac and density)
+      // remark: used for stabilization right hand sides
+      //----------------------------------------------------
+      //            LINALG::Matrix<nsd,1> res_old(true);
+      //            if (instationary)
+      //            {
+      //              // timefac * (\rho*du/dt + (\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
+      //              for (size_t isd = 0; isd < nsd; ++isd)
+      //                res_old(isd) = densaf*gpvelnp(isd) - rhsint(isd) + timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+      //            }
+      //            else // stationary
+      //            {
+      //              // timefac * ((\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
+      //              // remark: Although calculation is stationary, scaling with timefac is kept to be
+      //              //         consistent with formulation of matrix entries, which are also scaled.
+      //              for(size_t isd = 0; isd < nsd; ++isd)
+      //                res_old(isd) = timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
+      //            }
+
+      // evaluate residual once for all stabilisation right hand sides
+      LINALG::Matrix<nsd,1> res_old(true);
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpvelnp(isd);
+        }
+      }
+      // integration factors and coefficients of single terms
+      const double timefacfac = timefac * fac;
+
       if (ASSTYPE== XFEM::xfem_assembly)
       {
         if(ele->Bisected())
@@ -621,6 +1108,494 @@ void SysmatDomainNitsche(
   return;
 }
 
+
+/*!
+  Calculate domain integrals in matrix and rhs for combustion problem formulation
+ */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          int NUMDOF,
+          class M1, class V1, class V2>
+void SysmatDomainNitscheStabHexRule(
+    const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
+    const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
+    const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
+    const M1&                      eveln,        ///< nodal velocity n   values for this element
+    const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
+    const M1&                      eaccn,        ///< nodal acceleration n values for this element
+    const M1&                      eaccam,       ///< nodal acceleration n values for this element
+    const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
+    const V2&                      ephi,         ///< nodal G-function values for this element
+    Teuchos::RCP<const MAT::Material> material,  ///< fluid material
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
+    const double                   time,         ///< current time
+    const double                   dt,           ///< delta t (time step size)
+    const double                   theta,        ///< parameter for one step theta scheme
+    const double                   ga_alphaF,
+    const double                   ga_alphaM,
+    const double                   ga_gamma,
+    const bool                     newton,       ///< full Newton or fixed-point-like
+    const bool                     pstab,        ///< turn on/off PSPG stabilization
+    const bool                     supg,         ///< turn on/off SUPG stabilization
+    const bool                     cstab,        ///< turn on/off BV   stabilization
+    const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
+    const bool                     instationary, ///< switch between stationary and instationary formulation
+    const bool                     genalpha,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    bool                           domainplus
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
+
+  if (ASSTYPE != XFEM::xfem_assembly)
+    dserror("you should not be here");
+
+  // number space dimensions for 3d combustion element
+  const size_t nsd = 3;
+
+  // number of nodes of this element
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // time integration factor
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+
+  // get node coordinates of this element
+  static LINALG::Matrix<nsd,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+  // read body force (dead load) from input file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> edead(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "DeadOrLive", edead);
+
+  // read the pressure gradient (body force w/out scaling w/ density)
+  // from inut file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> epgrad(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "neum_pgrad", epgrad);
+
+  // flag for higher order elements
+  const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
+
+  // get number of parameters (dofs) for each field
+  // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+  dsassert(numparamvelx == numparampres, "assumption violation");
+
+  // stabilization parameter
+  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double mk = FLD::UTILS::MK<DISTYPE>();
+
+  // get domain integration cells for this element
+  //const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+
+  //-----------------------------------
+  // loop over domain integration cells
+  //-----------------------------------
+  //for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  //{
+    //--------------------------------------------------
+    // get material parameters for this integration cell
+    //--------------------------------------------------
+    // density \rho^{n+1}
+    double densaf  = -1.0;
+    // dynamic viscosity \mu^{n+1}
+    double dynvisc = -1.0;
+    // set density and dynamic viscosity
+    COMBUST::GetMaterialParams(material, domainplus, densaf, dynvisc);
+
+//    // blend smoothly to plus (burnt) domain
+//    if (cell->getDomainPlus())
+//    {
+//      double densminus = -1.0;
+//      double dynviscminus = -1.0;
+//      COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
+//
+//      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+//    }
+    // density \rho^{n}
+    // TODO until the XFEM time integration is done properly, densities from previous and
+    // current time steps are identical
+    const double densn = densaf;
+
+    //-----------------------------------------------------------
+    // evaluate the enrichment function for this integration cell
+    //-----------------------------------------------------------
+    const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,ephi,domainplus);
+
+    //----------------------------------------------
+    // get Gaussian points for this integration cell
+    //----------------------------------------------
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, false,  DRT::Element::hex8);
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+    //--------------------------------------
+    // integration loop over Gaussian points
+    //--------------------------------------
+if (intpoints.nquad != 8)
+  dserror("8 Gausspoints expected");
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      //---------------------------------------------
+      // transform coordinates of this Gaussian point
+      //---------------------------------------------
+      // coordinates of the current integration point in cell coordinates \eta^domain
+      const LINALG::Matrix<nsd,1> posXiDomain(intpoints.qxg[iquad]);
+//cout << "position of Gauss point " << iquad << " is "<< posXiDomain << endl;
+      // coordinates of the current integration point in element coordinates \xi
+      //static LINALG::Matrix<nsd,1> posXiDomain;
+      //GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = 1.0; // GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+#ifdef DEBUG
+      if (detcell < 0.0)
+      {
+        cout << "detcell :  " << detcell << endl;
+        dserror("negative detcell!");
+      }
+#endif
+      //----------------------------------------------------------------------------
+      // evaluate shape functions and their first derivatives at this Gaussian point
+      //----------------------------------------------------------------------------
+      static LINALG::Matrix<numnode,1> funct;
+      static LINALG::Matrix<nsd,numnode> deriv;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      //-------------------------------------
+      // procedures involving Jacobian matrix
+      //-------------------------------------
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      static LINALG::Matrix<nsd,nsd> xjm;
+      xjm.MultiplyNT(deriv,xyze);
+
+      const double det = xjm.Determinant();
+      const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+      if (det < 0.0)
+      {
+        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+      }
+
+      // inverse of jacobian
+      static LINALG::Matrix<nsd,nsd> xji;
+      xji.Invert(xjm);
+
+      //-------------------------------------------------------------------
+      // compute global derivates of shape functions at this Gaussian point
+      //-------------------------------------------------------------------
+      static LINALG::Matrix<3,numnode> derxy;
+      // derxy(i,j) = xji(i,k) * deriv(k,j)
+      derxy.Multiply(xji,deriv);
+
+      // compute second global derivative
+      static LINALG::Matrix<6,numnode> derxy2;
+      if (higher_order_ele)
+      {
+        static LINALG::Matrix<6,numnode> deriv2;
+        DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      }
+      else
+      {
+        derxy2.Clear();
+      }
+
+      //--------------------------------------------------------------------------------
+      // rearrange (enriched) shape functions and derivatives as approximation functions
+      //--------------------------------------------------------------------------------
+      const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+      // (enriched) shape functions = approximation functions (P = N * \Psi)
+      static XFEM::ApproxFunc<2,shpVecSize> shp;
+
+      if (ASSTYPE == XFEM::xfem_assembly)
+      {
+        // temporary arrays holding enriched shape functions (N * \Psi)
+        static LINALG::Matrix<shpVecSize,1> enr_funct;
+        enr_funct.Clear();
+        static LINALG::Matrix<3,shpVecSize> enr_derxy;
+        enr_derxy.Clear();
+        static LINALG::Matrix<6,shpVecSize> enr_derxy2;
+        enr_derxy2.Clear();
+
+        // shape functions and derivatives for nodal parameters (dofs)
+        enrvals.ComputeModifiedEnrichedNodalShapefunction(
+            Velx,
+            funct,
+            derxy,
+            derxy2,
+            enr_funct,
+            enr_derxy,
+            enr_derxy2);
+
+//cout << "funct " << funct << endl;
+//cout << "enr_funct " << enr_funct << endl;
+
+        // fill approximation functions for XFEM
+        for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+        {
+          shp.d0(iparam) = enr_funct(iparam);
+          shp.dx(iparam) = enr_derxy(0,iparam);
+          shp.dy(iparam) = enr_derxy(1,iparam);
+          shp.dz(iparam) = enr_derxy(2,iparam);
+          shp.dxdx(iparam) = enr_derxy2(0,iparam);
+          shp.dxdy(iparam) = enr_derxy2(3,iparam);
+          shp.dxdz(iparam) = enr_derxy2(4,iparam);
+          shp.dydx(iparam) = shp.dxdy(iparam);
+          shp.dydy(iparam) = enr_derxy2(1,iparam);
+          shp.dydz(iparam) = enr_derxy2(5,iparam);
+          shp.dzdx(iparam) = shp.dxdz(iparam);
+          shp.dzdy(iparam) = shp.dydz(iparam);
+          shp.dzdz(iparam) = enr_derxy2(2,iparam);
+        }
+      }
+      else // not xfem_assembly i.e. standard assembly
+      {
+        dserror("das gibts gar nicht");
+        // fill approximation functions for standard FEM
+        // remark: numparamvelx == numnode, for standard FEM
+        for (size_t iparam = 0; iparam < numnode; ++iparam)
+        {
+          shp.d0(iparam) = funct(iparam);
+          shp.dx(iparam) = derxy(0,iparam);
+          shp.dy(iparam) = derxy(1,iparam);
+          shp.dz(iparam) = derxy(2,iparam);
+          shp.dxdx(iparam) = derxy2(0,iparam);
+          shp.dxdy(iparam) = derxy2(3,iparam);
+          shp.dxdz(iparam) = derxy2(4,iparam);
+          shp.dydx(iparam) = shp.dxdy(iparam);
+          shp.dydy(iparam) = derxy2(1,iparam);
+          shp.dydz(iparam) = derxy2(5,iparam);
+          shp.dzdx(iparam) = shp.dxdz(iparam);
+          shp.dzdy(iparam) = shp.dydz(iparam);
+          shp.dzdz(iparam) = derxy2(2,iparam);
+        }
+      }
+      //------------------------------------------------------
+      // get velocities and accelerations at integration point
+      //------------------------------------------------------
+      const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shp.d0, numparamvelx);
+
+      //----------------------------------------------
+      // get velocity derivatives at integration point
+      //----------------------------------------------
+      static LINALG::Matrix<3,nsd> vderxy;
+      vderxy.Clear();
+      // vderxy = enr_derxy(j,k)*evelnp(i,k);
+      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+        {
+          vderxy(isd,0) += evelnp(isd,iparam) * shp.dx(iparam);
+          vderxy(isd,1) += evelnp(isd,iparam) * shp.dy(iparam);
+          vderxy(isd,2) += evelnp(isd,iparam) * shp.dz(iparam);
+        }
+      }
+
+      //-----------------------------------------------------
+      // get second velocity derivatives at integration point
+      //-----------------------------------------------------
+      static LINALG::Matrix<3,6> vderxy2;
+      vderxy2.Clear();
+      //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
+      if (higher_order_ele)
+      {
+        for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+        {
+          for (size_t isd = 0; isd < nsd; ++isd)
+          {
+            vderxy2(isd,0) += evelnp(isd,iparam) * shp.dxdx(iparam);
+            vderxy2(isd,1) += evelnp(isd,iparam) * shp.dydy(iparam);
+            vderxy2(isd,2) += evelnp(isd,iparam) * shp.dzdz(iparam);
+            vderxy2(isd,3) += evelnp(isd,iparam) * shp.dxdy(iparam);
+            vderxy2(isd,4) += evelnp(isd,iparam) * shp.dxdz(iparam);
+            vderxy2(isd,5) += evelnp(isd,iparam) * shp.dydz(iparam);
+          }
+        }
+      }
+
+      //----------------------------------
+      // get pressure at integration point
+      //----------------------------------
+      double pres = 0.0;
+      for (size_t iparam = 0; iparam != numparampres; ++iparam)
+        pres += eprenp(iparam) * shp.d0(iparam);
+
+      //--------------------------------------------
+      // get pressure gradients at integration point
+      //--------------------------------------------
+      static LINALG::Matrix<nsd,1> gradp;
+      gradp.Clear();
+      // gradp = enr_derxy(i,j)*eprenp(j);
+      for (size_t iparam = 0; iparam != numparampres; ++iparam)
+      {
+        gradp(0) += eprenp(iparam) * shp.dx(iparam);
+        gradp(1) += eprenp(iparam) * shp.dy(iparam);
+        gradp(2) += eprenp(iparam) * shp.dz(iparam);
+      }
+
+      //------------------------------------------
+      // compute stabilization parameters (3 taus)
+      //------------------------------------------
+      const double vel_norm = gpvelnp.Norm2();
+      //const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
+      double tau_stab_Mu = 0.0;
+      double tau_stab_Mp = 0.0;
+      double tau_stab_C  = 0.0;
+      // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
+      //         'hk' instead of using the streamlength for 'tau_stab_Mu'
+      FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+          instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
+          tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+
+//cout << "tau_stab_Mu " << tau_stab_Mu << endl;
+//cout << "tau_stab_Mp " << tau_stab_Mp << endl;
+//cout << "tau_stab_C " << tau_stab_C << endl << endl;
+
+      //------------------------------------------------------------------------
+      // build RHS vector at integration point (scaled with timefac and density)
+      //------------------------------------------------------------------------
+      static LINALG::Matrix<nsd,1> rhsint;
+      rhsint.Clear();
+
+      // time RHS vector from previous time step
+      // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
+          gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
+      histvec.Scale(densn);
+
+      // body force vector
+      // remark: unit is acceleration (not density weighted)
+      static LINALG::Matrix<nsd,1> bodyforce;
+      bodyforce.Clear();
+      static LINALG::Matrix<nsd,1> noscalebodyforce;
+      noscalebodyforce.Clear();
+      for (std::size_t isd = 0; isd < nsd; isd++)
+      {
+        for (std::size_t inode = 0; inode < numnode; inode++)
+        {
+          bodyforce(isd) += edead(isd,inode) * funct(inode);
+          noscalebodyforce(isd) += epgrad(isd,inode) * funct(inode);
+        }
+      }
+      // scale body force: body force * density^{n+1}
+      bodyforce.Scale(densaf);
+
+      for (size_t isd = 0; isd < nsd; ++isd)
+        rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+
+      //-----------------------------------------------------------------------
+      // compute numerical representation of some single operators (not scaled)
+      //-----------------------------------------------------------------------
+
+      // convective term:  u_old * grad u_old:
+      // remark: conv_old = vderxy(i,j)*gpvelnp(j);
+      LINALG::Matrix<nsd,1> conv_old(true);
+      conv_old.Multiply(vderxy,gpvelnp);
+
+      // viscous term:  div epsilon(u_old)
+      LINALG::Matrix<nsd,1> visc_old;
+      visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
+      visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
+      visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
+
+      // convective part of linearized convective term: u_old * grad (funct)
+      // remark: u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
+      static LINALG::Matrix<shpVecSize,1> enr_conv_c;
+      enr_conv_c.Clear();
+      for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+      {
+        enr_conv_c(iparam) += shp.dx(iparam)*gpvelnp(0);
+        enr_conv_c(iparam) += shp.dy(iparam)*gpvelnp(1);
+        enr_conv_c(iparam) += shp.dz(iparam)*gpvelnp(2);
+      }
+
+      // viscous term  - grad * epsilon(u)
+      /*    /                                              \
+                 |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+               1 |                                                |
+               - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+               2 |                                                |
+                 |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+                  \                                              /
+       */
+      static COMBUST::EnrViscs2<shpVecSize> enr_viscs2;
+      //            enr_viscs2.Clear();
+      for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+      {
+        enr_viscs2.xx(iparam) = 0.5 * (2.0 * shp.dxdx(iparam) + shp.dydy(iparam) + shp.dzdz(iparam));
+        enr_viscs2.xy(iparam) = 0.5 *  shp.dydx(iparam);
+        enr_viscs2.xz(iparam) = 0.5 *  shp.dzdx(iparam);
+        enr_viscs2.yx(iparam) = 0.5 *  shp.dxdy(iparam);
+        enr_viscs2.yy(iparam) = 0.5 * (shp.dxdx(iparam) + 2.0 * shp.dydy(iparam) + shp.dzdz(iparam));
+        enr_viscs2.yz(iparam) = 0.5 *  shp.dzdy(iparam);
+        enr_viscs2.zx(iparam) = 0.5 *  shp.dxdz(iparam);
+        enr_viscs2.zy(iparam) = 0.5 *  shp.dydz(iparam);
+        enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
+      }
+
+      //----------------------------------------------------
+      // evaluate residual (scaled with timefac and density)
+      // remark: used for stabilization right hand sides
+      //----------------------------------------------------
+      //            LINALG::Matrix<nsd,1> res_old(true);
+      //            if (instationary)
+      //            {
+      //              // timefac * (\rho*du/dt + (\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
+      //              for (size_t isd = 0; isd < nsd; ++isd)
+      //                res_old(isd) = densaf*gpvelnp(isd) - rhsint(isd) + timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+      //            }
+      //            else // stationary
+      //            {
+      //              // timefac * ((\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
+      //              // remark: Although calculation is stationary, scaling with timefac is kept to be
+      //              //         consistent with formulation of matrix entries, which are also scaled.
+      //              for(size_t isd = 0; isd < nsd; ++isd)
+      //                res_old(isd) = timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
+      //            }
+
+      // evaluate residual once for all stabilisation right hand sides
+      LINALG::Matrix<nsd,1> res_old(true);
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpvelnp(isd);
+        }
+      }
+      // integration factors and coefficients of single terms
+      const double timefacfac = timefac * fac;
+
+      //----------------------------------------
+      // build stiffness matrix standard entries
+      //----------------------------------------
+      COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
+          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+    } // end loop over gauss points
+  //} // end loop over integration cells
+
+  return;
+}
 
 /*!
   Calculate boundary integrals in matrix and rhs for stationary combustion problem formulation
