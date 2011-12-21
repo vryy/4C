@@ -16,7 +16,8 @@ Maintainer: Andreas Ehrl
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//#define DIRECTMANIPULATION
+#define DIRECTMANIPULATION
+#define BLOCKMATRIX_2x2
 
 #include "fluid_meshtying.H"
 #include "fluid_utils.H"
@@ -159,11 +160,24 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     // | knn  | knm' |
     // | kmn' | kmm' |
     // ---------------
+#ifdef BLOCKMATRIX_2x2
     LINALG::MapExtractor rowmapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
     LINALG::MapExtractor dommapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > matsolve
       = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (dommapext,rowmapext,1,false,true));
     sysmatsolve_ = matsolve;
+#else
+    if(msht_==INPAR::FLUID::condensed_bmat)
+    {
+      LINALG::MapExtractor rowmapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
+      LINALG::MapExtractor dommapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
+      Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > matsolve
+        = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (dommapext,rowmapext,1,false,true));
+      sysmatsolve_ = matsolve;
+    }
+    else
+      sysmatsolve_ = mat;
+#endif
 
     //RCP<vector<double> > test1 = solver.Params().sublist("Inverse1").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
     //cout << "Length of null space before  " << test1->size() << endl;
@@ -174,20 +188,31 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     //cout << "address  " << test2 << endl;
 
     // fixing length of Inverse1 nullspace
-    if (msht_ ==INPAR::FLUID::condensed_bmat && msht_ ==INPAR::FLUID::condensed_bmat_merged)
+    if (msht_ ==INPAR::FLUID::condensed_bmat)
     {
       {
+        string inv="Inverse1";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace("Inverse1",oldmap, newmap, solver_.Params().sublist("Inverse1"));
+        solver_.FixMLNullspace(inv.c_str(),oldmap, newmap, solver_.Params().sublist("Inverse1"));
       }
       // fixing length of Inverse2 nullspace
       {
+        string inv="Inverse2";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace("Inverse2",oldmap, newmap, solver_.Params().sublist("Inverse2"));
-     }
-   }
+        solver_.FixMLNullspace(inv.c_str(),oldmap, newmap, solver_.Params().sublist("Inverse2"));
+      }
+    }
+#ifdef BLOCKMATRIX_2x2
+    else if(msht_ ==INPAR::FLUID::condensed_bmat_merged)
+    {
+      string inv="BMatMerged";
+      const Epetra_Map& oldmap = *(dofrowmap_);
+      const Epetra_Map& newmap = *(mergedmap_);
+      solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params());
+    }
+#endif
 
     return mat;
   }
@@ -447,27 +472,39 @@ void FLD::Meshtying::SolveMeshtying(
   break;
   case INPAR::FLUID::condensed_bmat_merged:
   case INPAR::FLUID::coupling_iontransport_laplace:
-    {
+  {
+      RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+      RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
+#ifdef BLOCKMATRIX_2x2
       RCP<Epetra_Vector> res      = LINALG::CreateVector(*mergedmap_,true);
       RCP<Epetra_Vector> inc      = LINALG::CreateVector(*mergedmap_,true);
       RCP<Epetra_Vector> wkrylov  = LINALG::CreateVector(*mergedmap_,true);
       RCP<Epetra_Vector> ckrylov  = LINALG::CreateVector(*mergedmap_,true);
 
-      RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
-      RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
       RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap_,108,false,true));
-
+#else
+      RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,108,false,true));
+#endif
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
 
+#ifdef BLOCKMATRIX_2x2
        SplitVectorBasedOn3x3(residual, res);
        if(project==true)
-        {
+       {
           RCP<Epetra_Vector> wvector = rcp(((*w)(0)),false);
           RCP<Epetra_Vector> cvector = rcp(((*c)(0)),false);
           SplitVectorBasedOn3x3(wvector, wkrylov);
           SplitVectorBasedOn3x3(cvector, ckrylov);
         }
+#else
+
+       sysmatsolve->Assign(0,2, View, sysmatnew->Matrix(0,2));
+       sysmatsolve->Assign(1,2, View, sysmatnew->Matrix(1,2));
+       sysmatsolve->Assign(2,0, View, sysmatnew->Matrix(2,0));
+       sysmatsolve->Assign(2,1, View, sysmatnew->Matrix(2,1));
+       sysmatsolve->Assign(2,2, View, sysmatnew->Matrix(2,2));
+#endif
 
         // assign blocks to the solution matrix
         sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
@@ -481,13 +518,15 @@ void FLD::Meshtying::SolveMeshtying(
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
+#ifdef BLOCKMATRIX_2x2
         solver_.Solve(mergedmatrix->EpetraOperator(),inc,res,true,itnum==1, wkrylov, ckrylov, project);
-      }
+#else
+        solver_.Solve(mergedmatrix->EpetraOperator(),incvel,residual,true,itnum==1, w, c, project);
+#endif
 
-      {
-        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
-        // Export the computed increment to the global increment
+#ifdef BLOCKMATRIX_2x2
         LINALG::Export(*inc,*incvel);
+#endif
 
         // compute and update slave dof's
         UpdateSlaveDOF(incvel);
@@ -1101,7 +1140,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
     sysmatnew->Matrix(1,1).Add(*kmm_mod,false,1.0,1.0);
   }
 
-#if 0
+#ifndef BLOCKMATRIX_2x2
   // block ss
   {
     // build identity matrix for slave dofs
@@ -1229,6 +1268,17 @@ void FLD::Meshtying::OutputSetUp()
     cout << "Projection matrix:" << endl;
     cout << *(adaptermeshtying_.GetMortarTrafo())<< endl << endl;
   }
+
+  /* {
+   const std::string fname = "c_after.txt";
+
+   std::ofstream f;
+   f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+   f << "\n" << "Begin" << "\n";
+   f << *c;
+   f << "End" << "\n";
+   f.close();
+   }*/
 }
 
 /*-------------------------------------------------------*/
@@ -1317,5 +1367,133 @@ void FLD::Meshtying::OutputVectorSplit(
   cout << "Teil fs: " << endl << *(splitvector[2]) << endl;
   return;
 }
+
+/*-------------------------------------------------------*/
+/*  Output: Analyze matrix                 ehrl (11/11)  */
+/*-------------------------------------------------------*/
+void FLD::Meshtying::AnalyzeMatrix(
+    RCP<LINALG::SparseMatrix>        sparsematrix)
+{
+  double localmatrixentries = 0.0;
+  double parmatrixentries = 0.0;
+  Teuchos::RCP< Epetra_CrsMatrix > matrix = sparsematrix->EpetraMatrix ();
+  {
+    // number of row elements
+    const int numdofrows = sparsematrix->RowMap().NumMyElements();
+
+    for (int i=0; i<numdofrows; ++i)
+    {
+      // max. number of non-zero values
+      int maxnumentries = matrix->MaxNumEntries();
+      int numOfNonZeros = 0;
+      vector<int> indices(maxnumentries, 0);
+      vector<double> values(maxnumentries, 0.0);
+
+      int error = matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
+      if (error!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
+
+      for (int ii = 0; ii<numOfNonZeros; ii++)
+      {
+        localmatrixentries += values[ii];
+      }
+    }
+
+    discret_->Comm().SumAll(&localmatrixentries,&parmatrixentries,1);
+  }
+  double normfrob = matrix->NormFrobenius();
+  double norminf = matrix->NormInf();
+  double normone = matrix->NormOne();
+  double matrixsize = matrix->NumGlobalRows()*matrix->NumGlobalCols();
+  double nonzero = matrix->NumGlobalNonzeros();
+
+  if (myrank_ == 0)
+  {
+    {
+      cout.precision(20);
+      cout << endl;
+      cout << "-------------- Analyze Matrix ----------------------" << endl;
+      cout << "| global matrix size:          " << matrixsize << endl;
+      cout << "| number of global non-zeros:  " << nonzero << endl;
+      cout << "| Matrix norm (Frobenius):     " << normfrob << endl;
+      cout << "| Matrix norm (Inf):           " << norminf << endl;
+      cout << "| Matrix norm (One):           " << normone << endl;
+      cout << "| sum of all matrix entries:   " << parmatrixentries << endl;
+      cout << "----------------------------------------------------" << endl;
+    }
+  }
+}  // end AnalyzeMatrix()
+
+/*-------------------------------------------------------------*/
+/*  Output: Replace matrix entries         ehrl (11/11)        */
+/*  Replace computed identity matrix by a real identity matrix */
+/*-------------------------------------------------------------*/
+void FLD::Meshtying::ReplaceMatrixEntries(
+    RCP<LINALG::SparseMatrix>        sparsematrix)
+{
+  Teuchos::RCP< Epetra_CrsMatrix > Pmat = sparsematrix->EpetraMatrix ();
+  const int numdofrows = sparsematrix->RowMap().NumMyElements();
+
+  for (int i=0; i<numdofrows; ++i)
+  {
+    // max. number of non-zero values
+    int maxnumentries = Pmat->MaxNumEntries();
+    int numOfNonZeros = 0;
+    vector<int> indices(maxnumentries);
+    vector<double> values(maxnumentries);
+
+    int error = Pmat->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
+    if (error!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
+
+    // Saftey check: only one nonZero value in specific row
+    if (numOfNonZeros!=1)
+      dserror("Replace PMat: more than one nonZero value in specific row");
+
+    double unity = 1.0;
+    Pmat->ReplaceMyValues(i, 1, &unity, &indices[0]);
+  }
+
+  double normfrob = sparsematrix->NormFrobenius();
+  double norminf = sparsematrix->NormInf();
+  double normone = sparsematrix->NormOne();
+
+  if (myrank_ == 0)
+  {
+    {
+      cout.precision(16);
+      cout << "------------------------------------------------------" << endl;
+      cout << "| projection matrix is replaced by a identity matrix:" << endl;
+      cout << "| Matrix norm (Frobenius):  " << normfrob << endl;
+      cout << "| Matrix norm (Inf):  " << norminf << endl;
+      cout << "| Matrix norm (One):  " << normone << endl;
+      cout << "------------------------------------------------------" << endl;
+    }
+  }
+  //dserror("Remove dserror from OutputSetup()!!");
+} // end ReplaceMatrixEntries()
+
+// -------------------------------------------------------------------
+// check absolut velinc norm                           ehrl   11/2011
+// -------------------------------------------------------------------
+/*
+void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(RCP<Epetra_Vector>&   vector)
+{
+  double incvelnorm_L2;
+  double incprenorm_L2;
+
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(vector);
+  onlyvel->Norm2(&incvelnorm_L2);
+
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(vector);
+  onlypre->Norm2(&incprenorm_L2);
+
+  printf("+------------+-------------------+--------------+\n");
+  printf("| %10.14E   | %10.14E   |",
+         incvelnorm_L2,incprenorm_L2);
+  printf(")\n");
+  printf("+------------+-------------------+--------------+\n");
+
+  return;
+}
+  */
 
 #endif /* CCADISCRET       */

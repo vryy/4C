@@ -117,6 +117,15 @@ class Meshtying
     //! Output: split vector
     void OutputVectorSplit(RCP<Epetra_Vector>  vector);
 
+    //! Analyze system matrix
+    void AnalyzeMatrix(
+        RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
+
+    //! Replace matrix entries
+    /// Replace computed identity matrix by a real identity matrix
+    void ReplaceMatrixEntries(
+        RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
+
   private:
 
     //! Adjust the residual for a saddle point system (PrepareMeshtyingSystem)
