@@ -612,11 +612,14 @@ void COMBUST::GetMaterialParams(
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::BlendMaterial(
     const DRT::Element* ele,
+    const GEO::IntCell* cell,
     const double        time,
     double&             denstarget,    // target density
     double&             dynvisctarget, // target dynamic viscosity
-    const double        densorigin ,   // original density
-    const double        dynviscorigin  // original viscosity
+    const double        densplus,      // plus density
+    const double        dynviscplus,   // minus viscosity
+    const double        densminus,     // plus density
+    const double        dynviscminus   // minus viscosity
 )
 {
   vector<DRT::Condition*> cond;
@@ -624,35 +627,83 @@ void COMBUST::BlendMaterial(
 
   if (cond.size()>=1)
   {
-    // find out whether there is a time curve
-    const vector<int>* curve = cond[0]->Get<vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-
-    // initialisation
-    double curvefac = 0.0;
-    if (curvenum >= 0) // yes, we have a timecurve
-    {
-      // time factor for the intermediate step
-      if(time >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      else
-        dserror("Negative time value in blending material: time = %f",time);
-    }
-    else // we do not have a timecurve --- timefactors are constant equal 1
-      curvefac = 1.0;
-
-    double fac = -1.0;
-    // get switch from the condition
-    const vector<int>* onoff = cond[0]->Get<vector<int> > ("onoff");
-    if (onoff)
-      fac = (*onoff)[0]*curvefac;
+    // get the domain to blend
+    bool blenddomain = true;
+    const string* sblenddomain = cond[0]->Get<string>("domain");
+    if (sblenddomain->compare("plus") == 0)
+      blenddomain = true;
+    else if (sblenddomain->compare("minus") == 0)
+      blenddomain = false;
     else
-      dserror("could not read switch in blending material");
+      dserror("Invalid domain in blending material");
 
-    denstarget = densorigin*fac + denstarget*(1.0-fac);
-    dynvisctarget = dynviscorigin*fac + dynvisctarget*(1.0-fac);
+    if (cell->getDomainPlus() == blenddomain)
+    {
+      // find out whether there is a time curve
+      const vector<int>* curve = cond[0]->Get<vector<int> >("curve");
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0];
+
+      // initialisation
+      double curvefac = 0.0;
+      if (curvenum >= 0) // yes, we have a timecurve
+      {
+        // time factor for the intermediate step
+        if(time >= 0.0)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        else
+          dserror("Negative time value in blending material: time = %f",time);
+      }
+      else // we do not have a timecurve --- timefactors are constant equal 1
+        curvefac = 1.0;
+
+      double fac = -1.0;
+      // get switch from the condition
+      const vector<int>* onoff = cond[0]->Get<vector<int> > ("onoff");
+      if (onoff)
+        fac = (*onoff)[0]*curvefac;
+      else
+        dserror("could not read switch in blending material");
+
+      if (blenddomain)
+      {
+        denstarget = densminus*fac + densplus*(1.0-fac);
+        dynvisctarget = dynviscminus*fac + dynviscplus*(1.0-fac);
+      }
+      else
+      {
+        denstarget = densplus*fac + densminus*(1.0-fac);
+        dynvisctarget = dynviscplus*fac + dynviscminus*(1.0-fac);
+      }
+    }
+    else
+    {
+      if (cell->getDomainPlus())
+      {
+        denstarget = densplus;
+        dynvisctarget = dynviscplus;
+      }
+      else
+      {
+        denstarget = densminus;
+        dynvisctarget = dynviscminus;
+      }
+    }
   }
+  else
+  {
+    if (cell->getDomainPlus())
+    {
+      denstarget = densplus;
+      dynvisctarget = dynviscplus;
+    }
+    else
+    {
+      denstarget = densminus;
+      dynvisctarget = dynviscminus;
+    }
+  }
+  return;
 }
 
 

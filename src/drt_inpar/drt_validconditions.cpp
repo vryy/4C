@@ -711,6 +711,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",1)));
   blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  blendmaterialcomponents.push_back(Teuchos::rcp(new StringConditionComponent("domain","plus",
+              Teuchos::tuple<std::string>("plus","minus"),
+              Teuchos::tuple<std::string>("plus","minus"))));
 
   Teuchos::RCP<ConditionDefinition> blendmaterial =
     Teuchos::rcp(new ConditionDefinition("COMBUST BLEND MATERIAL VOLUME",

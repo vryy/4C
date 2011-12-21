@@ -394,11 +394,14 @@ namespace COMBUST
    */
 void BlendMaterial(
     const DRT::Element* ele,
+    const GEO::IntCell* cell,
     const double        time,
     double&             denstarget,    // target density
     double&             dynvisctarget, // target dynamic viscosity
-    const double        densorigin,    // origin density
-    const double        dynviscorigin  // origin dynamic viscosity
+    const double        densplus,      // plus density
+    const double        dynviscplus,   // plus dynamic viscosity
+    const double        densminus,     // minus density
+    const double        dynviscminus   // minus dynamic viscosity
 );
 
 

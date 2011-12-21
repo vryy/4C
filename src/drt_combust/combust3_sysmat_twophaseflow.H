@@ -143,21 +143,17 @@ void SysmatTwoPhaseFlow(
     //         const double dynvisc = kinvisc * dens;
     double dynvisc = -1.0;
     // set density and dynamic viscosity
-    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
-
-    // blend smoothly to minus (gas bubble) domain
-    if (!cell->getDomainPlus())
     {
       double densplus = -1.0;
+      double densminus = -1.0;
       double dynviscplus = -1.0;
+      double dynviscminus = -1.0;
       COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
+      COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
-      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densplus, dynviscplus);
+      // blend smoothly to minus (gas bubble) domain
+      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
-    // density \rho^{n}
-    // TODO until the XFEM time integration is done properly, densities from previous and
-    // current time steps are identical
-    //const double densn = densaf;
 
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi

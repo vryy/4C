@@ -137,16 +137,16 @@ void SysmatDomainNitsche(
     // dynamic viscosity \mu^{n+1}
     double dynvisc = -1.0;
     // set density and dynamic viscosity
-    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
-
-    // blend smoothly to plus (burnt) domain
-    if (cell->getDomainPlus())
     {
+      double densplus = -1.0;
       double densminus = -1.0;
+      double dynviscplus = -1.0;
       double dynviscminus = -1.0;
+      COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
-      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+      // blend smoothly to minus (gas bubble) domain
+      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
@@ -624,16 +624,16 @@ void SysmatDomainNitscheGalerkin(
     // dynamic viscosity \mu^{n+1}
     double dynvisc = -1.0;
     // set density and dynamic viscosity
-    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
-
-    // blend smoothly to plus (burnt) domain
-    if (cell->getDomainPlus())
     {
+      double densplus = -1.0;
       double densminus = -1.0;
+      double dynviscplus = -1.0;
       double dynviscminus = -1.0;
+      COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
-      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+      // blend smoothly to minus (gas bubble) domain
+      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
@@ -2976,16 +2976,16 @@ void Nitsche_SysmatNeumannInflow(
   // dynamic viscosity \mu^{n+1}
   double dynvisc = -1.0;
   // set density and dynamic viscosity
-  COMBUST::GetMaterialParams(material, cell.getDomainPlus(), densaf, dynvisc);
-
-  // blend smoothly to plus (burnt) domain
-  if (cell.getDomainPlus())
   {
+    double densplus = -1.0;
     double densminus = -1.0;
+    double dynviscplus = -1.0;
     double dynviscminus = -1.0;
+    COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
     COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
-    COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+    // blend smoothly to minus (gas bubble) domain
+    COMBUST::BlendMaterial(ele, &cell, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
   }
 
   //-----------------------------------------------------------
