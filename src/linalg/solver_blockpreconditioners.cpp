@@ -66,8 +66,17 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("ML Parameters").set("null space: dimension",1);
         const int plength = (*A)(1,1).RowMap().NumMyElements();
         RCP<vector<double> > pnewns = rcp(new vector<double>(plength,1.0));
+        //TODO: vector<double> has zero length for particular cases (e.g. no Lagrange multiplier on this processor)
+        //      -> RCP for the null space is set to NULL in Fedora 12 -> dserror
+        //      -> RCP points to a random memory field in Fedora 8 -> RCP for null space is not NULL
+        // Temporary work around (ehrl, 21.12.11):
+        // In the case of plength=0 the vector<double> is rescaled (size 0 -> size 1, initial value 0) in order to avoid problems with ML
+        // (ML expects an RCP for the null space != NULL)
+        if (plength==0)
+          pnewns->resize(1,0.0);
         inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
         inv2.sublist("ML Parameters").remove("nullspace",false);
+        inv2.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
       }
 
       //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
