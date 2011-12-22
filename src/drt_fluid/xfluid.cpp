@@ -966,7 +966,8 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
         bound_f << "VT(";
         break;
       default:
-        dserror( "unsupported shape" );
+//        dserror( "unsupported shape" );
+        break;
       }
 
       const std::vector<GEO::CUT::Point*> & points = bc->Points();

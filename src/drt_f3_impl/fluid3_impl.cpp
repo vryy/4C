@@ -12934,8 +12934,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
   if ( fluidfluidcoupling )
   {
-
-
     // build Gsui and Guis
     int ipatchsizesbefore = 0;
     for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
@@ -13469,9 +13467,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
   #else
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
-            double drs = 0; // transformation factor between reference cell and linearized boundary cell
-
-            LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
             normal.Clear();
 
             // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
