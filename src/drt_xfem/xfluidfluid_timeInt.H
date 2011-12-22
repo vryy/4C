@@ -103,6 +103,14 @@ public:
   std::map<int, vector<int> > enrichednoden_;
   std::map<int, vector<int> > enrichednodenp_;
 
+  // map of every node to it's parent elements. This could be more
+  // than one if we have more than one volume cells for the node
+  std::map<int, vector<int> > nodetoparentele_;
+
+  // map of the parent elements (from the map above) to their nds
+  // vectos
+  std::map<int, std::vector< std::vector< int > > > parenteletondsset_;
+
   const Epetra_Map* currentbgdofmap_;
   const Epetra_Map* oldbgdofmap_;
 

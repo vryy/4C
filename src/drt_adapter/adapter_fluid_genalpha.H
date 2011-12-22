@@ -105,6 +105,9 @@ namespace ADAPTER {
       FLD::UTILS::FluidXFluidMapExtractor  object;
       FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
       return reftoobject;}
+
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {dserror("not implemented");return Teuchos::null;}
+
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;}
 

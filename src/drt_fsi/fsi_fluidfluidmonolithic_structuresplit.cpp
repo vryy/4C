@@ -9,6 +9,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_io/io_control.H"
 
@@ -25,7 +26,9 @@ extern struct _GENPROB     genprob;
 FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(const Epetra_Comm& comm)
   : Monolithic(comm)
 {
-
+  const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
+                          (xdyn,"MONOLITHIC_XFFSI_APPROACH");
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -211,114 +214,6 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool fi
       Extractor().AddVector(*veln,1,f);
     }
  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrixold(LINALG::BlockSparseMatrixBase& mat)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
-
-  // extract Jacobian matrices and put them into composite system
-  // matrix W
-
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
-  if (s==Teuchos::null)
-    dserror("expect structure block matrix");
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-  if (f==Teuchos::null)
-    dserror("expect fluid matrix");
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-  if (a==Teuchos::null)
-    dserror("expect ale block matrix");
-
-  LINALG::SparseMatrix& aii = a->Matrix(0,0);
-  LINALG::SparseMatrix& aig = a->Matrix(0,1);
-
-  /*----------------------------------------------------------------------*/
-
-  double scale     = FluidField().ResidualScaling();
-  double timescale = FluidField().TimeScaling();
-
-  // build block matrix
-  // The maps of the block matrix have to match the maps of the blocks we
-  // insert here.
-
-  // Uncomplete fluid matrix to be able to deal with slightly defective
-  // interface meshes.
-  f->UnComplete();
-
-  mat.Assign(0,0,View,s->Matrix(0,0));
-
-  sigtransform_(s->FullRowMap(),
-                s->FullColMap(),
-                s->Matrix(0,1),
-                1./timescale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(0,1));
-  sggtransform_(s->Matrix(1,1),
-                1./(scale*timescale),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                *f,
-                true,
-                true);
-  sgitransform_(s->Matrix(1,0),
-                1./scale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(1,0));
-
-  mat.Assign(1,1,View,*f);
-
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
-                mat.Matrix(2,1));
-  mat.Assign(2,2,View,aii);
-
-  /*----------------------------------------------------------------------*/
-  // add optional fluid linearization with respect to mesh motion block
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
-  if (mmm!=Teuchos::null)
-  {
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-
-    mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
-    mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
-
-    const ADAPTER::Coupling& coupfa = FluidAleCoupling();
-
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   false);
-
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   true);
-  }
-
-  // done. make sure all blocks are filled.
-  mat.Complete();
 }
 
 /*----------------------------------------------------------------------*/
@@ -595,10 +490,10 @@ void FSI::FluidFluidMonolithicStructureSplit::UnscaleSolution(LINALG::BlockSpars
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
-                                                               Teuchos::RCP<const Epetra_Vector> sv,
-                                                               Teuchos::RCP<const Epetra_Vector> fv,
-                                                               Teuchos::RCP<const Epetra_Vector> av,
-                                                               double fluidscale)
+                                                          Teuchos::RCP<const Epetra_Vector> sv,
+                                                          Teuchos::RCP<const Epetra_Vector> fv,
+                                                          Teuchos::RCP<const Epetra_Vector> av,
+                                                          double fluidscale)
 {
   // structure inner
   Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface().ExtractOtherVector(sv);
@@ -688,7 +583,8 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
 
-  SetupNewSystem();
+  if (monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
+    SetupNewSystem();
 
   //xfluidfluid splitter
   xfluidfluidsplitter_ = FluidField().XFluidFluidMapExtractor();
@@ -698,18 +594,25 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::Update()
 {
-  AleField().SolveAleXFluidFluidFSI();
-  FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
+  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton)
+  {
+    AleField().SolveAleXFluidFluidFSI();
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
+  }
 
   StructureField().Update();
   FluidField().    Update();
   AleField().      Update();
 
-  // build ale system matrix for the next time step. Here first we
-  // update the vectors then we set the fluid-fluid dirichlet values
-  // in buildsystemmatrix
-  AleField().BuildSystemMatrix(false);
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+
+  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton )
+  {
+    // build ale system matrix for the next time step. Here first we
+    // update the vectors then we set the fluid-fluid dirichlet values
+    // in buildsystemmatrix
+    AleField().BuildSystemMatrix(false);
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -741,6 +644,132 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupNewSystem()
         )
       );
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidFluidMonolithicStructureSplit::Newton()
+{
+  // initialise equilibrium loop
+  iter_ = 1;
+  normrhs_ = 0.0;
+  normstrrhs_ = 0.0;
+  normflrhs_ = 0.0;
+  normalerhs_ = 0.0;
+  norminc_ = 0.0;
+
+  // get length of the structural, fluid and ale vector
+  ns_ = (*(StructureField().RHS())).GlobalLength();
+  nf_ = (*(FluidField().RHS())).GlobalLength();
+  na_ = (*(AleField().RHS())).GlobalLength();
+
+  x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
+  x_sum_->PutScalar(0.0);
+
+  // incremental solution vector with length of all FSI dofs
+  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_->PutScalar(0.0);
+
+  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_->PutScalar(0.0);
+
+  // residual vector with length of all FSI dofs
+  rhs_ = LINALG::CreateVector(*DofRowMap(), true);
+  rhs_->PutScalar(0.0);
+  nall_ = (*rhs_).GlobalLength();
+
+  firstcall_ = true;
+
+  // equilibrium iteration loop (loop over k)
+  while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
+  {
+    // compute residual forces #rhs_ and tangent #tang_
+    // build linear system stiffness matrix and rhs/force
+    // residual for each field
+
+    Evaluate(iterinc_);
+
+    if (not FluidField().DofRowMap()->SameAs(Extractor().ExtractVector(iterinc_,1)->Map()))
+    {
+      cout << GREEN_LIGHT << " New Map!! " <<  END_COLOR <<  endl;
+      // save the old x_sum
+      Teuchos::RCP<Epetra_Vector> x_sum_n =  LINALG::CreateVector(*DofRowMap(), true);
+      *x_sum_n = *x_sum_;
+      Teuchos::RCP<const Epetra_Vector> sx_n;
+      Teuchos::RCP<const Epetra_Vector> ax_n;
+      sx_n = Extractor().ExtractVector(x_sum_n,0);
+      ax_n = Extractor().ExtractVector(x_sum_n,2);
+
+      SetupNewSystem();
+      xfluidfluidsplitter_ = FluidField().XFluidFluidMapExtractor();
+      rhs_ = LINALG::CreateVector(*DofRowMap(), true);
+      iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+      zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+      x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
+
+      // build the new iter_sum
+      Extractor().InsertVector(sx_n,0,x_sum_);
+      Extractor().InsertVector(FluidField().Stepinc(),1,x_sum_);
+      Extractor().InsertVector(ax_n,2,x_sum_);
+      nf_ = (*(FluidField().RHS())).GlobalLength();
+    }
+
+    // create the linear system
+    // J(x_i) \Delta x_i = - R(x_i)
+    // create the systemmatrix
+    SetupSystemMatrix();
+
+    // check whether we have a sanely filled tangent matrix
+    if (not systemmatrix_->Filled())
+    {
+      dserror("Effective tangent matrix must be filled here");
+    }
+
+    SetupRHS(*rhs_,firstcall_);
+
+    LinearSolve();
+
+
+    // reset solver tolerance
+    solver_->ResetTolerance();
+
+    // build residual force norm
+    // for now use for simplicity only L2/Euclidian norm
+    rhs_->Norm2(&normrhs_);
+    StructureField().RHS()->Norm2(&normstrrhs_);
+    FluidField().RHS()->Norm2(&normflrhs_);
+    AleField().RHS()->Norm2(&normalerhs_);
+
+    // build residual increment norm
+    iterinc_->Norm2(&norminc_);
+
+
+    // print stuff
+    PrintNewtonIter();
+
+    // increment equilibrium loop index
+    iter_ += 1;
+
+    firstcall_ = false;
+
+  }// end while loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // test whether max iterations was hit
+  if ( (Converged()) and (Comm().MyPID()==0) )
+  {
+    cout << endl;
+    cout << endl;
+    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
+  }
+  else if (iter_ >= itermax_)
+  {
+    cout << endl;
+    cout << endl;
+    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
+  }
+}
+
 #endif
 
 

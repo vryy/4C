@@ -40,6 +40,16 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm)
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
+  itermax_ = fsidyn.get<int>("ITEMAX");
+  normtypeinc_
+    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_INC");
+  normtypefres_
+    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_RESF");
+  combincfres_
+    = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
+  tolinc_ =  fsidyn.get<double>("CONVTOL");
+  tolfres_ = fsidyn.get<double>("CONVTOL");
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -58,113 +68,102 @@ void FSI::Monolithic::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
- void FSI::Monolithic::Newton()
- {
-   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-   itermax_ = fsidyn.get<int>("ITEMAX");
-   normtypeinc_
-     = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_INC");
-   normtypefres_
-     = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_RESF");
-   combincfres_
-     = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
-   tolinc_ =  fsidyn.get<double>("CONVTOL");
-   tolfres_ = fsidyn.get<double>("CONVTOL");
+void FSI::Monolithic::Newton()
+{
+  // initialise equilibrium loop
+  iter_ = 1;
+  normrhs_ = 0.0;
+  normstrrhs_ = 0.0;
+  normflrhs_ = 0.0;
+  normalerhs_ = 0.0;
+  norminc_ = 0.0;
 
+  // get length of the structural, fluid and ale vector
+  ns_ = (*(StructureField().RHS())).GlobalLength();
+  nf_ = (*(FluidField().RHS())).GlobalLength();
+  na_ = (*(AleField().RHS())).GlobalLength();
 
-   // initialise equilibrium loop
-   iter_ = 1;
-   normrhs_ = 0.0;
-   normstrrhs_ = 0.0;
-   normflrhs_ = 0.0;
-   normalerhs_ = 0.0;
-   norminc_ = 0.0;
+  x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
+  x_sum_->PutScalar(0.0);
 
-   // get length of the structural, fluid and ale vector
-   ns_ = (*(StructureField().RHS())).GlobalLength();
-   nf_ = (*(FluidField().RHS())).GlobalLength();
-   na_ = (*(AleField().RHS())).GlobalLength();
+  // incremental solution vector with length of all FSI dofs
+  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_->PutScalar(0.0);
 
-   x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
-   x_sum_->PutScalar(0.0);
+  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_->PutScalar(0.0);
 
-   // incremental solution vector with length of all FSI dofs
-   iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-   iterinc_->PutScalar(0.0);
+  // residual vector with length of all FSI dofs
+  rhs_ = LINALG::CreateVector(*DofRowMap(), true);
+  rhs_->PutScalar(0.0);
+  nall_ = (*rhs_).GlobalLength();
 
-   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-   zeros_->PutScalar(0.0);
+  firstcall_ = true;
 
-   // residual vector with length of all FSI dofs
-   rhs_ = LINALG::CreateVector(*DofRowMap(), true);
-   rhs_->PutScalar(0.0);
-   nall_ = (*rhs_).GlobalLength();
+  // equilibrium iteration loop (loop over k)
+  while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
+  {
+    // compute residual forces #rhs_ and tangent #tang_
+    // build linear system stiffness matrix and rhs/force
+    // residual for each field
 
-   firstcall_ = true;
+    Evaluate(iterinc_);
 
-   // equilibrium iteration loop (loop over k)
-   while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
-   {
-     // compute residual forces #rhs_ and tangent #tang_
-     // build linear system stiffness matrix and rhs/force
-     // residual for each field
+    // create the linear system
+    // J(x_i) \Delta x_i = - R(x_i)
+    // create the systemmatrix
+    SetupSystemMatrix();
 
-     Evaluate(iterinc_);
+    // check whether we have a sanely filled tangent matrix
+    if (not systemmatrix_->Filled())
+    {
+      dserror("Effective tangent matrix must be filled here");
+    }
 
-     // create the linear system
-     // J(x_i) \Delta x_i = - R(x_i)
-     // create the systemmatrix
-     SetupSystemMatrix();
+    SetupRHS(*rhs_,firstcall_);
 
-     // check whether we have a sanely filled tangent matrix
-     if (not systemmatrix_->Filled())
-     {
-       dserror("Effective tangent matrix must be filled here");
-     }
+    LinearSolve();
 
-     SetupRHS(*rhs_,firstcall_);
+    // reset solver tolerance
+    solver_->ResetTolerance();
 
-     LinearSolve();
+    // build residual force norm
+    // for now use for simplicity only L2/Euclidian norm
+    rhs_->Norm2(&normrhs_);
+    StructureField().RHS()->Norm2(&normstrrhs_);
+    FluidField().RHS()->Norm2(&normflrhs_);
+    AleField().RHS()->Norm2(&normalerhs_);
 
-     // reset solver tolerance
-     solver_->ResetTolerance();
+    // build residual increment norm
+    iterinc_->Norm2(&norminc_);
 
-     // build residual force norm
-     // for now use for simplicity only L2/Euclidian norm
-     rhs_->Norm2(&normrhs_);
-     StructureField().RHS()->Norm2(&normstrrhs_);
-     FluidField().RHS()->Norm2(&normflrhs_);
-     AleField().RHS()->Norm2(&normalerhs_);
+    // print stuff
+    PrintNewtonIter();
 
-     // build residual increment norm
-     iterinc_->Norm2(&norminc_);
+    // increment equilibrium loop index
+    iter_ += 1;
 
+    firstcall_ = false;
 
-     // print stuff
-     PrintNewtonIter();
+  }// end while loop
 
-     // increment equilibrium loop index
-     iter_ += 1;
+  // correct iteration counter
+  iter_ -= 1;
 
-     firstcall_ = false;
-
-   }// end while loop
-
-   // correct iteration counter
-   iter_ -= 1;
-
-   // test whether max iterations was hit
-   if ( (Converged()) and (Comm().MyPID()==0) )
-   {
-     cout << endl;
-     cout << endl;
-     cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
-   }
-   else if (iter_ >= itermax_)
-   {
-     cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
-   }
- }
+  // test whether max iterations was hit
+  if ( (Converged()) and (Comm().MyPID()==0) )
+  {
+    cout << endl;
+    cout << endl;
+    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
+  }
+  else if (iter_ >= itermax_)
+  {
+    cout << endl;
+    cout << endl;
+    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -191,8 +190,8 @@ bool FSI::Monolithic::Converged()
   switch (normtypefres_)
   {
   case INPAR::FSI::convnorm_abs:
-    //convfres = normrhs_ < tolfres_;
-    convfres = (normrhs_/nall_) < tolfres_;
+    convfres = normrhs_ < tolfres_;
+    //convfres = (normrhs_/nall_) < tolfres_;
     break;
   case INPAR::FSI::convnorm_rel:
     convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normflrhs_/nf_) < tolfres_) and ((normalerhs_/na_) < tolfres_));
@@ -223,17 +222,19 @@ void FSI::Monolithic::LinearSolve()
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
   // apply Dirichlet BCs to system of equations
-//  InitialGuess(iterinc_);
-     iterinc_->PutScalar(0.0);
+  if(firstcall_)
+    InitialGuess(iterinc_);
+  else
+    iterinc_->PutScalar(0.0);
 
-   LINALG::ApplyDirichlettoSystem(
-     sparse,
-     iterinc_,
-     rhs_,
-     Teuchos::null,
-     zeros_,
-     *CombinedDBCMap()
-     );
+  LINALG::ApplyDirichlettoSystem(
+    sparse,
+    iterinc_,
+    rhs_,
+    Teuchos::null,
+    zeros_,
+    *CombinedDBCMap()
+    );
 
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
@@ -243,7 +244,6 @@ void FSI::Monolithic::LinearSolve()
 
   // standard solver call
   solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -505,6 +505,7 @@ void FSI::Monolithic::PrintNewtonIter()
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 {
+  cout << "CONVTOL: " << tolfres_ << endl;
   // open outstringstream
   std::ostringstream oss;
 

@@ -97,7 +97,7 @@ public:
     return mymindof;
   }
 
-  virtual void MinGID() {}
+  virtual void MinGID(int mingid) {}
 
   int minGID_ ;
 

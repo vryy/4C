@@ -20,7 +20,7 @@ namespace XFEM
 
     void Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const;
 
-    virtual void MinGID();
+    virtual void MinGID(int mingid);
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);

@@ -63,7 +63,7 @@ namespace FSI
     void Timeloop();
 
     /// Newton Raphson
-    void Newton();
+    virtual void Newton();
 
     bool Converged();
 
@@ -123,7 +123,6 @@ namespace FSI
 
   protected:
 
-
     /// extract the three field vectors from a given composed vector
     /*!
       We are dealing with NOX here, so we get absolute values. x is the sum of
@@ -169,6 +168,28 @@ namespace FSI
     // sum of increments
     Teuchos::RCP<Epetra_Vector> x_sum_;
 
+    int iter_;  //!< iteration step
+    int itermax_;  //!< maximally permitted iterations
+
+    int ns_;  //!< length of structural residual forces
+    int nf_;  //!< length of fluid residual forces
+    int na_;  //!< length of ale residual forces
+    int nall_;
+
+    double normrhs_;  //!< norm of residual forces
+    double normstrrhs_;  //!< norm of structural residual forces
+    double normflrhs_;  //!< norm of fluid residual forces
+    double normalerhs_;  //!< norm of ale residual forces
+    double norminc_;  //!< norm of residual unknowns
+
+    //!< a singular stream to stdout in parallel environment
+    IO::Ostream0 cout0_;
+
+    Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Epetra_Vector> rhs_;       //!< rhs of FSI system
+    Teuchos::RCP<Epetra_Vector> zeros_;     //!< a zero vector of full length
+    Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
+
   private:
 
     /// dof row map splitted in (field) blocks
@@ -183,34 +204,14 @@ namespace FSI
     Teuchos::RCP<UTILS::DebugWriter> fdbg_;
 
 
-    //!< a singular stream to stdout in parallel environment
-    IO::Ostream0 cout0_;
-
-    //! @name Iterative solution technique
+   //! @name Iterative solution technique
 
     enum INPAR::FSI::ConvNorm normtypeinc_;  //!< convergence check for increment
     enum INPAR::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
     enum INPAR::FSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
 
-    int iter_;  //!< iteration step
-    int itermax_;  //!< maximally permitted iterations
     double tolinc_;  //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
-    int ns_;  //!< length of structural residual forces
-    int nf_;  //!< length of fluid residual forces
-    int na_;  //!< length of ale residual forces
-    int nall_;
-
-    Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
-    Teuchos::RCP<Epetra_Vector> rhs_;       //!< rhs of FSI system
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
-
-    double normrhs_;  //!< norm of residual forces
-    double normstrrhs_;  //!< norm of structural residual forces
-    double normflrhs_;  //!< norm of fluid residual forces
-    double normalerhs_;  //!< norm of ale residual forces
-    double norminc_;  //!< norm of residual unknowns
 
     //@}
   };

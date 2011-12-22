@@ -139,6 +139,8 @@ namespace ADAPTER {
 
     virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() {return fluid_.XFluidFluidMapExtractor();}
 
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_.Stepinc();}
+
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 
@@ -226,6 +228,8 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+
+    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
 
     bool monolithicfluidfluidfsi_;
   };

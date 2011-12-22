@@ -35,6 +35,9 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
     monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
     //output_(output)
 {
+  monolithic_approach_= DRT::INPUT::get<INPAR::XFEM::Monolithic_xffsi_Approach>
+                        (params->sublist("XFEM"),"MONOLITHIC_XFFSI_APPROACH");
+
   interface_.Setup(*embfluiddis);
   fluid_.SetSurfaceSplitter(&interface_);
 
@@ -186,8 +189,9 @@ void ADAPTER::FluidFluidImpl::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+ void ADAPTER::FluidFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
+
   if (stepinc!=Teuchos::null)
   {
     fluid_.Evaluate(stepinc);

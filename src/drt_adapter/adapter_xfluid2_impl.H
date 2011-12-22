@@ -115,6 +115,8 @@ namespace ADAPTER {
       FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
       return reftoobject;}
 
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {dserror("not implemented");return Teuchos::null;}
+
     virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;};
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};

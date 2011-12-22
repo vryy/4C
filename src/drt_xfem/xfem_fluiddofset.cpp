@@ -40,8 +40,8 @@ int XFEM::FluidDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, co
   return count;
 }
 
-void XFEM::FluidDofSet::MinGID()
+void XFEM::FluidDofSet::MinGID(int mingid)
 {
   // set the minimal GID of the fixed-size-dofset
-  minGID_ = dis_.DofRowMap()->MinAllGID();
+  minGID_ = mingid;
 }

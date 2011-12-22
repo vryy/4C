@@ -53,7 +53,10 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
-  dofset_->MinGID(); // set the minimal GID of xfem dis
+  if (xfluid.step_ < 1)
+    xfluid.minnumdofsets_ = xfluid.discret_->DofRowMap()->MinAllGID();
+
+  dofset_->MinGID(xfluid.minnumdofsets_); // set the minimal GID of xfem dis
   xfluid.discret_->ReplaceDofSet( dofset_, true );
   xfluid.discret_->FillComplete();
 
@@ -1122,7 +1125,6 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   interface_disp_           = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(params_.sublist("XFEM"),"INTERFACE_DISP");
   interface_disp_func_no_   = params_.sublist("XFEM").get<int>("DISP_FUNCT_NO", -1);
   interface_disp_curve_no_  = params_.sublist("XFEM").get<int>("DISP_CURVE_NO", -1);
-
 
   // output for used FUNCT
   if(myrank_ == 0)

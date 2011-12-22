@@ -70,6 +70,8 @@ public:
       FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
       return reftoobject;}
 
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {dserror("not implemented");return Teuchos::null;}
+
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }

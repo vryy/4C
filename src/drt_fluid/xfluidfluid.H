@@ -182,6 +182,9 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    fluidfluidveln_;
       Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
 
+      // used for monolithic fully newton
+      Teuchos::RCP<Epetra_Vector>    stepinc_;
+
       // Extractor used for splitting fluid and ale_fluid
       FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
@@ -293,6 +296,8 @@ namespace FLD
 
     void SetBgStateVectorsAndPrepareTimeStep();
 
+    void SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle();
+
     void UpdateMonolithicFluidSolution();
 
     void SetInitialFlowField(
@@ -323,6 +328,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
     Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
     Teuchos::RCP<Epetra_Vector> GridVel() {return gridv_; }
+    Teuchos::RCP<Epetra_Vector> Stepinc() {return state_->stepinc_;}
 
     Teuchos::RCP<Epetra_Vector> Dispnp() {return aledispnp_; }
     Teuchos::RCP<Epetra_Vector> Dispn() { return aledispn_; }
@@ -334,12 +340,12 @@ namespace FLD
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
 
-    FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor(){return state_->fluidfluidsplitter_; }
+    FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor(){ return state_->fluidfluidsplitter_; }
 
     /// provide access to the Dirichlet maps
-    const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_;}
-    const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_;}
-    Teuchos::RCP<const Epetra_Map>  FluidFluidDirichMaps() { return state_->fluidfluiddbcmaps_;} // whole fluid
+    const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }
+    const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_; }
+    Teuchos::RCP<const Epetra_Map>  FluidFluidDirichMaps() { return state_->fluidfluiddbcmaps_; } // whole fluid
 
     /// Expand the Dirichlet DOF set
     ///
@@ -417,6 +423,9 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    aleaccn_;
     Teuchos::RCP<Epetra_Vector>    aleaccam_;
      //@}
+
+    /// the vector containing body and surface forces
+    Teuchos::RCP<Epetra_Vector>    aleneumann_loads_;
 
     Teuchos::RCP<Epetra_Vector>    alevelnp_;
     Teuchos::RCP<Epetra_Vector>    aleveln_;
@@ -546,7 +555,7 @@ namespace FLD
     //! @name XFEM coupling specific parameters
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
-    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_apporach_; // xfluidfluid monolithic approach
+    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
     enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;            // xfluidfluid time integration approach
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
@@ -641,10 +650,13 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map> fixedfsidofmap_;
 
     int maxnumdofsets_;
+    int minnumdofsets_;
 
     //gauss integration rule
     std::string VolumeCellGaussPointBy_;
     std::string BoundCellGaussPointBy_;
+
+    int gmsh_count_;
   };
 }
 

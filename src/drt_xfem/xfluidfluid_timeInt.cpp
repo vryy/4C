@@ -23,6 +23,8 @@ Maintainer: Shadan Shahmiri
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_element.H"
 
+#include "../drt_cut/cut_volumecell.H"
+
 #include <iostream>
 
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
@@ -60,10 +62,48 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
     GEO::CUT::Node * n = wizard.GetNode(node->Id());
     if (n!=NULL) // xfem nodes
     {
+      // set of volumecells which belong to the node. The size of the
+      // vector depends on the combined volumecells which are around
+      // the node. For the std nodes the size is 1.
+      std::vector<std::set<GEO::CUT::plain_volumecell_set> > vcs= n->DofCellSets();
+      std::vector<int> parentelements;
+      for (size_t i=0; i<vcs.size(); i++ )
+      {
+        // we just need the first vc to find out the parent element.
+        // for hex20 we have sets of volumecells otherwise for linear
+        // elements the size of the set is one
+
+        // get the i volumecell set, which could be a set of volumecells
+        std::set<GEO::CUT::plain_volumecell_set> myvcsets = vcs.at(i);
+
+        //get the first set
+        std::set<GEO::CUT::plain_volumecell_set>::iterator s = myvcsets.begin();
+
+        // get the first volume cell (vc)
+        GEO::CUT::plain_volumecell_set k = *s;
+        GEO::CUT::plain_volumecell_set::iterator it = k.begin();
+        GEO::CUT::VolumeCell * vc = *it;
+
+        // get the element handle and the nds vector
+        std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+        std::vector< std::vector< int > >   nds_sets;
+        DRT::Element * actele = bgdis->gElement(vc->ParentElement()->Id());
+        parentelements.push_back(actele->Id());
+        GEO::CUT::ElementHandle * e = wizard.GetElement( actele );
+        e->GetVolumeCellsDofSets( cell_sets, nds_sets );
+
+        parenteletondsset_[actele->Id()] = nds_sets;
+
+      }
+
+      nodetoparentele_[gid] = parentelements;
+
       GEO::CUT::Point * p = n->point();
       GEO::CUT::Point::PointPosition pos = p->Position();
       if (pos==GEO::CUT::Point::outside and bgdis->NumDof(node) != 0) //std
       {
+
+        //cout << node->Id() << "std!! size()" << vcs.size() << endl;
         //cout << " outside " << pos <<  " "<< node->Id() << endl;
         vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
@@ -96,10 +136,33 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       cout << " why here? " << "node "<<  node->Id()<< " " <<  bgdis->NumDof(node) <<  endl;
   }
 
-//     //debug output
-//     for (int i=0; i<bgdis->NumMyColNodes(); ++i)
+
+//  debug output
+//   for(map<int, vector<int> >::iterator iter = nodetoparentele_.begin(); iter!= nodetoparentele_.end();
+//       iter++)
+//   {
+//     cout << "ngid " <<  iter->first << endl;
+//     vector<int> fff= iter->second;
+//     for (int u=0;u<fff.size();++u)
+//       cout << fff.at(u);
+//     cout << endl;
+//   }
+//   for(std::map<int, std::vector< std::vector< int > > >::iterator iter = parenteletondsset_.begin(); iter!= parenteletondsset_.end();
+//       iter++)
+//   {
+//     cout << "elegid " << iter->first << endl;
+//     cout << "size nds " << iter->second.size() << endl;
+//     for (int s=0; s < iter->second.size(); ++s)
 //     {
-//       const DRT::Node* actnode = bgdis->lColNode(i);
+//       const std::vector<int> & nds = iter->second[s];
+//       for (int ttt=0; ttt<nds.size(); ++ttt)
+//         cout << nds.at(ttt) << " " ;
+//       cout << endl;
+//     }
+//   }
+//    for (int i=0; i<bgdis->NumMyColNodes(); ++i)
+//    {
+//        const DRT::Node* actnode = bgdis->lColNode(i);
 //       map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
 //       map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
 //       map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
@@ -175,8 +238,16 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
     {
       int numsets = bgdis->NumDof(bgnode)/4;
       vector<int> gdofsn = iterstn->second;
-      //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehere
+
+      //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
       //dofsets vorhanden sind
+
+      // Information
+      if (iterstn->second.size()>4)
+        cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
+
+      if (numsets > 1)
+        cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
       int offset = 0;
       for (int set=0; set<numsets; set++)
@@ -202,6 +273,9 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
              ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end()))
     {
       int numsets = bgdis->NumDof(bgnode)/4;
+
+      if( numsets > 1 )
+        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
       LINALG::Matrix<3,1> bgnodecords(true);
       bgnodecords(0,0) = bgnode->X()[0];
@@ -270,7 +344,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
         if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
             or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
         {
-          cout << "Take enriched values !!" << endl;
+          cout << RED_LIGHT <<  "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << END_COLOR<< endl;
           vector<int> gdofsn = iteren->second;
           int offset = 0;
           for (int set=0; set<numsets; set++)
@@ -288,7 +362,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
         }
         else
         {
-          cout << YELLOW_LIGHT << " Warning FFT: No patch element found for the node " << bgnode->Id() ;
+          cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
           if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterstnp != stdnodenp_.end())
             cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
           else if (iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
@@ -298,23 +372,24 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
           else if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end())
             cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
         }
-
-        //dserror("STOP");
       }
     }
     //do nothing:
-    //n: void->n+1: void, n:std->n+1:void, n:std->n+1:enriched, n:enriched->n+1:void
+    //n: void->n+1: void, n:std->n+1:void, n:enriched->n+1:void
     else if ( (iterstn == stdnoden_.end() and iteren == enrichednoden_.end()
                and iterstnp == stdnodenp_.end() and iterenp == enrichednodenp_.end() ) or
               (iterstn != stdnoden_.end() and (iterstnp == stdnodenp_.end() and iterenp == enrichednodenp_.end())) or
-              (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()) or
               (iteren != enrichednoden_.end() and (iterenp == enrichednodenp_.end() and iterstnp == stdnodenp_.end())) )
     {
+
+      if( bgdis->NumDof(bgnode) > 0 )
+        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() << endl;
       //cout << "do nothing" << bgnode->Id() << endl; ;
     }
     else
       cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
   }
+
 }//SetNewBgStatevectorAndProjectEmbToBg
 
 // -------------------------------------------------------------------

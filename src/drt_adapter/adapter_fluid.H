@@ -419,6 +419,8 @@ namespace ADAPTER {
 
     virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() = 0;
 
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
+
     /// After the fluid solve we need the forces at the FSI interface.
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() = 0;
 

@@ -47,7 +47,7 @@ namespace FSI
     virtual void SetupRHS(Epetra_Vector& f, bool firstcall);
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrixold(LINALG::BlockSparseMatrixBase& mat);
+    //void SetupSystemMatrixold(LINALG::BlockSparseMatrixBase& mat);
 
     virtual void SetupSystemMatrix();
 
@@ -63,6 +63,9 @@ namespace FSI
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+
+    // newton for xfem
+    virtual void Newton();
 
   protected:
 
@@ -136,6 +139,8 @@ namespace FSI
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 
     FLD::UTILS::FluidXFluidMapExtractor xfluidfluidsplitter_;
+
+    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
   };
 }
 

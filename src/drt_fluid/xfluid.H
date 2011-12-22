@@ -591,6 +591,7 @@ namespace FLD
     Teuchos::RCP<XFluidState> state_;
 
     int maxnumdofsets_;
+    int minnumdofsets_;
   };
 }
 
