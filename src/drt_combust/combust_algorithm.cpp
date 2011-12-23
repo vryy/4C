@@ -233,6 +233,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
         ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
     );
@@ -1294,6 +1295,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
       FluidField().ExtractInterfaceVeln(),
       Teuchos::null,
       Teuchos::null,
+      Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
     );
@@ -1319,6 +1321,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 //        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
+        Teuchos::null,
         Teuchos::null,
         Teuchos::null,
         FluidField().DofSet(),
@@ -1456,6 +1459,7 @@ void COMBUST::Algorithm::DoGfuncField()
         ManipulateFluidFieldForGfunc(FluidField().ExtractInterfaceVeln(), FluidField().DofSet()),
         Teuchos::null,
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
       );
@@ -1467,6 +1471,7 @@ void COMBUST::Algorithm::DoGfuncField()
         FluidField().ExtractInterfaceVeln(),
         Teuchos::null,
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
       );
@@ -1475,6 +1480,7 @@ void COMBUST::Algorithm::DoGfuncField()
       //ScaTraField().SetVelocityField(
       //    FluidField().ExtractInterfaceVeln(),
       //    FluidField().Hist(),
+      //    Teuchos::null,
       //    Teuchos::null,
       //    FluidField().DofSet(),
       //    FluidField().Discretization()
@@ -1516,6 +1522,7 @@ void COMBUST::Algorithm::DoGfuncField()
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
         //ComputeFlameVel(convel,FluidField().DofSet(),FluidField().GetDBCMapExtractor()->CondMap()),
+        Teuchos::null,
         Teuchos::null,
         Teuchos::null,
         FluidField().DofSet(),

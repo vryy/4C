@@ -335,6 +335,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Scaam() { return scaam_; }
   Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
+  Teuchos::RCP<Epetra_Vector> FsVel() { return fsvelaf_; }
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }

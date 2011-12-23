@@ -154,6 +154,9 @@ namespace ADAPTER {
     /// convective velocity (= velnp - grid velocity)
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel() = 0;
 
+    /// fine-scale velocity
+    virtual Teuchos::RCP<const Epetra_Vector> FsVel() = 0;
+
     //@}
 
     //! @name Misc

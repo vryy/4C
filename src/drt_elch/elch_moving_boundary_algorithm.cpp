@@ -92,6 +92,7 @@ if (not pseudotransient_)
       FluidField().Hist(),
       Teuchos::null,
       Teuchos::null,
+      Teuchos::null,
       FluidField().Discretization()
   );
 }
@@ -245,6 +246,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     ScaTraField().SetVelocityField(
         FluidField().ConvectiveVel(), // = velnp - grid velocity
         FluidField().Hist(),
+        Teuchos::null,
         Teuchos::null,
         Teuchos::null,
         FluidField().Discretization()

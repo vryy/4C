@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include <Epetra_IntSerialDenseVector.h>
 #include "../drt_lib/drt_singletondestruction.H"
 
@@ -166,7 +167,7 @@ public:
         const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
-        const bool                            turbmodel, ///< flag for turbulence model
+        const enum INPAR::FLUID::TurbModelAction turbmodel, ///< flag for turbulence action
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
         const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -236,7 +237,7 @@ public:
         const double                          timefac,
         const enum INPAR::SCATRA::AssgdType   whichassgd,
         const bool                            assgd,
-        const bool                            turbmodel,
+        const enum INPAR::FLUID::TurbModelAction turbmodel,
         const double                          Cs,
         const double                          tpn,
         const double                          vol,
@@ -571,7 +572,7 @@ public:
         const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
-        const bool                            turbmodel, ///< turbulence model flag
+        const enum INPAR::FLUID::TurbModelAction turbmodel, ///< turbulence model action
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
         const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -733,6 +734,9 @@ public:
     vector<LINALG::Matrix<nen_,1> > ephiam_;
     //! history vector of transported scalars
     vector<LINALG::Matrix<nen_,1> > ehist_;
+    //! nodal fine-scale velocity values at t_(n+1) or t_(n+alpha_F)
+    //! required for fine-scale subgrid diffusivity of type smagorinsky_small and multifractal subgrid scales
+    LINALG::Matrix<nsd_,nen_> efsvel_;
 
 
     LINALG::Matrix<nsd_,1> grad_phi_0;
@@ -792,6 +796,8 @@ public:
     LINALG::Matrix<numderiv2_,nen_> derxy2_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::Matrix<nsd_,nsd_> vderxy_;
+    //! global fine-scale velocity derivatives in gausspoint w.r.t x,y,z
+    LINALG::Matrix<nsd_,nsd_> fsvderxy_;
     //! rhs force in Gauss point
     vector<double> rhs_;
     //! rhs of temperature equation in case of reactive equation system

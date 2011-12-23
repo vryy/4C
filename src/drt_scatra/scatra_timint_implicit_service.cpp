@@ -1621,7 +1621,14 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       eleparams.set("incremental solver",true); // say yes and you get the residual!!
       eleparams.set<int>("form of convective term",convform_);
       eleparams.set<int>("fs subgrid diffusivity",fssgd_);
-      eleparams.set("turbulence model",turbmodel_);
+      //eleparams.set("turbulence model",turbmodel_);
+      // set general parameters for turbulent flow
+      eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+      // set model-dependent parameters
+      eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+      // and set parameters for multifractal subgrid-scale modeling
+      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+        eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
       eleparams.set("frt",frt_);
 
       // provide velocity field and potentially acceleration/pressure field
@@ -1629,6 +1636,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
       AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
       AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+      // and provide fine-scale velocity for multifractal subgrid-scale modeling only
+      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+        AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
       //provide displacement field in case of ALE
       eleparams.set("isale",isale_);
@@ -1640,6 +1650,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // clear state
       discret_->ClearState();
+
+      // AVM3 separation for incremental solver: get fine-scale part of scalar
+      if (incremental_ and
+          (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
+       AVM3Separation();
 
       // we have to perform some dirty action here...
       bool incremental_old = incremental_;

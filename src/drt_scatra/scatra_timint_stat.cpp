@@ -43,6 +43,8 @@ SCATRA::TimIntStationary::TimIntStationary(
   // fine-scale vector
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (turbmodel_ != INPAR::FLUID::no_model)
+    dserror("Turbulence is not stationary problem!");
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   ElectrodeKineticsTimeUpdate(true);

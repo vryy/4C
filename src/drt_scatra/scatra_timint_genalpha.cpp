@@ -62,7 +62,7 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   genalphafac_ = gamma_/alphaM_;
 
   // fine-scale vector at time n+alpha_F
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)

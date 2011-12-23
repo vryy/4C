@@ -92,6 +92,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+    virtual Teuchos::RCP<const Epetra_Vector> FsVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap(unsigned nds);
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();

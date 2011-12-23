@@ -127,6 +127,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
         FluidField().Accam(),
         FluidField().Velaf(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().Discretization());
   }
   else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
@@ -136,6 +137,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
         FluidField().Accam(),
         FluidField().Velaf(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().Discretization());;
   }
   else
@@ -144,6 +146,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
       FluidField().Velnp(),
         FluidField().Hist(),
         FluidField().Velnp(),
+        Teuchos::null,
         Teuchos::null,
         FluidField().Discretization()
     );

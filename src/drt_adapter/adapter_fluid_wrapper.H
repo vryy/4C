@@ -52,6 +52,8 @@ namespace ADAPTER
     { return fluid_->Dispnp(); }
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel()
     { return fluid_->ConvectiveVel(); }
+    virtual Teuchos::RCP<const Epetra_Vector> FsVel()
+        { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return fluid_->DofRowMap(); }
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)

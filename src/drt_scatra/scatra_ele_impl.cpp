@@ -41,6 +41,8 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include "scatra_reinit_defines.H" // schott
 
 //#define VISUALIZE_ELEMENT_DATA
@@ -404,7 +406,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set thermodynamic pressure and its time derivative as well as
     // flag for turbulence model if required
-    bool turbmodel = false;
+    INPAR::FLUID::TurbModelAction turbmodel = INPAR::FLUID::no_model;
+    ParameterList& sgvisclist = params.sublist("SUBGRID VISCOSITY");
+    ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
     if (scatratype == INPAR::SCATRA::scatratype_loma)
     {
       thermpressnp_ = params.get<double>("thermodynamic pressure");
@@ -413,7 +417,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
       // set flag for turbulence model
-      turbmodel = params.get<bool>("turbulence model");
+      if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+        turbmodel = INPAR::FLUID::smagorinsky;
+      if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+        turbmodel = INPAR::FLUID::multifractal_subgrid_scales;
     }
 
     // set flag for conservative form
@@ -495,15 +502,13 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // check for solver type
       if (is_incremental_) dserror("Artificial fine-scale subgrid-diffusivity approach only in combination with non-incremental solver so far!");
     }
-    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all)
+    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all or whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     {
       fssgd = true;
 
       // check for solver type
-      if (not is_incremental_) dserror("Fine-scale subgrid-diffusivity approach using all-scale Smagorinsky model only in combination with incremental solver so far!");
+      if (not is_incremental_) dserror("Fine-scale subgrid-diffusivity approach using all/small-scale Smagorinsky model only in combination with incremental solver so far!");
     }
-    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
-      dserror("Fine-scale subgrid-diffusivity approach using fine-scale Smagorinsky model not available so far!");
 
     // check for combination of all-scale and fine-scale subgrid diffusivity
     if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
@@ -651,17 +656,30 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       emagnetnp_.Clear();
     }
 
+    // parameters for subgrid-diffusivity models
     double Cs(0.0);
     double tpn(1.0);
+    // parameters for multifractal subgrid-scale modeling
     // get subgrid-diffusivity vector if turbulence model is used
-    if (turbmodel or (is_incremental_ and fssgd))
+    double Csgs_sgvel = 0.0;
+    double alpha = 0.0;
+    bool calc_N = true;
+    double N_vel = 1.0;
+    INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
+    INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
+    double c_nu = 1.0;
+    bool nwl = false;
+    bool beta = 0.0;
+    if (turbmodel!=INPAR::FLUID::no_model or (is_incremental_ and fssgd))
     {
       // get Smagorinsky constant and turbulent Prandtl number
-      Cs  = params.get<double>("Smagorinsky constant");
-      tpn = params.get<double>("turbulent Prandtl number");
+      Cs  = sgvisclist.get<double>("C_SMAGORINSKY");
+      tpn = sgvisclist.get<double>("C_TURBPRANDTL");
 
-      if (is_incremental_ and fssgd)
+      // get fine-scale values
+      if ((is_incremental_ and fssgd) or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
       {
+        // get fine scale scalar field
         RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
         if (gfsphinp==null) dserror("Cannot get state vector 'fsphinp'");
 
@@ -676,6 +694,44 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
             fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
           }
         }
+
+        // get fine-scale velocity at nodes
+        const RCP<Epetra_MultiVector> fsvelocity = params.get< RCP<Epetra_MultiVector> >("fine-scale velocity field",null);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+      }
+
+      // get model parameters
+      if (turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      {
+        Csgs_sgvel = mfslist.get<double>("CSGS");
+        if (mfslist.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+         alpha = 3.0;
+        else dserror("Scale-Separtion method not supported!");
+        calc_N = DRT::INPUT::IntegralValue<int>(mfslist,"CALC_N");
+        N_vel = mfslist.get<double>("N");
+        if (mfslist.get<string>("REF_VELOCITY") == "strainrate")
+         refvel = INPAR::FLUID::strainrate;
+        else if (mfslist.get<string>("REF_VELOCITY") == "resolved")
+         refvel = INPAR::FLUID::resolved;
+        else if (mfslist.get<string>("REF_VELOCITY") == "fine_scale")
+         refvel = INPAR::FLUID::fine_scale;
+        else
+         dserror("Unknown velocity!");
+        if (mfslist.get<string>("REF_LENGTH") == "cube_edge")
+         reflength = INPAR::FLUID::cube_edge;
+        else if (mfslist.get<string>("REF_LENGTH") == "sphere_diameter")
+         reflength = INPAR::FLUID::sphere_diameter;
+        else if (mfslist.get<string>("REF_LENGTH") == "streamlength")
+         reflength = INPAR::FLUID::streamlength;
+        else if (mfslist.get<string>("REF_LENGTH") == "gradient_based")
+         reflength = INPAR::FLUID::gradient_based;
+        else if (mfslist.get<string>("REF_LENGTH") == "metric_tensor")
+         reflength = INPAR::FLUID::metric_tensor;
+        else
+         dserror("Unknown length!");
+        c_nu = mfslist.get<double>("C_NU");
+        nwl = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT");
+        beta = mfslist.get<double>("BETA");
       }
     }
 
@@ -1568,7 +1624,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
   const bool                            assgd, ///< all-scale subgrid-diff. flag
   const bool                            fssgd, ///< fine-scale subgrid-diff. flag
-  const bool                            turbmodel, ///< turbulence model flag
+  const enum INPAR::FLUID::TurbModelAction turbmodel, ///< turbulence model action
   const double                          Cs, ///< Smagorinsky constant
   const double                          tpn, ///< turbulent Prandtl number
   const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -1636,7 +1692,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     {
       // calculation of all-scale subgrid diffusivity (artificial or due to
       // constant-coefficient Smagorinsky model) at element center
-      if (assgd or turbmodel)
+      if (assgd or turbmodel == INPAR::FLUID::smagorinsky)
         CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
@@ -1730,7 +1786,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
-          if (assgd or turbmodel)
+          if (assgd or turbmodel == INPAR::FLUID::smagorinsky)
             CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
 
           // calculation of fine-scale artificial subgrid diffusivity
@@ -1824,7 +1880,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
-          if (assgd or turbmodel)
+          if (assgd or turbmodel == INPAR::FLUID::smagorinsky)
             CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
 
           // calculation of fine-scale artificial subgrid diffusivity
@@ -2687,7 +2743,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
   const double                          timefac,
   const enum INPAR::SCATRA::AssgdType   whichassgd,
   const bool                            assgd,
-  const bool                            turbmodel,
+  const enum INPAR::FLUID::TurbModelAction turbmodel,
   const double                          Cs,
   const double                          tpn,
   const double                          vol,
@@ -2825,7 +2881,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
   }
   // all-scale subgrid diffusivity due to Smagorinsky model divided by
   // turbulent Prandtl number
-  else if (turbmodel)
+  else if (turbmodel == INPAR::FLUID::smagorinsky)
   {
     //
     // SMAGORINSKY MODEL
@@ -2921,30 +2977,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
   //----------------------------------------------------------------------
   else
   {
-    //if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all)
-    //{
-    //
-    // ALL-SCALE SMAGORINSKY MODEL
-    // ---------------------------
-    //                                      +-                                 -+ 1
-    //                                  2   |          / h \           / h \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent                     |          \   / ij        \   / ij |
-    //                                      +-                                 -+
-    //                                      |                                   |
-    //                                      +-----------------------------------+
-    //                                            'resolved' rate of strain
-    //
+    if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all)
+    {
+      //
+      // ALL-SCALE SMAGORINSKY MODEL
+      // ---------------------------
+      //                                      +-                                 -+ 1
+      //                                  2   |          / h \           / h \    | -
+      //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+      //        turbulent                     |          \   / ij        \   / ij |
+      //                                      +-                                 -+
+      //                                      |                                   |
+      //                                      +-----------------------------------+
+      //                                            'resolved' rate of strain
+      //
 
-    // compute (all-scale) rate of strain
-    double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelnp_,derxy_,vderxy_);
+      // compute (all-scale) rate of strain
+      double rateofstrain = -1.0e30;
+      rateofstrain = GetStrainRate(evelnp_,derxy_,vderxy_);
 
-    // subgrid diffusivity = subgrid viscosity / turbulent Prandtl number
-    sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * rateofstrain / tpn;
-    /*}
-      else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
-      {
+      // subgrid diffusivity = subgrid viscosity / turbulent Prandtl number
+      sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * rateofstrain / tpn;
+    }
+    else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+    {
       //
       // FINE-SCALE SMAGORINSKY MODEL
       // ----------------------------
@@ -2955,15 +3011,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
       //                                      +-                                 -+
       //                                      |                                   |
       //                                      +-----------------------------------+
-      //                                            'resolved' rate of strain
+      //                                           'fine-scale' rate of strain
       //
 
       // fine-scale rate of strain
       double fsrateofstrain = -1.0e30;
-      fsrateofstrain = GetStrainRate(fsevelnp_,derxy_,fsvderxy_);
+      fsrateofstrain = GetStrainRate(efsvel_,derxy_,fsvderxy_);
 
-      sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * fsrateofstrain;
-      }*/
+      // subgrid diffusivity = subgrid viscosity / turbulent Prandtl number
+      sgdiff_[k] = densnp_[k] * Cs * Cs * h * h * fsrateofstrain / tpn;
+      }
 
     // compute gradient of fine-scale part of scalar value
     fsgradphi_.Multiply(derxy_,fsphinp_[k]);
@@ -6521,7 +6578,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
   const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
   const bool                            assgd,
   const bool                            fssgd,
-  const bool                            turbmodel,
+  const enum INPAR::FLUID::TurbModelAction turbmodel,
   const double                          Cs,
   const double                          tpn,
   const double                          frt,
@@ -7465,23 +7522,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
       erhs[fvi] -= vrhs*funct_(vi);
     }
   }
-
-//	//----------------------------------------------------------------
-//	// fine-scale subgrid-diffusivity term on right hand side
-//	//----------------------------------------------------------------
-//	if (is_incremental_ and fssgd)
-//	{
-//		cout << "check the gssgd case for reinitialization" << endl;
-////	  vrhs = rhsfac*sgdiff_[dofindex];
-////	  for (int vi=0; vi<nen_; ++vi)
-////	  {
-////	    const int fvi = vi*numdofpernode_+dofindex;
-////
-////	    double laplawf(0.0);
-////	    GetLaplacianWeakFormRHS(laplawf,derxy_,fsgradphi_,vi);
-////	    erhs[fvi] -= vrhs*laplawf;
-////	  }
-//	}
 
   return;
 } //ScaTraImpl::CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION

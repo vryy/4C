@@ -92,8 +92,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   isale_    (extraparams_->get<bool>("isale")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
-  reinitaction_(INPAR::SCATRA::reinitaction_none),
-  masscalc_    (INPAR::SCATRA::masscalc_none),
   reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false)),
   stepmax_  (params_->get<int>("NUMSTEP")),
   maxtime_  (params_->get<double>("MAXTIME")),
@@ -112,7 +110,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
   fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   frt_      (0.0),
-  tpn_      (1.0),
   errfile_  (extraparams_->get<FILE*>("err file")),
   initialvelset_(false),
   lastfluxoutputstep_(-1),
@@ -216,12 +213,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
-//  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-//  {
-//    reinitaction_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSETDONOTUSE"),"REINITIALIZATION");
-//    masscalc_     = DRT::INPUT::IntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSETDONOTUSE"),"MASSCALCULATION");
-//  }
-
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
   {
@@ -271,7 +262,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // in standard case, but do not save the graph if fine-scale subgrid
     // diffusivity is used in non-incremental case
     if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    {
+      // this is a very special case
+      // only fssugrdiff_artificial is allowed in combination with non-incremental
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    }
     else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
   }
 
@@ -362,8 +357,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // get fluid turbulence sublist
-  ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE PARAMETERS"));
-  ParameterList * sgviscparams =&(extraparams_->sublist("SUBGRID VISCOSITY"));
+  ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
 
   // parameters for statistical evaluation of normal fluxes
   samstart_  = turbparams->get<int>("SAMPLING_START");
@@ -404,11 +398,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
   // -------------------------------------------------------------------
   // necessary only for AVM3 approach:
-  // initialize subgrid-diffusivity matrix + respective ouptput
+  // initialize subgrid-diffusivity matrix + respective output
   // -------------------------------------------------------------------
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
   {
     sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+
+    // fine-scale velocities (always three velocity components per node)
+    // transferred from the fluid field
+    fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
     // Output
     if (myrank_ == 0)
@@ -422,37 +420,54 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // get turbulence model and parameters for low-Mach-number case
   // -------------------------------------------------------------------
-  turbmodel_ = false;
+  turbmodel_ = INPAR::FLUID::no_model;
   if (scatratype_==INPAR::SCATRA::scatratype_loma)
   {
-    // potential turbulence model
-    if (turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
-      turbmodel_ = true;
+    // set turbulence model
+    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+    {
+      turbmodel_ = INPAR::FLUID::smagorinsky;
+
+      // Output
+      if (turbmodel_ and myrank_ == 0)
+      {
+        cout << "All-scale subgrid-diffusivity model: ";
+        cout << turbparams->get<string>("PHYSICAL_MODEL");
+        cout << &endl << &endl;
+      }
+    }
+    else if (turbparams->get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+    {
+      turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+
+      // fine-scale velocities (always three velocity components per node)
+      // transferred from the fluid field
+      fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+      ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+      if (mfsparams->get<string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
+       dserror("Only scale separation by plain algebraic multigrid available in scatra!");
+
+      // Output
+      if (turbmodel_ and myrank_ == 0)
+      {
+        cout << "Multifractal subgrid-scale model: ";
+        cout << turbparams->get<string>("PHYSICAL_MODEL");
+        cout << &endl << &endl;
+      }
+    }
 
     // warning No. 1: if classical (all-scale) turbulence model other than
-    // constant-coefficient Smagorinsky is intended to be used
-    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky_with_van_Driest_damping" or
-        turbparams->get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
-      dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model currently possible!");
+    // constant-coefficient Smagorinsky or multifractal subrgid-scale modeling
+    // is intended to be used
+    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky" or
+        turbparams->get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+      dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model and multifractal subrgid-scale modeling currently possible!");
 
     // warning No. 2: if classical (all-scale) turbulence model and fine-scale
     // subgrid-viscosity approach are intended to be used simultaneously
-    if (turbmodel_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
-      dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
-
-    // Smagorinsky constant
-    Cs_ = sgviscparams->get<double>("C_SMAGORINSKY",0.0);
-
-    // turbulent Prandtl number
-    tpn_ = sgviscparams->get<double>("C_TURBPRANDTL",1.0);
-
-    // Output
-    if (turbmodel_ and myrank_ == 0)
-    {
-      cout << "All-scale subgrid-diffusivity model: ";
-      cout << turbparams->get<string>("PHYSICAL_MODEL");
-      cout << &endl << &endl;
-    }
+    if (turbmodel_==INPAR::FLUID::smagorinsky and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+      dserror("No combination of classical turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
   }
 
   // -------------------------------------------------------------------
@@ -692,7 +707,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
-  if (step_==1 and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Preparation();
+  if (step_==1 and
+      (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
+     AVM3Preparation();
 
   // -------------------------------------------------------------------
   // compute values at intermediate time steps (only for gen.-alpha)
@@ -1359,7 +1376,9 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     // in standard case, but do not save the graph if fine-scale subgrid
     // diffusivity is used in non-incremental case
     if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+         //sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+         // cf constructor
+         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
     else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
   }
 
@@ -1431,6 +1450,12 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     oldMulti = vel_;
     vel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *vel_);
+  }
+  if (fsvel_ != Teuchos::null)
+  {
+    oldMulti = fsvel_;
+    fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *fsvel_);
   }
 
   // acceleration and pressure required for computation of subgrid-scale
@@ -1603,13 +1628,13 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
        or timealgo_ == INPAR::SCATRA::timeint_tg4_leapfrog
        or timealgo_ == INPAR::SCATRA::timeint_tg4_onestep)
   {
-	  // taylor galerkin transport of levelset
-	  eleparams.set("action","levelset_TaylorGalerkin");
+    // taylor galerkin transport of levelset
+    eleparams.set("action","levelset_TaylorGalerkin");
   }
   else
   {
-	  // standard case
-	  eleparams.set("action","calc_condif_systemmat_and_residual");
+    // standard case
+    eleparams.set("action","calc_condif_systemmat_and_residual");
   }
 
   // DO THIS AT VERY FIRST!!!
@@ -1630,9 +1655,13 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set("incremental solver",incremental_);
   eleparams.set<int>("form of convective term",convform_);
   eleparams.set<int>("fs subgrid diffusivity",fssgd_);
-  eleparams.set("turbulence model",turbmodel_);
-  eleparams.set("Smagorinsky constant",Cs_);
-  eleparams.set("turbulent Prandtl number",tpn_);
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+  // and set parameters for multifractal subgrid-scale modeling
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+    eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
   eleparams.set("frt",frt_);// ELCH specific factor F/RT
 
   // provide velocity field and potentially acceleration/pressure field
@@ -1641,6 +1670,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
   AddMultiVectorToParameterList(eleparams,"magnetic field",magneticfield_);
+  // and provide fine-scale velocity for multifractal subgrid-scale modeling only
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1656,7 +1688,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->ClearState();
 
   // AVM3 separation for incremental solver: get fine-scale part of scalar
-  if (incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Separation();
+  if (incremental_ and
+      (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
+   AVM3Separation();
 
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
@@ -1875,13 +1909,14 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 
 /*----------------------------------------------------------------------*
- | set convective velocity field (+ pressure and acceleration field     |
- | if required)                                               gjb 05/09 |
+ | set convective velocity field (+ pressure and acceleration field as  |
+ | well as fine-scale velocity field if required)             gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
 Teuchos::RCP<const Epetra_Vector> confluidvel,
 Teuchos::RCP<const Epetra_Vector> fluidacc,
 Teuchos::RCP<const Epetra_Vector> fluidvel,
+Teuchos::RCP<const Epetra_Vector> fluidfsvel,
 Teuchos::RCP<const DRT::DofSet> dofset,
 Teuchos::RCP<DRT::Discretization> fluiddis)
 {
@@ -1905,6 +1940,14 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   // boolean indicating whether acceleration vector exists
   // -> if yes, subgrid-scale velocity may need to be computed on element level
   bool sgvelswitch = (fluidacc != Teuchos::null);
+
+  // boolean indicating whether fine-scale velocity vector exists
+  // -> if yes, multifractal subgrid-scale modeling is applied
+  bool fsvelswitch = (fluidfsvel != Teuchos::null);
+  // some thing went wrong if we want to use multifractal subgrid-scale modeling
+  // and have not got the fine-scale velocity
+  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and not fsvelswitch)
+    dserror("Fine-scale velocity expected for multifractal subgrid-scale modeling!");
 
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -1986,6 +2029,21 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
         // insert acceleration value into node-based vector
         accpre_->ReplaceMyValue(lnodeid, index, acceleration);
         if (err!=0) dserror("error while inserting a value into accpre_");
+      }
+
+      // finally, we transfer the fine-scale velocity if required
+      if (fsvelswitch)
+      {
+        // get value of corresponding fine-scale velocity component
+        double fsvelocity = (*fluidfsvel)[flid];
+        if (havetorotate)
+        {
+          // this is the desired component of the rotated vector field
+          fsvelocity = FLD::GetComponentOfRotatedVectorField(index,fluidfsvel,flid,rotangle);
+        }
+        // insert fine-scale velocity value into node-based vector
+        err = fsvel_->ReplaceMyValue(lnodeid, index, fsvelocity);
+        if (err!=0) dserror("error while inserting a value into fsvel_");
       }
     }
 
@@ -2144,7 +2202,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       int err = 0;
 
       // random noise is relative to difference of max-min values of initial profile
-      double perc = extraparams_->sublist("TURBULENCE PARAMETERS").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      double perc = extraparams_->sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
       // out to screen
       if (myrank_==0)

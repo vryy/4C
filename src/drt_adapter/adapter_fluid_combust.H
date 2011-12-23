@@ -182,6 +182,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Scaam() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+    virtual Teuchos::RCP<const Epetra_Vector> FsVel(){ dserror("not implemented"); return Teuchos::null; };
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);

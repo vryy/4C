@@ -188,6 +188,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::ConvectiveVel()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::FsVel()
+{
+  return fluid_.FsVel();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidImpl::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();

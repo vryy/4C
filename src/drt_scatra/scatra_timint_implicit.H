@@ -41,6 +41,7 @@ Maintainer: Georg Bauer
 #include <Epetra_CrsGraph.h>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 
 //forward declarations
@@ -194,6 +195,7 @@ public:
       Teuchos::RCP<const Epetra_Vector> confluidvel, ///< convective fluid velocity/press. vector
       Teuchos::RCP<const Epetra_Vector> fluidacc, ///< fluid acceleration vector
       Teuchos::RCP<const Epetra_Vector> fluidvel,  ///< fluid velocity vector
+      Teuchos::RCP<const Epetra_Vector> fluidfsvel, ///< fluid fine-scale velocity vector
       Teuchos::RCP<const DRT::DofSet> dofset,
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
@@ -652,13 +654,6 @@ protected:
   /// flag for type of scalar transport problem
   INPAR::SCATRA::ScaTraType scatratype_;
 
-  /// flag controlling level set reinitialization strategy
-  INPAR::SCATRA::ReinitializationAction reinitaction_;
-
-  /// flag controlling level set mass calculation strategy
-  INPAR::SCATRA::MassCalculation masscalc_;
-
-
   /// boolian if scatra object is used for level set reinitialization
   bool reinitswitch_;
 
@@ -727,12 +722,8 @@ protected:
   /// ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;
 
-  /// LOMA-specific parameter: flag for turbulence model
-  bool turbmodel_;
-
-  /// LOMA-specific parameters: Smagorinsky constant and turbulent Prandtl number
-  double Cs_;
-  double tpn_;
+  /// LOMA-specific parameter: turbulence model
+  enum INPAR::FLUID::TurbModelAction turbmodel_;
 
   /// LOMA-specific parameter: thermodynamic pressure at n+1 and n
   double thermpressnp_;
@@ -788,6 +779,9 @@ protected:
 
   /// convective velocity
   RCP<Epetra_MultiVector>    convel_;
+
+  /// subgrid-scale velocity required for multifractal subgrid-scale modeling
+  RCP<Epetra_MultiVector>    fsvel_;
 
   /// acceleration and pressure required for computation of subgrid-scale velocity
   RCP<Epetra_MultiVector>    accpre_;

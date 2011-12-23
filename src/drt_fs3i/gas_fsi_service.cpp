@@ -157,6 +157,7 @@ void FS3I::GasFSI::SetVelocityFields()
                                            Teuchos::null,
                                            vel[i],
                                            Teuchos::null,
+                                           Teuchos::null,
                                            discret[i]);
   }
 }

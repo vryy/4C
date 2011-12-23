@@ -62,7 +62,7 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   }
 
   // fine-scale vector at time n+1
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)

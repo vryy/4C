@@ -55,9 +55,10 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Accam() {dserror("not implemented"); return null;}
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Scaam() { dserror("not implemented"); return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Vector> Hist(){dserror("not implemented"); return null;}
+    virtual Teuchos::RCP<const Epetra_Vector> Hist(){ dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+    virtual Teuchos::RCP<const Epetra_Vector> FsVel(){ dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap(unsigned nds) { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() { return fluid_.SystemMatrix(); }
