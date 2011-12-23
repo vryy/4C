@@ -1107,7 +1107,10 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
   // clean up
   nurbsdis      ->ClearState();
-  scatranurbsdis->ClearState();
+  if (scatranurbsdis != NULL)
+  {
+    scatranurbsdis->ClearState();
+  }
 
   // communicate results among processors
   int size=countpoints.size();
