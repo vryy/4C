@@ -1240,21 +1240,16 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 {
-  if (discret_ != Teuchos::null)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    ResetFluidAvgVectors(*dofrowmap);
-  }
-
-  if (standarddofset_ != Teuchos::null)
+  if (standarddofset_ != Teuchos::null) // XFEM case
   {
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     ResetFluidAvgVectors(*dofrowmap);
   }
-
-  if ( (discret_ == Teuchos::null and standarddofset_ == Teuchos::null) or
-       (discret_ != Teuchos::null and standarddofset_ != Teuchos::null) )
-    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+  else // standard fluid case
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    ResetFluidAvgVectors(*dofrowmap);
+  }
 
   if(withscatra_)
   {
