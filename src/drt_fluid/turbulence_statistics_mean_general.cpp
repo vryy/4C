@@ -39,6 +39,9 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   velpressplitter_(velpressplitter),
   withscatra_     (withscatra)
 {
+  if (discret_ == Teuchos::null)
+    dserror("valid discretization expected");
+
   // get directions to do spatial averaging
   homdir_.clear();
 
@@ -90,12 +93,15 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   const bool                        withscatra
   )
   :
-  discret_        (Teuchos::null),
+  discret_        (discret),
   standarddofset_ (standarddofset),
   density_        (density),
   velpressplitter_(velpressplitter),
   withscatra_     (withscatra)
 {
+  if (discret_ == Teuchos::null and standarddofset_ == Teuchos::null)
+    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+
   // get directions to do spatial averaging
   homdir_.clear();
 
@@ -1151,9 +1157,7 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   AddToTotalTimeAverage();
 
-  // don't ask the fluid discretization 'discret_' for its communicator, since it could be
-  // Teuchos::null (for XFEM problems); use the scatra discretization instead
-  if(scatradis_->Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     cout << "XXXXXXXXXXXXXXXXXXXXX              ";
     cout << " Wrote averaged vector             ";
@@ -1184,21 +1188,16 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 {
-  if (discret_ != Teuchos::null)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    TimeResetFluidAvgVectors(*dofrowmap);
-  }
-
-  if (standarddofset_ != Teuchos::null)
+  if (standarddofset_ != Teuchos::null) // XFEM case
   {
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     TimeResetFluidAvgVectors(*dofrowmap);
   }
-
-  if ( (discret_ == Teuchos::null and standarddofset_ == Teuchos::null) or
-       (discret_ != Teuchos::null and standarddofset_ != Teuchos::null) )
-    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+  else // standard fluid case
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    TimeResetFluidAvgVectors(*dofrowmap);
+  }
 
   if(withscatra_)
   {
