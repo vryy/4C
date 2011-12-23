@@ -118,9 +118,10 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
         vector<int> gdofs = bgdis->Dof(node);
         enrichednodenp_[gid] = gdofs;
       }
-      else if (pos==GEO::CUT::Point::oncutsurface and bgdis->NumDof(node) == 0)
+      else if (pos==GEO::CUT::Point::oncutsurface and  bgdis->NumDof(node) != 0)
       {
-        cout << " oncutsurface " << node->Id() << endl;
+        vector<int> gdofs = bgdis->Dof(node);
+        stdnodenp_[gid] = gdofs;
       }
       else
       {
@@ -383,7 +384,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
     {
 
       if( bgdis->NumDof(bgnode) > 0 )
-        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() << endl;
+        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  END_COLOR<< endl;
       //cout << "do nothing" << bgnode->Id() << endl; ;
     }
     else
