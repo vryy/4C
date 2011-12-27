@@ -520,11 +520,11 @@ void SysmatDomainNitsche(
           instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
-      COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
-          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
-          instationary, genalpha, newton, pstab, supg, cstab,
-          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+      //COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+      //    assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+      //    gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+      //    instationary, genalpha, newton, pstab, supg, cstab,
+      //    tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
     } // end loop over gauss points
   } // end loop over integration cells
