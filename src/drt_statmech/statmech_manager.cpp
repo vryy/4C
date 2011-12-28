@@ -3138,7 +3138,7 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
   CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
   CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
 
-  /*/ this section creates crosslinker finite elements
+  // this section creates crosslinker finite elements
   // Commented because of performance issues  when adding a large number of elements at once.
   // 2. Now, parallely search for neighbour nodes
   RCP<Epetra_MultiVector> neighbourslid;
@@ -3328,7 +3328,7 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
   {
     beamcmanager->ContactDiscret().CheckFilledGlobally();
     beamcmanager->ContactDiscret().FillComplete(true, false, false);
-  }*/
+  }
 
   //Gmsh output
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
@@ -3339,8 +3339,13 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
   }
   //couts
   if(!discret_.Comm().MyPID())
-    cout<<"\n\n"<<numsinglybound<<" initial singly-bound crosslinkers set!"<<endl;
-   // cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;
+  {
+    cout<<"====setting initial crosslinkers===="<<endl;
+    cout<<"singly bound: "<<numsinglybound-numsetelements<<endl;
+    cout<<"doubly bound: "<<numsetelements<<endl;
+    cout<<"===================================="<<endl;
+  }
+
 #endif
 #endif
   return;

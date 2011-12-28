@@ -198,11 +198,6 @@ void StatMechTime::Integrate()
        * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.*/
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
-        /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
-         * even before the first statmechmanager_->Update() call because the octree is needed to decide
-         * whether links can be set...*/
-        if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0 && i==0)
-          buildoctree = true;
         if(!discret_.Comm().MyPID())
           cout<<"====== employing beam contact ======"<<endl;
         // store integration parameter alphaf into beamcmanager_ as well
@@ -240,8 +235,14 @@ void StatMechTime::Integrate()
 
       if(i == 0)
       {
+        /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
+         * even before the first statmechmanager_->Update() call because the octree is needed to decide
+         * whether links can be set...*/
         if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+        {
+          buildoctree = true;
           statmechmanager_->SetInitialCrosslinkers(beamcmanager_);
+        }
 
         statmechmanager_->InitOutput(ndim,dt);
         if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
