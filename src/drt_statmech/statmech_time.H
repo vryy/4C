@@ -83,6 +83,9 @@ protected:
   //! \brief zero if in current time step the iterative solution of the nonlinear system of equations has not converged
   int   isconverged_;
 
+  //! \brief contact constraint norm value of the preceeding uzawa step
+  double prevcontactnorm_;
+
   //! \brief object for managing beam contact
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
 

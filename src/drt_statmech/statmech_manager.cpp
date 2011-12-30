@@ -344,7 +344,11 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
     {
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
+
       SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager);
+
+      if(beamcmanager!=Teuchos::null && rebuildoctree)
+        beamcmanager->ResetPairs();
 
       SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager);
     }
@@ -395,10 +399,10 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 #endif // #ifdef MEASURETIME
 
   return;
-  } // StatMechManager::Update()
+} // StatMechManager::Update()
 
-  void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int,LINALG::Matrix<3,1> >& currentrotations)
-  {
+void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int,LINALG::Matrix<3,1> >& currentrotations)
+{
   /*in preparation for later decision whether a crosslink should be established between two nodes (binding spots) we first store the
    * current positions of all column map nodes (column map binding spots) in the map currentpositions; additionally we store the rotational displacements
    * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
@@ -3329,6 +3333,10 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
     beamcmanager->ContactDiscret().CheckFilledGlobally();
     beamcmanager->ContactDiscret().FillComplete(true, false, false);
   }
+
+  // reduce number of contact pairs to zero again to avoid unnecessary computations
+  if(beamcmanager!=Teuchos::null)
+    beamcmanager->ResetPairs();
 
   //Gmsh output
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))

@@ -340,6 +340,8 @@ void StatMechTime::Integrate()
           //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON)
           case INPAR::CONTACT::solution_auglag:
           {
+            // initialize prevcontactnorm with some high value in order to not mess up the check within PTC
+            prevcontactnorm_ = 1e6;
             // Initialize all lmuzawa to zero at beginning of new time step
             beamcmanager_->ResetAlllmuzawa();
 
@@ -372,7 +374,11 @@ void StatMechTime::Integrate()
                 FullNewton(randomnumbers);
               // in case uzawa step did not converge, leave the inner loop and get a new set of random numbers
               if(isconverged_==0)
+              {
+                // reset pairs to size 0 since the octree is being constructed completely anew
+                beamcmanager_->ResetPairs();
               	break;
+              }
 
               // update constraint norm and penalty parameter
               beamcmanager_->UpdateConstrNorm();
@@ -1174,33 +1180,44 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  //if on convergence arises within maxiter iterations the time step is restarted with new random numbers
-  if (numiter>=maxiter || fresmnormdivergent)
+  // assume convergence of ptc convergence
+  bool ptcconverged = true;
+  // the situation might arise when a single contact pair leads to non-convergence in the uzawa loop. For now, we "overlook" this
+  double relconstrnorm = 0.0;
+  if(uzawa)
   {
+    relconstrnorm = beamcmanager_->GetConstrNorm()/prevcontactnorm_;
+    prevcontactnorm_ = beamcmanager_->GetConstrNorm();
+  }
+  //if no convergence arises within maxiter iterations the time step is restarted with new random numbers
+  if(numiter>=maxiter || fresmnormdivergent)
+  {
+    ptcconverged = false;
+    // standard procedure
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
-  	// reset pairs to size 0 since the octree is being constructed completely anew
-  	beamcmanager_->ResetPairs();
-    if(discret_.Comm().MyPID()==0 and printscreen)
+    //check for constraint norm change. If the change in the constraint is becomes minimal, this is considered to be the optimum (for now)
+    if(uzawa && relconstrnorm>=0.9)
+    {
+      ptcconverged = true;
+      isconverged_ = 1;
+      statmechmanager_->unconvergedsteps_--;
+    }
+    if(discret_.Comm().MyPID()==0 and printscreen and !ptcconverged)
     {
       std::cout<<"\n\n";
       if(uzawa)
       {
-      	std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
+        std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
       }
       else
-      	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
+        std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
     }
-     //dserror("FullNewton unconverged in %d iterations",numiter);
+    //dserror("FullNewton unconverged in %d iterations",numiter);
   }
-  else
-  {
-     if (!myrank_ and printscreen)
-     {
-       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck,crotptc);
-     }
-  }
+
+  if(ptcconverged and !myrank_ and printscreen)
+       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
 
   params_.set<int>("num iterations",numiter);
 
