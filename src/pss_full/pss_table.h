@@ -46,6 +46,9 @@ table. This table can be queried for those values quite easily.
 #define PSS_TABLE_H
 
 #include "../headers/standardtypes.h"
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -252,7 +255,7 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent);
 
 
 /* Read the control file given by name. Put its contents into the map. */
-void parse_control_file(MAP* map, const CHAR* filename);
+void parse_control_file(MAP* map, const CHAR* filename, MPI_Comm comm);
 
 
 /* Read the control file given by name. Put its contents into the map.

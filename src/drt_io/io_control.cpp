@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <time.h>
 #ifndef WIN_MUENCH
 #include <pwd.h>
+#include <Epetra_MpiComm.h>
 #endif
 
 #include <vector>
@@ -390,12 +391,28 @@ IO::InputControl::InputControl(std::string filename, const bool serial)
   name << filename << ".control";
 
   if (!serial)
-    parse_control_file(&table_, name.str().c_str());
+    parse_control_file(&table_, name.str().c_str(), MPI_COMM_WORLD);
   else
     parse_control_file_serial(&table_, name.str().c_str());
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+IO::InputControl::InputControl(std::string filename, const Epetra_Comm& comm)
+  : filename_(filename)
+{
+  std::stringstream name;
+  name << filename << ".control";
 
+  // works for parallel, as well as serial applications because we only
+  // have an Epetra_MpiComm
+  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
+  if (!&epetrampicomm)
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  const MPI_Comm lcomm = epetrampicomm.GetMpiComm();
+
+  parse_control_file(&table_, name.str().c_str(), lcomm);
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::InputControl::~InputControl()

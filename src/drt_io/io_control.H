@@ -101,6 +101,7 @@ namespace IO
   {
   public:
     InputControl(std::string filename, const bool serial=false);
+    InputControl(std::string filename, const Epetra_Comm& comm);
     ~InputControl();
 
     MAP* ControlFile() { return &table_; }

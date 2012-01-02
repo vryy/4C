@@ -1269,7 +1269,7 @@ typedef struct _PARSER_DATA {
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
+static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MPI_Comm comm)
 {
   data->tok = tok_none;
   data->lineno = 1;
@@ -1318,14 +1318,14 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
 #ifdef PARALLEL
   if (par.nprocs > 1) {
     INT err;
-    err = MPI_Bcast(&data->file_size,1,MPI_INT,0,MPI_COMM_WORLD);
+    err = MPI_Bcast(&data->file_size,1,MPI_INT,0,comm);
     if (err != 0) {
       dserror("MPI_Bcast failed: %d", err);
     }
     if (par.myrank > 0) {
       data->file_buffer = CCAMALLOC((data->file_size+1)*sizeof(CHAR));
     }
-    err = MPI_Bcast(data->file_buffer, data->file_size+1, MPI_CHAR, 0, MPI_COMM_WORLD);
+    err = MPI_Bcast(data->file_buffer, data->file_size+1, MPI_CHAR, 0, comm);
     if (err != 0) {
       dserror("MPI_Bcast failed: %d", err);
     }
@@ -1788,7 +1788,7 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-void parse_control_file(MAP* map, const CHAR* filename)
+void parse_control_file(MAP* map, const CHAR* filename, MPI_Comm comm)
 {
   PARSER_DATA data;
 
@@ -1798,7 +1798,7 @@ void parse_control_file(MAP* map, const CHAR* filename)
    * uninitialized (virgin) map. */
   init_map(map);
 
-  init_parser_data(&data, filename);
+  init_parser_data(&data, filename, comm);
   parse_definitions(&data, map);
   destroy_parser_data(&data);
 }

@@ -777,7 +777,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix)
 {
   if (genprob.restart)
-    inputcontrol_ = Teuchos::rcp(new IO::InputControl(prefix));
+    inputcontrol_ = Teuchos::rcp(new IO::InputControl(prefix, comm));
 
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm,
                                                       ProblemType(),
