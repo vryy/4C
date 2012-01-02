@@ -315,7 +315,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   if (fcold_==Teuchos::null) fcold_ = rcp(new Epetra_Vector(fres.Map()));
   
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = rcp(new LINALG::SparseMatrix(fres.Map(),100));
+  stiffc_ = rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
 
   // print current pair vector on the screen
