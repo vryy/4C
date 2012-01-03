@@ -4,6 +4,7 @@
 #include "fs3i.H"
 #include "gas_fsi.H"
 #include "biofilm_fsi.H"
+#include "aero_tfsi.H"
 #include "fs3i_dyn.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -21,7 +22,7 @@ extern struct _GENPROB     genprob;
 void fs3i_dyn()
 {
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -38,7 +39,11 @@ void fs3i_dyn()
   case prb_biofilm_fsi:
   {
     fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
-
+  }
+  break;
+  case prb_tfsi_aero:
+  {
+    fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
   }
   break;
   default:

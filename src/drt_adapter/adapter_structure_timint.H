@@ -123,6 +123,12 @@ namespace ADAPTER {
     /// Get time step size \f$\Delta t_n\f$
     virtual double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
 
+    /// Set time step size \f$\Delta t_n\f$
+    void SetTimeStepSize(double timestepsize){structure_->SetTimeStepSize(timestepsize);}
+
+    /// Set time step size \f$\Delta t_n\f$ and timen_//added gh
+    void SetInitialTimeStepAndTime(double timestepsize){structure_->SetInitialTimeStepAndTime(timestepsize);}
+
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
     virtual int GetTimeStep() const { return structure_->GetStep(); }
 

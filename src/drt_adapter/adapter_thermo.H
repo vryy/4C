@@ -147,6 +147,12 @@ namespace ADAPTER
     /// Get number of time steps
     virtual int GetTimeNumStep() const = 0;
 
+    /// Set time step size for the current step
+    virtual void SetTimeStepSize(double timestepsize) = 0;
+
+    /// Set time step size for the first step
+    virtual void SetInitialTimeStepAndTime(double timestepsize) = 0;
+
     /// Take the time and integrate (time loop)
     void Integrate();
 
@@ -183,6 +189,13 @@ namespace ADAPTER
 
     /// return thermal contact manager
     virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
+
+    /// enable communication with an external interface (e.g. tfsi) in order to apply loads
+    virtual void SetSurfaceTFSI(Teuchos::RCP<const LINALG::MapExtractor> tfsisurface) = 0;
+
+    /// apply interface loads on the thermal field
+    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
+
 
     //@}
 

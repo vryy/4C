@@ -187,6 +187,12 @@ namespace ADAPTER {
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 
+    /// set time step size
+    virtual void SetTimeStepSize(double timestepsize){dserror("not yet implemented");}
+
+    /// set time step size and time
+    virtual void SetInitialTimeStepAndTime(double timestepsize){dserror("not yet implemented");}
+
     /// update displacement and evaluate elements
     ///
     /// there are two displacement increments possible

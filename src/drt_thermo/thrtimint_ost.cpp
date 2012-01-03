@@ -147,6 +147,12 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
+  // interface forces to external forces
+  if (!is_null(tfsisurface_))
+  {
+    fextn_->Update(1.0, *fifc_, 1.0);
+  }
+
   // initialise internal forces
   fintn_->PutScalar(0.0);
   fcapn_->PutScalar(0.0);

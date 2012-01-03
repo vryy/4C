@@ -399,6 +399,7 @@ int main(
       break;
     }
     case prb_tsi:
+    case prb_tfsi_aero:
     {
       cout << "Output TSI Problem" << endl;
 

@@ -560,6 +560,12 @@ namespace STR
     //! Get time step size \f$\Delta t_n\f$
     double GetTimeStepSize() const { return (*dt_)[0]; }
 
+    //! Set time step size \f$\Delta t_n\f$
+    void SetTimeStepSize(double timestepsize) { (*dt_)[0] = timestepsize; }
+
+    //! Set time step size and time in the first step \f$\Delta t_n\f$
+    void SetInitialTimeStepAndTime(double timestepsize) { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
+
     //! Return current step number map
     int GetStep() const { return step_; }
 

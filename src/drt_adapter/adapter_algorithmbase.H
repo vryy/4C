@@ -35,6 +35,12 @@ namespace ADAPTER
     /// tests if there are more time steps to do
     bool NotFinished() { return step_ < nstep_ and time_+1e-10*dt_ < maxtime_; }
 
+    /// set time step size
+    void SetDt(double stepsize) { dt_ = stepsize; }
+
+    /// current time
+    double Time() const {return time_;}
+
   protected:
 
     /// time step size
@@ -48,9 +54,6 @@ namespace ADAPTER
 
     /// maximum simulation time
     double MaxTime() const { return maxtime_;}
-
-    /// current time
-    double Time() const {return time_;}
 
     //! @name Time loop building blocks
 

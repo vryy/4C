@@ -450,5 +450,30 @@ void ADAPTER::ThermoTimInt::PreparePartitionStep()
 }
 
 
+/*----------------------------------------------------------------------*
+ | external interface loads (heat fluxes) are applied to                |
+ | the thermo field                                         ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::ApplyInterfaceForces
+(
+  Teuchos::RCP<Epetra_Vector> ithermoload
+)
+{
+  thermo_->SetForceInterface(ithermoload);
+}
+
+
+/*----------------------------------------------------------------------*
+ | map extractor is set to communicate external loads       ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::SetSurfaceTFSI
+(
+  Teuchos::RCP<const LINALG::MapExtractor> tfsisurface  //!< the TFSI surface
+)
+{
+  thermo_->SetSurfaceTFSI(tfsisurface);
+}
+
+
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

@@ -339,8 +339,9 @@ namespace GEO
   \param elementList          element list of close elements, is looped
   \param point                point to be examined
   \param minDistCoords        Coords of the nearest point
+  \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
-  void nearest3DObjectInNode(
+  int nearest3DObjectInNode(
 	  const RCP<DRT::Discretization>              dis,
 	  map<int, RCP<DRT::Element> >&				        elements,
 	  const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,

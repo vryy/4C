@@ -709,11 +709,13 @@ void GEO::nearest2DObjectInNode(
 
 /*----------------------------------------------------------------------*
  | gives the coords of the nearest point on or in an object in  tk 01/10|
- | tree node; object is either a node, line or surface element          |
+ | tree node; object is either a node, line or surface element;         |
+ | also surface id of nearest object is returned, in case of a          |
+ | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
-void GEO::nearest3DObjectInNode(
+int GEO::nearest3DObjectInNode(
 		const RCP<DRT::Discretization>              dis,
-		map<int, RCP<DRT::Element> >& 				      elements,
+		map<int, RCP<DRT::Element> >&               elements,
 		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
 		const std::map<int, std::set<int> >&        elementList,
 		const LINALG::Matrix<3,1>&                  point,
@@ -727,6 +729,7 @@ void GEO::nearest3DObjectInNode(
 	LINALG::Matrix<3,1> normal(true);
 	LINALG::Matrix<3,1> x_surface(true);
 	std::map< int, std::set<int> > nodeList;
+	int surfid = -1;
 
 	// run over all surface elements
 	for(std::map<int, std::set<int> >::const_iterator labelIter = elementList.begin(); labelIter != elementList.end(); labelIter++)
@@ -740,6 +743,7 @@ void GEO::nearest3DObjectInNode(
 				pointFound = false;
 				min_distance = distance;
 				nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
+				surfid = element->Id();
 			}
 
 			// run over all line elements
@@ -752,6 +756,7 @@ void GEO::nearest3DObjectInNode(
 					pointFound = false;
 					min_distance = distance;
 					nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
+					surfid = element->Id();
 				}
 			}
 			// collect nodes
@@ -769,6 +774,7 @@ void GEO::nearest3DObjectInNode(
 			{
 				min_distance = distance;
 				nearestObject.setNodeObjectType(*nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
+				surfid = node->Elements()[0]->Id(); //surf id of any of the adjacent elements
 			}
 		}
 
@@ -778,7 +784,7 @@ void GEO::nearest3DObjectInNode(
 	// save projection point
 	minDistCoords = nearestObject.getPhysCoord();
 
-	return;  
+	return surfid;
 }
 
 /*----------------------------------------------------------------------*

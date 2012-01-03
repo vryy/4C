@@ -52,7 +52,8 @@ THR::TimInt::TimInt(
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
   )
-: discret_(actdis),
+: tfsisurface_(Teuchos::null),
+  discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
@@ -131,6 +132,9 @@ THR::TimInt::TimInt(
   tempn_ = LINALG::CreateVector(*dofrowmap_, true);
   // temperature rates R_{n+1} at t_{n+1}
   raten_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create empty matrices
   tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
@@ -1041,6 +1045,32 @@ void THR::TimInt::SetInitialField(
 
   return;
 } // THR::TimIntImpl::SetInitialField
+
+
+/*----------------------------------------------------------------------*
+| enable communication with external interfaces for applying loads      |
+|                                                           ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::SetSurfaceTFSI
+(
+  Teuchos::RCP<const LINALG::MapExtractor> tfsisurface
+)
+{
+  tfsisurface_ = tfsisurface;
+}
+
+
+/*----------------------------------------------------------------------*
+| apply interface loads to the thermo field                 ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::SetForceInterface
+(
+  Teuchos::RCP<Epetra_Vector> ithermoload
+)
+{
+  fifc_->PutScalar(0.0);
+  tfsisurface_->InsertCondVector(ithermoload, fifc_);
+}
 
 
 /*----------------------------------------------------------------------*

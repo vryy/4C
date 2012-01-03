@@ -347,6 +347,7 @@ void DRT::Problem::InputControl()
     genprob.numsf=0;
     break;
   case prb_tsi:
+  case prb_tfsi_aero:
   {
     genprob.numsf = 0;  /* structural field index */
     genprob.numtf = 1;  /* thermal field index */
@@ -1095,6 +1096,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_tsi:
+  case prb_tfsi_aero:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));

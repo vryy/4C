@@ -123,8 +123,24 @@ namespace ADAPTER
     /// Get number of time steps
     virtual int GetTimeNumStep() const { return thermo_->GetTimeNumStep(); }
 
+    /// Set time step size for the current step
+    virtual void SetTimeStepSize(double timestepsize){ thermo_->SetTimeStepSize(timestepsize); }
+
+    /// Set time step size for the first step
+    virtual void SetInitialTimeStepAndTime(double timestepsize){ thermo_->SetInitialTimeStepAndTime(timestepsize); }
+
     /// start new time step
     void PrepareTimeStep();
+
+    /// set the interface map extractor in the thermo field
+    void SetSurfaceTFSI(
+      Teuchos::RCP<const LINALG::MapExtractor> tfsisurface  //!< the TFSI surface
+      );
+
+    /// apply external interface loads to the thermo field
+    void ApplyInterfaceForces(
+      Teuchos::RCP<Epetra_Vector> ithermoload   ///< load due to the tfsi interface
+      );
 
     /// evaluate element with given temperature increment
     void Evaluate(

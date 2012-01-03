@@ -20,6 +20,7 @@ typedef enum _PROBLEM_TYP
                        prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
                        prb_fsi_lung,     /*  airway fsi problem with attached parenchyma balloon */
                        prb_gas_fsi,      /*  fsi with gas transport */
+                       prb_tfsi_aero,    /*  thermo fluid structure interaction problem including the aero code */
                        prb_structure,    /*  structural problem */
                        prb_struct_ale,   /*  structural problem, ale formulation */
                        prb_fluid,        /*  fluid problem */
@@ -48,7 +49,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","biofilm_fsi",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","biofilm_fsi",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
