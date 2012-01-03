@@ -239,16 +239,14 @@ void FS3I::BiofilmFSI::DoScatraStep()
 
   while (stopnonliniter==false)
   {
+    itnum++;
+
     SetMeshDisp();
     SetVelocityFields();
 
     EvaluateScatraFields();
 
     SetupCoupledScatraSystem();
-
-    stopnonliniter = AbortScatraNonlinIter(itnum);
-    if (stopnonliniter)
-      break;
 
     // transfer moving mesh data
     for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -262,9 +260,9 @@ void FS3I::BiofilmFSI::DoScatraStep()
 
 
     LinearSolveScatra();
-    FieldUpdateIter();
+    IterUpdate();
 
-    itnum++;
+    stopnonliniter = ConvergenceCheck(itnum);
   }
 
   UpdateAndOutput();

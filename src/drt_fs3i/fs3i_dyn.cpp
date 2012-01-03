@@ -4,6 +4,7 @@
 #include "fs3i.H"
 #include "gas_fsi.H"
 #include "biofilm_fsi.H"
+#include "thermo_fsi.H"
 #include "aero_tfsi.H"
 #include "fs3i_dyn.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -31,23 +32,28 @@ void fs3i_dyn()
 
   switch (genprob.probtyp)
   {
-  case prb_gas_fsi:
-  {
-    fs3i = Teuchos::rcp(new FS3I::GasFSI(comm));
-  }
-  break;
-  case prb_biofilm_fsi:
-  {
-    fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
-  }
-  break;
-  case prb_tfsi_aero:
-  {
-    fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
-  }
-  break;
-  default:
-    dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
+    case prb_gas_fsi:
+    {
+      fs3i = Teuchos::rcp(new FS3I::GasFSI(comm));
+    }
+    break;
+    case prb_biofilm_fsi:
+    {
+      fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
+    }
+    break;
+    case prb_thermo_fsi:
+    {
+      fs3i = Teuchos::rcp(new FS3I::ThermoFSI(comm));
+    }
+    break;
+    case prb_tfsi_aero:
+    {
+      fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
+    }
+    break;
+    default:
+      dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
     break;
   }
 

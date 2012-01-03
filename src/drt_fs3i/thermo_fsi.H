@@ -1,44 +1,32 @@
 #ifdef CCADISCRET
 
-#ifndef GASFSI_H
-#define GASFSI_H
+#ifndef THERMOFSI_H
+#define THERMOFSI_H
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "fs3i.H"
 
 namespace FS3I
 {
-  class GasFSI : public FS3I_Base
+  class ThermoFSI : public FS3I_Base
   {
   public:
 
-    GasFSI(const Epetra_Comm& comm);
+    ThermoFSI(const Epetra_Comm& comm);
 
-    virtual ~GasFSI(){};
+    virtual ~ThermoFSI(){};
 
     virtual void SetupSystem();
 
     virtual void Timeloop();
 
-    virtual void TestResults(const Epetra_Comm& comm);
+    virtual void TestResults(const Epetra_Comm& comm) { dserror("not implemented"); return; };
 
     void DoScatraStep();
 
-    void EvaluateScatraFields();
-
-    void SetupCoupledScatraSystem();
-
-    void SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
-                                  const Teuchos::RCP<const Epetra_Vector> vec1,
-                                  const Teuchos::RCP<const Epetra_Vector> vec2);
-
-    void SetupCoupledScatraRHS();
-
     void SetupCoupledScatraMatrix();
 
-    void LinearSolveScatra();
-
-    void CoupledScatraSolve();
+    void SetupCoupledScatraRHS();
 
     void ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector>  globalvec,
                                    Teuchos::RCP<const Epetra_Vector>& vec1,
@@ -54,7 +42,6 @@ namespace FS3I
 
   protected:
 
-
   private:
 
     /// communication (mainly for screen output)
@@ -66,6 +53,7 @@ namespace FS3I
     /// dof row map of scatra problems splitted in (field) blocks
     LINALG::MultiMapExtractor scatraglobalex_;
 
+    /// scatra block matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
@@ -81,16 +69,11 @@ namespace FS3I
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
 
-    /// consideration of surface permeability
-    bool permeablesurf_;
-
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
-    ::FSI::UTILS::MatrixRowColTransform sbbtransform_;
-    ::FSI::UTILS::MatrixRowTransform sbitransform_;
-    ::FSI::UTILS::MatrixColTransform sibtransform_;
-
-    ::FSI::UTILS::MatrixRowTransform fbitransform_;
+    FSI::UTILS::MatrixRowColTransform sbbtransform_;
+    FSI::UTILS::MatrixRowTransform sbitransform_;
+    FSI::UTILS::MatrixColTransform sibtransform_;
     ///@}
   };
 

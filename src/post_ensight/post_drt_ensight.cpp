@@ -87,6 +87,7 @@ int main(
     }
     case prb_gas_fsi:
     case prb_biofilm_fsi:
+    case prb_thermo_fsi:
     {
       string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);

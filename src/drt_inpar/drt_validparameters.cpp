@@ -585,6 +585,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("ReducedDimensionalAirWays");                   label.push_back(prb_red_airways);
     name.push_back("Gas_Fluid_Structure_Interaction");             label.push_back(prb_gas_fsi);
     name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
+    name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",

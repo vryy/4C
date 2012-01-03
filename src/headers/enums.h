@@ -20,6 +20,8 @@ typedef enum _PROBLEM_TYP
                        prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
                        prb_fsi_lung,     /*  airway fsi problem with attached parenchyma balloon */
                        prb_gas_fsi,      /*  fsi with gas transport */
+                       prb_biofilm_fsi,  /*  biofilm growth problem */
+                       prb_thermo_fsi,   /*  thermo-fluid-structure-interaction problem */
                        prb_tfsi_aero,    /*  thermo fluid structure interaction problem including the aero code */
                        prb_structure,    /*  structural problem */
                        prb_struct_ale,   /*  structural problem, ale formulation */
@@ -42,14 +44,13 @@ typedef enum _PROBLEM_TYP
                        prb_elch,         /*  electrochemical problem */
                        prb_combust,      /*  combustion problem */
                        prb_art_net,      /*  arterial network problem */ /*_1D_ARTERY_*/
-                       prb_red_airways,  /*  reduced dimensional airways */
-                       prb_biofilm_fsi   /*  biofilm growth problem */
+                       prb_red_airways  /*  reduced dimensional airways */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","biofilm_fsi",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -74,8 +75,8 @@ typedef enum _FIELDTYP
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
                        scatra,      /* scalar transport field */
-                       scatra1,      /* scalar transport field in case of multiple fields */
-                       scatra2,      /* scalar transport field in case of multiple fields */
+                       scatra1,     /* scalar transport field in case of multiple fields */
+                       scatra2,     /* scalar transport field in case of multiple fields */
                        artery,      /* artery field*/
                        thermo,      /* thermal field */
                        fluidfluidboundary,  /*fluidfluidboundary field*/
@@ -168,10 +169,10 @@ typedef enum _FLUID_DYNTYPE
 /*----------------------------------------------------------------------*/
 typedef enum _FLUID_SOLVINGSTRATEGIES
 {
-	fluid_solver_implicit=0,
-	fluid_solver_pressurecorrection=1,
-	fluid_solver_pressurecorrection_semiimplicit=2,
-    fluid_solver_fluid_xfluid
+  fluid_solver_implicit=0,
+  fluid_solver_pressurecorrection=1,
+  fluid_solver_pressurecorrection_semiimplicit=2,
+  fluid_solver_fluid_xfluid
 } FLUID_SOLVINGSTRATEGIES;
 
 /*----------------------------------------------------------------------*/

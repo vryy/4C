@@ -65,7 +65,7 @@ FS3I::GasFSI::GasFSI(const Epetra_Comm& comm)
   RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+    RCP<DRT::Discretization> fluiddis = problem->Dis(genprob.numff,0);
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
@@ -75,16 +75,16 @@ FS3I::GasFSI::GasFSI(const Epetra_Comm& comm)
   //FSI::UTILS::CreateAleDiscretization();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(1,0);
+  RefCountPtr<DRT::Discretization> fluiddis = problem->Dis(1,0);
   // access the structure discretization
-  RefCountPtr<DRT::Discretization> structdis = DRT::Problem::Instance()->Dis(0,0);
+  RefCountPtr<DRT::Discretization> structdis = problem->Dis(0,0);
   // access the fluid scatra discretization
-  RefCountPtr<DRT::Discretization> fluidscatradis = DRT::Problem::Instance()->Dis(3,0);
+  RefCountPtr<DRT::Discretization> fluidscatradis = problem->Dis(3,0);
   // access the fluid structure discretization
-  RefCountPtr<DRT::Discretization> structscatradis = DRT::Problem::Instance()->Dis(3,1);
+  RefCountPtr<DRT::Discretization> structscatradis = problem->Dis(3,1);
 
   // get material map for the transport elements
-  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = DRT::Problem::Instance()->ClonedMaterialMap();
+  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
   if (clonefieldmatmap.size() < 2)
     dserror("at least 2 matlists needed for lung gas exchange");
 
@@ -178,17 +178,17 @@ FS3I::GasFSI::GasFSI(const Epetra_Comm& comm)
   }
 
   // access the problem-specific parameter lists
-  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  const Teuchos::ParameterList& structdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
 
   permeablesurf_ = DRT::INPUT::IntegralValue<int>(scatradyn,"PERMEABLESURF");
 
   // create one-way coupling algorithm instances
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,DRT::Problem::Instance()->ScalarTransportFluidSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,problem->ScalarTransportFluidSolverParams()));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,DRT::Problem::Instance()->ScalarTransportStructureSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,problem->ScalarTransportStructureSolverParams()));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -278,25 +278,6 @@ FS3I::GasFSI::GasFSI(const Epetra_Comm& comm)
       std::map<int,double>::iterator sit = struct_PermCoeffs.find(ID);
       if ((*sit).second != fluid_permcoef)
         dserror("Permeability coefficient of ScaTra interface needs to be the same in both conditions");
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::GasFSI::ReadRestart()
-{
-  // read the restart information, set vectors and variables ---
-  // be careful, dofmaps might be changed here in a Redistribute call
-  if (genprob.restart)
-  {
-    fsi_->ReadRestart(genprob.restart);
-
-    for (unsigned i=0; i<scatravec_.size(); ++i)
-    {
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField().ReadRestart(genprob.restart);
     }
   }
 }
@@ -448,18 +429,6 @@ void FS3I::GasFSI::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::GasFSI::DoFsiStep()
-{
-  fsi_->PrepareTimeStep();
-  fsi_->TimeStep(fsi_);
-  fsi_->PrepareOutput();
-  fsi_->Update();
-  fsi_->Output();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FS3I::GasFSI::DoScatraStep()
 {
   if (Comm().MyPID()==0)
@@ -477,6 +446,8 @@ void FS3I::GasFSI::DoScatraStep()
 
   while (stopnonliniter==false)
   {
+    itnum++;
+
     SetMeshDisp();
     SetVelocityFields();
 
@@ -484,34 +455,15 @@ void FS3I::GasFSI::DoScatraStep()
 
     SetupCoupledScatraSystem();
 
-    stopnonliniter = AbortScatraNonlinIter(itnum);
-    if (stopnonliniter)
-      break;
-
     LinearSolveScatra();
-    FieldUpdateIter();
+    IterUpdate();
 
-    itnum++;
+    stopnonliniter = ConvergenceCheck(itnum);
   }
 
   UpdateScatraFields();
 
   ScatraOutput();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::GasFSI::PrepareTimeStep()
-{
-  SetMeshDisp();
-  SetVelocityFields();
-
-  for (unsigned i=0; i<scatravec_.size(); ++i)
-  {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().PrepareTimeStep();
-  }
 }
 
 
@@ -623,34 +575,6 @@ void FS3I::GasFSI::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::GasFSI::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
-                                                Teuchos::RCP<const Epetra_Vector>& vec1,
-                                                Teuchos::RCP<const Epetra_Vector>& vec2)
-{
-  if (!permeablesurf_)
-  {
-    // process fluid scatra unknowns
-    vec1 = scatraglobalex_.ExtractVector(globalvec,0);
-
-    // process structure scatra unknowns at the boundary
-    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0].ExtractVector(vec1,1);
-    Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_.ExtractVector(globalvec,1);
-    Teuchos::RCP<Epetra_Vector> vec2_boundary = Scatra1ToScatra2(vec1_boundary);
-
-    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1].InsertVector(vec2_inner,0);
-    scatrafieldexvec_[1].InsertVector(vec2_boundary,1,vec2_temp);
-    vec2 = vec2_temp;
-  }
-  else
-  {
-    vec1 = scatraglobalex_.ExtractVector(globalvec,0);
-    vec2 = scatraglobalex_.ExtractVector(globalvec,1);
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FS3I::GasFSI::SetupCoupledScatraMatrix()
 {
   Teuchos::RCP<LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField().SystemMatrix();
@@ -744,15 +668,47 @@ void FS3I::GasFSI::LinearSolveScatra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::GasFSI::FieldUpdateIter()
+void FS3I::GasFSI::IterUpdate()
 {
+  // define incremental vectors for fluid- and structure-based scatra
+  // fields and extract respective vectors
   Teuchos::RCP<const Epetra_Vector> inc1;
   Teuchos::RCP<const Epetra_Vector> inc2;
-
   ExtractScatraFieldVectors(scatraincrement_,inc1,inc2);
 
+  // update both fluid- and structure-based solution vectors
   scatravec_[0]->ScaTraField().UpdateIter(inc1);
   scatravec_[1]->ScaTraField().UpdateIter(inc2);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::GasFSI::ExtractScatraFieldVectors(
+  Teuchos::RCP<const Epetra_Vector>  globalvec,
+  Teuchos::RCP<const Epetra_Vector>& vec1,
+  Teuchos::RCP<const Epetra_Vector>& vec2
+)
+{
+  if (!permeablesurf_)
+  {
+    // process fluid scatra unknowns
+    vec1 = scatraglobalex_.ExtractVector(globalvec,0);
+
+    // process structure scatra unknowns at the boundary
+    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0].ExtractVector(vec1,1);
+    Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_.ExtractVector(globalvec,1);
+    Teuchos::RCP<Epetra_Vector> vec2_boundary = Scatra1ToScatra2(vec1_boundary);
+
+    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1].InsertVector(vec2_inner,0);
+    scatrafieldexvec_[1].InsertVector(vec2_boundary,1,vec2_temp);
+    vec2 = vec2_temp;
+  }
+  else
+  {
+    vec1 = scatraglobalex_.ExtractVector(globalvec,0);
+    vec2 = scatraglobalex_.ExtractVector(globalvec,1);
+  }
 }
 
 
@@ -764,19 +720,6 @@ void FS3I::GasFSI::UpdateScatraFields()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Update();
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::GasFSI::ScatraOutput()
-{
-  for (unsigned i=0; i<scatravec_.size(); ++i)
-  {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().Output();
-    scatra->ScaTraField().OutputMeanScalars();
   }
 }
 
@@ -799,6 +742,22 @@ void FS3I::GasFSI::CoupledScatraSolve()
                        true,
                        true);
 #endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::GasFSI::TestResults(const Epetra_Comm& comm)
+{
+  DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField().CreateFieldTest());
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    DRT::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
+  }
+  DRT::Problem::Instance()->TestAll(comm);
 }
 
 #endif

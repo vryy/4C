@@ -820,9 +820,10 @@ set(OBJS_DRT_FSI
 )
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i_dyn.cpp
+  src/drt_fs3i/fs3i_service.cpp
   src/drt_fs3i/gas_fsi.cpp
-  src/drt_fs3i/gas_fsi_service.cpp
   src/drt_fs3i/biofilm_fsi.cpp
+  src/drt_fs3i/thermo_fsi.cpp
   src/drt_fs3i/aero_tfsi.cpp
   src/drt_fs3i/aero_tfsi_serv.cpp
 )

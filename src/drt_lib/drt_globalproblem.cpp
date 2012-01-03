@@ -284,6 +284,7 @@ void DRT::Problem::InputControl()
   }
   case prb_gas_fsi:
   case prb_biofilm_fsi:
+  case prb_thermo_fsi:
   {
     genprob.numsf=0;
     genprob.numff=1;
