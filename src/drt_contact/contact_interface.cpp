@@ -2801,6 +2801,10 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleNT: Node ownership inconsistency!");
+    
+    // error if no D matrix entries
+    if((cnode->MoData().GetD()).size() == 0)
+      dserror("Error: No D matrix entry available!");
 
     if (Dim()==2)
     {
