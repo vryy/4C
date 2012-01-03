@@ -29,6 +29,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_contact/contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_beamcontact/beam3contact_defines.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
@@ -644,6 +645,12 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
     // *********** time measurement ***********
     dtcmt_ = timer_->WallTime() - dtcpu;
     // *********** time measurement ***********
+
+    // visualization of current Newton step
+#ifdef GMSHNEWTONSTEPS
+    beamcman_->GmshOutput(*disn_,stepn_,iter_);
+    beamcman_->ConsoleOutput();
+#endif // #ifdef GMSHNEWTONSTEPS
   }
 
   // wotcha
@@ -1519,7 +1526,6 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
     int maxuzawaiter = beamcman_->InputParameters().get<int>("UZAWAMAXSTEPS");
 
     // outer Augmented Lagrangian iteration (Uzawa)
-    beamcman_->ResetUzawaIter();
     do
     {
       // increase iteration index by one
@@ -1554,8 +1560,9 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
 
     } while (abs(beamcman_->GetConstrNorm()) >= eps);
 
-    // reset penalty parameter
+    // reset penalty parameter and Uzawa index
     beamcman_->ResetCurrentpp();
+    beamcman_->ResetUzawaIter();
   }
 
   //**********************************************************************
