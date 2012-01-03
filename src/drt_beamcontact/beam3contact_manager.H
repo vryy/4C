@@ -267,8 +267,8 @@ public:
     d) the current element coordinates of the contact point
 
   NOTE: This method can also be called after each newton-step (e.g. if you want to check
-  convergence problems). In this case, you have to uncomment the #define GMSHNEWTONSTEP
-  flag in 'beam3contactstrugenalpha.h'.
+  convergence problems). In this case, you have to uncomment the GMSHNEWTONSTEP preprocessor
+  flag in 'beam3contact_defines.h'.
 
   */
   void ConsoleOutput();

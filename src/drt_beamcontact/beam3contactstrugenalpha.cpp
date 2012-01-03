@@ -13,6 +13,7 @@ Maintainer: Christoph Meier
 
 
 #include "beam3contactstrugenalpha.H"
+#include "beam3contact_defines.H"
 #include <iostream>
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_lib/drt_globalproblem.H"

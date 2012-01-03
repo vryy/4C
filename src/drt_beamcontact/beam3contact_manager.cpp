@@ -14,6 +14,7 @@ Maintainer: Christoph Meier
 
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
+#include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
@@ -28,9 +29,6 @@ Maintainer: Christoph Meier
 #ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
 #endif
-
-// flag switching between different evaluations of the constraint tolerance
-#define RELCONSTRTOL
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|

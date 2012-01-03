@@ -25,33 +25,8 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-
 using namespace std;
 using namespace Teuchos;
-
-// write gmsh output in each time step
-//#define GMSHTIMESTEPS
-
-// write gmsh and console output in each Newton step
-//#define GMSHNEWTONSTEPS
-
-// output reaction forces and moments
-//#define REACTIONFORCES
-
-// perform finite difference checks
-//#define BEAMCONTACTFDCHECKS
-
-#define BEAMCONTACTMAXITER 50     // max number of steps for local Newton
-#define BEAMCONTACTTOL 1.0e-12    // convergence tolerance for local Newton
-#define NDIM 3                    // number of spatial dimensions
-#define XIETATOL 1.0e-9           // tolerance for valid vaulues of beam parameters Xi and Eta (e.g. Xi \in [-1 - XIETATOL; 1 + XIETATOL])
-#define NORMTOL  1.0e-9           // tolerance when the to contact points are to close and one beam has to be shifted artificially
-#define SHIFTVALUE 1.0e-7         // value, one contact point will be shiftet, if contact points are to close
-#define COLINEARTOL 1.0e-12       // tolerance when two elements are almost colinear
-#define NORMALTOL 0.1             // tolerance how small the scalar product of normal_old and normal is allowed to be
-#define MANIPULATERADIUS 1        // with this parameter the geometrical radius used for contact evaluation can be choosen different from the physical radius appearing in the bending stiffness
-#define NEIGHBORTOL 2             // parameter that allows to also evaluate the contact normal of neighbor elements which is need for the new gap function. It has proofed to be useful that NEIGHBORTOL \in [1 ; 3]
-#define GAPTOL 1.0e-12            // tolerance for the allowable difference between old and new gap definition which should be identical in the converged state
 
 namespace CONTACT
 {
@@ -63,7 +38,6 @@ namespace CONTACT
 
  \author popp (popp@lnm.mw.tum.de), cyron (cyron@lnm.mw.tum.de)
  */
-
 
 
 class B3CNeighbor
@@ -460,10 +434,13 @@ private:
   \brief Compute skalar product between old normal vector and new normal vector
 
   */
-
   double Computeskalar();
 
+  /*!
+  \brief Compute sign function of an arbitrary number
 
+  */
+  int Signum(double val);
 
   /*!
   \brief Evaluate gap function

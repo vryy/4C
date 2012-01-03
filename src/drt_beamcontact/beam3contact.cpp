@@ -13,7 +13,7 @@ Maintainer: Christoph Meier
 #ifdef CCADISCRET
 
 #include "beam3contact.H"
-#include "beam3contact_utils.H"
+#include "beam3contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -672,13 +672,10 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     const int* node_ids2 = element2_->NodeIds();
     
     // define variable for sgn(normal*normal_old) of modified gapfunction
-    double sgn_skalar = 1;
+    int sgn_skalar = 1;
 
-
-    // decide wether the modified gap function will be apllied or not
-    if (ngf_)
-      sgn_skalar = sgn(Computeskalar());
-
+    // decide wether the modified gap function will be applied or not
+    if (ngf_) sgn_skalar = Signum(Computeskalar());
 
     //********************************************************************
     // Compute Fc1 (force acting on first element)
@@ -788,15 +785,11 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
   //**********************************************************************
   if (contactflag_)
   {
-
-
     // define variable for sgn(normal*normal_old) of modified gapfunction
-    double sgn_skalar = 1;
+    int sgn_skalar = 1;
 
-
-    // decide wether the modified gap function will be apllied or not
-    if (ngf_) sgn_skalar = sgn(Computeskalar());
-
+    // decide wether the modified gap function will be applied or not
+    if (ngf_) sgn_skalar = Signum(Computeskalar());
 
     // auxiliary stiffmatrix for part III of linearization to avoid tensor notation
     Epetra_SerialDenseMatrix stiffc_III(NDIM*(numnode1+numnode2),NDIM*(numnode1+numnode2));
@@ -1175,18 +1168,18 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
   const DRT::ElementType & eot1 = element1_->ElementType();
   const DRT::ElementType & eot2 = element2_->ElementType();
 
-  #ifdef D_BEAM3
-      if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
-        MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
-      if ( eot2 == DRT::ELEMENTS::Beam3Type::Instance() )
-        MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
-  #endif  // #ifdef D_BEAM3
-  #ifdef D_BEAM3II
-      if ( eot1 == DRT::ELEMENTS::Beam3iiType::Instance() )
-        MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
-      if ( eot2 == DRT::ELEMENTS::Beam3iiType::Instance() )
-        MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element2_))->Iyy();
-  #endif  // #ifdef D_BEAM3II
+#ifdef D_BEAM3
+  if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
+  if ( eot2 == DRT::ELEMENTS::Beam3Type::Instance() )
+    MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
+#endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+  if ( eot1 == DRT::ELEMENTS::Beam3iiType::Instance() )
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
+  if ( eot2 == DRT::ELEMENTS::Beam3iiType::Instance() )
+    MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element2_))->Iyy();
+#endif  // #ifdef D_BEAM3II
   
   // compute radii of both elements
   double radius_ele1=0;
@@ -1194,7 +1187,6 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
   ComputeEleRadius(radius_ele1,MomentOfInertia_ele1);
   ComputeEleRadius(radius_ele2,MomentOfInertia_ele2);
   
-
   // comute gap to be returned
   gap = norm - radius_ele1 - radius_ele2;
   //cout << "\n***\nPaar: " << element1_->Id() << "/" << element2_->Id() << "\n***" << endl;
@@ -1208,23 +1200,17 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 
   double gapnew = 0;
 
-
-
   if (ngf_)
   {
-    double normalold_normal=0;
-    normalold_normal = Computeskalar();
+    double normalold_normal = Computeskalar();
     if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
-    gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
+    gapnew = Signum(normalold_normal)*norm - radius_ele1 - radius_ele2;
   }
 
   oldgap_ = gap;
 
   if (ngf_) gap = gapnew;
   //cout << "new gap:" << gap << "\n";
-
-
-
 
   // also set class variable
   gap_ = gap;
@@ -1768,7 +1754,7 @@ void CONTACT::Beam3contact::InvertNormal()
 
 
 /*----------------------------------------------------------------------*
- |  Calculate scalar product of old and new normal          meier 10/2010|
+ |  Calculate scalar product of old and new normal         meier 10/2010|
  *----------------------------------------------------------------------*/
 double CONTACT::Beam3contact::Computeskalar()
 {
@@ -1781,6 +1767,21 @@ double CONTACT::Beam3contact::Computeskalar()
  |  end: Calculate scalar product of old and new normal
  *----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ |  Compute sign function of an arbitrary number           meier 10/2010|
+ *----------------------------------------------------------------------*/
+int CONTACT::Beam3contact::Signum(double val)
+{
+  int sgn = 0;
+
+  if (val < 0) sgn = -1;
+  else         sgn =  1;
+
+  return sgn;
+}
+/*----------------------------------------------------------------------*
+ |  end: Compute sign function of an arbitrary number
+ *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Update Uzawa-based Lagrange mutliplier                  popp 04/2010|

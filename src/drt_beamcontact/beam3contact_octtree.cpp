@@ -13,6 +13,7 @@ Maintainer: Christoph Meier
 
 #include "beam3contact_octtree.H"
 #include "beam3contact.H"
+#include "beam3contact_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
 
@@ -38,9 +39,6 @@ Maintainer: Christoph Meier
 #ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
 #endif
-
-// measure time for octree build and intermediate steps
-//#define MEASURETIME
 
 using namespace std;
 
