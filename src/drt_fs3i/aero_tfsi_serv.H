@@ -19,7 +19,6 @@ Maintainer: Georg Hammerl
 #define AERO_TFSI_SERV_H
 
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_mapextractor.H"
 
 
 namespace FS3I
@@ -106,22 +105,21 @@ namespace FS3I
 
 
     private:
+      Teuchos::RCP<DRT::Discretization> istructdis_;    ///< discretization of structural interface
+      Teuchos::RCP<DRT::Discretization> ithermodis_;    ///< discretization of thermal interface
 
-    Teuchos::RCP<DRT::Discretization> istructdis_;    ///< discretization of structural interface
-    Teuchos::RCP<DRT::Discretization> ithermodis_;    ///< discretization of thermal interface
+      Teuchos::RCP<const Epetra_Map> istructdofredumap_;   ///< dof map of fully redundant structural interface
+      Teuchos::RCP<const Epetra_Map> ithermodofredumap_;   ///< dof map of fully redundant structural interface
 
-    Teuchos::RCP<const Epetra_Map> istructdofredumap_;   ///< dof map of fully redundant structural interface
-    Teuchos::RCP<const Epetra_Map> ithermodofredumap_;   ///< dof map of fully redundant structural interface
+      map<int, map<int, RCP<DRT::Element> > > structreduelements_;   ///< redundant version of coupling elements for each interface
 
-    map<int, map<int, RCP<DRT::Element> > > structreduelements_;   ///< redundant version of coupling elements for each interface
+      Teuchos::RCP<const LINALG::MapExtractor> thermorowmapext_;   ///< map extractor between thermo discret and interface thermo dis
 
-    Teuchos::RCP<const LINALG::MapExtractor> thermorowmapext_;   ///< map extractor between thermo discret and interface thermo dis
+      Teuchos::RCP<Epetra_Vector> matconfig_;    ///< material configuration of structural gids
 
-    Teuchos::RCP<Epetra_Vector> matconfig_;    ///< material configuration of structural gids
+      double maxmindist_;    ///< search radius to find close elements on the structural interface
 
-    double maxmindist_;    ///< search radius to find close elements on the structural interface
-
-    int maxid_;    ///< currently not needed
+      int maxid_;    ///< max id of the interfaces
 
     }; // class AeroCouplingUtils
 

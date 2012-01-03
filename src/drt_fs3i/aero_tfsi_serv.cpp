@@ -27,12 +27,8 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "aero_tfsi_serv.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
-
-#include "../drt_geometry/searchtree.H"
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_thermo/thermo_element.H"
