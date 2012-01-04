@@ -482,8 +482,6 @@ protected:
 
   // \brief GIDs of elements added at the beginning when this time step was conducted the last time
   std::vector<int> addedelements_;
-  // \brief GIDs of contact discretization elements added at the beginning when this time step was conducted the last time
-  std::vector<int> addedcelements_;
 
   //variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
   RCP<Epetra_MultiVector> crosslinkerbondconv_;

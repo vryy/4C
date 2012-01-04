@@ -1216,6 +1216,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                   // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
                   if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                     break;
+                  //if((*filamentnumber_)[(int)LID(0,0)]!= 0 &&(*filamentnumber_)[(int)LID(1,0)]!=0)
+                  //  break;
                   //unit direction vector between currently considered two nodes
                   LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0,0)))->second);
                   direction -= (currentpositions.find((int)LID(1,0)))->second;
@@ -1454,9 +1456,7 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     if(!addinitlinks)
     {
       // beam contact discretization
-      if(mydiscret.Name()=="beam contact")
-        addedcelements_.push_back(crossgid);
-      else// "standard" problem discretization
+      if(mydiscret.Name()!="beam contact")
         addedelements_.push_back(crossgid);
     }
     mydiscret.AddElement(newcrosslinker);
@@ -2209,10 +2209,7 @@ void StatMechManager::WriteConv()
   addedelements_.resize(0);
   deletedelements_.resize(0);
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
-  {
-    addedcelements_.resize(0);
     deletedcelements_.resize(0);
-  }
 
   return;
 } // StatMechManager::WriteConv()
@@ -2298,8 +2295,6 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTAC
   for(int i=0; i<(int)addedelements_.size(); i++)
     discret_.DeleteElement(addedelements_[i]);
 
-  addedelements_.resize(0);
-
   /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
    *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
    *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
@@ -2324,9 +2319,9 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTAC
     }
     deletedcelements_.resize(0);
 
-    for(int i=0; i<(int)addedcelements_.size(); i++)
-      beamcmanager->ContactDiscret().DeleteElement(addedcelements_[i]);
-    addedcelements_.resize(0);
+    for(int i=0; i<(int)addedelements_.size(); i++)
+      beamcmanager->ContactDiscret().DeleteElement(addedelements_[i]);
+    addedelements_.resize(0);
 
     // contact discretization
     beamcmanager->ContactDiscret().CheckFilledGlobally();
