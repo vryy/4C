@@ -287,6 +287,28 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     virtual RCP<LINALG::SparseMatrix> TMatrix() { return null; }
 
+    /*!
+    \brief Return number of active nodes
+
+    */
+    const int NumberOfActiveNodes()
+    {
+      if (gactivenodes_!=Teuchos::null)
+        return gactivenodes_->NumGlobalElements();
+      return 0;
+    }
+
+    /*!
+    \brief Return number of frictional slip nodes
+
+    */
+    const int NumberOfSlipNodes()
+    {
+      if (gslipnodes_!=Teuchos::null)
+        return gslipnodes_->NumGlobalElements();
+      return 0;
+    }
+
     //@}
 
     //! @name Evaluation methods

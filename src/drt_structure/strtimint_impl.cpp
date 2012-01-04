@@ -1774,6 +1774,20 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   if (HaveContactMeshtying())
     oss << std::setw(10)<< "tc";
 
+  // add contact set information
+  if (HaveContactMeshtying())
+  {
+    // only print something for contact, not for meshtying
+    INPAR::CONTACT::ApplicationType apptype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+    if (apptype == INPAR::CONTACT::app_mortarcontact)
+    {
+      oss << std::setw(10)<< "#active";
+      if (cmtman_->GetStrategy().Friction())
+        oss << std::setw(10)<< "#slip";
+    }
+  }
+
   // finish oss
   oss << std::ends;
 
@@ -1869,6 +1883,20 @@ void STR::TimIntImpl::PrintNewtonIterText
   oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
   if (HaveContactMeshtying())
     oss << std::setw(10) << std::setprecision(2) << std::scientific << dtcmt_;
+
+  // add contact set information
+  if (HaveContactMeshtying())
+  {
+    // only print something for contact, not for meshtying
+    INPAR::CONTACT::ApplicationType apptype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+    if (apptype == INPAR::CONTACT::app_mortarcontact)
+    {
+      oss << std::setw(10) << cmtman_->GetStrategy().NumberOfActiveNodes();
+      if (cmtman_->GetStrategy().Friction())
+        oss << std::setw(10) << cmtman_->GetStrategy().NumberOfSlipNodes();
+    }
+  }
 
   // finish oss
   oss << std::ends;

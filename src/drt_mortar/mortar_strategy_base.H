@@ -186,6 +186,8 @@ class StrategyBase
     virtual void MeshInitialization() = 0;
     virtual RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
+    virtual const int NumberOfActiveNodes() = 0;
+    virtual const int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
     virtual void OutputWear() = 0;
     virtual void Print(ostream& os) const = 0;

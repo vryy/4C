@@ -417,6 +417,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void InitEvalInterface() {}
     void InitEvalMortar() {}
     void Initialize() {}
+    const int NumberOfActiveNodes() {return 0;}
+    const int NumberOfSlipNodes() {return 0;}
     void OutputStresses() {}
     void OutputWear() {}
     void RedistributeContact(RCP<Epetra_Vector> dis) {}
