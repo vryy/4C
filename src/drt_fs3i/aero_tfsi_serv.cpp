@@ -145,10 +145,14 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
         istructele->SetNodeIds( ((*eit).second->NumNode()), ((*eit).second->NodeIds()) );
         istructnewdis->AddElement( istructele );
         // thermo interface elements
+#ifdef D_THERMO
         RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("THERMO","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
         ithermoele->SetNodeIds( ((*eit).second->NumNode()), ((*eit).second->NodeIds()) );
         rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(ithermoele,true)->SetDisType( istructele->Shape() );
         ithermonewdis->AddElement( ithermoele );
+#else
+        dserror("D_THERMO flag is switched off! You need thermo for Aero_TFSI.");
+#endif
       }
     }
   }
