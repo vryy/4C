@@ -1197,7 +1197,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
     //check for constraint norm change. If the change in the constraint is becomes minimal, this is considered to be the optimum (for now)
-    if((uzawa && relconstrnorm>=0.9) || beamcmanager_->GetConstrNorm()<0.5)
+    if((uzawa && relconstrnorm>=0.9) || (uzawa && beamcmanager_->GetConstrNorm()<0.5))
     {
       ptcconverged = true;
       isconverged_ = 1;
