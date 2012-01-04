@@ -340,8 +340,6 @@ void StatMechTime::Integrate()
           //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON)
           case INPAR::CONTACT::solution_auglag:
           {
-            // initialize prevcontactnorm with some high value in order to not mess up the check within PTC
-            prevcontactnorm_ = 1e6;
             // Initialize all lmuzawa to zero at beginning of new time step
             beamcmanager_->ResetAlllmuzawa();
 
@@ -1181,42 +1179,42 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
 
   //-------------------------------- test whether max iterations was hit
   // assume convergence of ptc convergence
-  bool ptcconverged = true;
-  // the situation might arise when a single contact pair leads to non-convergence in the uzawa loop. For now, we "overlook" this
-  double relconstrnorm = 0.0;
-  if(uzawa)
-  {
-    relconstrnorm = beamcmanager_->GetConstrNorm()/prevcontactnorm_;
-    prevcontactnorm_ = beamcmanager_->GetConstrNorm();
-  }
+  bool acceptuzawastep = true;
+
   //if no convergence arises within maxiter iterations the time step is restarted with new random numbers
   if(numiter>=maxiter || fresmnormdivergent)
   {
-    ptcconverged = false;
+    acceptuzawastep = false;
     // standard procedure
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
-    //check for constraint norm change. If the change in the constraint is becomes minimal, this is considered to be the optimum (for now)
-    if((uzawa && relconstrnorm>=0.9) || (uzawa && beamcmanager_->GetConstrNorm()<0.5))
+    // We take a look at the change in the contact constraint norm.
+    // Reason: when the constraint tolerance is a relative measure (gap compared to the smaller of the two beam radii),
+    // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
+    // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
+    // (pair linker/filament). Then, convergence is nearly impossible to achieve in some cases, yet, results are acceptable already.
+    // In these cases, the timestep is not restarted since the contact algorithm has lead to an acceptable outcome.
+    // the criterion norm<1.0 is justified by the current need to prevent 99% and not 100% of intersections from happening.
+    double norm = 1e6;
+    beamcmanager_->UpdateConstrNorm(&norm);
+    if(!fresmnormdivergent && uzawa && beamcmanager_->GetUzawaIter()>2 && norm<1.0)
     {
-      ptcconverged = true;
+      acceptuzawastep = true;
       isconverged_ = 1;
       statmechmanager_->unconvergedsteps_--;
     }
-    if(discret_.Comm().MyPID()==0 and printscreen and !ptcconverged)
+    if(discret_.Comm().MyPID()==0 and printscreen and !acceptuzawastep)
     {
       std::cout<<"\n\n";
       if(uzawa)
-      {
         std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
-      }
       else
         std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
     }
     //dserror("FullNewton unconverged in %d iterations",numiter);
   }
 
-  if(ptcconverged and !myrank_ and printscreen)
+  if(acceptuzawastep and !myrank_ and printscreen)
        PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
 
   params_.set<int>("num iterations",numiter);

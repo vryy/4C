@@ -1168,7 +1168,7 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 /*----------------------------------------------------------------------*
  |  Update contact constraint norm                            popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNorm()
+void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
 {
   // some local variables
   int j=0;
@@ -1240,7 +1240,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
     updatepp = UpdateCurrentpp(globnorm);
   
    // print results to screen
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID()==0 && cnorm==NULL)
   {
     cout << endl << "*********************************************"<<endl;
     cout << "Global Constraint Norm = " << globnorm << endl;
@@ -1249,7 +1249,10 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   }
     
   // update class variable
-  constrnorm_ = globnorm;
+  if(cnorm==NULL)
+    constrnorm_ = globnorm;
+  else
+    *cnorm = globnorm;
   
   return; 
 }

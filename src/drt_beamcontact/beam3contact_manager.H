@@ -196,8 +196,10 @@ public:
   whereas in the augmented Lagrange case, an empiric update formula for the
   penalty parameter is also applied to speed up Uzawa convergence.
 
+  \param cnorm (in/out) read-only (no norm update) if cnorm is not the null pointer
+
   */
-  void UpdateConstrNorm();
+  void UpdateConstrNorm(double* cnorm = NULL);
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
