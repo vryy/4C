@@ -1966,6 +1966,10 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
        or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
        and not fsvelswitch)
     dserror("Fine-scale velocity expected for multifractal subgrid-scale modeling!");
+  // as fsvelswitch is also true for smagorinsky_all, we have to reset fsvelswitch
+  // as the corresponding vector, which is not necessary, is not provided in scatra
+  if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_all and fsvelswitch)
+    fsvelswitch = false;
 
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)

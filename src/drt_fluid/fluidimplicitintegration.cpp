@@ -3795,7 +3795,14 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   discret_->SetState("hist" ,hist_ );
   discret_->SetState("accam",accam_);
   discret_->SetState("scaaf",scaaf_);
+  // this vector contains only zeros unless SetIterLomaFields is called
+  // as this function has not been called yet
+  // we have to replace the zeros by ones
+  // otherwise nans are produced
+  scaam_->PutScalar(1.0);
   discret_->SetState("scaam",scaam_);
+  // reset the vector
+  scaam_->PutScalar(0.0);
 
   // set fine-scale vector
   // dummy vector initialized with zeros
