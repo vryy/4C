@@ -359,8 +359,12 @@ void StatMechTime::Integrate()
               beamcmanager_->UpdateUzawaIter();
               if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
               {
-                cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
                 isconverged_=0;
+                // note pair crosslinker/filament is the problem here. Since relative constraint norm, half of the crosslinker radius is ok
+                if(beamcmanager_->GetConstrNorm()<0.5)
+                  isconverged_ = 1;
+                else
+                  cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
                 break;
                 //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
               }
