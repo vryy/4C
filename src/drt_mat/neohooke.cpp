@@ -147,7 +147,7 @@ void MAT::NeoHooke::Evaluate(
   // invert C
   LINALG::Matrix<6,1> invc(false);
 
-  double invdet = 1./I3;
+  double invdet = 1.0/I3;
 
   invc(0) = rcg(1)*rcg(2) - 0.25*rcg(4)*rcg(4);
   invc(1) = rcg(0)*rcg(2) - 0.25*rcg(5)*rcg(5);
@@ -159,15 +159,15 @@ void MAT::NeoHooke::Evaluate(
   invc.Scale(invdet);
 
   // Material Constants c1 and beta
-  const double c1 = 0.5 * ym/(2*(1+nu));
-  const double beta = nu/(1-2*nu);
+  const double c1 = 0.5 * ym/(2.0*(1.0+nu));
+  const double beta = nu/(1.0-2.0*nu);
 
   // energy function
   // Psi = c1/beta (I3^{-beta} - 1) + c1 ( I1-3 )
   // S = -2 c1 I3^{-beta} C^{-1} + 2 c1 Identity
-
+  const double fac = pow(I3,-beta);
   stress = invc;
-  stress.Scale(-2.0*c1*pow(I3,-beta)); // volumetric part
+  stress.Scale(-2.0*c1*fac); // volumetric part
   const double iso = 2.0*c1;  // isochoric part
   stress(0) += iso;
   stress(1) += iso;
@@ -176,12 +176,13 @@ void MAT::NeoHooke::Evaluate(
   // material tensor:
   // C = 4 c1 beta I3^{-beta} C^{-1} dyad C^{-1} + 4 c1 I3^{-beta} C^{-1} boeppel C^{-1}
   // where `boeppel' is called `Holzapfelproduct' below
-  const double delta6 = 4. * c1 * beta * pow(I3,-beta);
-  const double delta7 = 4. * c1 * pow(I3,-beta);
+  const double delta6 = 4.0 * c1 * beta * fac;
+  const double delta7 = 4.0 * c1 * fac;
   for (int i=0; i<6; ++i)
     for (int j=0; j<6; ++j)
       cmat(i,j) = delta6 * invc(i)*invc(j);
   AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+
   return;
 } // end of neohooke evaluate
 
