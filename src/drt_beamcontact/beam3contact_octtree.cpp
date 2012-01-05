@@ -49,11 +49,13 @@ Beam3ContactOctTree::Beam3ContactOctTree(ParameterList& params, DRT::Discretizat
 discret_(discret),
 searchdis_(searchdis),
 basisnodes_(discret.NumGlobalNodes()),
-dofoffset_(dofoffset),
-radfactor_(1.0)
+dofoffset_(dofoffset)
 {
   // define max tree depth (maybe, set this as input file parameter)
   maxtreedepth_ = 6;
+  // define extrusion factor
+  extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
+
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
   if(statmechparams.get<double>("PeriodLength",0.0)>0.0)
@@ -97,7 +99,7 @@ radfactor_(1.0)
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                      meier 01/11|
  *----------------------------------------------------------------------*/
-vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions)
+vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
 {
   // initialize beam diameter
   diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
@@ -122,14 +124,14 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
 #ifdef D_BEAM3
     if (eot == DRT::ELEMENTS::Beam3Type::Instance())
     {
-      (*diameter_)[i] = radfactor_*2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
+      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
       (*diameter_)[i] = 0.5;
     }
 #endif // #ifdef BEAM3II
 
 #ifdef D_BEAM3II
     if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      (*diameter_)[i] = radfactor_*2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
+      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
 #endif
 
     // feasibility check
@@ -151,16 +153,18 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
   CreateBoundingBoxes(currentpositions);
 
   // call recursive octtree build
-  // get the root octant
   LINALG::Matrix<1,6> rootoctantlim = GetRootOctant();
-  // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
   std::vector<std::vector<int> > bboxesinoctants;
   bboxesinoctants.clear();
-  locateAll(rootoctantlim, bboxesinoctants);
+  std::vector<std::vector<double> > octreelimits = locateAll(rootoctantlim, bboxesinoctants);
 
   // intersection checks
   vector<RCP<Beam3contact> > contactpairs;
   BoundingBoxIntersection(currentpositions, bboxesinoctants, &contactpairs);
+
+  // output
+  if(step>-1)
+    OctreeOutput(contactpairs ,octreelimits, step, allbboxes_);
 
   return contactpairs;
 }// OctTreeSearch()
@@ -282,6 +286,66 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
   return intersection;
 }
 
+/*-----------------------------------------------------------------------------------*
+ |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
+ *----------------------------------------------------------------------------------.*/
+void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octlimits, int step, RCP<Epetra_MultiVector>  allbboxes)
+{
+  if(!discret_.Comm().MyPID())
+  {
+    // active contact pairs
+    if((int)cpairs.size()>0)
+    {
+      //Print ContactPairs to .dat-file and plot with Matlab....................
+      std::ostringstream filename;
+      filename << "ContactPairs"<<std::setw(6) << setfill('0') << step <<".dat";
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "w");
+      std::stringstream myfile;
+      for (int i=0;i<(int)cpairs.size();i++)
+        myfile << (cpairs[i]->Element1())->Id() <<"  "<< (cpairs[i]->Element2())->Id() <<endl;
+      fprintf(fp, myfile.str().c_str());
+      fclose(fp);
+    }
+    // octant limits output
+    if((int)octlimits.size()>0)
+    {
+      std::ostringstream filename;
+      filename << "OctreeLimits"<<std::setw(6) << setfill('0') << step <<".dat";
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "w");
+      std::stringstream myfile;
+      for (int u=0; u<(int)octlimits.size(); u++)
+      {
+        for (int v=0; v<(int)octlimits[u].size(); v++)
+          myfile <<scientific<<octlimits[u][v] <<" ";
+        myfile <<endl;
+      }
+      fprintf(fp, myfile.str().c_str());
+      fclose(fp);
+    }
+    // bounding box coords output
+    if(allbboxes!=Teuchos::null)
+    {
+      std::ostringstream filename;
+      filename << "BoundingBoxCoords"<<std::setw(6) << setfill('0') << step <<".dat";
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "w");
+      std::stringstream myfile;
+      for (int u=0; u<allbboxes->MyLength(); u++)
+      {
+        for (int v=0; v<allbboxes->NumVectors(); v++)
+          myfile <<scientific<<(*allbboxes)[v][u] <<" ";
+        myfile <<endl;
+      }
+      fprintf(fp, myfile.str().c_str());
+      fclose(fp);
+    }
+  }
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Bounding Box creation function (private)                 meier 01/11|
  |  generates bounding boxes extended with factor 1.05                  |
@@ -391,7 +455,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
   // factor by which the box is extruded in each dimension (->input file parameter??)
-  double extrusionfactor = 1.05;
+  double extrusionfactor = extrusionfactor_;
   if(bboxlimits!=Teuchos::null)
     extrusionfactor = 1.0;
 
@@ -734,7 +798,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
 
-  double extrusionfactor = 1.05;
+  double extrusionfactor = extrusionfactor_;
   // Since the hypothetical bounding box stands for a crosslinker to be set, we just need the exact dimensions of the element
   if(bboxlimits!=Teuchos::null)
     extrusionfactor = 1.0;
@@ -969,7 +1033,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
  |  box of a set belongs to; binary matrices BX, BY, BZ where each row shows               |
  |  "binary address" of each region are written to .dat- files each.                       |
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants)
+std::vector<std::vector<double> > Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants)
 {
 #ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
@@ -1004,53 +1068,11 @@ void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vec
   bbox2octantrow.Export(*bbox2octant_, exporter, Add);
   bbox2octant_->Import(bbox2octantrow, importer, Insert);
 
-  //cout<<*bbox2octant_<<endl;
-
-  /*// Write allbboxesstdvec to .dat-file allBBoxesstdvec.dat
-  std::ostringstream filename;
-  filename << "allbboxesstdvec.dat";
-  FILE* fp = NULL;
-  //open file to write output data into
-  fp = fopen(filename.str().c_str(), "w");
-  // write output to temporary stringstream;
-  std::stringstream myfile;
-  for (int u = 0; u < (int)allbboxesstdvec.size(); u++)
-      {
-        for (int v = 0; v < (int)allboxesstdvec[0].size(); v++)
-        {
-          myfile <<scientific<<allbboxesstdvec[u][v] <<" ";
-        }
-        myfile <<endl;
-      }
-  //write content into file and close it
-  fprintf(fp, myfile.str().c_str());
-  fclose(fp);*/
-
-
-  /*/ For Octree Visualization: Write OctreeLimits to.dat-file OctreeLimits...................
-  std::ostringstream filename3;
-  filename3 << "OctreeLimits.dat";
-  FILE* fp3 = NULL;
-  //open file to write output data into
-  fp3 = fopen(filename3.str().c_str(), "w");
-  // write output to temporary stringstream;
-  std::stringstream myfile3;
-  for (int u = 0; u < (int)OctreeLimits.size(); u++)
-      {
-        for (int v = 0; v < (int)OctreeLimits[u].size(); v++)
-        {
-          myfile3 <<scientific<<OctreeLimits[u][v] <<" ";
-        }
-        myfile3 <<endl;
-      }
-   //write content into file and close it
-   fprintf(fp3, myfile3.str().c_str());
-   fclose(fp3);*/
 #ifdef MEASURETIME
    if(!searchdis_.Comm().MyPID())
      cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
 #endif
-  return;
+  return OctreeLimits;
 }// end of method locateAll
 
 
@@ -1487,20 +1509,6 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
     cout << "Intersection time:\t\t" << isectimeglobal << " seconds\n\n";
 #endif
 
-  /*/Print ContactPairs to .dat-file and plot with Matlab....................
-  std::ostringstream filename2;
-  filename2 << "ContactPairs.dat";
-  FILE* fp2 = NULL;
-  fp2 = fopen(filename2.str().c_str(), "w");
-  fclose(fp2);
-  //open file to write output data into
-  // write output to temporary stringstream;
-  std::stringstream myfile2;
-  fp2 = fopen(filename2.str().c_str(), "a");
-  for (int i=0;i<(int)contactpairs->size();i++)
-    myfile2 << ((*contactpairs)[i]->Element1())->Id() <<"  "<< ((*contactpairs)[i]->Element2())->Id() <<endl;
-  fprintf(fp2, myfile2.str().c_str());
-  fclose(fp2);*/
   return;
 }//end of method BoundingBoxIntersection()
 
@@ -1922,5 +1930,4 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
 
   return intersection;
 }
-
 #endif /*CCADISCRET*/

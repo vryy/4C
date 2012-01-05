@@ -337,7 +337,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
      * handled as row map vector*/
     Epetra_Vector discol(*discret_.DofColMap(), true);
     LINALG::Export(disrow, discol);
-    GetNodePositions(disrow, discol, currentpositions, currentrotations);
+    GetNodePositions(discol, currentpositions, currentrotations);
 
     // set crosslinkers, i.e. considering crosslink molecule diffusion after filaments had time to equilibrate
     if(time_>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(time_-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
@@ -401,14 +401,18 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
   return;
 } // StatMechManager::Update()
 
-void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int,LINALG::Matrix<3,1> >& currentrotations)
+void StatMechManager::GetNodePositions(Epetra_Vector& discol,
+                                       std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+                                       std::map<int,LINALG::Matrix<3,1> >& currentrotations,
+                                       bool positionsonly)
 {
   /*in preparation for later decision whether a crosslink should be established between two nodes (binding spots) we first store the
    * current positions of all column map nodes (column map binding spots) in the map currentpositions; additionally we store the rotational displacements
    * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
    * currentpositions and currentrotations relate positions and rotations to a local column map node Id, respectively*/
   currentpositions.clear();
-  currentrotations.clear();
+  if(!positionsonly)
+    currentrotations.clear();
 
   // in case the four-noded crosslinker beam element is used, currentpositions and currentrotations have to be set up another way
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
@@ -431,7 +435,7 @@ void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& dis
       currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
       currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
       //if node has also rotational degrees of freedom
-      if (discret_.NumDof(node) == 6)
+      if (discret_.NumDof(node) == 6 && !positionsonly)
       {
         currrot(0) = discol[discret_.DofColMap()->LID(dofnode[3])];
         currrot(1) = discol[discret_.DofColMap()->LID(dofnode[4])];
@@ -439,7 +443,8 @@ void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& dis
       }
 
       currentpositions[node->LID()] = currpos;
-      currentrotations[node->LID()] = currrot;
+      if(!positionsonly)
+        currentrotations[node->LID()] = currrot;
     }
   }
   return;
@@ -3070,9 +3075,8 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
 
   // Vectors hold zero->ok, since no displacement at this stage of the simulation
-  Epetra_Vector disrow(*discret_.DofRowMap(), true);
   Epetra_Vector discol(*discret_.DofColMap(), true);
-  GetNodePositions(disrow, discol, currentpositions, currentrotations);
+  GetNodePositions(discol, currentpositions, currentrotations);
   // do initial octree build
   if(beamcmanager!=Teuchos::null)
     beamcmanager->OcTree()->OctTreeSearch(currentpositions);
@@ -3338,6 +3342,7 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
   {
     std::ostringstream filename;
     filename << "./GmshOutput/InitLinks.pos";
+    Epetra_Vector disrow(*discret_.DofRowMap(), true);
     GmshOutput(disrow,filename,0);
   }
   //couts

@@ -48,12 +48,17 @@ class Beam3ContactOctTree
     //!\brief Destructor
     virtual ~Beam3ContactOctTree() {};
 
-    // call octtree search routine
-    vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
+    //!\brief call octtree search routine
+    vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
 
+    //!\brief checks in which octant a given bounding box lies
     std::vector<int> InWhichOctantLies(const int& thisBBoxID);
-    // intersection test of all elements in the octant in which a given bounding box lies
+
+    //!\brief intersection test of all elements in the octant in which a given bounding box lies
     bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID);
+
+    //!\brief output of octree discretization, bounding boxes and contact pairs
+    void OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octlimits, int step, RCP<Epetra_MultiVector>  allbboxes = Teuchos::null);
 
   private:
     // Bounding Box Types
@@ -74,7 +79,7 @@ class Beam3ContactOctTree
     void CreateCOBB(Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
     // spatial division of 3-dimensional volume
-    void locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
+    std::vector<std::vector<double> > locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
 
     // primitive for locateAll
     void locateBox(std::vector<std::vector<double> > allBBoxesstdvec,
@@ -109,8 +114,8 @@ class Beam3ContactOctTree
     // maximum tree depth
     int maxtreedepth_;
 
-    // scalar factor for diameters
-    double radfactor_;
+    // scalar extrusion factor for bounding boxes
+    double extrusionfactor_;
 
     // diameters of all beam elements
     RCP<Epetra_Vector> diameter_;

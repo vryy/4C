@@ -44,7 +44,8 @@ namespace INPAR
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_gmsh, ///< writing special output in order to generate a Gmsh movie
       statout_structpolymorph, ///< writing special output in order to determine network structure
-      statout_densitydensitycorr ///< writing sepcial output in order to visualize density-density-corr.-function
+      statout_densitydensitycorr, ///< writing sepcial output in order to visualize density-density-corr.-function
+      statout_octree ///< writing output for octree visualization and checks
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)

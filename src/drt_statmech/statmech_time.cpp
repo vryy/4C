@@ -303,7 +303,7 @@ void StatMechTime::Integrate()
       {
         std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
         std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
-        std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n";
+        std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n"<<endl;
       }
       //assuming that iterations will converge
       isconverged_ = 1;
@@ -343,6 +343,8 @@ void StatMechTime::Integrate()
             // Initialize all lmuzawa to zero at beginning of new time step
             beamcmanager_->ResetAlllmuzawa();
 
+            if(!discret_.Comm().MyPID())
+              cout<<"Predictor:"<<endl;
             ConsistentPredictor(randomnumbers);
 
             // get tolerance and maximum number of Uzawa steps from input file

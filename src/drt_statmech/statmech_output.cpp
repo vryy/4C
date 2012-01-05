@@ -23,6 +23,8 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_beamcontact/beam3contact_octtree.H"
 
 
 #ifdef D_BEAM3
@@ -446,6 +448,21 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
         std::ostringstream filename;
         filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
         DDCorrOutput(dis, filename, istep, dt);
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_octree:
+    {
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
+      {
+        std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+        std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+        Epetra_Vector discol(*discret_.DofColMap(), true);
+        LINALG::Export(dis, discol);
+        GetNodePositions(discol, currentpositions, currentrotations, true);
+        beamcmanager->OcTree()->OctTreeSearch(currentpositions, istep);
+        beamcmanager->ResetPairs();
       }
     }
     break;

@@ -256,8 +256,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
     double t_end = Teuchos::Time::wallTime() - t_start;
     if(!pdiscret_.Comm().MyPID())
-      cout << "\nOctree Search: " << t_end << " seconds\n";
-
+      cout << "           Octree Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs" << endl;;
 
     /*//Print ContactPairs to .dat-file and plot with Matlab....................
     std::ostringstream filename2;
@@ -290,7 +289,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     SearchPossibleContactPairs(currentpositions);
     double t_end = Teuchos::Time::wallTime() - t_start;
     if(!pdiscret_.Comm().MyPID())
-      cout << "\nBrute Force Search: " << t_end << " seconds\n";
+      cout << "\nBrute Force Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs at the moment" << endl;
   }
   
   //**********************************************************************
@@ -316,9 +315,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   stiffc_ = rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
 
-  // print current pair vector on the screen
-  if (!pdiscret_.Comm().MyPID())
-    cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
   for (int i=0;i<(int)pairs_.size();++i)
   {
     //cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << endl;

@@ -217,7 +217,7 @@ protected:
   void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
 
   //! \brief Get current binding spot positions
-   void GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations);
+  void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
      \param dis     (in)      current displacement vector
