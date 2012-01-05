@@ -18,8 +18,6 @@ Maintainer: Florian Henke
 
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-#include "combust_interface.H"
-#include "combust_flamefront.H"
 
 /// namespace of the combustion module in BACI
 namespace COMBUST

@@ -16,8 +16,6 @@ Maintainer: Axel Gerstenberger
 #define XDOFMAPCREATION_PARALLEL_UTILS_H
 
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/interface.H"
-#include "../drt_xfem/element_ansatz.H"
 
 namespace XFEM
 {

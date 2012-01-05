@@ -15,12 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XDOFMAPCREATION_FSI_H
 #define XDOFMAPCREATION_FSI_H
 
-#include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/interface.H"
-#include "../drt_xfem/element_ansatz.H"
 #include "../drt_inpar/inpar_combust.H"
-// Der ist hier nur drin, damit ich (Florian Henke) auf die FlameFront im InterfaceHandle zugreifen kann
-#include "../drt_combust/combust_interface.H"
 
 namespace XFEM
 {

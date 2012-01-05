@@ -15,6 +15,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "timeInt.H"
+#include "../drt_lib/drt_exporter.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -480,7 +481,7 @@ flamefront_(flamefront)
     for (int leleid=0; leleid<discret_->NumMyColElements(); leleid++)  // loop over processor nodes
     {
       DRT::Element* iele = discret_->lColElement(leleid);
-      if (oldinterfacehandle_->ElementBisected(iele->Id()) or oldinterfacehandle_->ElementTouchedPlus(iele) or oldinterfacehandle_->ElementTouchedMinus(iele)) // element cut
+      if (oldinterfacehandle_->ElementSplit(iele) or oldinterfacehandle_->ElementTouchedPlus(iele) or oldinterfacehandle_->ElementTouchedMinus(iele)) // element cut
       {
         const int* nodeGids = iele->NodeIds(); // node gids
         for (int inode=0;inode<iele->NumNode();inode++) // loop over element nodes
@@ -704,7 +705,9 @@ void XFEM::STD::startpoints()
               } // end loop over fieldenr
 
               LINALG::Matrix<1,1> arc(true); // cosinus of angle between dist and vel(x_n+1)*diff.Norm2()
-              arc.MultiplyTN(1.0/nodevel.Norm2(),diff,nodevel);
+              if (nodevel.Norm2()/diff.Norm2()>1e-2)
+                arc.MultiplyTN(1.0/nodevel.Norm2(),diff,nodevel);
+
               double dist = diff.Norm2() + (diff.Norm2()-arc.Norm2()); // distance, containing arc influence
 
               if (dist-data->dMin_+TOL*dist < 0) // new nearest node (cosinus shall be near 1!)
@@ -1227,38 +1230,34 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around node
   {
-#ifdef COMBUST_CUT
-    if (oldinterfacehandle_->ElementBisected(eles[iele]->Id())) // element intersected
-#else
-      if (oldinterfacehandle_->ElementBisected(eles[iele])) // element intersected
-#endif
+    if (oldinterfacehandle_->ElementSplit(eles[iele])) // element intersected
+    {
+      if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
       {
-        if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
+        set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
+        if (tmp == critElesMinus_.end()) // volumes just saved in critical cases
         {
-          set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
-          if (tmp == critElesMinus_.end()) // volumes just saved in critical cases
-          {
-            critCut = false; // one element has a big enough support for the node -> no problem with values
-            break;
-          }
-          else
-            critCut = true;
-        } // end if node in plus domain
+          critCut = false; // one element has a big enough support for the node -> no problem with values
+          break;
+        }
         else
+          critCut = true;
+      } // end if node in plus domain
+      else
+      {
+        set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
+        if (tmp == critElesPlus_.end()) // volumes just saved in critical cases
         {
-          set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
-          if (tmp == critElesPlus_.end()) // volumes just saved in critical cases
-          {
-            critCut = false; // one element has a big enough support for the node -> no problem with values
-            break;
-          }
-          else
-            critCut = true;
-        } // end if node in minus domain
-      } // end if element bisected or touched
+          critCut = false; // one element has a big enough support for the node -> no problem with values
+          break;
+        }
+        else
+          critCut = true;
+      } // end if node in minus domain
+    } // end if element bisected or touched
   } // end loop over elements around node
+  //  if (critCut) cout << *node << " is newly set because of critical cut" << endl;
   return critCut;
-  //      cout << "bool is " << critCut << endl;
 } // end function critCut
 
 
@@ -1280,49 +1279,45 @@ void XFEM::ENR::getCritCutElements(
   {
     currEle = discret_->lColElement(iele);
 
-#ifdef COMBUST_CUT
-    if (oldinterfacehandle_->ElementBisected(currEle->Id())) // element bisected
-#else
-      if (oldinterfacehandle_->ElementBisected(currEle)) // element bisected
-#endif
+    if (oldinterfacehandle_->ElementSplit(currEle)) // element bisected
+    {
+      plusVol = 0.0;
+      minusVol = 0.0;
+
+      // get domain integration cells for this element
+      const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->GetDomainIntCells(currEle)); // domain integration cells of bisected element
+
+      // loop over domain integration cells
+      for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
       {
-        plusVol = 0.0;
-        minusVol = 0.0;
+        currVol = cell->VolumeInPhysicalDomain();
 
-        // get domain integration cells for this element
-        const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->GetDomainIntCells(currEle)); // domain integration cells of bisected element
-
-        // loop over domain integration cells
-        for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+        if (currVol < 0.0)
         {
-          currVol = cell->VolumeInPhysicalDomain();
+          cout << "negative volume detected and reverted" << endl;
+          currVol = -currVol;
+        }
 
-          if (currVol < 0.0)
-          {
-            cout << "negative volume detected and reverted" << endl;
-            currVol = -currVol;
-          }
+        if (cell->getDomainPlus())	plusVol += currVol;
+        else 						minusVol += currVol;
+      } // end loop over domain integration cells
 
-          if (cell->getDomainPlus())	plusVol += currVol;
-          else 						minusVol += currVol;
-        } // end loop over domain integration cells
+      if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain
+      {
+        cout << "element " << *currEle << " shall be bisected" << endl;
+        cout << "element volume in plus domain is " << plusVol << endl;
+        cout << "element volume in minus domain is " << minusVol << endl;
+        dserror("WARNING!!! Bisected domain shall have integration cells on both interface sides!");
+      } // end if no domain integration cell in one subdomain
 
-        if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain
-        {
-          cout << "element " << *currEle << " shall be bisected" << endl;
-          cout << "element volume in plus domain is " << plusVol << endl;
-          cout << "element volume in minus domain is " << minusVol << endl;
-          dserror("WARNING!!! Bisected domain shall have integration cells on both interface sides!");
-        } // end if no domain integration cell in one subdomain
+      eleVol = plusVol + minusVol;
 
-        eleVol = plusVol + minusVol;
+      if (plusVol/eleVol < critTol_)
+        critElesPlus_.insert(currEle->Id());
 
-        if (plusVol/eleVol < critTol_)
-          critElesPlus_.insert(currEle->Id());
-
-        if (minusVol/eleVol < critTol_)
-          critElesMinus_.insert(currEle->Id());
-      } // end if element bisected
+      if (minusVol/eleVol < critTol_)
+        critElesMinus_.insert(currEle->Id());
+    } // end if element bisected
   } // end loop over col elements
 } // end function getCritCutElements
 

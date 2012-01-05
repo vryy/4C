@@ -15,9 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XDOFMAPCREATION_H
 #define XDOFMAPCREATION_H
 
-#include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/interface.H"
-#include "../drt_xfem/element_ansatz.H"
+#include "dof_management.H"
 
 namespace XFEM
 {

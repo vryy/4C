@@ -17,11 +17,12 @@ Maintainer: Martin Winklmaier
 #define TIMEINT_STD_SEMILAGRANGE_H_
 
 
-#include "timeInt_std_extrapolation.H"
+#include "timeInt.H"
 
 
 namespace XFEM
 {
+  class Extrapolation;
 
 /*!
   \brief this class is used in XFEM to compute new values for standard degrees of freedom

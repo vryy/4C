@@ -25,7 +25,6 @@ Maintainer: Florian Henke
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_inpar/inpar_combust.H"
-#include "combust_interface.H"
 
 namespace DRT
 {

@@ -3152,7 +3152,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           const DRT::Element* ele = discret_->lRowElement(iele);
 
           // output only for bisected elements
-          if (dofmanagerForOutput_->getInterfaceHandle()->ElementBisected(ele))
+          if (dofmanagerForOutput_->getInterfaceHandle()->ElementSplit(ele))
           {
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector
@@ -3853,7 +3853,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           const DRT::Element* ele = discret_->lRowElement(iele);
 
           // output only for bisected elements
-          if (dofmanagerForOutput_->getInterfaceHandle()->ElementBisected(ele))
+          if (dofmanagerForOutput_->getInterfaceHandle()->ElementSplit(ele))
           {
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector

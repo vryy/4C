@@ -232,9 +232,9 @@ void XFEM::Extrapolation::bisection(
       {
         midele = eletmp;
         elefound = true;
-        if (oldinterfacehandle_->ElementBisected(midele->Id()) == true) // really cut -> ok
+        if (oldinterfacehandle_->ElementSplit(midele) == true) // really cut -> ok
           break;
-        else if (oldinterfacehandle_->GetNumDomainIntCells(midele) <= 1) // really uncut -> ok
+        else if (oldinterfacehandle_->ElementIntersected(midele->Id()) == false) // really uncut -> ok
           break;
         else // special cases -> try to take another element
           ; // do not break, but potential element is saved
@@ -244,7 +244,7 @@ void XFEM::Extrapolation::bisection(
     if (elefound)
       break;
     else // corresponds to CFL > 1 -> not very good, but possible
-      pointTmp.Update(1.0,pointTmp,-pow(0.5,iter+1),dist);
+      pointTmp.Update(-pow(0.5,iter+1),dist,1.0);
 
     if (iter==crit_max_iter) break;
   }
@@ -270,10 +270,10 @@ void XFEM::Extrapolation::bisection(
       curr_max_iter = std_max_iter; // usable point found
       midpoint = pointTmp; // possible point
       ximidpoint = xipointTmp;
-      pointTmp.Update(1.0,pointTmp,pow(0.5,i+1),dist); // nearer to endpoint
+      pointTmp.Update(pow(0.5,i+1),dist,1.0); // nearer to endpoint
     }
     else
-      pointTmp.Update(1.0,pointTmp,-pow(0.5,i+1),dist); // nearer to startpoint
+      pointTmp.Update(-pow(0.5,i+1),dist,1.0); // nearer to startpoint
   }
 
   // if element is (nearly) touched, the above bisection might fail
@@ -333,10 +333,10 @@ void XFEM::Extrapolation::bisection(
         {
           curr_max_iter = std_max_iter;
           startpointLeft = pointTmp; // possible point
-          pointTmp.Update(1.0,pointTmp,pow(0.5,i+1),dist); // nearer to optimal startpoint
+          pointTmp.Update(pow(0.5,i+1),dist,1.0); // nearer to optimal startpoint
         }
         else
-          pointTmp.Update(1.0,pointTmp,-pow(0.5,i+1),dist); // nearer to not-optimal, but possible node
+          pointTmp.Update(-pow(0.5,i+1),dist,1.0); // nearer to not-optimal, but possible node
       }
 
       curr_max_iter = crit_max_iter;
@@ -351,10 +351,10 @@ void XFEM::Extrapolation::bisection(
         {
           curr_max_iter = std_max_iter;
           startpointRight = pointTmp; // possible point
-          pointTmp.Update(1.0,pointTmp,-pow(0.5,i+1),dist); // nearer to original startpoint
+          pointTmp.Update(-pow(0.5,i+1),dist,1.0); // nearer to original startpoint
         }
         else
-          pointTmp.Update(1.0,pointTmp,+pow(0.5,i+1),dist); // nearer to midpoint, worse ratio, but possible
+          pointTmp.Update(+pow(0.5,i+1),dist,1.0); // nearer to midpoint, worse ratio, but possible
       }
 
       // check if startpoints changed
@@ -400,7 +400,7 @@ void XFEM::Extrapolation::bisection(
       if (elefound) break;
       if (iter==curr_max_iter) break;
 
-      pointTmp.Update(1.0,pointTmp,+pow(0.5,iter),dist);
+      pointTmp.Update(+pow(0.5,iter),dist,1.0);
     }
 
     if (!elefound)
@@ -410,7 +410,7 @@ void XFEM::Extrapolation::bisection(
     for (int i=iter;i<=curr_max_iter+1;i++)
     {
       if (!elefound)
-        pointTmp.Update(1.0,pointTmp,+pow(0.5,i),dist); // nearer to midpoint
+        pointTmp.Update(+pow(0.5,i),dist,1.0); // nearer to midpoint
       else
       {
         if (interfaceSideCompare(startele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
@@ -418,10 +418,10 @@ void XFEM::Extrapolation::bisection(
           curr_max_iter = std_max_iter;
           startpoint = pointTmp; // possible point
           xistartpoint = xipointTmp;
-          pointTmp.Update(1.0,pointTmp,-pow(0.5,i),dist); // nearer to original startpoint
+          pointTmp.Update(-pow(0.5,i),dist,1.0); // nearer to original startpoint
         }
         else
-          pointTmp.Update(1.0,pointTmp,+pow(0.5,i),dist); // nearer to midpoint
+          pointTmp.Update(+pow(0.5,i),dist,1.0); // nearer to midpoint
       }
 
       if (i<=curr_max_iter)

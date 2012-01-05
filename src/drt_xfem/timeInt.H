@@ -18,11 +18,9 @@ Maintainer: Martin Winklmaier
 
 
 
-#include "dof_management.H"
-#include "dof_management_element.H"
+
 #include "enrichment_utils.H"
 #include "../drt_cut/cut_position.H"
-#include "../drt_lib/drt_exporter.H"
 
 
 namespace XFEM
@@ -1166,6 +1164,7 @@ protected:
   ) const
   {
     const int nsd = 3; // dimension
+    numnodeused = numnode; // initial value
 
     // remark: this function shall handle critical enrichments
     // therefore it shall sort out enrichments nearly as far away
@@ -1194,72 +1193,80 @@ protected:
     // handle touched elements (the enrichment value influences the touchedminuselement)
     if (oldinterfacehandle_->ElementTouchedMinus(element))
     {
-      for (int inode=0;inode<numnode;inode++) // loop over element nodes
+      // here the tolerance has to be moderate so that all touched nodes are used:
+      // a small tolerance might result in numnodeused = 0, giving nans finally
+      // a high tolerance might result in using nodes which are not touched
+      double TOL = 1e-6;
+      numnodeused = 0; // entry while loop below
+      while (numnodeused==0)
       {
-        if (fabs(dmin(inode)/diameter) > 1e-6) // no touching node is not enriched by this element and shall therefore not be used
+        numnodeused = numnode;
+
+        for (int inode=0;inode<numnode;inode++) // loop over element nodes
         {
-          numnodeused--;
-          dmin(inode) = INFINITY; // set distance to inifinity as indicator for critical case
-        } // end if
-      } // end loop over element nodes
+          if (fabs(dmin(inode)/diameter) > 1e-3) // no touching node is not enriched by this element and shall therefore not be used
+          {
+            numnodeused--;
+            dmin(inode) = INFINITY; // set distance to inifinity as indicator for critical case
+          } // end if
+        } // end loop over element nodes
+
+        if (numnodeused==0)
+          TOL = 10*TOL; // increase tolerance so that nodes will be identified as touched in next round of loop
+      }
     } // end if element touched minus
 
     // handle bisected elements
-#ifdef COMBUST_CUT
-    else if (oldinterfacehandle_->ElementBisected(element->Id()))
-#else
-      else if (oldinterfacehandle_->ElementBisected(element))
-#endif
+    else if (oldinterfacehandle_->ElementSplit(element))
+    {
+      // sort out nodes far away since their enrichment values are critical
+      // but guarantee that both interface sides still give entries
+      LINALG::Matrix<1,numnode> tmpdmin = dmin; // minimal distances, potentially modified
+      double Tol = 0.5; // tolerance for critical values check
+      double minTol = 1e-3; // minimal tolerance for critical values check
+      bool plusside = false;
+      bool minusside = false;
+
+      while(true) // loop that stops when enriched nodes on both interface sides are found
       {
-        // sort out nodes far away since their enrichment values are critical
-        // but guarantee that both interface sides still give entries
-        LINALG::Matrix<1,numnode> tmpdmin = dmin; // minimal distances, potentially modified
-        double Tol = 0.5; // tolerance for critical values check
-        double minTol = 1e-3; // minimal tolerance for critical values check
-        numnodeused = numnode; // number of not critical nodes
-        bool plusside = false;
-        bool minusside = false;
-
-        while(true) // loop that stops when enriched nodes on both interface sides are found
+        for (int inode=0;inode<numnode;inode++) // loop over element nodes
         {
-          for (int inode=0;inode<numnode;inode++) // loop over element nodes
+          if ((diameter-fabs(tmpdmin(inode)))/diameter < Tol) // node shall not be used
           {
-            if ((diameter-fabs(tmpdmin(inode)))/diameter < Tol) // node shall not be used
-            {
-              numnodeused--;
-              tmpdmin(inode) = INFINITY;
-            }
-            else
-            {
-              if (tmpdmin(inode)>=0) plusside = true;
-              else minusside = true;
-            } // end if
-          } // end loop over nodes
-
-          // check if enrichment values for both sides exist
-          if (plusside && minusside) // both sides exist
-          {
-            //        cout << "final tolerance is " << Tol << endl;
-            break;
+            numnodeused--;
+            tmpdmin(inode) = INFINITY;
           }
           else
           {
-            if (Tol<minTol)
-              break;
-            else
-            {// make tolerance smaller and reset values
-              tmpdmin = dmin;
-              Tol = 0.8*Tol; // get tol smaller
-              numnodeused = numnode;
-              plusside = false;
-              minusside = false;
-            } // end if tolerance
-          } // end if both sides exist
-        } // end while loop
-        dmin = tmpdmin;
-      }
-      else
-        dserror("BUG! This function shall just handle bisected or touched minus elements!");
+            if (tmpdmin(inode)>=0) plusside = true;
+            else minusside = true;
+          } // end if
+        } // end loop over nodes
+
+        // check if enrichment values for both sides exist
+        if (plusside && minusside) // both sides exist
+        {
+          //        cout << "final tolerance is " << Tol << endl;
+          break;
+        }
+        else
+        {
+          if (Tol<minTol)
+            break;
+          else
+          {// make tolerance smaller and reset values
+            tmpdmin = dmin;
+            Tol = 0.8*Tol; // get tol smaller
+            numnodeused = numnode;
+            plusside = false;
+            minusside = false;
+          } // end if tolerance
+        } // end if both sides exist
+      } // end while loop
+      dmin = tmpdmin;
+    }
+    else
+      dserror("BUG! This function shall just handle bisected or touched minus elements!");
   };
 
   //! compute signed distance of a node to the interface part in an element
