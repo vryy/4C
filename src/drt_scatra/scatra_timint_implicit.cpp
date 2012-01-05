@@ -406,7 +406,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     // fine-scale velocities (always three velocity components per node)
     // transferred from the fluid field
-    fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    // only Smagorinsky small
+    if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+      fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
     // Output
     if (myrank_ == 0)
@@ -414,6 +416,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       cout << "Fine-scale subgrid-diffusivity approach based on AVM3: ";
       cout << fssgd_;
       cout << &endl << &endl;
+    }
+
+    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+    {
+      if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small
+          and turbparams->get<string>("FSSUGRVISC") != "Smagorinsky_small")
+        dserror ("Same subgrid-viscosity approach expected!");
+      if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_all
+          and turbparams->get<string>("FSSUGRVISC") != "Smagorinsky_all")
+        dserror ("Same subgrid-viscosity approach expected!");
     }
   }
 
@@ -440,6 +452,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     {
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
 
+      // initalize matrix used to build the scale separation operator
+      sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+
       // fine-scale velocities (always three velocity components per node)
       // transferred from the fluid field
       fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
@@ -460,8 +475,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // warning No. 1: if classical (all-scale) turbulence model other than
     // constant-coefficient Smagorinsky or multifractal subrgid-scale modeling
     // is intended to be used
-    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky" or
-        turbparams->get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+    if (turbparams->get<string>("PHYSICAL_MODEL") != "Smagorinsky" and
+        turbparams->get<string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales" and
+        turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
       dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model and multifractal subrgid-scale modeling currently possible!");
 
     // warning No. 2: if classical (all-scale) turbulence model and fine-scale
@@ -1671,7 +1687,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
   AddMultiVectorToParameterList(eleparams,"magnetic field",magneticfield_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
-  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
@@ -1946,7 +1962,9 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   bool fsvelswitch = (fluidfsvel != Teuchos::null);
   // some thing went wrong if we want to use multifractal subgrid-scale modeling
   // and have not got the fine-scale velocity
-  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and not fsvelswitch)
+  if (step_>=1 and (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales
+       or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+       and not fsvelswitch)
     dserror("Fine-scale velocity expected for multifractal subgrid-scale modeling!");
 
   // loop over all local nodes of scatra discretization

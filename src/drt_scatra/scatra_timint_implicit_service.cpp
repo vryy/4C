@@ -1637,7 +1637,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
       AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
       // and provide fine-scale velocity for multifractal subgrid-scale modeling only
-      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
         AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
       //provide displacement field in case of ALE

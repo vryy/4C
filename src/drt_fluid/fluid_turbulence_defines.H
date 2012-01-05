@@ -68,6 +68,8 @@ namespace FLD {
 // multifractal subgrid-scales      //
 //----------------------------------//
 
+// !! CAUTION !!: these options are not available for coupling with scalar transport
+
 //> multifractal subgrid-scale model as proposed by Burton and Dahm (2005)
 //> cross-stress term
 //> currently conservative form (may be switched off)

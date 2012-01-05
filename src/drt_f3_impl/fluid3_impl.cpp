@@ -972,7 +972,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
     GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-  //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
   LINALG::Matrix<nsd_,1> B(true);
@@ -980,19 +979,24 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   {
     if (not f3Parameter_->B_gp_)
     {
-      //------------------------------------------------------------------------------------------------
-      // calculate coefficient for multifractal modeling of subgrid velocity
-      //------------------------------------------------------------------------------------------------
       // make sure to get material parameters at element center
-      if (f3Parameter_->mat_gp_ and f3Parameter_->tau_gp_)
+      if (f3Parameter_->mat_gp_)
         //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
         GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-      // calculate parameters of multifractal subgrid-scales
+      // provide necessary velocities and gradients at element center
+      velint_.Multiply(evelaf,funct_);
+      fsvelint_.Multiply(fsevelaf,funct_);
+      vderxy_.MultiplyNT(evelaf,derxy_);
+      // calculate parameters of multifractal subgrid-scales and, finally,
+      // calculate coefficient for multifractal modeling of subgrid velocity
       PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+      // clear all velocities and gradients
+      velint_.Clear();
+      fsvelint_.Clear();
+      vderxy_.Clear();
     }
   }
-  //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
 
 
   // calculate subgrid viscosity and/or stabilization parameter at element center
@@ -1044,7 +1048,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     vderxy_.MultiplyNT(evelaf,derxy_);
 
-    // get fine-scale velocity derivatives at integration point
+    // get fine-scale velocity and its derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
     {
@@ -1053,6 +1057,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     else
     {
       fsvderxy_.Clear();
+    }
+    if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      fsvelint_.Multiply(fsevelaf,funct_);
+      fsvderxy_.MultiplyNT(fsevelaf,derxy_);
+    }
+    else
+    {
+      fsvelint_.Clear();
     }
 
     // get convective velocity at integration point
@@ -1078,14 +1091,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // (only required for one-step-theta and BDF2 time-integration schemes)
     histmom_.Multiply(emhist,funct_);
 
-
-
-    //--------------------------------------SCALE SIMILARITY------------------------------------------
-    //------------------------------------------------------------------------------------------------
     // preparation of scale similarity type models
     // get filtered velocities and reynolds-stresses at integration point
     // get fine scale velocity at integration point for advanced models
-    //------------------------------------------------------------------------------------------------
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
      or f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
     {
@@ -1154,9 +1162,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       reystressinthat_.Clear();
       reystresshatdiv_.Clear();
       velhativelhatjdiv_.Clear();
-      fsvelint_.Clear();
     }
-    //--------------------------------------SCALE SIMILARITY------------------------------------------
 
 
     //----------------------------------------------------------------------
@@ -1185,30 +1191,20 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       CalcStabParameter(vol);
     }
 
-    //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
-    // potential evaluation of multifractal subgrid-scales at integarion point
+    // potential evaluation of coefficient of multifractal subgrid-scales at integarion point
     if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
       if (f3Parameter_->B_gp_)
       {
-        //------------------------------------------------------------------------------------------------
-        // calculate coefficient for multifractal modeling of subgrid velocity
-        //------------------------------------------------------------------------------------------------
         // make sure to get material parameters at gauss point
-        if (not f3Parameter_->mat_gp_ and not f3Parameter_->tau_gp_)
+        if (not f3Parameter_->mat_gp_)
           GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
         // calculate parameters of multifractal subgrid-scales
         PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
       }
 
-      //------------------------------------------------------------------------------------------------
-      // calculate fine-scale velocity for multifractal subgrid-scale model
-      //------------------------------------------------------------------------------------------------
-      fsvelint_.Multiply(fsevelaf,funct_);
-
-      fsvderxy_.MultiplyNT(fsevelaf,derxy_);
-
+      // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
       for (int idim=0; idim<nsd_; idim++)
         mffsvelint_(idim,0) = fsvelint_(idim,0) * B(idim,0);
 
@@ -1219,17 +1215,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
 
       mffsvdiv_ = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
-
     }
     else
     {
-      fsvelint_.Clear();
       mffsvelint_.Clear();
       mffsvderxy_.Clear();
       mffsvdiv_ = 0.0;
     }
-    //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
-
 
     //----------------------------------------------------------------------
     //  evaluation of various partial operators at integration point
@@ -2322,7 +2314,7 @@ else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
 
   // compute rate of strain at n+alpha_F or n+1
   double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
+  rateofstrain = GetStrainRate(evelaf);
 
   // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -2347,7 +2339,7 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
 
   // compute rate of strain at n+alpha_F or n+1
   double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
+  rateofstrain = GetStrainRate(evelaf);
 
   // compute viscosity according to a modified power law model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
@@ -2884,11 +2876,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     // ratio of viscous scale to element length
     double scale_ratio = 0.0;
 
-    // get velocity at element center
-    velint_.Multiply(evelaf,funct_);
     // get norm
     const double vel_norm = velint_.Norm2();
-    fsvelint_.Multiply(fsevelaf,funct_);
     const double fsvel_norm = fsvelint_.Norm2();
 
     // do we have a fixed parameter N
@@ -2983,7 +2972,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::gradient_based:
       {
-        vderxy_.MultiplyNT(evelaf,derxy_);
         LINALG::Matrix<3,1> normed_velgrad;
 
         for (int rr=0;rr<3;++rr)
@@ -3142,7 +3130,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::strainrate:
       {
-        strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+        //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+        strainnorm = GetStrainRate(evelaf);
+        strainnorm /= sqrt(2.0);
         Re_ele = strainnorm * hk * hk * densaf_ / visc_;
         break;
       }
@@ -3162,7 +3152,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
       //  lambda_nu
       //
       scale_ratio = f3Parameter_->c_nu_ * pow(Re_ele,3.0/4.0);
-      // scale_ration < 1.0 leads to N < 0
+      // scale_ratio < 1.0 leads to N < 0
       // therefore, we clip once more
       if (scale_ratio < 1.0)
         scale_ratio = 1.0;
@@ -3179,9 +3169,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
         N[i] = N_re;
     }
 
-    velint_.Clear();
-    fsvelint_.Clear();
-
 #ifdef DIR_N
     vector<double> weights (3);
     weights[0] = WEIGHT_NX;
@@ -3196,7 +3183,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     {
       // not yet calculated, estimate norm of strain rate
       if (f3Parameter_->CalcN_ or f3Parameter_->refvel_ != INPAR::FLUID::strainrate)
-        strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+      {
+        //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+        strainnorm = GetStrainRate(evelaf);
+        strainnorm /= sqrt(2.0);
+      }
 
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * densaf_ / visc_;
@@ -3447,7 +3438,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
 
   // compute (all-scale) rate of strain
   double rateofstrain = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
+  rateofstrain = GetStrainRate(evelaf);
 
   if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
   {
@@ -3549,7 +3540,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc(
 
     // compute (all-scale) rate of strain
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
+    rateofstrain = GetStrainRate(evelaf);
 
     fssgvisc_ = densaf_ * Cs * Cs * hk * hk * rateofstrain;
   }
@@ -3570,7 +3561,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc(
 
     // fine-scale rate of strain
     double fsrateofstrain = -1.0e30;
-    fsrateofstrain = GetStrainRate(fsevelaf,derxy_,fsvderxy_);
+    fsrateofstrain = GetStrainRate(fsevelaf);
 
     fssgvisc_ = densaf_ * Cs * Cs * hk * hk * fsrateofstrain;
   }
@@ -3590,8 +3581,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
   LINALG::Matrix<nsd_,1>& B
   )
 {
-  //                                  1
-  //          |       1              |2
+  //
+  //          |       1              |
   //  kappa = | -------------------- |
   //          |  1 - alpha ^ (-4/3)  |
   //
@@ -3604,13 +3595,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-    B(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
+    B(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*N[dim]/3.0) * sqrt((pow(2.0,4.0*N[dim]/3.0)-1));
+//    if (eid_ == 100)
+//     std::cout << "fluid  " << setprecision (10) << B(dim,0) << std::endl;
   }
-#ifdef DIR_N // overwrite for direction dependent N
-  B(0,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
-  B(1,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[1]/3.0) * sqrt((pow(2.0,4.0*N[1]/3.0)-1));
-  B(2,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[2]/3.0) * sqrt((pow(2.0,4.0*N[2]/3.0)-1));
-#endif
 
 #ifdef CONST_B // overwrite all, just for testing
   for (int dim=0; dim<nsd_; dim++)

@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include <Epetra_IntSerialDenseVector.h>
 #include "../drt_lib/drt_singletondestruction.H"
 
@@ -167,9 +168,20 @@ public:
         const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
-        const enum INPAR::FLUID::TurbModelAction turbmodel, ///< flag for turbulence action
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
+        const double                          Csgs_sgvel, ///< parameter of multifractal subgrid-scales (velocity)
+        const double                          alpha, ///< grid-filter to test-filter ratio
+        const bool                            calc_N, ///< flag to activate calculation of N
+        const double                          N_vel, ///< value for N if not calculated
+        const enum INPAR::FLUID::RefVelocity  refvel, ///< reference velocity
+        const enum INPAR::FLUID::RefLength    reflength, ///< reference length
+        const double                          c_nu, ///< scaling for Re
+        const bool                            nwl, ///< flag to activate near-wall limit
+        const double                          Csgs_sgphi, ///< parameter of multifractal subgrid-scales (phi)
+        const double                          c_diff, ///< scaling for Re*Pr
+        const double                          beta, ///< to include lhs
+        const bool                            BD_gp, ///< evaluation of model coefficient at gp
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
@@ -237,7 +249,6 @@ public:
         const double                          timefac,
         const enum INPAR::SCATRA::AssgdType   whichassgd,
         const bool                            assgd,
-        const enum INPAR::FLUID::TurbModelAction turbmodel,
         const double                          Cs,
         const double                          tpn,
         const double                          vol,
@@ -272,6 +283,24 @@ public:
     virtual double CalcCharEleLength(
                                      const double  vol,
                                      const double  vel_norm
+    );
+
+    //! calculate coefficients of mutifractal subgrid-scale modeling
+    virtual void CalcBAndDForMultifracSubgridScales(
+        LINALG::Matrix<nsd_,1>&                     B_mfs, ///< coefficient for fine-scale velocity (will be filled)
+        LINALG::Matrix<nsd_,1>&                     D_mfs, ///< coefficient for fine-scale scalar (will be filled)
+        const double                                Csgs_sgvel, ///< parameter of multifractal subgrid-scales (velocity)
+        const double                                alpha, ///< grid-filter to test-filter ratio
+        const bool                                  calc_N, ///< flag to activate calculation of N
+        const double                                N_vel, ///< value for N if not calculated
+        const enum INPAR::FLUID::RefVelocity        refvel, ///< reference velocity
+        const enum INPAR::FLUID::RefLength          reflength, ///< reference length
+        const double                                c_nu, ///< scaling for Re
+        const bool                                  nwl, ///< flag to activate near-wall limit
+        const double                                Csgs_sgphi, ///< parameter of multifractal subgrid-scales (phi)
+        const double                                c_diff, ///< scaling for Re*Pr
+        const double                                vol, ///< volume of element
+        const int                                   k
     );
 
     //! calculate subgrid-scale velocity
@@ -507,10 +536,11 @@ public:
     };
 
     //! calculate rate of strain of (fine-scale) velocity
-    inline double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel,
-                                const LINALG::Matrix<nsd_,nen_>& derxy,
-                                LINALG::Matrix<nsd_,nsd_>     & velderxy)
+    inline double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel)
     {
+      // evel is tranferred here since the evaluation of the strain rate can be performed
+      // for various velocities such as velint_, fsvel_, ...
+
       double rateofstrain=0;
 
       // get velocity derivatives at integration point
@@ -524,7 +554,8 @@ public:
       //
       // j : direction of derivative x/y/z
       //
-      velderxy.MultiplyNT(evel,derxy);
+      LINALG::Matrix<nsd_,nsd_> velderxy;
+      velderxy.MultiplyNT(evel,derxy_);
 
       // compute (resolved) rate of strain
       //
@@ -550,8 +581,6 @@ public:
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
       }
-
-      // sqrt(two_epsilon(rr,mm)*two_epsilon(mm,rr)/4.0*2.0)
 
       return(sqrt(rateofstrain/2.0));
     }
@@ -711,6 +740,8 @@ public:
     bool mat_gp_;
     //! flag for stabilization parameter evaluation at Gaussian integration points
     bool tau_gp_;
+    //! turbulence model
+    enum INPAR::FLUID::TurbModelAction turbmodel_;
 
     //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,nen_> evelnp_;
@@ -794,10 +825,6 @@ public:
     LINALG::Matrix<nsd_,nen_> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<numderiv2_,nen_> derxy2_;
-    //! global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::Matrix<nsd_,nsd_> vderxy_;
-    //! global fine-scale velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::Matrix<nsd_,nsd_> fsvderxy_;
     //! rhs force in Gauss point
     vector<double> rhs_;
     //! rhs of temperature equation in case of reactive equation system
@@ -810,8 +837,13 @@ public:
     LINALG::Matrix<nsd_,1> convelint_;
     //! subgrid-scale velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> sgvelint_;
+    //! multifractal subgrid-scale velocity vector in gausspoint
+    LINALG::Matrix<nsd_,1> mfsgvelint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)
     LINALG::Matrix<nsd_,1> migvelint_;
+    //! fine-scale velocity values at gausspoint
+    //! required for fine-scale subgrid diffusivity of type smagorinsky_small and multifractal subgrid scales
+    LINALG::Matrix<nsd_,1> fsvelint_;
     //! velocity divergence
     double vdiv_;
     //! residual of scalar transport equation
@@ -840,6 +872,8 @@ public:
     LINALG::Matrix<nsd_,1> gradphi_;
     //! (global) gradient of fine-scale part of scalar at integration point
     LINALG::Matrix<nsd_,1> fsgradphi_;
+    //! (global) gradient of multifractal subgrid-scale scalar at integration point
+    LINALG::Matrix<nsd_,1> mfsggradphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<nen_,1> laplace_;
     //! convective term (part of residual)
@@ -870,6 +904,9 @@ public:
     bool migrationinresidual_;
     //! reaction coefficent derivative (needed for matrix contribution)
     vector<double> reacoeffderiv_;
+
+    //TODO: remove
+    int eid_;
 
 
   };

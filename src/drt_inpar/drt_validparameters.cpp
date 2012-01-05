@@ -2458,7 +2458,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Smagorinsky",
       "Smagorinsky_with_van_Driest_damping",
       "Dynamic_Smagorinsky",
-      "AVM3",
       "Scale_Similarity",
       "Scale_Similarity_basic",
       "Multifractal_Subgrid_Scales"),
@@ -2467,11 +2466,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
       "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
       "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow.",
-      "Algebraic variational multiscale-multigrid method",
       "Scale Similarity Model coherent with the variational multiscale formulation",
       "Scale Similarity Model according to liu, meneveau, katz",
       "Multifractal Subgrid-Scale Modeling based on the work of burton"),
-    tuple<int>(0,1,2,3,4,5,6,7),
+    tuple<int>(0,1,2,3,4,5,6),
     &fdyn_turbu);
 
   {
@@ -2677,6 +2675,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn_turbmfs);
 
   DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbmfs);
+
+  DoubleParameter(
+    "CSGS_PHI",
+    0.0,
+    "Modelparameter of multifractal subgrid-scales for scalar transport.",
+    &fdyn_turbmfs);
+
+  DoubleParameter(
+    "C_DIFF",
+    1.0,
+    "Proportionality constant between Re*Pr and ratio dissipative scale to element length. Usually equal cnu.",
+    &fdyn_turbmfs);
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");

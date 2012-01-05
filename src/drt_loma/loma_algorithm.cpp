@@ -178,7 +178,7 @@ void LOMA::Algorithm::InitialCalculations()
   ScaTraField().SetVelocityField(FluidField().Velnp(),
                                  Teuchos::null,
                                  Teuchos::null,
-                                 Teuchos::null,
+                                 FluidField().FsVel(),
                                  Teuchos::null,
                                  FluidField().Discretization());
 

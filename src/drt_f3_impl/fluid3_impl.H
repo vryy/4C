@@ -883,9 +883,7 @@ namespace ELEMENTS
 
       \return computed rate of strain
      */
-    double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel,
-                         const LINALG::Matrix<nsd_,nen_>& derxy,
-                         LINALG::Matrix<nsd_,nsd_>        & velderxy)
+    double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel)
     {
       double rateofstrain=0.0;
 
@@ -903,7 +901,8 @@ namespace ELEMENTS
       //
       // j : direction of derivative x/y/z
       //
-      velderxy.MultiplyNT(evel,derxy);
+      LINALG::Matrix<nsd_,nsd_> velderxy;
+      velderxy.MultiplyNT(evel,derxy_);
 
       // compute (resolved) rate of strain
       //
@@ -935,64 +934,6 @@ namespace ELEMENTS
       return(sqrt(rateofstrain/2.0));
     }
 
-    /*!
-      \brief calculate norm of strain of (fine-scale) velocity
-
-      \param evel       (i) nodal velocity values
-      \param derxy      (i) shape function derivatives
-      \param velderxy   (o) velocity derivatives
-
-      \return computed norm of strain
-     */
-    double GetNormStrain(const LINALG::Matrix<nsd_,nen_>& evel,
-                         const LINALG::Matrix<nsd_,nen_>& derxy,
-                         LINALG::Matrix<nsd_,nsd_>      & velderxy)
-    {
-      double normofstrain=0.0;
-
-      // velderxy is computed here since the evaluation of the strain rate can be performed
-      // at the element center before the gauss loop
-
-      // get velocity derivatives at integration point
-      //
-      //              +-----  dN (x)
-      //   dvel (x)    \        k
-      //   -------- =   +     ------ * vel
-      //      dx       /        dx        k
-      //        j     +-----      j
-      //              node k
-      //
-      // j : direction of derivative x/y/z
-      //
-      velderxy.MultiplyNT(evel,derxy);
-
-      // compute (resolved) norm of strain
-      //
-      //          +-                                 -+ 1
-      //          |          /   \           /   \    | -
-      //          |     eps | vel |   * eps | vel |   | 2
-      //          |          \   / ij        \   / ij |
-      //          +-                                 -+
-      //
-      LINALG::Matrix<nsd_,nsd_> two_epsilon;
-      for(int rr=0;rr<nsd_;++rr)
-      {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
-        }
-      }
-
-      for(int rr=0;rr<nsd_;++rr)
-      {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          normofstrain += two_epsilon(rr,mm)*two_epsilon(rr,mm);
-        }
-      }
-
-      return(sqrt(normofstrain/4.0));
-    }
 
     /*!
      * \brief fill elment matrix and vectors with the global values
