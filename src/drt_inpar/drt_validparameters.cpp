@@ -1388,6 +1388,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        &scontact);
 
   DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&scontact);
+  IntParameter("BEAMS_TREEDEPTH",6,"max tree depth of the octree",&scontact);
 
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
                                yesnotuple,yesnovalue,&scontact);

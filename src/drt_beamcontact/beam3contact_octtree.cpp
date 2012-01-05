@@ -52,7 +52,7 @@ basisnodes_(discret.NumGlobalNodes()),
 dofoffset_(dofoffset)
 {
   // define max tree depth (maybe, set this as input file parameter)
-  maxtreedepth_ = 6;
+  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
   // define extrusion factor
   extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
 

@@ -454,7 +454,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     case INPAR::STATMECH::statout_octree:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 && beamcmanager!=Teuchos::null)
       {
         std::map<int, LINALG::Matrix<3, 1> > currentpositions;
         std::map<int, LINALG::Matrix<3, 1> > currentrotations;

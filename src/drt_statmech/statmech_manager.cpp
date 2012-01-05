@@ -3345,6 +3345,11 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
     Epetra_Vector disrow(*discret_.DofRowMap(), true);
     GmshOutput(disrow,filename,0);
   }
+  if(beamcmanager!=Teuchos::null && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_octree)
+  {
+    beamcmanager->OcTree()->OctTreeSearch(currentpositions,999999);
+    beamcmanager->ResetPairs();
+  }
   //couts
   if(!discret_.Comm().MyPID())
   {
