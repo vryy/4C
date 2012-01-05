@@ -143,7 +143,7 @@ void MAT::Yeoh::Evaluate(
   // invariants
   const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
   const double I3 = C(0)*C(1)*C(2)
-        + C(3)*C(4)*C(5)
+        + 2.0*C(3)*C(4)*C(5)
         - C(1)*C(5)*C(5)
         - C(2)*C(3)*C(3)
         - C(0)*C(4)*C(4);    // 3rd invariant, determinant
