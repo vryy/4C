@@ -60,7 +60,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   //print all dofsets
   xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
-  FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_,velpressplitter_);
+  FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,velpressplitter_);
 
   fluiddofrowmap_ = xfluid.bgdis_->DofRowMap();
 
@@ -230,6 +230,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     discret.SetState("velaf",velnp_);
     alediscret.SetState("velaf",xfluid_.alevelnp_);
   }
+
+  eleparams.set("nitsche_stab", xfluid_.nitsche_stab_);
+  eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
 
     DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
     DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,Teuchos::null,xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
@@ -423,8 +426,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                                    bintpoints,
                                                    side_coupling,
                                                    eleparams,
-                                                   xfluid_.nitsche_stab_,
-                                                   xfluid_.nitsche_stab_conv_,
                                                    strategy.Elematrix1(),
                                                    strategy.Elevector1(),
                                                    Cuiui);
@@ -803,6 +804,11 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid_TwoSidedMortaring( T
     discret.SetState("velaf",velnp_);
     alediscret.SetState("velaf",xfluid_.alevelnp_);
   }
+  
+  eleparams.set("coupling_strategy",xfluid_.coupling_strategy_);
+
+  eleparams.set("nitsche_stab", xfluid_.nitsche_stab_);
+  eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
 
 
     DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
@@ -997,9 +1003,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid_TwoSidedMortaring( T
                                                    eleparams,
                                                    alediscret,
                                                    xfluid_.boundary_emb_gid_map_,
-                                                   xfluid_.coupling_strategy_,
-                                                   xfluid_.nitsche_stab_,
-                                                   xfluid_.nitsche_stab_conv_,
                                                    strategy.Elematrix1(),
                                                    strategy.Elevector1(),
                                                    Cuiui);
@@ -2216,8 +2219,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   dofset_out_ = DRT::IndependentDofSet();
   dofset_out_.Reset();
   dofset_out_.AssignDegreesOfFreedom(*bgdis_,0,0);
-  // split based on complete fluid field
-  FLD::UTILS::SetupFluidSplit(*bgdis_,dofset_out_,3,velpressplitterForOutput_);
+  // split based on complete fluid field (standard splitter that handles one dofset)
+  FLD::UTILS::SetupFluidSplit(*bgdis_,dofset_out_,numdim_,velpressplitterForOutput_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
@@ -2375,6 +2378,11 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
     cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
     cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
     cout << "\n";
+
+    if(stabparams->get<string>("VSTAB") != "no_vstab")              dserror("check VSTAB for XFEM");
+    if(stabparams->get<string>("CROSS-STRESS") != "no_cross")       dserror("check CROSS-STRESS for XFEM");
+    if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
+
   }
 
   // distinguish stationary and instationary case

@@ -81,6 +81,72 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
   extractor.Setup(*dis.DofRowMap(),maps);
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+                                 int fluid_ndof,
+                                 int pres_ndof,
+                                 LINALG::MultiMapExtractor& extractor)
+{
+  unsigned fp_dim = static_cast<unsigned>(fluid_ndof + pres_ndof);
+
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dis.Dof(node);
+
+    if( (dof.size() % fp_dim) != 0) dserror("Fluid-Pres-Split is not unique! mismatch between number of dofs and fluid/pres dim");
+
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      // test for dof position
+      if (j%fp_dim < static_cast<unsigned>(fluid_ndof))
+      {
+        otherdofset.insert(dof[j]);
+      }
+      else
+      {
+        conddofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                conddofmapvec.size(),
+                                &conddofmapvec[0],
+                                0,
+                                dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                otherdofmapvec.size(),
+                                &otherdofmapvec[0],
+                                0,
+                                dis.Comm()));
+  otherdofmapvec.clear();
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps( 2 );
+  maps[0] = otherdofmap;
+  maps[1] = conddofmap;
+  extractor.Setup(*dis.DofRowMap(),maps);
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,

@@ -160,9 +160,6 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::XFluid2Impl::GetDBCMapExtracto
 void ADAPTER::XFluid2Impl::Integrate()
 {
 
-    // output of stabilization details
-    fluid_.PrintStabilizationParams();
-
     // call standard integrate routine for stationary interfaces
     fluid_.Integrate();
 
@@ -739,64 +736,6 @@ double ADAPTER::XFluid2Impl::Dt() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluid2Impl::LiftDrag()
 {
-  cout << YELLOW_LIGHT << "check LiftDrag implementation" << END_COLOR << endl;
-
-  // -------------------------------------------------------------------
-  //          calculate lift'n'drag forces from the residual
-  // -------------------------------------------------------------------
-
-  // get forces on all procs
-  // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<const Epetra_Vector> iforcecol = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, fluid_.itrueresidual_);
-
-  if (fluid_.Boundary_Dis()->Comm().MyPID() == 0)
-  {
-    // compute force components
-    const int nsd = 3;
-    const Epetra_Map* dofcolmap = boundarydis_->DofColMap();
-    LINALG::Matrix<3,1> c(true);
-    for (int inode = 0; inode < boundarydis_->NumMyColNodes(); ++inode)
-    {
-      const DRT::Node* node = boundarydis_->lColNode(inode);
-      const std::vector<int> dof = boundarydis_->Dof(node);
-      for (int isd = 0; isd < nsd; ++isd)
-      {
-        // minus to get correct sign of lift and drag (force acting on the body)
-        c(isd) -= (*iforcecol)[dofcolmap->LID(dof[isd])];
-      }
-    }
-
-    // print to file
-    std::ostringstream s;
-    std::ostringstream header;
-
-    header << left  << std::setw(10) << "Time"
-           << right << std::setw(16) << "F_x"
-           << right << std::setw(16) << "F_y"
-           << right << std::setw(16) << "F_z";
-    s << left  << std::setw(10) << scientific << Time()
-      << right << std::setw(16) << scientific << c(0)
-      << right << std::setw(16) << scientific << c(1)
-      << right << std::setw(16) << scientific << c(2);
-
-    std::ofstream f;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".liftdrag.txt";
-    if (Step() <= 1)
-    {
-      f.open(fname.c_str(),std::fstream::trunc);
-      //f << header.str() << endl;
-    }
-    else
-    {
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-    }
-    f << s.str() << "\n";
-    f.close();
-
-//    std::cout << header.str() << endl << s.str() << endl;
-  }
-
   fluid_.LiftDrag();
 }
 

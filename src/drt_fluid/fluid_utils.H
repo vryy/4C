@@ -358,6 +358,33 @@ void SetupFluidSplit(const DRT::Discretization& dis,
                      int ndim,
                      LINALG::MapExtractor& extractor);
 
+
+/// Split dof row map of discretization into velocity and pressure maps
+/*!
+  This versions is adopted for XFluid and XFluidFluid where more dofsets are used for one node.
+  To get a unique split for velocity and pressure we have to define velocity ndof and pressure ndof.
+  The pres_ndof defines the offset between velocity dofs for two nodes.
+  This splitter works also for cases when nodes do not carry dofs (nodes in void domain!).
+
+  The velocity dofs are assigned to map 0 (the other map) and the pressure
+  dofs are assigned to map 1 (the condition map).
+
+  \param dis : (in) Discretization
+  \param fluid_ndof : (in) ndofs for fluid vector (2 or 3)
+  \param pres_ndof : (in) ndofs for pressure (usually 1)
+  \param extractor : (out) ready made map splitter
+
+  \author schott
+  \date 12/11
+ */
+void SetupFluidSplit(const DRT::Discretization& dis,
+                     int fluid_ndof,
+                     int pres_ndof,
+                     LINALG::MultiMapExtractor& extractor);
+
+
+
+
 /// Split dof row map of discretization into velocity and pressure maps
 /*!
 
