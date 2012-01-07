@@ -8,8 +8,8 @@ find_path(ACML_INCLUDES
   NAMES
   acml.h
   PATHS
-  $ENV{ACMLDIR}/include
-  $ENV{ACML_DIR}/include
+  ${ACMLDIR}/include
+  ${ACML_DIR}/include
   ${INCLUDE_INSTALL_DIR}
 )
 
@@ -17,8 +17,8 @@ find_library(ACML_LIBRARIES
   NAMES
   acml_mp acml_mv
   PATHS
-  $ENV{ACMLDIR}/lib
-  $ENV{ACML_DIR}/lib
+  ${ACMLDIR}/lib
+  ${ACML_DIR}/lib
   ${LIB_INSTALL_DIR}
 )
 
@@ -27,7 +27,7 @@ find_file(ACML_LIBRARIES
   libacml_mp.so
   PATHS
   /usr/lib
-  $ENV{ACMLDIR}/lib
+  ${ACMLDIR}/lib
   ${LIB_INSTALL_DIR}
 )
 
@@ -37,15 +37,15 @@ if(NOT ACML_LIBRARIES)
         NAMES
         acml acml_mv
         PATHS
-        $ENV{ACMLDIR}/lib
-        $ENV{ACML_DIR}/lib
+        ${ACMLDIR}/lib
+        ${ACML_DIR}/lib
         ${LIB_INSTALL_DIR}
         )
     find_file(ACML_LIBRARIES
         libacml.so libacml_mv.so
         PATHS
         /usr/lib
-        $ENV{ACMLDIR}/lib
+        ${ACMLDIR}/lib
         ${LIB_INSTALL_DIR}
         )
 endif()
