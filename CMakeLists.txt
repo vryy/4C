@@ -189,6 +189,15 @@ endif (NOT Trilinos_DIR)
 
 ###------------------------------------------------------------------ External Libraries
 
+find_package(ACML)
+if (ACML_FOUND)
+  include_directories(${ACML_INCLUDES})
+  #link_directories(${ACML_INCLUDES})
+  set(LIBRARIES ${LIBRARIES} ${ACML_LIBRARIES} )
+  MESSAGE("II Found ACML (AMD Math Core Library): ${ACML_LIBRARIES}")
+  MESSAGE("II Found ACML (AMD Math Core Library): ${ACML_INCLUDES}")
+endif()
+
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
