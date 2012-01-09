@@ -51,11 +51,6 @@ searchdis_(searchdis),
 basisnodes_(discret.NumGlobalNodes()),
 dofoffset_(dofoffset)
 {
-  // define max tree depth (maybe, set this as input file parameter)
-  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
-  // define extrusion factor
-  extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
-
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
   if(statmechparams.get<double>("PeriodLength",0.0)>0.0)
@@ -91,6 +86,14 @@ dofoffset_(dofoffset)
   for(int i=0; i<(int)lines.size(); i++)
     for(int j=0; j<(int)lines[i]->Nodes()->size(); j++)
       (*bbox2line_)[searchdis_.NodeColMap()->LID( lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
+
+  // octree specs
+  // extrusion factor
+  extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
+  // max tree depth
+  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
+  // max number of bounding boxes per leaf octant
+  maxbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT",8);
 
   return;
 }
@@ -156,7 +159,10 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
   LINALG::Matrix<1,6> rootoctantlim = GetRootOctant();
   std::vector<std::vector<int> > bboxesinoctants;
   bboxesinoctants.clear();
-  std::vector<std::vector<double> > octreelimits = locateAll(rootoctantlim, bboxesinoctants);
+  // Vector containing limits of Octants for Visualization
+  std::vector<std::vector<double> > octreelimits;
+  octreelimits.clear();
+  locateAll(rootoctantlim, bboxesinoctants, octreelimits);
 
   // intersection checks
   vector<RCP<Beam3contact> > contactpairs;
@@ -289,7 +295,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
 /*-----------------------------------------------------------------------------------*
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
-void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octlimits, int step, RCP<Epetra_MultiVector>  allbboxes)
+void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octreelimits, int step, RCP<Epetra_MultiVector>  allbboxes)
 {
   if(!discret_.Comm().MyPID())
   {
@@ -308,17 +314,17 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       fclose(fp);
     }
     // octant limits output
-    if((int)octlimits.size()>0)
+    if((int)octreelimits.size()>0)
     {
       std::ostringstream filename;
       filename << "OctreeLimits"<<std::setw(6) << setfill('0') << step <<".dat";
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
-      for (int u=0; u<(int)octlimits.size(); u++)
+      for (int u=0; u<(int)octreelimits.size(); u++)
       {
-        for (int v=0; v<(int)octlimits[u].size(); v++)
-          myfile <<scientific<<octlimits[u][v] <<" ";
+        for (int v=0; v<(int)octreelimits[u].size(); v++)
+          myfile <<scientific<<octreelimits[u][v] <<" ";
         myfile <<endl;
       }
       fprintf(fp, myfile.str().c_str());
@@ -1033,7 +1039,9 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
  |  box of a set belongs to; binary matrices BX, BY, BZ where each row shows               |
  |  "binary address" of each region are written to .dat- files each.                       |
  *----------------------------------------------------------------------------------------*/
-std::vector<std::vector<double> > Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants)
+void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim,
+                                    std::vector<std::vector<int> >& bboxesinoctants,
+                                    std::vector<std::vector<double> >& octreelimits)
 {
 #ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
@@ -1052,12 +1060,10 @@ std::vector<std::vector<double> > Beam3ContactOctTree::locateAll(LINALG::Matrix<
   }
   //initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
-  //Initialize Vector of Vectors containing limits of Octants for Visualization
-  std::vector< std::vector <double> > OctreeLimits;
 
   // Recursively construct octree; Proc 0 only (parallel computing impossible)
   if(searchdis_.Comm().MyPID()==0)
-    locateBox(allbboxesstdvec, rootoctantlim, &OctreeLimits, bboxesinoctants, treedepth);
+    locateBox(allbboxesstdvec, rootoctantlim, octreelimits, bboxesinoctants, treedepth);
   else // communicate bbox2octant_
     bbox2octant_->PutScalar(0.0);
 
@@ -1072,7 +1078,7 @@ std::vector<std::vector<double> > Beam3ContactOctTree::locateAll(LINALG::Matrix<
    if(!searchdis_.Comm().MyPID())
      cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
 #endif
-  return OctreeLimits;
+  return;
 }// end of method locateAll
 
 
@@ -1083,7 +1089,7 @@ std::vector<std::vector<double> > Beam3ContactOctTree::locateAll(LINALG::Matrix<
  *----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxesstdvec,
                                     LINALG::Matrix<1,6> lim,
-                                    std::vector<std::vector<double> >* OctreeLimits,
+                                    std::vector<std::vector<double> >& octreelimits,
                                     std::vector<std::vector<int> >& bboxesinoctants,
                                     int& treedepth)
 {
@@ -1257,7 +1263,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
 
     //If to divide further, let LocateBox call itself with updated inputs
     if ((N > n0) && (currtreedepth < maxtreedepth_-1))
-      locateBox(bboxsubset, limits[oct], OctreeLimits, bboxesinoctants, currtreedepth);
+      locateBox(bboxsubset, limits[oct], octreelimits, bboxesinoctants, currtreedepth);
     else
     {
       // no further discretization of the volume because either the maximal tree depth or the minimal number of bounding
@@ -1266,11 +1272,11 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
       std::vector<int> Box_IDs;
       if(bboxsubset.size()!=0)
       {
-        //Push back Limits of suboctants to OctreeLimits
+        //Push back Limits of suboctants to octreelimits
         std::vector<double> suboct_limVec(6,0);
         for(int k=0; k<6; k++)
           suboct_limVec[k]=limits[oct](k);
-        OctreeLimits->push_back(suboct_limVec);
+        octreelimits.push_back(suboct_limVec);
 
         for (int m = 0; m < (int)bboxsubset.size(); m++)
         {

@@ -196,6 +196,8 @@ void StatMechTime::Integrate()
        * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
        * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
        * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.*/
+      buildoctree = true;
+
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
         if(!discret_.Comm().MyPID())

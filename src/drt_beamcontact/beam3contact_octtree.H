@@ -75,16 +75,18 @@ class Beam3ContactOctTree
     LINALG::Matrix<1,6> GetRootOctant();
     // create axis aligned bounding boxes
     void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    // create coylindrical oriented bounding boxes
+    // create cylindrical oriented bounding boxes
     void CreateCOBB(Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
     // spatial division of 3-dimensional volume
-    std::vector<std::vector<double> > locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
+    void locateAll(LINALG::Matrix<1,6>& rootoctantlim,
+                   std::vector<std::vector<int> >& bboxesinoctants,
+                   std::vector<std::vector<double> >& octreelimits);
 
     // primitive for locateAll
     void locateBox(std::vector<std::vector<double> > allBBoxesstdvec,
                    LINALG::Matrix<1,6> lim,
-                   std::vector<std::vector<double> >* OctreeLimits,
+                   std::vector<std::vector<double> >& octreelimits,
                    std::vector<std::vector<int> >& bboxesinoctants,
                    int& treedepth);
 
@@ -111,11 +113,14 @@ class Beam3ContactOctTree
     // dof offset between discret_ and searchdis_
     int dofoffset_;
     
+    // scalar extrusion factor for bounding boxes
+    double extrusionfactor_;
+
     // maximum tree depth
     int maxtreedepth_;
 
-    // scalar extrusion factor for bounding boxes
-    double extrusionfactor_;
+    // maximum number of bounding boxes per leaf octant
+    int maxbboxesinoctant_;
 
     // diameters of all beam elements
     RCP<Epetra_Vector> diameter_;
