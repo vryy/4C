@@ -226,18 +226,17 @@ MESSAGE("End of Trilinos details\n")
 #set(Boost_DEBUG ON)
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams
 #program_options )
-find_package( Boost COMPONENTS graph program_options )
 
+SET( Boost_NO_SYSTEM_PATHS true )
 
-#set(Boost_USE_STATIC_LIBS ON) 
-#set(Boost_DETAILED_FAILURE_MSG ON)
-#set(Boost_USE_MULTITHREAD OFF) 
-#set(Boost_DEBUG ON)
-#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
-find_package( Boost COMPONENTS graph program_options )
+FIND_PACKAGE( Boost COMPONENTS graph program_options REQUIRED)
 
 if (Boost_FOUND)
+  #message("Found Boost: ${Boost_INCLUDE_DIRS}")
+  #message("Boost libraries: ${Boost_LIBRARIES}")
+  #message("Boost libraries: ${Boost_LIBRARY_DIRS}")
   include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS}) 
   set(LIBRARIES
     ${Boost_LIBRARIES}
     ${LIBRARIES}
