@@ -131,6 +131,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // "yoghurt-type" fluid with nonlinear viscosity according to a power law
+  // and extended by an Arrhenius-type term to account for temperature dependence
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_yoghurt",
+                                            "yoghurt-type fluid with nonlinear viscosity",
+                                            INPAR::MAT::m_yoghurt));
+
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
+    AddNamedReal(m,"DENSITY","density");
+    AddNamedReal(m,"THERMCOND","thermal conductivity (J/(m*K*s))");
+    AddNamedReal(m,"STRAINRATEEXP","exponent of strain-rate term");
+    AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
+    AddNamedReal(m,"ACTENERGY","activation energy (J/kg)");
+    AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
+    AddNamedReal(m,"DELTA","safety factor");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // fluid flow in a permeable material
   {
     Teuchos::RCP<MaterialDefinition> m

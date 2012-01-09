@@ -444,6 +444,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yeoh.cpp
+  src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_coupanisoexpotwo.cpp
   src/drt_matelast/elast_coupanisoneohooketwo.cpp
   src/drt_matelast/elast_coupblatzko.cpp

@@ -34,8 +34,9 @@ Maintainer: Georg Bauer
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/sutherland.H"
 #include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/yoghurt.H"
 
 #include "../linalg/linalg_utils.H"
 

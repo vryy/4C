@@ -47,6 +47,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "scatra_reinit_defines.H"
@@ -1155,7 +1156,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         // set density to 1.0
         double dens = 1.0;
 
-        // get density if not constant
+        // get density if not equal one
         if (material->MaterialType() == INPAR::MAT::m_matlist)
         {
           const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
@@ -1221,6 +1222,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 
           // compute density
           dens = actmat->ComputeDensity(provar);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+        {
+          const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+          // get constant density
+          dens = actmat->Density();
         }
         else dserror("Material type is not supported for Neumann inflow!");
 

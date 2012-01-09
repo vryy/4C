@@ -32,14 +32,15 @@ Maintainer: Volker Gravemeier / Andreas Ehrl
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/yoghurt.H"
 
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
@@ -2347,6 +2348,28 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   visc_ = m * pow((delta + rateofstrain), (-1)*a);
   // dynamic viscosity
   visc_ *= densaf_;
+}
+else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+{
+  const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+  // get constant density
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
+
+  // compute temperature at n+alpha_F or n+1
+  const double tempaf = funct_.Dot(escaaf);
+
+  // compute rate of strain at n+alpha_F or n+1
+  double rateofstrain = -1.0e30;
+  rateofstrain = GetStrainRate(evelaf);
+
+  // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
+  visc_ = actmat->ComputeViscosity(rateofstrain,tempaf);
+
+  // compute diffusivity
+  diffus_ = actmat->ComputeDiffusivity();
 }
 else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {

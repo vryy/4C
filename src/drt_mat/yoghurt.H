@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file sutherland.H
+\file yoghurt.H
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -10,8 +10,8 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef SUTHERLAND_H
-#define SUTHERLAND_H
+#ifndef YOGHURT_H
+#define YOGHURT_H
 
 #ifdef CCADISCRET
 
@@ -26,72 +26,75 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// parameters for material with temperature dependence according to Sutherland law
-    class Sutherland : public Parameter
+    /// parameters for "Yoghurt-type" material with nonlinear viscosity
+    /// determined via power law by Oswald and extended by an Arrhenius-type
+    /// term to account for temperature dependence
+    class Yoghurt : public Parameter
     {
     public:
 
       /// standard constructor
-      Sutherland(
+      Yoghurt(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~Sutherland() { ; }
+      virtual ~Yoghurt() { ; }
 
       /// @name material parameters
       //@{
 
-      /// reference dynamic viscosity (kg/(m*s))
-      const double refvisc_;
-      /// reference temperature (K)
-      const double reftemp_;
-      /// Sutherland temperature (K)
-      const double suthtemp_;
       /// specific heat capacity
       const double shc_;
-      /// Prandtl number
-      const double pranum_;
-      /// (initial) thermodynamic pressure
-      const double thermpress_;
+      /// density
+      const double density_;
+      /// thermal conductivity
+      const double thermcond_;
+      /// exponent of strain-rate term
+      const double strrateexp_;
+      /// pre-exponential constant
+      const double preexcon_;
+      /// activation energy
+      const double actenergy_;
       /// specific gas constant R
       const double gasconst_;
-
+      /// safety factor delta
+      const double delta_;
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class Sutherland
+    };  // class Yoghurt
 
   }  // namespace PAR
 
-class SutherlandType : public DRT::ParObjectType
+class YoghurtType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "SutherlandType"; }
+  std::string Name() const { return "YoghurtType"; }
 
-  static SutherlandType & Instance() { return instance_; };
+  static YoghurtType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
 private:
 
-  static SutherlandType instance_;
+  static YoghurtType instance_;
 };
 
   /*----------------------------------------------------------------------*/
-  /// material with temperature dependence according to Sutherland law
-  class Sutherland : public Material
+  /// wrapper for "Yoghurt-type" material
+  class Yoghurt : public Material
   {
   public:
 
     /// construct empty material object
-    Sutherland();
+    Yoghurt();
 
     /// construct the material object given material parameters
-    explicit Sutherland(MAT::PAR::Sutherland* params);
+    explicit Yoghurt(MAT::PAR::Yoghurt* params);
 
     //! @name Packing and Unpacking
 
@@ -102,7 +105,7 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return SutherlandType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return YoghurtType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -133,39 +136,36 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_yoghurt; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Sutherland( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Yoghurt( *this ) ); }
 
     /// compute viscosity
-    double ComputeViscosity(const double temp) const;
+    double ComputeViscosity(const double rateofstrain, const double temp) const;
 
     /// compute diffusivity
-    double ComputeDiffusivity(const double temp) const;
-
-    /// compute density
-    double ComputeDensity(const double temp, const double thermpress) const;
+    double ComputeDiffusivity() const;
 
     /// return material parameters for element calculation
     //@{
 
-    /// reference dynamic viscosity (kg/(m*s))
-    double RefVisc() const { return params_->refvisc_; }
-    /// reference temperature (K)
-    double RefTemp() const { return params_->reftemp_; }
-    /// Sutherland temperature (K)
-    double SuthTemp() const { return params_->suthtemp_; }
     /// specific heat capacity
     double Shc() const { return params_->shc_; }
-    /// Prandtl number
-    double PraNum() const { return params_->pranum_; }
-    /// (initial) thermodynamic pressure
-    double ThermPress() const { return params_->thermpress_; }
+    /// density
+    double Density() const { return params_->density_; }
+    /// thermal conductivity
+    double ThermCond() const { return params_->thermcond_; }
+    /// exponent of strain-rate term
+    double StrRateExp() const { return params_->strrateexp_; }
+    /// pre-exponential constant
+    double PreExCon() const { return params_->preexcon_; }
+    /// activation energy
+    double ActEnergy() const { return params_->actenergy_; }
     /// specific gas constant R
     double GasConst() const { return params_->gasconst_; }
-
-    //@}
+    /// safety factor
+    double Delta() const { return params_->delta_; }    //@}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -173,7 +173,7 @@ private:
   private:
 
     /// my material parameters
-    MAT::PAR::Sutherland* params_;
+    MAT::PAR::Yoghurt* params_;
   };
 
 }

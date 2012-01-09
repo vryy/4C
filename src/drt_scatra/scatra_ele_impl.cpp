@@ -27,6 +27,7 @@
 #include "../drt_mat/ion.H"
 #include "../drt_mat/biofilm.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -2664,6 +2665,43 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     reacoeff_[0]      = 0.0;
     reacoeffderiv_[0] = 0.0;
     reatemprhs_[0]    = 0.0;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  {
+    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+    dsassert(numdofpernode_==1,"more than 1 dof per node for Yoghurt material");
+
+    // get specific heat capacity at constant pressure
+    shc_ = actmat->Shc();
+
+    // compute diffusivity
+    diffus_[0] = actmat->ComputeDiffusivity();
+
+    // get constant density
+    densnp_[0] = actmat->Density();
+    densam_[0] = densnp_[0];
+    densn_[0] = densnp_[0];
+
+    // set reaction coeff. and temperature rhs for reactive equation system to zero
+    reacoeff_[0] = 0.0;
+    reacoeffderiv_[0] = 0.0;
+    reatemprhs_[0] = 0.0;
+
+    // get also fluid viscosity if subgrid-scale velocity is to be included
+    // or multifractal subgrid-scales are used
+    if (sgvel_ or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      // compute temperature at n+1 or n+alpha_F
+      const double tempnp = funct_.Dot(ephinp_[0]);
+
+      // compute rate of strain
+      double rateofstrain = -1.0e30;
+      rateofstrain = GetStrainRate(evelnp_);
+
+      // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
+      visc_ = actmat->ComputeViscosity(rateofstrain,tempnp);
+    }
   }
   else dserror("Material type is not supported");
 
