@@ -1398,9 +1398,11 @@ void XFEM::ENR::SignedDistance(
     else
       mindist = vertexdist;
   }
-  if (mindist == 5555.5) // case 3
+  if (mindist == 5555.5) // in touched-minus elements this case can happen
   {
-    dserror ("computation of minimal distance failed");
+    if (curr_ih->ElementTouchedMinus(discret_->gElement(elegid)) == false)
+      dserror ("computation of minimal distance failed");
+    dist = (*curr_phi)[node->LID()];
     return;
   }
   else
