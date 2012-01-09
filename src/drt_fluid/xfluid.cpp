@@ -1337,7 +1337,10 @@ void FLD::XFluid::PrintStabilizationParams()
           def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
           def_tau != "Smoothed_FBVW")
       {
-        dserror("not a valid tau definition (DEFINITION_TAU) without \"dt\" for instationary problems");
+        std::cout << RED_LIGHT
+                  << "Are you sure that you want to use stationary version of stabilization parameters "
+                  << "for instationary computations (just reasonable for small time steps dt)"
+                  << END_COLOR << endl;
       }
     }
     else // stationary case
