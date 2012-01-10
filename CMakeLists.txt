@@ -227,7 +227,8 @@ MESSAGE("End of Trilinos details\n")
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams
 #program_options )
 
-SET( Boost_NO_SYSTEM_PATHS true )
+# allow to use system specific Boost
+#SET( Boost_NO_SYSTEM_PATHS true )
 
 FIND_PACKAGE( Boost COMPONENTS graph program_options REQUIRED)
 
