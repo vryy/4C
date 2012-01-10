@@ -359,6 +359,7 @@ void StatMechTime::Integrate()
             {
               // increase iteration index
               beamcmanager_->UpdateUzawaIter();
+              // if unconverged
               if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
               {
                 isconverged_=0;
@@ -421,7 +422,6 @@ void StatMechTime::Integrate()
         statmechmanager_->RestoreConv(stiff_, beamcmanager_);
         buildoctree = true;
       }
-
     }
     while(isconverged_ == 0);
 
@@ -1215,7 +1215,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     {
       std::cout<<"\n\n";
       if(uzawa)
-        std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
+        std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged (isconverged_="<<isconverged_<<") - leaving Uzawa loop and restarting time step...!\n\n";
       else
         std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
     }
@@ -1223,7 +1223,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   }
 
   if(acceptuzawastep and !myrank_ and printscreen)
-       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
+    PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
 
   params_.set<int>("num iterations",numiter);
 

@@ -1461,7 +1461,9 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     if(!addinitlinks)
     {
       // beam contact discretization
-      if(mydiscret.Name()!="beam contact")
+      if(mydiscret.Name()=="beam contact")
+        addedcelements_.push_back(crossgid);
+      else
         addedelements_.push_back(crossgid);
     }
     mydiscret.AddElement(newcrosslinker);
@@ -2211,10 +2213,13 @@ void StatMechManager::WriteConv()
   searchforneighboursconv_ = rcp(new Epetra_Vector(*searchforneighbours_));
 
   //set addedelements_, deletedelements_ empty vectors
-  addedelements_.resize(0);
-  deletedelements_.resize(0);
+  addedelements_.clear();
+  deletedelements_.clear();
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
-    deletedcelements_.resize(0);
+  {
+    addedcelements_.clear();
+    deletedcelements_.clear();
+  }
 
   return;
 } // StatMechManager::WriteConv()
@@ -2294,12 +2299,13 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTAC
       dserror("Failed to build an element from the element data");
     discret_.AddElement(rcp(ele));
   }
-  deletedelements_.resize(0);
+  deletedelements_.clear();
 
   //loop through addedelements_, delete all these elements and then set addedelements_ an empty vector
   for(int i=0; i<(int)addedelements_.size(); i++)
     discret_.DeleteElement(addedelements_[i]);
-
+  addedelements_.clear();
+  
   /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
    *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
    *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
@@ -2322,11 +2328,11 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTAC
         dserror("Failed to build an element from the element data");
       beamcmanager->ContactDiscret().AddElement(rcp(ele));
     }
-    deletedcelements_.resize(0);
+    deletedcelements_.clear();
 
-    for(int i=0; i<(int)addedelements_.size(); i++)
-      beamcmanager->ContactDiscret().DeleteElement(addedelements_[i]);
-    addedelements_.resize(0);
+    for(int i=0; i<(int)addedcelements_.size(); i++)
+      beamcmanager->ContactDiscret().DeleteElement(addedcelements_[i]);
+    addedcelements_.clear();
 
     // contact discretization
     beamcmanager->ContactDiscret().CheckFilledGlobally();
@@ -3349,7 +3355,8 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
     }
     if(beamcmanager!=Teuchos::null && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_octree)
     {
-      beamcmanager->OcTree()->OctTreeSearch(currentpositions,999999);
+      // "-2" for initial octree output
+      beamcmanager->OcTree()->OctTreeSearch(currentpositions,-2);
       beamcmanager->ResetPairs();
     }
     //couts
