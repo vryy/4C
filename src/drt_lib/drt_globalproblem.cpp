@@ -935,6 +935,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_gas_fsi:
   case prb_biofilm_fsi:
+  case prb_thermo_fsi:
   {
     if(distype == "Nurbs")
     {
