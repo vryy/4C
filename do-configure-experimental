@@ -35,10 +35,16 @@ else
 fi
 
 ############################################################
+# use LNM Trilinos Q1/2012 (d)
+INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/include"
+LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/lib"
+Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc8_openmpi_release/lib/cmake/Trilinos"
+
+############################################################
 # use LNM Trilinos Q4/2011 (a)
-INCLUDE_INSTALL_DIR="/lnm/lib/Q4_2011/fc8/openmpi-gcc/include"
-LIB_INSTALL_DIR="/lnm/lib/Q4_2011/fc8/openmpi-gcc/lib"
-Trilinos_PREFIX="/lnm/lib/Q4_2011/fc8/openmpi-gcc/trilinos"
+#INCLUDE_INSTALL_DIR="/lnm/lib/Q4_2011/fc8/openmpi-gcc/include"
+#LIB_INSTALL_DIR="/lnm/lib/Q4_2011/fc8/openmpi-gcc/lib"
+#Trilinos_PREFIX="/lnm/lib/Q4_2011/fc8/openmpi-gcc/trilinos"
 
 
 $CMAKE_COMMAND \
