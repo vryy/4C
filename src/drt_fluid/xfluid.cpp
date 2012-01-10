@@ -366,7 +366,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
 
-        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.VolumeCellGaussPointBy_));
+        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.VolumeCellGaussPointBy_);
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -451,19 +451,19 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui);
-              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
-                  impl->ElementXfemInterfaceNeumann( ele,
-                                              discret,
-                                              la[0].lm_,
-                                              intpoints[count],
-                                              cutdiscret,
-                                              bcells,
-                                              bintpoints,
-                                              side_coupling,
-                                              eleparams,
-                                              strategy.Elematrix1(),
-                                              strategy.Elevector1(),
-                                              Cuiui);
+//               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
+//                   impl->ElementXfemInterfaceNeumann( ele,
+//                                               discret,
+//                                               la[0].lm_,
+//                                               intpoints[count],
+//                                               cutdiscret,
+//                                               bcells,
+//                                               bintpoints,
+//                                               side_coupling,
+//                                               eleparams,
+//                                               strategy.Elematrix1(),
+//                                               strategy.Elevector1(),
+//                                               Cuiui);
 
             }
 
@@ -655,12 +655,12 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
           const std::vector<int> & nds = vc->NodalDofSet();
           if ( e->IsCut() )
           {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, vel, nds );
+            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
             GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
           }
           else
           {
-            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, vel );
+            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
           }
         }
       }
