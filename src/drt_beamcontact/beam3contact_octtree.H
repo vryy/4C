@@ -58,7 +58,7 @@ class Beam3ContactOctTree
     bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID);
 
     //!\brief output of octree discretization, bounding boxes and contact pairs
-    void OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octlimits, int step, RCP<Epetra_MultiVector>  allbboxes = Teuchos::null);
+    void OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, int step);
 
   private:
     // Bounding Box Types
@@ -69,78 +69,81 @@ class Beam3ContactOctTree
       cyloriented
     };
 
-    // generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
+    //!\brief Initialize class vectors for new Octree search
+    void InitializeOctreeSearch();
+    //!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
     void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
-    // get the dimensions of the root octant
+    //!\brief get the dimensions of the root octant
     LINALG::Matrix<1,6> GetRootOctant();
-    // create axis aligned bounding boxes
+    //!\brief create axis aligned bounding boxes
     void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    // create cylindrical oriented bounding boxes
+    //!\brief create coylindrical oriented bounding boxes
     void CreateCOBB(Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
-    // spatial division of 3-dimensional volume
-    void locateAll(LINALG::Matrix<1,6>& rootoctantlim,
-                   std::vector<std::vector<int> >& bboxesinoctants,
-                   std::vector<std::vector<double> >& octreelimits);
+    //!\brief spatial division of 3-dimensional volume
+    void locateAll();
 
-    // primitive for locateAll
-    void locateBox(std::vector<std::vector<double> > allBBoxesstdvec,
+    //!\brief primitive for locateAll
+    void locateBox(std::vector<std::vector<double> > allbboxesstdvec,
                    LINALG::Matrix<1,6> lim,
-                   std::vector<std::vector<double> >& octreelimits,
+                   std::vector<std::vector<double> >& OctreeLimits,
                    std::vector<std::vector<int> >& bboxesinoctants,
                    int& treedepth);
 
-    // build list
-    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, std::vector<std::vector<int> >& bboxesinoctants, vector<RCP<Beam3contact> >* contactpairs);
+    //!\brief build list
+    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, vector<RCP<Beam3contact> >* contactpairs);
 
-    // intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
+    //!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
     bool IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    // intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
+    //!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
     bool IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
-    // problem discretization
+    //!\brief problem discretization
     DRT::Discretization& discret_;
     
-    // contact discretization
+    //!\brief contact discretization
     DRT::Discretization& searchdis_;
     
-    // number of initial nodes
+    //!\brief number of initial nodes
     int basisnodes_;
     
-    // dof offset between discret_ and searchdis_
+    //!\brief dof offset between discret_ and searchdis_
     int dofoffset_;
     
-    // scalar extrusion factor for bounding boxes
-    double extrusionfactor_;
-
-    // maximum tree depth
+    //!\brief maximum tree depth
     int maxtreedepth_;
 
-    // maximum number of bounding boxes per leaf octant
-    int maxbboxesinoctant_;
+    //!\brief minimum number of BBs per octant
+    int minbboxesinoctant_;
 
-    // diameters of all beam elements
+    //!\brief scalar factor for diameters
+    double extrusionfactor_;
+
+    //!\brief diameters of all beam elements
     RCP<Epetra_Vector> diameter_;
 
-    // stores the IDs and the coordinates of all bounding boxes
+    //!\brief stores the IDs and the coordinates of all bounding boxes
     RCP<Epetra_MultiVector> allbboxes_;
 
-    // vector listing the bounding boxes located in the octants
+    //!\brief vector listing the bounding boxes located in the octants
     RCP<Epetra_MultiVector> bboxesinoctants_;
 
-    // mapping bounding boxes to octants they lie in
+    //!\brief mapping bounding boxes to octants they lie in
     RCP<Epetra_MultiVector> bbox2octant_;
 
-    // vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
+    //!\brief storage vector for octree octant limits
+    std::vector< std::vector <double> > octreelimits_;
+
+    //!\brief vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
     RCP<Epetra_Vector> numshifts_;
 
-    // vector holding information to which line (design line) a bounding box belongs
+    //!\brief vector holding information to which line (design line) a bounding box belongs
     RCP<Epetra_Vector> bbox2line_;
 
-    // Bounding Box type
+    //!\brief Bounding Box type
     Beam3ContactOctTree::BboxType boundingbox_;
 };
 

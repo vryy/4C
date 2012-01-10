@@ -51,6 +51,14 @@ searchdis_(searchdis),
 basisnodes_(discret.NumGlobalNodes()),
 dofoffset_(dofoffset)
 {
+  // octree specs
+  // extrusion factor
+  extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
+  // max tree depth
+  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
+  // max number of bounding boxes per leaf octant
+  minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT",8);
+
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
   if(statmechparams.get<double>("PeriodLength",0.0)>0.0)
@@ -74,6 +82,9 @@ dofoffset_(dofoffset)
   else
     dserror("No Octree declared in your Input file!");
 
+  if(!discret_.Comm().MyPID())
+    cout<<"max. tree depth        = "<<maxtreedepth_<<"\nmax. BB per octant     = "<<minbboxesinoctant_<<"\nextrusion factor       = "<<extrusionfactor_<<endl;
+
   // get line conditions
   bbox2line_ = rcp(new Epetra_Vector(*(searchdis_.NodeColMap())));
   bbox2line_->PutScalar(-1.0);
@@ -87,14 +98,6 @@ dofoffset_(dofoffset)
     for(int j=0; j<(int)lines[i]->Nodes()->size(); j++)
       (*bbox2line_)[searchdis_.NodeColMap()->LID( lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
 
-  // octree specs
-  // extrusion factor
-  extrusionfactor_ = params.get<double>("BEAMS_EXTFAC", 1.05);
-  // max tree depth
-  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
-  // max number of bounding boxes per leaf octant
-  maxbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT",8);
-
   return;
 }
 
@@ -104,74 +107,26 @@ dofoffset_(dofoffset)
  *----------------------------------------------------------------------*/
 vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
 {
-  // initialize beam diameter
-  diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
-
-  // initialize vector mapping bounding boxes to octants with -1.0 for empty
-  // initialize with 4 columns (the maximum number of octants a single bounding box can belong to
-  bbox2octant_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4));
-  bbox2octant_->PutScalar(-1.0);
-  // initialize vector counting the number of shifts across volume boundaries in case of periodic boundary conditions
-  // used to optimize bounding box intersection
-  if(periodicBC_)
-    numshifts_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap()),true));
-
-
-  // determine radius factor by looking at the absolute mean variance of a bounding box (not quite sure...)
-  //beam diameter
-  for(int i=0; i<searchdis_.ElementColMap()->NumMyElements(); i++)
-  {
-    DRT::Element* beamelement = searchdis_.lColElement(i);
-    const DRT::ElementType & eot = beamelement->ElementType();
-
-#ifdef D_BEAM3
-    if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-    {
-      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
-      (*diameter_)[i] = 0.5;
-    }
-#endif // #ifdef BEAM3II
-
-#ifdef D_BEAM3II
-    if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
+#ifdef OCTREEDEBUG
+  double t_start = Teuchos::Time::wallTime();
 #endif
-
-    // feasibility check
-    if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
-  }
-  // initialize multivector storage of Bounding Boxes
-  // (components 0,...,5 contain bounding box limits)
-  // (components 6,...,23 contain bounding box limits in case of periodic boundary conditions (2nd part of the box)):
-  // a box may b subject to a boundary shift up to 3 times -> 4 segments -> 24 values + 1 bounding box ID
-  // (component 24 containts element ID)
-  // in case of periodic boundary conditions, we need 12+1 vectors within allbboxes_, without periodic BCs 6+1
-  allbboxes_ = Teuchos::null;
-  if(periodicBC_)
-    allbboxes_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4*6+1, true));
-  else
-    allbboxes_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),7, true));
-
+  // initialize class vectors
+  InitializeOctreeSearch();
   // build axis aligned bounding boxes
   CreateBoundingBoxes(currentpositions);
-
   // call recursive octtree build
-  LINALG::Matrix<1,6> rootoctantlim = GetRootOctant();
-  std::vector<std::vector<int> > bboxesinoctants;
-  bboxesinoctants.clear();
-  // Vector containing limits of Octants for Visualization
-  std::vector<std::vector<double> > octreelimits;
-  octreelimits.clear();
-  locateAll(rootoctantlim, bboxesinoctants, octreelimits);
-
+  // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
+  locateAll();
   // intersection checks
   vector<RCP<Beam3contact> > contactpairs;
-  BoundingBoxIntersection(currentpositions, bboxesinoctants, &contactpairs);
-
+  BoundingBoxIntersection(currentpositions, &contactpairs);
   // output
-  if(step>-1)
-    OctreeOutput(contactpairs ,octreelimits, step, allbboxes_);
+  OctreeOutput(contactpairs , step);
 
+#ifdef OCTREEDEBUG
+  if(!discret_.Comm().MyPID())
+    cout<<"Octree Search time: "<<Teuchos::Time::wallTime()-t_start<<endl;
+#endif
   return contactpairs;
 }// OctTreeSearch()
 /*----------------------------------------------------------------------*
@@ -295,16 +250,19 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
 /*-----------------------------------------------------------------------------------*
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
-void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, std::vector<std::vector<double> >& octreelimits, int step, RCP<Epetra_MultiVector>  allbboxes)
+void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, int step)
 {
-  if(!discret_.Comm().MyPID())
+  if(!discret_.Comm().MyPID() && step!=-1)
   {
     // active contact pairs
     if((int)cpairs.size()>0)
     {
       //Print ContactPairs to .dat-file and plot with Matlab....................
       std::ostringstream filename;
-      filename << "ContactPairs"<<std::setw(6) << setfill('0') << step <<".dat";
+      if(step!=-2)
+        filename << "ContactPairs"<<std::setw(6) << setfill('0') << step <<".dat";
+      else
+        filename << "ContactPairsInit.dat" <<endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
@@ -314,34 +272,40 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       fclose(fp);
     }
     // octant limits output
-    if((int)octreelimits.size()>0)
+    if((int)octreelimits_.size()>0)
     {
       std::ostringstream filename;
-      filename << "OctreeLimits"<<std::setw(6) << setfill('0') << step <<".dat";
+      if(step!=-2)
+        filename << "OctreeLimits"<<std::setw(6) << setfill('0') << step <<".dat";
+      else
+        filename << "OctreeLimitsInit.dat"<<endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
-      for (int u=0; u<(int)octreelimits.size(); u++)
+      for (int u=0; u<(int)octreelimits_.size(); u++)
       {
-        for (int v=0; v<(int)octreelimits[u].size(); v++)
-          myfile <<scientific<<octreelimits[u][v] <<" ";
+        for (int v=0; v<(int)octreelimits_[u].size(); v++)
+          myfile <<scientific<<octreelimits_[u][v] <<" ";
         myfile <<endl;
       }
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
     }
     // bounding box coords output
-    if(allbboxes!=Teuchos::null)
+    if(allbboxes_!=Teuchos::null)
     {
       std::ostringstream filename;
-      filename << "BoundingBoxCoords"<<std::setw(6) << setfill('0') << step <<".dat";
+      if(step!=-2)
+        filename << "BoundingBoxCoords"<<std::setw(6) << setfill('0') << step <<".dat";
+      else
+        filename << "BoundingBoxCoordsInit.dat"<<endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
-      for (int u=0; u<allbboxes->MyLength(); u++)
+      for (int u=0; u<allbboxes_->MyLength(); u++)
       {
-        for (int v=0; v<allbboxes->NumVectors(); v++)
-          myfile <<scientific<<(*allbboxes)[v][u] <<" ";
+        for (int v=0; v<allbboxes_->NumVectors(); v++)
+          myfile <<scientific<<(*allbboxes_)[v][u] <<" ";
         myfile <<endl;
       }
       fprintf(fp, myfile.str().c_str());
@@ -351,7 +315,55 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Bounding Box creation function (private)               mueller 01/12|
+ |  Initialize octree class vectors and specifications                  |
+ *----------------------------------------------------------------------*/
+void Beam3ContactOctTree::InitializeOctreeSearch()
+{
+#ifdef OCTREEDEBUG
+  if(!discret_.Comm().MyPID())
+    cout<<"Searchdis: "<<searchdis_.ElementColMap()->NumMyElements()<<", Probdis: "<<discret_.NumGlobalElements()<<endl;
+#endif
+  // mapping bounding boxes to octants with -1.0 for empty with 4 columns (max number of octants a single BB can belong to)
+  bbox2octant_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4));
+  bbox2octant_->PutScalar(-1.0);
+  // number of shifts across volume boundaries in case of periodic boundary conditions (for intersection optimization)
+  if(periodicBC_)
+    numshifts_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap()),true));
 
+  // determine radius factor by looking at the absolute mean variance of a bounding box (not quite sure...)
+  //beam diameter
+  diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
+  for(int i=0; i<searchdis_.ElementColMap()->NumMyElements(); i++)
+  {
+    DRT::Element* beamelement = searchdis_.lColElement(i);
+    const DRT::ElementType & eot = beamelement->ElementType();
+
+#ifdef D_BEAM3
+    if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
+#endif // #ifdef BEAM3II
+
+#ifdef D_BEAM3II
+    if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
+#endif
+    // feasibility check
+    if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
+  }
+  // storage of Bounding Boxes
+  // (components 0,...,5 contain bounding box limits)
+  // (components 6,...,23 contain bounding box limits in case of periodic boundary conditions):
+  // a box may b subject to a boundary shift up to 3 times -> 4 segments -> 24 values + 1 bounding box ID
+  allbboxes_ = Teuchos::null;
+  if(periodicBC_)
+    allbboxes_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4*6+1, true));
+  else
+    allbboxes_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),7, true));
+
+  return;
+}
 /*----------------------------------------------------------------------*
  |  Bounding Box creation function (private)                 meier 01/11|
  |  generates bounding boxes extended with factor 1.05                  |
@@ -415,29 +427,6 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
     numshiftsrow.Export(*numshifts_, exporter, Add);
     numshifts_->Import(numshiftsrow, importer, Insert);
   }
-
-  //Test: print allbboxes_->...................
-  //cout << "\n\tTest extendedAABB" << endl;
-
-  /*/Visualization print allbboxes_ to .dat-file and plot with Matlab....................
-  std::ostringstream filename;
-  filename << "extendedAABB.dat";
-  FILE* fp = NULL;
-  //open file to write output data into
-  fp = fopen(filename.str().c_str(), "w");
-  // write output to temporary stringstream;
-  std::stringstream myfile;
-  for (int u = 0; u < allbboxes_->MyLength(); u++)
-  {
-    for (int v = 0; v < allbboxes_->NumVectors(); v++)
-    {
-      myfile <<scientific<<setprecision(10)<<(*allbboxes_)[v][u] <<" ";
-    }
-    myfile <<endl;
-  }
-  //write content into file and close it
-  fprintf(fp, myfile.str().c_str());
-  fclose(fp);*/
 
 #ifdef MEASURETIME
   double bbgentimelocal = Teuchos::Time::wallTime() - t_AABB;
@@ -1023,10 +1012,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
         (*allbboxes_)[i][elecolid] = -1e9;
     // last entry: element GID
     (*allbboxes_)[allbboxes_->NumVectors()-1][elecolid] = elegid;
-  }
-  //for(int i=0; i<allbboxes_->NumVectors(); i++)
-  //  cout<<(*allbboxes_)[i][elecolid]<<" ";
-  //cout<<endl;
+  };
   return;
 }
 
@@ -1039,17 +1025,15 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
  |  box of a set belongs to; binary matrices BX, BY, BZ where each row shows               |
  |  "binary address" of each region are written to .dat- files each.                       |
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim,
-                                    std::vector<std::vector<int> >& bboxesinoctants,
-                                    std::vector<std::vector<double> >& octreelimits)
+void Beam3ContactOctTree::locateAll()
 {
 #ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
 #endif
-  //cout << "\n\tTest locateAll" << endl;
-  
-  // Parameters and Initialization....................
-  // Convert Epetra_MultiVector allbboxes_ to vector(vector(vector)....................
+  // get the root octant
+  LINALG::Matrix<1,6> rootoctantlim = GetRootOctant();
+
+  // Convert Epetra_MultiVector allbboxes_ to vector(vector(vector))
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
   for(int i=0; i < allbboxes_->MyLength(); i++)
   {
@@ -1061,10 +1045,14 @@ void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim,
   //initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
 
+  // Parameters and Initialization
+  std::vector<std::vector<int> > bboxesinoctants;
+  bboxesinoctants.clear();
+  octreelimits_.clear();
   // Recursively construct octree; Proc 0 only (parallel computing impossible)
   if(searchdis_.Comm().MyPID()==0)
-    locateBox(allbboxesstdvec, rootoctantlim, octreelimits, bboxesinoctants, treedepth);
-  else // communicate bbox2octant_
+    locateBox(allbboxesstdvec, rootoctantlim, octreelimits_, bboxesinoctants, treedepth);
+  else
     bbox2octant_->PutScalar(0.0);
 
   Epetra_Export exporter(*(searchdis_.ElementColMap()), *(searchdis_.ElementRowMap()));
@@ -1074,6 +1062,78 @@ void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim,
   bbox2octantrow.Export(*bbox2octant_, exporter, Add);
   bbox2octant_->Import(bbox2octantrow, importer, Insert);
 
+  //determine maximum depth of OctreeMap
+  int maxdepthlocal = 0;
+  int bboxlengthlocal = 0;
+  if(discret_.Comm().MyPID()==0)
+  {
+    bboxlengthlocal = (int)bboxesinoctants.size();
+    for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
+      if((int)bboxesinoctants[i].size()>maxdepthlocal)
+        maxdepthlocal = (int)bboxesinoctants[i].size();
+  }
+
+  int maxdepthglobal = 0;
+  int bboxlengthglobal = 0;
+  discret_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
+  discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
+
+  if(!discret_.Comm().MyPID())
+  {
+    for(int i=0; i<(int)bboxesinoctants[0].size(); i++)
+      cout<<bboxesinoctants[0][i]<<" ";
+    cout<<endl;
+  }
+  // build temporary, fully overlapping map and row map
+  // create crosslinker maps
+  std::vector<int> gids;
+  for (int i=0 ; i<bboxlengthglobal; i++ )
+    gids.push_back(i);
+  // crosslinker column and row map
+  Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
+  Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
+
+  // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
+  bboxesinoctants_ = rcp(new Epetra_MultiVector(octtreemap,maxdepthglobal));
+  Epetra_MultiVector bboxinoctrow(octtreerowmap,maxdepthglobal, true);
+
+  // fill bboxinoct for Proc 0
+  if(searchdis_.Comm().MyPID()==0)
+  {
+    bboxesinoctants_->PutScalar(-9.0);
+    for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
+      for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
+        (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
+  }
+  else
+    bboxesinoctants_->PutScalar(0.0);
+
+  // Communication
+  Epetra_Export octmapexporter(octtreemap, octtreerowmap);
+  Epetra_Import octmapimporter(octtreemap, octtreerowmap);
+  bboxinoctrow.Export(*bboxesinoctants_,octmapexporter,Add);
+  bboxesinoctants_->Import(bboxinoctrow,octmapimporter,Insert);
+
+#ifdef OCTREEDEBUG
+  std::ostringstream filename;
+  if(!discret_.Comm().MyPID())
+  {
+    filename << "BBinOct.dat";
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream myfile;
+    for (int u=0; u<bboxesinoctants_->MyLength(); u++)
+    {
+      for (int v=0; v<bboxesinoctants_->NumVectors(); v++)
+        myfile <<scientific<<(*bboxesinoctants_)[v][u] <<" ";
+      myfile <<endl;
+    }
+    fprintf(fp, myfile.str().c_str());
+    fclose(fp);
+
+    cout<<"bboxesinoctants_ : "<<bboxesinoctants_->MyLength()<<"x"<<bboxesinoctants_->NumVectors()<<endl;
+  }
+#endif
 #ifdef MEASURETIME
    if(!searchdis_.Comm().MyPID())
      cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
@@ -1089,22 +1149,10 @@ void Beam3ContactOctTree::locateAll(LINALG::Matrix<1,6>& rootoctantlim,
  *----------------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxesstdvec,
                                     LINALG::Matrix<1,6> lim,
-                                    std::vector<std::vector<double> >& octreelimits,
+                                    std::vector<std::vector<double> >& OctreeLimits,
                                     std::vector<std::vector<int> >& bboxesinoctants,
                                     int& treedepth)
 {
-  //cout << "\n\n\nTest locateBox...................." << endl;
-
-  // Initialization
-  // Number of Bounding Boxes in leaf octant
-  int n0 = 10;
-
-  // Zeilenanzahl der Eingangsmatrix
-  //cout << "INPUT Number of Boxes:   " << allbboxesstdvec.size() << endl;
-
-  // Check for further recursion by checking current treedepth (second criterion)....................
-  //cout << "INPUT Treedepth:  " << treedepth <<"\n";
-
   // Divide further....................
   // Center of octant....................
   double xcenter = 0.0; double ycenter = 0.0; double zcenter = 0.0;
@@ -1209,7 +1257,6 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
               break;
               default: dserror("No or an invalid Octree type was chosen. Check your input file!");
             }
-
             if(inoctant)
               break;
           }
@@ -1262,21 +1309,22 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
     //cout << "Number of Bounding Boxes in suboctant "<<oct<<":  "<< bboxsubset.size() <<"\t";
 
     //If to divide further, let LocateBox call itself with updated inputs
-    if ((N > n0) && (currtreedepth < maxtreedepth_-1))
-      locateBox(bboxsubset, limits[oct], octreelimits, bboxesinoctants, currtreedepth);
+    if (N > minbboxesinoctant_ && currtreedepth < maxtreedepth_-1)
+      locateBox(bboxsubset, limits[oct], OctreeLimits, bboxesinoctants, currtreedepth);
     else
     {
       // no further discretization of the volume because either the maximal tree depth or the minimal number of bounding
       // boxes per octant has been reached
       // Store IDs of Boxes of bboxsubset in vector
       std::vector<int> Box_IDs;
+      Box_IDs.clear();
       if(bboxsubset.size()!=0)
       {
-        //Push back Limits of suboctants to octreelimits
+        //Push back Limits of suboctants to OctreeLimits
         std::vector<double> suboct_limVec(6,0);
         for(int k=0; k<6; k++)
           suboct_limVec[k]=limits[oct](k);
-        octreelimits.push_back(suboct_limVec);
+        OctreeLimits.push_back(suboct_limVec);
 
         for (int m = 0; m < (int)bboxsubset.size(); m++)
         {
@@ -1341,61 +1389,11 @@ LINALG::Matrix<1,6> Beam3ContactOctTree::GetRootOctant()
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                                           std::vector<std::vector<int> >& bboxesinoctants,
                                            vector<RCP<Beam3contact> >* contactpairs)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
 #endif
-  //cout << "\n\nIntersectionAABB Test..................." << endl;
-
-  //determine maximum depth of OctreeMap
-  int maxdepthlocal = 0;
-  int bboxlengthlocal = 0;
-  if(discret_.Comm().MyPID()==0)
-  {
-    bboxlengthlocal = (int)bboxesinoctants.size();
-    for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
-      if((int)bboxesinoctants[i].size()>maxdepthlocal)
-        maxdepthlocal = (int)bboxesinoctants[i].size();
-  }
-
-  int maxdepthglobal = 0;
-  int bboxlengthglobal = 0;
-  discret_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
-  discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
-
-  // build Epetra_MultiVector from OtreeMap
-  // build temporary, fully overlapping map and row map
-  // create crosslinker maps
-  std::vector<int> gids;
-  for (int i=0 ; i<bboxlengthglobal; i++ )
-    gids.push_back(i);
-  // crosslinker column and row map
-  Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
-  Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
-  // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
-  bboxesinoctants_ = rcp(new Epetra_MultiVector(octtreemap,maxdepthglobal+1));
-  Epetra_MultiVector bboxinoctrow(octtreerowmap,maxdepthglobal+1, true);
-  // fill bboxinoct for Proc 0
-  if(searchdis_.Comm().MyPID()==0)
-  {
-    bboxesinoctants_->PutScalar(-9.0);
-    for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
-      for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
-        (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
-  }
-  else
-    bboxesinoctants_->PutScalar(0.0);
-
-  // Communication
-  Epetra_Export exporter(octtreemap, octtreerowmap);
-  Epetra_Import importer(octtreemap, octtreerowmap);
-  bboxinoctrow.Export(*bboxesinoctants_,exporter,Add);
-  bboxesinoctants_->Import(bboxinoctrow,importer,Insert);
-
-  //Algorithm begins
-
   // Build contact pair Map
   std::map<int, std::vector<int> > contactpairmap;
   // create contact pair vector, redundant on all Procs; including redundant pairs
@@ -1936,4 +1934,5 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
 
   return intersection;
 }
+
 #endif /*CCADISCRET*/
