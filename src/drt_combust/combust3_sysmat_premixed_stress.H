@@ -1147,7 +1147,7 @@ void SysmatBoundaryStress(
         normal(0) += functele(i)*xyze(0,i);
         normal(1) += functele(i)*xyze(1,i);
       }
-      normal.Scale(-1.0);
+      normal.Scale(1.0);
 #endif
 #ifdef FLAME_VORTEX
       normal.Clear();
@@ -1220,7 +1220,7 @@ void SysmatBoundaryStress(
 #endif
 
       // jump in normal stress
-      const double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+      const double jflux_n = mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
       // jump of traction vector (stress tensor * normal)
       LINALG::Matrix<nsd,1> jflux(true);
       jflux(0) = jflux_n*normal(0);

@@ -1329,7 +1329,7 @@ void SysmatBoundaryStressNormal(
         normal(0) += functele(i)*xyze(0,i);
         normal(1) += functele(i)*xyze(1,i);
       }
-      normal.Scale(-1.0);
+      normal.Scale(1.0);
 #endif
 #ifdef FLAME_VORTEX
       normal.Clear();

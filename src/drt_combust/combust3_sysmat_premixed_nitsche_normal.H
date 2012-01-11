@@ -313,7 +313,7 @@ void SysmatDomainNitscheNormal(
 
         const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
         if (norm == 0.0) dserror("norm of normal vector is zero!");
-        normal.Scale(-1.0/norm);
+        normal.Scale(1.0/norm);
 #endif
 //      cout << xyze << endl;
 //      cout << "normal "<< normal << endl;
@@ -1094,7 +1094,7 @@ void Nitsche_SysmatBoundaryCellNormal(
       }
       const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
       if (norm == 0.0) dserror("norm of normal vector is zero!");
-      normal.Scale(-1.0/norm);
+      normal.Scale(1.0/norm);
 
       LINALG::Matrix<3,1> point(true);
       for (unsigned inode=0;inode<numnode;++inode)
@@ -2337,10 +2337,10 @@ void SysmatBoundaryNitscheNormal(
   // jump in flux (normal stress)
   double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
   if(fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion){
-    jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+    jflux_n = mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
   }
   else if(fluxjumptype == INPAR::COMBUST::flux_jump_const){
-    jflux_n = 3.0;
+    jflux_n = 5.0;
   }
   else{
     // flux jump is zero

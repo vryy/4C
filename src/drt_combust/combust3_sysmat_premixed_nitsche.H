@@ -1830,7 +1830,7 @@ void Nitsche_SysmatBoundaryCell(
 #endif
       const double norm = normal_smooth.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
       if (norm == 0.0) dserror("norm of normal vector is zero!");
-      normal_smooth.Scale(-1.0/norm);
+      normal_smooth.Scale(1.0/norm);
 #endif
 
       //-----------------------------
