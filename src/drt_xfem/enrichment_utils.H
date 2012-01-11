@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #define ENRICHMENT_UTILS_H
 
 #include "dof_management_element.H"
-#include "xfem_enums.H"
+#include "xfem_utils.H"
 #include "xfem_element_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_combust.H"

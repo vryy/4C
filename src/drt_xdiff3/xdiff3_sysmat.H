@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #define XDIFF3_SYSMAT_H
 
 #include "xdiff3.H"
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 
 namespace XDIFF

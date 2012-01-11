@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_geometry/intersection_service.H"
 #include <Epetra_SerialDenseSolver.h>
 

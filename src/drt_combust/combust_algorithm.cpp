@@ -1857,7 +1857,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ManipulateFluidFieldForGfu
             if (nodelid < 0)
               dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinp).Comm().MyPID(),nodegid);
 
-            if ((*phinp)[nodelid] <= 0.0)
+            if (XFEM::plusDomain((*phinp)[nodelid]) == false)
               gotnegativephi = true;
             else
               gotpositivephi = true;

@@ -25,7 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"

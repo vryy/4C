@@ -218,8 +218,8 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
     for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
-      if (fabs(phinp_[inode]) < 1e-014)
+      // nodes with abs(Gfunc)< tol => touch point
+      if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
       {
         // pressure fields gets jump enrichment
         if (*field == XFEM::PHYSICS::Pres){

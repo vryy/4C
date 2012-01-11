@@ -18,7 +18,7 @@ Maintainer: Ursula Mayer
 #define INTEGRATIONCELL_COORDTRAFO_H
 
 
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_geometry/integrationcell.H"
 
 

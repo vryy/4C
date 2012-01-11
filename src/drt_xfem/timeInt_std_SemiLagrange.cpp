@@ -1434,14 +1434,22 @@ void XFEM::SemiLagrange::exportAlternativAlgoData()
   {
     if (data->state_==TimeIntData::failedSL_)
     {
-      for (size_t i=0;i<data->startOwner_.size();i++)
+      if (data->startOwner_.size()!=1)
       {
-        data->startGid_.clear();
-        data->startGid_.push_back(data->startGid_[i]);
-        data->startOwner_.clear();
-        data->startOwner_.push_back(data->startOwner_[i]);
-        dataVec[data->startOwner_[0]].push_back(*data);
+        vector<int> gids = data->startGid_;
+        vector<int> owners = data->startOwner_;
+
+        for (size_t i=0;i<owners.size();i++)
+        {
+          data->startGid_.clear();
+          data->startGid_.push_back(gids[i]);
+          data->startOwner_.clear();
+          data->startOwner_.push_back(owners[i]);
+          dataVec[data->startOwner_[i]].push_back(*data);
+        }
       }
+      else // this case is handled explicit since it will happen (nearly) always
+        dataVec[data->startOwner_[0]].push_back(*data);
     }
   }
 

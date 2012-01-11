@@ -114,7 +114,7 @@ int XFEM::TIMEINT::interfaceSide(
     double phi
 ) const
 {
-  if (phi >= 0) return 1;
+  if (plusDomain(phi) == true) return 1;
   else return -1;
 } // end function interfaceSide
 
@@ -1224,9 +1224,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
   const int numeles=eles.size();
 
   // determine interface side of node
-  bool domainPlus; // indicator if node is in omega^+
-  if ((*phin_)[node->LID()] >= 0)	domainPlus = true;
-  else								domainPlus = false;
+  bool domainPlus = plusDomain((*phin_)[node->LID()]); // indicator if node is in omega^+
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around node
   {

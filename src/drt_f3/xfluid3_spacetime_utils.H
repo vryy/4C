@@ -13,7 +13,7 @@ Maintainer: Axel Gerstenberger
 #define XFLUID3_SPACETIME_UTILS_H
 
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_xfem/interfacexfsi.H"

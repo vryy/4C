@@ -1204,7 +1204,7 @@ protected:
 
         for (int inode=0;inode<numnode;inode++) // loop over element nodes
         {
-          if (fabs(dmin(inode)/diameter) > 1e-3) // no touching node is not enriched by this element and shall therefore not be used
+          if (fabs(dmin(inode)/diameter) > TOL) // no touching node is not enriched by this element and shall therefore not be used
           {
             numnodeused--;
             dmin(inode) = INFINITY; // set distance to inifinity as indicator for critical case
@@ -1245,10 +1245,7 @@ protected:
 
         // check if enrichment values for both sides exist
         if (plusside && minusside) // both sides exist
-        {
-          //        cout << "final tolerance is " << Tol << endl;
           break;
-        }
         else
         {
           if (Tol<minTol)

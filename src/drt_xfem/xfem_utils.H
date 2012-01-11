@@ -1,21 +1,21 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfem_enums.H
+\file xfem_utils.H
 
 \brief basic enums used in xfem routines
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifndef XFEM_ENUMS_H
-#define XFEM_ENUMS_H
+#ifndef XFEM_UTILS_H
+#define XFEM_UTILS_H
 
 namespace XFEM
 {
@@ -27,6 +27,15 @@ namespace XFEM
     xfem_assembly         ///< variable layout of element matrices - ask dofmanagers for layout information
   };
 
+  //! identify interface side due to phivalue value
+  inline bool plusDomain(double phiValue)
+  {
+    double TOL = 1.0e-14;
+    if (phiValue<-TOL)
+      return false;
+    else
+      return true;
+  };
 }
 
 #endif

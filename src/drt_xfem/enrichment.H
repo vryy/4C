@@ -15,11 +15,13 @@
 #define ENRICHMENT_H
 
 
+#include "xfem_utils.H"
 #include "../drt_combust/combust_interface.H"
 
 //! namespace for all XFEM related stuff
 namespace XFEM
 {
+
   class InterfaceHandle;
 
   /*!
@@ -60,7 +62,7 @@ namespace XFEM
       explicit Enrichment(
       ) :
         type_(typeUndefined),
-        xfemconditionlabel_(-1)  // means undefined
+        xfemconditionlabel_(-1)// means undefined
       {
         //dserror("Enrichment() -> please don't call me!");
         return;
@@ -181,7 +183,7 @@ namespace XFEM
           {
           case XFEM::Enrichment::typeVoid:
           {
-              if (phi(inode) < 0.0) {
+              if (plusDomain(phi(inode))==false) {
                   enrval = 0.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!
@@ -190,7 +192,7 @@ namespace XFEM
           }
           case XFEM::Enrichment::typeJump:
           {
-              if (phi(inode) < 0.0) {
+              if (plusDomain(phi(inode))==false) {
                   enrval = -1.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!
@@ -242,7 +244,7 @@ namespace XFEM
               {
                 phival += phi(inode) * funct(inode);
               }
-              if (phival < 0.0) {
+              if (plusDomain(phival)==false) {
                   enrval = 0.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!
@@ -257,7 +259,7 @@ namespace XFEM
               {
                 phival += phi(inode) * funct(inode);
               }
-              if (phival < 0.0) {
+              if (plusDomain(phival)==false) { // numerically zero
                   enrval = -1.0;
               } else {
                   enrval = 1.0; // phi == 0 is enriched!
@@ -338,7 +340,7 @@ namespace XFEM
                       sum2 += phi(inode) * funct(inode);
                   }
 
-                  if (sum2 < 0)
+                  if (plusDomain(sum2)==false)
                   {
                       enrvalderxy[isd] = sum1der + sum2der;
                   }
@@ -405,7 +407,7 @@ namespace XFEM
                       sum2 += phi(inode) * funct(inode);
                   }
 
-                  if (sum2 < 0)
+                  if (plusDomain(sum2)==false)
                   {
                       enrvalderxy2[isd] = sum1der2 + sum2der2;
                   }
@@ -439,7 +441,6 @@ namespace XFEM
       //! a global id used to distinguish several surfaces within one element
       int xfemconditionlabel_;
   };
-
 }
 
 

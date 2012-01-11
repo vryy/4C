@@ -23,7 +23,7 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
