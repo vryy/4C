@@ -638,7 +638,7 @@ protected:
     LINALG::Matrix<nsd,1> normal(true);
     normal(0) = xyz(0);
     normal(1) = xyz(1);
-    normal.Scale(-1.0/normal.Norm2());
+    normal.Scale(1.0/normal.Norm2());
 #endif
     // enriched shape functions and derivatives for nodal parameters (dofs)
     enrvals.ComputeNormalShapeFunction(

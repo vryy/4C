@@ -237,7 +237,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
     normal(2) = 0.0;
     const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
     if (norm == 0.0) dserror("norm of normal vector is zero!");
-    normal.Scale(-1.0/norm);
+    normal.Scale(1.0/norm);
 #endif
 
     // shape functions and derivatives for nodal parameters (dofs)

@@ -715,7 +715,7 @@ void XFEM::SemiLagrange::backTracking(
 #ifdef COLLAPSE_FLAME_NORMAL
     LINALG::Matrix<nsd,1> normal(node->X());
     normal(2) = 0.0;
-    normal.Scale(-1.0/normal.Norm2());
+    normal.Scale(1.0/normal.Norm2());
 #endif
     ApproxFuncNormalVector<2,2*numnode> shp;
     pointdataXFEMNormal<numnode,DISTYPE>(
