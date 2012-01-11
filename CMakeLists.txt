@@ -256,12 +256,6 @@ endif()
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   include_directories(${Trilinos_TPL_INCLUDE_DIRS})
-  #if (HAVE_MueLu)
-    # ugly hacks for MueLu
-   # include_directories("/home/wiesner/trilinos/Trilinos_dev/fc8_openmpi_dbg_q52011/preCopyrightTrilinos/muelu/xpetra/src")
-   # include_directories("/home/wiesner/trilinos/Trilinos_dev/preCopyrightTrilinos/muelu/utils/ForwardDeclaration")
-   # include_directories("/home/wiesner/trilinos/Trilinos_dev/preCopyrightTrilinos/muelu/utils/Facade")
-  #endif (HAVE_MueLu)
   link_directories(${Trilinos_LIBRARY_DIRS})
 
   set(LIBRARIES
@@ -1854,9 +1848,7 @@ baci_test(beam3test2quadratic 1 "")
 baci_test(beam3test2quadratic 2 "")
 baci_test(beam3test2quartic 1 "")
 baci_test(beam3test2quartic 2 "")
-#if (NOT TRILINOS_DEV)
-baci_test(calcified_zugstab 2 "") # SUPERLU_dist available only in non-dev Trilinos
-#endif()
+baci_test(calcified_zugstab 2 "")
 baci_test(combust_beltrami_8x8x8_ost 1 "")
 baci_test(combust_beltrami_8x8x8_ost 2 "")
 baci_test(combust_beltrami_8x8x8_ost_2iter 1 "")
@@ -2530,6 +2522,11 @@ passive_baci_test(xfsi_multibody_hex20_tp_DLM_yes 1 "")
 passive_baci_test(xfsi_multibody_hex20_tp_DLM_yes 2 "")
 passive_baci_test(xfsi_multibody_hex8_monolithic 1 "")
 passive_baci_test(xfsi_shooter_thin 1 "")
+
+if (HAVE_MueLu)
+baci_test(f2_drivencavity20x20_muelu_drt.dat 1 "")
+baci_test(f2_drivencavity20x20_muelu_drt.dat 2 "")
+endif (HAVE_MueLu)
 
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
