@@ -37,6 +37,12 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
       }
     }
     rhs_mom(fnc-1) = mome;
+
+    if(fnc==1)
+    {
+      if(rhs_mom(0)<0.0)
+        dserror("negaive volume in base function integration. is ordering of vertices right?");
+    }
 //      std::cout<<mome<<std::endl;
 //
   }
@@ -311,6 +317,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     inter2.push_back(int2);
     inter2.push_back(pt[1]);
     inter2.push_back(pt[2]);
+#if 0 //old way of point distribution method in intersection lines
     if(fabs(inter2[0]-inter1[0])<0.025*(maxi[0]-mini[0]))
     {
       vector<double> middle(3);
@@ -320,13 +327,41 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       linePts.push_back(middle);
       intersect = true;
     }
-    else if(fabs(inter2[0]-inter1[0])<0.05*(maxi[0]-mini[0]))
+    else if(fabs(inter2[0]-inter1[0])<0.1*(maxi[0]-mini[0]))
     {
-      OnLine(inter1,inter2,linePts,2/*numeach/2+1*/);//blockkk or remove
+      OnLine(inter1,inter2,linePts,2);
+      intersect = true;
+    }
+    else if(fabs(inter2[0]-inter1[0])<0.2*(maxi[0]-mini[0]))
+    {
+      OnLine(inter1,inter2,linePts,3);
+      intersect = true;
+    }
+    else if(fabs(inter2[0]-inter1[0])<0.3*(maxi[0]-mini[0]))
+    {
+      OnLine(inter1,inter2,linePts,4);
       intersect = true;
     }
     else
       OnLine(inter1,inter2,linePts,numeach);
+#endif
+#if 1 //scaled point distribution method in intersection lines
+    int numX = (fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1;
+    if(numX==1)
+    {
+      vector<double> middle(3);
+      middle[0] = 0.5*(inter2[0]+inter1[0]);
+      middle[1] = inter2[1];
+      middle[2] = inter2[2];
+      linePts.push_back(middle);
+      intersect = true;
+    }
+    else
+    {
+      OnLine(inter1,inter2,linePts,numX);
+      intersect = true;
+    }
+#endif
     return intersect;
   }
   else
@@ -673,7 +708,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 			break;
 		}
 
-/*		Epetra_SerialDenseVector err(num_func_);
+		Epetra_SerialDenseVector err(num_func_);
 		for(int i=0;i<num_func_;i++)
 		{
 			err(i) = 0.0;
@@ -690,10 +725,10 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 		//ErrorForSpecificFunction(rhs_moment,weights,numeach);//blockkk
 		const double maxError = err.InfNorm();
 		std::cout<<"max error = "<<maxError<<"\n";
-		if(maxError<1e-06 || numeach==21)//blockkk
+		if(maxError<1e-10 || numeach==13)//blockkk
 			break;
 		else
-			numeach++;*/
+			numeach++;
     break;
 
   }

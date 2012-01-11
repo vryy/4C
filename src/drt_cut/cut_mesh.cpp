@@ -1745,6 +1745,20 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
       }
     }
 
+#if 0 //to print the number of gauss points in each volumecell
+    std::vector<int> numgpeach;
+    numgpeach.reserve(cells.size());
+    for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+      numic += vc->IntegrationCells().size();
+      numgpeach[i-cells.begin()] = vc->NumGaussPoints( shape );
+    }
+    std::cout<<"Number of Gauss points in each volume = \n";
+    for(unsigned i=0;i<cells.size();i++)
+      std::cout<<"vc no = "<<i<<"\t"<<"numgp = "<<numgpeach[i]<<"\n";
+#endif
+
     double volume_error = ( ev-cv )/ev;
 
 #ifdef DEBUGCUTLIBRARY

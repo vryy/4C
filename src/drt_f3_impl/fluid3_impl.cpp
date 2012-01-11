@@ -11784,12 +11784,12 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
           si->Evaluate(eta,x_side,normal,drs);
 
-          const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
+          /*const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
 
           // find element local position of gauss point at interface
           GEO::CUT::Position<distype> pos( xyze_, x_side );
           pos.Compute();
-          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
   #else
           const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
@@ -11811,6 +11811,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           default:
             throw std::runtime_error( "unsupported integration cell type" );
           }
+#endif
         }
         else if(bc->Shape()==DRT::Element::dis_none)
         {
@@ -11834,7 +11835,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
-#endif
+
 
         // evaluate shape functions
         DRT::UTILS::shape_function<distype>( rst, funct_ );
@@ -12780,16 +12781,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-           double drs = 0;
+           //double drs = 0;
 
            si->Evaluate(eta,x_side,normal,drs);
 
-           const double fac = drs*iquad.Weight();
+           /*const double fac = drs*iquad.Weight();
 
            // find element local position of gauss point at interface
            GEO::CUT::Position<distype> pos( xyze_, x_side );
            pos.Compute();
-           const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+           const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
 
   #else
            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -12812,6 +12813,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
            default:
              throw std::runtime_error( "unsupported integration cell type" );
            }
+#endif
          }
          else if(bc->Shape()==DRT::Element::dis_none)
          {
@@ -12823,7 +12825,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
               x_gp_lin(idim,0) = gpcord[idim];
            }
          }
-#endif
+
 
          meas_surface += drs*iquad.Weight();
        }
@@ -12870,16 +12872,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-            double drs = 0;
+           // double drs = 0;
 
             si->Evaluate(eta,x_side,normal,drs);
 
-            const double fac = drs*iquad.Weight();
+            /*const double fac = drs*iquad.Weight();
 
             // find element local position of gauss point at interface
             GEO::CUT::Position<distype> pos( xyze_, x_side );
             pos.Compute();
-            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
 
     #else
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -12902,6 +12904,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
             default:
               throw std::runtime_error( "unsupported integration cell type" );
             }
+#endif
           }
           else if(bc->Shape()==DRT::Element::dis_none)
           {
@@ -12927,7 +12930,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
-#endif
+
 
 
         // evaluate shape functions
@@ -13447,16 +13450,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
               const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-              double drs = 0;
+              //double drs = 0;
 
               si->Evaluate(eta,x_side,normal,drs);
 
-              const double fac = drs*iquad.Weight();
+              /*const double fac = drs*iquad.Weight();
 
               // find element local position of gauss point at interface
               GEO::CUT::Position<distype> pos( xyze_, x_side );
               pos.Compute();
-              const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+              const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
 
   #else
               const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -13479,6 +13482,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
               default:
                 throw std::runtime_error( "unsupported integration cell type" );
               }
+#endif
             }
             else if(bc->Shape()==DRT::Element::dis_none)
             {
@@ -13490,7 +13494,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
                  x_gp_lin(idim,0) = gpcord[idim];
               }
             }
-#endif
+
 
             meas_surface += drs*iquad.Weight();
           }
@@ -13570,16 +13574,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-            double drs = 0;
+            //double drs = 0;
 
             si->Evaluate(eta,x_side,normal,drs);
 
-            const double fac = drs*iquad.Weight();
+            /*const double fac = drs*iquad.Weight();
 
             // find element local position of gauss point at interface
             GEO::CUT::Position<distype> pos( xyze_, x_side );
             pos.Compute();
-            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
 
   #else
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -13602,6 +13606,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
             default:
               throw std::runtime_error( "unsupported integration cell type" );
             }
+#endif
           }
           else if(bc->Shape()==DRT::Element::dis_none)
           {
@@ -13627,7 +13632,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
           LINALG::Matrix<2,1> xi_side(true);
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
-#endif
+
 
           // evaluate embedded element shape functions
           emb->EvaluateEmb( x_side );

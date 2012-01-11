@@ -16,6 +16,9 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     rhs_bcell_temp(fnc-1) = faee1.integrate_facet();
   }
 
+  if(rhs_bcell_temp(0)<0.0)
+    dserror("Negative area found in base function integration. Is ordering of vertices a problem?");
+
   Epetra_SerialDenseVector Bcellweights;
 
   int ptsEachLine = 14;//14 points gave min error for the test cases
@@ -121,6 +124,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
       {
         err(i) += Bcellweights(j)*base_function(BcellgausPts_[j],i+1);
       }
+//      std::cout<<err(i)<<"\t"<<rhs_bcell_temp(i)<<"\n";//blockkk
       if(fabs(rhs_bcell_temp(i))>1e-8)
         err(i) = (err(i)-rhs_bcell_temp(i))/rhs_bcell_temp(i);
       else
@@ -130,8 +134,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 /*    for(int i=0;i<err.Length();i++)
       std::cout<<err(i)<<"\n";*/
     double maxerr = err.InfNorm();
-    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";//blockkk
-    std::cout<<"area = "<<rhs_bcell(0)<<"\n";//blockkk
+    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
     if(maxerr<1e-10 || ptsEachLine>25)
       break;
     else
@@ -142,6 +145,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     }
 //      break;//blockkk
   }
+  //dserror("in boundary cell integration");
 
 #ifdef DEBUGCUTLIBRARY
     BcellGaussPointGmsh(BcellgausPts_,corners1);
