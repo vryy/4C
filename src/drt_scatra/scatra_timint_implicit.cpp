@@ -131,6 +131,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     else if (prbtype_ == "scatra")       scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype_ == "gas_fsi")      scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype_ == "biofilm_fsi")  scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype_ == "thermo_fsi")   scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
       dserror("Problemtype %s not supported", prbtype_.c_str());
   }
