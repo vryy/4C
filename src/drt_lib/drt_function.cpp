@@ -534,6 +534,42 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation for a combustion test function
+  class CircularFlame2Function : public Function
+  {
+  public:
+
+    /// ctor
+    CircularFlame2Function();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
+  /// special implementation for a combustion test function
+  class CircularFlame3Function : public Function
+  {
+  public:
+
+    /// ctor
+    CircularFlame3Function();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
+  /// special implementation for a combustion test function
+  class CircularFlame4Function : public Function
+  {
+  public:
+
+    /// ctor
+    CircularFlame4Function();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
   /// special implementation two-phase flow test case
   class CollapsingWaterColumnFunction : public Function
   {
@@ -707,6 +743,23 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("ZALESAKSDISK")
     ;
 
+  DRT::INPUT::LineDefinition circularflame2;
+  circularflame2
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME2")
+    ;
+
+  DRT::INPUT::LineDefinition circularflame3;
+  circularflame3
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME3")
+    ;
+
+  DRT::INPUT::LineDefinition circularflame4;
+  circularflame4
+    .AddNamedInt("FUNCT")
+    .AddTag("CIRCULARFLAME4")
+    ;
   DRT::INPUT::LineDefinition collapsingwatercolumn;
   collapsingwatercolumn
     .AddNamedInt("FUNCT")
@@ -763,6 +816,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
   lines->Add(zalesaksdisk);
+  lines->Add(circularflame2);
+  lines->Add(circularflame3);
+  lines->Add(circularflame4);
   lines->Add(collapsingwatercolumn);
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
@@ -983,6 +1039,18 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.push_back(rcp(new ZalesaksDiskFunction()));
+      }
+      else if (function->HaveNamed("CIRCULARFLAME2"))
+      {
+        functions_.push_back(rcp(new CircularFlame2Function()));
+      }
+      else if (function->HaveNamed("CIRCULARFLAME3"))
+      {
+        functions_.push_back(rcp(new CircularFlame3Function()));
+      }
+      else if (function->HaveNamed("CIRCULARFLAME4"))
+      {
+        functions_.push_back(rcp(new CircularFlame4Function()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
@@ -2451,6 +2519,78 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
 
 }
 
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 01/12 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::CircularFlame2Function::CircularFlame2Function() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of circular flame test function henke               01/12 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::CircularFlame2Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  const double visc_minus = 0.00001;
+  const double dens_minus = 1.0;
+  const double radius_0 = 0.025;
+  const double u = 1.0;
+  double radius = radius_0 + t*2.0*u;
+
+  double flux = 0.5*dens_minus*radius*radius*u*u/(xp[0]*xp[0]+xp[1]*xp[1])
+              + visc_minus*2.0*radius*u*dens_minus/(xp[0]*xp[0]+xp[1]*xp[1])*(1.0-2.0*xp[0]*xp[0]/(xp[0]*xp[0]+xp[1]*xp[1]));
+
+  return flux;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 01/12 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::CircularFlame3Function::CircularFlame3Function() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of circular flame test function henke               01/12 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::CircularFlame3Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  const double visc_minus = 0.00001;
+  const double dens_minus = 1.0;
+  const double radius_0 = 0.025;
+  const double u = 1.0;
+  double radius = radius_0 + t*2.0*u;
+
+  double flux = 0.5*dens_minus*radius*radius*u*u/(xp[0]*xp[0]+xp[1]*xp[1])
+              + visc_minus*2.0*radius*u*dens_minus/(xp[0]*xp[0]+xp[1]*xp[1])*(1.0-2.0*xp[1]*xp[1]/(xp[0]*xp[0]+xp[1]*xp[1]));
+
+  return flux;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 01/12 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::CircularFlame4Function::CircularFlame4Function() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of circular flame test function henke               01/12 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::CircularFlame4Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  const double visc_minus = 0.00001;
+  const double radius_0 = 0.025;
+  const double u = 1.0;
+  double radius = radius_0 + t*2.0*u;
+
+  double flux = -4.0*visc_minus*radius*u*xp[0]*xp[1]/((xp[0]*xp[0]+xp[1]*xp[1])*(xp[0]*xp[0]+xp[1]*xp[1]));
+
+  return flux;
+}
 
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 04/10 |
