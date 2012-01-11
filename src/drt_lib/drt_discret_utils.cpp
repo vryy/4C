@@ -168,10 +168,13 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
   // adapt ML settings (if ML preconditioner is used)
   // see whether we have a sublist indicating usage of Trilinos::ML
-  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("Stratimikos Parameters")) return;
+  if (!solveparams.isSublist("ML Parameters") &&
+      !solveparams.isSublist("MueLu Parameters") &&
+	  !solveparams.isSublist("Stratimikos Parameters")) return;
   ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("Stratimikos Parameters"))
   {
+	// TODO: what about MueLu?
     if (solveparams.sublist("Stratimikos Parameters").get<string>("Preconditioner Type") != "ML")
         return;
     else
@@ -179,6 +182,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   }
   else if (solveparams.isSublist("ML Parameters"))
     mllist_ptr = &(solveparams.sublist("ML Parameters"));
+  else if (solveparams.isSublist("MueLu Parameters"))
+	mllist_ptr = &(solveparams.sublist("MueLu Parameters"));
   else return;
 
   // see whether we have previously computed the nullspace

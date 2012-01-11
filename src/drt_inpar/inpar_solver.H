@@ -103,7 +103,9 @@ namespace INPAR
       azprec_BGS2x2,             ///< Block Gauss-Seidel for 2x2 system
       azprec_TekoSIMPLE,         ///< SIMPLE preconditioner for 2x2 block system (Teko)
       azprec_BGSnxn,             ///< Block Gauss-Seidel for nxn system (Teko)
-      azprec_CheapSIMPLE         ///< CheapSIMPLE (BACI implementation for contact/meshtying/constraints)
+      azprec_CheapSIMPLE,        ///< CheapSIMPLE (BACI implementation for contact/meshtying/constraints)
+      azprec_MueLuAMG_sym,	     ///< MueLu AMG preconditioner (Smoothed aggregation for symmetric problems)
+      azprec_MueLuAMG_nonsym	 ///< MueLu AMG preconditioner (PG-AMG for nonsymmetric problems ~ MLFLUID2)
     };
 
     /// Different prolongation smoothing strategies for AMGBS preconditioner

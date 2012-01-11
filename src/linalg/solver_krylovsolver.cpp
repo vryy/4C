@@ -17,6 +17,7 @@
 #include "solver_krylovprojectionpreconditioner.H"
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
+#include "solver_muelupreconditioner.H"
 #ifdef TRILINOS_DEV
 #include "solver_tekopreconditioner.H"
 #endif
@@ -77,6 +78,14 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     else if ( Params().isSublist("ML Parameters") )
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MLPreconditioner( outfile_, Params().sublist("ML Parameters") ) );
+    }
+    else if ( Params().isSublist("MueLu Parameters") )
+    {
+#ifdef HAVE_MueLu
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
+#else
+      dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
+#endif
     }
     else if ( Params().isSublist("AMGBS Parameters") ) // TODO remove me.
     {

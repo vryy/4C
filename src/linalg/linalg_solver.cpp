@@ -717,6 +717,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
     mllist.set<bool>("LINALG::AMG_Operator",true);
   break;
+  case INPAR::SOLVER::azprec_MueLuAMG_sym: // MueLu operator (smoothed aggregation)
+	mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
+	break;
+  case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
+	mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
+    mllist.set("energy minimization: enable",true);
+    mllist.set("energy minimization: type",3); // TODO: different energy minimization modes not available for MueLu, yet
+    mllist.set("aggregation: block scaling",false);
+	break;
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
     mllist.set("aggregation: use tentative restriction",true);
   break;
@@ -758,6 +767,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
 
   // set ml smoothers
   const int mlmaxlevel = inparams.get<int>("ML_MAXLEVEL");
+
   // create vector of integers containing smoothing steps/polynomial order of level
   std::vector<int> mlsmotimessteps;
   {
@@ -788,11 +798,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERMED");
       damp = inparams.get<double>("ML_DAMPMED");
     }
-    else
+    /*else
     {
       type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
       damp = inparams.get<double>("ML_DAMPCOARSE");
-    }
+    }*/
     switch (type)
     {
     case 0: // SGS
@@ -829,8 +839,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: damping factor"              ,damp);
     break;
     case 2: // Chebychev
-      smolevelsublist.set("smoother: type"                        ,"MLS");
-      smolevelsublist.set("smoother: MLS polynomial order"        ,mlsmotimessteps[i]);
+      smolevelsublist.set("smoother: type"                        ,"Chebyshev"/*"MLS"*/);
+      smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+      //smolevelsublist.set("smoother: Chebyshev alpha"             ,20);
     break;
     case 3: // MLS
       smolevelsublist.set("smoother: type"                        ,"MLS");
@@ -900,9 +911,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
       mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     break;
-    case 2:
-      mllist.set("coarse: type"                ,"MLS");
-      mllist.set("coarse: MLS polynomial order",mlsmotimessteps[coarse]);
+    case 2: // Chebychev
+      mllist.set("smoother: type"                        ,"Chebyshev"/*"MLS"*/);
+      mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
+      //smolevelsublist.set("smoother: Chebyshev alpha"             ,20);
     break;
     case 3:
       mllist.set("coarse: type"                ,"MLS");
@@ -1086,6 +1098,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
+    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
       beloslist.set("Preconditioner Type","ML");
       break;
     case INPAR::SOLVER::azprec_AMGBS:
@@ -1277,6 +1291,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_BGS2x2:
     case INPAR::SOLVER::azprec_BGSnxn:
     case INPAR::SOLVER::azprec_TekoSIMPLE:
+    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     case INPAR::SOLVER::azprec_CheapSIMPLE:
@@ -1338,235 +1354,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-        azprectyp == INPAR::SOLVER::azprec_MLAPI ||
-        azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
+        azprectyp == INPAR::SOLVER::azprec_MLAPI    ||
+        azprectyp == INPAR::SOLVER::azprec_AMG)  // new AMG preconditioner
+
     {
       ParameterList& mllist = outparams.sublist("ML Parameters");
       mllist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);
-
-      /*ML_Epetra::SetDefaults("SA",mllist);
-      switch (azprectyp)
-      {
-      case INPAR::SOLVER::azprec_ML: // do nothing, this is standard
-      break;
-      case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
-        mllist.set<bool>("LINALG::AMG_Operator",true);
-      break;
-      case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restruction
-        mllist.set("aggregation: use tentative restriction",true);
-      break;
-      case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
-        mllist.set("energy minimization: enable",true);
-        mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
-        mllist.set("aggregation: block scaling",false);
-      break;
-      case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
-        mllist.set<bool>("LINALG::AMGPreconditioner",true);
-      break;
-      default: dserror("Unknown type of ml preconditioner");
-      }
-      mllist.set("ML output"                       ,inparams.get<int>("ML_PRINT"));
-      if (inparams.get<int>("ML_PRINT")==10)
-        mllist.set("print unused"                  ,1);
-      else
-        mllist.set("print unused"                  ,-2);
-      mllist.set("increasing or decreasing"        ,"increasing");
-      mllist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
-      mllist.set("max levels"                      ,inparams.get<int>("ML_MAXLEVEL"));
-      mllist.set("smoother: pre or post"           ,"both");
-      mllist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
-      mllist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
-      mllist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
-      // override the default sweeps=2 with a default sweeps=1
-      // individual level sweeps are set below
-      mllist.set("smoother: sweeps",1);
-      // save memory if this is an issue, make ML use single precision
-      //mllist.set("low memory usage",true);
-      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
-      {
-        case 0:  mllist.set("aggregation: type","Uncoupled");  break;
-        case 1:  mllist.set("aggregation: type","METIS");      break;
-        case 2:  mllist.set("aggregation: type","VBMETIS");    break;
-        case 3:  mllist.set("aggregation: type","MIS");        break;
-        default: dserror("Unknown type of coarsening for ML"); break;
-      }
-
-      // set ml smoothers
-      const int mlmaxlevel = inparams.get<int>("ML_MAXLEVEL");
-      // create vector of integers containing smoothing steps/polynomial order of level
-      std::vector<int> mlsmotimessteps;
-      {
-        std::istringstream mlsmotimes(Teuchos::getNumericStringParameter(inparams,"ML_SMOTIMES"));
-        std::string word;
-        while (mlsmotimes >> word)
-          mlsmotimessteps.push_back(std::atoi(word.c_str()));
-      }
-
-      if ((int)mlsmotimessteps.size() < mlmaxlevel)
-        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-                mlsmotimessteps.size(),mlmaxlevel);
-
-      for (int i=0; i<mlmaxlevel-1; ++i)
-      {
-        char levelstr[11];
-        sprintf(levelstr,"(level %d)",i);
-        ParameterList& smolevelsublist = mllist.sublist("smoother: list "+(string)levelstr);
-        int type;
-        double damp;
-        if (i==0)
-        {
-          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERFINE");
-          damp = inparams.get<double>("ML_DAMPFINE");
-        }
-        else if (i < mlmaxlevel-1)
-        {
-          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERMED");
-          damp = inparams.get<double>("ML_DAMPMED");
-        }
-        else
-        {
-          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
-          damp = inparams.get<double>("ML_DAMPCOARSE");
-        }
-        switch (type)
-        {
-        case 0: // SGS
-          smolevelsublist.set("smoother: type"                        ,"symmetric Gauss-Seidel");
-          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-          smolevelsublist.set("smoother: damping factor"              ,damp);
-        break;
-        case 7: // GS
-          smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
-          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-          smolevelsublist.set("smoother: damping factor"              ,damp);
-        break;
-        case 8: // DGS
-          smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
-          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-          smolevelsublist.set("smoother: damping factor"              ,damp);
-          azlist.set<bool>("downwinding",true);
-          azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-          {
-            ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-            ifpacklist.set("schwarz: reordering type","true");
-          }
-        break;
-        case 1: // Jacobi
-          smolevelsublist.set("smoother: type"                        ,"Jacobi");
-          smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-          smolevelsublist.set("smoother: damping factor"              ,damp);
-        break;
-        case 2: // Chebychev
-          smolevelsublist.set("smoother: type"                        ,"MLS");
-          smolevelsublist.set("smoother: MLS polynomial order"        ,mlsmotimessteps[i]);
-        break;
-        case 3: // MLS
-          smolevelsublist.set("smoother: type"                        ,"MLS");
-          smolevelsublist.set("smoother: MLS polynomial order"        ,-mlsmotimessteps[i]);
-        break;
-        case 4: // Ifpack's ILU
-        {
-          smolevelsublist.set("smoother: type"                        ,"IFPACK");
-          smolevelsublist.set("smoother: ifpack type"                 ,"ILU");
-          smolevelsublist.set("smoother: ifpack overlap"              ,inparams.get<int>("IFPACKOVERLAP"));
-          smolevelsublist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]);
-          ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd" or "true"
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-        }
-        break;
-        case 5: // Amesos' KLU
-          smolevelsublist.set("smoother: type"                        ,"Amesos-KLU");
-        break;
-        case 9: // Amesos' Umfpack
-          smolevelsublist.set("smoother: type"                        ,"Amesos-UMFPACK");
-        break;
-#ifdef PARALLEL
-        case 6: // Amesos' SuperLU_Dist
-          smolevelsublist.set("smoother: type"                        ,"Amesos-Superludist");
-        break;
-#endif
-        default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
-        } // switch (type)
-      } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
-
-      // set coarse grid solver
-      const int coarse = mlmaxlevel-1;
-      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
-      {
-        case 0:
-          mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
-          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-        break;
-        case 7:
-          mllist.set("coarse: type"          ,"Gauss-Seidel");
-          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-        break;
-        case 8:
-          mllist.set("coarse: type"          ,"Gauss-Seidel");
-          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-          azlist.set<bool>("downwinding",true);
-          azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-          {
-            ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-            ifpacklist.set("schwarz: reordering type","true");
-          }
-        break;
-        case 1:
-          mllist.set("coarse: type"          ,"Jacobi");
-          mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-          mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-        break;
-        case 2:
-          mllist.set("coarse: type"                ,"MLS");
-          mllist.set("coarse: MLS polynomial order",mlsmotimessteps[coarse]);
-        break;
-        case 3:
-          mllist.set("coarse: type"                ,"MLS");
-          mllist.set("coarse: MLS polynomial order",-mlsmotimessteps[coarse]);
-        break;
-        case 4:
-        {
-          mllist.set("coarse: type"          ,"IFPACK");
-          mllist.set("coarse: ifpack type"   ,"ILU");
-          mllist.set("coarse: ifpack overlap",0);
-          mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]);
-          ParameterList& ifpacklist = mllist.sublist("coarse: ifpack list");
-          ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
-          ifpacklist.set("schwarz: reordering type","rcm");
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-        }
-        break;
-        case 5:
-          mllist.set("coarse: type","Amesos-KLU");
-        break;
-        case 9:
-          mllist.set("coarse: type","Amesos-UMFPACK");
-        break;
-        case 6:
-          mllist.set("coarse: type","Amesos-Superludist");
-        break;
-        default: dserror("Unknown type of coarse solver for ML"); break;
-      } // switch (azvar->mlsmotype_coarse)
-      // default values for nullspace
-      mllist.set("PDE equations",1);
-      mllist.set("null space: dimension",1);
-      mllist.set("null space: type","pre-computed");
-      mllist.set("null space: add default vectors",false);
-      mllist.set<double*>("null space: vectors",NULL);
-#if defined(PARALLEL) && defined(PARMETIS)
-      mllist.set("repartition: enable",1);
-      mllist.set("repartition: partitioner","ParMETIS");
-      mllist.set("repartition: max min ratio",1.3);
-      mllist.set("repartition: min per proc",3000);
-#endif
-      //cout << mllist << endl << endl << endl; fflush(stdout);*/
     } // if ml preconditioner
+    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
+    	azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym	)
+    {
+        ParameterList& muelulist = outparams.sublist("MueLu Parameters");
+        muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
+    }
     //------------------------------------- set parameters for AMGBS if used
     if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
     {

@@ -571,7 +571,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
   if ((solver->Params().isSublist("Aztec Parameters") || solver->Params().isSublist("Belos Parameters"))
       &&
-      solver->Params().isSublist("ML Parameters")
+      solver->Params().isSublist("ML Parameters") // TODO what about MueLu?
       &&
       DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none)
     {

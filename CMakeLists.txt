@@ -100,6 +100,11 @@ if (TRILINOS_DEV)
   add_definitions("-DTRILINOS_DEV")
 endif (TRILINOS_DEV)
 
+option (HAVE_MueLu "Turn on MueLu support (needs MueLu to be compiled within Trilinos" OFF)
+if (HAVE_MueLu)
+  add_definitions("-DHAVE_MueLu")
+endif (HAVE_MueLu)
+
 #   additional features
 
 option (BINIO "binary io" ON)
@@ -251,6 +256,12 @@ endif()
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   include_directories(${Trilinos_TPL_INCLUDE_DIRS})
+  #if (HAVE_MueLu)
+    # ugly hacks for MueLu
+   # include_directories("/home/wiesner/trilinos/Trilinos_dev/fc8_openmpi_dbg_q52011/preCopyrightTrilinos/muelu/xpetra/src")
+   # include_directories("/home/wiesner/trilinos/Trilinos_dev/preCopyrightTrilinos/muelu/utils/ForwardDeclaration")
+   # include_directories("/home/wiesner/trilinos/Trilinos_dev/preCopyrightTrilinos/muelu/utils/Facade")
+  #endif (HAVE_MueLu)
   link_directories(${Trilinos_LIBRARY_DIRS})
 
   set(LIBRARIES
@@ -258,6 +269,16 @@ if (Trilinos_FOUND)
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
+
+  if (HAVE_MueLu)
+    # ugly hacks for MueLu
+    # move muelu-utils to end of library list. it seems that otherwise Teuchos-dependencies cannot be resolved by linker
+    set(LIBRARIES
+      ${LIBRARIES}
+      muelu-utils
+      )
+  endif (HAVE_MueLu)
+    
 # define of which library we are using - for compatibility checks
 #if (Trilinos_VERSION STREQUAL "10.1d") 
 #add_definitions("-DTRILINOS_10_1d")
@@ -1098,6 +1119,7 @@ set(OBJS_LINALG
   src/linalg/solver_krylovprojectionpreconditioner.cpp
   src/linalg/solver_ifpackpreconditioner.cpp
   src/linalg/solver_mlpreconditioner.cpp
+  src/linalg/solver_muelupreconditioner.cpp
   src/linalg/solver_tekopreconditioner.cpp
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
