@@ -561,13 +561,13 @@ void MAT::ConstraintMixture::EvaluateStress
   if (refmassdenselastin < 0.0 || refmassdenselastin > density) dserror("mass fraction of elastin not in [0;1]");
   // account for isotropic prestretch of elastin
   LINALG::Matrix<NUM_STRESS_3D,1> glstrainiso(*glstrain);
-  glstrainiso.Scale(pow(prestretchelastin,2));
+  glstrainiso.Scale(prestretchelastin*prestretchelastin);
   LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
   EvaluateElastin(&glstrainiso, &cmatiso, &Siso);
-  Siso.Scale(refmassdenselastin/density*pow(prestretchelastin,2));
+  Siso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin);
   (*stress) = Siso;
-  cmatiso.Scale(refmassdenselastin/density*pow(prestretchelastin,4));
+  cmatiso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin*prestretchelastin*prestretchelastin);
   (*cmat) = cmatiso;
   currmassdens += refmassdenselastin;
 
@@ -663,7 +663,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     Degradation(time - deptime, &qdegrad);
     LINALG::Matrix<4,1> collmass(true);
     history_->at(idpast).GetMass(gp, &collmass);
-    double facS = pow(stretch,2) * qdegrad * collmass(idfiber) / density * depdt;
+    double facS = stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
     Saniso.Scale(facS);
     (*stress) += Saniso;
 
@@ -676,10 +676,10 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
       A(3) = a(0)*a(1); A(4) = a(1)*a(2); A(5) = a(0)*a(2);
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoadd(true);
       cmatanisoadd.MultiplyNT(A, Saniso);
-      cmatanisoadd.Scale(-2.0/pow(collstretch(idfiber),2));
+      cmatanisoadd.Scale(-2.0/(collstretch(idfiber)*collstretch(idfiber)));
       (*cmat) += cmatanisoadd;
     } else {
-      double faccmat = pow(stretch,4) * qdegrad * collmass(idfiber) / density * depdt;
+      double faccmat = stretch*stretch*stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
       cmataniso.Scale(faccmat);
       (*cmat) += cmataniso;
     }
@@ -729,7 +729,7 @@ void MAT::ConstraintMixture::EvaluateSingleFiber
 
   double I4 =  A(0)*C(0) + A(1)*C(1) + A(2)*C(2)
              + 1.*(A(3)*C(3) + A(4)*C(4) + A(5)*C(5)); // I4 = trace(A C)
-  I4 = I4 * pow(stretch,2);  // account for prestretch and stretch at deposition time
+  I4 = I4 * stretch*stretch;  // account for prestretch and stretch at deposition time
 
   //--------------------------------------------------------------------------------------
   // fibers can only stretch/compress down to a minimal value
@@ -1617,13 +1617,13 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
   double prestretchelastin = params_->prestretchelastin_;
   // account for isotropic prestretch of elastin
   LINALG::Matrix<NUM_STRESS_3D,1> glstrainiso(*glstrain);
-  glstrainiso.Scale(pow(prestretchelastin,2));
+  glstrainiso.Scale(prestretchelastin*prestretchelastin);
   LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
   EvaluateElastin(& glstrainiso, & cmatiso, & Siso);
-  Siso.Scale(refmassdenselastin/density*pow(prestretchelastin,2));
+  Siso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin);
   (*stress) += Siso;
-  cmatiso.Scale(refmassdenselastin/density*pow(prestretchelastin,4));
+  cmatiso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin*prestretchelastin*prestretchelastin);
   (*cmat) += cmatiso;
   currmassdens += refmassdenselastin;
 
@@ -1894,13 +1894,13 @@ void MAT::ConstraintMixture::EvaluateImplicitSingleNew
   double prestretchelastin = params_->prestretchelastin_;
   // account for isotropic prestretch of elastin
   LINALG::Matrix<NUM_STRESS_3D,1> glstrainiso(*glstrain);
-  glstrainiso.Scale(pow(prestretchelastin,2));
+  glstrainiso.Scale(prestretchelastin*prestretchelastin);
   LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
   EvaluateElastin(& glstrainiso, & cmatiso, & Siso);
-  Siso.Scale(refmassdenselastin/density*pow(prestretchelastin,2));
+  Siso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin);
   (*stress) += Siso;
-  cmatiso.Scale(refmassdenselastin/density*pow(prestretchelastin,4));
+  cmatiso.Scale(refmassdenselastin/density*prestretchelastin*prestretchelastin*prestretchelastin*prestretchelastin);
   (*cmat) += cmatiso;
   currmassdens += refmassdenselastin;
 
@@ -1936,7 +1936,7 @@ void MAT::ConstraintMixture::GradStressDMass
   Degradation(0.0,&qdegrad);
   LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
   EvaluateSingleFiber(glstrain, NULL, & Saniso, a, stretch);
-  double facS = pow(stretch,2) * qdegrad / density * dt;
+  double facS = stretch*stretch * qdegrad / density * dt;
   Saniso.Scale(facS);
   if (option)
     (*derivative).Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0,Saniso);
@@ -1968,8 +1968,8 @@ void MAT::ConstraintMixture::GradMassDStress
   LINALG::Matrix<3,1> temp1(true);
   temp1.Multiply(Smatrix,Ca);
   CSCa.Multiply(Cmatrix,temp1);
-  double fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-             / massstress / pow(actcollstretch,2);
+  double fac = massprodbasal_ * params_->growthfactor_ / homstressfixed / (J*J)
+             / massstress / (actcollstretch*actcollstretch);
   if (massstress == 0.0) fac = 0.0;
   (*derivative)(0) = fac * Ca(0) * CSCa(0);
   (*derivative)(1) = fac * Ca(1) * CSCa(1);
@@ -2011,9 +2011,9 @@ void MAT::ConstraintMixture::GradMassDStretch
   (*derivative)(0) = a(0)*a(0); (*derivative)(1) = a(1)*a(1);
   (*derivative)(2) = a(2)*a(2); (*derivative)(3) = a(0)*a(1);
   (*derivative)(4) = a(1)*a(2); (*derivative)(5) = a(0)*a(2);
-  (*derivative).Update(1.0,Cinv,1.0/pow(actcollstretch,2));
+  (*derivative).Update(1.0,Cinv,1.0/(actcollstretch*actcollstretch));
   (*derivative).Scale(- 1.0 * massstress);
-  double fac = 1.0 / massstress / pow(actcollstretch,2) / pow(J,2);
+  double fac = 1.0 / massstress / (actcollstretch*actcollstretch) / (J*J);
   (*derivative)(0) += fac * (2.0 * a(0) * SCSCa(0) + SCa(0) * SCa(0));
   (*derivative)(1) += fac * (2.0 * a(1) * SCSCa(1) + SCa(1) * SCa(1));
   (*derivative)(2) += fac * (2.0 * a(2) * SCSCa(2) + SCa(2) * SCa(2));

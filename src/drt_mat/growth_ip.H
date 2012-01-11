@@ -51,25 +51,25 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      // density
+      /// density
       const double density_;
-      // elastic material number
+      /// elastic material number
       const int idmatelastic_;
-      // start growth after starttime
+      /// start growth after starttime
       const double starttime_;
-      // stop growth after endtime
+      /// stop growth after endtime
       const double endtime_;
-      // tolerance for local Newton iteration
+      /// tolerance for local Newton iteration
       const double abstol_;
-      // growth law parameter kthetaplus
+      /// growth law parameter kthetaplus
       const double kthetaplus_;
-      // growth law parameter mthetaplus
+      /// growth law parameter mthetaplus
       const double mthetaplus_;
-      // growth law parameter kthetaminus
+      /// growth law parameter kthetaminus
       const double kthetaminus_;
-      // growth law parameter mthetaminus
+      /// growth law parameter mthetaminus
       const double mthetaminus_;
-      // homeostatic value for mandelstress
+      /// homeostatic value for mandelstress
       const double hommandel_;
       //@}
 

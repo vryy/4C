@@ -48,27 +48,27 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      // dilatation parameter
+      /// dilatation parameter
       const double kappa_;
-      // shear modulus
+      /// shear modulus
       const double mue_;
-      // density
+      /// density
       const double density_;
-      // parameter for linear fiber stiffness of collagen
+      /// parameter for linear fiber stiffness of collagen
       const double k1c_;
-      // parameter for exponential fiber stiffness of collagen
+      /// parameter for exponential fiber stiffness of collagen
       const double k2c_;
-      // parameter for linear fiber stiffness of smooth muscle
+      /// parameter for linear fiber stiffness of smooth muscle
       const double k1m_;
-      // parameter for exponential fiber stiffness of smooth muscle
+      /// parameter for exponential fiber stiffness of smooth muscle
       const double k2m_;
-      // mass fraction of elastin
+      /// mass fraction of elastin
       const double phie_;
-      // mass fraction of collagen
+      /// mass fraction of collagen
       const double phic_;
-      // mass fraction of smooth muscle
+      /// mass fraction of smooth muscle
       const double phim_;
-      // option for initialization
+      /// option for initialization
       const int init_;
       //@}
 

@@ -44,21 +44,21 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      // dilatation parameter
+      /// dilatation parameter
       const double kappa_;
-      // shear modulus
+      /// shear modulus
       const double mue_;
-      // density
+      /// density
       const double density_;
-      // parameter for linear fiber stiffness
+      /// parameter for linear fiber stiffness
       const double k1_;
-      // parameter for exponential fiber stiffness
+      /// parameter for exponential fiber stiffness
       const double k2_;
-      // angle between fiber direction and circumferential direction
+      /// angle between fiber direction and circumferential direction
       const double gamma_;
-      // minimal principal stretch fibers do respond to
+      /// minimal principal stretch fibers do respond to
       const double minstretch_;
-      // option for initialization
+      /// option for initialization
       const int init_;
       //@}
 

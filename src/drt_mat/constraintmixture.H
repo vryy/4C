@@ -54,43 +54,43 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      // density
+      /// density
       const double density_;
-      // shear modulus
+      /// shear modulus
       const double mue_;
-      // mass fraction of elastin
+      /// mass fraction of elastin
       const double phielastin_;
-      // prestretch of elastin
+      /// prestretch of elastin
       const double prestretchelastin_;
-      // parameter for linear fiber stiffness of collagen
+      /// parameter for linear fiber stiffness of collagen
       const double k1_;
-      // parameter for exponential fiber stiffness of collagen
+      /// parameter for exponential fiber stiffness of collagen
       const double k2_;
-      // prestretch of collagen fibers
+      /// prestretch of collagen fibers
       const double prestretchcollagen_;
-      // dilatation modulus
+      /// dilatation modulus
       const double kappa_;
       // basal rate of mass production
 //      const double massprodbasal_;
-      // lifetime of collagen fibers
+      /// lifetime of collagen fibers
       const double lifetime_;
-      // homeostatic target value of scalar stress measure
+      /// homeostatic target value of scalar stress measure
       const double homstress_;
-      // growth factor
+      /// growth factor
       const double growthfactor_;
-      // at this time turnover of collagen starts
+      /// at this time turnover of collagen starts
       const double starttime_;
-      // time integration scheme (Explicit,Implicit)
+      /// time integration scheme (Explicit,Implicit)
       const string* integration_;
-      // tolerance for local Newton iteration
+      /// tolerance for local Newton iteration
       const double abstol_;
-      // driving force of growth (Single,All)
+      /// driving force of growth (Single,All)
       const string* growthforce_;
-      // how to set stretches in the beginning
+      /// how to set stretches in the beginning
       const string* initstretch_;
-      // which degradation function
+      /// which degradation function
       const string degoption_;
-      // tolerance for degradation
+      /// tolerance for degradation
       const double degtol_;
       //@}
 
@@ -137,20 +137,24 @@ namespace MAT
     void Setup(const int ngp, const double massprodbasal);
 
   private:
-    // communicate time variables to the outside
+
+    /// @name Access to History
+    //@{
+    /// set time variables
     void SetTime(double deptime, double dt) {depositiontime_ = deptime; dt_ = dt;};
+    /// get time variables
     void GetTime(double* deptime, double* dt) {*deptime = depositiontime_; *dt = dt_;};
-
-    // communicate stretches to the outside
+    /// set stretches
     void SetStretches(int gp, LINALG::Matrix<4,1> stretches);
+    /// get stretches
     void GetStretches(int gp, LINALG::Matrix<4,1>* stretches);
-
-    // communicate mass production rates to the outside
+    /// set mass production rates
     void SetMass(int gp, LINALG::Matrix<4,1> massprod);
+    /// get mass production rates
     void GetMass(int gp, LINALG::Matrix<4,1>* massprod);
-
-    // return number of gausspoints
+    /// return number of gausspoints
     int NumGP() const { return numgp_;}
+    //@}
 
     /// deposition time of collagen fibers
     double depositiontime_;
