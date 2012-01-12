@@ -169,7 +169,7 @@ TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
 TOLPRE                          1e-08
-TOLRES                          1e-08
+TOLRES                          2e-08
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
