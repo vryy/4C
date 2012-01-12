@@ -839,9 +839,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: damping factor"              ,damp);
     break;
     case 2: // Chebychev
-      smolevelsublist.set("smoother: type"                        ,"Chebyshev"/*"MLS"*/);
+      smolevelsublist.set("smoother: type"                        ,"MLS");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-      //smolevelsublist.set("smoother: Chebyshev alpha"             ,20);
     break;
     case 3: // MLS
       smolevelsublist.set("smoother: type"                        ,"MLS");
@@ -912,9 +911,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     break;
     case 2: // Chebychev
-      mllist.set("smoother: type"                        ,"Chebyshev"/*"MLS"*/);
+      mllist.set("smoother: type"                        ,"MLS");
       mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
-      //smolevelsublist.set("smoother: Chebyshev alpha"             ,20);
     break;
     case 3:
       mllist.set("coarse: type"                ,"MLS");
