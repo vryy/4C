@@ -96,6 +96,7 @@ typedef struct _GENPROB
   INT               numscatra;     /* actual number of the scalar transport field */
   INT               numartf;       /* actual number of the 1D_Artery field */
   INT               numawf;        /* actual number of the reduced dimensional airways field */
+  INT               numof;         /* actual number of optimization field */
 
 } GENPROB;
 

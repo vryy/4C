@@ -207,6 +207,8 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
+    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity);
+
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 

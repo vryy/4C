@@ -270,6 +270,14 @@ public:
     );
 
   /*!
+  \brief reset density in topology optimization problems
+
+  */
+  void SetTopOptPorosityField(
+      RCP<Epetra_Vector> porosity
+  );
+
+  /*!
   \brief calculate error between a analytical solution and the
          numerical solution of a test problems
 
@@ -695,6 +703,10 @@ protected:
   RCP<Epetra_Vector>    dispnp_;
   RCP<Epetra_Vector>    dispn_;
   RCP<Epetra_Vector>    dispnm_;
+  //@}
+
+  //! @name density in topology optimization
+  RCP<Epetra_Vector>    topopt_porosity_;
   //@}
 
   /// only necessary for AVM3: scale-separation matrix

@@ -447,6 +447,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mooneyrivlin.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
+  src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticneohooke.cpp
   src/drt_mat/plasticlinelast.cpp
@@ -978,6 +979,14 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_nurbs_discret/drt_control_point.cpp
   src/drt_nurbs_discret/drt_knotvector.cpp
   src/drt_nurbs_discret/drt_nurbs_discret.cpp
+)
+set(OBJS_DRT_TOPOPT
+  src/drt_adapter/adapter_fluid_topopt_algo.cpp
+  src/drt_adapter/adapter_topopt.cpp
+  src/drt_opti/topopt_algorithm.cpp
+  src/drt_opti/topopt_dyn.cpp
+  src/drt_opti/topopt_optimizer.cpp
+  src/drt_opti/topopt_utils.cpp
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
@@ -1581,6 +1590,7 @@ add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
+add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 
 add_library(alg_stk_structure ${OBJS_STK_STRUCTURE})
 add_library(alg_stk_fluid ${OBJS_STK_FLUID})
@@ -1600,6 +1610,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_contact
   alg_stk_structure
   alg_stk_fluid
+  alg_topopt
   )
 
 # general framework

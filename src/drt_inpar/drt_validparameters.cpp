@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_topopt.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
@@ -586,6 +587,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Gas_Fluid_Structure_Interaction");             label.push_back(prb_gas_fsi);
     name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
     name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
+    name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",
@@ -3293,6 +3295,64 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   IntParameter("BIONUMSTEP",0,"Maximum number of steps for surface grown",&biofilmcontrol);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& topoptcontrol = list->sublist("TOPOLOGY OPTIMIZATION CONTROL",false,
+      "control parameters for topology optimization problems");
+
+  DoubleParameter("MAXTIME",10.0,"Total simulation time",&topoptcontrol);
+  IntParameter("NUMSTEP",100,"Total number of timesteps",&topoptcontrol);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&topoptcontrol);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
+  IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
+  DoubleParameter("PORO_BOUNDARY_UP",25000,"maximal porosity",&topoptcontrol);
+  DoubleParameter("PORO_BOUNDARY_DOWN",0,"minimal porosity",&topoptcontrol);
+  DoubleParameter("SMEARING_FACTOR",1.0,"smearing factor between density and porosity",&topoptcontrol);
+
+  setStringToIntegralParameter<int>("RESTART_ACTION","Fluid_Time_Step","Startint field of Restart",
+      tuple<std::string>(
+          "Fluid_Time_Step",
+          "Adjoint_Time_Step",
+          "Evaluated_Gradient",
+          "Finished_Optimization_Step"),
+          tuple<int>(
+              INPAR::TOPOPT::fluid,
+              INPAR::TOPOPT::adjoint,
+              INPAR::TOPOPT::gradient,
+              INPAR::TOPOPT::opti_step),
+              &topoptcontrol);
+
+  setStringToIntegralParameter<int>("CONV_CHECK_TYPE","Residuum","Convergence check due to given fields",
+      tuple<std::string>(
+          "Increment",
+          "Residuum",
+          "Increment_and_Residuum"),
+          tuple<int>(
+              INPAR::TOPOPT::inc,
+              INPAR::TOPOPT::res,
+              INPAR::TOPOPT::inc_and_res),
+              &topoptcontrol);
+  DoubleParameter("CONVTOL",1e-5,"Tolerance for iteration over fields",&topoptcontrol);
+  DoubleParameter("RESTOL",1e-5,"Convergence tolerance of the objective function",&topoptcontrol);
+  DoubleParameter("INCTOL",1e-5,"Convergence tolerance of the optimized variable",&topoptcontrol);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,
+      "control parameters for the optimizer of a topology optimization problem");
+
+  IntParameter("MAX_ITER",-1,"Maximal number of optimization steps",&topoptoptimizer);
+  IntParameter("MATID",-1,"Material ID for automatic mesh generation",&topoptoptimizer);
+
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
+                               "Initial Field for density = topology optimization's optimization variable",
+                               tuple<std::string>(
+                                 "zero_field",
+                                 "field_by_function"),
+                               tuple<int>(
+                                   INPAR::TOPOPT::initfield_zero_field,
+                                   INPAR::TOPOPT::initfield_field_by_function),
+                               &topoptoptimizer);
+  IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");
 
@@ -4051,7 +4111,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  tuple<std::string>("Tessellation","MomentFitting"),
                                  tuple<int>(0,1),
                                  &xfem_general);
-
 
 
   /*----------------------------------------------------------------------*/

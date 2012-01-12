@@ -617,6 +617,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     gasconstant_ = 1.0;
   }
 
+  // initialize pseudo-porosity vector for topology optimization as null
+  topopt_porosity_ = Teuchos::null;
+
   // initialize all thermodynamic pressure values and its time derivatives
   // to one or zero, respectively
   // -> they are kept this way for incompressible flow
@@ -1187,6 +1190,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
       eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
+
+      //set additional pseudo-porosity field for topology optimization
+      eleparams.set("topopt_porosity",topopt_porosity_);
 
       // set general vector values needed by elements
       discret_->ClearState();
@@ -4471,6 +4477,19 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   return;
 
 } // ScaTraTimIntImpl::SetTimeLomaFields
+
+
+
+/*----------------------------------------------------------------------*
+ | sent density field for topology optimization         winklmaier 12/11|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetTopOptPorosityField(
+    RCP<Epetra_Vector> porosity
+)
+{
+  topopt_porosity_ = porosity;
+}
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

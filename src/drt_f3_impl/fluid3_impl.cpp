@@ -646,6 +646,22 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   if (f3Parameter_->is_genalpha_) eveln.Clear();
   else                            eaccam.Clear();
 
+  LINALG::Matrix<nen_,1> eporo(true);
+  if (params.get<RCP<Epetra_Vector> >("topopt_porosity") !=Teuchos::null)
+  {
+    // activate reaction terms
+    f3Parameter_->reaction_topopt_ = true;
+    f3Parameter_->reaction_ = true;
+
+    // read nodal values from global vector
+    RCP<Epetra_Vector> topopt_porosity = params.get<RCP<Epetra_Vector> >("topopt_porosity");
+    for (int nn=0;nn<nen_;++nn)
+    {
+      int lid = (ele->Nodes()[nn])->LID();
+      eporo(nn,0) = (*topopt_porosity)[lid];
+    }
+  }
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
@@ -742,6 +758,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     fsevelaf,
     evel_hat,
     ereynoldsstress_hat,
+    eporo,
     mat,
     ele->IsAle(),
     ele->Owner()==discretization.Comm().MyPID(),
@@ -783,6 +800,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
   const LINALG::Matrix<nsd_,nen_> &             evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
+  const LINALG::Matrix<nen_,1> &                eporo,
   Teuchos::RCP<MAT::Material>                   mat,
   bool                                          isale,
   bool                                          isowned,
@@ -854,6 +872,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          elemat1,
          elemat2,  // -> emesh
          elevec1,
+         eporo,
          thermpressaf,
          thermpressam,
          thermpressdtaf,
@@ -926,6 +945,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
   LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
+  const LINALG::Matrix<nen_,1> &                eporo,
   const double                                  thermpressaf,
   const double                                  thermpressam,
   const double                                  thermpressdtaf,
@@ -1174,6 +1194,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     if (f3Parameter_->mat_gp_)
       GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
+    // get reaction coefficient due to porosity for topology optimization
+    // !do this only at gauss point!
+    // TODO does it make problems to evaluate at element center? (i think it should, winklmaier)
+    if (f3Parameter_->reaction_topopt_)
+    {
+      reacoeff_ = funct_.Dot(eporo);
+    }
+
     // calculate subgrid viscosity and/or stabilization parameter at integration point
     if (f3Parameter_->tau_gp_)
     {
@@ -1216,6 +1244,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
 
       mffsvdiv_ = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
+
     }
     else
     {
@@ -1232,7 +1261,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //----------------------------------------------------------------------
     // compute convective term from previous iteration and convective operator
     // (both zero for reactive problems, for the time being)
-    if (f3Parameter_->reaction_)
+    // winklmaier: zero only for previous reactive (= darcy???) problems
+    if (f3Parameter_->darcy_)
     {
       conv_old_.Clear();
       conv_c_.Clear();
@@ -2624,6 +2654,8 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   // get constant viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
   visc_ = actmat->SetViscosity();
 
+  // set darcy flag to true
+  f3Parameter_->darcy_ = true;
   // set reaction flag to true
   f3Parameter_->reaction_ = true;
 
@@ -3859,7 +3891,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
     double re01 = 0.0;
     double re11 = 0.0;
-    if (f3Parameter_->reaction_)
+    if (f3Parameter_->reaction_) // TODO Martin: check influence of reaction to stabilization
     {
       re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(strle));
       re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(hk));
@@ -11784,12 +11816,12 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
           si->Evaluate(eta,x_side,normal,drs);
 
-          /*const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
+          const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
 
           // find element local position of gauss point at interface
           GEO::CUT::Position<distype> pos( xyze_, x_side );
           pos.Compute();
-          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
+          const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
   #else
           const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
@@ -11811,7 +11843,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           default:
             throw std::runtime_error( "unsupported integration cell type" );
           }
-#endif
         }
         else if(bc->Shape()==DRT::Element::dis_none)
         {
@@ -11835,6 +11866,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
+#endif
 
 
         // evaluate shape functions
@@ -12781,16 +12813,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
            const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-           //double drs = 0;
+           double drs = 0;
 
            si->Evaluate(eta,x_side,normal,drs);
 
-           /*const double fac = drs*iquad.Weight();
+           const double fac = drs*iquad.Weight();
 
            // find element local position of gauss point at interface
            GEO::CUT::Position<distype> pos( xyze_, x_side );
            pos.Compute();
-           const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
+           const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
   #else
            const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -12813,7 +12845,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
            default:
              throw std::runtime_error( "unsupported integration cell type" );
            }
-#endif
          }
          else if(bc->Shape()==DRT::Element::dis_none)
          {
@@ -12825,6 +12856,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
               x_gp_lin(idim,0) = gpcord[idim];
            }
          }
+#endif
 
 
          meas_surface += drs*iquad.Weight();
@@ -12872,16 +12904,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-           // double drs = 0;
+            double drs = 0;
 
             si->Evaluate(eta,x_side,normal,drs);
 
-            /*const double fac = drs*iquad.Weight();
+            const double fac = drs*iquad.Weight();
 
             // find element local position of gauss point at interface
             GEO::CUT::Position<distype> pos( xyze_, x_side );
             pos.Compute();
-            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
     #else
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -12904,7 +12936,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
             default:
               throw std::runtime_error( "unsupported integration cell type" );
             }
-#endif
           }
           else if(bc->Shape()==DRT::Element::dis_none)
           {
@@ -12930,6 +12961,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
         LINALG::Matrix<2,1> xi_side(true);
         si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
+#endif
 
 
 
@@ -13450,16 +13482,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
               const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-              //double drs = 0;
+              double drs = 0;
 
               si->Evaluate(eta,x_side,normal,drs);
 
-              /*const double fac = drs*iquad.Weight();
+              const double fac = drs*iquad.Weight();
 
               // find element local position of gauss point at interface
               GEO::CUT::Position<distype> pos( xyze_, x_side );
               pos.Compute();
-              const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
+              const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
   #else
               const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -13482,7 +13514,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
               default:
                 throw std::runtime_error( "unsupported integration cell type" );
               }
-#endif
             }
             else if(bc->Shape()==DRT::Element::dis_none)
             {
@@ -13494,6 +13525,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
                  x_gp_lin(idim,0) = gpcord[idim];
               }
             }
+#endif
 
 
             meas_surface += drs*iquad.Weight();
@@ -13574,16 +13606,16 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-            //double drs = 0;
+            double drs = 0;
 
             si->Evaluate(eta,x_side,normal,drs);
 
-            /*const double fac = drs*iquad.Weight();
+            const double fac = drs*iquad.Weight();
 
             // find element local position of gauss point at interface
             GEO::CUT::Position<distype> pos( xyze_, x_side );
             pos.Compute();
-            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();*/
+            const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
   #else
             const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
@@ -13606,7 +13638,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
             default:
               throw std::runtime_error( "unsupported integration cell type" );
             }
-#endif
           }
           else if(bc->Shape()==DRT::Element::dis_none)
           {
@@ -13632,6 +13663,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
           LINALG::Matrix<2,1> xi_side(true);
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
+#endif
 
 
           // evaluate embedded element shape functions

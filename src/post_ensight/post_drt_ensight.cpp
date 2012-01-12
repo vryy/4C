@@ -426,6 +426,15 @@ int main(
 
       break;
     }
+    case prb_fluid_topopt:
+    {
+      string basename = problem.outname();
+
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+      break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number

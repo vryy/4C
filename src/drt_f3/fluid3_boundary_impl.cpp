@@ -70,19 +70,18 @@ DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInt
   {
     return Fluid3BoundaryImpl<DRT::Element::tri3>::Instance();
   }
-  /*  case DRT::Element::tri6:
+  case DRT::Element::tri6:
   {
     return Fluid3BoundaryImpl<DRT::Element::tri6>::Instance();
-  }*/
+  }
   case DRT::Element::line2:
   {
     return Fluid3BoundaryImpl<DRT::Element::line2>::Instance();
   }
-  /*
   case DRT::Element::line3:
   {
     return Fluid3BoundaryImpl<DRT::Element::line3>::Instance();
-  }*/
+  }
   case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
     return Fluid3BoundaryImpl<DRT::Element::nurbs2>::Instance();

@@ -268,6 +268,7 @@ public:
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
+  const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
 
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
 

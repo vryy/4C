@@ -53,6 +53,7 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   is_newton_(false),
   is_inconsistent_(false),
   reaction_(false),
+  darcy_(false),
   physicaltype_(INPAR::FLUID::incompressible),
   tds_(INPAR::FLUID::subscales_none),
   transient_(INPAR::FLUID::inertia_stab_drop),

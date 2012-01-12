@@ -126,6 +126,7 @@ namespace INPAR
       m_growth,   ///< integration point based growth
       m_constraintmixture,  ///< growth and remodeling of arteries
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
+      m_opti_dens,    ///< density field for topology optimization
       m_none          ///< undefined
     };
 

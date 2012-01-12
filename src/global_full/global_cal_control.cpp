@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
+#include "../drt_opti/topopt_dyn.H"
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -114,6 +115,10 @@ void ntacal()
 
     case prb_combust:
       combust_dyn();
+      break;
+
+    case prb_fluid_topopt:
+      fluid_topopt_dyn();
       break;
 
 #ifdef D_ARTNET

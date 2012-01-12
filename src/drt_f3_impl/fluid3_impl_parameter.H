@@ -71,6 +71,10 @@ public:
   bool is_inconsistent_;
   //! flag to (de)activate potential reactive terms
   bool reaction_;
+  //! flag to (de)aktivate porous darcy flow
+  bool darcy_;
+  //! flag to (de)aktivate reaction due to topology optimization
+  bool reaction_topopt_;
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType physicaltype_;
   //! Flag to (de)activate time-dependent subgrid stabilization

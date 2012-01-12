@@ -355,6 +355,12 @@ namespace ADAPTER {
 
     //@}
 
+    //! @name Transfer the porosity field used in the topology optimization to the fluid
+
+    /// set pseudo-porosity field in the fluid
+    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity) = 0;
+    //@}
+
     //! @name Import geometrical coupling information about an implicitely defined interface from a different field
 
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set

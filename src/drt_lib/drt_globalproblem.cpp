@@ -201,6 +201,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
   reader.ReadGidSection("--BIOFILM CONTROL", *list);
+  reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
+  reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
@@ -394,6 +396,12 @@ void DRT::Problem::InputControl()
     genprob.numaf = 1;  /* ale field index */
     break;
   }
+  case prb_fluid_topopt:
+  {
+    genprob.numff = 0; /* fluid field index */
+    genprob.numof = 1; /* field index of optimization variables */
+    break;
+  }
 
   default:
     dserror("problem type %d unknown", genprob.probtyp);
@@ -406,7 +414,7 @@ void DRT::Problem::InputControl()
   case prb_fsi:
   case prb_fsi_lung:
   case prb_fluid_ale:
-  case prb_fluid:  
+  case prb_fluid:
   case prb_scatra:
   case prb_loma:  
   case prb_elch:
@@ -837,6 +845,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   RCP<DRT::Discretization> structscatradis = null;
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
   RCP<DRT::Discretization> airwaydis       = null; //
+  RCP<DRT::Discretization> optidis         = null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1229,6 +1238,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_ale)
+  case prb_fluid_topopt:
+  {
+    // create empty discretizations
+    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    AddDis(genprob.numff, fluiddis);
+
+    optidis = rcp(new DRT::Discretization("topopt",reader.Comm()));
+    AddDis(genprob.numof, optidis);
+
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+    break;
+  } // end of else if (genprob.probtyp==prb_combust)
   default:
     dserror("Unknown problem type: %d",genprob.probtyp);
   }
@@ -1506,7 +1528,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 /*----------------------------------------------------------------------*/
 RCP<DRT::Discretization> DRT::Problem::Dis(int fieldnum, int disnum) const
 {
-
   return discretizations_[fieldnum][disnum];
 }
 

@@ -164,6 +164,7 @@ namespace ADAPTER
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractVelocityPart(velpres); }
+    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity){ dserror("not implemented!"); };
     virtual void ImportDiscretization(Teuchos::RCP<const DRT::Discretization> importdis)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
