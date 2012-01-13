@@ -1078,12 +1078,6 @@ void Beam3ContactOctTree::locateAll()
   discret_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
   discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
 
-  if(!discret_.Comm().MyPID())
-  {
-    for(int i=0; i<(int)bboxesinoctants[0].size(); i++)
-      cout<<bboxesinoctants[0][i]<<" ";
-    cout<<endl;
-  }
   // build temporary, fully overlapping map and row map
   // create crosslinker maps
   std::vector<int> gids;
