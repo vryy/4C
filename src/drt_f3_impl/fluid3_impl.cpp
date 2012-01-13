@@ -647,7 +647,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   else                            eaccam.Clear();
 
   LINALG::Matrix<nen_,1> eporo(true);
-  if (params.get<RCP<Epetra_Vector> >("topopt_porosity") !=Teuchos::null)
+  if ((params.getEntryPtr("topopt_porosity") != NULL) and // parameter exists and ...
+      (params.get<RCP<Epetra_Vector> >("topopt_porosity") !=Teuchos::null)) // ... according vector is filled
   {
     // activate reaction terms
     f3Parameter_->reaction_topopt_ = true;
@@ -1198,9 +1199,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // !do this only at gauss point!
     // TODO does it make problems to evaluate at element center? (i think it should, winklmaier)
     if (f3Parameter_->reaction_topopt_)
-    {
       reacoeff_ = funct_.Dot(eporo);
-    }
 
     // calculate subgrid viscosity and/or stabilization parameter at integration point
     if (f3Parameter_->tau_gp_)
