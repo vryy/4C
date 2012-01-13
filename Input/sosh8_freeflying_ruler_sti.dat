@@ -69,7 +69,7 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 //NUMSTEP                         2000
 NUMSTEP                         10
-PREDICT                         ConstDisVelAcc
+PREDICT                         ConstAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     100
 RESULTDT                        0
