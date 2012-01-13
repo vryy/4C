@@ -16,8 +16,8 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     rhs_bcell_temp(fnc-1) = faee1.integrate_facet();
   }
 
-  if(rhs_bcell_temp(0)<0.0)
-    dserror("Negative area found in base function integration. Is ordering of vertices a problem?");
+  /*if(rhs_bcell_temp(0)<0.0)
+    dserror("Negative area found in base function integration. Is ordering of vertices a problem?");*/
 
   Epetra_SerialDenseVector Bcellweights;
 

@@ -40,8 +40,8 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
     if(fnc==1)
     {
-      if(rhs_mom(0)<0.0)
-        dserror("negaive volume in base function integration. is ordering of vertices right?");
+      /*if(rhs_mom(0)<0.0)
+        dserror("negaive volume in base function integration. is ordering of vertices right?");*/
     }
 //      std::cout<<mome<<std::endl;
 //
