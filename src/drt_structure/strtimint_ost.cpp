@@ -27,7 +27,7 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 {
   // beta
   if ( (theta_ <= 0.0) or (theta_ > 1.0) )
-    dserror("beta out of range (0.0,1.0]");
+    dserror("theta out of range (0.0,1.0]");
 
   // done
   return;
