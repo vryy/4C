@@ -228,7 +228,9 @@ namespace INPAR
     enum PredEnum
     {
       pred_vague,  ///< undetermined
-      pred_constdis,  ///< constant displacements
+      pred_constdis,  ///< constant displacements, consistent velocities and accelerations
+      pred_constvel,  ///< constant velocity, extrapolated displacements, consistent accelerations
+      pred_constacc,  ///< constant acceleration, extrapolated displacements and velocities
       pred_constdisvelacc,  ///< constant displacements,
                            ///< velocities and accelerations
       pred_tangdis, ///< linearised solution obeying DBC displacements via tangent

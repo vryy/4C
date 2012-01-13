@@ -151,6 +151,14 @@ namespace STR
     //! and consistent velocities and displacements
     void PredictConstDisConsistVelAcc();
 
+    //! Consistent predictor with constant velocities,
+    //! extrapolated displacements and consistent accelerations
+    void PredictConstVelConsistAcc();
+
+    //! Consistent predictor with constant accelerations
+    //! and extrapolated velocities and displacements
+    void PredictConstAcc();
+
     //! Create force residual #fres_ and ist stiffness #stiff_
     void EvaluateForceStiffResidual(bool predict = false);
 

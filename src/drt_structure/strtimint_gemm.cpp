@@ -136,7 +136,50 @@ void STR::TimIntGEMM::PredictConstDisConsistVelAcc()
 }
 
 /*----------------------------------------------------------------------*/
+/* Consistent predictor with constant velocities,
+ * extrapolated displacements and consistent accelerations */
+void STR::TimIntGEMM::PredictConstVelConsistAcc()
+{
+  // extrapolated displacements based upon constant velocities
+  // d_{n+1} = d_{n} + dt * v_{n}
+  disn_->Update(1.0, (*dis_)[0], (*dt_)[0], (*vel_)[0], 0.0);
 
+  // consistent velocities
+  veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+  veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
+                (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
+                gamma_/(beta_*(*dt_)[0]));
+
+  // consistent accelerations
+  accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+  accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
+                (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
+                1./(beta_*(*dt_)[0]*(*dt_)[0]));
+
+  // That's it!
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Consistent predictor with constant accelerations
+ * and extrapolated velocities and displacements */
+void STR::TimIntGEMM::PredictConstAcc()
+{
+  // extrapolated displacements based upon constant accelerations
+  // d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n}
+  disn_->Update(1.0, (*dis_)[0], (*dt_)[0], (*vel_)[0], 0.0);
+  disn_->Update((*dt_)[0] * (*dt_)[0] /2., (*acc_)[0], 1.0);
+
+  // extrapolated velocities (equal to consistent velocities)
+  // v_{n+1} = v_{n} + dt * a_{n}
+  veln_->Update(1.0, (*vel_)[0], (*dt_)[0], (*acc_)[0],  0.0);
+
+  // constant accelerations (equal to consistent accelerations)
+  accn_->Update(1.0, (*acc_)[0], 0.0);
+
+  // That's it!
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative

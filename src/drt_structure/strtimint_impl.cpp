@@ -175,6 +175,18 @@ void STR::TimIntImpl::Predict()
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
+  else if ( (pred_ == INPAR::STR::pred_constvel))
+  {
+    PredictConstVelConsistAcc();
+    normdisi_ = 1.0e6;
+    normpres_ = 1.0e6;
+  }
+  else if ( (pred_ == INPAR::STR::pred_constacc))
+  {
+    PredictConstAcc();
+    normdisi_ = 1.0e6;
+    normpres_ = 1.0e6;
+  }
   else if ( (pred_ == INPAR::STR::pred_constdisvelacc)
             or (pred_ == INPAR::STR::pred_constdisvelaccpres) )
   {
@@ -1971,6 +1983,17 @@ void STR::TimIntImpl::PrintStepText
 
   // print it, now
   fflush(ofile);
+
+  FILE* MyFile = NULL;
+  MyFile = fopen("o/fly/noi.txt", "at+");
+
+  if (MyFile)
+  {
+    fprintf(MyFile, "%i\t%i\n", step_, iter_);
+    fclose(MyFile);
+  }
+  else
+    dserror("ERROR: File could not be opened.");
 
   // fall asleep
   return;

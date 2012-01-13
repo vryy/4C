@@ -148,6 +148,68 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 }
 
 /*----------------------------------------------------------------------*/
+/* Consistent predictor with constant velocities,
+ * extrapolated displacements and consistent accelerations */
+void STR::TimIntOneStepTheta::PredictConstVelConsistAcc()
+{
+  // time step size
+  const double dt = (*dt_)[0];
+
+  // extrapolated displacements based upon constant velocities
+  // d_{n+1} = d_{n} + dt * v_{n}
+  disn_->Update(1.0, (*dis_)[0], dt, (*vel_)[0], 0.0);
+
+  // new end-point velocities
+  veln_->Update(1.0/(theta_*dt), *disn_,
+                -1.0/(theta_*dt), *(*dis_)(0),
+                0.0);
+  veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
+                1.0);
+
+  // new end-point accelerations
+  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
+                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
+                0.0);
+  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
+                -(1.0-theta_)/theta_, *(*acc_)(0),
+                1.0);
+  // That's it!
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Consistent predictor with constant accelerations
+ * and extrapolated velocities and displacements */
+void STR::TimIntOneStepTheta::PredictConstAcc()
+{
+  // time step size
+  const double dt = (*dt_)[0];
+
+  // extrapolated displacements based upon constant accelerations
+  // d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n}
+  disn_->Update(1.0, (*dis_)[0], dt, (*vel_)[0], 0.0);
+  disn_->Update(dt * dt / 2., (*acc_)[0], 1.0);
+
+  // new end-point velocities
+  veln_->Update(1.0/(theta_*dt), *disn_,
+                -1.0/(theta_*dt), *(*dis_)(0),
+                0.0);
+  veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
+                1.0);
+
+  // new end-point accelerations
+  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
+                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
+                0.0);
+  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
+                -(1.0-theta_)/theta_, *(*acc_)(0),
+                1.0);
+
+  // That's it!
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
 void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)

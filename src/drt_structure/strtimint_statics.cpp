@@ -56,6 +56,10 @@ STR::TimIntStatics::TimIntStatics
     std::cout << "with statics" << std::endl;
   }
 
+  // check if predictor is admissible for statics
+  if ( (pred_ == INPAR::STR::pred_constvel) or (pred_ == INPAR::STR::pred_constacc))
+    dserror("Predictor does not make sense for statics, only predictor with constant displacements.");
+
   // create force vectors
 
   // internal force vector F_{int;n} at last time

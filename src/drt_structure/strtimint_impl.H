@@ -113,6 +113,20 @@ namespace STR
     //! integrator.
     virtual void PredictConstDisConsistVelAcc() = 0;
 
+    //! Predict displacements based on the assumption of constant
+    //! velocities. Calculate consistent velocities and accelerations
+    //! afterwards.
+    //! This method has to be implemented by the individual time
+    //! integrator.
+    virtual void PredictConstVelConsistAcc() = 0;
+
+    //! Predict displacements based on the assumption of constant
+    //! accelerations. Calculate consistent velocities and accelerations
+    //! afterwards.
+    //! This method has to be implemented by the individual time
+    //! integrator.
+    virtual void PredictConstAcc() = 0;
+
     //! Predict displacements which satisfy exactly the Dirichlet BCs
     //! and the linearised system at the previously converged state.
     //!

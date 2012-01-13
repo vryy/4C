@@ -1025,10 +1025,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Use linearization of external follower load in Newton",
                                     yesnotuple,yesnovalue,&sdyn);
 
-  setStringToIntegralParameter<int>("PREDICT","ConstDis","",
+  setStringToIntegralParameter<int>("PREDICT","ConstDis","Type of predictor",
                                tuple<std::string>(
                                  "Vague",
                                  "ConstDis",
+                                 "ConstVel",
+                                 "ConstAcc",
                                  "ConstDisVelAcc",
                                  "TangDis",
                                  "ConstDisPres",
@@ -1036,6 +1038,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(
                                  INPAR::STR::pred_vague,
                                  INPAR::STR::pred_constdis,
+                                 INPAR::STR::pred_constvel,
+                                 INPAR::STR::pred_constacc,
                                  INPAR::STR::pred_constdisvelacc,
                                  INPAR::STR::pred_tangdis,
                                  INPAR::STR::pred_constdispres,
