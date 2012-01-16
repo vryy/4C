@@ -70,6 +70,12 @@ public:
   };
   FGIType FGIType_; // computation type due to input data (FGI,FRS)
 
+  enum intersectionType
+  {
+    uncut_, // really not cut
+    cut_, // standard cut
+    numerical_cut_ // small, numerically neglected cut
+  };
   //! set computation type due to iteration counter
   void type(int iter,int iterMax);
 
@@ -80,6 +86,12 @@ protected:
       vector<RCP<Epetra_Vector> > newRowVectorsn,
       vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
+
+  //! check the intersection status of an element
+  intersectionType intersectionStatus(
+      const DRT::Element* ele,
+      bool oldTimeStep = true
+  ) const;
 
   //! compare interface side of two points
   bool interfaceSideCompare(
@@ -1191,7 +1203,7 @@ protected:
       dserror("element diameter shall be greater than zero");
 
     // handle touched elements (the enrichment value influences the touchedminuselement)
-    if (oldinterfacehandle_->ElementTouchedMinus(element))
+    if (intersectionStatus(element)==TIMEINT::numerical_cut_)
     {
       // here the tolerance has to be moderate so that all touched nodes are used:
       // a small tolerance might result in numnodeused = 0, giving nans finally
@@ -1217,7 +1229,7 @@ protected:
     } // end if element touched minus
 
     // handle bisected elements
-    else if (oldinterfacehandle_->ElementSplit(element))
+    else if (intersectionStatus(element)==XFEM::TIMEINT::cut_)
     {
       // sort out nodes far away since their enrichment values are critical
       // but guarantee that both interface sides still give entries

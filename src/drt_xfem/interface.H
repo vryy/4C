@@ -67,18 +67,9 @@ namespace XFEM
 
     //! tell me, whether the element is intersected or not
     bool ElementIntersected(const int element_gid) const;
-    
+
     //! tell me, whether the element is bisected or not
     bool ElementSplit(const DRT::Element* xfemElement) const;
-    
-    //! tell me, whether the element is touched or not
-    bool ElementTouched(const DRT::Element* xfemElement) const;
-
-    //! tell me, whether the element has a whole touched face and lies in the plus domain or not
-    bool ElementTouchedPlus(const DRT::Element* xfemElement) const;
-    
-    //! tell me, whether the element has a whole touched face and lies in the minus domain or not
-    bool ElementTouchedMinus(const DRT::Element* xfemElement) const;
 
     //! check, whether given element id has been intersected by the given interface (label)
     bool ElementHasLabel(
@@ -167,9 +158,6 @@ namespace XFEM
 
     //! fill label per element list
     void InvertElementsPerLabel();
-
-    //! tell me the touching type of an element (0: not touched, 1: touched plus, -1: touched minus)
-    int TouchedType(const DRT::Element* xfemElement) const;
 
     //! intersected domain
     const Teuchos::RCP<DRT::Discretization>   xfemdis_;

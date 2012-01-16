@@ -255,7 +255,7 @@ bool XFEM::InterfaceHandle::ElementIntersected(
 
 
 /*------------------------------------------------------------------------------------------------*
- | decide if this element is bisected (truely split into two parts, not intersected)              |
+ | decide if this element is split (= bi- or trisected or numerically bi- or trisected            |
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementSplit(
     const DRT::Element* xfemElement) const
@@ -265,123 +265,11 @@ bool XFEM::InterfaceHandle::ElementSplit(
   std::size_t numcells = this->GetNumDomainIntCells(xfemElement);
 
   if (numcells > 1) // more than one domain integration cell -> element bisected or numerically touched
-  {
-    if (TouchedType(xfemElement)==0) // not touched
-      bisected = true;
-    else
-      bisected = false;
-  }
+    bisected = true;
   else
     bisected = false;
 
   return bisected;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | decide if this element is touched on a whole 2D face                                           |
- *------------------------------------------------------------------------------------------------*/
-bool XFEM::InterfaceHandle::ElementTouched(
-    const DRT::Element* xfemElement) const
-{
-  if (TouchedType(xfemElement)!=0) // not untouched = touched
-    return true;
-  else
-    return false;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | decide if this element is touched on a whole 2D face and lies in the plus domain               |
- *------------------------------------------------------------------------------------------------*/
-bool XFEM::InterfaceHandle::ElementTouchedPlus(
-    const DRT::Element* xfemElement) const
-{
-  if (TouchedType(xfemElement)==+1)
-    return true;
-  else
-    return false;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | decide if this element is touched on a whole 2D face and lies in the minus domain              |
- *------------------------------------------------------------------------------------------------*/
-bool XFEM::InterfaceHandle::ElementTouchedMinus(
-    const DRT::Element* xfemElement) const
-{
-  if (TouchedType(xfemElement)==-1)
-    return true;
-  else
-    return false;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | decide if this element is numerically touched                                                  |
- *------------------------------------------------------------------------------------------------*/
-int XFEM::InterfaceHandle::TouchedType(
-    const DRT::Element* xfemElement) const
-{
-  int touchedType = 0; // untouched
-
-  std::size_t numDomainCells = this->GetNumDomainIntCells(xfemElement);
-  std::size_t numBoundaryCells = this->GetNumBoundaryIntCells(xfemElement);
-
-  if (numDomainCells == 1 and numBoundaryCells == 1) // real touched element, touchedminus or touchedplus possible
-  {
-    // reinitialization (just for sure)
-    touchedType = 0;
-
-    // get the boundary integration cell (there is exactly one)
-    GEO::BoundaryIntCells boundarycells = elementalBoundaryIntCells_.find(xfemElement->Id())->second;
-    if(boundarycells.size() != 1) dserror("there must be exactly one boundary cell");
-
-    for(GEO::BoundaryIntCells::const_iterator iter=boundarycells.begin(); iter!=boundarycells.end(); iter++)
-    {
-      if (iter->getDomainPlus())
-        touchedType = 1;
-      else
-        touchedType = -1;
-    }
-  }
-  else if (numDomainCells > 1) // potential numerically touched
-  {
-    // reinitialization (just for sure)
-    touchedType = 0;
-
-    GEO::DomainIntCells domaincells = elementalDomainIntCells_.find(xfemElement->Id())->second;
-    if (domaincells.size()<1) dserror("there must be at least one domain cell");
-
-    for(GEO::DomainIntCells::const_iterator iter=domaincells.begin(); iter!=domaincells.end(); iter++)
-    {
-      if (iter->getDomainPlus())
-      {
-        if (touchedType==0) // first time modified
-          touchedType = +1; // potentially touched plus
-        else if (touchedType==-1) // domain cell in omega+ and omega- ->not touched
-        {
-          touchedType = 0;
-          break;
-        } // if touched = 1, the element was and is again potentially touched plus
-      }
-      else
-      {
-        if (touchedType==0) // first time modified
-          touchedType = -1; // potentially touched minus
-        else if (touchedType==+1) // domain cell in omega+ and omega- ->not touched
-        {
-          touchedType = 0;
-          break;
-        }
-        // if touched = -1, the element was and is again potentially touched minus
-      }
-    }
-  }
-  else
-    touchedType = 0; // untouched
-
-  return touchedType;
 }
 
 

@@ -232,9 +232,9 @@ void XFEM::Extrapolation::bisection(
       {
         midele = eletmp;
         elefound = true;
-        if (oldinterfacehandle_->ElementSplit(midele) == true) // really cut -> ok
+        if (intersectionStatus(midele)==XFEM::TIMEINT::cut_) // really cut -> ok
           break;
-        else if (oldinterfacehandle_->ElementIntersected(midele->Id()) == false) // really uncut -> ok
+        else if (intersectionStatus(midele)==XFEM::TIMEINT::uncut_) // really uncut -> ok
           break;
         else // special cases -> try to take another element
           ; // do not break, but potential element is saved

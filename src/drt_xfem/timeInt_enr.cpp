@@ -81,7 +81,7 @@ void XFEM::EnrichmentProjection::callOldValues(
   {
     const DRT::Element* ele = discret_->lColElement(iele); // current element
 
-      if (oldinterfacehandle_->ElementSplit(ele) or oldinterfacehandle_->ElementTouchedMinus(ele)) // element is intersected
+      if (intersectionStatus(ele)!=XFEM::TIMEINT::uncut_) // element is intersected
       {
         switch (ele->Shape())
         {
@@ -150,7 +150,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
 
   if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
   {
-    if (oldinterfacehandle_->ElementSplit(ele)) // compute jump and kink in bisected ele
+    if (intersectionStatus(ele)==XFEM::TIMEINT::cut_) // compute jump and kink in bisected ele
     {
       // compute the kink and jump height at the interface in this element
       // a least squares approach is used for the computation
@@ -236,7 +236,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
   {
-    if (oldinterfacehandle_->ElementSplit(ele)) // compute jump and kink in bisected ele
+    if (intersectionStatus(ele)==XFEM::TIMEINT::cut_) // compute jump and kink in bisected ele
     {
       // compute the kink and jump height at the interface in this element
       // a least squares approach is used for the computation
@@ -362,7 +362,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
 
   if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
   {
-    if (oldinterfacehandle_->ElementSplit(ele)) // compute kink in bisected ele
+    if (intersectionStatus(ele)==XFEM::TIMEINT::cut_) // compute kink in bisected ele
     {
       double enrSum; // sum of enrichment values of element nodes
       LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
@@ -399,7 +399,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
   {
-    if (oldinterfacehandle_->ElementSplit(ele)) // compute kink in bisected ele
+    if (intersectionStatus(ele)==XFEM::TIMEINT::cut_) // compute kink in bisected ele
     {
       double enrSumVel; // sum of scalar velocity enrichment values of element nodes
       double enrSumPres; // sum of pressure enrichment values
@@ -481,7 +481,7 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
       {
         const int elegid = eles[iele]->Id(); // global id of current element
 
-        if (oldinterfacehandle_->ElementSplit(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+        if (intersectionStatus(eles[iele])!=XFEM::TIMEINT::uncut_) // element intersected
         {
           numOldIntersectedEle++;
           currJumpsAndKinks = eleJumpsAndKinks_.find(elegid)->second;
@@ -594,8 +594,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
           for (int iele=0;iele<numeles;iele++)
           {
             const int elegid = eles[iele]->Id(); // global id of current element
-
-            if (oldinterfacehandle_->ElementSplit(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+            if (intersectionStatus(eles[iele])!=XFEM::TIMEINT::uncut_) // element intersected
             {
               numOldIntersectedEle++;
 
@@ -612,6 +611,13 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
           if (numOldIntersectedEle==0)
           {
+            for (int iele=0;iele<numeles;iele++)
+            {
+              const int elegid = eles[iele]->Id(); // global id of current element
+              cout << "cutstatus of ele " << *eles[iele] << " is: " << oldinterfacehandle_->ElementCutStatus(elegid);
+//              cout << ", ele touchedplus: " << oldinterfacehandle_->ElementTouchedPlus(elegid);
+//              cout << ", ele touchedminus: " << oldinterfacehandle_->ElementTouchedMinus(elegid) << endl;
+            }
             cout << *currOldNode << " is enriched at old timestep" << endl;
             dserror("Enriched node shall have an intersected element around");
           }
@@ -651,7 +657,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
           {
             const int elegid = eles[iele]->Id(); // global id of current element
 
-            if (oldinterfacehandle_->ElementSplit(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+            if (intersectionStatus(eles[iele])!=XFEM::TIMEINT::uncut_) // element intersected
             {
               numOldIntersectedEle++;
 
@@ -729,7 +735,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around enriched node
   {
-    if (newinterfacehandle_->ElementSplit(eles[iele]) || newinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+    if (intersectionStatus(eles[iele],false)!=XFEM::TIMEINT::uncut_) // element intersected
     {
       numNewIntersectedEle++;
       double dist = 0.0; // minimal distance from node to interface segment of current element
@@ -813,7 +819,7 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around enriched node
   {
-    if (newinterfacehandle_->ElementSplit(eles[iele])) // element intersected
+    if (intersectionStatus(eles[iele],false)==XFEM::TIMEINT::cut_) // element intersected
     {
       numNewIntersectedEle++;
       double dist = 0.0; // currently dummy

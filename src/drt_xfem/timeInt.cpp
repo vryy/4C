@@ -108,6 +108,59 @@ void XFEM::TIMEINT::handleVectors(
 
 
 /*------------------------------------------------------------------------------------------------*
+ * identify intersection status of an element                                    winklmaier 01/12 *
+ *------------------------------------------------------------------------------------------------*/
+XFEM::TIMEINT::intersectionType XFEM::TIMEINT::intersectionStatus(
+    const DRT::Element* ele,
+    bool oldTimeStep
+) const
+{
+  // return status are: 0 = uncut, 1 = bisected/trisected, 2 = numerically intersected
+
+  // initialization
+  RCP<COMBUST::InterfaceHandleCombust> ih;
+  RCP<Epetra_Vector> phi;
+
+  if (oldTimeStep)
+  {
+    ih = oldinterfacehandle_;
+    phi = phin_;
+  }
+  else
+  {
+    ih = newinterfacehandle_;
+    phi = phinp_;
+  }
+
+  // check if "normally" intersected
+  if ((ih->ElementBisected(ele->Id())) or
+      (ih->ElementTrisected(ele->Id())))
+    return XFEM::TIMEINT::cut_; // bisected or trisected
+
+  // check if numerically intersected:
+  // this means, nodes are on different sides of the interface,
+  // but the cut status is not bi- or trisected so that some phi-values are nearly zero
+  const int* elenodeids = ele->NodeIds();  // nodeids of element
+  double phivalue = 0.0;
+  bool side = true;
+  for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
+  {
+    phivalue = (*phin_)[discret_->gNode(elenodeids[nodeid])->LID()];
+    if (nodeid == 0)
+      side = plusDomain(phivalue);
+    else
+    {
+      if (side!=plusDomain(phivalue)) // different sides
+        return XFEM::TIMEINT::numerical_cut_; // numerically intersected
+    }
+  }
+
+  return XFEM::TIMEINT::uncut_;
+} // end function intersectionStatus
+
+
+
+/*------------------------------------------------------------------------------------------------*
  * identify interface side of a point in combustion                              winklmaier 10/10 *
  *------------------------------------------------------------------------------------------------*/
 int XFEM::TIMEINT::interfaceSide(
@@ -481,7 +534,7 @@ flamefront_(flamefront)
     for (int leleid=0; leleid<discret_->NumMyColElements(); leleid++)  // loop over processor nodes
     {
       DRT::Element* iele = discret_->lColElement(leleid);
-      if (oldinterfacehandle_->ElementSplit(iele) or oldinterfacehandle_->ElementTouchedPlus(iele) or oldinterfacehandle_->ElementTouchedMinus(iele)) // element cut
+      if (intersectionStatus(iele)!=TIMEINT::uncut_) // element cut
       {
         const int* nodeGids = iele->NodeIds(); // node gids
         for (int inode=0;inode<iele->NumNode();inode++) // loop over element nodes
@@ -1228,7 +1281,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around node
   {
-    if (oldinterfacehandle_->ElementSplit(eles[iele])) // element intersected
+    if (intersectionStatus(eles[iele])==XFEM::TIMEINT::cut_) // element intersected
     {
       if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
       {
@@ -1277,7 +1330,7 @@ void XFEM::ENR::getCritCutElements(
   {
     currEle = discret_->lColElement(iele);
 
-    if (oldinterfacehandle_->ElementSplit(currEle)) // element bisected
+    if (intersectionStatus(currEle)==XFEM::TIMEINT::cut_) // element bisected
     {
       plusVol = 0.0;
       minusVol = 0.0;
@@ -1398,7 +1451,7 @@ void XFEM::ENR::SignedDistance(
   }
   if (mindist == 5555.5) // in touched-minus elements this case can happen
   {
-    if (curr_ih->ElementTouchedMinus(discret_->gElement(elegid)) == false)
+    if (intersectionStatus(discret_->gElement(elegid)) != TIMEINT::numerical_cut_)
       dserror ("computation of minimal distance failed");
     dist = (*curr_phi)[node->LID()];
     return;

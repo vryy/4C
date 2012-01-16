@@ -324,52 +324,46 @@ const double COMBUST::InterfaceHandleCombust::ComputeSurface()
 // return whether the element has a whole touched face and lies in the plus domain or not
 bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 {
-  bool touched = false;
-
   std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
     if (iter->second == COMBUST::FlameFront::touched)
-      touched  = true;
+      return true;
   }
   else
     dserror("cut status not available for ths element");
 
-  return touched;
+  return false;
 }
 
 // return whether the element is bisected or not
 bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
 {
-  bool bisected = false;
-
   std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
     if (iter->second == COMBUST::FlameFront::bisected)
-      bisected = true;
+      return true;
   }
   else
     dserror("cut status not available for this element");
 
-  return bisected;
+  return false;
 }
 
 // return whether the element is trisected or not
 bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) const
 {
-  bool trisected = false;
-
   std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
     if (iter->second == COMBUST::FlameFront::trisected)
-      trisected = true;
+      return true;
   }
   else
     dserror("cut status not available for ths element");
 
-  return trisected;
+  return false;
 }
 
 // return whether the element is trisected or not
