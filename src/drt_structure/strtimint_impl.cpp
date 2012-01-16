@@ -1984,17 +1984,6 @@ void STR::TimIntImpl::PrintStepText
   // print it, now
   fflush(ofile);
 
-  FILE* MyFile = NULL;
-  MyFile = fopen("o/fly/noi.txt", "at+");
-
-  if (MyFile)
-  {
-    fprintf(MyFile, "%i\t%i\n", step_, iter_);
-    fclose(MyFile);
-  }
-  else
-    dserror("ERROR: File could not be opened.");
-
   // fall asleep
   return;
 }
