@@ -350,8 +350,14 @@ endif(NETCDF_FOUND)
   message("WW *************************************************************")
 #endif()
 
-
-
+find_package(ACML)
+if (ACML_FOUND)
+  include_directories(${ACML_INCLUDES})
+  #link_directories(${ACML_INCLUDES})
+  set(LIBRARIES ${ACML_LIBRARIES} ${LIBRARIES}  )
+  MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
+  MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
+endif()
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
@@ -1739,9 +1745,11 @@ include(CTest)
 ###------------------------------------------------------------------ Unit Tests
 
 if(NOT TRILINOS_DEV)
+if (NOT ACML_FOUND )
   add_executable(cut_test ${OBJS_CUT_TEST})
   target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
+endif(NOT ACML_FOUND)
 endif(NOT TRILINOS_DEV)
 
 #add_executable(graph_test ${OBJS_GRAPH_TEST})
