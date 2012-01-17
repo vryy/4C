@@ -66,7 +66,8 @@ class Beam3ContactOctTree
     {
     	none,
       axisaligned,
-      cyloriented
+      cyloriented,
+      spherical
     };
 
     //!\brief Initialize class vectors for new Octree search
@@ -78,7 +79,10 @@ class Beam3ContactOctTree
     //!\brief create axis aligned bounding boxes
     void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     //!\brief create coylindrical oriented bounding boxes
-    void CreateCOBB(Epetra_SerialDenseMatrix&  coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+    void CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+    // create spherical bounding boxes for crosslinker
+    void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+
 
     //!\brief spatial division of 3-dimensional volume
     void locateAll();
@@ -97,6 +101,8 @@ class Beam3ContactOctTree
     bool IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     //!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
     bool IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
+    // intersection method applying spherical bounding boxes for crosslinker when both boxes belong to existing elements
+    bool IntersectionSPBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;

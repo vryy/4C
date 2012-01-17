@@ -79,6 +79,12 @@ dofoffset_(dofoffset)
       cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<endl;
     boundingbox_ = Beam3ContactOctTree::cyloriented;
   }
+  else if(boundingbox == "octree_spherical")
+  {
+    if(!discret_.Comm().MyPID())
+      cout<<"Search routine:\nOctree + Sphercial BBs"<<endl;
+    boundingbox_ = Beam3ContactOctTree::spherical;
+  }
   else
     dserror("No Octree declared in your Input file!");
 
@@ -409,6 +415,9 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
         break;
         case Beam3ContactOctTree::cyloriented:
           CreateCOBB(coord, elecolid);
+        break;
+        case Beam3ContactOctTree::spherical:
+          CreateSPBB(coord, elecolid);
         break;
         default: dserror("No or an invalid Octree type was chosen. Check your input file!");
       }
@@ -1015,7 +1024,24 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   };
   return;
 }
-
+/*-----------------------------------------------------------------------------------------*
+ |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 1/12|
+ *----------------------------------------------------------------------------------------*/
+void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+{
+  if(bboxlimits!=Teuchos::null)
+  {
+    bboxlimits = rcp(new Epetra_SerialDenseMatrix(3,1));
+    for(int dof=0; dof<coord.M(); dof++)
+      (*bboxlimits)(dof,0) = coord(dof,0);
+  }
+  else
+  {
+    for(int dof=0; dof<coord.M(); dof++)
+      (*allbboxes_)[dof][elecolid] = coord(dof,0);
+  }
+  return;
+}
 /*-----------------------------------------------------------------------------------------*
  |  locateAll function (private); Recursive division of a 3-dimensional set.    meier 02/11|
  |  [Oct_ID, element-ID] = locateAll( &allbboxes_)                                          |
@@ -1079,7 +1105,7 @@ void Beam3ContactOctTree::locateAll()
   discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
 
   // build temporary, fully overlapping map and row map
-  // create crosslinker maps
+  // create octree maps
   std::vector<int> gids;
   for (int i=0 ; i<bboxlengthglobal; i++ )
     gids.push_back(i);
@@ -1442,6 +1468,9 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
             break;
             case Beam3ContactOctTree::cyloriented:
               intersection = IntersectionCOBB(bboxIDs);
+            break;
+            case Beam3ContactOctTree::spherical:
+              intersection = IntersectionSPBB(bboxIDs);
             break;
             default: dserror("No or an invalid Octree type was chosen. Check your input file!");
           }
@@ -1929,4 +1958,41 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
   return intersection;
 }
 
+/*-----------------------------------------------------------------------------------*
+ |  Spherical Bounding Box Intersection function when both bounding boxes           |
+ |  for linkers                                       (private)        mueller 01/12|
+ *----------------------------------------------------------------------------------*/
+bool Beam3ContactOctTree::IntersectionSPBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+{
+  bool intersection = false;
+  int bboxid0 = searchdis_.ElementColMap()->LID(bboxIDs[0]);
+  int bboxid1 = searchdis_.ElementColMap()->LID(bboxIDs[1]);
+  LINALG::Matrix<3,1> v;
+  double radiusextrusion = 1.1;
+
+  double bbox1diameter = 0.0;
+  if(bboxlimits!=Teuchos::null)
+    bbox1diameter = (*diameter_)[diameter_->MyLength()-1];
+  else
+    bbox1diameter = (*diameter_)[bboxid1];
+
+  if(bboxlimits!=Teuchos::null)
+  {
+    for (int i=0; i<(int)v.M(); i++)
+      v(i)=(*bboxlimits)(i,0)-(*allbboxes_)[i][bboxid0];
+  }
+  else
+  {
+    for (int i=0; i<(int)v.M(); i++)
+      v(i)=(*allbboxes_)[i][bboxid1]-(*allbboxes_)[i][bboxid0];
+  }
+
+  double d=1e9;
+  d=v.Norm2();
+
+  if (d<radiusextrusion*((*diameter_)[bboxid0]+bbox1diameter)/2.0)
+    intersection=true;
+
+  return intersection;
+}
 #endif /*CCADISCRET*/
