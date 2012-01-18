@@ -2547,8 +2547,8 @@ passive_baci_test(xfsi_multibody_hex8_monolithic 1 "")
 passive_baci_test(xfsi_shooter_thin 1 "")
 
 if (HAVE_MueLu)
-baci_test(f2_drivencavity20x20_muelu_drt.dat 1 "")
-baci_test(f2_drivencavity20x20_muelu_drt.dat 2 "")
+baci_test(f2_drivencavity20x20_muelu_drt 1 "")
+baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 endif (HAVE_MueLu)
 
 # remove any output files from our tests
