@@ -145,7 +145,7 @@ XFEM::TIMEINT::intersectionType XFEM::TIMEINT::intersectionStatus(
   bool side = true;
   for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
   {
-    phivalue = (*phin_)[discret_->gNode(elenodeids[nodeid])->LID()];
+    phivalue = (*phi)[discret_->gNode(elenodeids[nodeid])->LID()];
     if (nodeid == 0)
       side = plusDomain(phivalue);
     else
@@ -1381,14 +1381,28 @@ void XFEM::ENR::getCritCutElements(
 void XFEM::ENR::SignedDistance(
     const DRT::Node* node,
     const int elegid,
-    const RCP<COMBUST::InterfaceHandleCombust> curr_ih,
-    const RCP<Epetra_Vector> curr_phi,
     double& dist,
-    LINALG::Matrix<3,1>& normal
+    LINALG::Matrix<3,1>& normal,
+    bool oldTimeStep
 ) const
 {
+  // Initialization
   const int nsd = 3;
   LINALG::Matrix<nsd,1> nodecoord(node->X()); // coordinates of this node
+
+  RCP<COMBUST::InterfaceHandleCombust> ih;
+  RCP<Epetra_Vector> phi;
+
+  if (oldTimeStep)
+  {
+    ih = oldinterfacehandle_;
+    phi = phin_;
+  }
+  else
+  {
+    ih = newinterfacehandle_;
+    phi = phinp_;
+  }
 
   //-----------------------------------------------------------
   // compute smallest distance to the flame front for this node
@@ -1399,7 +1413,7 @@ void XFEM::ENR::SignedDistance(
   double mindist = 5555.5; // default value
 
   // number of flamefront patches for this element
-  const std::vector<GEO::BoundaryIntCell> patches = curr_ih->GetBoundaryIntCells(elegid);
+  const std::vector<GEO::BoundaryIntCell> patches = ih->GetBoundaryIntCells(elegid);
   const int numpatch = patches.size();
 
   // loop flame front patches of this element
@@ -1444,16 +1458,17 @@ void XFEM::ENR::SignedDistance(
   if (fabs(vertexdist) < fabs(mindist))
   {
     // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
-    if ((*curr_phi)[node->LID()] * vertexdist < 0.0 )
+    if ((*phi)[node->LID()] * vertexdist < 0.0 )
       mindist = -vertexdist;
     else
       mindist = vertexdist;
   }
   if (mindist == 5555.5) // in touched-minus elements this case can happen
   {
-    if (intersectionStatus(discret_->gElement(elegid)) != TIMEINT::numerical_cut_)
+    if (intersectionStatus(discret_->gElement(elegid),oldTimeStep) != TIMEINT::numerical_cut_)
       dserror ("computation of minimal distance failed");
-    dist = (*curr_phi)[node->LID()];
+
+    dist = (*phi)[node->LID()];
     return;
   }
   else

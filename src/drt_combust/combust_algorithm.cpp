@@ -29,6 +29,7 @@ Maintainer: Florian Henke
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_geometry/integrationcell.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -1069,7 +1070,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       }
 #endif
 
-      if (gfuncval >= 0.0){ // interface or burnt domain -> burnt material
+      if (XFEM::plusDomain(gfuncval) == true){ // interface or burnt domain -> burnt material
         // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
         speedfac = (sl -D*curv)* rhominus/rhoplus;
       }

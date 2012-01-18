@@ -1123,7 +1123,7 @@ protected:
         // evaluate the minimal distance of the nodes to the interface segments in this element
         // this part is adopted from src/drt_combust/combust_reinitializer.cpp
         // more information can be found there in function 'signedDistanceFunction'
-        SignedDistance(currnode,element->Id(),oldinterfacehandle_,phin_,dmin(inode),normal);
+        SignedDistance(currnode,element->Id(),dmin(inode),normal);
 
         numJumpEnr=0; // number of jump enrichments
         numKinkEnr=0; // number of kink enrichments
@@ -1282,10 +1282,9 @@ protected:
   void SignedDistance(
       const DRT::Node* node,
       const int elegid,
-      const RCP<COMBUST::InterfaceHandleCombust> curr_ih,
-      const RCP<Epetra_Vector> curr_phi,
       double& dist,
-      LINALG::Matrix<3,1>& normal
+      LINALG::Matrix<3,1>& normal,
+      bool oldTimeStep = true
   ) const;
 
   //! compute normal vector of flame front patch
