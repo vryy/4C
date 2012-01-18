@@ -1926,6 +1926,22 @@ void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combust
       double curvature=0.0;
       COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
 
+      //----------------------------------------------------------------
+      // cut off curvature at a maximum value to prevent singular values
+      //----------------------------------------------------------------
+      // calculate largest element diameter
+      const double elesize = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
+      // use 1/h as the maximum admissible curvature
+      if (fabs(curvature) > (1.0/elesize) )
+      {
+        if (curvature < 0.0)
+          curvature = -1.0/elesize;
+        else
+          curvature = 1.0/elesize;
+
+        cout << "curvature cut off at value " << curvature << " for element " << adjele->Id() << endl;
+      }
+
       avcurv += curvature;
     }
     avcurv /= numele;
