@@ -738,6 +738,7 @@ void Sysmat(
     const bool                              genalpha,
     const INPAR::COMBUST::CombustionType    combusttype,     ///< switch for type of combusiton problem
     const double                            flamespeed,      ///<
+    const double                            marksteinlength, ///<
     const double                            nitschevel,      ///<
     const double                            nitschepres,     ///<
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
@@ -882,7 +883,7 @@ void Sysmat(
 #ifndef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
-          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
 #else
@@ -985,7 +986,7 @@ void Sysmat(
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
-          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, INPAR::COMBUST::vel_jump_none,
           INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration);
     }
@@ -1069,6 +1070,7 @@ void COMBUST::callSysmat(
     const bool                           genalpha,
     const INPAR::COMBUST::CombustionType combusttype,
     const double                         flamespeed,
+    const double                         marksteinlength,
     const double                         nitschevel,
     const double                         nitschepres,
     const INPAR::COMBUST::SurfaceTensionApprox  surftensapprox,
@@ -1085,33 +1087,33 @@ void COMBUST::callSysmat(
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
@@ -1125,33 +1127,33 @@ void COMBUST::callSysmat(
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox,
             connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
+//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");
@@ -1185,8 +1187,7 @@ void SysmatNeumannInflow(
     const bool                                      newton,
     const bool                                      instationary,
     const bool                                      genalpha,
-    const INPAR::COMBUST::CombustionType            combusttype,
-    const double                                    flamespeed
+    const INPAR::COMBUST::CombustionType            combusttype
 )
 {
   //TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
@@ -1243,7 +1244,7 @@ void SysmatNeumannInflow(
             DRT::UTILS::intrule_tri_3point, xyze,
             evelaf, ephi,
             numparamvelx, newton,
-            material, flamespeed,
+            material,
             time, timefac
         );
         break;
@@ -1253,7 +1254,7 @@ void SysmatNeumannInflow(
             DRT::UTILS::intrule_quad_4point, xyze,
             evelaf, ephi,
             numparamvelx, newton,
-            material, flamespeed,
+            material,
             time, timefac
         );
         break;
@@ -1299,8 +1300,7 @@ void COMBUST::callSysmatNeumannInflow(
     const bool                           newton,
     const bool                           instationary,
     const bool                           genalpha,
-    const INPAR::COMBUST::CombustionType combusttype,
-    const double                         flamespeed
+    const INPAR::COMBUST::CombustionType combusttype
     )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -1327,8 +1327,7 @@ void COMBUST::callSysmatNeumannInflow(
           newton,
           instationary,
           genalpha,
-          combusttype,
-          flamespeed);
+          combusttype);
     break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
@@ -1358,8 +1357,7 @@ void COMBUST::callSysmatNeumannInflow(
           newton,
           instationary,
           genalpha,
-          combusttype,
-          flamespeed);
+          combusttype);
     break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");

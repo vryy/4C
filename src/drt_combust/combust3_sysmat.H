@@ -92,6 +92,7 @@ namespace COMBUST
       const bool                              genalpha,
       const INPAR::COMBUST::CombustionType    combusttype,
       const double                            flamespeed,
+      const double                            marksteinlength,
       const double                            nitschevel,
       const double                            nitschepres,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
@@ -122,8 +123,7 @@ namespace COMBUST
       const bool                                      newton,
       const bool                                      instationary,
       const bool                                      genalpha,
-      const INPAR::COMBUST::CombustionType            combusttype,
-      const double                                    flamespeed
+      const INPAR::COMBUST::CombustionType            combusttype
   );
 
   /// get material parameters (constant within the domain integration cell)

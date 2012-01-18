@@ -912,7 +912,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
 
   // laminar flame speed
   const double sl = combustdyn_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED");
-  const double D  = combustdyn_.sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY");
+  const double marksteinlength  = combustdyn_.sublist("COMBUSTION FLUID").get<double>("MARKSTEIN_LENGTH");
 
 #ifdef COMBUST_GMSH_NORMALFIELD
   const std::string filestr = "normal_field";
@@ -974,7 +974,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
         // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
         //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-        //std::cout << "/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
+        std::cout << "/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
         nvec.PutScalar(0.0);
       }
       else
@@ -1022,7 +1022,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       //---------------------------------------------
       // get phi value for this node
       const double gfuncval = (*phinp)[nodelid];
-      const double curv = 0.0;//(*curvature)[nodelid];
+      const double curv = (*curvature)[nodelid];
 
       double speedfac = 0.0;
 
@@ -1072,11 +1072,11 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
 
       if (XFEM::plusDomain(gfuncval) == true){ // interface or burnt domain -> burnt material
         // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
-        speedfac = (sl -D*curv)* rhominus/rhoplus;
+        speedfac = (sl -marksteinlength*curv)* rhominus/rhoplus;
       }
       else{ // unburnt domain -> unburnt material
         // flame speed factor = laminar flame speed
-        speedfac = sl-D*curv;
+        speedfac = sl-marksteinlength*curv;
       }
 
       LINALG::Matrix<3,1> flvelrel(true);

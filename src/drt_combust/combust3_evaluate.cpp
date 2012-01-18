@@ -274,6 +274,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // parameters for premixed combustion problems
       const double flamespeed = params.get<double>("flamespeed");
+      const double marksteinlength = params.get<double>("marksteinlength");
 
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
@@ -349,7 +350,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -391,7 +392,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
         // condensation
@@ -408,7 +409,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
     }

@@ -1616,6 +1616,7 @@ void Nitsche_SysmatBoundaryCell(
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
     const V2&                         ecurv,
     const double&                     flamespeed,
+    const double&                     marksteinlength,
     const double&                     dens_minus,
     const double                      dens_plus,
     const double&                       timefac,
@@ -1798,7 +1799,6 @@ void Nitsche_SysmatBoundaryCell(
         // interpolate curvature to Gaussian point
         curv += ecurv(i)*funct_gp(i);
       }
-      curv = 0.0;//curv*-1.0;
 #ifdef COMBUST_2D
       normal_smooth(2) = 0.0;
 #endif
@@ -1837,8 +1837,7 @@ void Nitsche_SysmatBoundaryCell(
       // prepare interface conditions
       //-----------------------------
       // mass flux through flame front
-      const double D = 0.0;//1.161/(1.161*1.0);
-      const double mflux = (flamespeed -D*curv)*dens_minus*wallfac;
+      const double mflux = (flamespeed -marksteinlength*curv)*dens_minus*wallfac;
 
       // velocity jump in normal direction
 #if 0
@@ -2748,6 +2747,7 @@ void SysmatBoundaryNitsche(
     const double                               ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
     const double                               flamespeed,     ///<
+    const double                               marksteinlength,///<
     const double                               nitschevel,     ///<
     const double                               nitschepres,    ///<
     const double                               ele_meas_plus,  ///< measure of element in plus domain
@@ -2907,7 +2907,7 @@ void SysmatBoundaryNitsche(
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, ecurv,
-          flamespeed, dens_minus, dens_plus,
+          flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
@@ -2919,7 +2919,7 @@ void SysmatBoundaryNitsche(
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, ecurv,
-          flamespeed, dens_minus, dens_plus,
+          flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
@@ -2956,7 +2956,6 @@ void Nitsche_SysmatNeumannInflow(
     const size_t&                          numparamvelx,
     const bool&                            newton,
     Teuchos::RCP<const MAT::Material>      material,
-    const double&                          flamespeed,
     const double&                          time,
     const double&                          timefac
 )

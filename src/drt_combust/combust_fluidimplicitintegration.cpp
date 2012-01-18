@@ -44,6 +44,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/timeInt_std_SemiLagrange.H"
 #include "../drt_xfem/timeInt_std_extrapolation.H"
 #include "../drt_xfem/timeInt_enr.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_control.H"
@@ -90,6 +91,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   xfemtimeint_enr_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnr>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR")),
   xfemtimeint_enr_comp_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
+  marksteinlength_(params_.sublist("COMBUSTION FLUID").get<double>("MARKSTEIN_LENGTH")),
   moldiffusivity_(params_.sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
@@ -1265,6 +1267,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         eleparams.set<int>("veljumptype",veljumptype_);
         eleparams.set<int>("fluxjumptype",fluxjumptype_);
         eleparams.set("flamespeed",flamespeed_);
+        eleparams.set("marksteinlength",marksteinlength_);
         eleparams.set("nitschevel",nitschevel_);
         eleparams.set("nitschepres",nitschepres_);
         eleparams.set("DLM_condensation",condensation_);
@@ -1346,7 +1349,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             condparams.set<int>("combusttype",combusttype_);
             condparams.set<int>("veljumptype",veljumptype_);
             condparams.set<int>("fluxjumptype",fluxjumptype_);
-            condparams.set("flamespeed",flamespeed_);
             condparams.set("nitschevel",nitschevel_);
             condparams.set("nitschepres",nitschepres_);
 
@@ -2403,6 +2405,7 @@ void FLD::CombustFluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set<int>("veljumptype",veljumptype_);
   eleparams.set<int>("fluxjumptype",fluxjumptype_);
   eleparams.set("flamespeed",flamespeed_);
+  eleparams.set("marksteinlength",marksteinlength_);
   eleparams.set("nitschevel",nitschevel_);
   eleparams.set("nitschepres",nitschepres_);
   eleparams.set("DLM_condensation",condensation_);
@@ -4014,7 +4017,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 }
                 const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
                 if (norm == 0.0) dserror("norm of normal vector is zero!");
-                normal.Scale(-1.0/norm);
+                normal.Scale(1.0/norm);
 #endif
                 // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
                 XFEM::ApproxFuncNormalVector<0,8> enrfunct_plus(true);
@@ -4065,7 +4068,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                   // here, a triangular boundary integration cell is assumed (numvertices = 3)
                   if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
                   const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-                  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+                  //const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
 
                   LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
                   const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
@@ -4593,13 +4596,15 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     DRT::Node* lnode = discret_->lRowNode(nodeid);
 
     LINALG::Matrix<nsd,1> coords(lnode->X());
-//    coords(1) -= 0.5;
-    double coordsnorm = sqrt(coords(0)*coords(0)+coords(1)*coords(1));
+#ifdef COMBUST_2D
+    coords(2)=0.0;
+#endif
+    double coordsnorm = sqrt(coords(0)*coords(0)+coords(1)*coords(1)+coords(2)*coords(2));
 
     const int lid = phinp->Map().LID(lnode->Id());
     const double gfuncval = (*phinp)[lid];
 
-    const double radius = 0.25;
+    const double radius = 0.025;
     const double velrad = 1.0;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
@@ -4613,21 +4618,23 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifndef COMBUST_NORMAL_ENRICHMENT
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
-          //(*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm; // half jump height of 1.0
-          //(*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm;
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(0)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(0)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(0)/coordsnorm; // half jump height of 1.0
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(0)/coordsnorm;
 
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(1)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(1)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(1)/coordsnorm; // half jump height of 1.0
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(1)/coordsnorm;
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
         {
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(2)/coordsnorm; // half jump height of 1.0
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(2)/coordsnorm;
+#ifdef COMBUST_2D
           (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
           (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
+#endif
         }
 #else
         if (fieldenr->getField() == XFEM::PHYSICS::Veln)
@@ -4640,13 +4647,28 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           // -0.5 *jump + 0.5*dist*kink
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0; // 0.5*(2.0)
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0; // 0.5*(2.0)
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*(1.0) + 0.5*gfuncval*4.0; // 0.5*(7.0)
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*(1.0) + 0.5*gfuncval*4.0; // 0.5*(7.0)
         }
       } // end if jump enrichment
       else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
-        if (gfuncval>=0.0)//coordsnorm>0.25 // Standard dofs ausserhalb vom Kreis
+        if (XFEM::plusDomain(gfuncval) == true) // Standard dofs innerhalb des Kreises
+        {
+          if (fieldenr->getField() == XFEM::PHYSICS::Velx or
+              fieldenr->getField() == XFEM::PHYSICS::Vely or
+              fieldenr->getField() == XFEM::PHYSICS::Velz )
+          {
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+          {
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = -1.5; //-6.5;
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = -1.5; //-6.5;
+          }
+        }
+        else // Standard dofs ausshalb des Kreises
         {
           if (fieldenr->getField() == XFEM::PHYSICS::Velx)
           {
@@ -4660,28 +4682,17 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
           {
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(2)/(coordsnorm*coordsnorm);
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(2)/(coordsnorm*coordsnorm);
+#ifdef COMBUST_2D
             (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
             (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
+#endif
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
             (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*radius*radius/(coordsnorm*coordsnorm);
             (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*radius*radius/(coordsnorm*coordsnorm);
-          }
-        }
-        else // Standard dofs im Kreis
-        {
-          if (fieldenr->getField() == XFEM::PHYSICS::Velx or
-              fieldenr->getField() == XFEM::PHYSICS::Vely or
-              fieldenr->getField() == XFEM::PHYSICS::Velz )
-          {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
-          }
-          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-          {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = 5.5; //-2.5;
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = 5.5; //-2.5;
           }
         }
       }

@@ -721,8 +721,6 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
 
         // general parameters for two-phase flow and premixed combustion problems
         const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
-        // parameters for premixed combustion problems
-        const double flamespeed = params.get<double>("flamespeed");
 
         //---------------------------------------------------
         // get parent elements location vector and ownerships
@@ -775,8 +773,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
             newton,
             instationary,
             genalpha,
-            combusttype,
-            flamespeed);
+            combusttype);
 
         break;
       }
@@ -798,7 +795,7 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
-  std::cout << "/!\\ warning === Neumann boundary conditions in XFEM problems are not implemented in a general way!" << std::endl;
+  //std::cout << "/!\\ warning === intersected Neumann boundary conditions in XFEM problems are not treated correctly" << std::endl;
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 

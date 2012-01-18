@@ -470,6 +470,8 @@ protected:
 
   // laminar flame speed
   const double flamespeed_;
+  // laminar Markstein length
+  const double marksteinlength_;
   // molecular diffusivity
   const double moldiffusivity_;
   // Nitsche parameter velocity
