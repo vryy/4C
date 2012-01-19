@@ -40,6 +40,8 @@ using namespace std;
 /*----------------------------------------------------------------------*/
 ADAPTER::Coupling::Coupling()
 {
+  masterdofmap_ = Teuchos::null;
+  slavedofmap_ = Teuchos::null;
 }
 
 
