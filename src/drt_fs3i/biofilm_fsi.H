@@ -3,13 +3,19 @@
 #ifndef FSI_BIOFILM_GROWTH_H
 #define FSI_BIOFILM_GROWTH_H
 
-#include "../drt_scatra/passive_scatra_algorithm.H"
-#include "../drt_fs3i/gas_fsi.H"
-#include "../drt_adapter/adapter_structure_bio.H"
+#include "../drt_fs3i/fs3i_partitioned_1wc.H"
+
+// forward declarations
+
+namespace ADAPTER
+{
+  class StructureBio;
+}
+
 
 namespace FS3I
 {
-  class BiofilmFSI:  public GasFSI/*,public ADAPTER::StructureBio*/
+  class BiofilmFSI:  public PartFS3I_1WC/*,public ADAPTER::StructureBio*/
   {
 
   public:
@@ -27,8 +33,8 @@ namespace FS3I
     void DoScatraStep();
 
     void ComputeInterfaceVectors(
-      RCP<Epetra_Vector> idispnp_,
-      RCP<Epetra_Vector> iveln_);
+      Teuchos::RCP<Epetra_Vector> idispnp_,
+      Teuchos::RCP<Epetra_Vector> iveln_);
 
     Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
@@ -45,10 +51,10 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
 
     /// coupling of fluid and ale (whole field)
-    ADAPTER::Coupling coupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
 
     // grown volume
     double grownvolume_;
@@ -90,13 +96,13 @@ namespace FS3I
     double time_;
 
     /// interface displacement at time t^{n}
-    RCP<Epetra_Vector> idispn_;
+    Teuchos::RCP<Epetra_Vector> idispn_;
 
     /// interface displacement at time t^{n+1}
-    RCP<Epetra_Vector> idispnp_;
+    Teuchos::RCP<Epetra_Vector> idispnp_;
 
     /// fluid velocity at interface (always zero!)
-    RCP<Epetra_Vector> iveln_;
+    Teuchos::RCP<Epetra_Vector> iveln_;
 
     Teuchos::RCP<ADAPTER::StructureBio> structbio;
 

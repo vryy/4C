@@ -1,12 +1,13 @@
 
 #ifdef CCADISCRET
 
-#include "fs3i.H"
-#include "gas_fsi.H"
-#include "biofilm_fsi.H"
-#include "thermo_fsi.H"
-#include "aero_tfsi.H"
 #include "fs3i_dyn.H"
+
+#include "fs3i.H"
+#include "fs3i_partitioned_1wc.H"
+#include "fs3i_partitioned_2wc.H"
+#include "biofilm_fsi.H"
+#include "aero_tfsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #ifdef PARALLEL
@@ -15,10 +16,12 @@
 #include <Epetra_SerialComm.h>
 #endif
 
+#include <Teuchos_TimeMonitor.hpp>
+
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
-// entry point for all kinds if FS3I
+// entry point for all kinds of FS3I
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
@@ -34,17 +37,17 @@ void fs3i_dyn()
   {
     case prb_gas_fsi:
     {
-      fs3i = Teuchos::rcp(new FS3I::GasFSI(comm));
+      fs3i = Teuchos::rcp(new FS3I::PartFS3I_1WC(comm));
+    }
+    break;
+    case prb_thermo_fsi:
+    {
+      fs3i = Teuchos::rcp(new FS3I::PartFS3I_2WC(comm));
     }
     break;
     case prb_biofilm_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
-    }
-    break;
-    case prb_thermo_fsi:
-    {
-      fs3i = Teuchos::rcp(new FS3I::ThermoFSI(comm));
     }
     break;
     case prb_tfsi_aero:

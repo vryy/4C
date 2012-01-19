@@ -61,7 +61,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmFSI::BiofilmFSI(
 	const Epetra_Comm& comm)
-:GasFSI(comm),
+:PartFS3I_1WC(comm),
  comm_(comm)/*,
  ADAPTER::StructureBio(comm,	///< communicator
 					   prbdyn, 	///< problem-specific parameters
@@ -107,25 +107,25 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  const string condname = "FSICoupling";
 
 	  // set up ale-fluid couplings
-	  icoupfa_.SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
-									  (fsi_->FluidField().Interface().FSICondMap()),
-									  *(fsi_->AleField().Discretization()),
-									  (fsi_->AleField().Interface().FSICondMap()),
-									  condname,
-	                                  genprob.ndim);
+	  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
+                                           (fsi_->FluidField().Interface().FSICondMap()),
+                                           *(fsi_->AleField().Discretization()),
+                                           (fsi_->AleField().Interface().FSICondMap()),
+                                           condname,
+                                           genprob.ndim);
 
 	  // the fluid-ale coupling always matches
 	  const Epetra_Map* fluidnodemap = fsi_->FluidField().Discretization()->NodeRowMap();
 	  const Epetra_Map* alenodemap   = fsi_->AleField().Discretization()->NodeRowMap();
 
-	  coupfa_.SetupCoupling(*(fsi_->FluidField().Discretization()),
- 							*(fsi_->AleField().Discretization()),
-							*fluidnodemap,
-							*alenodemap,
-	                        genprob.ndim);
+	  coupfa_->SetupCoupling(*(fsi_->FluidField().Discretization()),
+                                 *(fsi_->AleField().Discretization()),
+                                 *fluidnodemap,
+                                 *alenodemap,
+                                 genprob.ndim);
 
 	  /// do we need this. What's for???
-	  fsi_->FluidField().SetMeshMap(coupfa_.MasterDofMap());
+	  fsi_->FluidField().SetMeshMap(coupfa_->MasterDofMap());
 
 	  Teuchos::RCP<ADAPTER::StructureBio> structbio = Teuchos::rcp(new ADAPTER::StructureBio(Comm(), fsidyn, 1, 0, "FSICoupling"));
 
@@ -260,9 +260,9 @@ void FS3I::BiofilmFSI::DoScatraStep()
 
 
     LinearSolveScatra();
-    IterUpdate();
+    ScatraIterUpdate();
 
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ScatraConvergenceCheck(itnum);
   }
 
   UpdateAndOutput();
@@ -339,7 +339,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return icoupfa_.MasterToSlave(iv);
+  return icoupfa_->MasterToSlave(iv);
 }
 
 
@@ -347,7 +347,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::FluidToAle(Teuchos::RCP<Epetra_Vec
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------*/
