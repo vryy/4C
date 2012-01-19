@@ -567,6 +567,7 @@ namespace ELEMENTS
 
     //! update material parameters including subgrid-scale part of scalar
     void UpdateMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
+                           const LINALG::Matrix<nsd_,nen_>&     evelaf,    ///< velocity at time n+alpha_f / n+1
                            const LINALG::Matrix<nen_,1>&        escaaf,    ///< scalar at time n+alpha_f / n+1
                            const LINALG::Matrix<nen_,1>&        escaam,    ///< scalar at time n+alpha_m / n
                            const double                         thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1

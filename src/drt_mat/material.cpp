@@ -48,6 +48,7 @@ Maintainer: Lena Wiechert
 #include "artwallremod.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
+#include "yoghurt.H"
 #include "permeablefluid.H"
 #include "lung_penalty.H"
 #include "lung_ogden.H"
@@ -305,6 +306,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ModPowerLaw(curmat));
     MAT::PAR::ModPowerLaw* params = static_cast<MAT::PAR::ModPowerLaw*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_yoghurt:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Yoghurt(curmat));
+    MAT::PAR::Yoghurt* params = static_cast<MAT::PAR::Yoghurt*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_permeable_fluid:

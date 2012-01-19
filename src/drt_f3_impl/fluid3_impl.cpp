@@ -1338,7 +1338,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       ComputeSubgridScaleScalar(escaaf,escaam);
 
       // update material parameters including subgrid-scale part of scalar
-      UpdateMaterialParams(material,escaaf,escaam,thermpressaf,thermpressam);
+      UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
 
       // right-hand side of continuity equation based on updated material parameters
       // and including all stabilization terms
@@ -2679,6 +2679,7 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
+  const LINALG::Matrix<nsd_,nen_>&   evelaf,
   const LINALG::Matrix<nen_,1>&      escaaf,
   const LINALG::Matrix<nen_,1>&      escaam,
   const double                       thermpressaf,
@@ -2896,6 +2897,28 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
       scadtfac_ = scaconvfacaf_;
     }
   }
+}
+else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+{
+  const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+  // get constant density
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
+
+  // compute temperature at n+alpha_F or n+1
+  const double tempaf = funct_.Dot(escaaf);
+
+  // compute rate of strain at n+alpha_F or n+1
+  double rateofstrain = -1.0e30;
+  rateofstrain = GetStrainRate(evelaf);
+
+  // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
+  visc_ = actmat->ComputeViscosity(rateofstrain,tempaf);
+
+  // compute diffusivity
+  diffus_ = actmat->ComputeDiffusivity();
 }
 else dserror("Update of material parameters not required for this material type!");
 
@@ -15396,7 +15419,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
     ComputeSubgridScaleScalar(escaaf,escaam);
 
     // update material parameters including subgrid-scale part of scalar
-    UpdateMaterialParams(material,escaaf,escaam,thermpressaf,thermpressam);
+    UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
 
     //----------------------------------------------------------------------
     //  evaluate temperature-based residual vector for continuity equation
