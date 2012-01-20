@@ -78,7 +78,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     plastic->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson){
     MAT::Robinson* robinson = static_cast <MAT::Robinson*>(Material().get());
-    robinson->Setup(NUMGPT_SOH8);
+    robinson->Setup(NUMGPT_SOH8, linedef);
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
     humcard->Setup(NUMGPT_SOH8, linedef);
@@ -91,17 +91,17 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   }
 
   // temporary variable for read-in
-  std::string buffer;
+   std::string buffer;
 
   // read kinematic flag (default: we expect kintype to be total lagrangian)
   linedef->ExtractString("KINTYP",buffer);
   if (buffer=="lin")
   {
-    kintype_ = soh8_geolin;
+   kintype_ = soh8_geolin;
   }
   else if (buffer=="nln")
   {
-    kintype_ = soh8_totlag;
+   kintype_ = soh8_totlag;
   }
   else dserror ("Reading SO_HEX8 element failed");
 
