@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "thermoplasticlinelast.H"
 #include "plasticneohooke.H"
 #include "plasticlinelast.H"
+#include "robinson.H"
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
@@ -131,6 +132,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
     MAT::PAR::PlasticLinElast* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_vp_robinson:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Robinson(curmat));
+    MAT::PAR::Robinson* params = static_cast<MAT::PAR::Robinson*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_struct_multiscale:
@@ -489,7 +497,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_dam_mp:
   case INPAR::MAT::m_damage_ge:
   case INPAR::MAT::m_th_fourier_gen:
-  case INPAR::MAT::m_vp_robinson:
+//  case INPAR::MAT::m_vp_robinson:
   default:
     dserror("unknown material type %d", curmat->Type());
   }

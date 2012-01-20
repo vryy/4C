@@ -36,6 +36,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
+#include "../drt_mat/robinson.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
@@ -111,36 +112,35 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       break;
     }
     // added this material only for hex8
-    case INPAR::MAT::m_thermopllinelast: /*------------- Linear thermo-elastio-plastic Material */
+    case INPAR::MAT::m_thermopllinelast: /*-- linear thermo-elastio-plastic Material */
     {
       MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      // if (!pllinelast->Initialized())
-      //   thrpllinelast->Setup(NUMGPT_SOH8);
       thrpllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = thrpllinelast->Density();
       return;
       break;
     }
-    case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
+    case INPAR::MAT::m_plneohooke: /*-- Plastic NeoHookean Material */
     {
       MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      //if (!plastic->Initialized())
-      //  plastic->Setup(NUMGPT_SOH8);
       plastic->Evaluate(defgrd,gp,params,cmat,stress);
       *density = plastic->Density();
       return;
       break;
     }
-    case INPAR::MAT::m_pllinelast: /*------------- Plastic linear elastic Material */
+    case INPAR::MAT::m_pllinelast: /*-- plastic linear elastic Material */
     {
       MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      // if (!pllinelast->Initialized())
-      //  pllinelast->Setup(NUMGPT_SOH8);
       pllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = pllinelast->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
+    {
+      MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
+      robinson->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
+      *density = robinson->Density();
       return;
       break;
     }

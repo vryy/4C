@@ -439,6 +439,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*----------------------------------------------------------------------*/
+  // Robinson's visco-plastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Robinson",
+                                            "Robinson's visco-plastic material",
+                                            INPAR::MAT::m_vp_robinson));
+
+    AddNamedString(m,"KIND","kind of Robinson material","arya_narloyz");
+    AddNamedInt(m,"YOUNGNUM","number of Young's modulus in list");
+    AddNamedRealVector(m,"YOUNG","Young's modulus","YOUNGNUM");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
+    AddNamedReal(m,"HRDN_FACT","hardening factor 'A'");
+    AddNamedReal(m,"HRDN_EXPO","hardening power 'n'");
+    AddNamedInt(m,"SHRTHRSHLDNUM","number of K^2' in list");
+    AddNamedRealVector(m,"SHRTHRSHLD","Bingam-Prager shear stress threshold 'K^2'", "SHRTHRSHLDNUM");
+    AddNamedReal(m,"RCVRY","recovery factor 'R_0'");
+    AddNamedReal(m,"ACTV_ERGY","activation energy 'Q_0'");
+    AddNamedReal(m,"ACTV_TMPR","activation temperature 'T_0'");
+    AddNamedReal(m,"G0","'G_0'");
+    AddNamedReal(m,"M_EXPO","'m'");
+    AddNamedInt(m,"BETANUM","number of 'beta' in list");
+    AddNamedRealVector(m,"BETA","beta", "BETANUM");
+    AddNamedReal(m,"H_FACT","'H'");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   // Elastic orthotropic material
   {

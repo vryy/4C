@@ -23,7 +23,7 @@ Maintainer: Burkhard Bornemann
 namespace INPAR
 {
 
-  /// General input parameters for structural problems
+  /// General input parameters for materials
   namespace MAT
   {
 
@@ -130,7 +130,27 @@ namespace INPAR
       m_none          ///< undefined
     };
 
-  }  // namespace STR
+    /*----------------------------------------------------------------------*
+     | Robinson's visco-plastic material                        bborn 03/07 |
+     | material parameters                                                  |
+     | [1] Butler, Aboudi and Pindera: "Role of the material constitutive   |
+     |     model in simulating the reusable launch vehicle thrust cell      |
+     |     liner response", J Aerospace Engrg, 18(1), 2005.                 |
+     | [2] Arya: "Analytical and finite element solutions of some problems  |
+     |     using a vsicoplastic model", Comput & Struct, 33(4), 1989.       |
+     | [3] Arya: "Viscoplastic analysis of an experimental cylindrical      |
+     |     thrust chamber liner", AIAA J, 30(3), 1992.                      |
+     *----------------------------------------------------------------------*/
+    enum RobinsonType
+    {
+      vp_robinson_kind_vague=0,  ///< unset
+      vp_robinson_kind_butler,  ///< Butler et al, 2005 [1]
+      vp_robinson_kind_arya,  ///< Arya, 1989 [2]
+      vp_robinson_kind_arya_narloyz,  ///< Arya, 1992 [3]
+      vp_robinson_kind_arya_crmosteel ///<  Arya, 1992 [3]
+    };  // RobinsonType
+
+  }  // namespace MAT
 
 }  // namespace INPAR
 

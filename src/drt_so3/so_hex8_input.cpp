@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/robinson.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -73,8 +74,11 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_thermopllinelast){
-      MAT::ThermoPlasticLinElast* plastic = static_cast <MAT::ThermoPlasticLinElast*>(Material().get());
-      plastic->Setup(NUMGPT_SOH8);
+    MAT::ThermoPlasticLinElast* plastic = static_cast <MAT::ThermoPlasticLinElast*>(Material().get());
+    plastic->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson){
+    MAT::Robinson* robinson = static_cast <MAT::Robinson*>(Material().get());
+    robinson->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
     humcard->Setup(NUMGPT_SOH8, linedef);
