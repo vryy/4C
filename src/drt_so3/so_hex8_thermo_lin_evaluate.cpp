@@ -61,7 +61,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   else if (action=="calc_struct_reset_istep")   act = So_hex8::calc_struct_reset_istep;  // needed for TangDis predictor
   else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
   else if (action=="calc_struct_stifftemp")     act = So_hex8::calc_struct_stifftemp;
-  else dserror("Unknown type of action for So_hex8");
+  else dserror("Unknown type of action for So_hex8: %s",action.c_str());
   // what should the element do
   switch(act)
   {
