@@ -17,7 +17,6 @@ Maintainer: Christian Cyron
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
-//#include "../drt_lib/drt_globalproblem.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"

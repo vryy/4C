@@ -1200,12 +1200,10 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     // Reason: when the constraint tolerance is a relative measure (gap compared to the smaller of the two beam radii),
     // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
     // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
-    // (pair linker/filament). Then, convergence is nearly impossible to achieve in some cases, yet, results are acceptable already.
-    // In these cases, the timestep is not restarted since the contact algorithm has lead to an acceptable outcome.
-    // the criterion norm<1.0 is justified by the current need to prevent 99% and not 100% of intersections from happening.
+    // (pair linker/filament).
     double norm = 1e6;
     beamcmanager_->UpdateConstrNorm(&norm);
-    if(!fresmnormdivergent && uzawa && beamcmanager_->GetUzawaIter()>2 && norm<1.0)
+    if(!fresmnormdivergent && uzawa && beamcmanager_->GetUzawaIter()>2 && norm<0.7)
     {
       acceptuzawastep = true;
       isconverged_ = 1;
