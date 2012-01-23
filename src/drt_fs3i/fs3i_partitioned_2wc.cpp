@@ -10,6 +10,15 @@
 FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   :PartFS3I(comm)
 {
+  //---------------------------------------------------------------------
+  // read input parameters specific to FS3I_2WC problem
+  //---------------------------------------------------------------------
+  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
+  itermax_ = fs3icontrol.get<int>("ITEMAX");
+  convtol_ = fs3icontrol.get<double>("CONVTOL");
+
+  // flag for constant thermodynamic pressure
+  consthermpress_ = fs3icontrol.get<string>("CONSTHERMPRESS");
 }
 
 /*----------------------------------------------------------------------*/
@@ -21,11 +30,13 @@ void FS3I::PartFS3I_2WC::Timeloop()
 
   //fsi_->PrepareTimeloop();
 
-  while (fsi_->NotFinished())
+  while (NotFinished())
   {
-    //DoFsiStep();
+    SetTimeStep();
+    //DoFSIStep();
     SetFSISolution();
     DoScatraStep();
+    IncrementTimeAndStep();
   }
 }
 

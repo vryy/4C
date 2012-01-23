@@ -23,11 +23,13 @@ void FS3I::PartFS3I_1WC::Timeloop()
 
   fsi_->PrepareTimeloop();
 
-  while (fsi_->NotFinished())
+  while (NotFinished())
   {
-    DoFsiStep();
+    SetTimeStep();
+    DoFSIStep();
     SetFSISolution();
     DoScatraStep();
+    IncrementTimeAndStep();
   }
 }
 

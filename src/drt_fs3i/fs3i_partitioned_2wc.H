@@ -18,6 +18,16 @@ namespace FS3I
     virtual void Timeloop();
 
     virtual bool ScatraConvergenceCheck(int itnum);
+
+  private:
+
+    //! @name  parameters controlling iteration between FSI and ScaTra
+    int itermax_;
+    double convtol_;
+    //@}
+
+    /// flag for constant thermodynamic pressure
+    string consthermpress_;
   };
 }
 

@@ -210,7 +210,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
   while (step_fsi < nstep_fsi and t+1e-10*dt_fsi < maxtime_fsi)
   {
-	DoFsiStep();
+	DoFSIStep();
 	DoScatraStep();
 
     step_fsi++;

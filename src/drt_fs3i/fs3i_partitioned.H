@@ -57,6 +57,15 @@ namespace FS3I
     //! considered coupling, i.e. one-way or two-way)
     virtual void Timeloop() = 0;
 
+    //! flag whether time loop should be finished
+    bool NotFinished() { return step_ < numstep_ and time_ <= timemax_; };
+
+    //! increment step and time
+    void IncrementTimeAndStep();
+
+    //! set current time and step in individual field integrators
+    void SetTimeStep();
+
     //! read and set fields needed for restart
     virtual void ReadRestart();
 
@@ -72,7 +81,7 @@ namespace FS3I
     //! solution of ScaTra problem
     void DoScatraStep();
 
-    void DoFsiStep();
+    void DoFSIStep();
 
     //@}
 
@@ -145,7 +154,6 @@ namespace FS3I
 
     //! output of scalars and mean scalars
     void ScatraOutput();
-
     //@}
 
   protected:
@@ -166,6 +174,14 @@ namespace FS3I
     Teuchos::RCP<LINALG::MultiMapExtractor> scatraglobalex_;
 
   private:
+
+    //! @name  control parameters
+    double dt_;
+    int numstep_;
+    double timemax_;
+    int step_;
+    double time_;
+    //@}
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
@@ -191,8 +207,8 @@ namespace FS3I
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
 
-    /// consideration of surface permeability
-    bool permeablesurf_;
+    /// flag for infinite surface permeability
+    bool infperm_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

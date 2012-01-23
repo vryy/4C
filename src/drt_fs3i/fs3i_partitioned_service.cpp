@@ -53,13 +53,32 @@ Teuchos::RCP<Epetra_Vector> FS3I::PartFS3I::Scatra1ToScatra2(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FS3I::PartFS3I::IncrementTimeAndStep()
+{
+  step_ += 1;
+  time_ += dt_;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I::SetTimeStep()
+{
+  fsi_->SetTimeStep(time_, step_);
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+    scatravec_[i]->ScaTraField().SetTimeStep(time_, step_);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::ExtractScatraFieldVectors(
   Teuchos::RCP<const Epetra_Vector>  globalvec,
   Teuchos::RCP<const Epetra_Vector>& vec1,
   Teuchos::RCP<const Epetra_Vector>& vec2
 )
 {
-  if (!permeablesurf_)
+  if (infperm_)
   {
     // process fluid scatra unknowns
     vec1 = scatraglobalex_->ExtractVector(globalvec,0);

@@ -52,6 +52,22 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   //---------------------------------------------------------------------
+  // read input parameters for FS3I problem
+  //---------------------------------------------------------------------
+  const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
+  dt_ = fs3icontrol.get<double>("TIMESTEP");
+  numstep_ = fs3icontrol.get<int>("NUMSTEP");
+  timemax_ = fs3icontrol.get<double>("MAXTIME");
+
+  infperm_ = DRT::INPUT::IntegralValue<int>(fs3icontrol,"INF_PERM");
+
+  //---------------------------------------------------------------------
+  // set step and time
+  //---------------------------------------------------------------------
+  step_ = 0;
+  time_ = 0.;
+
+  //---------------------------------------------------------------------
   // ensure correct order of three discretizations, with dof-numbering
   // such that structure dof < fluid dof < ale dofs
   // (ordering required at certain non-intuitive points)
@@ -157,11 +173,11 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
           linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
           linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
-        fsi_ = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
+        fsi_ = Teuchos::rcp(new FSI::PartitionedMonolithic(comm,fs3icontrol));
       else if (coupling==fsi_iter_monolithicfluidsplit)
-        fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm));
+        fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fs3icontrol));
       else if (coupling==fsi_iter_monolithicstructuresplit)
-        fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
+        fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fs3icontrol));
       else
         dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
       break;
@@ -182,8 +198,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
-
-  permeablesurf_ = DRT::INPUT::IntegralValue<int>(scatradyn,"PERMEABLESURF");
 
   //---------------------------------------------------------------------
   // check various input parameters
@@ -220,9 +234,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
   // check if relevant parameters are chosen the same for FSI and ScaTra
   // dynamics
-  if (scatradyn.get<double>("TIMESTEP") != fsidyn.get<double>("TIMESTEP") or
-      scatradyn.get<int>("NUMSTEP") != fsidyn.get<int>("NUMSTEP") or
-      scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
+  if (scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
       scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
     dserror("Fix your input file! Time integration parameters for FSI and ScaTra fields not matching!");
 
@@ -252,7 +264,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       int myID = (coupcond[iter])->GetInt("coupling id");
       condIDs[i].insert(myID);
 
-      if (permeablesurf_)
+      if (!infperm_)
       {
         double myperm = (coupcond[iter])->GetDouble("permeability coefficient");
         PermCoeffs[i].insert(pair<int,double>(myID,myperm));
@@ -262,7 +274,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   if (condIDs[0].size() != condIDs[1].size())
     dserror("ScaTra coupling conditions need to be defined on both discretizations");
 
-  if (permeablesurf_)
+  if (!infperm_)
   {
     std::map<int,double> fluid_PermCoeffs = PermCoeffs[0];
     std::map<int,double> struct_PermCoeffs = PermCoeffs[1];
@@ -302,6 +314,9 @@ void FS3I::PartFS3I::ReadRestart()
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
       currscatra->ScaTraField().ReadRestart(genprob.restart);
     }
+
+    time_ = fsi_->FluidField().Time();
+    step_ = fsi_->FluidField().Step();
   }
 }
 
@@ -340,14 +355,14 @@ void FS3I::PartFS3I::SetupSystem()
   // the second field (currently structure) is always split
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
 
-  // If we do not consider the permeability of the interface between different
-  // scatra fields, the concentrations on both sides of the interface are
+  // In the limiting case of an infinite permeability of the interface between
+  // different scatra fields, the concentrations on both sides of the interface are
   // constrained to be equal. In this case, we keep the fluid scatra dofs at the
   // interface as unknowns in the overall system, whereas the structure scatra
   // dofs are condensed (cf. "structuresplit" in a monolithic FSI
   // system). Otherwise, both concentrations are kept in the overall system
   // and the equality of fluxes is considered explicitly.
-  if (!permeablesurf_)
+  if (infperm_)
   {
     maps.push_back(scatrafieldexvec_[0].FullMap());
     maps.push_back(scatrafieldexvec_[1].Map(0));
@@ -360,9 +375,8 @@ void FS3I::PartFS3I::SetupSystem()
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   scatraglobalex_->Setup(*fullmap,maps);
 
-  // create coupling vectors and matrices (only needed when surface permeability is
-  // considered)
-  if (permeablesurf_)
+  // create coupling vectors and matrices (only needed for finite surface permeabilities)
+  if (!infperm_)
   {
     for (unsigned i=0; i<scatravec_.size(); ++i)
     {
@@ -435,7 +449,7 @@ void FS3I::PartFS3I::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::DoFsiStep()
+void FS3I::PartFS3I::DoFSIStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
@@ -531,8 +545,8 @@ void FS3I::PartFS3I::EvaluateScatraFields()
     SCATRA::ScaTraTimIntImpl& scatra = scatra_adap->ScaTraField();
     scatra.PrepareLinearSolve();
 
-    // add contributions due to permeable surface/interface
-    if (permeablesurf_)
+    // add contributions due to finite interface permeability
+    if (!infperm_)
     {
       Teuchos::RCP<Epetra_Vector> coupforce = scatracoupforce_[i];
       Teuchos::RCP<LINALG::SparseMatrix> coupmat = scatracoupmat_[i];
@@ -575,8 +589,8 @@ void FS3I::PartFS3I::SetupCoupledScatraRHS()
   Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Residual();
   SetupCoupledScatraVector(scatrarhs_,scatra1,scatra2);
 
-  // additional contributions in case of interface permeability
-  if (permeablesurf_)
+  // additional contributions in case of finite interface permeability
+  if (!infperm_)
   {
     Teuchos::RCP<Epetra_Vector> coup1 = scatracoupforce_[0];
     Teuchos::RCP<Epetra_Vector> coup2 = scatracoupforce_[1];
@@ -605,7 +619,7 @@ void FS3I::PartFS3I::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector>  globa
                                               Teuchos::RCP<const Epetra_Vector>& vec1,
                                               Teuchos::RCP<const Epetra_Vector>& vec2)
 {
-  if (!permeablesurf_)
+  if (infperm_)
   {
     // concentrations are assumed to be equal at the interface
     // extract the inner (uncoupled) dofs from second field
@@ -638,7 +652,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
   if (scatra2==Teuchos::null)
     dserror("expect structure scatra block matrix");
 
-  if (!permeablesurf_)
+  if (infperm_)
   {
     // Uncomplete system matrix to be able to deal with slightly defective
     // interface meshes.

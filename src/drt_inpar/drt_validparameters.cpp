@@ -2954,9 +2954,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   BoolParameter("CONV_HEAT_TRANS",
       "no","Flag to (de)activate potential convective heat transfer boundary conditions",&scatradyn);
 
-  BoolParameter("PERMEABLESURF",
-      "no","Consideration of surface/interface permeability",&scatradyn);
-
   BoolParameter("SKIPINITDER",
       "no","Flag to skip computation of initial time derivative",&scatradyn);
 
@@ -3201,6 +3198,30 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                   INPAR::SCATRA::consistency_no,
                                   INPAR::SCATRA::consistency_l2_projection_lumped),
                                &scatradyn_stab);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fs3idyn = list->sublist(
+      "FS3I CONTROL",
+      false,
+      "control parameters for FS3I problems\n");
+
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fs3idyn);
+  IntParameter("NUMSTEP",20,"Total number of time steps",&fs3idyn);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fs3idyn);
+  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&fs3idyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fs3idyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&fs3idyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fs3idyn);
+  BoolParameter("INF_PERM","yes","Flag for infinite permeability",&fs3idyn);
+  setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
+                               "treatment of thermodynamic pressure in time",
+                               tuple<std::string>(
+                                 "No_energy",
+                                 "No_mass",
+                                 "Yes"
+                                 ),
+                               tuple<int>(0,1,2),
+                               &fs3idyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
