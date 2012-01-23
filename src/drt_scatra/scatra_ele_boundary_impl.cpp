@@ -47,6 +47,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1377,6 +1378,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
       if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       {
         const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+
+        shc = actmat->Capacity();
+      }
+      else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+      {
+        const MAT::ThermoStVenantKirchhoff* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
 
         shc = actmat->Capacity();
       }

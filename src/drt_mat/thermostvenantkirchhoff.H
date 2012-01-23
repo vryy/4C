@@ -66,6 +66,10 @@ namespace PAR
     const double density_;
     /// linear coefficient of thermal expansion
     const double thermexpans_;
+    /// heat capacity
+    const double capa_;
+    /// heat conductivity
+    const double conduct_;
     /// initial temperature (constant) \f \Theta_0 \f
     const double thetainit_;
 
@@ -199,7 +203,7 @@ private:
       );
 
     /// calculates stress-temperature modulus
-    double STModulus();
+    double STModulus() const;
 
     /// Young's modulus
     double Youngs() const { return params_->youngs_; }
@@ -209,6 +213,12 @@ private:
 
     /// density
     virtual double Density() const { return params_->density_; }
+
+    /// conductivity
+    double Conductivity() const { return params_->conduct_; }
+
+    /// material capacity
+    double Capacity() const { return params_->capa_; }
 
     /// Initial temperature
     double InitTemp() const { return params_->thetainit_; }

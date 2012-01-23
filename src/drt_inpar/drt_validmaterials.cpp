@@ -374,6 +374,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
+    AddNamedReal(m,"CAPA","capacity",true);
+    AddNamedReal(m,"CONDUCT","conductivity",true);
     AddNamedReal(m,"INITTEMP","initial temperature");
 
     AppendMaterialDefinition(matlist,m);

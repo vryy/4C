@@ -44,6 +44,8 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   thermexpans_(matdata->GetDouble("THEXPANS")),
+  capa_(matdata->GetDouble("CAPA")),
+  conduct_(matdata->GetDouble("CONDUCT")),
   thetainit_(matdata->GetDouble("INITTEMP"))
 {
 }
@@ -308,7 +310,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::STModulus()
+double MAT::ThermoStVenantKirchhoff::STModulus() const
 {
   // initialize the parameters for the lame constants
   const double ym  = params_->youngs_;

@@ -27,6 +27,7 @@
 #include "../drt_mat/ion.H"
 #include "../drt_mat/biofilm.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -2651,7 +2652,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     diffus_[0] = actmat->Conductivity()/actmat->Capacity();
 
     // set density at various time steps and density gradient factor to 1.0/0.0
-    // (preliminary setting)
     densn_[0]       = 1.0;
     densnp_[0]      = 1.0;
     densam_[0]      = 1.0;
@@ -2665,6 +2665,47 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     reacoeff_[0]      = 0.0;
     reacoeffderiv_[0] = 0.0;
     reatemprhs_[0]    = 0.0;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+  {
+    dsassert(numdofpernode_==1,"more than 1 dof per node for thermo St. Venant-Kirchhoff material");
+
+    const MAT::ThermoStVenantKirchhoff* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
+
+    // get constant diffusivity (conductivity divided by specific heat capacity)
+    diffus_[0] = actmat->Conductivity()/actmat->Capacity();
+
+    // set density at various time steps and set density gradient factor to 1.0/0.0
+    densnp_[0]      = actmat->Density();
+    densam_[0]      = densnp_[0];
+    densn_[0]       = densnp_[0];
+    densgradfac_[0] = 0.0;
+
+    // set specific heat capacity at constant volume
+    // (value divided by density here for its intended use on right-hand side)
+    shc_ = actmat->Capacity()/densnp_[0];
+
+    // compute velocity divergence required for reaction coefficient
+    GetDivergence(vdiv_,evelnp_,derxy_);
+
+    // compute reaction coefficient
+    // (divided by density due to later multiplication by density in CalMatAndRHS)
+    const double stmodulus = actmat->STModulus();
+    reacoeff_[0] = -vdiv_*stmodulus/(actmat->Capacity()*densnp_[0]);
+
+    // set reaction flag to true, check whether reaction coefficient is positive
+    // and set derivative of reaction coefficient
+    if (reacoeff_[0] > EPS14) reaction_ = true;
+    if (reacoeff_[0] < -EPS14)
+      dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0, reacoeff_[0]);
+    reacoeffderiv_[0] = reacoeff_[0];
+
+    // set temperature rhs for reactive equation system to zero
+    reatemprhs_[0] = 0.0;
+
+    // set temporal derivative of thermodynamic pressure to zero for
+    // the present structure-based scalar transport
+    thermpressdt_ = 0.0;
   }
   else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
   {
