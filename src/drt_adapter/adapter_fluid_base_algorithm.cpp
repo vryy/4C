@@ -263,6 +263,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
+  // check correct setting
+  if ((genprob.probtyp == prb_thermo_fsi or genprob.probtyp == prb_loma) and
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") 
+      != INPAR::FLUID::loma)
+    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
+
+
   // -------------------------------------------------- time integration
   // note: here, the values are taken out of the problem-dependent ParameterList prbdyn
   // (which also can be fluiddyn itself!)

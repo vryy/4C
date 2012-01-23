@@ -4,18 +4,20 @@
 
      including instationary solvers based on
 
-     o one-step-theta time-integration scheme
+     o a one-step-theta time-integration scheme,
 
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
+     o a two-step BDF2 time-integration scheme
+       (with potential one-step-theta start algorithm),
 
-     and stationary solver.
+     o two variants of a generalized-alpha time-integration scheme
+
+     and a stationary solver.
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
+Maintainers: Volker Gravemeier & Andreas Ehrl
+             {vgravem,ehrl}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15245/-252
 </pre>
 
 *----------------------------------------------------------------------*/
