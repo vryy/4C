@@ -105,6 +105,8 @@ if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
+option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
+
 #   additional features
 
 option (BINIO "binary io" ON)
@@ -2552,6 +2554,10 @@ if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 endif (HAVE_MueLu)
+
+if (FS3I_INCACouplingTest)
+  include (/home/hammerl/buildslave/FS3I_INCA_coupling_test.cmake)
+endif (FS3I_INCACouplingTest)
 
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
