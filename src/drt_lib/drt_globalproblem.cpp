@@ -191,6 +191,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   //reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/LEVELSET", *list);
+  reader.ReadGidSection("--FS3I CONTROL", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
@@ -416,7 +417,7 @@ void DRT::Problem::InputControl()
   case prb_fluid_ale:
   case prb_fluid:
   case prb_scatra:
-  case prb_loma:  
+  case prb_loma:
   case prb_elch:
   {
 #ifdef D_ARTNET
@@ -1254,16 +1255,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   default:
     dserror("Unknown problem type: %d",genprob.probtyp);
   }
-  
+
   // add artery or airways discretizations only for the following problem types
   switch (genprob.probtyp)
   {
   case prb_fsi:
   case prb_fsi_lung:
   case prb_fluid_ale:
-  case prb_fluid:  
+  case prb_fluid:
   case prb_scatra:
-  case prb_loma:  
+  case prb_loma:
   case prb_elch:
   {
 #ifdef D_ARTNET
