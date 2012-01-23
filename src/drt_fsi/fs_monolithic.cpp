@@ -42,10 +42,11 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm)
-  : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
-    FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
-    AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams())
+FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
+                                        const Teuchos::ParameterList& timeparams)
+  : AlgorithmBase(comm,timeparams),
+    FluidBaseAlgorithm(timeparams,true),
+    AleBaseAlgorithm(timeparams)
 {
 }
 
@@ -124,8 +125,9 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicMainFS::MonolithicMainFS(const Epetra_Comm& comm)
-  : MonolithicBaseFS(comm)
+FSI::MonolithicMainFS::MonolithicMainFS(const Epetra_Comm& comm,
+                                        const Teuchos::ParameterList& timeparams)
+  : MonolithicBaseFS(comm,timeparams)
 {
 }
 
@@ -487,8 +489,9 @@ bool FSI::MonolithicMainFS::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::BlockMonolithicFS::BlockMonolithicFS(const Epetra_Comm& comm)
-  : MonolithicMainFS(comm),
+FSI::BlockMonolithicFS::BlockMonolithicFS(const Epetra_Comm& comm,
+                                          const Teuchos::ParameterList& timeparams)
+  : MonolithicMainFS(comm,timeparams),
     precondreusecount_(0)
 {
 }
@@ -545,8 +548,9 @@ void FSI::BlockMonolithicFS::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm)
-  : BlockMonolithicFS(comm)
+FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
+                                const Teuchos::ParameterList& timeparams)
+  : BlockMonolithicFS(comm,timeparams)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");

@@ -26,8 +26,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm)
-  : BlockMonolithic(comm)
+FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
+                                                const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams)
 {
 }
 
@@ -222,7 +223,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                                    apciter[0],
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
-#endif    
+#endif
   default:
     dserror("Unsupported type of monolithic solver");
     break;

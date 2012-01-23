@@ -727,7 +727,7 @@ void fluid_fluid_fsi_drt()
   {
   case fsi_iter_fluidfluid_monolithicstructuresplit:
   {
-    Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm));
+    Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
 
      // now do the coupling setup an create the combined dofmap
     fsi->SetupSystem();
@@ -836,7 +836,7 @@ void fluid_freesurf_drt()
 
     // Monolithic Free Surface Algorithm
 
-    fsi = Teuchos::rcp(new FSI::MonolithicFS(comm));
+    fsi = Teuchos::rcp(new FSI::MonolithicFS(comm,fsidyn));
 
     if (genprob.restart)
     {
@@ -946,43 +946,43 @@ void fsi_ale_drt()
         linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
         linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
     {
-      fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
+      fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm,fsidyn));
     }
     else if (coupling==fsi_iter_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm));
+      fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_monolithicstructuresplit)
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
+      fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_monolithiclagrange)
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
+      fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm,fsidyn));
     }
     else if (coupling==fsi_iter_lung_monolithicstructuresplit)
     {
-      fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm));
+      fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_lung_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm));
+      fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_constr_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm));
+      fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_constr_monolithicstructuresplit)
     {
-      fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm));
+      fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_mortar_monolithicstructuresplit)
     {
-      fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm));
+      fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_mortar_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm));
+      fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm,fsidyn));
     }
     else
     {

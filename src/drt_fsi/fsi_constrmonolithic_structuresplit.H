@@ -18,7 +18,8 @@ namespace FSI
   class ConstrMonolithicStructureSplit : public ConstrMonolithic
   {
   public:
-    explicit ConstrMonolithicStructureSplit(const Epetra_Comm& comm);
+    explicit ConstrMonolithicStructureSplit(const Epetra_Comm& comm,
+                                            const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>
@@ -67,7 +68,7 @@ namespace FSI
 
 
   private:
-    
+
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sconT_;
 
@@ -79,10 +80,10 @@ namespace FSI
     /// transformation of shape derivative matrix
     UTILS::MatrixColTransform fmiitransform_;
     UTILS::MatrixColTransform fmgitransform_;
-    
+
     /// transformation of ale matrix
     UTILS::MatrixColTransform aigtransform_;
-    
+
     /// transformation of constraints matrices
     UTILS::MatrixRowTransform scgitransform_;
     UTILS::MatrixColTransform csigtransform_;

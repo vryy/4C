@@ -13,8 +13,9 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(const Epetra_Comm& comm)
-  : LungMonolithic(comm)
+FSI::LungMonolithicFluidSplit::LungMonolithicFluidSplit(const Epetra_Comm& comm,
+                                                        const Teuchos::ParameterList& timeparams)
+  : LungMonolithic(comm,timeparams)
 {
   return;
 }

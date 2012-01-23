@@ -41,6 +41,9 @@ namespace ADAPTER
     /// current time
     double Time() const {return time_;}
 
+    /// set new time step in ReadRestart() or in a potential outer control
+    void SetTimeStep(double time, int step);
+
   protected:
 
     /// time step size
@@ -72,9 +75,6 @@ namespace ADAPTER
 
     /// write output
     virtual void Output() {}
-
-    /// set new time step in ReadRestart()
-    void SetTimeStep(double time, int step);
 
     /// set method name for screen output
     void SetMethod(std::string method) { method_ = method; }

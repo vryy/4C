@@ -15,8 +15,9 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(const Epetra_Comm& comm)
-  : ConstrMonolithic(comm)
+FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(const Epetra_Comm& comm,
+                                                                    const Teuchos::ParameterList& timeparams)
+  : ConstrMonolithic(comm,timeparams)
 {
   return;
 }

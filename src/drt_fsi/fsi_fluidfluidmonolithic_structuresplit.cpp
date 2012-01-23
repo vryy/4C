@@ -23,8 +23,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(const Epetra_Comm& comm)
-  : Monolithic(comm)
+FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(const Epetra_Comm& comm,
+                                                                            const Teuchos::ParameterList& timeparams)
+  : Monolithic(comm,timeparams)
 {
   const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
   monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>

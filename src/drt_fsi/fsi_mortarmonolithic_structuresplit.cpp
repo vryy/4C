@@ -26,8 +26,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra_Comm& comm)
-  : BlockMonolithic(comm),
+FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra_Comm& comm,
+                                                                    const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams),
     comm_(comm)
 {
   notsetup_=true;
@@ -226,7 +227,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                                             apciter[0],
                                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
-#endif    
+#endif
     default:
       dserror("Unsupported type of monolithic solver");
     break;
@@ -870,14 +871,14 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
                                                 Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = 
+  Teuchos::RCP<NOX::StatusTest::Combo> combo       =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = 
+  Teuchos::RCP<NOX::StatusTest::Combo> converged   =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = 
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
       Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = 
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    =
       Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);

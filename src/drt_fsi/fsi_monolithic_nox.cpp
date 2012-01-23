@@ -34,11 +34,12 @@
 // Discretizations, which in turn defines the dof number ordering of the
 // Discretizations.
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm)
-  : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
-    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
-    AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams())
+FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
+                                    const Teuchos::ParameterList& timeparams)
+  : AlgorithmBase(comm,timeparams),
+    StructureBaseAlgorithm(timeparams),
+    FluidBaseAlgorithm(timeparams,true),
+    AleBaseAlgorithm(timeparams)
 {
 }
 
@@ -192,8 +193,9 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicNOX::MonolithicNOX(const Epetra_Comm& comm)
-  : MonolithicBase(comm)
+FSI::MonolithicNOX::MonolithicNOX(const Epetra_Comm& comm,
+                                  const Teuchos::ParameterList& timeparams)
+  : MonolithicBase(comm,timeparams)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -677,8 +679,9 @@ bool FSI::MonolithicNOX::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm)
-  : MonolithicNOX(comm),
+FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
+                                      const Teuchos::ParameterList& timeparams)
+  : MonolithicNOX(comm,timeparams),
     precondreusecount_(0)
 {
 }

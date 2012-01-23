@@ -22,8 +22,9 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& comm)
-  : BlockMonolithic(comm),
+FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& comm,
+                                                            const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams),
     comm_(comm)
 {
   notsetup_ = true;
@@ -275,13 +276,13 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       a->Matrix(0,1).Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
 
       Extractor().AddVector(*rhs,2,f);
-      
+
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
       if (mmm!=Teuchos::null)
       {
         LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
         LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-        
+
         rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
 
         fmgg.Apply(*iprojdispinc_,*rhs);
@@ -290,7 +291,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
         Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
         mortar->Multiply(true,*rhs,*tmprhs);
-        
+
         rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
 
         Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
@@ -303,7 +304,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         }
 
         Extractor().AddVector(*rhs,0,f);
-        
+
         rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
 
         fmig.Apply(*iprojdispinc_,*rhs);
@@ -350,7 +351,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
     mortar->Multiply(true,*rhs,*tmprhs);
-    
+
     rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
@@ -437,7 +438,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #else
   mat.Assign(0,1,View,*lfgi);
 #endif
-  
+
   RCP<LINALG::SparseMatrix> fig = MLMultiply(f->Matrix(0,1),false,*mortar,false,false,false,true);
   RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig->RowMap(),81,false));
 
@@ -527,7 +528,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     {
       lfmig = LINALG::MLMultiply(*lfmig,false,*stcmat, false, false, false,true);
     }
-    
+
     mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
@@ -805,7 +806,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
       Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
       stcmat->Multiply(true,*modsv,*modsv);
     }
-    
+
     Extractor().InsertVector(*modsv,0,f);
 
   }
@@ -891,14 +892,14 @@ FSI::MortarMonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlPara
                                          Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = 
+  Teuchos::RCP<NOX::StatusTest::Combo> combo       =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = 
+  Teuchos::RCP<NOX::StatusTest::Combo> converged   =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = 
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
       Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = 
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    =
       Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
@@ -1093,7 +1094,7 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
   AleField().      Output();
   FluidField().LiftDrag();
-  
+
   if (StructureField().GetConstraintManager()->HaveMonitor())
   {
     StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());

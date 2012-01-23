@@ -25,7 +25,8 @@ namespace FSI
   class LungMonolithic : public BlockMonolithic
   {
   public:
-    explicit LungMonolithic(const Epetra_Comm& comm);
+    explicit LungMonolithic(const Epetra_Comm& comm,
+                            const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>

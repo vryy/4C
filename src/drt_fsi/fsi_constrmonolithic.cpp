@@ -26,8 +26,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::ConstrMonolithic::ConstrMonolithic(const Epetra_Comm& comm)
-  : BlockMonolithic(comm),
+FSI::ConstrMonolithic::ConstrMonolithic(const Epetra_Comm& comm,
+                                        const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams),
     conman_(StructureField().GetConstraintManager())
 {
 

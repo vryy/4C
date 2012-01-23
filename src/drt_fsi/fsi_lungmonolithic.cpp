@@ -26,8 +26,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm)
-  : BlockMonolithic(comm)
+FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
+                                    const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams)
 {
   //-----------------------------------------------------------------------------
   // additional fluid-structure volume constraints

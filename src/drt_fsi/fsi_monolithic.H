@@ -39,7 +39,8 @@ namespace FSI
   {
     friend class FSI::UTILS::MonolithicDebugWriter;
   public:
-    explicit Monolithic(const Epetra_Comm& comm);
+    explicit Monolithic(const Epetra_Comm& comm,
+                        const Teuchos::ParameterList& timeparams);
 
     ///
     /*! do the setup for the monolithic system

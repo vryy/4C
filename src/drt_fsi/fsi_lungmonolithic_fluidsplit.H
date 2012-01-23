@@ -19,7 +19,8 @@ namespace FSI
   class LungMonolithicFluidSplit : public LungMonolithic
   {
   public:
-    explicit LungMonolithicFluidSplit(const Epetra_Comm& comm);
+    explicit LungMonolithicFluidSplit(const Epetra_Comm& comm,
+                                      const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>

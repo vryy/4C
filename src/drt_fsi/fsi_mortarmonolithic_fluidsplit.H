@@ -26,7 +26,8 @@ namespace FSI
   class MortarMonolithicFluidSplit : public BlockMonolithic
   {
   public:
-    explicit MortarMonolithicFluidSplit(const Epetra_Comm& comm);
+    explicit MortarMonolithicFluidSplit(const Epetra_Comm& comm,
+                                        const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 

@@ -16,8 +16,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::PartitionedMonolithic::PartitionedMonolithic(const Epetra_Comm& comm)
-  : MonolithicNOX(comm)
+FSI::PartitionedMonolithic::PartitionedMonolithic(const Epetra_Comm& comm,
+                                                  const Teuchos::ParameterList& timeparams)
+  : MonolithicNOX(comm,timeparams)
 {
 }
 

@@ -22,10 +22,10 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm)
-  : BlockMonolithic(comm)
+FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
+                                                        const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams)
 {
-
   return;
 }
 

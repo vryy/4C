@@ -20,8 +20,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicLagrange::MonolithicLagrange(const Epetra_Comm& comm)
-  : BlockMonolithic(comm)
+FSI::MonolithicLagrange::MonolithicLagrange(const Epetra_Comm& comm,
+                                            const Teuchos::ParameterList& timeparams)
+  : BlockMonolithic(comm,timeparams)
 {
 }
 /*----------------------------------------------------------------------*/

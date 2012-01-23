@@ -18,7 +18,8 @@ namespace FSI
   class ConstrMonolithicFluidSplit : public ConstrMonolithic
   {
   public:
-    explicit ConstrMonolithicFluidSplit(const Epetra_Comm& comm);
+    explicit ConstrMonolithicFluidSplit(const Epetra_Comm& comm,
+                                        const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>
@@ -69,7 +70,7 @@ namespace FSI
   private:
 
     Teuchos::RCP<LINALG::SparseMatrix> sconT_;
-    
+
     /// transformation of fluid matrix
     UTILS::MatrixRowColTransform fggtransform_;
     UTILS::MatrixRowTransform fgitransform_;
