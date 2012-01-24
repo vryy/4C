@@ -44,19 +44,48 @@ LOMA::Algorithm::Algorithm(
   consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
 
   // flag for special flow and start of sampling period from fluid parameter list
-  special_flow_ = prbdyn.get<string>("CANONICAL_FLOW");
-  samstart_     = prbdyn.get<int>("SAMPLING_START");
+  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  special_flow_ = fluiddyn.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW");
+  samstart_     = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
+//  special_flow_ = prbdyn.get<string>("CANONICAL_FLOW");
+//  samstart_     = prbdyn.get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being
   if (ScaTraField().Incremental() == false)
     dserror("Incremental ScaTra formulation required for low-Mach-number flow");
 
+  // flag for turbulent inflow
+  turbinflow_ = DRT::INPUT::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW");
+  if(turbinflow_)
+  {
+    if (Comm().MyPID()==0)
+    {
+      std::cout << "##############################################################" << std::endl;
+      std::cout << "#                     TURBULENT INFLOW                       #" << std::endl;
+      std::cout << "# Caution!                                                   #" << std::endl;
+      std::cout << "# Assumptions: - constant thermodynamic pressure in main     #" << std::endl;
+      std::cout << "#                problem domain                              #" << std::endl;
+      std::cout << "#              - inflow domain as closed system without in-/ #" << std::endl;
+      std::cout << "#                outflow and heating                         #" << std::endl;
+      std::cout << "#                -> constant thermodynamic pressure          #" << std::endl;
+      std::cout << "##############################################################" << std::endl;
+    }
+
+    if (special_flow_ != "loma_backward_facing_step")
+     dserror("Turbulent inflow generation only for backward-facing step!");
+    if (consthermpress_ != "Yes")
+     dserror("Constant thermodynamic pressure in main problem domain!");
+  }
+
   // preparatives for monolithic solver
   if (monolithic_)
   {
+    // check whether turbulent inflow is included,
+    // which is currently not possible for monolithic solver
+    if (turbinflow_) dserror("No turbulent inflow for monolithic low-Mach-number solver");
+
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
-    const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
     INPAR::FLUID::LinearisationAction linearization = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
     if (linearization != INPAR::FLUID::fixed_point_like)
       dserror("Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number solver, for the time being!");
@@ -237,7 +266,7 @@ void LOMA::Algorithm::OuterLoop()
     cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
-           ScaTraField().Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),ScaTraField().Step(),stepmax_);
+           Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
   }
 
   // maximum number of iterations tolerance for outer iteration
@@ -302,7 +331,7 @@ void LOMA::Algorithm::MonoLoop()
     cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
-           ScaTraField().Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),ScaTraField().Step(),stepmax_);
+           Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
   }
 
   // maximum number of iterations tolerance for monolithic iteration
@@ -650,6 +679,21 @@ void LOMA::Algorithm::Output()
 
   ScaTraField().Output();
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LOMA::Algorithm::ReadInflowRestart(int restart)
+{
+  // in case a inflow generation in the inflow section has been performed,
+  // there are not any scatra results available and the initial field is used
+  FluidField().ReadRestart(restart);
+  // as ReadRestart is only called for the FluidField
+  // time and step have not been set in the superior class and the ScaTraField
+  SetTimeStep(FluidField().Dt(),FluidField().Step());
+  ScaTraField().SetTimeStep(FluidField().Dt(),FluidField().Step());
   return;
 }
 

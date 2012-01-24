@@ -118,7 +118,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   project_(false),
   w_(Teuchos::null),
   c_(Teuchos::null),
-  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING"))
+  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING")),
+  turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -724,7 +726,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
-  if (step_==1 and
+  if ((step_==1 or (turbinflow_ and step_==numinflowsteps_+1)) and
       (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
      AVM3Preparation();
 

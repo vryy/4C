@@ -116,6 +116,12 @@ namespace FLD {
 //> high Reynolds number limit: B = 0.42
 //#define B_CONST 0.21
 
+//----------------------------//
+// turbulent loma flow        //
+//----------------------------//
+
+//#define SGSCALSCALAR
+
 }
 #endif // #ifndef FLUID_TURBULENCE_DEFINES_H
 #endif // #ifdef CCADISCRET

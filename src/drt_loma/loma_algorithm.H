@@ -56,6 +56,9 @@ namespace LOMA
     /// LOMA time loop
     void TimeLoop();
 
+    /// read restart for. preceding turbulent inflow simulation
+    void ReadInflowRestart(int restart);
+
   protected:
 
     /// do initial calculations
@@ -146,6 +149,9 @@ namespace LOMA
 
     /// start of sampling period
     int samstart_;
+
+    /// flag for turbulent inflow
+    bool turbinflow_;
 
   private:
 

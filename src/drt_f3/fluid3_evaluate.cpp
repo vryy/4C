@@ -2963,10 +2963,10 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
         Re_ele_str = 1.0;
 
       // calculate corrected Csgs
-      //           -3/8
+      //           -3/16
       //  *(1 - (Re)   )
       //
-      Csgs *= (1-pow(Re_ele_str,-3.0/8.0));
+      Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
     }
 
     for (int dim=0; dim<NSD; dim++)

@@ -11,6 +11,9 @@ flows.
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland.H"
+
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur
 //#define NO_VALUES_IN_PLANES
@@ -36,7 +39,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   inflowchannel_      (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
   dens_     (1.0),
-  visc_     (1.0)
+  visc_     (1.0),
+  shc_      (1.0)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -157,7 +161,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
   }
 
-  if(physicaltype_ != INPAR::FLUID::loma)
+  if (physicaltype_ == INPAR::FLUID::incompressible)
   {
      // get fluid viscosity from material definition --- for computation
      // of ltau
@@ -171,6 +175,21 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // we need the kinematic viscosity here
       dens_ = actmat->density_;
       visc_ = actmat->viscosity_/dens_;
+    }
+  }
+  else if (physicaltype_ == INPAR::FLUID::loma)
+  {
+     // get specific heat capacity --- for computation
+     // of Temp_tau
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+    if (id==-1)
+      dserror("Could not find sutherland material");
+    else
+    {
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+      // we need the kinematic viscosity here
+      shc_ = actmat->shc_;
     }
   }
 
@@ -3874,16 +3893,18 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   else
     dserror("Cannot determine flow direction by traction (appears not unique)");
 
-  const double qwb = sumqwb_/areanumsamp;
-  const double qwt = sumqwt_/areanumsamp;
+  // heat flux at the wall is trueresidual of energy equation
+  // multiplied by the specific heat
+  const double qwb = sumqwb_*shc_/areanumsamp;
+  const double qwt = sumqwt_*shc_/areanumsamp;
 
   // u_tau and l_tau at bottom and top wall as well as mean values
   const double utaub = sqrt(tauwb/rhowb);
   const double utaut = sqrt(tauwt/rhowt);
   double Ttaub = 0.0;
-  if (rhowb*utaub < -2e-9 or rhowb*utaub > 2e-9) Ttaub = qwb/(rhowb*utaub);
+  if (rhowb*utaub < -2e-9 or rhowb*utaub > 2e-9) Ttaub = qwb/(rhowb*shc_*utaub);
   double Ttaut = 0.0;
-  if (rhowt*utaut < -2e-9 or rhowt*utaut > 2e-9) Ttaut = qwt/(rhowt*utaut);
+  if (rhowt*utaut < -2e-9 or rhowt*utaut > 2e-9) Ttaut = qwt/(rhowt*shc_*utaut);
 
   //----------------------------------------------------------------------
   // output to log-file

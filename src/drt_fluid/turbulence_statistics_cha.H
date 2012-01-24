@@ -47,10 +47,10 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -73,8 +73,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
-
-#include "../drt_mat/newtonianfluid.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -375,6 +373,8 @@ private:
   //! viscosity to calculate l_tau, y+ etc.
   double dens_;
   double visc_;
+  //! specific heat capacity to calculate Temp_tau (loma)
+  double shc_;
 
   //!--------------------------------------------------
   //!         integration based averaging

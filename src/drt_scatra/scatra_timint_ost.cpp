@@ -554,6 +554,10 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
     }
   }
 
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
+      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    AVM3Preparation();
+
   return;
 }
 

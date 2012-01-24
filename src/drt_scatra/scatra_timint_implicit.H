@@ -869,6 +869,11 @@ protected:
   // options for meshtying
   int msht_;
 
+  // flag for turbulent inflow (turbulent loma specific)
+  bool turbinflow_;
+  // number of inflow generation time steps (turbulent loma specific)
+  int numinflowsteps_;
+
 }; // class ScaTraTimIntImpl
 
 } // namespace SCATRA

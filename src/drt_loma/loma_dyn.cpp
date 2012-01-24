@@ -69,6 +69,9 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
   // access parameter list for scatra
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
+  // access parameter list for fluid
+  const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
+
   // identify type of velocity field
   const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
 
@@ -105,6 +108,13 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     // use fluid discretization as layout for scatra discretization
     if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 
+    // to generate turbulent flow in the inflow section only, it is not necessary to
+    // solve the transport equation for the temperature
+    // therefore, use problem type fluid
+    if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
+       (restart<fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
+      dserror("Choose problem type fluid to generate turbulent flow in the inflow section!");
+
     // create scatra elements if scatra discretization is empty (typical case)
     if (scatradis->NumGlobalNodes()==0)
     {
@@ -129,7 +139,17 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
 
     // read restart information
-    if (restart) loma->ReadRestart(restart);
+    // in case a inflow generation in the inflow section has been performed, there are not any
+    // scatra results available and the initial field is used
+    if (restart)
+    {
+      if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
+         (restart==fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
+        loma->ReadInflowRestart(restart);
+      else
+        loma->ReadRestart(restart);
+    }
+
 
     // enter LOMA algorithm
     loma->TimeLoop();

@@ -181,6 +181,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   extraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
   extraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+  extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
   // -------------------------------------------------------------------
   // algorithm construction depending on

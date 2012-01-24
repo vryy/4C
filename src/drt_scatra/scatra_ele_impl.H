@@ -180,7 +180,6 @@ public:
         const bool                            nwl, ///< flag to activate near-wall limit
         const double                          Csgs_sgphi, ///< parameter of multifractal subgrid-scales (phi)
         const double                          c_diff, ///< scaling for Re*Pr
-        const double                          beta, ///< to include lhs
         const bool                            BD_gp, ///< evaluation of model coefficient at gp
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
@@ -309,7 +308,8 @@ public:
         const double  time,
         const double  dt,
         const double  timefac,
-        const int     k
+        const int     k,
+        const enum INPAR::SCATRA::ScaTraType  scatratype
     );
 
     //! calculate subgrid-scale velocity for level set / two-phase flow problems
@@ -797,7 +797,7 @@ public:
     vector<double> densam_;
     //! factor for density derivative (at t_(n+1) or t_(n+alpha_F))
     vector<double> densgradfac_;
-    //! diffusivity / diffusivities (in case of systems) / thermal conductivity
+    //! diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
     vector<double> diffus_;
     //! reaction coefficient
     vector<double> reacoeff_;
@@ -904,9 +904,6 @@ public:
     bool migrationinresidual_;
     //! reaction coefficent derivative (needed for matrix contribution)
     vector<double> reacoeffderiv_;
-
-    //TODO: remove
-    int eid_;
 
 
   };

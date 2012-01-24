@@ -59,6 +59,9 @@
 // use effective diffusion coefficient for stabilization
 #define ACTIVATEBINARYELECTROLYTE
 
+// include define flags for turbulence models under development
+#include "../drt_fluid/fluid_turbulence_defines.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
@@ -746,6 +749,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         c_diff = mfslist.get<double>("C_DIFF");
         // general parameters
         beta = mfslist.get<double>("BETA");
+        if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point interation noly!");
         if (mfslist.get<string>("EVALUATION_B") == "element_center")
         BD_gp = false;
         else if (mfslist.get<string>("EVALUATION_B") == "integration_point")
@@ -782,7 +786,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       nwl,
       Csgs_sgphi,
       c_diff,
-      beta,
       BD_gp,
       frt,
       scatratype);
@@ -1667,14 +1670,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const bool                            nwl, ///< flag to activate near-wall limit
   const double                          Csgs_sgphi, ///< parameter of multifractal subgrid-scales
   const double                          c_diff, ///< scaling for Re*Pr
-  const double                          beta, ///< to include lhs
   const bool                            BD_gp, ///< evaluation of model coefficient at gp
   const double                          frt, ///< factor F/RT needed for ELCH calculations
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
-//	//TODO: remove
-//	eid_ = ele->Id();
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -1933,6 +1933,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
         conv_.MultiplyTN(derxy_,convelint_);
 
+        // gradient of current scalar value
+        gradphi_.Multiply(derxy_,ephinp_[k]);
+
+        // convective term using current scalar value
+        conv_phi_[k] = convelint_.Dot(gradphi_);
+
+        // diffusive term using current scalar value for higher-order elements
+        if (use2ndderiv_)
+        {
+          // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+          GetLaplacianStrongForm(diff_, derxy2_);
+          diff_.Scale(diffus_[k]);
+          diff_phi_[k] = diff_.Dot(ephinp_[k]);
+        }
+
+        // reactive term using current scalar value
+        if (reaction_)
+        {
+          // scalar at integration point
+          const double phi = funct_.Dot(ephinp_[k]);
+
+          rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+        }
+
         // velocity divergence required for conservative form
         if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
@@ -1990,7 +2014,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
             CalTau(ele,visc_,dt,timefac,whichtau,vol,k,0.0,false);
 
             if (scatratype != INPAR::SCATRA::scatratype_levelset)
-              CalcSubgrVelocity(ele,time,dt,timefac,k);
+              CalcSubgrVelocity(ele,time,dt,timefac,k,scatratype);
             else CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
             //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
 
@@ -2024,7 +2048,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
           fsgradphi_.Multiply(derxy_,fsphinp_[k]);
           for (int idim=0; idim<nsd_; idim++)
-            mfsggradphi_= fsgradphi_(idim,0) * D_mfs(idim,0);
+            mfsggradphi_(idim,0) = fsgradphi_(idim,0) * D_mfs(idim,0);
         }
         else
         {
@@ -2035,6 +2059,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // subgrid-scale part of scalar
         CalcResidualAndSubgrScalar(dt,timefac,k);
 
+#ifdef SGSCALSCALAR
         // update material parameters based on inclusion of subgrid-scale
         // part of scalar (active only for mixture fraction,
         // Sutherland law and progress variable, for the time being)
@@ -2044,6 +2069,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         rhs_[k] = bodyforce_[k].Dot(funct_)/shc_;
         rhs_[k] += thermpressdt_/shc_;
         rhs_[k] += densnp_[k]*reatemprhs_[k];
+#endif
 
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,residual,fac,fssgd,timefac,dt,alphaF,k);
@@ -3768,7 +3794,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   // N may depend on the direction -> currently unused
   vector<double> Nvel (3);
   // variable for final (corrected) Csgs_vel
-  double Csgs_vel_nw = 0.0;
+  double Csgs_vel_nw = Csgs_sgvel;
 
   // potential calculation of Re to determine N
   double Re_ele = -1.0;
@@ -3999,10 +4025,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
        Re_ele_str = 1.0;
 
     // calculate corrected Csgs
-    //           -3/8
+    //           -3/16
     //  *(1 - (Re)   )
     //
-    Csgs_vel_nw = Csgs_sgvel * (1-pow(Re_ele_str,-3.0/8.0));
+    Csgs_vel_nw *= (1-pow(Re_ele_str,-3.0/16.0));
   }
 
   // STEP 2: calculate B
@@ -4022,8 +4048,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   for (int dim=0; dim<nsd_; dim++)
   {
     B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1));
-//    if (eid_ == 100)
-//     std::cout << "scatra  " << setprecision (10) << B_mfs(dim,0) << std::endl;
+//    if (eid_ == 10000)
+//     std::cout << "B  " << setprecision (10) << B_mfs(dim,0) << std::endl;
   }
 
   //----------------------------------------------------------------
@@ -4111,8 +4137,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   for (int dim=0; dim<nsd_; dim++)
   {
     D_mfs(dim,0) = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi[dim]/2.0) * sqrt((pow(2.0,gamma*Nphi[dim])-1));
-//    if (eid_ == 100)
-//     std::cout << "scatra  " << setprecision(10) << D_mfs(dim,0) << std::endl;
+//    if (eid_ == 10000)
+//     std::cout << "D  " << setprecision(10) << D_mfs(dim,0) << std::endl;
   }
 
   return;
@@ -4128,11 +4154,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   const double   time,
   const double   dt,
   const double   timefac,
-  const int      k
+  const int      k,
+  const enum INPAR::SCATRA::ScaTraType  scatratype
   )
 {
   // definitions
   LINALG::Matrix<nsd_,1> acc;
+  LINALG::Matrix<nsd_,nsd_> vderxy;
   LINALG::Matrix<nsd_,1> conv;
   LINALG::Matrix<nsd_,1> gradp;
   LINALG::Matrix<nsd_,1> visc;
@@ -4143,7 +4171,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   acc.Multiply(eaccnp_,funct_);
 
   // get velocity derivatives
-  LINALG::Matrix<nsd_,nsd_> vderxy;
   vderxy.MultiplyNT(evelnp_,derxy_);
 
   // compute convective fluid term
@@ -4244,16 +4271,32 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
-    double prefac = 1.0/3.0;
-    derxy2_.Scale(prefac);
-
-    for (int i=0; i<nen_; ++i)
+    if (scatratype == INPAR::SCATRA::scatratype_loma)
     {
-      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+      double prefac = 1.0/3.0;
+      derxy2_.Scale(prefac);
 
-      visc(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
-      visc(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
-      visc(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
+      for (int i=0; i<nen_; ++i)
+      {
+        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+
+        visc(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
+        visc(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
+        visc(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
+      }
+
+      derxy2_.Scale(1.0/prefac);
+    }
+    else
+    {
+      for (int i=0; i<nen_; ++i)
+      {
+        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
+
+        visc(0) = (sum*evelnp_(0,i))/2.0;
+        visc(1) = (sum*evelnp_(1,i))/2.0;
+        visc(2) = (sum*evelnp_(2,i))/2.0;
+      }
     }
   }
   else visc.Clear();
@@ -4648,31 +4691,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
   const int      k
   )
 {
-  // gradient of current scalar value
-  gradphi_.Multiply(derxy_,ephinp_[k]);
-
-  // convective term using current scalar value
-  conv_phi_[k] = convelint_.Dot(gradphi_);
-
-  // diffusive term using current scalar value for higher-order elements
-  if (use2ndderiv_)
-  {
-    // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-    GetLaplacianStrongForm(diff_, derxy2_);
-    diff_.Scale(diffus_[k]);
-
-    diff_phi_[k] = diff_.Dot(ephinp_[k]);
-  }
-
-  // reactive term using current scalar value
-  if (reaction_)
-  {
-    // scalar at integration point
-    const double phi = funct_.Dot(ephinp_[k]);
-
-    rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
-  }
-
   if (is_genalpha_)
   {
     // time derivative stored on history variable
@@ -4697,7 +4715,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
   //--------------------------------------------------------------------
   // calculation of subgrid-scale part of scalar
   //--------------------------------------------------------------------
+  sgphi_[k] = 0.0;
+#ifdef SGSCALSCALAR
   sgphi_[k] = -tau_[k]*scatrares_[k];
+#endif
 
   return;
 } //ScaTraImpl::CalcResidualAndSubgrScalar
@@ -4843,9 +4864,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // addition to convective term for conservative form
   if (conservative_)
   {
-    // gradient of current scalar value
-    gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
     // convective term using current scalar value
     const double cons_conv_phi = convelint_.Dot(gradphi_);
 
@@ -5124,9 +5142,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 
   if (is_incremental_ and is_genalpha_)
   {
-    // gradient of current scalar value
-    gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
     rhsfac    = timefacfac/alphaF;
     rhstaufac = timetaufac/alphaF;
     rhsint   *= (timefac/alphaF);
@@ -5160,6 +5175,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   }
   else if (not is_incremental_ and is_genalpha_)
   {
+    // for this case, gradphi_ (i.e. the gradient
+    // at time n+1) is overwritten by the gradient at time n
+    // analogously, conv_phi_ at time n+1 is replace by its
+    // value at time n
     // gradient of scalar value at n
     gradphi_.Multiply(derxy_,ephin_[dofindex]);
 
@@ -5167,7 +5186,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     conv_phi_[dofindex] = convelint_.Dot(gradphi_);
 
     // diffusive term using current scalar value for higher-order elements
-    if (use2ndderiv_) diff_phi_[dofindex] = diff_.Dot(ephin_[dofindex]);
+    double diff_phin = 0.0;
+    if (use2ndderiv_) diff_phin = diff_.Dot(ephin_[dofindex]);
+
+    // diffusive term using current scalar value for higher-order elements
+//    if (use2ndderiv_) diff_phi_[dofindex] = diff_.Dot(ephin_[dofindex]);
 
     // reactive term using scalar value at n
     if (reaction_)
@@ -5180,7 +5203,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 
     rhsint   += densam_[dofindex]*hist_[dofindex]*(alphaF/timefac);
     scatrares_[dofindex] = (1.0-alphaF) * (densn_[dofindex]*conv_phi_[dofindex]
-                                           - diff_phi_[dofindex] + rea_phi_[dofindex]) - rhsint;
+                                           - diff_phin + rea_phi_[dofindex]) - rhsint;
+//    - diff_phi_[dofindex] + rea_phi_[dofindex]) - rhsint;
     rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
     rhstaufac = timetaufac/alphaF;
     rhsint   *= (timefac/alphaF);
@@ -5208,9 +5232,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   }
   else if (is_incremental_ and not is_genalpha_)
   {
-    // gradient of current scalar value
-    gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
     if (not is_stationary_)
     {
       scatrares_[dofindex] *= dt;
@@ -5369,25 +5390,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // convective form only
   if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    if (nsd_<3) dserror("Turbulence is 3D!")
-;    //if (beta=0.0)
+    if (nsd_<3) dserror("Turbulence is 3D!");
+    // fixed-point interation only (i.e. beta=0.0) assumed, cf
+    // turbulence part in Evaluate()
    {
+     double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
+     double reynolds = mfsgvelint_.Dot(mfsggradphi_);
+
      for (int vi=0; vi<nen_; ++vi)
      {
        const int fvi = vi*numdofpernode_+dofindex;
-
-       double cross = 0.0;
-       double reynolds = 0.0;
-       for (int dim=0;dim<nsd_;dim++)
-       {
-         cross = convelint_(dim,0)*mfsggradphi_(dim,0) + mfsgvelint_(dim,0)*gradphi_(dim,0);
-         reynolds = mfsgvelint_(dim,0)*mfsggradphi_(dim,0);
-       }
-
        erhs[fvi] -= rhsfac*densnp_[dofindex]*funct_(vi,0)*(cross+reynolds);
      }
    }
-
   }
 
   return;

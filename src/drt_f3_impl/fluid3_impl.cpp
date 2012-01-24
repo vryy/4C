@@ -1333,9 +1333,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
 
+#ifdef SGSCALSCALAR
       // compute subgrid-scale part of scalar
       // -> different for generalized-alpha and other time-integration schemes
       ComputeSubgridScaleScalar(escaaf,escaam);
+#endif
 
       // update material parameters including subgrid-scale part of scalar
       UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
@@ -3275,10 +3277,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
          Re_ele_str = 1.0;
 
       // calculate corrected Csgs
-      //           -3/8
+      //           -3/16
       //  *(1 - (Re)   )
       //
-      Csgs *= (1-pow(Re_ele_str,-3.0/8.0));
+      Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
     }
 
     // call function to compute coefficient B
@@ -15414,9 +15416,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
     // -> different for generalized-alpha and other time-integration schemes
     ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam);
 
+#ifdef SGSCALSCALAR
     // compute subgrid-scale part of scalar
     // -> different for generalized-alpha and other time-integration schemes
     ComputeSubgridScaleScalar(escaaf,escaam);
+#endif
 
     // update material parameters including subgrid-scale part of scalar
     UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
