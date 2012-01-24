@@ -14,8 +14,6 @@ Maintainer: Ursula Rasthofer
 #ifndef TURBULENT_FLOW_ALGORITHM_H
 #define TURBULENT_FLOW_ALGORITHM_H
 
-#include <Epetra_Comm.h>
-
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_fluid/fluid_discret_extractor.H"
 

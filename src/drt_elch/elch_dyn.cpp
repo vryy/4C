@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_utils.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_comm/comm_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
@@ -169,7 +170,8 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       elch->TimeLoop();
 
       // summarize the performance measurements
-      Teuchos::TimeMonitor::summarize();
+      Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
+      Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
 
       // perform the result test
       DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
@@ -189,7 +191,8 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       elch->TimeLoop();
 
       // summarize the performance measurements
-      Teuchos::TimeMonitor::summarize();
+      Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
+      Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
 
       // perform the result test
       DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());

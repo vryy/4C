@@ -728,6 +728,7 @@ set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/vele3_surface_evaluate.cpp
 )
 set(OBJS_DRT_UTILS
+  src/drt_comm/comm_utils.cpp
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp

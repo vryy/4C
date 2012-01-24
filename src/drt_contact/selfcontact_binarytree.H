@@ -40,7 +40,6 @@ Maintainer: Alexander Popp
 #define SELFCONTACT_BINARYTREE_SELF_H
 
 #include "Teuchos_RCP.hpp"
-#include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_SerialDenseMatrix.h"
 

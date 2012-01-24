@@ -3,7 +3,6 @@
 
 #include <Epetra_Operator.h>
 #include <Epetra_Map.h>
-#include <Epetra_Comm.h>
 
 namespace LINALG
 {
