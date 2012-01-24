@@ -210,7 +210,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SUTHTEMP","Sutherland temperature (K)");
     AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
     AddNamedReal(m,"PRANUM","Prandtl number");
-    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m�)");
+    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m^3)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);
@@ -254,7 +254,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
-    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m�)");
+    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m^3)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);
@@ -374,8 +374,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
-    AddNamedReal(m,"CAPA","capacity",true);
-    AddNamedReal(m,"CONDUCT","conductivity",true);
+    AddNamedReal(m,"CAPA","capacity");
+    AddNamedReal(m,"CONDUCT","conductivity");
     AddNamedReal(m,"INITTEMP","initial temperature");
 
     AppendMaterialDefinition(matlist,m);

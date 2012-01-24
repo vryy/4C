@@ -261,7 +261,7 @@ UPRES                           1
 -------------------------------------------------------XFEM GENERAL
 -------------------------------------------XFLUID PROJECTION SOLVER
 ----------------------------------------------------------MATERIALS
-MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.0e11 NUE 0.0 DENS 1.0  THEXPANS 1.0e-05 INITTEMP 293.0 
+MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.0e11 NUE 0.0 DENS 1.0  THEXPANS 1.0e-05 CAPA 420 CONDUCT 52.0 INITTEMP 293.0 
 MAT 2   THERM_FourierIso   CAPA 420   CONDUCT 52.0
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.0
@@ -502,28 +502,6 @@ DSURF  0
 DVOL   0
 ---------------------------------------DESIGN SURFACE INV ANALYSIS
 DSURF  0
--------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
-DPOINT 0
--------------DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT
-DLINE  0
------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT 0
-------------------------DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS
-DPOINT 0
-------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS
-DPOINT 0
-------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
-DSURF  0
---------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
-DSURF  0
----------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
-DPOINT 0
-----------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
-DPOINT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    4 DNODE 2

@@ -276,7 +276,7 @@ ITEMAX                          10 // 11.02.10
 COUPVARIABLE                    Temperature
 COUPALGO                        tsi_iterstagg 
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK  YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 INITTEMP 0
+MAT 1 MAT_Struct_ThrStVenantK  YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 CAPA 42 CONDUCT 5.2 INITTEMP 0
 MAT 2 THERM_FourierIso   CAPA 42 CONDUCT 5.2
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1 t1 0.0 t2 4.0 
@@ -507,32 +507,6 @@ DSURF  0
 DVOL   0
 ---------------------------------------DESIGN SURFACE INV ANALYSIS
 DSURF  0
--------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
-DPOINT 0
--------------DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT
-DLINE  0
------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT 0
-------------------------DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS
-DPOINT 0
-------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS
-DPOINT 0
-------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
-DSURF  0
---------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
-DSURF  0
----------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
-DPOINT 0
-----------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
-DPOINT 0
-----------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
-DSURF  0
---------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
-DLINE  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
