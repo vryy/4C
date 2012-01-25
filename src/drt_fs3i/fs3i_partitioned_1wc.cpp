@@ -4,6 +4,7 @@
 
 #include "../drt_fsi/fsi_monolithic_nox.H"
 #include "../drt_scatra/passive_scatra_algorithm.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -25,12 +26,41 @@ void FS3I::PartFS3I_1WC::Timeloop()
 
   while (NotFinished())
   {
-    SetTimeStep();
+    IncrementTimeAndStep();
     DoFSIStep();
     SetFSISolution();
     DoScatraStep();
-    IncrementTimeAndStep();
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::PartFS3I_1WC::DoScatraStep()
+{
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+  }
+
+  // first scatra field is associated with fluid, second scatra field is
+  // associated with structure
+
+  bool stopnonliniter=false;
+  int itnum = 0;
+
+  PrepareTimeStep();
+
+  while (stopnonliniter==false)
+  {
+    ScatraEvaluateSolveIterUpdate();
+    itnum++;
+    if (ScatraConvergenceCheck(itnum))
+      break;
+  }
+
+  UpdateScatraFields();
+  ScatraOutput();
 }
 
 
@@ -38,83 +68,67 @@ void FS3I::PartFS3I_1WC::Timeloop()
 /*----------------------------------------------------------------------*/
 bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
 {
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
+  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
+  INPAR::SCATRA::SolverType scatra_solvtype = DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(fs3icontrol,"SCATRA_SOLVERTYPE");
 
-  int myrank = comm.MyPID();
-
-  // some input parameters for the scatra fields
-  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
-  const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
-  const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
-
-  //----------------------------------------------------- compute norms
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);
-  // set up vector of absolute concentrations
-  double connorm_L2(0.0);
-  Teuchos::RCP<Epetra_Vector> con = rcp(new Epetra_Vector(scatraincrement_->Map()));
-  Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField().Phinp();
-  Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Phinp();
-  SetupCoupledScatraVector(con,scatra1,scatra2);
-  con->Norm2(&connorm_L2);
+  double incconnorm(0.0);
+  scatraincrement_->Norm2(&incconnorm);
 
-  // care for the case that nothing really happens in the concentration field
-  if (connorm_L2 < 1e-5)
+  switch(scatra_solvtype)
   {
-    connorm_L2 = 1.0;
-  }
-
-  // absolute tolerance for deciding if residual is (already) zero
-  // prevents additional solver calls that will not improve the residual anymore
-
-  //-------------------------------------------------- output to screen
-  /* special case of very first iteration step:
-      - solution increment is not yet available
-      - do not perform a solver call when the initial residuals are < EPS14*/
-  if (itnum == 0)
-  {
-    if (myrank == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",itnum,itemax,ittol,conresnorm);
-    }
-    // abort iteration, when there's nothing more to do
-    if (conresnorm < abstolres)
-    {
-      // print 'finish line'
-      if (myrank == 0)
-      {
-        printf("+------------+-------------------+--------------+\n");
-      }
-      return true;
-    }
-    else
-      return false;
-  }
-  /* ordinary case later iteration steps:
-     - solution increment can be printed
-     - convergence check should be done*/
-  else
+  case INPAR::SCATRA::solvertype_linear_incremental:
   {
     // print the screen info
-    if (myrank == 0)
+    if (Comm().MyPID()==0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",itnum,itemax,ittol,conresnorm);
+      printf("\n+-------------------+-------------------+\n");
+      printf("| norm of residual  | norm of increment |\n");
+      printf("+-------------------+-------------------+\n");
+      printf("|    %10.3E     |    %10.3E     |\n",
+             conresnorm,incconnorm);
+      printf("+-------------------+-------------------+\n\n");
+    }
+    return true;
+  }
+  break;
+  case INPAR::SCATRA::solvertype_nonlinear:
+  {
+    // some input parameters for the scatra fields
+    const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
+    const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
+    const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
+
+    double connorm(0.0);
+    // set up vector of absolute concentrations
+    Teuchos::RCP<Epetra_Vector> con = rcp(new Epetra_Vector(scatraincrement_->Map()));
+    Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField().Phinp();
+    Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Phinp();
+    SetupCoupledScatraVector(con,scatra1,scatra2);
+    con->Norm2(&connorm);
+
+    // care for the case that nothing really happens in the concentration field
+    if (connorm < 1e-5)
+      connorm = 1.0;
+
+    // print the screen info
+    if (Comm().MyPID()==0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,conresnorm,incconnorm/connorm);
     }
 
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the
     // current residual. Norm of residual is just printed for information
-    if (conresnorm <= ittol)
+    if (conresnorm <= ittol and incconnorm/connorm <= ittol)
     {
-      if (myrank == 0)
+      if (Comm().MyPID()==0)
       {
         // print 'finish line'
-        printf("+------------+-------------------+--------------+\n");
+        printf("+------------+-------------------+--------------+--------------+\n");
       }
       return true;
     }
@@ -123,9 +137,9 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
     else if (conresnorm < abstolres)
     {
       // print 'finish line'
-      if (myrank == 0)
+      if (Comm().MyPID()==0)
       {
-        printf("+------------+-------------------+--------------+\n");
+        printf("+------------+-------------------+--------------+--------------+\n");
       }
       return true;
     }
@@ -134,11 +148,11 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
     // next timestep...
     else if (itnum == itemax)
     {
-      if (myrank == 0)
+      if (Comm().MyPID()==0)
       {
-        printf("+-----------------------------------------------+\n");
-        printf("| >>>>>>> scatra not converged in itemax steps! |\n");
-        printf("+-----------------------------------------------+\n");
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
       }
       // yes, we stop the iteration
       return true;
@@ -146,6 +160,11 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
     else
       return false;
   }
+  break;
+  default:
+    dserror("Illegal ScaTra solvertype in FS3I");
+  }
+  return false;
 }
 
 #endif

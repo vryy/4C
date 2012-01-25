@@ -503,35 +503,15 @@ void FS3I::PartFS3I::SetFSISolution()
   SetVelocityFields();
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::DoScatraStep()
+void FS3I::PartFS3I::ScatraEvaluateSolveIterUpdate()
 {
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
-  }
-
-  // first scatra field is associated with fluid, second scatra field is
-  // associated with structure
-
-  bool stopnonliniter=false;
-  int itnum = 0;
-
-  PrepareTimeStep();
-
-  while (stopnonliniter==false)
-  {
-    EvaluateScatraFields();
-    SetupCoupledScatraSystem();
-    if (ScatraConvergenceCheck(itnum))
-      break;
-    LinearSolveScatra();
-    ScatraIterUpdate();
-    itnum++;
-  }
-  UpdateScatraFields();
-  ScatraOutput();
+  EvaluateScatraFields();
+  SetupCoupledScatraSystem();
+  LinearSolveScatra();
+  ScatraIterUpdate();
 }
 
 

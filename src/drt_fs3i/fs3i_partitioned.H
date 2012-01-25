@@ -63,9 +63,6 @@ namespace FS3I
     //! increment step and time
     void IncrementTimeAndStep();
 
-    //! set current time and step in individual field integrators
-    void SetTimeStep();
-
     //! read and set fields needed for restart
     virtual void ReadRestart();
 
@@ -78,8 +75,8 @@ namespace FS3I
     //! information transfer FSI -> ScaTra
     void SetFSISolution();
 
-    //! solution of ScaTra problem
-    void DoScatraStep();
+    //! evalute, solver and iteratively update coupled ScaTra problem
+    void ScatraEvaluateSolveIterUpdate();
 
     void DoFSIStep();
 

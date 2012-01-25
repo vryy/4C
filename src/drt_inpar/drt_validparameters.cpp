@@ -3212,6 +3212,16 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fs3idyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fs3idyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fs3idyn);
+  setStringToIntegralParameter<int>("SCATRA_SOLVERTYPE","nonlinear",
+                               "type of scalar transport solver",
+                               tuple<std::string>(
+                                 "linear",
+                                 "nonlinear"
+                                 ),
+                               tuple<int>(
+                                 INPAR::SCATRA::solvertype_linear_incremental,
+                                 INPAR::SCATRA::solvertype_nonlinear),
+                               &fs3idyn);
   BoolParameter("INF_PERM","yes","Flag for infinite permeability",&fs3idyn);
   setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
                                "treatment of thermodynamic pressure in time",

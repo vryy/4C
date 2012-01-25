@@ -17,6 +17,8 @@ namespace FS3I
 
     virtual void Timeloop();
 
+    void DoScatraStep();
+
     virtual bool ScatraConvergenceCheck(int itnum);
   };
 

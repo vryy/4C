@@ -32,11 +32,10 @@ void FS3I::PartFS3I_2WC::Timeloop()
 
   while (NotFinished())
   {
-    SetTimeStep();
+    IncrementTimeAndStep();
     //DoFSIStep();
     SetFSISolution();
-    DoScatraStep();
-    IncrementTimeAndStep();
+    //DoScatraStep();
   }
 }
 
