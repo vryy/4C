@@ -4479,7 +4479,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
     else
     {
       // rhs of stationary momentum equation: density*bodyforce
-      // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
+      // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
            rhsmom_.Update(deltadens_,bodyforce_, 0.0);
