@@ -20,7 +20,6 @@ Maintainer: Volker Gravemeier
 #ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
-#include "../drt_comm/comm_utils.H"
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -156,8 +155,7 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     loma->TimeLoop();
 
     // summarize performance measurements
-    Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-    Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+    Teuchos::TimeMonitor::summarize();
 
     // perform result test if required
     problem->AddFieldTest(loma->FluidField().CreateFieldTest());

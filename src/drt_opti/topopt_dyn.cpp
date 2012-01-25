@@ -16,7 +16,6 @@ Maintainer: Martin Winklmaier
 #ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
-#include "../drt_comm/comm_utils.H"
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -128,8 +127,7 @@ cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restart
   // validate the results
   //------------------------------------------------------------------------------------------------
     // summarize the performance measurements
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+  Teuchos::TimeMonitor::summarize();
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(topopt_->FluidField().CreateFieldTest());

@@ -48,7 +48,6 @@
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#include "../drt_comm/comm_utils.H"
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -1047,8 +1046,7 @@ void fsi_ale_drt()
   }
   }
 
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 
 
@@ -1181,8 +1179,7 @@ void xfsi_drt()
   }
   }
 
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+  Teuchos::TimeMonitor::summarize();
 }
 
 

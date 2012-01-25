@@ -20,7 +20,6 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "scatra_resulttest.H"
-#include "../drt_comm/comm_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
@@ -131,8 +130,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       algo->TimeLoop();
 
       // summarize the performance measurements
-      Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-      Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+      Teuchos::TimeMonitor::summarize();
 
       // perform the result test
       DRT::Problem::Instance()->AddFieldTest(algo->FluidField().CreateFieldTest());

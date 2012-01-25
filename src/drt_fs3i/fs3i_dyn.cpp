@@ -10,7 +10,11 @@
 #include "aero_tfsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_comm/comm_utils.H"
+#ifdef PARALLEL
+#include <Epetra_MpiComm.h>
+#else
+#include <Epetra_SerialComm.h>
+#endif
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -21,7 +25,11 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
+#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+#else
+  Epetra_SerialComm comm;
+#endif
 
   Teuchos::RCP<FS3I::FS3I_Base> fs3i;
 
@@ -63,8 +71,7 @@ void fs3i_dyn()
 
   fs3i->TestResults(comm);
 
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 
 #endif

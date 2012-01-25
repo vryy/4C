@@ -20,7 +20,6 @@ Maintainer: Markus Gitterle
 #ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
-#include "../drt_comm/comm_utils.H"
 #else
 #include <Epetra_SerialComm.h>
 #endif
@@ -91,8 +90,7 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
   stru_ale->TimeLoop();
   
   // summarize the performance measurements
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+  Teuchos::TimeMonitor::summarize();
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(stru_ale->StructureField().CreateFieldTest());

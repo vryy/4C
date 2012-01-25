@@ -12,8 +12,12 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#ifdef PARALLEL
+#include <mpi.h>
 #include <Epetra_MpiComm.h>
-#include "../drt_comm/comm_utils.H"
+#else
+#include <Epetra_SerialComm.h>
+#endif
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -37,8 +41,12 @@ extern struct _GENPROB     genprob;
  *------------------------------------------------------------------------------------------------*/
 void combust_dyn()
 {
-  // get the communicator
+  // create a communicator
+#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+#else
+  Epetra_SerialComm comm;
+#endif
 
   //------------------------------------------------------------------------------------------------
   // print COMBUST-Logo on screen
@@ -141,8 +149,7 @@ void combust_dyn()
   // validate the results
   //------------------------------------------------------------------------------------------------
     // summarize the performance measurements
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr());
+  Teuchos::TimeMonitor::summarize();
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(combust_->FluidField().CreateFieldTest());
