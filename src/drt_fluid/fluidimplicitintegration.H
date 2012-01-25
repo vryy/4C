@@ -507,6 +507,16 @@ protected:
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   /*!
+  \brief  increment time and step value
+
+  */
+  void IncrementTimeAndStep()
+  {
+    step_ += 1;
+    time_ += dta_;
+  }
+
+  /*!
   \brief call elements to calculate system matrix/rhs and assemble
 
   */

@@ -826,10 +826,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 {
 
   // -------------------------------------------------------------------
-  //              set time dependent parameters
+  //              set time-dependent parameters
   // -------------------------------------------------------------------
-  step_ += 1;
-  time_ += dta_;
+  IncrementTimeAndStep();
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
   if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -4654,10 +4653,10 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
   while (step_< stepmax_)
   {
    // -------------------------------------------------------------------
-   //              set (pseudo-)time dependent parameters
+   //              set (pseudo-)time-dependent parameters
    // -------------------------------------------------------------------
-   step_ += 1;
-   time_ += dta_;
+   IncrementTimeAndStep();
+
    // -------------------------------------------------------------------
    //                         out to screen
    // -------------------------------------------------------------------
