@@ -94,8 +94,7 @@ namespace ELASTIC
   /// \f]
   ///
   ///
-  /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
-  ///     Journal of Applied Mechanics, 2000
+  /// [1] Holzapfel, G.A. "Nonlinear Solid Mechanics", 2000, p.247
   /// \author rausch
   /// \date 04/09
   class CoupBlatzKo : public Summand
