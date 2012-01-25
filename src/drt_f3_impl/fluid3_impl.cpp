@@ -2319,8 +2319,13 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
 
     if(escaaf(0) < EPS12)
       dserror("Boussinesq approximation: density in escaaf is zero");
+    densaf_ = density_0;
+    densam_ = densaf_;
+    densn_  = densaf_;
 
-    deltadens_ =  (funct_.Dot(escaaf)- density_0)/ density_0;
+    deltadens_ =  (funct_.Dot(escaaf)- density_0);
+    // divison by density_0 was removed here since we keep the density in all
+    // terms of the momentum equation (no divison by rho -> using dynamic viscosity)
   }
   // incompressible flow (standard case)
   else
@@ -4455,7 +4460,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
-      // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
+      // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
         rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,deltadens_,bodyforce_);
