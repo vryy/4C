@@ -7,13 +7,13 @@ EXTRA_ARGS=$@
 #BUILD_TYPE="RELWITHDEBINFO"
 BUILD_TYPE="RELEASE"
 
-PREFIX=/lnm/lib/Q4_2011/kaiser/openmpi-gcc
+#PREFIX=/lnm/lib/Q4_2011/kaiser/openmpi-gcc
+PREFIX=/lnm/lib/Q1_2012/kaiser/openmpi-gcc
 MPIDIR=/opt/openmpi/1.2.9/gcc
 
 INCLUDE_INSTALL_DIR="$PREFIX/include"
 LIB_INSTALL_DIR="$PREFIX/lib"
-Trilinos_PREFIX="/lnm/lib/Q4_2011/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9"
-#Trilinos_DIR="/lnm/lib/Trilinos_dev/kaiser-ompi-1.2.9"
+Trilinos_PREFIX="/lnm/lib/Q1_2012/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9/lib/cmake/Trilinos"
 
 /lnm/bin/cmake \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
@@ -30,10 +30,11 @@ Trilinos_PREFIX="/lnm/lib/Q4_2011/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9"
     -D CMAKE_Fortran_FLAGS:STRING="-Wall -DSIXTYFOUR -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-pipe -O5 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-    -D HAVENOT_SUPERLU:BOOL=ON \
+    -D HAVENOT_SUPERLU:BOOL=OFF \
     -D BLA_VENDOR:STRING="ACML" \
-    -D BLAS_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
-    -D LAPACK_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
+    -D BLAS_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a" \
+    -D LAPACK_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a" \
+    -D ACMLDIR:STRING="/opt/acml4.4.0/gfortran64" \
     -D TRILINOS_DEV:BOOL=ON \
     -D DEBUG:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
