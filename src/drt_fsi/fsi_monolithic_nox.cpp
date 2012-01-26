@@ -369,9 +369,9 @@ void FSI::MonolithicNOX::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Req
   grp->CaptureSystemState();
 
   // solve the whole thing
-  NOX::StatusTest::StatusType status = solver->solve();
+  noxstatus_ = solver->solve();
 
-  if (status != NOX::StatusTest::Converged)
+  if (noxstatus_ != NOX::StatusTest::Converged)
     if (Comm().MyPID()==0)
       utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 

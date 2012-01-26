@@ -299,6 +299,9 @@ namespace UTILS
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
 
+    /// request NOX convergence from outside (needed for coupled problems)
+    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
+
   private:
 
     /// dof row map splitted in (field) blocks
@@ -313,6 +316,9 @@ namespace UTILS
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
+
+    /// status of NOX convergence check
+    NOX::StatusTest::StatusType noxstatus_;
 
     /// output stream
     Teuchos::RCP<std::ofstream> log_;
