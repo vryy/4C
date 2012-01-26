@@ -96,8 +96,6 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
     act = Fluid3::calc_smagorinsky_const;
-  else if (action == "get_density")
-    act = Fluid3::get_density;
   else if (action == "get_gas_constant")
     act = Fluid3::get_gas_constant;
   else if (action == "calc_node_normal")
@@ -647,34 +645,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
         else dserror("%i D elements does not support calculation of model parameters", nsd);
       }
-      case get_density:
-      {
-        // This is a very poor way to transport the density to the
-        // outside world. Is there a better one?
-        // only used for elch with natural convection
-        if(mat->MaterialType()== INPAR::MAT::m_fluid)
-        {
-          const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-          params.set("density", actmat->Density());
-        }
-//        else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-//        {
-//          const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-//          params.set("density", actmat->Density());
-//        }
-//        else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-//        {
-//          const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-//          params.set("density", actmat->Density());
-//        }
-//        else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
-//        {
-//          const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-//          params.set("density", actmat->Density());
-//        }
-        else dserror("material appears to be incorrect");
-      }
-      break;
       case get_gas_constant:
       {
         if (mat->MaterialType()== INPAR::MAT::m_sutherland)
