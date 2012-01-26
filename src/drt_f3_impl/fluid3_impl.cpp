@@ -2308,9 +2308,11 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   // Varying Density
   if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
   {
-    densaf_ = funct_.Dot(escaaf);
+    const double density_0 = actmat->Density();
+
+    densaf_ = funct_.Dot(escaaf)*density_0;
     densam_ = densaf_;
-    densn_  = funct_.Dot(escaam);
+    densn_  = funct_.Dot(escaam)*density_0;
   }
   // Boussinesq approximation: Calculation of delta rho
   else if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
@@ -2323,7 +2325,7 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
     densam_ = densaf_;
     densn_  = densaf_;
 
-    deltadens_ =  (funct_.Dot(escaaf)- density_0);
+    deltadens_ =  (funct_.Dot(escaaf)- 1.0)*density_0;
     // divison by density_0 was removed here since we keep the density in all
     // terms of the momentum equation (no divison by rho -> using dynamic viscosity)
   }
@@ -3798,8 +3800,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
                               i,j
     */
 
-    //TODO: Boussinesq
-
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
@@ -4498,6 +4498,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
   // compute subgrid-scale velocity
   //----------------------------------------------------------------------
   // 1) quasi-static subgrid scales
+  // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin, ...
+  // Definition of subgrid velocity used by Hughes
   if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
   {
     sgvelint_.Update(-tau_(1),momres_old_,0.0);

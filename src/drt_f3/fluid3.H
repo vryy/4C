@@ -489,7 +489,6 @@ private:
     calc_model_params_mfsubgr_scales,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
-    get_density,
     get_gas_constant,
     integrate_shape,
     calc_node_normal,

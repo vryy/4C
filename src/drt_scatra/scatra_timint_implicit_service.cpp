@@ -887,7 +887,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
 /*----------------------------------------------------------------------*
  | compute density from ion concentrations                    gjb 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
+void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 {
   double newdensity(0.0);
   int err(0);
@@ -927,7 +927,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
       // compute contribution to density due to ionic species k
       newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
     }
-    newdensity *= density0;
 
     // insert the current density value for this node
     // (has to be at position of el potential/ the position of the last dof!

@@ -38,7 +38,6 @@ ELCH::Algorithm::Algorithm(
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
    conpotincnp_ (rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
-   density0_ (GetInitialFluidDensity()),
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
@@ -155,7 +154,7 @@ void ELCH::Algorithm::InitialCalculations()
 
   // compute initial density
   // set initial density to time step n+1 and n
-  ScaTraField().ComputeDensity(density0_);
+  ScaTraField().ComputeDensity();
   // not essential
   ScaTraField().UpdateDensityElch();
 
@@ -460,7 +459,7 @@ void ELCH::Algorithm::OuterIterationConvection()
     // compute new denselchnp_ and pass it to the fluid discretisation
     // pass actual density field to fluid discretisation
     // Density derivative is not used for OST, BDF2 and convective formulation
-    ScaTraField().ComputeDensity(density0_);
+    ScaTraField().ComputeDensity();
     FluidField().SetTimeLomaFields(
         ScaTraField().DensElchNp(),
         0.0,
@@ -639,28 +638,6 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   }
 
   return stopnonliniter;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double ELCH::Algorithm::GetInitialFluidDensity()
-{
-  // initialization of the initial density
-  double density = 0.0;
-
-  // initialization only for convection, otherwise the density0 is set to zero
-  if (natconv_ == true)
-  {
-    // we ask the elements for the density (works for all fluid materials)
-    ParameterList eleparams;
-    eleparams.set("action","get_density");
-    FluidField().Discretization()->Evaluate(eleparams,null,null,null,null,null);
-    density = eleparams.get<double>("density");
-    if (density <= 0.0) dserror("received illegal density value");
-  }
-
-  return density;
 }
 
 #endif // CCADISCRET

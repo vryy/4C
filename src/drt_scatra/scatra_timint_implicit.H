@@ -232,7 +232,7 @@ public:
   void ComputeThermPressureFromMassCons();
 
   /// compute density field from concentration(s) for ELCH natural convection
-  void ComputeDensity(const double density);
+  void ComputeDensity();
 
   /// check convergence (only for low-Mach-number flow, for the time being)
   bool ConvergenceCheck(int itnum, int itmax, const double ittol);
