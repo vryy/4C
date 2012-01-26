@@ -36,6 +36,8 @@ void FS3I::PartFS3I_2WC::Timeloop()
   {
     IncrementTimeAndStep();
 
+    PrepareTimeStep();
+
     OuterLoop();
 
     TimeUpdateAndOutput();
