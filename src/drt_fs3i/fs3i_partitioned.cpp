@@ -113,7 +113,8 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 
-  // create fluid scatra elements if the fluid scatra discretization is empty
+  // create fluid-based scalar transport elements if fluid-based scalar
+  // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
@@ -139,7 +140,8 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
 
-  // create structure scatra elements if the structure scatra discretization is empty
+  // create structure-based scalar transport elements if structure-based
+  // scalar transport discretization is empty
   if (structscatradis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
@@ -169,7 +171,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
     {
       INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
-      // call constructor to initialise the base class
+      // call constructor to initialise base class
       if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
           linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
           linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
@@ -202,7 +204,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   // check various input parameters
   //---------------------------------------------------------------------
-
   const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
 
@@ -224,7 +225,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   if (scatravec_[0]->ScaTraField().Incremental() == false)
     dserror("Incremental formulation needed for coupled lung scatra simulations");
 
-  // make sure that initial time derivative of concentration is not calculated
+  // make sure that initial time derivative of scalar is not calculated
   // automatically (i.e. field-wise)
   //if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
   //  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
@@ -240,7 +241,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
-  // discretizations and definition of the  permeability coefficient
+  // discretizations and definition of the permeability coefficient
   //---------------------------------------------------------------------
   std::vector<std::set<int> > condIDs;
   std::set<int> fluidIDs;
@@ -409,8 +410,8 @@ void FS3I::PartFS3I::SetupSystem()
   // create scatra increment vector
   scatraincrement_ = rcp(new Epetra_Vector(*scatraglobalex_->FullMap(),true));
 
-  // check whether potential Dirichlet conditions at the scatra interface are
-  // defined on both discretizations
+  // check whether potential Dirichlet conditions at scatra interface are
+  // defined for both discretizations
   CheckInterfaceDirichletBC();
 
   // scatra solver
@@ -433,7 +434,7 @@ void FS3I::PartFS3I::SetupSystem()
   if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
     dserror("Block Gauss-Seidel preconditioner expected");
 
-  // use coupled SCATRA solver object
+  // use coupled scatra solver object
   scatrasolver_ = rcp(new LINALG::Solver(coupledscatrasolvparams,
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -444,18 +445,6 @@ void FS3I::PartFS3I::SetupSystem()
   (scatravec_[0])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse1"));
   (scatravec_[1])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse2"));
 #endif
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::DoFSIStep()
-{
-  fsi_->PrepareTimeStep();
-  fsi_->TimeStep(fsi_);
-  fsi_->PrepareOutput();
-  fsi_->Update();
-  fsi_->Output();
 }
 
 
@@ -512,6 +501,11 @@ void FS3I::PartFS3I::ScatraEvaluateSolveIterUpdate()
   SetupCoupledScatraSystem();
   LinearSolveScatra();
   ScatraIterUpdate();
+  // in case of later use of generalized-alpha time integration, a
+  // routine for computing intermediate values is required at this point;
+  // for the time being, this merely serves as a reminder for this
+  // required inclusion
+  //ComputeIntermediateValues();
 }
 
 
@@ -537,7 +531,7 @@ void FS3I::PartFS3I::EvaluateScatraFields()
       // evaluate interface flux condition
       scatra.SurfacePermeability(coupmat,coupforce);
 
-      // apply Dirichlet BC to coupling matrix and vector
+      // apply Dirichlet boundary conditions to coupling matrix and vector
       Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
       const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra.DirichMaps();
       const Teuchos::RCP< const Epetra_Map > dbcmap = dbcmapex->CondMap();

@@ -17,17 +17,35 @@ namespace FS3I
 
     virtual void Timeloop();
 
+    void InitialCalculations();
+
+    void PrepareTimeStep();
+
+    void OuterLoop();
+
+    //void SetFSIValuesInScaTra();
+
+    void SetScaTraValuesInFSI();
+
+    bool ConvergenceCheck(int itnum);
+
     virtual bool ScatraConvergenceCheck(int itnum);
+
+    void TimeUpdateAndOutput();
 
   private:
 
-    //! @name  parameters controlling iteration between FSI and ScaTra
-    int itermax_;
-    double convtol_;
+    //! @name  (preliminary) maximum number of iterations and tolerance for outer iteration
+    int     itmax_;
+    double  ittol_;
     //@}
 
     /// flag for constant thermodynamic pressure
     string consthermpress_;
+
+    /// fluid- and structure-based scalar transport problem
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structurescatra_;
   };
 }
 

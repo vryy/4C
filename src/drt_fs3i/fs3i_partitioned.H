@@ -78,8 +78,6 @@ namespace FS3I
     //! evalute, solver and iteratively update coupled ScaTra problem
     void ScatraEvaluateSolveIterUpdate();
 
-    void DoFSIStep();
-
     //@}
 
 
@@ -170,15 +168,16 @@ namespace FS3I
     /// dof row map of scatra problems splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> scatraglobalex_;
 
-  private:
-
-    //! @name  control parameters
-    double dt_;
-    int numstep_;
-    double timemax_;
+    //! @name  control parameters for time-integration scheme
     int step_;
+    int numstep_;
+
+    double dt_;
     double time_;
+    double timemax_;
     //@}
+
+  private:
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
