@@ -241,6 +241,9 @@ namespace UTILS
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
 
+    /// request NOX convergence from outside (needed for coupled problems)
+    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
+
   protected:
 
     /// setup solver for global block system
@@ -298,9 +301,6 @@ namespace UTILS
 
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
-
-    /// request NOX convergence from outside (needed for coupled problems)
-    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
 
   private:
 
