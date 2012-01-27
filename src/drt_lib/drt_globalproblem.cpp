@@ -400,7 +400,6 @@ void DRT::Problem::InputControl()
   case prb_fluid_topopt:
   {
     genprob.numff = 0; /* fluid field index */
-    genprob.numof = 1; /* field index of optimization variables */
     break;
   }
 
@@ -1244,9 +1243,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
-
-    optidis = rcp(new DRT::Discretization("topopt",reader.Comm()));
-    AddDis(genprob.numof, optidis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 

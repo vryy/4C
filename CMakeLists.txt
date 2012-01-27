@@ -994,8 +994,11 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_TOPOPT
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_topopt.cpp
+  src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
+  src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
   src/drt_opti/topopt_algorithm.cpp
   src/drt_opti/topopt_dyn.cpp
+  src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
   src/drt_opti/topopt_optimizer.cpp
   src/drt_opti/topopt_utils.cpp
 )

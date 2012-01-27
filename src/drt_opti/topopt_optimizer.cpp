@@ -27,8 +27,13 @@ TOPOPT::Optimizer::Optimizer(
 discret_(discret),
 params_(params.sublist("TOPOLOGY OPTIMIZER"))
 {
-  dens_i_ = rcp(new Epetra_Vector(*discret_->DofRowMap(),false));
-  dens_ip_ = rcp(new Epetra_Vector(*discret_->DofRowMap(),false));
+  // topology density fields
+  dens_i_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
+  dens_ip_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
+
+  // fluid fields for optimization
+  vel_ = rcp(new map<int,Epetra_Vector>);
+  adjointvel_ = rcp(new map<int,Epetra_Vector>);
 
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialField>(params_,"INITIALFIELD"),
       params_.get<int>("INITFUNCNO"));
@@ -52,25 +57,15 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   }
   case INPAR::TOPOPT::initfield_field_by_function:
   {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
 
-      int numdofs = nodedofset.size();
-      for (int k=0;k< numdofs;++k)
-      {
-        const int dofgid = nodedofset[k];
-        int doflid = dofrowmap->LID(dofgid);
-        // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
-        dens_ip_->ReplaceMyValues(1,&initialval,&doflid);
-      }
+      // evaluate component k of spatial function
+      double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
+      dens_ip_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
     }
     break;
   }
@@ -79,6 +74,38 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   }
 
   dens_i_->Update(1.0,*dens_ip_,0.0);
+}
+
+
+
+void TOPOPT::Optimizer::ImportFluidData(
+    RCP<Epetra_Vector> vel,
+    int step)
+{
+  vel_->insert(pair<int,Epetra_Vector>(step,*vel));
+}
+
+
+
+void TOPOPT::Optimizer::ImportAdjointFluidData(
+    RCP<Epetra_Vector> vel,
+    int step)
+{
+  adjointvel_->insert(pair<int,Epetra_Vector>(step,*vel));
+}
+
+
+
+const Epetra_Map* TOPOPT::Optimizer::RowMap()
+{
+  return discret_->NodeRowMap();
+}
+
+
+
+const Epetra_Map* TOPOPT::Optimizer::ColMap()
+{
+  return discret_->NodeColMap();
 }
 
 

@@ -56,7 +56,7 @@ namespace ADAPTER {
     virtual ~TopOptBaseAlgorithm();
 
     /// access to the scalar transport field solver
-    TOPOPT::Optimizer& Optimizer();
+    RCP<TOPOPT::Optimizer> Optimizer();
 
   private:
 

@@ -21,9 +21,9 @@ ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
     Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
-:  AlgorithmBase(comm,prbdyn),
-   FluidBaseAlgorithm(prbdyn,false),
-   TopOptBaseAlgorithm(prbdyn,false),
+:  FluidBaseAlgorithm(prbdyn,false),
+   TopOptBaseAlgorithm(prbdyn,0),
+   TopOptFluidAdjointAlgorithm(prbdyn),
    params_(prbdyn)
 {
   return;
@@ -36,13 +36,12 @@ ADAPTER::FluidTopOptCouplingAlgorithm::~FluidTopOptCouplingAlgorithm()
 {
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidTopOptCouplingAlgorithm::ReadRestart(int step)
 {dserror("change");
   FluidField().ReadRestart(step);
-  SetTimeStep(FluidField().Time(),step);
-
   return;
 }
 

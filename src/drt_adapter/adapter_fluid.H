@@ -66,6 +66,11 @@ namespace COMBUST
   class FlameFront;
 }
 
+namespace TOPOPT
+{
+  class Optimizer;
+}
+
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
@@ -358,7 +363,7 @@ namespace ADAPTER {
     //! @name Transfer the porosity field used in the topology optimization to the fluid
 
     /// set pseudo-porosity field in the fluid
-    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity) = 0;
+    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer) = 0;
     //@}
 
     //! @name Import geometrical coupling information about an implicitely defined interface from a different field

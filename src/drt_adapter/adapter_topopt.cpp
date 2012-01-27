@@ -33,7 +33,7 @@ extern struct _GENPROB     genprob;
 /// constructor
 ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-    const int disnum                   ///< scatra discretization number (default: 0)
+    const int disnum                   ///< fluid field discretization number (default: 0)
 )
 {
   // setup topology optimization algorithm
@@ -42,12 +42,12 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numof,disnum);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numff,disnum);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled()) dserror("fluid discretization should be filled before");
 
 //  // -------------------------------------------------------------------
 //  // context for output and restart
@@ -74,9 +74,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-TOPOPT::Optimizer& ADAPTER::TopOptBaseAlgorithm::Optimizer()
+RCP<TOPOPT::Optimizer> ADAPTER::TopOptBaseAlgorithm::Optimizer()
 {
-  return *optimizer_;
+  return optimizer_;
 }
 
 

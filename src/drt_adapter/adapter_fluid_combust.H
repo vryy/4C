@@ -267,7 +267,7 @@ namespace ADAPTER
     /// extract the velocity part of a vector of unknowns
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
-    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity)
+    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer)
     { dserror("not implemented!"); };
 
     /// combustion fluid imports level set discretization (that is, a ScaTra Discretization!)

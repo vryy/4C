@@ -17,8 +17,8 @@ Maintainer: Martin Winklmaier
 #define ADAPTER_FLUID_TOPOPT_ALGO_H_
 
 #include "adapter_fluid_base_algorithm.H"
-#include "adapter_algorithmbase.H"
 #include "adapter_topopt.H"
+#include "adapter_topopt_fluid_adjoint_base.H"
 
 namespace ADAPTER
 {
@@ -37,9 +37,9 @@ namespace ADAPTER
     \date 12/11
    */
   class FluidTopOptCouplingAlgorithm :
-    public AlgorithmBase,
     public FluidBaseAlgorithm,
-    public TopOptBaseAlgorithm
+    public TopOptBaseAlgorithm,
+    public TopOptFluidAdjointAlgorithm
   {
   public:
 

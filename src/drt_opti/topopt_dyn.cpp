@@ -62,7 +62,6 @@ void fluid_topopt_dyn()
   //------------------------------------------------------------------------------------------------
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
-  int disnumof = genprob.numof; // discretization number optimization field; typically 1
 
   // access fluid discretization
   RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -70,33 +69,8 @@ void fluid_topopt_dyn()
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
-  // access G-function discretization (it should be empty)
-  RCP<DRT::Discretization> optidis = DRT::Problem::Instance()->Dis(disnumof,0);
-
-  if (!optidis->Filled()) optidis->FillComplete(false,false,false);
-
-  if (optidis->NumGlobalNodes()==0)
-  {
-    Epetra_Time time(comm);
-
-    // access the scalar transport parameter list
-    const Teuchos::ParameterList& opticontrol = DRT::Problem::Instance()->OptimizationControlParams();
-    // fetch the desired material id for the optimization elements
-    const int matid = opticontrol.sublist("TOPOLOGY OPTIMIZER").get<int>("MATID");
-    // create the optimization discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy> > clonewizard =
-          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy>() );
-
-      clonewizard->CreateMatchingDiscretization(fluiddis,optidis,matid);
-    }
-    if (comm.MyPID()==0)
-      cout<<"Created optimization discretization from fluid discretization in...."
-          <<time.ElapsedTime() << " secs\n\n";
-  }
-  else
-    dserror("Optimization discretization is not empty as it should be!");
-  // TODO this shall be ok later if optimization has different discretization than fluid (winklmaier)
+  // currently the optimization field has no own discretization
+  // it uses the fluid node maps for creating the required vector(s)
 
 //  //------------------------------------------------------------------------------------------------
 //  // create a topology optimization algorithm

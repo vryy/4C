@@ -734,9 +734,10 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::ExtractVelocityPart(Teucho
 }
 
 
-void ADAPTER::FluidImpl::SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity)
+void ADAPTER::FluidImpl::SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer)
 {
-  return fluid_.SetTopOptPorosityField(porosity);
+  fluid_.SetTopOptData(porosity,optimizer);
+  return;
 }
 
 

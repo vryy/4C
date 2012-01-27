@@ -52,9 +52,15 @@ namespace TOPOPT
     /// desctructor
     virtual ~Optimizer(){};
 
+    void ImportFluidData(RCP<Epetra_Vector> vel,int step);
+    void ImportAdjointFluidData(RCP<Epetra_Vector> vel, int step);
+
     RCP<Epetra_Vector> DensityI(){return dens_i_;}; // density field of last optimization step
     RCP<Epetra_Vector> DensityIp(){return dens_ip_;}; // density field of new optimization step
-    RCP<DRT::Discretization> Discret(){return discret_;}; // discretization of optimization variable
+
+    RCP<DRT::Discretization> Discret(){return discret_;}; // discretization of fluid field
+    const Epetra_Map* RowMap(); // row map of optimization variable
+    const Epetra_Map* ColMap(); // column map of optimization variable
 
   protected:
 
@@ -68,6 +74,10 @@ namespace TOPOPT
     RCP<Epetra_Vector> dens_ip_; // new density in row map
     RCP<DRT::Discretization> discret_; // discretization of optimization field
     const ParameterList& params_; // parameters
+
+    // fields for optimization
+    RCP<map<int,Epetra_Vector> > vel_;
+    RCP<map<int,Epetra_Vector> > adjointvel_;
 
   }; // end class Optimizer
 } // end namespace TOPOPT

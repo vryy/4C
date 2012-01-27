@@ -38,7 +38,7 @@ TOPOPT::Algorithm::Algorithm(
   conv_check_type_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::ConvCheck>(topopt_,"CONV_CHECK_TYPE"))
 {
   // initialize system vector (without values)
-  poro_ = rcp(new Epetra_Vector(*Optimizer().Discret()->DofColMap(),false));
+  poro_ = rcp(new Epetra_Vector(*Optimizer()->Discret()->NodeColMap(),false));
 
   return;
 }
@@ -133,8 +133,8 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
       if ((conv_check_type_==INPAR::TOPOPT::inc) or
           (conv_check_type_==INPAR::TOPOPT::inc_and_res))
       {
-        Epetra_Vector inc(*Optimizer().Discret()->DofRowMap(),false);
-        inc.Update(1.0,*Optimizer().DensityIp(),-1.0,*Optimizer().DensityI(),0.0);
+        Epetra_Vector inc(*Optimizer()->RowMap(),false);
+        inc.Update(1.0,*Optimizer()->DensityIp(),-1.0,*Optimizer()->DensityI(),0.0);
 
         double incvelnorm;
         inc.Norm2(&incvelnorm);
@@ -146,7 +146,7 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
       if ((conv_check_type_==INPAR::TOPOPT::res) or
           (conv_check_type_==INPAR::TOPOPT::inc_and_res))
       {
-        Epetra_Vector res(*Optimizer().Discret()->DofRowMap(),false);
+        Epetra_Vector res(*Optimizer()->RowMap(),false);
         res.Update(1.0,*objective_ip_,-1.0,*objective_i_,0.0);
 
         double resvelnorm;
@@ -174,7 +174,7 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  FluidField().SetTopOptPorosityField(poro_);
+  FluidField().SetTopOptData(poro_,Optimizer());
   return;
 }
 
@@ -254,8 +254,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
    *
    * winklmaier 12/11
    * */
-  RCP<DRT::Discretization> optidis = Optimizer().Discret();
-  RCP<Epetra_Vector> density = Optimizer().DensityIp();
+  RCP<Epetra_Vector> density = Optimizer()->DensityIp();
 
   const double poro_bd_down = topopt_.get<double>("PORO_BOUNDARY_DOWN");
   const double poro_bd_up = topopt_.get<double>("PORO_BOUNDARY_UP");
@@ -265,13 +264,13 @@ void TOPOPT::Algorithm::UpdatePorosity()
 
   // evaluate porosity due to density
   Epetra_Vector poro_row(density->Map(),false);
-  for (int lnodeid=0; lnodeid<optidis->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
+  for (int lnodeid=0; lnodeid<Optimizer()->Discret()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
   {
     const double dens = (*density)[lnodeid];
     (poro_row)[lnodeid] = poro_bd_up + poro_diff*dens*(1+fac)/(dens+fac);
   }
 
-  // density allways in rowmap -> porosity for fluid evaluation in col map required
+  // density always in rowmap -> porosity for fluid evaluation in col map required
   LINALG::Export(poro_row,*poro_);
 }
 

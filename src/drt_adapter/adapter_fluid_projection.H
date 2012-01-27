@@ -170,7 +170,7 @@ public:
 
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
-    virtual void SetTopOptPorosityField(Teuchos::RCP<Epetra_Vector> porosity){ dserror("not implemented!"); };
+    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer){ dserror("not implemented!"); };
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
     virtual void UseBlockMatrix(bool splitmatrix);
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
