@@ -198,13 +198,14 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   }
 
   // get constant density variable for incompressible flow
-  {
+  //
+/*  {
     ParameterList eleparams;
     eleparams.set("action","get_density");
     discret_->Evaluate(eleparams);
     density_ = eleparams.get<double>("density");
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
-  }
+  }*/
 
   // print information about elements
   // (to double-check and log that correct input has been read)
@@ -1989,7 +1990,7 @@ void FLD::XFluidImplicitTimeInt::Output()
 
       // output (hydrodynamic) pressure for visualization
       Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-      pressure->Scale(density_);
+      //pressure->Scale(density_);
       output_->WriteVector("pressure_smoothed", pressure);
 
       //output_->WriteVector("residual", trueresidual_);

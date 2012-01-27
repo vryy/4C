@@ -1210,17 +1210,14 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
-
-
-
   // get constant density variable for incompressible flow
-  {
+/*  {
     ParameterList eleparams;
     eleparams.set("action","get_density");
     discret_->Evaluate(eleparams);
     density_ = eleparams.get<double>("density");
     if (density_ <= 0.0) dserror("received negative or zero density value from elements");
-  }
+  }*/
 
   // -------------------------------------------------------------------
   // create output dofsets and prepare output
