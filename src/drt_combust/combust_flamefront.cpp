@@ -859,6 +859,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
   // gradphi_ gets a NodeColMap
   gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),nsd));
+  gradphi_->PutScalar(0.0);
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow = rcp(new Epetra_MultiVector(*fluiddis_->NodeRowMap(),nsd));
@@ -1848,14 +1849,23 @@ void CalcCurvature(
 
     double grad_phi_norm = grad_phi.Norm2();
 
-
-    curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
-                                             + grad_phi(1)*grad_phi(1)*grad_phi2(1)
-                                             + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
-                  -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
-                                             + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
-                                             + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
-                  +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
+    // check norm of normal gradient
+    if (fabs(grad_phi_norm < 1.0E-12))// 'ngradnorm' == 0.0
+    {
+      std::cout << "/!\\ phi gradient too small -> local max or min in level-set field assumed" << std::endl;
+      // set curvature to a large value (it will be cut off based on the element size)
+      curvature = 1.0E12;
+    }
+    else
+    {
+      curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
+          + grad_phi(1)*grad_phi(1)*grad_phi2(1)
+          + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
+          -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
+              + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
+              + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
+              +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
+    }
 
   return;
 
@@ -1893,9 +1903,8 @@ void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combust
       const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
       LINALG::Matrix<3,1> posXiDomain(true);
-#ifdef DEBUG
+      {
       bool nodefound = false;
-#endif
       // find out which node in the element is my local node lnode
       for (size_t inode=0; inode<numnode; ++inode)
       {
@@ -1903,15 +1912,12 @@ void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combust
         {
           // get local (element) coordinates of this node
           posXiDomain = DRT::UTILS::getNodeCoordinates(inode,DRT::Element::hex8);
-#ifdef DEBUG
           nodefound = true;
-#endif
         }
       }
-#ifdef DEBUG
       if (nodefound==false)
         dserror("node was not found in list of elements");
-#endif
+      }
 
       // smoothed normal vector at this node
       LINALG::Matrix<3,numnode> mygradphi(true);
@@ -1939,7 +1945,7 @@ void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combust
         else
           curvature = 1.0/elesize;
 
-        cout << "curvature cut off at value " << curvature << " for element " << adjele->Id() << endl;
+        cout << "curvature cut off at value " << 1.0/elesize << " in element " << adjele->Id() << endl;
       }
 
       avcurv += curvature;

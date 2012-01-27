@@ -968,19 +968,38 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       const double ngradphi = mygradphi.Norm2();
 
       // divide vector by its norm to get unit normal vector
-      if (abs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
+      if (fabs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
       {
         // length of smoothed normal is zero at this node -> node must be on a singularity of the
         // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
         // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
         //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-        std::cout << "/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
+        std::cout << "\n/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
         nvec.PutScalar(0.0);
       }
       else
       {
         nvec.Scale(-1.0/ngradphi);
       }
+
+#ifdef COLLAPSE_FLAME
+      nvec(0) = lnode->X()[0];
+      nvec(1) = lnode->X()[1];
+      nvec(2) = lnode->X()[2];
+#ifdef COMBUST_2D
+      nvec(2) = 0.0;
+#endif
+      const double norm = nvec.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+      if (norm == 0.0)
+      {
+        nvec.PutScalar(0.0);
+        //dserror("norm of normal vector is zero!");
+      }
+      else
+      {
+        nvec.Scale(1.0/norm);
+      }
+#endif
 
 #ifdef COMBUST_GMSH_NORMALFIELD
       if (gmshoutput_)
