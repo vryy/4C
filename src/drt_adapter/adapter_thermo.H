@@ -118,9 +118,6 @@ namespace ADAPTER
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
-    /// recalculate thermal matrices for tsi simulations
-    virtual void TSIMatrix() = 0;
-
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 

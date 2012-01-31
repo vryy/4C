@@ -1,28 +1,28 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_thermo_timint.H
+\file adapter_thermo_timint_expl.H
 
 \brief Thermal time integration field adapter
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 
 </pre>
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                             bborn 08/09 |
+ |  definitions                                              dano 01/12 |
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_THERMO_TIMINT_H
-#define ADAPTER_THERMO_TIMINT_H
+#ifndef ADAPTER_THERMO_TIMINT_EXPL_H
+#define ADAPTER_THERMO_TIMINT_EXPL_H
 
 /*----------------------------------------------------------------------*
- |  headers                                                 bborn 08/09 |
+ |  headers                                                  dano 01/12 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -32,29 +32,28 @@ Maintainer: Burkhard Bornemann
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-//#include "../drt_thermo/thr_resulttest.H"
 
-#include "../drt_thermo/thrtimint_impl.H"
+#include "../drt_thermo/thrtimint_expl.H"
 #include "adapter_thermo.H"
 
 /*----------------------------------------------------------------------*
- |  adapting adapter                                        bborn 08/09 |
+ |  adapting adapter                                         dano 01/12 |
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
 
   /*====================================================================*/
   /*!
-   * \brief Adapter to general implicit thermal time integration
+   * \brief Adapter to general explicit thermal time integration
    *
    * \date 08/08
    */
-  class ThermoTimInt : public Thermo
+  class ThermoTimIntExpl : public Thermo
   {
   public:
 
     /// Constructor
-    ThermoTimInt(
+    ThermoTimIntExpl(
       Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
       Teuchos::RCP<Teuchos::ParameterList> tdynparams,  ///< input parameters
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
@@ -86,6 +85,9 @@ namespace ADAPTER
 
     /// direct access to system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+    /// recalculate thermal matrices for tsi simulations
+    void TSIMatrix();
 
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
@@ -227,7 +229,7 @@ namespace ADAPTER
   private:
 
     /// create implicit marching time integrator
-    Teuchos::RCP<THR::TimIntImpl> Create(
+    Teuchos::RCP<THR::TimIntExpl> Create(
       const Teuchos::ParameterList& ioflags,  //!< input-output-flags
       const Teuchos::ParameterList& tdyn,  //!< thermal dynamic flags
       const Teuchos::ParameterList& xparams,  //!< extra flags
@@ -236,8 +238,8 @@ namespace ADAPTER
       Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
       );
 
-    /// the actual thermo algorithm
-    Teuchos::RCP<THR::TimIntImpl> thermo_;
+    /// the actual explicit thermo algorithm
+    Teuchos::RCP<THR::TimIntExpl> thermo_;
 
     /// sum of temperature vectors already applied,
     /// i.e. the incremental temperature
@@ -254,10 +256,10 @@ namespace ADAPTER
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 
-  };  // class ThermoTimInt
+  };  // class ThermoTimIntExpl
 
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif // ADAPTER_THERMO_TIMINT_H
+#endif // ADAPTER_THERMO_TIMINT_EXPL_H
 #endif // CCADISCRET

@@ -195,13 +195,6 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ThermoTimInt::SystemMatrix()
   return thermo_->Tang();
 }
 
-/*----------------------------------------------------------------------*
- | recalculate thermal matrices for tsi simulations          dano 05/10 |
- *----------------------------------------------------------------------*/
-void ADAPTER::ThermoTimInt::TSIMatrix()
-{
-  thermo_->TSIMatrix();
-}
 
 /*----------------------------------------------------------------------*
  | get discretisation                                       bborn 08/09 |

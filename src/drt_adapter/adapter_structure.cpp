@@ -97,6 +97,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   case INPAR::STR::dyna_ab2:
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
+  case INPAR::STR::dyna_explEuler:
     SetupTimIntImpl(prbdyn);  // <-- here is the show
     break;
   default :

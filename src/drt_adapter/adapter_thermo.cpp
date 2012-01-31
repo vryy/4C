@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
 #include "adapter_thermo_timint.H"
+#include "adapter_thermo_timint_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -73,6 +74,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   case INPAR::THR::dyna_onesteptheta :
   case INPAR::THR::dyna_gemm :
   case INPAR::THR::dyna_genalpha :
+  case INPAR::THR::dyna_explEuler :
     SetupTimIntImpl(prbdyn);   // <-- here is the show
     break;
   default :
@@ -83,7 +85,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
 }
 
 /*----------------------------------------------------------------------*
- |                                                          bborn 08/09 |
+ | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
 {

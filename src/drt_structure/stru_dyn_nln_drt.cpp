@@ -98,6 +98,7 @@ void caldyn_drt()
     case INPAR::STR::dyna_ab2:
     case INPAR::STR::dyna_euma :
     case INPAR::STR::dyna_euimsto :
+    case INPAR::STR::dyna_explEuler :
       dyn_nlnstructural_drt();
       break;
     case INPAR::STR::dyna_Gen_EMM:

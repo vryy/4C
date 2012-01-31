@@ -737,6 +737,7 @@ namespace STR
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
+    bool lumpmass_;  //!< flag for lumping the mass matrix, default: false
     //@}
 
     //! @name Global vectors

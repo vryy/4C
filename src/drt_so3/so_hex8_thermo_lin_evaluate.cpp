@@ -56,6 +56,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   else if (action=="calc_struct_nlnstiff")      act = So_hex8::calc_struct_nlnstiff;
   else if (action=="calc_struct_internalforce") act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiffmass")  act = So_hex8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = So_hex8::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = So_hex8::calc_struct_stress;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = So_hex8::calc_struct_reset_istep;  // needed for TangDis predictor
@@ -177,6 +178,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   //==================================================================================
   // linear stiffness, internal force vector, and consistent mass matrix
   case calc_struct_nlnstiffmass:
+  case calc_struct_nlnstifflmass:
   {
     // stiffness
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
@@ -233,6 +235,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
+    
+    if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
   }
   break;
 

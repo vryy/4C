@@ -33,6 +33,7 @@ Maintainer: Thomas Klöppel
 #include "strtimint_ost.H"
 #include "strtimint_gemm.H"
 #include "strtimint_ab2.H"
+#include "strtimint_expleuler.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -176,7 +177,13 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
                                             actdis, solver, contactsolver, output));
       break;
     }
-
+    // forward Euler time integration
+    case INPAR::STR::dyna_explEuler :
+    {
+      sti = Teuchos::rcp(new STR::TimIntExplEuler(ioflags, sdyn, xparams,
+                                            actdis, solver, contactsolver, output));
+      break;
+    }
     // Everything else
     default :
     {

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_expl.cpp
-\brief Explicit time integration for structural dynamics
+\file thrtimint_expl.cpp
+\brief Explicit time integration for thermal dynamics
 
 <pre>
 Maintainer: Alexander Popp
@@ -18,61 +18,38 @@ Maintainer: Alexander Popp
 /* headers */
 #include <sstream>
 
-#include "strtimint.H"
-#include "strtimint_expl.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "thrtimint.H"
+#include "thrtimint_expl.H"
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::TimIntExpl::TimIntExpl
+THR::TimIntExpl:: TimIntExpl
 (
   const Teuchos::ParameterList& ioparams,  //!< ioflags
-  const Teuchos::ParameterList& sdynparams,  //!< input parameters
+  const Teuchos::ParameterList& tdynparams,  //!< input parameters
   const Teuchos::ParameterList& xparams,  //!< extra flags
   Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
   Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-  Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
   Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
 )
 : TimInt
   (
     ioparams,
-    sdynparams,
+    tdynparams,
     xparams,
     actdis,
     solver,
-    contactsolver,
     output
   )
 {
-  // explicit time integrators cannot handle constraints
-  if (conman_->HaveConstraint())
-    dserror("Explicit TIS cannot handle constraints");
-
-  // explicit time integrators can only handle penalty contact / meshtying
-  if (HaveContactMeshtying())
-  {
-    INPAR::CONTACT::SolvingStrategy soltype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-    if (soltype != INPAR::CONTACT::solution_penalty)
-      dserror("Explicit TIS can only handle penalty contact / meshtying");
-  }
-
-  // cannot handle rotated DOFs
-  if (locsysman_ != Teuchos::null)
-    dserror("Explicit TIS cannot handle local co-ordinate systems");
-
   // get away
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::PrintStep()
+void THR::TimIntExpl::PrintStep()
 {
   // print out
   if ( (myrank_ == 0) and printscreen_ )
@@ -91,7 +68,7 @@ void STR::TimIntExpl::PrintStep()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::PrintStepText
+void THR::TimIntExpl::PrintStepText
 (
   FILE* ofile
 )
@@ -101,9 +78,11 @@ void STR::TimIntExpl::PrintStepText
           " | nstep %6d"
           " | time %-14.8E"
           " | dt %-14.8E"
-          " | numiter %3d"
-          " | wct %-14.8E\n",
-          step_, stepmax_, (*time_)[0], (*dt_)[0], 0, timer_->ElapsedTime());
+          " | numiter %3d\n",
+     //     " | wct %-14.8E\n",
+          step_, stepmax_, (*time_)[0], (*dt_)[0], 0
+   //       timer_->ElapsedTime()
+   );
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"

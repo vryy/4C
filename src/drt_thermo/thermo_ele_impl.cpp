@@ -346,7 +346,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }  // action == "calc_thermo_fintcond"
 
   //============================================================================
-  // calculate only the internal force F_int
+  // calculate only the internal force F_int, needed for restart
   else if (action == "calc_thermo_fint")
   {
     // set views
@@ -446,7 +446,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
-  // --> for dynamic case
+  // --> for dynamic case, called only once in DetermineCapaConsistTempRate
   else if (action == "calc_thermo_fintcapa")
   {
     // set views
@@ -546,6 +546,34 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
     // copy capacity matrix if available
     //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+
+    // lump the capacity matrix in case of explicit time integration
+    // check the time integrator
+    const INPAR::THR::DynamicType timint
+      = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
+    switch (timint)
+    {
+      case INPAR::THR::dyna_explEuler :
+      {
+        // TODO 30.01.12 
+        cout << "in lump matrix thr element!" << endl;
+        CalculateLumpMatrix(&ecapa);
+        break;
+      }
+      case INPAR::THR::dyna_genalpha :
+      case INPAR::THR::dyna_onesteptheta :
+      case INPAR::THR::dyna_statics :
+      {
+        break;
+      }
+      case INPAR::THR::dyna_undefined :
+      default :
+      {
+        dserror("Don't know what to do...");
+        break;
+      }
+    }  // end of switch(timint)
+
   }  // action == "calc_thermo_fintcapa"
 
   //============================================================================
@@ -1763,6 +1791,32 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   /* =======================================================================*/
 
 } // CalculateInternalDissipation()
+
+
+/*----------------------------------------------------------------------*
+ |  lump mass matrix (private)                               dano 01/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa)
+{
+  // lump mass matrix
+  if (ecapa != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (unsigned int c=0; c<(*ecapa).N(); ++c)  // parse columns
+    {
+      double d = 0.0;
+      for (unsigned int r=0; r<(*ecapa).M(); ++r)  // parse rows
+      {
+        d += (*ecapa)(r,c);  // accumulate row entries
+        (*ecapa)(r,c) = 0.0;
+      }
+      (*ecapa)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
+
+
 
 
 /*----------------------------------------------------------------------*

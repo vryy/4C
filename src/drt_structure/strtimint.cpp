@@ -120,6 +120,7 @@ STR::TimInt::TimInt
   stepmax_(sdynparams.get<int>("NUMSTEP")),
   step_(Teuchos::null),
   stepn_(0),
+  lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS")==1),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
   vel_(Teuchos::null),
@@ -554,7 +555,11 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action", "calc_struct_nlnstiffmass");
+    if(lumpmass_ == false)
+      p.set("action", "calc_struct_nlnstiffmass");
+    // lumping the mass matrix
+    else
+      p.set("action", "calc_struct_nlnstifflmass");
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);

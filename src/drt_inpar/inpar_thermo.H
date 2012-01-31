@@ -45,8 +45,9 @@ namespace THR
     dyna_statics,                    ///< static analysis
     dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
     dyna_gemm,                       ///< generalised energy-momementum method
-    dyna_genalpha                    ///< generalised-alpha time integrator,
+    dyna_genalpha,                    ///< generalised-alpha time integrator,
                                      ///< new style (implicit)
+    dyna_explEuler                   ///< forward Euler (explicit)  
   };
 
   /// Map time integrator to string
@@ -70,6 +71,9 @@ namespace THR
       break;
     case dyna_genalpha :
       return "GenAlpha";
+      break;
+    case dyna_explEuler :
+      return "ExplEuler";
       break;
     default :
       dserror("Cannot make string for time integrator %d", name);

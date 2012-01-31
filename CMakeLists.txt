@@ -529,6 +529,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_structure_wrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
+  src/drt_adapter/adapter_thermo_timint_expl.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
   src/drt_adapter/adapter_xfluid2_impl.cpp
   src/drt_adapter/adapter_fluid_fluid_impl.cpp
@@ -916,6 +917,8 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint_impl.cpp
   src/drt_thermo/thrtimint_ost.cpp
   src/drt_thermo/thrtimint_statics.cpp
+  src/drt_thermo/thrtimint_expl.cpp
+  src/drt_thermo/thrtimint_expleuler.cpp
   src/drt_thermo/thr_contact.cpp
 )
 set(OBJS_POST_GID_TXT
@@ -1077,6 +1080,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_ab2.cpp
   src/drt_structure/strtimint_create.cpp
   src/drt_structure/strtimint_expl.cpp
+  src/drt_structure/strtimint_expleuler.cpp
   src/drt_structure/strtimint_gemm.cpp
   src/drt_structure/strtimint_genalpha.cpp
   src/drt_structure/strtimint_impl.cpp

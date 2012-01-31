@@ -48,7 +48,8 @@ namespace INPAR
       dyna_gemm,                       ///< generalised energy-momementum method
       dyna_ab2,                        ///< Adams-Bashforth 2nd order (explicit)
       dyna_euma,                       ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto                     ///< Euler implicit scheme for SDE's (stochastic, implicit)
+      dyna_euimsto,                    ///< Euler implicit scheme for SDE's (stochastic, implicit)
+      dyna_explEuler                   ///< forward Euler (explicit)
     };
 
     /// Map time integrator to string
@@ -84,6 +85,9 @@ namespace INPAR
         break;
       case dyna_ab2 :
         return "AdamsBashforth2" ;
+        break;
+      case dyna_explEuler :
+        return "ExplEuler";
         break;
       default :
         dserror("Cannot make string for time integrator %d", name);

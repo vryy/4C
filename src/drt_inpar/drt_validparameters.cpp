@@ -758,7 +758,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "GEMM",
                                  "AdamsBashforth2",
                                  "EulerMaruyama",
-                                 "EulerImpStoch"),
+                                 "EulerImpStoch",
+                                 "ExplicitEuler"),
                                tuple<int>(
                                  INPAR::STR::dyna_centr_diff,
                                  INPAR::STR::dyna_Gen_EMM,
@@ -770,7 +771,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_gemm,
                                  INPAR::STR::dyna_ab2,
                                  INPAR::STR::dyna_euma,
-                                 INPAR::STR::dyna_euimsto),
+                                 INPAR::STR::dyna_euimsto,
+                                 INPAR::STR::dyna_explEuler),
                                &sdyn);
   // a temporary flag
   setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
@@ -1071,6 +1073,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&sdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&sdyn);
+
+  setStringToIntegralParameter<int>("LUMPMASS","No",
+                               "Lump the mass matrix for explicit time integration",
+                               yesnotuple,yesnovalue,&sdyn);
 
   /*--------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in structural dynamics */
@@ -1641,13 +1647,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Statics",
                                  "OneStepTheta",
                                  "GEMM",
-                                 "GenAlpha"
+                                 "GenAlpha",
+                                 "ExplicitEuler"
                                  ),
                                tuple<int>(
                                   INPAR::THR::dyna_statics,
                                   INPAR::THR::dyna_onesteptheta,
                                   INPAR::THR::dyna_gemm,
-                                  INPAR::THR::dyna_genalpha),
+                                  INPAR::THR::dyna_genalpha,
+                                  INPAR::THR::dyna_explEuler),
                                &tdyn);
 
   // Output type

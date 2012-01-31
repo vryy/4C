@@ -241,6 +241,9 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  ///< k_Tu matrix
       );
 
+    //! calculate lumped capacity matrix in case of explicit time integration
+    void CalculateLumpMatrix(LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa);
+
     //@}
 
     //! actual values of temperatures
