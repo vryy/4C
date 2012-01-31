@@ -1460,8 +1460,8 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
   // we have to solve the following system of equations:
   //  _              _       _      _       _              _      _       _
   // | L(1,1)  L(1,2) |    | Lin_Xi  |    |  B(1,1)  B(1,2) |   | Lin_d1 |
-  // |               | *  |          | = |                 | * |        |
-  // |_L(2,1)  L(2,2)_|    |_Lin_Eta_|    |_B(2,1)  B(2,2)_|   |_Lin_d2_|
+  // |                | *  |         | =  |                 | * |        |
+  // |_L(2,1)  L(2,2)_|    |_Lin_Eta_|    |_B(2,1)  B(2,2)_ |   |_Lin_d2_|
   // 
   // this can be done easily because it is a linear 2x2-system.
   // we obtain the solution by inverting matrix L:

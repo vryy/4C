@@ -932,6 +932,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
     // reason for this: we set the crosslinker position of molecules with numbond>0 on a node, i.e. on a binding spot of a filement/linker
     // So, the maximal radius is now R_LINK-DeltaR_LINK assuming the linker can bond in any direction.
     // When numbond==0 -> crosslinker position is thought to be in the center of a sphere with the adjusted search radii rmin and rmax.
+    // In case of a helical binding spot structure, we exactly know the position of the singly bound linker. Therefore, no multiplication with 2.
     if ((int)numbond[part]>0.9 && !DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
     {
       rmin *= 2.0;
@@ -1044,11 +1045,10 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 /*----------------------------------------------------------------------*
  | rotation around a fixed axis by angle phirot          mueller (11/11)|
  *----------------------------------------------------------------------*/
-void StatMechManager::RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis,LINALG::Matrix<3,1>* vector, const double phirot)
+void StatMechManager::RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis,LINALG::Matrix<3,1>* vector, const double& phirot)
 {
-  // rotate the normal by alpha
   LINALG::Matrix<3, 3> RotMat;
-  // build the matrix of rotation
+
   for (int j=0; j<3; j++)
     RotMat(j, j) = cos(phirot) + axis(j) * axis(j) * (1 - cos(phirot));
   RotMat(0, 1) = axis(0) * axis(1) * (1 - cos(phirot)) - axis(2) * sin(phirot);
@@ -1058,7 +1058,6 @@ void StatMechManager::RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis,LI
   RotMat(2, 0) = axis(2) * axis(0) * (1 - cos(phirot)) - axis(1) * sin(phirot);
   RotMat(2, 1) = axis(2) * axis(1) * (1 - cos(phirot)) + axis(0) * sin(phirot);
 
-  // rotation
   LINALG::Matrix<3,1> tmpvec = *vector;
   vector->Multiply(RotMat, tmpvec);
 
@@ -2677,7 +2676,6 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
       // if the binding spots are oriented according to the double helical structure of f-actin
       if(DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
       {
-        // Note: maybe, we influence
         double ronebond = statmechparams_.get<double> ("R_LINK", 0.0) / 2.0;
         // get binding spot quaternion
         LINALG::Matrix<4,1> qbspot;
