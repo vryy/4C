@@ -1446,7 +1446,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
           }
 
           // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
-          RotationAroundFixedAxis(tangent,&normal,alpha);
+          RotationAroundFixedAxis(tangent,normal,alpha);
 
           // calculation of the visualized point lying in the direction of the rotated normal
           for (int j=0; j<visualizepositions_->NumVectors(); j++)
@@ -1575,7 +1575,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
             }
 
             // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
-            RotationAroundFixedAxis(tangent,&normal,alpha);
+            RotationAroundFixedAxis(tangent,normal,alpha);
 
             // calculation of the visualized point lying in the direction of the rotated normal
             for (int j=0; j<visualizepositions_->NumVectors(); j++)

@@ -254,7 +254,7 @@ protected:
                             RCP<Epetra_MultiVector>& neighboursLID);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
-  void RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>* vector, const double& phirot);
+  void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot);
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();

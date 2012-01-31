@@ -988,7 +988,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
                                 }
                               }
                               // rotation matrix around tangential vector by given angle
-                              RotationAroundFixedAxis(firstdir,&bspotvec,(*bspotorientations_)[tmplid]);
+                              RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[tmplid]);
                               // linker position
                               LINALG::Matrix<3,1> crossbspotdiff;
                               for(int l=0; l<(int)crossbspotdiff.M(); l++)
@@ -1045,8 +1045,12 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 /*----------------------------------------------------------------------*
  | rotation around a fixed axis by angle phirot          mueller (11/11)|
  *----------------------------------------------------------------------*/
-void StatMechManager::RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis,LINALG::Matrix<3,1>* vector, const double& phirot)
+void StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot)
 {
+  // unit length
+  axis.Scale(1.0/axis.Norm2());
+  vector.Scale(1.0/vector.Norm2());
+
   LINALG::Matrix<3, 3> RotMat;
 
   for (int j=0; j<3; j++)
@@ -1058,8 +1062,8 @@ void StatMechManager::RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis,LI
   RotMat(2, 0) = axis(2) * axis(0) * (1 - cos(phirot)) - axis(1) * sin(phirot);
   RotMat(2, 1) = axis(2) * axis(1) * (1 - cos(phirot)) + axis(0) * sin(phirot);
 
-  LINALG::Matrix<3,1> tmpvec = *vector;
-  vector->Multiply(RotMat, tmpvec);
+  LINALG::Matrix<3,1> tmpvec = vector;
+  vector.Multiply(RotMat, tmpvec);
 
   return;
 }
@@ -2693,7 +2697,7 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
           normal(i) = R(i,1);
         }
         // rotation matrix around tangential vector by given angle
-        RotationAroundFixedAxis(tangent,&normal,(*bspotorientations_)[(int)LID(0,0)]);
+        RotationAroundFixedAxis(tangent,normal,(*bspotorientations_)[(int)LID(0,0)]);
 
         // calculation of the visualized point lying in the direction of the rotated normal
         for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
@@ -2875,7 +2879,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
       bspotorientations_->Import(bspotorientationsrow,bspotimporter,Insert);
       bspotxi_->Import(bspotxirow,bspotimporter,Insert);
     }
-    else // old beam3/beam3ii element: new binding spot maps are equivalent to node maps
+    else // beam3/beam3ii element: new binding spot maps are equivalent to node maps
     {
       // maps
       bspotcolmap_ = rcp(new Epetra_Map(*(discret_.NodeColMap())));
@@ -2893,29 +2897,20 @@ void StatMechManager::CrosslinkerMoleculeInit()
         const vector<int>* nodeids = filaments[i]->Nodes();
         // retrieve filament length using first and last node of the current filament
         DRT::Node* node0 = discret_.lColNode(discret_.NodeColMap()->LID((*nodeids)[0]));
-        DRT::Node* node1 = discret_.lColNode(discret_.NodeColMap()->LID((*nodeids)[((int)nodeids->size())-1]));
+        DRT::Node* node1 = discret_.lColNode(discret_.NodeColMap()->LID((*nodeids)[1]));
 
         // length of the current filament
-        double lfil = 0.0;
+        double elelength = 0.0;
         for(int j=0; j<3; j++)
-          lfil += (node1->X()[j]-node0->X()[j])*(node1->X()[j]-node0->X()[j]);
-        lfil = sqrt(lfil);
+          elelength += (node1->X()[j]-node0->X()[j])*(node1->X()[j]-node0->X()[j]);
+        elelength = sqrt(elelength);
 
-        // element length (assuming equal node spacing)
-        double elelength = lfil/(double)(filaments[i]->Nodes()->size()-1);
+        cout<<"ElementLength = "<<elelength<<endl;
 
         for(int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
         {
-          double phibs = 0.0;
-          // first node
-          if(j==0)
-            (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = phibs;
-          else
-          {
-            // determine orientation (relative to second triad vector)
-            phibs = (((double)(j)*(elelength/riseperbspot)*rotperbspot)/(2.0*M_PI)-floor(((double)(j-1)*(elelength/riseperbspot)*rotperbspot)/(2.0*M_PI)))*2.0*M_PI;
-            (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = phibs;
-          }
+          // determine orientation (relative to second triad vector). No use of riseperbspot, since somewhat handled by element length
+          (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = j*rotperbspot;
           // assumption:
           if(bspotrowmap_->LID(bspotgid)>-1)
             (*bspot2element_)[bspotrowmap_->LID(bspotgid)] = discret_.lRowNode(discret_.NodeRowMap()->LID(bspotgid))->Elements()[0]->Id();
