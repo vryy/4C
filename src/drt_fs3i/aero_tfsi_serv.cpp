@@ -27,6 +27,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "aero_tfsi_serv.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/adapter_structure.H"
@@ -303,7 +304,6 @@ std::map<int,LINALG::Matrix<3,1> > FS3I::UTILS::AeroCouplingUtils::CurrentInterf
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
@@ -516,34 +516,5 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-vector<double> FS3I::UTILS::AeroCouplingUtils::Normal
-(
-  std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-  const int head1,
-  const int origin,
-  const int head2
-)
-{
-  vector<double> normal(3);
-  LINALG::Matrix<3,1> h1 = currentpositions[head1];
-  LINALG::Matrix<3,1> h2 = currentpositions[head2];
-  LINALG::Matrix<3,1> o  = currentpositions[origin];
-
-  normal[0] =   ((h1(1)-o(1))*(h2(2)-o(2)) - (h1(2)-o(2))*(h2(1)-o(1)));
-  normal[1] = - ((h1(0)-o(0))*(h2(2)-o(2)) - (h1(2)-o(2))*(h2(0)-o(0)));
-  normal[2] =   ((h1(0)-o(0))*(h2(1)-o(1)) - (h1(1)-o(1))*(h2(0)-o(0)));
-
-  double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
-  // fast way of introducing outward pointing normals is to multiply with -1
-  length *= -1.0;
-  normal[0] = normal[0]/length;
-  normal[1] = normal[1]/length;
-  normal[2] = normal[2]/length;
-
-  return normal;
-}
 
 #endif

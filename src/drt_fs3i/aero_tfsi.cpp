@@ -27,7 +27,9 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "aero_tfsi.H"
+#include "../drt_tsi/tsi_monolithic.H"
 #include "../drt_tsi/tsi_utils.H"
+#include "aero_tfsi_serv.H"
 
 
 
@@ -327,6 +329,7 @@ void FS3I::AeroTFSI::SplitData(
     {
       tmp1(in)=aerodata[0 + out*4 + in];
     }
+    // note: currently heat fluxes are transferred but forces not yet --> zeros
     for(int in=0; in<3; in++)
     {
       tmp2(in)=0.0;

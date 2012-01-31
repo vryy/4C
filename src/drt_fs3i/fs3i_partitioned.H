@@ -186,7 +186,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::Coupling> scatracoup_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
-    std::vector<LINALG::MultiMapExtractor> scatrafieldexvec_;
+    std::vector<Teuchos::RCP<LINALG::MultiMapExtractor> > scatrafieldexvec_;
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 

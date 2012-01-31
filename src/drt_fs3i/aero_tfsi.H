@@ -23,7 +23,6 @@ Maintainer: Georg Hammerl
  | definitions                                              ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-
 #ifndef AERO_TFSI_H
 #define AERO_TFSI_H
 
@@ -32,22 +31,37 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "fs3i.H"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Vector.h>
+#include <vector>
+#include "../linalg/linalg_fixedsizematrix.H"
 
-#include "aero_tfsi_serv.H"
-#include "../drt_tsi/tsi_monolithic.H"
+
+// forward declarations
+namespace TSI
+{
+  class Monolithic;
+}
 
 
 /*----------------------------------------------------------------------*
  |                                                          ghamm 12/11 |
  *----------------------------------------------------------------------*/
-/// FS3I: here --> Thermo-Fluid-Structure Interaction
+/// FS3I: Thermo-Fluid-Structure Interaction with Aero-code INCA
 namespace FS3I
 {
+  //forward declaration
+  namespace UTILS
+  {
+    class AeroCouplingUtils;
+  }
+
   class AeroTFSI : public FS3I_Base
   {
   public:
     AeroTFSI(
-    const Epetra_Comm& lcomm    ///< local epetra communicator
+    const Epetra_Comm& lcomm  ///< local epetra communicator
     );
 
     virtual ~AeroTFSI(){};
@@ -57,7 +71,7 @@ namespace FS3I
 
     /// test results (if necessary)
     virtual void TestResults(
-    const Epetra_Comm& comm
+    const Epetra_Comm& comm  ///< local epetra communicator
     );
 
     /// read restart
@@ -68,40 +82,40 @@ namespace FS3I
 
     /// get time step from INCA
     void GetTimeStep(
-    vector<double>& timestep    ///< received time step size
+    std::vector<double>& timestep  ///< received time step size
     );
 
     /// apply time step from INCA to BACI
     void SetTimeStep(
-    vector<double>& timestepsize    ///< time step size to be applied to BACI
+    std::vector<double>& timestepsize  ///< time step size to be applied to BACI
     );
 
     /// apply time step from INCA to BACI
     void SetInitialTimeStepAndTime(
-    vector<double>& timestepsize    ///< time step size to be applied to BACI
+    std::vector<double>& timestepsize  ///< time step size to be applied to BACI
     );
 
     /// communication with INCA in order to receive forces and temperatures in the interface
     void ReceiveAeroData(
-    vector<double>& aerodata    ///< raw data from INCA containing interface loads
+    std::vector<double>& aerodata  ///< raw data from INCA containing interface loads
     );
 
     /// communication with INCA in order to send disp, vel and temperatures in the interface
     void SendAeroData(
-    vector<double>& aerosenddata    ///< interface data is stored in here
+    std::vector<double>& aerosenddata  ///< interface data is stored in here
     );
 
     /// modifiy the reveived data into a more useful format
     void SplitData(
-    vector<double> aerodata,    ///< raw data from INCA
-    map<int, map<int, LINALG::Matrix<3,1> > >& aerocoords,   ///< coordinates where loads are applied
-    map<int, map<int, LINALG::Matrix<4,1> > >& aeroforces    ///< loads to be applied
+    std::vector<double> aerodata,  ///< raw data from INCA
+    std::map<int, std::map<int, LINALG::Matrix<3,1> > >& aerocoords,  ///< coordinates where loads are applied
+    std::map<int, std::map<int, LINALG::Matrix<4,1> > >& aeroforces  ///< loads to be applied
     );
 
     /// received and processed data is applied to the structural/thermal solver
     void ApplyInterfaceData(
-    Teuchos::RCP<Epetra_Vector> iforce,   ///< interface forces due to the fluid
-    Teuchos::RCP<Epetra_Vector> ithermoload   ///< interface thermal loads due to the fluid
+    Teuchos::RCP<Epetra_Vector> iforce,  ///< interface forces due to the fluid
+    Teuchos::RCP<Epetra_Vector> ithermoload  ///< interface thermal loads due to the fluid
     );
 
 
@@ -122,9 +136,9 @@ namespace FS3I
 
   private:
 
-  Teuchos::RCP<TSI::Monolithic> tsi_;   ///< Monolithic TSI system that is calculated
+  Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
 
-  const Teuchos::ParameterList& sdynparams_;    ///< structural parameter list
+  const Teuchos::ParameterList& sdynparams_;  ///< structural parameter list
 
   Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
 

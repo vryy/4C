@@ -338,17 +338,17 @@ void FS3I::PartFS3I::SetupSystem()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField().Discretization();
-    LINALG::MultiMapExtractor mapex;
+    Teuchos::RCP<LINALG::MultiMapExtractor> mapex = rcp(new LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
     mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,genprob.ndim)));
-    mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),mapex);
+    mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),*mapex);
     scatrafieldexvec_.push_back(mapex);
   }
 
   scatracoup_->SetupConditionCoupling(*(scatravec_[0]->ScaTraField().Discretization()),
-                                     scatrafieldexvec_[0].Map(1),
+                                     scatrafieldexvec_[0]->Map(1),
                                      *(scatravec_[1]->ScaTraField().Discretization()),
-                                     scatrafieldexvec_[1].Map(1),
+                                     scatrafieldexvec_[1]->Map(1),
                                      "ScaTraCoupling",
                                      1);
 
@@ -365,13 +365,13 @@ void FS3I::PartFS3I::SetupSystem()
   // and the equality of fluxes is considered explicitly.
   if (infperm_)
   {
-    maps.push_back(scatrafieldexvec_[0].FullMap());
-    maps.push_back(scatrafieldexvec_[1].Map(0));
+    maps.push_back(scatrafieldexvec_[0]->FullMap());
+    maps.push_back(scatrafieldexvec_[1]->Map(0));
   }
   else
   {
-    maps.push_back(scatrafieldexvec_[0].FullMap());
-    maps.push_back(scatrafieldexvec_[1].FullMap());
+    maps.push_back(scatrafieldexvec_[0]->FullMap());
+    maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   scatraglobalex_->Setup(*fullmap,maps);
@@ -574,13 +574,13 @@ void FS3I::PartFS3I::SetupCoupledScatraRHS()
     scatraglobalex_->AddVector(*coup2,1,*scatrarhs_,1.0);
 
     // contribution of the respective other field
-    Teuchos::RCP<Epetra_Vector> coup1_boundary = scatrafieldexvec_[0].ExtractVector(coup1,1);
-    Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[1].InsertVector(Scatra1ToScatra2(coup1_boundary),1);
+    Teuchos::RCP<Epetra_Vector> coup1_boundary = scatrafieldexvec_[0]->ExtractVector(coup1,1);
+    Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(coup1_boundary),1);
     temp->Scale(-1.0);
     scatraglobalex_->AddVector(*temp,1,*scatrarhs_);
 
-    Teuchos::RCP<Epetra_Vector> coup2_boundary = scatrafieldexvec_[1].ExtractVector(coup2,1);
-    temp = scatrafieldexvec_[0].InsertVector(Scatra2ToScatra1(coup2_boundary),1);
+    Teuchos::RCP<Epetra_Vector> coup2_boundary = scatrafieldexvec_[1]->ExtractVector(coup2,1);
+    temp = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(coup2_boundary),1);
     temp->Scale(-1.0);
     scatraglobalex_->AddVector(*temp,0,*scatrarhs_);
   }
@@ -597,10 +597,10 @@ void FS3I::PartFS3I::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector>  globa
   {
     // concentrations are assumed to be equal at the interface
     // extract the inner (uncoupled) dofs from second field
-    Teuchos::RCP<Epetra_Vector> vec2_other = scatrafieldexvec_[1].ExtractVector(vec2,0);
+    Teuchos::RCP<Epetra_Vector> vec2_other = scatrafieldexvec_[1]->ExtractVector(vec2,0);
 
-    Teuchos::RCP<Epetra_Vector> vec2_boundary = scatrafieldexvec_[1].ExtractVector(vec2,1);
-    Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0].InsertVector(Scatra2ToScatra1(vec2_boundary),1);
+    Teuchos::RCP<Epetra_Vector> vec2_boundary = scatrafieldexvec_[1]->ExtractVector(vec2,1);
+    Teuchos::RCP<Epetra_Vector> temp = scatrafieldexvec_[0]->InsertVector(Scatra2ToScatra1(vec2_boundary),1);
     temp->Update(1.0,*vec1,1.0);
 
     scatraglobalex_->InsertVector(*temp,0,*globalvec);
@@ -635,7 +635,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
     // structure scatra
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockscatra2 =
-      scatra2->Split<LINALG::DefaultBlockMatrixStrategy>(scatrafieldexvec_[1],scatrafieldexvec_[1]);
+      scatra2->Split<LINALG::DefaultBlockMatrixStrategy>(*(scatrafieldexvec_[1]),*(scatrafieldexvec_[1]));
     blockscatra2->Complete();
 
     scatrasystemmatrix_->Assign(1,1,View,blockscatra2->Matrix(0,0));
@@ -678,7 +678,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
     // contribution of the respective other field
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock1
-      = coup1->Split<LINALG::DefaultBlockMatrixStrategy>(scatrafieldexvec_[0],scatrafieldexvec_[0]);
+      = coup1->Split<LINALG::DefaultBlockMatrixStrategy>(*(scatrafieldexvec_[0]),*(scatrafieldexvec_[0]));
     coupblock1->Complete();
     (*fbitransform_)(coupblock1->Matrix(1,1),
                      -1.0,
@@ -686,7 +686,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
                      scatrasystemmatrix_->Matrix(1,0));
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock2
-      = coup2->Split<LINALG::DefaultBlockMatrixStrategy>(scatrafieldexvec_[1],scatrafieldexvec_[1]);
+      = coup2->Split<LINALG::DefaultBlockMatrixStrategy>(*(scatrafieldexvec_[1]),*(scatrafieldexvec_[1]));
     coupblock2->Complete();
     (*sbitransform_)(coupblock2->Matrix(1,1),
                      -1.0,

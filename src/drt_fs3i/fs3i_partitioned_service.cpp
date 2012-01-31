@@ -74,12 +74,12 @@ void FS3I::PartFS3I::ExtractScatraFieldVectors(
     vec1 = scatraglobalex_->ExtractVector(globalvec,0);
 
     // process structure scatra unknowns at the boundary
-    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0].ExtractVector(vec1,1);
+    Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0]->ExtractVector(vec1,1);
     Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_->ExtractVector(globalvec,1);
     Teuchos::RCP<Epetra_Vector> vec2_boundary = Scatra1ToScatra2(vec1_boundary);
 
-    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1].InsertVector(vec2_inner,0);
-    scatrafieldexvec_[1].InsertVector(vec2_boundary,1,vec2_temp);
+    Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1]->InsertVector(vec2_inner,0);
+    scatrafieldexvec_[1]->InsertVector(vec2_boundary,1,vec2_temp);
     vec2 = vec2_temp;
   }
   else

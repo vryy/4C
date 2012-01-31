@@ -3,6 +3,7 @@
 \file aero_tfsi_serv.cpp
 
 \brief Helper class for coupled simulations (INCA - BACI)
+       --> aero_tfsi.H & aero_tfsi.cpp
 
 <pre>
 Maintainer: Georg Hammerl
@@ -13,28 +14,60 @@ Maintainer: Georg Hammerl
 */
 
 
+/*----------------------------------------------------------------------*
+ | definitions                                              ghamm 12/11 |
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-
 #ifndef AERO_TFSI_SERV_H
 #define AERO_TFSI_SERV_H
 
-#include "../drt_lib/drt_discret.H"
+
+/*----------------------------------------------------------------------*
+ | headers                                                  ghamm 12/11 |
+ *----------------------------------------------------------------------*/
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Vector.h"
+#include <map>
+#include <vector>
+#include "../linalg/linalg_fixedsizematrix.H"
+
+
+/*----------------------------------------------------------------------*
+ | forward declarations                                     ghamm 12/11 |
+ *----------------------------------------------------------------------*/
+namespace DRT
+{
+  class Discretization;
+  class Element;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
+}
 
 
 namespace FS3I
 {
-
   namespace UTILS
   {
-
+    /// Helper class for coupled simulations INCA-BACI,
+    /// Builds interface discretizations (thermal & structural) for
+    /// the coupling interface.
+    /// Contains methods to project fluid loads onto the structure
+    /// and to prepare data before sending to INCA
+    /*!
+      \author ghamm
+      \date 12/11
+     */
     class AeroCouplingUtils
     {
     public:
       /// constructor initializing internal variables
         AeroCouplingUtils
       (
-        Teuchos::RCP<DRT::Discretization> structdis,   ///< structure discretization
-        Teuchos::RCP<DRT::Discretization> thermodis   ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> structdis,  ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> thermodis  ///< thermo discretization
       );
 
       /// empty destructor
@@ -43,19 +76,19 @@ namespace FS3I
       /// forces from the aero code are projected on the structural surface and distributed to the nodes
       void ProjectForceOnStruct
       (
-          Teuchos::RCP<Epetra_Vector> idispn,    ///< structural interface displacement of the current time step
-          map<int, map<int, LINALG::Matrix<3,1> > >& aerocoords,   ///< coordinates where the corresponding aero forces affect
-          map<int, map<int, LINALG::Matrix<4,1> > >& aeroforces,   ///< forces from the aero code
-          Teuchos::RCP<Epetra_Vector> iforce,   ///< distributed interface force that loads the structure
-          Teuchos::RCP<Epetra_Vector> iredutemp   ///< redundant distributed interface temperatures on the thermal interface
+          Teuchos::RCP<Epetra_Vector> idispn,  ///< structural interface displacement of the current time step
+          std::map<int, std::map<int, LINALG::Matrix<3,1> > >& aerocoords,  ///< coordinates where the corresponding aero forces affect
+          std::map<int, std::map<int, LINALG::Matrix<4,1> > >& aeroforces,  ///< forces from the aero code
+          Teuchos::RCP<Epetra_Vector> iforce,  ///< distributed interface force that loads the structure
+          Teuchos::RCP<Epetra_Vector> iredutemp  ///< redundant distributed interface temperatures on the thermal interface
       );
 
       /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA
       void PackData
       (
-        Teuchos::RCP<Epetra_Vector> idispnp,
-        Teuchos::RCP<Epetra_Vector> itempnp,
-        vector<double>& packeddata
+        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
+        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
+        std::vector<double>& packeddata ///< output: packed data, ready for sending
       );
 
       /// get material configuration
@@ -68,58 +101,49 @@ namespace FS3I
       Teuchos::RCP<const LINALG::MapExtractor> GetInterfaceMapExtractor(){ return thermorowmapext_;}
 
       /// access function for the interface discretization
-      RCP<DRT::Discretization> GetInterfaceStructDis(){ return istructdis_; }
+      Teuchos::RCP<DRT::Discretization> GetInterfaceStructDis(){ return istructdis_; }
 
       /// access function for the interface discretization
-      RCP<DRT::Discretization> GetInterfaceThermoDis(){ return ithermodis_; }
+      Teuchos::RCP<DRT::Discretization> GetInterfaceThermoDis(){ return ithermodis_; }
 
+      /// get number of coupling interfaces
       int NumInterfaces(){ return (maxid_+1); }
 
     protected:
-      /// calculate current position of structure interface nodes
+      /// calculate current position of structural interface nodes
       std::map<int,LINALG::Matrix<3,1> > CurrentInterfacePos
       (
-          Teuchos::RCP<Epetra_Vector> redudisp       ///< redundant version of structure displacements
+          Teuchos::RCP<Epetra_Vector> redudisp  ///< redundant version of structure displacements
       );
 
       /// fluid loads (forces & heat fluxes) are distributed to the adjacent nodes of the closest element 
       void DistributeForceToNodes
       (
-        int eleid,
-        int interface,
-        std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-        LINALG::Matrix<3,1>& projpoint,
-        LINALG::Matrix<4,1>& aeroforce,
-        Teuchos::RCP<Epetra_Vector> distributedforces,
-        Teuchos::RCP<Epetra_Vector> ithermoload
+        int eleid,  ///< element id of the closest element to the fluid load
+        int interface,  /// interface id in which the eleid is contained
+        std::map<int,LINALG::Matrix<3,1> >& currentpositions,  ///< current position of structural interface nodes
+        LINALG::Matrix<3,1>& projpoint,  ///< projection point on the closest element
+        LINALG::Matrix<4,1>& aeroforce,  ///< fluid induced loads (3x forces + 1x heat flux)
+        Teuchos::RCP<Epetra_Vector> distributedforces,  ///< distributed forces to the nodes of the element
+        Teuchos::RCP<Epetra_Vector> ithermoload  ///< distributed heat fluxes to the nodes of the element
       );
-
-      /// calculate the normal of an element
-      vector<double> Normal
-      (
-        std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-        const int head1,
-        const int origin,
-        const int head2
-      );
-
 
     private:
-      Teuchos::RCP<DRT::Discretization> istructdis_;    ///< discretization of structural interface
-      Teuchos::RCP<DRT::Discretization> ithermodis_;    ///< discretization of thermal interface
+      Teuchos::RCP<DRT::Discretization> istructdis_;  ///< discretization of structural interface
+      Teuchos::RCP<DRT::Discretization> ithermodis_;  ///< discretization of thermal interface
 
-      Teuchos::RCP<const Epetra_Map> istructdofredumap_;   ///< dof map of fully redundant structural interface
-      Teuchos::RCP<const Epetra_Map> ithermodofredumap_;   ///< dof map of fully redundant structural interface
+      Teuchos::RCP<const Epetra_Map> istructdofredumap_;  ///< dof map of fully redundant structural interface
+      Teuchos::RCP<const Epetra_Map> ithermodofredumap_;  ///< dof map of fully redundant structural interface
 
-      map<int, map<int, RCP<DRT::Element> > > structreduelements_;   ///< redundant version of coupling elements for each interface
+      std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structreduelements_; ///< redundant version of coupling elements for each interface
 
-      Teuchos::RCP<const LINALG::MapExtractor> thermorowmapext_;   ///< map extractor between thermo discret and interface thermo dis
+      Teuchos::RCP<const LINALG::MapExtractor> thermorowmapext_;  ///< map extractor between thermo discret and interface thermo dis
 
-      Teuchos::RCP<Epetra_Vector> matconfig_;    ///< material configuration of structural gids
+      Teuchos::RCP<Epetra_Vector> matconfig_; ///< material configuration of structural gids
 
-      double maxmindist_;    ///< search radius to find close elements on the structural interface
+      double maxmindist_; ///< search radius to find close elements on the structural interface
 
-      int maxid_;    ///< max id of the interfaces
+      int maxid_; ///< max id of the interfaces
 
     }; // class AeroCouplingUtils
 

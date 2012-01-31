@@ -33,14 +33,18 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
+  // forward declarations
 namespace LINALG
 {
-  // forward declaration
   class SparseMatrix;
   class MapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
+}
+namespace FS3I
+{
+  class AeroTFSI;
 }
 
 /// TSI: Thermo-Structure Interaction
@@ -76,6 +80,7 @@ namespace TSI
                          public ADAPTER::StructureBaseAlgorithm,
                          public ADAPTER::ThermoBaseAlgorithm
   {
+    friend class FS3I::AeroTFSI;
   public:
 
     /// create using a Epetra_Comm
@@ -89,7 +94,7 @@ namespace TSI
       int step  ///< step number where the calculation is continued
       );
 
-  public:
+  protected:
 
     //! @name Time loop building blocks
 
@@ -120,7 +125,7 @@ namespace TSI
    */
   class Monolithic : public MonolithicBase
   {
-
+    friend class FS3I::AeroTFSI;
   public:
     explicit Monolithic(
       const Epetra_Comm& comm,
@@ -222,9 +227,6 @@ namespace TSI
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
-
-    /// write output
-    void Output();
 
     //@}
 
@@ -328,6 +330,9 @@ namespace TSI
     bool printiter_;  //!< print intermediate iterations during solution
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
+
+    /// write output
+    void Output();
 
     /// communicate displacement vector to thermal field to enable their
     /// visualisation on the deformed body
