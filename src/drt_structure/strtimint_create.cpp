@@ -32,8 +32,9 @@ Maintainer: Thomas Klöppel
 #include "strtimint_genalpha.H"
 #include "strtimint_ost.H"
 #include "strtimint_gemm.H"
-#include "strtimint_ab2.H"
 #include "strtimint_expleuler.H"
+#include "strtimint_centrdiff.H"
+#include "strtimint_ab2.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -64,8 +65,6 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
     // old style time integrators
     case INPAR::STR::dyna_gen_alfa :
     case INPAR::STR::dyna_gen_alfa_statics :
-    case INPAR::STR::dyna_Gen_EMM :
-    case INPAR::STR::dyna_centr_diff :
     {
       dserror("You should not turn up here.");
       break;
@@ -153,7 +152,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
 }
 
 /*======================================================================*/
-/* create implicit marching time integrator */
+/* create explicit marching time integrator */
 Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
 (
   const Teuchos::ParameterList& ioflags,
@@ -170,6 +169,20 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
   // create specific time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
+      // forward Euler time integration
+    case INPAR::STR::dyna_expleuler :
+    {
+      sti = Teuchos::rcp(new STR::TimIntExplEuler(ioflags, sdyn, xparams,
+                                            actdis, solver, contactsolver, output));
+      break;
+    }
+    // central differences time integration
+    case INPAR::STR::dyna_centrdiff:
+    {
+      sti = Teuchos::rcp(new STR::TimIntCentrDiff(ioflags, sdyn, xparams,
+                                            actdis, solver, contactsolver, output));
+      break;
+    }
     // Adams-Bashforth 2nd order (AB2) time integration
     case INPAR::STR::dyna_ab2 :
     {
@@ -177,13 +190,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
                                             actdis, solver, contactsolver, output));
       break;
     }
-    // forward Euler time integration
-    case INPAR::STR::dyna_explEuler :
-    {
-      sti = Teuchos::rcp(new STR::TimIntExplEuler(ioflags, sdyn, xparams,
-                                            actdis, solver, contactsolver, output));
-      break;
-    }
+
     // Everything else
     default :
     {

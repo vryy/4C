@@ -80,24 +80,19 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   // major switch to different time integrators
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
-  case INPAR::STR::dyna_centr_diff :
-    dserror("no central differences in DRT");
-    break;
   case INPAR::STR::dyna_gen_alfa :
   case INPAR::STR::dyna_gen_alfa_statics :
     SetupStruGenAlpha(prbdyn);  // <-- here is the show
-    break;
-  case INPAR::STR::dyna_Gen_EMM :
-    dserror("Gen_EMM not supported");
     break;
   case INPAR::STR::dyna_statics :
   case INPAR::STR::dyna_genalpha :
   case INPAR::STR::dyna_onesteptheta :
   case INPAR::STR::dyna_gemm :
-  case INPAR::STR::dyna_ab2:
+  case INPAR::STR::dyna_expleuler:
+  case INPAR::STR::dyna_centrdiff :
+  case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
-  case INPAR::STR::dyna_explEuler:
     SetupTimIntImpl(prbdyn);  // <-- here is the show
     break;
   default :

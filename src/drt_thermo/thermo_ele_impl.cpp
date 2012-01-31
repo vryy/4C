@@ -553,7 +553,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
     {
-      case INPAR::THR::dyna_explEuler :
+      case INPAR::THR::dyna_expleuler :
       {
         // TODO 30.01.12 
         cout << "in lump matrix thr element!" << endl;

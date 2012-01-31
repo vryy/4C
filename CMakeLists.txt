@@ -1077,8 +1077,9 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimada_create.cpp
   src/drt_structure/strtimada_zienxie.cpp
   src/drt_structure/strtimint.cpp
-  src/drt_structure/strtimint_ab2.cpp
   src/drt_structure/strtimint_create.cpp
+  src/drt_structure/strtimint_ab2.cpp
+  src/drt_structure/strtimint_centrdiff.cpp
   src/drt_structure/strtimint_expl.cpp
   src/drt_structure/strtimint_expleuler.cpp
   src/drt_structure/strtimint_gemm.cpp
@@ -1941,6 +1942,8 @@ baci_test(constr3D_shrinking_stat_direct 1 "")
 baci_test(constr3D_shrinking_stat_direct 2 "")
 baci_test(constr3Dpen_shrinking_stat_direct 1 "")
 baci_test(constr3Dpen_shrinking_stat_direct 2 "")
+baci_test(contact2D_centrdiff 1 "")
+baci_test(contact2D_centrdiff 2 "")
 baci_test(contact2D_initfield 1 "")
 baci_test(contact2D_initfield 2 "")
 baci_test(contact2D_hertz_linstatic 1 "")

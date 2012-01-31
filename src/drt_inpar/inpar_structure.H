@@ -38,18 +38,18 @@ namespace INPAR
     enum DynamicType
     {
       dyna_gen_alfa,                   ///< generalised-alpha time integrator
+                                       ///< (old style)
       dyna_gen_alfa_statics,           ///< static analysis with gen_alfa
-      dyna_centr_diff,                 ///< central differences (explicit)
-      dyna_Gen_EMM,                    ///< generalised energy-momentum method
+                                       ///< (old style)
       dyna_statics,                    ///< static analysis
-      dyna_genalpha,                   ///< generalised-alpha time integrator,
-                                       ///< new style (implicit)
+      dyna_genalpha,                   ///< generalised-alpha time integrator (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
-      dyna_gemm,                       ///< generalised energy-momementum method
+      dyna_gemm,                       ///< generalised energy-momementum method (implicit)
+      dyna_expleuler,                  ///< forward Euler (explicit)
+      dyna_centrdiff,                  ///< central differences (explicit)
       dyna_ab2,                        ///< Adams-Bashforth 2nd order (explicit)
       dyna_euma,                       ///< Euler-Maruyama scheme (stochastic, explicit)
-      dyna_euimsto,                    ///< Euler implicit scheme for SDE's (stochastic, implicit)
-      dyna_explEuler                   ///< forward Euler (explicit)
+      dyna_euimsto                     ///< Euler implicit scheme for SDE's (stochastic, implicit)
     };
 
     /// Map time integrator to string
@@ -65,11 +65,6 @@ namespace INPAR
         break;
       case dyna_gen_alfa_statics :
         return "Static";
-      case dyna_centr_diff :
-        return "Centr_Diff";
-        break;
-      case dyna_Gen_EMM :
-        return "Gen_EMM";
         break;
       case dyna_statics :
         return "Statics";
@@ -83,11 +78,14 @@ namespace INPAR
       case dyna_gemm :
         return "GEMM";
         break;
+      case dyna_expleuler :
+        return "ExplEuler";
+        break;
+      case dyna_centrdiff :
+        return "CentrDiff";
+        break;
       case dyna_ab2 :
         return "AdamsBashforth2" ;
-        break;
-      case dyna_explEuler :
-        return "ExplEuler";
         break;
       default :
         dserror("Cannot make string for time integrator %d", name);

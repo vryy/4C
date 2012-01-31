@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_ab2.cpp
-\brief Structural time integration with Adams-Bashforth 2nd order (explicit)
+\file strtimint_centrdiff.cpp
+\brief Structural time integration with central difference scheme 2nd order (explicit)
 
 <pre>
 Maintainer: Alexander Popp
@@ -17,7 +17,7 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "strtimint_ab2.H"
+#include "strtimint_centrdiff.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../linalg/linalg_solver.H"
@@ -26,12 +26,11 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimIntAB2::TimIntAB2
+STR::TimIntCentrDiff::TimIntCentrDiff
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
-  //const Teuchos::ParameterList& ab2params,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<LINALG::Solver> contactsolver,
@@ -56,7 +55,7 @@ STR::TimIntAB2::TimIntAB2
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with Adams-Bashforth 2nd order"
+    std::cout << "with central differences"
               << std::endl;
   }
 
@@ -79,40 +78,29 @@ STR::TimIntAB2::TimIntAB2
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
-void STR::TimIntAB2::ResizeMStep()
+void STR::TimIntCentrDiff::ResizeMStep()
 {
-  // resize time and stepsize fields
-  time_->Resize(-1, 0, (*time_)[0]);
-  dt_->Resize(-1, 0, (*dt_)[0]);
-
-  // resize state vectors, AB2 is a 2-step method, thus we need two
-  // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, dofrowmap_, true);
-  vel_->Resize(-1, 0, dofrowmap_, true);
-  acc_->Resize(-1, 0, dofrowmap_, true);
+  // nothing to do, because CentrDiff is a 1-step method
+  return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void STR::TimIntAB2::IntegrateStep()
+void STR::TimIntCentrDiff::IntegrateStep()
 {
   // time this step
   timer_->ResetStartTime();
 
-  const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
-  const double dto = (*dt_)[-1];  // \f$\Delta t_{n-1}\f$
+  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+  const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
-  // new displacements \f$D_{n+}\f$
-  disn_->Update(1.0, *(*dis_)(0), 0.0);
-  disn_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *(*vel_)(0),
-                -(dt*dt)/(2.0*dto), *(*vel_)(-1),
-                1.0);
-
-  // new velocities \f$V_{n+1}\f$
+  // new velocities \f$V_{n+1/2}\f$
   veln_->Update(1.0, *(*vel_)(0), 0.0);
-  veln_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *(*acc_)(0),
-                -(dt*dt)/(2.0*dto), *(*acc_)(-1),
-                1.0);
+  veln_->Update(dthalf, *(*acc_)(0), 1.0);
+
+  // new displacements \f$D_{n+1}\f$
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
+  disn_->Update(dt, *veln_, 1.0);
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
@@ -162,7 +150,7 @@ void STR::TimIntAB2::IntegrateStep()
 
   // TIMING
   //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
-  
+
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
@@ -171,7 +159,7 @@ void STR::TimIntAB2::IntegrateStep()
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
-  
+
   if (HaveContactMeshtying())
   {
     frimpn_->Update(1.0, *fcmtn_, 1.0);
@@ -215,13 +203,16 @@ void STR::TimIntAB2::IntegrateStep()
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
+  // update of end-velocities \f$V_{n+1}\f$
+  veln_->Update(dthalf, *accn_, 1.0);
+
   // wassup?
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void STR::TimIntAB2::UpdateStepState()
+void STR::TimIntCentrDiff::UpdateStepState()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
@@ -243,7 +234,7 @@ void STR::TimIntAB2::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntAB2::UpdateStepElement()
+void STR::TimIntCentrDiff::UpdateStepElement()
 {
   // create the parameters for the discretization
   ParameterList p;
@@ -259,9 +250,9 @@ void STR::TimIntAB2::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntAB2::ReadRestartForce()
+void STR::TimIntCentrDiff::ReadRestartForce()
 {
-  dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
+  dserror("No restart ability for central differences time integrator!");
   return;
 }
 

@@ -89,7 +89,7 @@ namespace STR
     //! Return time integrator name
     enum INPAR::STR::DynamicType MethodName() const
     {
-      return INPAR::STR::dyna_explEuler;
+      return INPAR::STR::dyna_expleuler;
     }
 
     //! Provide number of steps, e.g. a single-step method returns 1,

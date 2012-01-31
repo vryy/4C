@@ -80,15 +80,8 @@ STR::TimIntExplEuler::TimIntExplEuler
 /* Resizing of multi-step quantities */
 void STR::TimIntExplEuler::ResizeMStep()
 {
-  // resize time and stepsize fields
-  time_->Resize(-1, 0, (*time_)[0]);
-  dt_->Resize(-1, 0, (*dt_)[0]);
-
-  // resize state vectors, ExplEuler is a 2-step method, thus we need two
-  // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, dofrowmap_, true);
-  vel_->Resize(-1, 0, dofrowmap_, true);
-  acc_->Resize(-1, 0, dofrowmap_, true);
+  // nothing to do, because ExplEuler is a 1-step method
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -100,7 +93,7 @@ void STR::TimIntExplEuler::IntegrateStep()
 
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
 
-  // new displacements \f$D_{n+}\f$
+  // new displacements \f$D_{n+1}\f$
   disn_->Update(1.0, *(*dis_)(0), 0.0);
   disn_->Update(dt, *(*vel_)(0), 1.0);
 
@@ -183,7 +176,7 @@ void STR::TimIntExplEuler::IntegrateStep()
     accn_->PutScalar(0.0);
 
     // in case of mass matrix is a BlockSparseMatrix, use solver
-    if((lumpmass_==false) || (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null))
+    if (lumpmass_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null)
     {
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised

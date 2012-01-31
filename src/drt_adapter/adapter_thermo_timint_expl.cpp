@@ -85,7 +85,7 @@ Teuchos::RCP<THR::TimIntExpl> ADAPTER::ThermoTimIntExpl::Create(
   switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
     // explicit analysis using forward Euler
-    case INPAR::THR::dyna_explEuler :
+    case INPAR::THR::dyna_expleuler :
     {
       tti = Teuchos::rcp(new THR::TimIntExplEuler(ioflags, tdyn, xparams, actdis, solver, output));
       break;

@@ -748,31 +748,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("DYNAMICTYP","GenAlpha",
                                "type of time integration control",
                                tuple<std::string>(
-                                 "Centr_Diff",
-                                 "Gen_EMM",
                                  "Gen_Alfa",
                                  "Static",
                                  "Statics",
                                  "GenAlpha",
                                  "OneStepTheta",
                                  "GEMM",
+                                 "ExplicitEuler",
+                                 "CentrDiff",
                                  "AdamsBashforth2",
                                  "EulerMaruyama",
-                                 "EulerImpStoch",
-                                 "ExplicitEuler"),
+                                 "EulerImpStoch"),
                                tuple<int>(
-                                 INPAR::STR::dyna_centr_diff,
-                                 INPAR::STR::dyna_Gen_EMM,
                                  INPAR::STR::dyna_gen_alfa,
                                  INPAR::STR::dyna_gen_alfa_statics,
                                  INPAR::STR::dyna_statics,
                                  INPAR::STR::dyna_genalpha,
                                  INPAR::STR::dyna_onesteptheta,
                                  INPAR::STR::dyna_gemm,
+                                 INPAR::STR::dyna_expleuler,
+                                 INPAR::STR::dyna_centrdiff,
                                  INPAR::STR::dyna_ab2,
                                  INPAR::STR::dyna_euma,
-                                 INPAR::STR::dyna_euimsto,
-                                 INPAR::STR::dyna_explEuler),
+                                 INPAR::STR::dyna_euimsto),
                                &sdyn);
   // a temporary flag
   setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
@@ -1655,7 +1653,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::THR::dyna_onesteptheta,
                                   INPAR::THR::dyna_gemm,
                                   INPAR::THR::dyna_genalpha,
-                                  INPAR::THR::dyna_explEuler),
+                                  INPAR::THR::dyna_expleuler),
                                &tdyn);
 
   // Output type

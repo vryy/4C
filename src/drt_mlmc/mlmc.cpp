@@ -215,22 +215,18 @@ void STR::MLMC::Integrate()
      // major switch to different time integrators
      switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
      {
-     case INPAR::STR::dyna_centr_diff:
-       dserror("no central differences in DRT");
-       break;
      case INPAR::STR::dyna_gen_alfa:
      case INPAR::STR::dyna_gen_alfa_statics:
      case INPAR::STR::dyna_statics:
      case INPAR::STR::dyna_genalpha:
      case INPAR::STR::dyna_onesteptheta:
      case INPAR::STR::dyna_gemm:
+     case INPAR::STR::dyna_expleuler:
+     case INPAR::STR::dyna_centrdiff:
      case INPAR::STR::dyna_ab2:
-     case INPAR::STR::dyna_euma :
-     case INPAR::STR::dyna_euimsto :
+     case INPAR::STR::dyna_euma:
+     case INPAR::STR::dyna_euimsto:
        dyn_nlnstructural_drt();
-       break;
-     case INPAR::STR::dyna_Gen_EMM:
-       dserror("GEMM not supported");
        break;
      default:
        dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());

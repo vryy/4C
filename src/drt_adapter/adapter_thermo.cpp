@@ -74,7 +74,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   case INPAR::THR::dyna_onesteptheta :
   case INPAR::THR::dyna_gemm :
   case INPAR::THR::dyna_genalpha :
-  case INPAR::THR::dyna_explEuler :
+  case INPAR::THR::dyna_expleuler :
     SetupTimIntImpl(prbdyn);   // <-- here is the show
     break;
   default :
