@@ -111,6 +111,24 @@ namespace ELEMENTS
         vector<int>&                    lm,
         Epetra_SerialDenseVector&       elevec1);
 
+
+    virtual int ComputeErrorXFEM(
+        DRT::ELEMENTS::Fluid3*          ele,
+        ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec);
+
+    virtual int ComputeErrorXFEM(
+        DRT::ELEMENTS::Fluid3*          ele,
+        ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec1,
+        const DRT::UTILS::GaussIntegration & intpoints2);
+
     /// Evaluate the element
     /*!
       Generic virtual interface function. Called via base pointer.
