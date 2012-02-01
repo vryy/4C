@@ -256,6 +256,8 @@ namespace FLD
     /// (multiple) corrector
     void MultiCorrector();
 
+    void EvaluateErrorComparedToAnalyticalSol();
+
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
     void Evaluate(

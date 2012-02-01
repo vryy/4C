@@ -1298,6 +1298,215 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   SetElementTurbulenceParameter();
 }
 
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
+{
+  /*     _______________
+        | GP
+        |---
+      \ |\  (u-u_exact)^2
+       \|---
+        |               */
+
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
+
+  int numscalars = 4;
+
+  Epetra_SerialDenseVector cpuscalars(numscalars);
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
+    Teuchos::rcp(new Epetra_SerialDenseVector(numscalars));
+
+  switch(calcerr)
+  {
+  case INPAR::FLUID::no_error_calculation:
+    // do nothing --- no analytical solution available
+    return;
+    break;
+  case INPAR::FLUID::beltrami_flow:
+  case INPAR::FLUID::channel2D:
+  case INPAR::FLUID::shear_flow:
+  {
+
+    // call loop over elements (assemble nothing)
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("u and p at time n+1 (converged)",state_->velnp_);
+
+    const int numrowele = discret_->NumMyRowElements();
+    for (int i=0; i<numrowele; ++i)
+    {
+      // define element vector
+      // elescalars[0]:deltavel, elescalars[1]:deltap,
+      // elescalars[2]:analytical vel, elescalars[3]:analytical pres
+      Epetra_SerialDenseVector elescalars(numscalars);
+
+      // pointer to current element
+      DRT::Element* actele = discret_->lRowElement(i);
+
+      Teuchos::RCP<MAT::Material> mat = actele->Material();
+
+      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+
+      GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+      DRT::Element::LocationArray la( 1 );
+
+      // xfem element
+      if ( e!=NULL )
+      {
+#ifdef DOFSETS_NEW
+
+        std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+        std::vector< std::vector<int> > nds_sets;
+        std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
+
+        if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
+        if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
+
+        int set_counter = 0;
+
+        // loop over volume cells
+        for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+             s!=cell_sets.end();
+             s++)
+        {
+          const std::vector<int> & nds = nds_sets[set_counter];
+
+          // get element location vector, dirichlet flags and ownerships
+          actele->LocationVector(*discret_,nds,la,false);
+
+          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,params_, mat, *discret_, la[0].lm_,
+                                                                                      elescalars,intpoints_sets[set_counter]);
+
+          // sum up (on each processor)
+          cpuscalars += elescalars;
+
+          set_counter += 1;
+        }
+#else
+        GEO::CUT::plain_volumecell_set cells;
+        std::vector<DRT::UTILS::GaussIntegration> intpoints;
+        e->VolumeCellGaussPoints( cells, intpoints ,VolumeCellGaussPointBy_);//modify gauss type
+
+        int count = 0;
+        for ( GEO::CUT::plain_volumecell_set::iterator s=cells.begin(); s!=cells.end(); ++s )
+        {
+          GEO::CUT::VolumeCell * vc = *s;
+          if ( vc->Position()==GEO::CUT::Point::outside )
+          {
+//             // one set of dofs
+//             std::vector<int>  ndstest;
+//             for (int t=0;t<8; ++t)
+//               ndstest.push_back(0);
+
+            const std::vector<int> & nds = vc->NodalDofSet();
+            actele->LocationVector(*discret_,nds,la,false);
+            //actele->LocationVector(*discret_,ndstest,la,false);
+
+            DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,params_, mat, *discret_, la[0].lm_,
+                                                                                        elescalars,intpoints[count]);
+
+            // sum up (on each processor)
+            cpuscalars += elescalars;
+          }
+          count += 1;
+        }
+
+#endif
+      }
+      // no xfem element
+      else
+      {
+        TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
+        // get element location vector, dirichlet flags and ownerships
+        actele->LocationVector(*discret_,la,false);
+         DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, params_, mat, *discret_, la[0].lm_,
+                                                                                     elescalars);
+         // sum up (on each processor)
+         cpuscalars += elescalars;
+      }
+    }//end loop over fluid elements
+  }
+  break;
+  default:
+    dserror("Cannot calculate error. Unknown type of analytical test problem");
+  }
+
+  // reduce
+  for (int i=0; i<numscalars; ++i) (*scalars)(i) = 0.0;
+  discret_->Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
+
+  double velerr = 0.0;
+  double preerr = 0.0;
+
+  // integrated analytic solution in order to compute relative error
+  double velint = 0.0;
+  double pint = 0.0;
+
+  // for the L2 norm, we need the square root
+  velerr = sqrt((*scalars)[0]);
+  preerr = sqrt((*scalars)[1]);
+
+  // analytical vel_mag and p_mag
+  velint= sqrt((*scalars)[2]);
+  pint = sqrt((*scalars)[3]);
+
+  if (myrank_ == 0)
+  {
+    {
+      cout.precision(8);
+      cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
+        DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error") <<
+        " ----------" << endl;
+      cout << "| velocity:  " << velerr/velint << endl;
+      cout << "| pressure:  " << preerr/pint << endl;
+      cout << "--------------------------------------------------------------------" << endl << endl;
+    }
+
+    // append error of the last time step to the error file
+    if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+    {
+      ostringstream temp;
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+".relerror";
+
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << "#| " << simulation << "\n";
+      f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
+      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+      f.flush();
+      f.close();
+    }
+
+    ostringstream temp;
+    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string fname = simulation+"_time.relerror";
+
+    if(step_==1)
+    {
+      std::ofstream f;
+      f.open(fname.c_str());
+      f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
+      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+      f.flush();
+      f.close();
+    }
+    else
+    {
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+      f.flush();
+      f.close();
+    }
+  }
+
+}
+
 void FLD::XFluid::PrintStabilizationParams()
 {
   // output of stabilization details
@@ -1467,6 +1676,12 @@ void FLD::XFluid::TimeLoop()
     StatisticsAndOutput();
 
     // -------------------------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    // -------------------------------------------------------------------
+    EvaluateErrorComparedToAnalyticalSol();
+
+
+    // -------------------------------------------------------------------
     //                       update time step sizes
     // -------------------------------------------------------------------
     dtp_ = dta_;
@@ -1526,6 +1741,12 @@ void FLD::XFluid::SolveStationaryProblem()
     //                        compute flow rates
     // -------------------------------------------------------------------
     //ComputeFlowRates();
+
+
+    // -------------------------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    // -------------------------------------------------------------------
+    EvaluateErrorComparedToAnalyticalSol();
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -3073,6 +3294,7 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
 {
   state_->GenAlphaUpdateAcceleration();
 }
+
 
 void FLD::XFluid::XFluidState::GenAlphaIntermediateValues()
 {

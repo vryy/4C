@@ -10,25 +10,14 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "xfluid_defines.H"
-
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
+#include "../drt_xfem/xfem_fluiddofset.H"
 
-#include "../drt_io/io_ostream0.H"
-#include "../drt_io/io.H"
-
-#include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dofset_independent.H"
-//#include "fluid_utils_mapextractor.H"
-
-#include "fluid_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
-#include "../drt_cut/cut_boundingbox.H"
+#include "fluid_utils_mapextractor.H"
 
 namespace DRT
 {
@@ -304,6 +293,8 @@ namespace FLD
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
       );
+
+    void EvaluateErrorComparedToAnalyticalSol();
 
     void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
                         const LINALG::MultiMapExtractor& domainmaps,
@@ -657,6 +648,8 @@ namespace FLD
     std::string BoundCellGaussPointBy_;
 
     int gmsh_count_;
+
+    string action_;
   };
 }
 
