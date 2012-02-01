@@ -55,7 +55,8 @@ STR::TimIntExplEuler::TimIntExplEuler
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with forward Euler"
+    std::cout << "with forward Euler" << std::endl
+              << "lumping activated: " << (lumpmass_?"true":"false") << std::endl
               << std::endl;
   }
 
@@ -175,7 +176,7 @@ void STR::TimIntExplEuler::IntegrateStep()
     // get accelerations
     accn_->PutScalar(0.0);
 
-    // in case of mass matrix is a BlockSparseMatrix, use solver
+    // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
     if (lumpmass_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null)
     {
       // refactor==false: This is not necessary, because we always
@@ -183,18 +184,14 @@ void STR::TimIntExplEuler::IntegrateStep()
       // in TimInt::DetermineMassDampConsistAccel
       solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, false, true);
     }
-    // in case of mass matrix is a SparseMatrix and lumpmass_==true
+    // direct inversion based on lumped mass matrix
     else
     {
       // extract the diagonal values of the mass matrix
       Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->RowMap(),false);
       (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->ExtractDiagonalCopy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )
-
-//cout << "diag = " << *diag << endl;
-//cout << "frimpn_ = " << *frimpn_ << endl;
       accn_->ReciprocalMultiply(1.0, *diag, *frimpn_, 0.0);
-//cout << "accn_ = " << *accn_ << endl;
     }
   }
 
