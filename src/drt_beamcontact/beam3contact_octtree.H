@@ -84,8 +84,8 @@ class Beam3ContactOctTree
     void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
 
-    //!\brief spatial division of 3-dimensional volume
-    void locateAll();
+    //!\brief spatial division of 3-dimensional volume. Returns false if no bounding boxes were found in any octant
+    bool locateAll();
 
     //!\brief primitive for locateAll
     void locateBox(std::vector<std::vector<double> > allbboxesstdvec,

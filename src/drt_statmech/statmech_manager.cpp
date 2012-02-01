@@ -2674,7 +2674,7 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
   if (LID.M()==1 && LID.N()==1)
   {
     // set molecule position to node position
-    map<int, LINALG::Matrix<3, 1> >::const_iterator pos0 = currentpositions.find((int)LID(0, 0));
+    map<int, LINALG::Matrix<3, 1> >::const_iterator pos0 = currentpositions.find((int)LID(0,0));
     if (coupledmovement)
     {
       // if the binding spots are oriented according to the double helical structure of f-actin
@@ -2713,7 +2713,7 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
     {
       if(DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
       {
-
+        // nothing to be done
       }
       else
       {
@@ -2731,10 +2731,25 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
   // case: crosslinker element
   if (LID.M()==2 && LID.N()==1)
   {
-    int largerlid = max((int)LID(0,0), (int)LID(1,0));
-    map<int,LINALG::Matrix<3,1> >::const_iterator updatedpos = currentpositions.find(largerlid);
-    for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
-      (*crosslinkerpositions_)[i][crosslinkernumber] = (updatedpos->second)(i);
+    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
+    {
+      map<int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find((int)LID(0,0));
+      for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
+        (*crosslinkerpositions_)[i][crosslinkernumber] = (pos->second)(i);
+      pos = currentpositions.find((int)LID(1,0));
+      for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
+      {
+        (*crosslinkerpositions_)[i][crosslinkernumber] += (pos->second)(i);
+        (*crosslinkerpositions_)[i][crosslinkernumber] /= 2.0;
+      }
+    }
+    else
+    {
+      int largerlid = max((int)LID(0,0), (int)LID(1,0));
+      map<int,LINALG::Matrix<3,1> >::const_iterator updatedpos = currentpositions.find(largerlid);
+      for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
+        (*crosslinkerpositions_)[i][crosslinkernumber] = (updatedpos->second)(i);
+    }
   }
   return;
 }// StatMechManager::CrosslinkerIntermediateUpdate
@@ -2904,8 +2919,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
         for(int j=0; j<3; j++)
           elelength += (node1->X()[j]-node0->X()[j])*(node1->X()[j]-node0->X()[j]);
         elelength = sqrt(elelength);
-
-        cout<<"ElementLength = "<<elelength<<endl;
 
         for(int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
         {

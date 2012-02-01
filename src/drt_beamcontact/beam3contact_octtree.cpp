@@ -122,13 +122,17 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
   CreateBoundingBoxes(currentpositions);
   // call recursive octtree build
   // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
-  locateAll();
+  bool bboxesfound = locateAll();
   // intersection checks
   vector<RCP<Beam3contact> > contactpairs;
-  BoundingBoxIntersection(currentpositions, &contactpairs);
-  // output
-  OctreeOutput(contactpairs , step);
-
+  if(bboxesfound)
+  {
+    BoundingBoxIntersection(currentpositions, &contactpairs);
+    // output
+    OctreeOutput(contactpairs , step);
+  }
+  else
+    contactpairs.clear();
 #ifdef OCTREEDEBUG
   if(!discret_.Comm().MyPID())
     cout<<"Octree Search time: "<<Teuchos::Time::wallTime()-t_start<<endl;
@@ -1051,7 +1055,7 @@ void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int&
  |  box of a set belongs to; binary matrices BX, BY, BZ where each row shows               |
  |  "binary address" of each region are written to .dat- files each.                       |
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateAll()
+bool Beam3ContactOctTree::locateAll()
 {
 #ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
@@ -1104,61 +1108,73 @@ void Beam3ContactOctTree::locateAll()
   discret_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
   discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
 
-  // build temporary, fully overlapping map and row map
-  // create octree maps
-  std::vector<int> gids;
-  for (int i=0 ; i<bboxlengthglobal; i++ )
-    gids.push_back(i);
-  // crosslinker column and row map
-  Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
-  Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
-
-  // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
-  bboxesinoctants_ = rcp(new Epetra_MultiVector(octtreemap,maxdepthglobal));
-  Epetra_MultiVector bboxinoctrow(octtreerowmap,maxdepthglobal, true);
-
-  // fill bboxinoct for Proc 0
-  if(searchdis_.Comm().MyPID()==0)
+  /* build temporary, fully overlapping map and row map for octree
+   * Note: maxdepthglobal does not occur for a converging Newton iteration. Yet, in some cases, when
+   * encountering divergence for the Newton scheme, this might happen.
+   * In biopolymer network simulations, this setting is not unlikely and unavoidable. a maximum depth of
+   * 0 means, there are no bounding boxes/elements in any octants. Hence, we will not detect any contact and
+   * therefore skip the rest of the octree algorithm.*/
+  if(maxdepthglobal>0)
   {
-    bboxesinoctants_->PutScalar(-9.0);
-    for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
-      for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
-        (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
-  }
-  else
-    bboxesinoctants_->PutScalar(0.0);
+    // create octree maps
+    std::vector<int> gids;
+    for (int i=0 ; i<bboxlengthglobal; i++ )
+      gids.push_back(i);
+    // crosslinker column and row map
+    Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
+    Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
 
-  // Communication
-  Epetra_Export octmapexporter(octtreemap, octtreerowmap);
-  Epetra_Import octmapimporter(octtreemap, octtreerowmap);
-  bboxinoctrow.Export(*bboxesinoctants_,octmapexporter,Add);
-  bboxesinoctants_->Import(bboxinoctrow,octmapimporter,Insert);
+    // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
+    bboxesinoctants_ = rcp(new Epetra_MultiVector(octtreemap,maxdepthglobal));
+    Epetra_MultiVector bboxinoctrow(octtreerowmap,maxdepthglobal, true);
+
+    // fill bboxinoct for Proc 0
+    if(searchdis_.Comm().MyPID()==0)
+    {
+      bboxesinoctants_->PutScalar(-9.0);
+      for (int i=0 ; i<(int)bboxesinoctants.size(); i++ )
+        for(int j=0; j<(int)bboxesinoctants[i].size(); j++)
+          (*bboxesinoctants_)[j][i] = bboxesinoctants[i][j];
+    }
+    else
+      bboxesinoctants_->PutScalar(0.0);
+
+    // Communication
+    Epetra_Export octmapexporter(octtreemap, octtreerowmap);
+    Epetra_Import octmapimporter(octtreemap, octtreerowmap);
+    bboxinoctrow.Export(*bboxesinoctants_,octmapexporter,Add);
+    bboxesinoctants_->Import(bboxinoctrow,octmapimporter,Insert);
 
 #ifdef OCTREEDEBUG
-  std::ostringstream filename;
-  if(!discret_.Comm().MyPID())
-  {
-    filename << "BBinOct.dat";
-    FILE* fp = NULL;
-    fp = fopen(filename.str().c_str(), "w");
-    std::stringstream myfile;
-    for (int u=0; u<bboxesinoctants_->MyLength(); u++)
+    std::ostringstream filename;
+    if(!discret_.Comm().MyPID())
     {
-      for (int v=0; v<bboxesinoctants_->NumVectors(); v++)
-        myfile <<scientific<<(*bboxesinoctants_)[v][u] <<" ";
-      myfile <<endl;
-    }
-    fprintf(fp, myfile.str().c_str());
-    fclose(fp);
+      filename << "BBinOct.dat";
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "w");
+      std::stringstream myfile;
+      for (int u=0; u<bboxesinoctants_->MyLength(); u++)
+      {
+        for (int v=0; v<bboxesinoctants_->NumVectors(); v++)
+          myfile <<scientific<<(*bboxesinoctants_)[v][u] <<" ";
+        myfile <<endl;
+      }
+      fprintf(fp, myfile.str().c_str());
+      fclose(fp);
 
-    cout<<"bboxesinoctants_ : "<<bboxesinoctants_->MyLength()<<"x"<<bboxesinoctants_->NumVectors()<<endl;
-  }
+      cout<<"bboxesinoctants_ : "<<bboxesinoctants_->MyLength()<<"x"<<bboxesinoctants_->NumVectors()<<endl;
+    }
 #endif
 #ifdef MEASURETIME
-   if(!searchdis_.Comm().MyPID())
-     cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
+     if(!searchdis_.Comm().MyPID())
+       cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
 #endif
-  return;
+     return true;
+  }
+  else
+  {
+    return false;
+  }
 }// end of method locateAll
 
 
