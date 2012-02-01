@@ -1151,7 +1151,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
             //skip the rest of this iteration of the i-loop in case the binding spot is occupied
             if(nodeLID>-1)
-              if((*bspotstatus_)[nodeLID]>0.9)
+              if((*bspotstatus_)[nodeLID]>-0.1)
                 continue;
 
             // flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
@@ -1190,8 +1190,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                   LINALG::SerialDenseMatrix LID(1,1,true);
                   LID(0,0) = nodeLID;
                   (*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
-                  // increment the number of crosslinkers at this node
-                  ((*bspotstatus_)[nodeLID]) = 1.0;
+                  // update status of binding spot by putting in the crosslinker id
+                  ((*bspotstatus_)[nodeLID]) = irandom;
                   // increment the number of bonds of this crosslinker
                   ((*numbond_)[irandom]) = 1.0;
                   CrosslinkerIntermediateUpdate(currentpositions, LID, irandom, bspottriadscol);
@@ -1265,7 +1265,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                     if(nodeLID>=0)
                     {
                       (*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
-                      ((*bspotstatus_)[nodeLID]) = 1.0;
+                      ((*bspotstatus_)[nodeLID]) = irandom;
                       // set flag at irandom-th crosslink molecule that an element is to be added
                       addcrosselement[irandom] = 1.0;
                       // update molecule positions
@@ -1509,30 +1509,32 @@ bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID)
   {
     bool setcrosslinker = true;
     // if a crosslink between two vertical filaments is considered, do not set a linker
-    if((*filamentnumber_)[(int)LID(0,0)]!= 0 &&(*filamentnumber_)[(int)LID(1,0)]!=0)
-    {
+    if((*filamentnumber_)[(int)LID(0,0)]!= 0 && (*filamentnumber_)[(int)LID(1,0)]!=0)
       setcrosslinker = false;
-      return setcrosslinker;
-    }
-    // determine which node LID entry is the non-zero entry
-    int currfilnumber = -1;
-    for(int k=0; k<(int)LID.M(); k++)
-      if((int)(*filamentnumber_)[(int)LID(k,0)]!= 0)
-      {
-        currfilnumber = (int)(*filamentnumber_)[(int)LID(k,0)];
-        break;
-      }
 
-    for(int k=0; k<filamentnumber_->MyLength(); k++)
+    if(setcrosslinker)
     {
-      // check if we already checked all nodes of the current filament. If yes, skip the rest of the nodes.
-      if((*filamentnumber_)[k]==currfilnumber+1)
-        break;
-      // check if any of the filament's nodes has a linker attached
-      if((*filamentnumber_)[k]==currfilnumber && discret_.lColNode(k)->NumElement()>2)
+      // determine which node LID entry is the non-zero entry
+      int currfilnumber = -1;
+      for(int k=0; k<(int)LID.M(); k++)
       {
-        setcrosslinker = false;
-        break;
+        if((int)(*filamentnumber_)[(int)LID(k,0)]!= 0)
+        {
+          currfilnumber = (int)(*filamentnumber_)[(int)LID(k,0)];
+          break;
+        }
+      }
+      for(int k=0; k<filamentnumber_->MyLength(); k++)
+      {
+        // skip the rest of the nodes when having reached the end of the current filament
+        if((*filamentnumber_)[k]==currfilnumber+1)
+          break;
+        // check if any of the filament's nodes has a linker attached
+        if((*filamentnumber_)[k]==currfilnumber && (*numbond_)[(int)(*bspotstatus_)[k]]>1.9)
+        {
+          setcrosslinker = false;
+          break;
+        }
       }
     }
     return setcrosslinker;
@@ -1603,7 +1605,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
               {
                 // obtain LID and reset crosslinkerbond_ at this position
                 int nodeLID = nodecolmap.LID((int) (*crosslinkerbond_)[j][irandom]);
-                ((*bspotstatus_)[nodeLID]) = 0.0;
+                ((*bspotstatus_)[nodeLID]) = -1.0;
                 (*numbond_)[irandom] = 0.0;
                 (*crosslinkerbond_)[j][irandom] = -1.0;
 
@@ -1637,7 +1639,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
                 // vector updates
                 (*crosslink2element_)[irandom] = -1.0;
-                (*bspotstatus_)[nodeLID] = 0.0;
+                (*bspotstatus_)[nodeLID] = -1.0;
                 (*crosslinkerbond_)[jrandom][irandom] = -1.0;
                 // if the linker to be removed occupies to binding spots on the same filament
                 if((*crosslinkonsamefilament_)[irandom] > 0.9)
@@ -1921,7 +1923,7 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
               {
                 // obtain LID and reset crosslinkerbond_ at this position
                 int nodeLID = discret_.NodeColMap()->LID((int) (*crosslinkerbond_)[j][irandom]);
-                (*bspotstatus_)[nodeLID] = 0.0;
+                (*bspotstatus_)[nodeLID] = -1.0;
                 delcrossmolecules[irandom] = 1.0;
               }
           }
@@ -1937,8 +1939,8 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
               delcrosselement[irandom] = (*crosslink2element_)[irandom];
               delcrossmolecules[irandom] = 1.0;
 
-              ((*bspotstatus_)[(int)(*crosslinkerbond_)[0][irandom]]) = 0.0;
-              ((*bspotstatus_)[(int)(*crosslinkerbond_)[1][irandom]]) = 0.0;
+              ((*bspotstatus_)[(int)(*crosslinkerbond_)[0][irandom]]) = -1.0;
+              ((*bspotstatus_)[(int)(*crosslinkerbond_)[1][irandom]]) = -1.0;
             }
             else	// passive crosslink molecule
             {
@@ -1948,7 +1950,7 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
                 {
                   // obtain LID and reset crosslinkerbond_ at this position
                   int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][irandom]);
-                  ((*bspotstatus_)[nodeLID]) = 0.0;
+                  ((*bspotstatus_)[nodeLID]) = -1.0;
                   delcrossmolecules[irandom] = 1.0;
                 }
             }
@@ -1960,13 +1962,6 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
         break;
     }// for (int i=0; i<numbond_->MyLength(); i++)
   }// if(discret_.Comm().MyPID()==0)
-  else
-  {
-    bspotstatus_->PutScalar(0.0);
-    delcrosselement.PutScalar(0.0);
-    delcrossmolecules.PutScalar(0.0);
-    // searchforneighbours_ and crosslinkonsamefilament_ are not communicated, hence, no resetting to zero here
-  }
 
   //synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
   // transfer vector
@@ -2920,7 +2915,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
 
       // vectors
       // initialize class vectors
-      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_, true));
+      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+      bspotstatus_->PutScalar(-1.0);
       bspotorientations_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
       bspotxi_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
       bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_, true));
@@ -2944,7 +2940,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
       bspotcolmap_ = rcp(new Epetra_Map(*(discret_.NodeColMap())));
       bspotrowmap_ = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
       // initialize class vectors (we do not need nspotxi_ here since the nodes are the binding spots)
-      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_, true));
+      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+      bspotstatus_->PutScalar(-1.0);
       bspotorientations_ = rcp(new Epetra_Vector(*bspotcolmap_));
       bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_));
 
@@ -2983,7 +2980,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
   {
     bspotcolmap_ = rcp(new Epetra_Map(*(discret_.NodeColMap())));
     bspotrowmap_ = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
-    bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_, true));
+    bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+    bspotstatus_->PutScalar(-1.0);
   }
 
   // create density-density-correlation-function map with
@@ -3159,12 +3157,12 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
       {
         int firstbspot = randbspot[i];
         // if this binding spot is still unoccupied
-        if((*bspotstatus_)[firstbspot]<0.1)
+        if((*bspotstatus_)[firstbspot]<-0.9)
         {
           // get the ilink-th random crosslinker
           int currlink = randlink[i];
           // attach it to the first binding spot (i.e. update of relevant class vectors)
-          (*bspotstatus_)[firstbspot] = 1.0;
+          (*bspotstatus_)[firstbspot] = currlink;
           (*numbond_)[currlink] = 1.0;
           for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
             if((*crosslinkerbond_)[j][currlink]<0.1)
@@ -3229,13 +3227,13 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
           // if second binding exists and spot is unoccupied; mandatory: occupy two binding spots on DIFFERENT filaments
           if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*filamentnumber_)[secondbspot]!=(*filamentnumber_)[randbspot[i]])
           {
-            if((*bspotstatus_)[secondbspot] < 0.1)
+            if((*bspotstatus_)[secondbspot] < -0.9)
             {
               numsetelements++;
               addcrosselement[currlink] = 1.0;
               // establish double bond to the first given neighbour
               // attach it to the second binding spot
-              (*bspotstatus_)[secondbspot] = 1.0;
+              (*bspotstatus_)[secondbspot] = currlink;
               (*numbond_)[currlink] = 2.0;
               Epetra_SerialDenseMatrix LID(2,1);
               for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
