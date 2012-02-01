@@ -156,7 +156,8 @@ namespace INPAR
       beltrami_flow,
       channel2D,
       gravitation,
-      shear_flow
+      shear_flow,
+      jeffery_hamel_flow
     };
 
     /// initial field

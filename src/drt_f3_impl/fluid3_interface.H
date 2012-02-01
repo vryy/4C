@@ -158,6 +158,24 @@ namespace ELEMENTS
         vector<int>&                    lm,
         Epetra_SerialDenseVector&       elevec1) = 0;
 
+    virtual int ComputeErrorXFEM(
+        DRT::ELEMENTS::Fluid3*          ele,
+        ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec1,
+        const DRT::UTILS::GaussIntegration & intpoints2) = 0;
+
+    virtual int ComputeErrorXFEM(
+        DRT::ELEMENTS::Fluid3*          ele,
+        ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec1) = 0;
+
+
     virtual int CalcDissipation(Fluid3*                    ele,
                                 ParameterList&             params,
                                 DRT::Discretization&       discretization,
