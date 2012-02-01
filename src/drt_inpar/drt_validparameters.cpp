@@ -1392,9 +1392,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)
   setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",
-       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient"),
+       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient","octree_spherical"),
        tuple<int>(INPAR::CONTACT::boct_none,INPAR::CONTACT::boct_none,
-                  INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb),
+                  INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb,INPAR::CONTACT::boct_spbb),
        &scontact);
 
   DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&scontact);
@@ -1537,6 +1537,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&statmech);
   //Toggles helical binding spot structure of the actin filament
   setStringToIntegralParameter<int>("HELICALBINDINGSTRUCT","No","Turns double-helical binding spot geometry on and off",
+                               yesnotuple,yesnovalue,&statmech);
+  //Toggles helical binding spot structure of the actin filament
+  setStringToIntegralParameter<int>("LOOMSETUP","No","Turns specific routines for loom network on and off",
                                yesnotuple,yesnovalue,&statmech);
 	//Rise per monomer in the actin double helix according to Howard, p. 125
 	DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);

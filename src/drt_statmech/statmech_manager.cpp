@@ -1224,8 +1224,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                   // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
                   if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                     break;
-                  //if((*filamentnumber_)[(int)LID(0,0)]!= 0 &&(*filamentnumber_)[(int)LID(1,0)]!=0)
-                  //  break;
+                  // do not do anything in case of a Loom set up if conditions hereafter are not met
+                  if(!SetCrosslinkerLoom(LID))
+                    break;
+
                   //unit direction vector between currently considered two nodes
                   LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0,0)))->second);
                   direction -= (currentpositions.find((int)LID(1,0)))->second;
@@ -1496,6 +1498,48 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
 #endif
   return;
 } //void StatMechManager::AddNewCrosslinkerElement()
+
+/*----------------------------------------------------------------------*
+ | setting of crosslinkers for loom network setup                       |
+ | (private)                                              mueller (2/12)|
+ *----------------------------------------------------------------------*/
+bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID)
+{
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
+  {
+    bool setcrosslinker = true;
+    // if a crosslink between two vertical filaments is considered, do not set a linker
+    if((*filamentnumber_)[(int)LID(0,0)]!= 0 &&(*filamentnumber_)[(int)LID(1,0)]!=0)
+    {
+      setcrosslinker = false;
+      return setcrosslinker;
+    }
+    // determine which node LID entry is the non-zero entry
+    int currfilnumber = -1;
+    for(int k=0; k<(int)LID.M(); k++)
+      if((int)(*filamentnumber_)[(int)LID(k,0)]!= 0)
+      {
+        currfilnumber = (int)(*filamentnumber_)[(int)LID(k,0)];
+        break;
+      }
+
+    for(int k=0; k<filamentnumber_->MyLength(); k++)
+    {
+      // check if we already checked all nodes of the current filament. If yes, skip the rest of the nodes.
+      if((*filamentnumber_)[k]==currfilnumber+1)
+        break;
+      // check if any of the filament's nodes has a linker attached
+      if((*filamentnumber_)[k]==currfilnumber && discret_.lColNode(k)->NumElement()>2)
+      {
+        setcrosslinker = false;
+        break;
+      }
+    }
+    return setcrosslinker;
+  }
+  else
+    return true;
+}
 
 /*----------------------------------------------------------------------*
  | searches crosslinkers and deletes them if probability check is passed|

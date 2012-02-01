@@ -123,6 +123,7 @@ namespace INPAR
       boct_none,         ///< no boundig box -> no octree
       boct_aabb,     	 ///< axis aligned bounding boxes
       boct_cobb,      	 ///< cylindrical oriented bounding boxes
+      boct_spbb        ///< spherical bounding boxes
     };
 
   }  // namespace CONTACT

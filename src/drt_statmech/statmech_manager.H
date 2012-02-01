@@ -209,6 +209,9 @@ protected:
                                    Epetra_Vector& discol,
                                    RCP<CONTACT::Beam3cmanager> beamcmanager);
 
+  //! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
+  bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID);
+
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in)  set of nodal coordinates
     \param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
