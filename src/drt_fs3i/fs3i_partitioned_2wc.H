@@ -1,3 +1,17 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned_2wc.H
+\brief H-file associated with algorithmic routines for partitioned
+       solution approaches to fluid-structure-scalar-scalar interaction
+       (FS3I) specifically related to two-way-coupled problem
+       configurations
+
+<pre>
+Maintainers: Volker Gravemeier & Lena Yoshihara
+             {vgravem,yoshihara}@lnm.mw.tum.de
+             089/289-15245,-15303
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef FS3I_PART_2WC_H
@@ -19,7 +33,7 @@ namespace FS3I
 
     void InitialCalculations();
 
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep();
 
     void OuterLoop();
 

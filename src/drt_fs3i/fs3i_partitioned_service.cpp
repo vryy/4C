@@ -1,3 +1,18 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned_service.cpp
+\brief Service routines for partitioned solution approaches to
+       fluid-structure-scalar-scalar interaction (FS3I), that is,
+       service routines not specifically related to partitioned
+       solution approaches to one -or two-way-coupled problem
+       configurations, respectively
+
+<pre>
+Maintainers: Lena Yoshihara & Volker Gravemeier
+             {yoshihara,vgravem}@lnm.mw.tum.de
+             089/289-15303,-15245
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>

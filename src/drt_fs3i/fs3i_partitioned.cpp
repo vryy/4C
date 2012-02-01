@@ -1,3 +1,18 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned.cpp
+\brief General algorithmic routines for partitioned solution approaches
+       to fluid-structure-scalar-scalar interaction (FS3I), that is,
+       algorithmic routines not specifically related to partitioned
+       solution approaches to one -or two-way-coupled problem
+       configurations, respectively
+
+<pre>
+Maintainers: Lena Yoshihara & Volker Gravemeier
+             {yoshihara,vgravem}@lnm.mw.tum.de
+             089/289-15303,-15245
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -461,26 +476,6 @@ void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
     DRT::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
   }
   DRT::Problem::Instance()->TestAll(comm);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::PrepareTimeStep()
-{
-  // set mesh displacement field for present time step
-  SetMeshDisp();
-
-  // set velocity fields from fluid and structure solution
-  // for present time step
-  SetVelocityFields();
-
-  // prepare time step for both fluid- and structure-based scatra field
-  for (unsigned i=0; i<scatravec_.size(); ++i)
-  {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().PrepareTimeStep();
-  }
 }
 
 

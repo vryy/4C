@@ -1,3 +1,17 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned_1wc.H
+\brief H-file associated with algorithmic routines for partitioned
+       solution approaches to fluid-structure-scalar-scalar interaction
+       (FS3I) specifically related to one-way-coupled problem
+       configurations
+
+<pre>
+Maintainers: Lena Yoshihara & Volker Gravemeier
+             {yoshihara,vgravem}@lnm.mw.tum.de
+             089/289-15303,-15245
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef FS3I_PART_1WC_H
@@ -20,6 +34,8 @@ namespace FS3I
     void DoFSIStep();
 
     void DoScatraStep();
+
+    virtual void PrepareTimeStep();
 
     virtual bool ScatraConvergenceCheck(int itnum);
   };

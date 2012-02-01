@@ -1,3 +1,16 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned_2wc.cpp
+\brief Algorithmic routines for partitioned solution approaches to
+       fluid-structure-scalar-scalar interaction (FS3I) specifically
+       related to two-way-coupled problem configurations
+
+<pre>
+Maintainers: Volker Gravemeier & Lena Yoshihara
+             {vgravem,yoshihara}@lnm.mw.tum.de
+             089/289-15245,-15303
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "fs3i_partitioned_2wc.H"
@@ -49,14 +62,17 @@ void FS3I::PartFS3I_2WC::Timeloop()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::InitialCalculations()
 {
+  // set initial values for mesh displacement field
+  SetMeshDisp();
+
   // set initial fluid velocity field for evaluation of initial scalar
   // time derivative in fluid-based scalar transport
   fluidscatra_->ScaTraField().SetVelocityField(fsi_->FluidField().Velnp(),
-                                              Teuchos::null,
-                                              Teuchos::null,
-                                              fsi_->FluidField().FsVel(),
-                                              Teuchos::null,
-                                              fsi_->FluidAdapter().Discretization());
+                                               Teuchos::null,
+                                               Teuchos::null,
+                                               fsi_->FluidField().FsVel(),
+                                               Teuchos::null,
+                                               fsi_->FluidAdapter().Discretization());
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport
@@ -89,9 +105,17 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::PrepareTimeStep()
 {
-  // prepare fluid- and structure-based scalar transport for time step
+  // set mesh displacement field for present time step
+  SetMeshDisp();
+
+  // set velocity fields from fluid and structure solution
+  // for present time step
+  SetVelocityFields();
+
+  // prepare time step for both fluid- and structure-based scatra field
   // (+ computation of initial scalar time derivative in first time step)
-  PrepareTimeStep();
+  fluidscatra_->ScaTraField().PrepareTimeStep();
+  structurescatra_->ScaTraField().PrepareTimeStep();
 
   // predict thermodynamic pressure and time derivative
   // (if not constant or based on mass conservation)

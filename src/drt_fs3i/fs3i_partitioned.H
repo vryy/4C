@@ -1,3 +1,18 @@
+/*!----------------------------------------------------------------------
+\file fs3i_partitioned.H
+\brief H-file associated with general algorithmic routines for
+       partitioned solution approaches to fluid-structure-scalar-scalar
+       interaction (FS3I), that is, algorithmic routines not specifically
+       related to partitioned solution approaches to one -or
+       two-way-coupled problem configurations, respectively
+
+<pre>
+Maintainers: Lena Yoshihara & Volker Gravemeier
+             {yoshihara,vgravem}@lnm.mw.tum.de
+             089/289-15303,-15245
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef PARTFS3I_H
@@ -143,7 +158,9 @@ namespace FS3I
 
     void SetVelocityFields();
 
-    void PrepareTimeStep();
+    //! routine for preparing time step to be defined in inherited classes 
+    //! (structure depends on coupling, that is, either one- or two-way)
+    virtual void PrepareTimeStep() = 0;
 
     void SetMeshDisp();
 
