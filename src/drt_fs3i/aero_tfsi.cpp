@@ -18,10 +18,6 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |

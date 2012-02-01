@@ -35,6 +35,7 @@ Maintainer: Georg Hammerl
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <vector>
+#include <mpi.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
 
