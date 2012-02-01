@@ -67,11 +67,6 @@ namespace FLD
                                DRT::Discretization    & cutdiscret,
                                DRT::Discretization    & embdis);
 
-      void EvaluateFluidFluid_TwoSidedMortaring( Teuchos::ParameterList & eleparams,
-                               DRT::Discretization    & bgdis,
-                               DRT::Discretization    & cutdiscret,
-                               DRT::Discretization    & embdis);
-
       void GmshOutput( DRT::Discretization & bgdis,
                        DRT::Discretization & embdis,
                        DRT::Discretization & cutdiscret,
