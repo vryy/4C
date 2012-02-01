@@ -221,8 +221,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       // special case: geometric linear
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+      {
         soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+      }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
@@ -232,9 +234,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         else // standard analysis
         soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+      }
 
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
-      }
 
     }
     break;
