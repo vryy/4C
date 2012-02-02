@@ -69,6 +69,8 @@ Maintainer: Lena Wiechert
 #include "constraintmixture.H"
 #include "biofilm.H"
 #include "optimization_density.H"
+#include "fluidporo.H"
+#include "structporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -330,6 +332,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::PermeableFluid* params = static_cast<MAT::PAR::PermeableFluid*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_fluidporo:
+  {
+    if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::FluidPoro(curmat));
+      MAT::PAR::FluidPoro* params = static_cast<MAT::PAR::FluidPoro*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_matlist:
   {
     if (curmat->Parameter() == NULL)
@@ -391,6 +400,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ElastHyper(curmat));
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_structporo:
+  {
+    if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::StructPoro(curmat));
+      MAT::PAR::StructPoro* params = static_cast<MAT::PAR::StructPoro*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::mes_couplogneohooke:

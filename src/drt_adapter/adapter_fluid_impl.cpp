@@ -154,6 +154,22 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Scaam()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Dispn()
+{
+  return fluid_.Dispn();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::GridVel()
+{
+  return fluid_.GridVel();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Hist()
 {
   return fluid_.Hist();
@@ -751,6 +767,14 @@ void ADAPTER::FluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialField in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
+{
+   fluid_.SetInitialPorosityField(initfield,startfuncno);
+   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::SetIterLomaFields(
     RCP<const Epetra_Vector>          scalaraf,
     RCP<const Epetra_Vector>          scalaram,
@@ -776,6 +800,20 @@ void ADAPTER::FluidImpl::SetTimeLomaFields(
 {
    fluid_.SetTimeLomaFields(scalarnp,thermpressnp,scatraresidual,scatradis, whichscalar);
    return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update Newton step                                                   |
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  fluid_.UpdateIterIncrementally(vel);
 }
 
 /*----------------------------------------------------------------------*/

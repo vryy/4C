@@ -269,6 +269,7 @@ public:
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
+  const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
 
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
@@ -288,6 +289,7 @@ public:
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& ReducedDAirwaySolverParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER"); }
   const Teuchos::ParameterList& TSIMonolithicSolverParams() const { return getParameterList()->sublist("TSI MONOLITHIC SOLVER"); }
+  const Teuchos::ParameterList& PoroelastMonolithicSolverParams() const { return getParameterList()->sublist("POROELASTICITY MONOLITHIC SOLVER"); }
   const Teuchos::ParameterList& MeshtyingSolverParams() const { return getParameterList()->sublist("MESHTYING SOLVER"); }
   const Teuchos::ParameterList& ContactSolverParams() const { return getParameterList()->sublist("CONTACT SOLVER"); }
   const Teuchos::ParameterList& ContactConstraintSolverParams() const { return getParameterList()->sublist("CONTACT CONSTRAINT SOLVER"); }

@@ -190,6 +190,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
+  // account for poroelasticity
+  // -------------------------------------------------------------------
+  poroelast_ = false;
+  if (params_.get<bool>("poroelast",false))
+  {
+	  poroelast_ = true;
+  }
+
+  // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
@@ -315,12 +324,16 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // history vector
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
+  //initial porosity (only required for poroelasticity)
+ // initporosityfield_= LINALG::CreateVector(*dofrowmap,true);
+
   if (alefluid_)
   {
     dispnp_ = LINALG::CreateVector(*dofrowmap,true);
     dispn_  = LINALG::CreateVector(*dofrowmap,true);
     dispnm_ = LINALG::CreateVector(*dofrowmap,true);
     gridv_  = LINALG::CreateVector(*dofrowmap,true);
+
   }
 
   // Vectors associated to boundary conditions
@@ -2934,6 +2947,14 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
+  //set parameters for poroelasticity
+  if(poroelast_)
+  {
+	  eleparams.set("bulkmodulus",params_.get<double>("bulkmodulus",1.0));
+	  eleparams.set("penaltyparameter",params_.get<double>("penaltyparameter",0.0));
+	  eleparams.set("initporosity",params_.get<double>("initporosity",0.5));
+  }
+
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
@@ -2944,6 +2965,16 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   {
     discret_->SetState("dispnp", dispnp_);
     discret_->SetState("gridv", gridv_);
+
+    if(poroelast_)
+    {
+		//just for poroelasticity
+		discret_->SetState("dispn", dispn_);
+		discret_->SetState("veln", veln_);
+		discret_->SetState("accnp", accnp_);
+		discret_->SetState("accn", accn_);
+    }
+
   }
 
   // set the only required state vectors
@@ -3104,11 +3135,28 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   // compute accelerations
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
-    Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
-    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+	  Teuchos::RCP<Epetra_Vector> onlyaccn  = Teuchos::null ;
+	  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::null;
+	  Teuchos::RCP<Epetra_Vector> onlyvelnm = Teuchos::null;
+	  Teuchos::RCP<Epetra_Vector> onlyveln  = Teuchos::null ;
+	  Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
+
+    if(not poroelast_) //standard case
+	{
+		onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+		onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+		onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
+		onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
+		onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+	}
+    else //poroelasticity case
+    {
+		onlyaccn  = accn_ ;
+		onlyaccnp = accnp_;
+		onlyvelnm = velnm_;
+		onlyveln  = veln_ ;
+		onlyvelnp = velnp_;
+    }
 
     TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
@@ -3411,6 +3459,9 @@ void FLD::FluidImplicitTimeInt::Output()
         output_.WriteVector("dispnm",dispnm_);
       }
 
+      if(poroelast_)
+      	output_.WriteVector("gridv", gridv_);
+
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->WriteRestart(output_);
@@ -3437,6 +3488,9 @@ void FLD::FluidImplicitTimeInt::Output()
       output_.WriteVector("dispn", dispn_);
       output_.WriteVector("dispnm",dispnm_);
     }
+
+    if(poroelast_)
+    	output_.WriteVector("gridv", gridv_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -3645,6 +3699,9 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispnp_,"dispnp");
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
+
+    if(poroelast_)
+    	reader.ReadVector(gridv_,"gridv");
   }
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
@@ -5660,6 +5717,55 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  set initial field for porosity                                      |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
+		const INPAR::POROELAST::InitialField init,
+    const int startfuncno)
+{
+	cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<endl;
+
+  switch(init)
+  {
+  case INPAR::POROELAST::initfield_field_by_function:
+  {
+	const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+	// loop all nodes on the processor
+	for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+	{
+	  // get the processor local node
+	  DRT::Node* lnode = discret_->lRowNode(lnodeid);
+	  // the set of degrees of freedom associated with the node
+	  std::vector<int> nodedofset = discret_->Dof(lnode);
+
+	  int numdofs = nodedofset.size();
+		double initialval
+		  = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL);
+
+		  // check whether there are invalid values of porosity
+		  if (initialval < EPS15) dserror("zero or negative initial porosity");
+		  if (initialval >= 1) dserror("initial porosity greater or equal than 1");
+	  for (int k=0;k< numdofs;++k)
+	  {
+		const int dofgid = nodedofset[k];
+		int doflid = dofrowmap->LID(dofgid);
+		// evaluate component k of spatial function
+		initporosityfield_->ReplaceMyValues(1,&initialval,&doflid);
+
+	  }
+	}
+
+	break;
+  }
+  default:
+    dserror("Unknown option for initial field: %d", init);
+  } // switch(init)
+
+  return;
+} // FluidImplicitTimeInt::SetInitialField
+
 // -------------------------------------------------------------------
 // set turbulence parameters                         rasthofer 11/2011
 // -------------------------------------------------------------------
@@ -5687,6 +5793,45 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
 Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::TurbulenceStatisticManager()
   {return statisticsmanager_;};
 
+void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
+  Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
+  )
+{
+
+	// set the new solution we just got
+	if (vel!=Teuchos::null)
+	{
+	  // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+	  // values.
+	  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
+	  aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
+	  //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+	  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
+
+	  //
+	  vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+		vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(velnp_),
+		aux);
+
+	  *velnp_ = *aux;
+
+	  if(poroelast_)
+	  {
+		  //only one step theta
+
+		  // new end-point accelerations
+		  aux->Update(1.0/(theta_*dta_), *velnp_,
+		               -1.0/(theta_*dta_), *(*veln_)(0),
+		               0.0);
+		  aux->Update(-(1.0-theta_)/theta_, *(*accn_)(0), 1.0);
+		  // put only to free/non-DBC DOFs
+		  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
+		  *accnp_= *aux;
+	  }
+	}
+
+	return;
+}
 
 // -------------------------------------------------------------------
 // print informations about turbulence model         rasthofer 04/2011

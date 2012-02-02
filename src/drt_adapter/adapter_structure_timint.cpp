@@ -543,6 +543,15 @@ void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
   structure_->ApplyTemperatures(temp);
 }
 
+/*----------------------------------------------------------------------*/
+/* apply current velocities and pressures (FSI like)                     */
+void ADAPTER::StructureTimIntImpl::ApplyVelAndPress(
+  Teuchos::RCP<const Epetra_Vector> velnp
+  )
+{
+  structure_->ApplyVelAndPress(velnp);
+}
+
 
 /*----------------------------------------------------------------------*/
 /* prepare partition step (Partitioned scheme)               dano 12/10 */
@@ -611,6 +620,23 @@ void ADAPTER::StructureTimIntImpl::ApplyDisMat(
 {
   structure_->ApplyDisMat(dismat);
 }
+
+/*----------------------------------------------------------------------*/
+/* build linear system stiffness matrix and rhs/force residual
+ *
+ * Monolithic FSI accesses the linearised structure problem. */
+
+/*
+void ADAPTER::StructureTimIntImpl::PoroEvaluate(
+  Teuchos::RCP<const Epetra_Vector> disiterinc
+)
+{
+  structure_->UpdateIterIncrementally(disiterinc);
+
+  // builds tangent, residual and applies DBC
+  structure_->PoroEvaluateForceStiffResidual();
+  structure_->PrepareSystemForNewtonSolve();
+}*/
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

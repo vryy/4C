@@ -68,6 +68,7 @@ Maintainer: Peter Gamnitzer
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_poroelast.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -379,6 +380,10 @@ public:
     const INPAR::FLUID::InitialField initfield,
     const int whichfunc
     );
+
+  /// set initial porosity field
+  void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
+  { dserror("not implemented!");return; };
 
   /*!
   \brief do a restart

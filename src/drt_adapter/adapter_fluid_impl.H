@@ -90,7 +90,9 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf();
     virtual Teuchos::RCP<const Epetra_Vector> Scaam();
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Vector> FsVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
@@ -212,6 +214,9 @@ namespace ADAPTER {
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 
+    /// set initial porosity field
+    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno);
+
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
                                    RCP<const Epetra_Vector> scalaram,
@@ -235,6 +240,9 @@ namespace ADAPTER {
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
        {return fluid_.TurbulenceStatisticManager();}
+
+    /// update velocity increment after Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) ;
 
   private:
 

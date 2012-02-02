@@ -99,6 +99,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")                  act = So_hex8::calc_global_gpstresses_map;
+  else if (action=="calc_poroelast_nlnstiff")                     act = So_hex8::calc_poroelast_nlnstiff;
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -1167,7 +1168,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         AddtoPack(data, strain);
         std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
       }
-
+      
       {
         DRT::PackBuffer data;
         AddtoPack(data, plstrain);
@@ -1180,6 +1181,83 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   break;
 
   //==================================================================================
+  // nonlinear stiffness and internal force vector for poroelasticity
+  case calc_poroelast_nlnstiff:
+  {
+    // stiffness
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
+    // internal force vector
+    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+    LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+    // elemat2,elevec2+3 are not used anyway
+
+    // need current displacement and residual forces
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
+    if (disp==null )
+      dserror("Cannot get state vector 'displacement' ");
+    // build the location vector only for the structure field
+    // vector<int> lm = la[0].lm_;
+    vector<double> mydisp((lm).size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
+    vector<double> myres(lm.size());
+    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+    if (elemat1.IsInitialized()) matptr = &elemat1;
+    // call the well-known soh8_nlnstiffmass for the normal structure solution
+      soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+
+	  // need current fluid state,
+	  // call the fluid discretization: fluid equates 2nd dofset
+	  // disassemble velocities and pressures
+
+	    /*
+  if (discretization.HasState(1,"fluidveln"))
+	  {
+		// the temperature field has only one dof per node, disregarded by the
+		// dimension of the problem
+		const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+		// number of nodes per element
+		const int nen_ = 8;
+
+	    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myvelnp(true);
+	    LINALG::Matrix<NUMNOD_SOH8,1>    myepreaf(true);
+		// check if you can get the temperature state
+		Teuchos::RCP<const Epetra_Vector> veln
+		 = discretization.GetState(1,"fluidveln");
+		if (velnp==Teuchos::null)
+		  dserror("Cannot get state vector 'fluidveln'");
+
+		//if (la[1].Size() != nen_*numdofpernode_)
+		//  dserror("Location vector length for velocities does not match!");
+
+	      // extract local values of the global vectors
+	      std::vector<double> mymatrix(la[1].lm_.size());
+	      DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
+
+	      for (int inode=0; inode<NUMNOD_SOH8; ++inode)  // number of nodes
+	      {
+
+	          for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+	          {
+	            (myvelnp)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
+	          }  // end for(idim)
+
+	            (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode_)];
+      std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
+    }
+	      }
+
+		soh8_nlnstiff_poroelast(lm,mydisp,myvelnp,myepreaf,&elemat1,&elemat2,&elevec1,&elevec2,NULL,NULL,params,
+	                       INPAR::STR::stress_none,INPAR::STR::strain_none);
+	  }*/
+
+  }
+  break;
+
+    //==================================================================================
   default:
     dserror("Unknown type of action for So_hex8");
   }

@@ -41,6 +41,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/fluidporo.H"
 
 #include <blitz/array.h>
 
@@ -2489,6 +2490,13 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
 
   // get constant viscosity
   visc_ = actmat->SetViscosity();
+}
+else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+{
+	const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+
+  // get constant viscosity
+  visc_ = actmat->Viscosity();
 }
 else dserror("Material type is not supported for boundary element!");
 

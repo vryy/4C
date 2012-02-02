@@ -42,6 +42,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_utils_mapextractor.H" // should go away
+#include "../drt_inpar/inpar_poroelast.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -496,7 +497,18 @@ public:
 
   void PrintTurbulenceModel();
   //@}
+  
+  /// set the initial porosity field
+  void SetInitialPorosityField(
+    const INPAR::POROELAST::InitialField,  ///< type of initial field
+	//const int,  ///< type of initial field
+    const int startfuncno  ///< number of spatial function
+    );
 
+  void UpdateIterIncrementally(
+    Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
+    );
+ 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
   Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
@@ -730,7 +742,7 @@ protected:
   /// optimizer for topology optimization
   RCP<TOPOPT::Optimizer> optimizer_;
   //@}
-  
+
   /// only necessary for AVM3: scale-separation matrix
   RCP<LINALG::SparseMatrix> Sep_;
 
@@ -751,6 +763,9 @@ protected:
 
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
+
+  /// initial porosity (poroelasticity)
+    RCP<Epetra_Vector>    initporosityfield_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
@@ -832,6 +847,9 @@ protected:
   int msht_;
 
   //@}
+
+  // flag for poroelasticity
+  double poroelast_;
 
 private:
 

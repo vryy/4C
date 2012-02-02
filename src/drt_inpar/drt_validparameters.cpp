@@ -42,6 +42,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
+#include "../drt_inpar/inpar_poroelast.H"
 
 #include <AztecOO.h>
 
@@ -588,6 +589,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
     name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
     name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
+    name.push_back("Poroelasticity");       		           				 label.push_back(prb_poroelast);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",
@@ -1875,6 +1877,81 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::TSI::bop_and
                                  ),
                                &tsidyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& poroelastdyn = list->sublist(
+   "POROELASTICITY DYNAMIC",false,
+   "Poroelasticity"
+   );
+
+  // Coupling strategy for (partitioned and monolithic) TSI solvers
+  setStringToIntegralParameter<int>(
+                              "COUPALGO","poroelast_monolithic",
+                              "Coupling strategies for poroelasticity solvers",
+                              tuple<std::string>(
+                                "poroelast_monolithic"
+                                ),
+                              tuple<int>(
+                                INPAR::POROELAST::Monolithic
+                                ),
+                              &poroelastdyn);
+
+  // Output type
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&poroelastdyn);
+  // Time loop control
+  IntParameter("NUMSTEP",200,"maximum number of Timesteps",&poroelastdyn);
+  DoubleParameter("MAXTIME",1000.0,"total simulation time",&poroelastdyn);
+  DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroelastdyn);
+  IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroelastdyn);
+  IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroelastdyn);
+  IntParameter("UPRES",1,"increment for writing solution",&poroelastdyn);
+  DoubleParameter("INITPOROSITY",0.5,"initial porosity",&poroelastdyn);
+
+  // Iterationparameters
+  DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);
+  DoubleParameter("INCTOL",1e-8,"tolerance in the increment norm for the Newton iteration",&poroelastdyn);
+
+  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+                               tuple<std::string>(
+                                 "Abs"
+                                 ),
+                               tuple<int>(
+                                 INPAR::POROELAST::convnorm_abs
+                                 ),
+                               &poroelastdyn);
+
+  setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                 tuple<std::string>(
+                                   "Abs"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::POROELAST::convnorm_abs
+                                   ),
+                                 &poroelastdyn);
+
+  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                               tuple<std::string>(
+                            		   "And",
+                                       "Or"),
+                                     tuple<int>(
+                                       INPAR::POROELAST::bop_and,
+                                       INPAR::POROELAST::bop_or),
+                               &poroelastdyn);
+
+  setStringToIntegralParameter<int>("INITIALFIELD","field_by_function",
+                               "Initial Field for thermal problem",
+                               tuple<std::string>(
+                               // "zero_field",
+                                 "field_by_function"
+                               //  "field_by_condition"
+                                 ),
+                               tuple<int>(
+                                 //  INPAR::POROELAST::initfield_zero_field,
+                                   INPAR::POROELAST::initfield_field_by_function
+                               //    INPAR::POROELAST::initfield_field_by_condition
+                                   ),
+                               &poroelastdyn);
+  IntParameter("INITFUNCNO",-1,"function number for porosity initial field",&poroelastdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
@@ -4225,7 +4302,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   Teuchos::ParameterList& cconstraintsolver = list->sublist("CONTACT CONSTRAINT SOLVER",false,"solver parameters for constraint block (Lagrange multipliers) within saddle point problem");
   SetValidSolverParameters(cconstraintsolver);
 
-
+  // Poroelasticity monolithic solver section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& poroelastmonsolver = list->sublist("POROELASTICITY MONOLITHIC SOLVER",false,"solver parameters for monoltihic poroelasticity");
+  SetValidSolverParameters(poroelastmonsolver);
+  
   return list;
 }
 

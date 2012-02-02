@@ -17,6 +17,9 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/standardtypes_cpp.H"
+
+extern struct _GENPROB     genprob;
 
 using namespace DRT::UTILS;
 
@@ -564,6 +567,32 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
 
       return;
     }
+
+
+int DRT::ELEMENTS::Fluid3::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+{
+  if (nds==1)
+    switch (genprob.probtyp)
+    {
+      case prb_poroelast:
+      {
+        return genprob.ndim;
+        break;
+      }
+      default: // scalar transport
+      {
+        return 1;
+        break;
+      }
+    }
+  else if(nds==0)
+    return NumDofPerNode(node);
+  else
+  {
+    dserror("invalid number of dof sets");
+    return -1;
+  }
+}
 
 
 #endif  // #ifdef CCADISCRET

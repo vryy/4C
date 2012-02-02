@@ -204,6 +204,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==FSICouplingNoSlide)            os << "Do not consider these nodes for sliding ALE";
   else if (Type()==EmbeddingTissue)               os << "Embedding Tissue Condition";
   else if (Type()==TotalTractionCorrectionCond)   os << "Total traction correct condition";
+  else if (Type()==NoPenetration)                 os << "No Penetration Condition";
   else if (Type()==TotalTractionCorrectionBorderNodes)  os << "Total traction correction border nodes condition";
   else if (Type()==RedAirwayVentilatorCond)       os << "Reduced d airway prescribed ventilator condition";
 

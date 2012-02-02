@@ -435,6 +435,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/contchainnetw.cpp
   src/drt_mat/elasthyper.cpp
   src/drt_mat/ferech_pv.cpp
+  src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growth_ip.cpp
   src/drt_mat/holzapfelcardiovascular.cpp
@@ -461,6 +462,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/protein.cpp
   src/drt_mat/scatra_mat.cpp
+  src/drt_mat/structporo.cpp
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp
@@ -524,6 +526,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_structure_lung.cpp
   src/drt_adapter/adapter_structure_strugenalpha.cpp
   src/drt_adapter/adapter_structure_timint.cpp
+  src/drt_adapter/adapter_structure_timint_poroelast.cpp
   src/drt_adapter/adapter_structure_timint_adaptive.cpp
   src/drt_adapter/adapter_structure_timint_expl.cpp
   src/drt_adapter/adapter_structure_wrapper.cpp
@@ -1415,6 +1418,11 @@ set(OBJS_DRT_STRU_ALE
   src/drt_stru_ale/stru_ale_dyn.cpp
   src/drt_stru_ale/stru_ale_utils.cpp
 )  
+set(OBJS_DRT_POROELAST
+  src/drt_poroelast/poroelast.cpp
+  src/drt_poroelast/poroelast_monolithic.cpp
+  src/drt_poroelast/poroelast_utils.cpp
+)
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -1579,6 +1587,7 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
+add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 
 add_library(alg_stk_fsi ${OBJS_STK_FSI})
@@ -1590,6 +1599,7 @@ set(MULTIFIELD_LIBRARIES
   alg_tsi
   alg_stk_fsi
   alg_stru_ale
+  alg_poroelast
   alg_fs3i
   )
 

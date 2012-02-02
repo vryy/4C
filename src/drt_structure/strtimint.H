@@ -199,6 +199,8 @@ namespace STR
     //! Make damping and mass matrix
     void DetermineMassDampConsistAccel();
 
+    void PoroDetermineMassDampConsistAccel();
+
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC
     (
@@ -371,6 +373,19 @@ namespace STR
       Teuchos::RCP<LINALG::SparseOperator> stiff  //!< stiffness matrix
     );
 
+    //! Evaluate ordinary internal force, its stiffness at state
+    void PoroApplyForceStiffInternal
+    (
+      const double time,  //!< evaluation time
+      const double dt,  //!< step size
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> stiff_rea // reacitve part of stiffness matrix
+    );
+
     //! Evaluate ordinary internal force
     //!
     //! We need incremental displacements, because the internal variables,
@@ -402,6 +417,11 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> temp  //!< current temperatures
     );
     //@}
+
+    void ApplyVelAndPress
+    (
+      Teuchos::RCP<const Epetra_Vector> veln  //!< current velocities and pressures
+    );
 
     //! @name Attributes
     //@{
@@ -794,6 +814,14 @@ namespace STR
     double            dtsolve_;  //!< linear solver time
     double            dtele_;    //!< element evaluation time
     double            dtcmt_;    //!< contact / meshtying evaluation time
+    //@}
+
+    //! @name Poroelasticity specific stuff
+    //@{
+    // global coupling variable of the fluid field (for poroelasticity problems only)
+    Teuchos::RCP<const Epetra_Vector> fluidveln_; //!< global velocities and pressures at n+1
+    double initporosity_;
+
     //@}
 
   };

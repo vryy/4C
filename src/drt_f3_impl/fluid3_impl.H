@@ -306,12 +306,70 @@ namespace ELEMENTS
                      const LINALG::Matrix<nen_,1>    &             epreaf,
                      const LINALG::Matrix<nsd_,nen_> &             evelnp,
                      const LINALG::Matrix<nsd_,nen_> &             emhist,
+                     const LINALG::Matrix<nen_,1>    &             epren,
+                     const LINALG::Matrix<nen_,1>    &             epressn_timederiv,
+                     const LINALG::Matrix<nen_,1>    &             epressnp_timederiv,
                      const LINALG::Matrix<nsd_,nen_> &             eaccam,
                      const LINALG::Matrix<nsd_,nen_> &             edispnp,
+                     const LINALG::Matrix<nsd_,nen_> &             edispn,
                      const LINALG::Matrix<nsd_,nen_> &             egridv,
                      Teuchos::RCP<MAT::Material>                   mat,
                      bool                                          isale,
                      const DRT::UTILS::GaussIntegration &          intpoints);
+
+    /// Evaluate the element for porous flow
+    /*!
+      Generic virtual interface function. Called via base pointer.
+     */
+    virtual int PoroEvaluateCoupl(DRT::ELEMENTS::Fluid3*        ele,
+                             DRT::Discretization &         discretization,
+                             const std::vector<int> &      lm,
+                             Teuchos::ParameterList&       params,
+                             Teuchos::RCP<MAT::Material> & mat,
+                             Epetra_SerialDenseMatrix&     elemat1_epetra,
+                             Epetra_SerialDenseMatrix&     elemat2_epetra,
+                             Epetra_SerialDenseVector&     elevec1_epetra,
+                             Epetra_SerialDenseVector&     elevec2_epetra,
+                             Epetra_SerialDenseVector&     elevec3_epetra );
+
+    /// Evaluate the element at specified gauss points for porous flow
+    virtual int PoroEvaluateCoupl(DRT::ELEMENTS::Fluid3*               ele,
+                             DRT::Discretization &                discretization,
+                             const std::vector<int> &             lm,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material> &        mat,
+                             Epetra_SerialDenseMatrix&            elemat1_epetra,
+                             Epetra_SerialDenseMatrix&            elemat2_epetra,
+                             Epetra_SerialDenseVector&            elevec1_epetra,
+                             Epetra_SerialDenseVector&            elevec2_epetra,
+                             Epetra_SerialDenseVector&            elevec3_epetra,
+                             const DRT::UTILS::GaussIntegration & intpoints );
+
+    /*!
+      \brief evaluate function for Fluid3 element for porous flow
+
+      Specific evaluate function without any knowledge about DRT objects. This
+      way the element evaluation is independent of the specific mesh storage.
+     */
+    int PoroEvaluateCoupl(  int                                           eid,
+							Teuchos::ParameterList&                       params,
+							const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+							LINALG::Matrix<(nsd_+1)*nen_,nsd_*nen_>      & elemat1,
+						 //   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
+							LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
+							const LINALG::Matrix<nsd_,nen_> &             evelaf,
+							const LINALG::Matrix<nen_,1>    &             epreaf,
+							const LINALG::Matrix<nsd_,nen_> &             evelnp,
+							const LINALG::Matrix<nsd_,nen_> &             emhist,
+							const LINALG::Matrix<nen_,1>    &             epren,
+							const LINALG::Matrix<nen_,1>    &             epressnp_timederiv,
+							const LINALG::Matrix<nsd_,nen_> &             eaccam,
+							const LINALG::Matrix<nsd_,nen_> &             edispnp,
+							const LINALG::Matrix<nsd_,nen_> &             edispn,
+							const LINALG::Matrix<nsd_,nen_> &             egridv,
+							Teuchos::RCP<MAT::Material>                   mat,
+							bool                                          isale,
+							const DRT::UTILS::GaussIntegration &          intpoints);
 
     /// evaluation of off-diagonal matrix block for monolithic loma solver
     /*!
@@ -428,42 +486,6 @@ namespace ELEMENTS
                 const DRT::UTILS::GaussIntegration &           intpoints);
 
     /*!
-      \brief calculate element matrix and rhs for porous flow
-
-      \param eid              (i) element id
-      \param ebofoaf          (i) body force at n+alpha_F/n+1
-      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
-      \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
-      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
-      \param eaccam           (i) nodal accelerations at n+alpha_M
-      \param emhist           (i) time rhs for momentum equation
-      \param edispnp          (i) nodal displacements (on moving mesh)
-      \param egridv           (i) grid velocity (on moving mesh)
-      \param estif            (o) element matrix to calculate
-      \param emesh            (o) linearization wrt mesh motion
-      \param eforce           (o) element rhs to calculate
-      \param material         (i) fluid material
-      \param isale            (i) ALE flag
-      \param intpoints        (i) Gaussian integration points
-
-      */
-    void PoroSysmat(int                                            eid,
-                    const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
-                    const LINALG::Matrix<nsd_,nen_>&               evelaf,
-                    const LINALG::Matrix<nsd_,nen_> &              evelnp,
-                    const LINALG::Matrix<nen_,1>&                  epreaf,
-                    const LINALG::Matrix<nsd_,nen_>&               eaccam,
-                    const LINALG::Matrix<nsd_,nen_>&               emhist,
-                    const LINALG::Matrix<nsd_,nen_>&               edispnp,
-                    const LINALG::Matrix<nsd_,nen_>&               egridv,
-                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
-                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   emesh,
-                    LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
-                    Teuchos::RCP<const MAT::Material>              material,
-                    bool                                           isale,
-                    const DRT::UTILS::GaussIntegration &           intpoints);
-
-    /*!
       \brief calculate element matrix for off-diagonal matrix block for monolithic low-Mach-number solver
 
       \param eid              (i) element id
@@ -506,6 +528,66 @@ namespace ELEMENTS
                                Teuchos::RCP<const MAT::Material>    material,
                                double&                              Cs_delta_sq,
                                const DRT::UTILS::GaussIntegration & intpoints);
+
+
+      /*!
+      \brief calculate element matrix and rhs for porous flow
+
+      \param eid              (i) element id
+      \param ebofoaf          (i) body force at n+alpha_F/n+1
+      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
+      \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
+      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
+      \param eaccam           (i) nodal accelerations at n+alpha_M
+      \param emhist           (i) time rhs for momentum equation
+      \param edispnp          (i) nodal displacements (on moving mesh)
+      \param egridv           (i) grid velocity (on moving mesh)
+      \param estif            (o) element matrix to calculate
+      \param emesh            (o) linearization wrt mesh motion
+      \param eforce           (o) element rhs to calculate
+      \param material         (i) fluid material
+      \param isale            (i) ALE flag
+      \param intpoints        (i) Gaussian integration points
+
+      */
+    void PoroSysmat(int                                            eid,
+                    const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
+                    const LINALG::Matrix<nsd_,nen_>&               evelaf,
+                    const LINALG::Matrix<nsd_,nen_> &              evelnp,
+                    const LINALG::Matrix<nen_,1>&                  epreaf,
+                    const LINALG::Matrix<nsd_,nen_>&               eaccam,
+                    const LINALG::Matrix<nsd_,nen_>&               emhist,
+                    const LINALG::Matrix<nen_,1>    &              epren,
+                    const LINALG::Matrix<nen_,1>    &              epressn_timederiv,
+                    const LINALG::Matrix<nen_,1>    &              epressnp_timederiv,
+                    const LINALG::Matrix<nsd_,nen_>&               edispnp,
+                    const LINALG::Matrix<nsd_,nen_>&               edispn,
+                    const LINALG::Matrix<nsd_,nen_>&               egridv,
+                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
+                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   emesh,
+                    LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
+                    Teuchos::RCP<const MAT::Material>              material,
+                    bool                                           isale,
+                    const DRT::UTILS::GaussIntegration &           intpoints);
+
+    void PoroSysmatCoupl(int                                            eid,
+						const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
+						const LINALG::Matrix<nsd_,nen_>&               evelaf,
+						const LINALG::Matrix<nsd_,nen_> &              evelnp,
+						const LINALG::Matrix<nen_,1>&                  epreaf,
+						const LINALG::Matrix<nsd_,nen_>&               eaccam,
+						const LINALG::Matrix<nsd_,nen_>&               emhist,
+						const LINALG::Matrix<nen_,1>    &              epren,
+						const LINALG::Matrix<nen_,1>    &              epressnp_timederiv,
+						const LINALG::Matrix<nsd_,nen_>&               edispnp,
+						const LINALG::Matrix<nsd_,nen_>&               edispn,
+						const LINALG::Matrix<nsd_,nen_>&               egridv,
+						LINALG::Matrix<(nsd_+1)*nen_,nsd_*nen_>&      ecoupl,
+					//	LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   emesh,
+						LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
+						Teuchos::RCP<const MAT::Material>              material,
+						bool                                           isale,
+						const DRT::UTILS::GaussIntegration &           intpoints);
 
     /*!
       \brief FD-check for debugging
@@ -895,6 +977,22 @@ namespace ELEMENTS
         const double &                                timefacfac    ///< = timefac x fac
         );
 
+    //! linearisation in the case of mesh motion 3-D for Poroelasticity
+    void PoroLinMeshMotion_3D(
+        LINALG::Matrix<(nsd_+1)*nen_,(nsd_)*nen_>&    emesh,        ///< mesh motion
+        const LINALG::Matrix<nsd_,nen_>&              evelaf,       ///< velocity at time n+alpha_f / n+1
+        const LINALG::Matrix<nsd_,nen_>&              egridv,       ///< grid velocity at time n+alpha_f / n+1
+        const double &                                press,        ///< pressure at integration point
+        const double &                                press_dot,   ///< pressure at integration point
+        const double &                                porosity,     ///< time derivative of pressure at integration point
+        const double &                                dphi_dp,      ///< d(porosity)/d(pressure) at integration point
+        const double &                                dphi_dJ,      ///< d(porosity)/d(J) at integration point
+        const double &                                J,            ///< Jacobian at integration point
+        LINALG::Matrix<1,nsd_>& 					  gradJ,        ///< derivative of Jacobian w.r.t. x,y,z
+        const double &                                timefac,      ///< time factor
+        const double &                                timefacfac    ///< = timefac x fac
+        );
+
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
 
@@ -1175,6 +1273,14 @@ namespace ELEMENTS
     DRT::UTILS::GaussIntegration intpoints_;
 
     double L2_; //Jeffery-Hamel
+
+    //! initial porosity
+    LINALG::Matrix<nen_,1> initporosityfield_;
+
+    //! bulkmodulus of porous media (only for poroelasticty problems)
+    double bulkmodulus_;
+    double penalty_;
+    double initporosity_;
   };
 }
 }

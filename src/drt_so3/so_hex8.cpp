@@ -28,6 +28,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/structporo.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -621,6 +622,11 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     fiber = "youngs";
     names[fiber] = 1; // scalar
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    string porosity = "porosity";
+    names[porosity] = 1; // scalar
+  }
 
   return;
 }
@@ -1095,6 +1101,15 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     {
       return false;
     }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* structporo = static_cast <MAT::StructPoro*>(Material().get());
+      if (name=="porosity")
+      {
+        if ((int)data.size()!=1) dserror("size mismatch");
+          data[0] = structporo->PorosityAv();
+      }
   }
 
 

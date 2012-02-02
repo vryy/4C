@@ -59,6 +59,8 @@ void adaptive_main()
       //break;
     case prb_red_airways:
       //break;
+    case prb_poroelast:
+      //break;
 
     default:
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);

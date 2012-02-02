@@ -155,6 +155,10 @@ namespace STR
     //! which reflects the respective situation.
     virtual void EvaluateForceStiffResidual(bool predict = false) = 0;
 
+    virtual void PoroEvaluateForceStiffResidual(bool predict = false) = 0;
+
+    virtual void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams) = 0;
+
     //! Evaluate forces due to constraints
     void ApplyForceStiffConstraint
     (

@@ -233,11 +233,24 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
-    // in case of TSI: nds=1 (second discretization) temperature: 1Dof/Node
-    if (nds==1){return 1;}
-    // structure, 3D: 3 Dofs per node
-//    return 3;
-    return NumDofPerNode(node);
+    switch (genprob.probtyp)
+    {
+    case prb_tsi:{
+		// in case of TSI: nds=1 (second discretization) temperature: 1Dof/Node
+		if (nds==1){return 1;}
+		break;
+    }
+    case prb_poroelast:{
+    	// in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
+    	if (nds==1){return genprob.ndim+1;}
+    	break;
+    }
+    default:
+		break;
+    }
+	// structure, 3D: 3 Dofs per node
+	//    return 3;
+	return NumDofPerNode(node);
   };
 
 
@@ -499,7 +512,11 @@ protected:
     calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
-    calc_global_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
+    calc_global_gpstresses_map, //! basically calc_struct_stress but with assembly of global gpstresses map
+    calc_poroelast_nlnstiff,   //!< internal force, stiffness for poroelasticity (structural part)
+    calc_poroelast_structurecoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
+    calc_poroelast_internalforce, //!< internal force for poroelasticity (structural part)
+    calc_poroelast_nlnstiffmass   //!< internal force, stiffness, mass for poroelasticity (structural part)
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)
@@ -779,6 +796,37 @@ protected:
 
   //@}
 
+
+  //! Calculate nonlinear stiffness and internal force for poroelasticity problems
+  virtual void soh8_nlnstiff_poroelast(
+	      vector<int>&              lm,             ///< location matrix
+	      vector<double>&           disp,           ///< current displacements
+	      vector<double>&           vel,           ///< current velocities
+	  //    vector<double>&           residual,       ///< current residual displ
+	      LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> &             evelnp, //< fluid velocity of element
+	      LINALG::Matrix<NUMNOD_SOH8,1> &  			epreaf, //< fluid pressure of element
+	      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+	      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* reamatrix,  // element reactive matrix
+	      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+	      LINALG::Matrix<NUMDOF_SOH8,1>* forcerea,                 // element reactive force vector
+	      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+	      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+	      ParameterList&            params,         ///< algorithmic parameters e.g. time
+	      const INPAR::STR::StressType   iostress,  ///< stress output option
+	      const INPAR::STR::StrainType   iostrain); ///< strain output option
+
+  //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
+  virtual void soh8_coupling_poroelast(
+	      vector<int>&              lm,             ///< location matrix
+	      vector<double>&           disp,           ///< current displacements
+	      vector<double>&           vel,           ///< current velocities
+	      LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> &             evelnp,  //< fluid velocity of element
+	      LINALG::Matrix<NUMNOD_SOH8,1> &  			            epreaf, //< fluid pressure of element
+	      LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8>* stiffmatrix,    ///< element stiffness matrix
+	      LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8>* reamatrix,  //< element reactive matrix
+	      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+	      LINALG::Matrix<NUMDOF_SOH8,1>* forcerea,                 //< element reactive force vector
+	      ParameterList&            params);         ///< algorithmic parameters e.g. time
 
   //! EAS technology, init
   void soh8_easinit();

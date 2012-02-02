@@ -177,6 +177,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--TSI DYNAMIC", *list);
+  reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
@@ -231,6 +232,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
   reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--MESHTYING SOLVER", *list);             // MESHTYING SOLVER for structure/fluid meshtying
+  reader.ReadGidSection("--POROELASTICITY MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)
   reader.ReadGidSection("--CONTACT CONSTRAINT SOLVER", *list);    // only used for constraint block in a saddle point problem (for contact/meshtying)
 
@@ -402,7 +404,12 @@ void DRT::Problem::InputControl()
     genprob.numff = 0; /* fluid field index */
     break;
   }
-
+  case prb_poroelast:
+  {
+    genprob.numsf=0;  /* structural field index */
+    genprob.numff=1;  /* fluid field index */
+    break;
+  }
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
@@ -1248,6 +1255,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   } // end of else if (genprob.probtyp==prb_combust)
+  case prb_poroelast:
+  {
+    // create empty discretizations
+	  structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+	  fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
+
+	  AddDis(genprob.numsf, structdis);
+	  AddDis(genprob.numff, fluiddis);
+
+	  nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+	  break;
+  }// end of else if (genprob.probtyp==prb_poroelast)
+
   default:
     dserror("Unknown problem type: %d",genprob.probtyp);
   }

@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace LINALG
@@ -156,8 +157,13 @@ namespace ADAPTER {
     /// mesh displacements at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 
+    /// mesh displacements at t(n+1)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
+
     /// convective velocity (= velnp - grid velocity)
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel() = 0;
+
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel() = 0;
 
     /// fine-scale velocity
     virtual Teuchos::RCP<const Epetra_Vector> FsVel() = 0;
@@ -198,6 +204,9 @@ namespace ADAPTER {
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
+
+    /// set initial flow field
+    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) = 0;
 
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
@@ -256,6 +265,9 @@ namespace ADAPTER {
 
     /// update at end of time step
     virtual void Update() = 0;
+
+    /// update velocity increment after Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// lift'n'drag forces, statistics time sample and
     /// output of solution and statistics

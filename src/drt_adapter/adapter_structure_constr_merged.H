@@ -76,6 +76,7 @@ namespace ADAPTER {
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
+
     /// direct access to system matrix
     RCP<LINALG::SparseMatrix> SystemMatrix();
 

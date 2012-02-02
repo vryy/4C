@@ -1641,6 +1641,38 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // hyperelastic material for poroelasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_StructPoro",
+                                            "wrapper for structure porelastic material",
+                                            INPAR::MAT::m_structporo));
+
+    //AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedInt(m,"MATID","ID of structure material");
+  //  AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
+    AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // fluid flow in a poroelastic material (darcy-flow)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoro",
+                                            "darcy-flow in poroelastic media",
+                                            INPAR::MAT::m_fluidporo));
+
+    AddNamedReal(m,"VISCOSITY","kinematic viscosity");
+    AddNamedReal(m,"DENSITY","density");
+    AddNamedReal(m,"PERMEABILITY","permeability of medium");
+  //  AddNamedReal(m,"BULKMODULUS","bulk modulus of medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

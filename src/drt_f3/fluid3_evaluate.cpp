@@ -72,8 +72,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_porousflow_sysmat_and_residual")
-    act = Fluid3::calc_porousflow_sysmat_and_residual;
+  else if (action == "calc_porousflow_fluid_coupling")
+    act = Fluid3::calc_porousflow_fluid_coupling;
   else if (action == "calc_loma_mono_odblock")
     act = Fluid3::calc_loma_mono_odblock;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
@@ -180,17 +180,37 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //-----------------------------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
-        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
-               this,
-               discretization,
-               lm,
-               params,
-               mat,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3 );
+      	if( Material()->MaterialType() != INPAR::MAT::m_fluidporo)
+      	{
+              return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
+                     this,
+                     discretization,
+                     lm,
+                     params,
+                     mat,
+                     elemat1,
+                     elemat2,
+                     elevec1,
+                     elevec2,
+                     elevec3 );
+      	}
+      	else
+    	      //-----------------------------------------------------------------------
+    	      // standard implementation enabling time-integration schemes such as
+    	      // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
+    	      // for the particular case of porous flow
+    	      //-----------------------------------------------------------------------
+            return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->PoroEvaluate(
+                   this,
+                   discretization,
+                   lm,
+                   params,
+                   mat,
+                   elemat1,
+                   elemat2,
+                   elevec1,
+                   elevec2,
+                   elevec3 );
       }
       break;
       //-----------------------------------------------------------------------
@@ -198,9 +218,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
       // for the particular case of porous flow
       //-----------------------------------------------------------------------
-      case calc_porousflow_sysmat_and_residual:
+      /***********************************************/
+      case calc_porousflow_fluid_coupling:
       {
-        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->PoroEvaluate(
+        if( Material()->MaterialType() == INPAR::MAT::m_fluidporo)
+        {
+          return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->PoroEvaluateCoupl(
                this,
                discretization,
                lm,
@@ -211,6 +234,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec1,
                elevec2,
                elevec3 );
+        }
+        else
+          dserror("Unknown material type for poroelasticity\n");
       }
       break;
       //-----------------------------------------------------------------------

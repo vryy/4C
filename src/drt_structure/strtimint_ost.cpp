@@ -520,4 +520,161 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
 }
 
 /*----------------------------------------------------------------------*/
+/* Poroelasticity: evaluate residual force and its stiffness, ie derivative
+ * with respect to end-point displacements \f$D_{n+1}\f$ */
+void STR::TimIntOneStepTheta::PoroEvaluateForceStiffResidual(bool predict)
+{
+
+  // theta-interpolate state vectors
+  EvaluateMidState();
+
+  // build new external forces
+  fextn_->PutScalar(0.0);
+  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
+
+  // interface forces to external forces
+  if (fsisurface_)
+  {
+    fextn_->Update(1.0, *fifc_, 1.0);
+  }
+
+  // initialize internal forces
+  fintn_->PutScalar(0.0);
+
+  // initialize stiffness matrix to zero
+  stiff_->Zero();
+
+  //! reactive part in stiffness matrix
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_rea = Teuchos::null;
+  stiff_rea = Teuchos::rcp(
+           new LINALG::SparseMatrix(
+                 *(discret_->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
+  stiff_rea->Zero();
+
+  // ordinary internal force and stiffness
+  PoroApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, stiff_rea);
+
+  // apply forces and stiffness due to constraints
+  ParameterList pcon;
+  //constraint matrix has to be scaled with the same value fintn_ is scaled with
+  pcon.set("scaleConstrMat",theta_);
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
+
+  // potential forces
+  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
+
+
+  // inertial forces #finertt_
+  mass_->Multiply(false, *acct_, *finertt_);
+
+  // viscous forces due Rayleigh damping
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Multiply(false, *velt_, *fvisct_);
+  }
+
+  // build residual  Res = M . A_{n+theta}
+  //                     + C . V_{n+theta}
+  //                     + F_{int;n+theta}
+  //                     - F_{ext;n+theta}
+
+  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
+  fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    fres_->Update(1.0, *fvisct_, 1.0);
+  }
+  fres_->Update((1.0-initporosity_), *finertt_, 1.0);
+
+  // build tangent matrix : effective dynamic stiffness matrix
+  //    K_{Teffdyn} = 1/(theta*dt^2) M
+  //                + 1/dt C
+  //                + theta K_{T}
+  stiff_->Add(*mass_, false, (1.0-initporosity_)/(theta_*(*dt_)[0]*(*dt_)[0]), theta_);
+
+  stiff_rea->Complete();
+  stiff_->Add(*stiff_rea, false, 1/(*dt_)[0], 1.0);
+
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    stiff_->Add(*damp_, false, 1.0/(*dt_)[0], 1.0);
+  }
+
+  // apply forces and stiffness due to contact / meshtying
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
+
+  // close stiffness matrix
+  stiff_->Complete();
+
+  return;
+}
+
+void STR::TimIntOneStepTheta::PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams)
+{
+  //const Teuchos::ParameterList& porodynparams = DRT::Problem::Instance()->PoroelastDynamicParams();
+  //initporosity_ =porodynparams.get<double>("INITPOROSITY");
+
+  initporosity_ =sdynparams->get<double>("INITPOROSITY");
+
+  // initialize stiffness matrix to zero
+  stiff_->Zero();
+
+  // determine mass, damping and initial accelerations
+  DetermineMassDampConsistAccel();
+
+  // create state vectors
+
+  // mid-displacements
+  dist_ = LINALG::CreateVector(*dofrowmap_, true);
+  // mid-velocities
+  velt_ = LINALG::CreateVector(*dofrowmap_, true);
+  // mid-accelerations
+  acct_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  // create force vectors
+
+  // internal force vector F_{int;n} at last time
+  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  // internal force vector F_{int;n+1} at new time
+  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  //! reactive part in stiffness matrix
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_rea = Teuchos::null;
+  stiff_rea = Teuchos::rcp(
+           new LINALG::SparseMatrix(
+                 *(discret_->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
+
+  // ordinary internal force and stiffness
+  PoroApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, stiff_rea);
+
+  // external force vector F_ext at last times
+  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  // external force vector F_{n+1} at new time
+  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // set initial external force vector
+  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext_);
+
+  // inertial mid-point force vector F_inert
+  finertt_ = LINALG::CreateVector(*dofrowmap_, true);
+  // viscous mid-point force vector F_visc
+  fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  // external pseudo force due to RobinBC
+  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
+
+	return;
+}
+
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

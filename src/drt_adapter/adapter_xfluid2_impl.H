@@ -96,6 +96,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Scaam() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist()  { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel() {dserror("not implemented"); return Teuchos::null;}
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() { dserror("not implemented"); return Teuchos::null; }
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Vector> FsVel() { dserror("not implemented"); return Teuchos::null; };
@@ -223,6 +225,11 @@ namespace ADAPTER {
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
+
+    /// set porosity flow field (for poroelasticity)
+    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
+    { dserror("not implemented!");return; };
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)  { dserror("not implemented!");return; };
 
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,

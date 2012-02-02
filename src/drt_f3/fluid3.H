@@ -276,22 +276,16 @@ public:
   }
 
   /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
+  \brief Get number of degrees of freedom of a certain node in case of multiple
+         dofsets (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
 
-  This is the version for a coupling to scalar transport with a second dof set.
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-  {
-    // number of dofs for scalar transport
-    if (nds==1){return 1;}
-    return NumDofPerNode(node);
-  }
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const;
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -455,6 +449,13 @@ public:
   */
   bool IsAle() const { return is_ale_; }
 
+  virtual void SetIsAle(bool is_ale)
+  {
+	  is_ale_ = is_ale;
+
+    return;
+  };
+
   /*!
   \brief Returns the quantity Cs*h^2 from the dynamic Smagorinsky model
   */
@@ -477,7 +478,7 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
-    calc_porousflow_sysmat_and_residual,
+    calc_porousflow_fluid_coupling,
     calc_loma_mono_odblock,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,

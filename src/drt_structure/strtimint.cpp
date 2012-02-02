@@ -617,6 +617,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
       damp_->Multiply(false, (*vel_)[0], *rhs);
     }
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
+
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
     if (pressure_ != Teuchos::null)
@@ -1069,6 +1070,8 @@ void STR::TimInt::DetermineStressStrain()
     // set the temperature for the coupled problem
     if(tempn_!=Teuchos::null)
       discret_->SetState(1,"temperature",tempn_);
+    if(fluidveln_!=Teuchos::null)
+      discret_->SetState(1,"fluidveln",fluidveln_);
     if(dismatn_!= null)
       discret_->SetState(0,"material displacement",dismatn_);
 
@@ -1642,7 +1645,15 @@ void STR::TimInt::ApplyForceInternal
   // create the parameters for the discretization
   ParameterList p;
   // action for elements
-  const std::string action = "calc_struct_internalforce";
+  std::string action = "calc_struct_internalforce";
+  const std::string prbtype = DRT::Problem::Instance()->ProblemType();
+  if( prbtype == "poroelast")
+  {
+	  action = "calc_poroelast_internalforce";
+	  //porelasticity specific parameters
+	  p.set("initporosity", initporosity_);
+  }
+
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
@@ -1650,6 +1661,14 @@ void STR::TimInt::ApplyForceInternal
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
+  if( prbtype == "poroelast")
+  {
+	  discret_->SetState("velocity", vel);
+	  if(fluidveln_!=Teuchos::null)
+	    discret_->SetState(1,"fluidvel",fluidveln_);
+	  else
+		  dserror("no fluid velocity given!");
+  }
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
   // set the temperature for the coupled problem
@@ -1749,6 +1768,23 @@ void STR::TimInt::ApplyTemperatures(
 }
 
 /*----------------------------------------------------------------------*/
+/* get the velocites and pressures from the fluid discretization    */
+void STR::TimInt::ApplyVelAndPress(
+  Teuchos::RCP<const Epetra_Vector> veln  ///< the current velocities
+  )
+{
+  if(veln != Teuchos::null)
+  {
+    // velocities and pressures at t_{n+1}
+	  fluidveln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+	  fluidveln_ = veln;
+  }
+  else dserror("no velocities and pressures available for poroelasticity");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* apply the new material displacements                      mgit 05/11 */
 void STR::TimInt::ApplyDisMat(
   Teuchos::RCP<Epetra_Vector> dismat
@@ -1787,7 +1823,68 @@ void STR::TimInt::AttachEnergyFile()
                  << " kinetic_energy internal_energy external_energy"
                  << std::endl;
   }
+  return;
+}
+  
+/*----------------------------------------------------------------------*/
+/* Poroelasticity: evaluate ordinary internal force, its stiffness at state */
+void STR::TimInt::PoroApplyForceStiffInternal
+(
+  const double time,
+  const double dt,
+  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
+  const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
+  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+  Teuchos::RCP<Epetra_Vector> fint,  // internal force
+  Teuchos::RCP<LINALG::SparseOperator> stiff,  // stiffness matrix
+  Teuchos::RCP<LINALG::SparseOperator> stiff_rea // reacitve part of stiffness matrix
+)
+{
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
 
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // action for elements
+  const std::string action = "calc_poroelast_nlnstiff";
+  //const std::string action = "calc_struct_nlnstiff";
+  p.set("action", action);
+  // other parameters that might be needed by the elements
+  p.set("total time", time);
+  p.set("delta time", dt);
+  //porelasticity specific parameters
+  p.set("initporosity", initporosity_);
+  if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+  // set vector values needed by elements
+  discret_->ClearState();
+  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0,"residual displacement", disi);
+  discret_->SetState(0,"displacement", dis);
+
+  //if (damping_ == INPAR::STR::damp_material)
+  discret_->SetState(0,"velocity", vel);
+  //fintn_->PutScalar(0.0);  // initialise internal force vector
+  // set the temperature for the coupled problem
+  if(tempn_!=Teuchos::null)
+    discret_->SetState(1,"temperature",tempn_);
+  if(fluidveln_!=Teuchos::null)
+    discret_->SetState(1,"fluidvel",fluidveln_);
+  if(dismatn_!=null)
+    discret_->SetState(0,"material displacement",dismatn_);
+  discret_->Evaluate(p, stiff, stiff_rea, fint, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
+
+#if 0
+  if (pressure_ != Teuchos::null)
+    cout << "Total volume=" << std::scientific << p.get<double>("volume") << endl;
+#endif
+
+  // *********** time measurement ***********
+  dtele_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
+
+  // that's it
   return;
 }
 
@@ -1799,6 +1896,111 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
     return locsysman_->Trafo();
 
   return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/* equilibrate system at initial state
+ * and identify consistent accelerations */
+void STR::TimInt::PoroDetermineMassDampConsistAccel()
+{
+  // temporary force vectors in this routine
+  Teuchos::RCP<Epetra_Vector> fext
+    = LINALG::CreateVector(*dofrowmap_, true); // external force
+  Teuchos::RCP<Epetra_Vector> fint
+    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+
+  // overwrite initial state vectors with DirichletBCs
+  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
+
+  // get external force
+  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
+
+  // initialise matrices
+  stiff_->Zero();
+  mass_->Zero();
+
+  // get initial internal force and stiffness and mass
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    //p.set("action", "calc_poroelast_nlnstiffmass");
+    p.set("action", "calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+    // set vector values needed by elements
+    discret_->ClearState();
+    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0,"residual displacement", zeros_);
+    discret_->SetState(0,"displacement", (*dis_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
+    // set the temperature for the coupled problem
+    if(tempn_!=Teuchos::null)
+    {
+      discret_->SetState(1,"temperature",tempn_);
+    }
+    if(fluidveln_!=Teuchos::null)
+      discret_->SetState(1,"fluidveln",fluidveln_);
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // finish mass matrix
+  mass_->Complete();
+
+  // close stiffness matrix
+  stiff_->Complete();
+
+  // build Rayleigh damping matrix if desired
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Add(*stiff_, false, dampk_, 0.0);
+    damp_->Add(*mass_, false, dampm_, 1.0);
+    damp_->Complete();
+  }
+
+  // in case of C0 pressure field, we need to get rid of
+  // pressure equations
+  Teuchos::RCP<LINALG::SparseOperator> mass = Teuchos::null;
+  if (pressure_ != Teuchos::null)
+  {
+    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
+    mass->ApplyDirichlet(*(pressure_->CondMap()));
+  }
+  else
+  {
+    mass = mass_;
+  }
+
+  // calculate consistent initial accelerations
+  // WE MISS:
+  //   - surface stress forces
+  //   - potential forces
+  {
+    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
+    if (damping_ == INPAR::STR::damp_rayleigh)
+    {
+      damp_->Multiply(false, (*vel_)[0], *rhs);
+    }
+    rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
+
+    // blank RHS on DBC DOFs
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
+    if (pressure_ != Teuchos::null)
+      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
+
+    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
+  }
+
+  // We need to reset the stiffness matrix because its graph (topology)
+  // is not finished yet in case of constraints and posssibly other side
+  // effects (basically managers).
+  stiff_->Reset();
+
+  // leave this hell
+  return;
 }
 
 /*----------------------------------------------------------------------*/

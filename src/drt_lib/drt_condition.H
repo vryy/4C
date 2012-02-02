@@ -219,6 +219,7 @@ public:
     ScaTraCoupling,
     EmbeddingTissue,
     TotalTractionCorrectionCond,
+    NoPenetration,
     TotalTractionCorrectionBorderNodes,
     RedAirwayVentilatorCond
   };

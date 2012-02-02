@@ -197,6 +197,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
+  // Neumann conditions for poroelasticity problems
+  Teuchos::RCP<ConditionDefinition> pointporoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT PORO NEUMANN CONDITIONS",
+                                         "PoroPointNeumann",
+                                         "Point Neumann",
+                                         DRT::Condition::PointNeumann,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> lineporoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO NEUMANN CONDITIONS",
+                                         "PoroLineNeumann",
+                                         "Line Neumann",
+                                         DRT::Condition::LineNeumann,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfporoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF PORO NEUMANN CONDITIONS",
+                                         "PoroSurfaceNeumann",
+                                         "Surface Neumann",
+                                         DRT::Condition::SurfaceNeumann,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volporoneumann =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL PORO NEUMANN CONDITIONS",
+                                         "PoroVolumeNeumann",
+                                         "Volume Neumann",
+                                         DRT::Condition::VolumeNeumann,
+                                         true,
+                                         DRT::Condition::Volume));
+
 
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
@@ -219,6 +249,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     lineXFEMneumann->AddComponent(neumanncomponents[i]);
     surfXFEMneumann->AddComponent(neumanncomponents[i]);
     volXFEMneumann->AddComponent(neumanncomponents[i]);
+    
+    pointporoneumann->AddComponent(neumanncomponents[i]);
+    lineporoneumann->AddComponent(neumanncomponents[i]);
+    surfporoneumann->AddComponent(neumanncomponents[i]);
+    volporoneumann->AddComponent(neumanncomponents[i]);
   }
 
   condlist.push_back(pointneumann);
@@ -239,6 +274,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(lineXFEMneumann);
   condlist.push_back(surfXFEMneumann);
   condlist.push_back(volXFEMneumann);
+  
+  condlist.push_back(pointporoneumann);
+  condlist.push_back(lineporoneumann);
+  condlist.push_back(surfporoneumann);
+  condlist.push_back(volporoneumann);
 
   /*--------------------------------------------------------------------*/
   // Dirichlet
@@ -370,6 +410,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Volume));
 
+  // Dirichlet conditions for poroelasticity problems
+  Teuchos::RCP<ConditionDefinition> pointporodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT PORO DIRICH CONDITIONS",
+                                         "PoroDirichlet",
+                                         "Point Dirichlet",
+                                         DRT::Condition::PointDirichlet,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> lineporodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO DIRICH CONDITIONS",
+                                         "PoroDirichlet",
+                                         "Line Dirichlet",
+                                         DRT::Condition::LineDirichlet,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfporodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF PORO DIRICH CONDITIONS",
+                                         "PoroDirichlet",
+                                         "Surface Dirichlet",
+                                         DRT::Condition::SurfaceDirichlet,
+                                         false,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volporodirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL PORO DIRICH CONDITIONS",
+                                         "PoroDirichlet",
+                                         "Volume Dirichlet",
+                                         DRT::Condition::VolumeDirichlet,
+                                         false,
+                                         DRT::Condition::Volume));
+
 
   for (unsigned i=0; i<dirichletcomponents.size(); ++i)
   {
@@ -392,6 +462,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     linethermodirichlet->AddComponent(dirichletcomponents[i]);
     surfthermodirichlet->AddComponent(dirichletcomponents[i]);
     volthermodirichlet->AddComponent(dirichletcomponents[i]);
+
+    pointporodirichlet->AddComponent(dirichletcomponents[i]);
+    lineporodirichlet->AddComponent(dirichletcomponents[i]);
+    surfporodirichlet->AddComponent(dirichletcomponents[i]);
+    volporodirichlet->AddComponent(dirichletcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);
@@ -413,6 +488,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(linethermodirichlet);
   condlist.push_back(surfthermodirichlet);
   condlist.push_back(volthermodirichlet);
+
+  condlist.push_back(pointporodirichlet);
+  condlist.push_back(lineporodirichlet);
+  condlist.push_back(surfporodirichlet);
+  condlist.push_back(volporodirichlet);
 
   /*--------------------------------------------------------------------*/
   // Initial fields
@@ -2721,8 +2801,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(embeddingtissuecond);
   //embeddingtissuecond->Print(cout, NULL, "");
 
+  /*--------------------------------------------------------------------*/
+  // Poroelasticity (no penetration)
 
+  Teuchos::RCP<ConditionDefinition> nopenetration =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NORMAL NO PENETRATION CONDITION",
+                                         "NoPenetration",
+                                         "No Penetration",
+                                         DRT::Condition::NoPenetration,
+                                         false,
+                                         DRT::Condition::Surface));
 
+  nopenetration->AddComponent(Teuchos::rcp(new IntConditionComponent("normalDir")));
+
+  condlist.push_back(nopenetration);
+
+  /*--------------------------------------------------------------------*/
   return vc;
 
 }

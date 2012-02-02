@@ -73,6 +73,10 @@ namespace ADAPTER
                                                                return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()       { dserror("not implemented");
                                                                return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn()       { dserror("not implemented");
+                                                               return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel() {dserror("not implemented");
+																return null;}
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { dserror("not implemented");
                                                          const Epetra_Map* dofrowmap = fluiddis_->DofRowMap();
                                                          return Teuchos::rcp(dofrowmap, false); };
@@ -187,6 +191,10 @@ namespace ADAPTER
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
     virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno);
+    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
+    { dserror("not implemented!");return; };
+    /// update velocity increment after Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)  { dserror("not implemented!");return; };
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }
     virtual void TimeLoop();

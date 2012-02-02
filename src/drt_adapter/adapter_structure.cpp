@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure_constr_merged.H"
 #include "adapter_structure_wrapper.H"
 #include "adapter_structure_lung.H"
+#include "adapter_structure_timint_poroelast.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -458,7 +459,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     {
       output->WriteMesh(0, 0.0);
     }
-  // get input parameter lists and copy them, because a few parameters are overwritten
+    // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype
   //  = DRT::Problem::Instance()->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags
@@ -539,6 +540,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
         dserror("only constant structure predictor with monolithic FSI possible");
       }
     }
+  }
+
+  // extra parameters for poroelasticity
+  if (genprob.probtyp == prb_poroelast)
+  {
+	  //set parameters for poroelasticity
+	  sdyn->set<double>("INITPOROSITY", prbdyn.get<double>("INITPOROSITY"));
   }
 
   // create a solver
@@ -751,6 +759,17 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
         else
           structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
       }
+    }
+    else if (genprob.probtyp == prb_poroelast)
+    {
+      tmpstr = Teuchos::rcp(new StructureTimIntImplPoro(stii, ioflags, sdyn, xparams,
+                                                        actdis, solver, contactsolver, output));
+      if (tmpstr->HaveConstraint())
+      {
+        structure_ = rcp(new StructureConstrMerged(tmpstr));
+      }
+      else
+        structure_ = tmpstr;
     }
     else
     {

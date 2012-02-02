@@ -318,6 +318,8 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
+
     //! specific method for iterative staggered partitioned TSI
 
     /// Identify residual

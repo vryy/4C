@@ -138,7 +138,7 @@ namespace ADAPTER {
     /// start new time step
     void PrepareTimeStep();
 
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
     /// update at time step end
     void Update();
@@ -317,6 +317,9 @@ namespace ADAPTER {
     virtual void ApplyTemperatures(
       Teuchos::RCP<const Epetra_Vector> temp
       );
+
+    // poroelasticity specific method
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp);
 
     //! specific method for iterative staggered partitioned TSI
 

@@ -94,6 +94,9 @@ namespace ADAPTER {
       dserror("Not impl."); return -1;
     }
 
+    /// evaluate for poroelasticity
+    void PoroEvaluate(Teuchos::RCP<const Epetra_Vector> disiterinc){dserror("not implemented"); return;};
+
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
     void Update();
@@ -245,6 +248,7 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp);
 
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) {dserror("not implemented");};
 
     //! specific method for iterative staggered partitioned TSI
 

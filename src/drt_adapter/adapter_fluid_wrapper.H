@@ -48,8 +48,11 @@ namespace ADAPTER
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist()
     { return fluid_->Hist(); }
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel() {dserror("not implemented"); return Teuchos::null;}
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
     { return fluid_->Dispnp(); }
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn()
+    { return fluid_->Dispn(); }
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel()
     { return fluid_->ConvectiveVel(); }
     virtual Teuchos::RCP<const Epetra_Vector> FsVel()
@@ -72,6 +75,9 @@ namespace ADAPTER
     { return fluid_->GetDBCMapExtractor(); }
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialFlowField(initfield, startfuncno); }
+    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
+    { dserror("not implemented!");return; };
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)  { dserror("not implemented!");return; };
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,

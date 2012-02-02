@@ -111,6 +111,31 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector&            elevec3_epetra,
                              const DRT::UTILS::GaussIntegration & intpoints ) = 0;
 
+    /// Evaluate the element at specified gauss points for porous flow
+    virtual int PoroEvaluateCoupl(DRT::ELEMENTS::Fluid3*               ele,
+                             DRT::Discretization &                discretization,
+                             const std::vector<int> &             lm,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material> &        mat,
+                             Epetra_SerialDenseMatrix&            elemat1_epetra,
+                             Epetra_SerialDenseMatrix&            elemat2_epetra,
+                             Epetra_SerialDenseVector&            elevec1_epetra,
+                             Epetra_SerialDenseVector&            elevec2_epetra,
+                             Epetra_SerialDenseVector&            elevec3_epetra) = 0;
+
+    /// Evaluate the element at specified gauss points for porous flow
+    virtual int PoroEvaluateCoupl(DRT::ELEMENTS::Fluid3*          ele,
+                             DRT::Discretization &                discretization,
+                             const std::vector<int> &             lm,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material> &        mat,
+                             Epetra_SerialDenseMatrix&            elemat1_epetra,
+                             Epetra_SerialDenseMatrix&            elemat2_epetra,
+                             Epetra_SerialDenseVector&            elevec1_epetra,
+                             Epetra_SerialDenseVector&            elevec2_epetra,
+                             Epetra_SerialDenseVector&            elevec3_epetra,
+                             const DRT::UTILS::GaussIntegration & intpoints ) = 0;
+
     /// evaluation of off-diagonal matrix block for monolithic loma solver
     /*!
       Generic virtual interface function. Called via base pointer.

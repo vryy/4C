@@ -63,6 +63,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/structporo.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -92,6 +93,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
   // interface go to the material law here.
   // the old interface does not exist anymore...
   RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+	  const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+	  mat = actmat->GetMaterial();
+  }
+
   switch (mat->MaterialType())
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */

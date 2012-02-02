@@ -316,6 +316,9 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp);
 
+    // poroelasticity specific method
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) {dserror("not implemented");};
+
     //! specific method for iterative staggered partitioned TSI
 
     /// Identify residual

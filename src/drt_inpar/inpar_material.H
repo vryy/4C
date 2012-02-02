@@ -127,6 +127,8 @@ namespace INPAR
       m_constraintmixture,  ///< growth and remodeling of arteries
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
       m_opti_dens,    ///< density field for topology optimization
+      m_fluidporo,       ///< darcy fluid for poroelasticity problems
+      m_structporo,		//< wrapper material for poroelasticity (structure)
       m_none          ///< undefined
     };
 

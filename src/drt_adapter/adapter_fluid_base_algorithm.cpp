@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_poroelast.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -541,6 +542,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
+
+  if (genprob.probtyp == prb_poroelast)
+  {
+	fluidtimeparams->set<double>("initporosity",prbdyn.get<double>("INITPOROSITY"));
+	fluidtimeparams->set<bool>("poroelast",true);
+  }
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
@@ -709,6 +716,22 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
+
+  // set initial porosity field by given function
+  // we do this here, since we have direct access to all necessary parameters
+//   if (genprob.probtyp == prb_poroelast)
+//   {
+//	INPAR::POROELAST::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::POROELAST::InitialField>(prbdyn,"INITIALFIELD");
+//	int startfuncno = prbdyn.get<int>("INITFUNCNO");
+
+//	cout<<"ADAPTER::FluidBaseAlgorithm::SetupFluid SetInitialPorosityField"<<endl;
+//	fluid_->SetInitialPorosityField(initfield,startfuncno);
+
+    //fluidtimeparams->set<int>("INITIALFIELD"   ,DRT::INPUT::IntegralValue<int>(prbdyn,"INITIALFIELD"));
+
+    // fluidtimeparams->set<int>("INITFUNCNO"   ,prbdyn.get<int>("INITFUNCNO"));
+//   }
+
   return;
 }
 
