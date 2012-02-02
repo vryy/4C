@@ -1837,7 +1837,7 @@ void Nitsche_SysmatBoundaryCell(
       // prepare interface conditions
       //-----------------------------
       // mass flux through flame front
-      const double mflux = (flamespeed -marksteinlength*curv)*dens_minus*wallfac;
+      const double mflux = flamespeed*(1.0 - marksteinlength*curv)*dens_minus*wallfac;
 
       // velocity jump in normal direction
 #if 0

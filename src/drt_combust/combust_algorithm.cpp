@@ -1091,11 +1091,11 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
 
       if (XFEM::plusDomain(gfuncval) == true){ // interface or burnt domain -> burnt material
         // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
-        speedfac = (sl -marksteinlength*curv)* rhominus/rhoplus;
+        speedfac = sl*(1.0-marksteinlength*curv)* rhominus/rhoplus;
       }
       else{ // unburnt domain -> unburnt material
         // flame speed factor = laminar flame speed
-        speedfac = sl-marksteinlength*curv;
+        speedfac = sl*(1.0-marksteinlength*curv);
       }
 
       LINALG::Matrix<3,1> flvelrel(true);
