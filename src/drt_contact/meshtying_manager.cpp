@@ -63,26 +63,26 @@ MORTAR::ManagerBase(),
 discret_(discret)
 {
   // overwrite base class communicator
-  comm_ = rcp(Discret().Comm().Clone());
+  comm_ = Teuchos::rcp(Discret().Comm().Clone());
 
   // welcome message
 
   // create some local variables (later to be stored in strategy)
-  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
+  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
   if (dim!= 2 && dim!=3) dserror("ERROR: Meshtying problem must be 2D or 3D");
-  vector<RCP<MORTAR::MortarInterface> > interfaces;
+  std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
   if(Comm().MyPID()==0)
   {
-    cout << "Checking meshtying input parameters...........";
+    std::cout << "Checking meshtying input parameters...........";
     fflush(stdout);
   }
   ReadAndCheckInput(mtparams);
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -92,11 +92,11 @@ discret_(discret)
   // for each group, create a contact interface and store it
   if(Comm().MyPID()==0)
   {
-    cout << "Building meshtying interface(s)...............";
+    std::cout << "Building meshtying interface(s)...............";
     fflush(stdout);
   }
 
-  vector<DRT::Condition*> contactconditions(0);
+  std::vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
 
   // there must be more than one meshtying condition
@@ -105,7 +105,7 @@ discret_(discret)
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
-  vector<int> foundgroups(0);
+  std::vector<int> foundgroups(0);
   int numgroupsfound = 0;
 
   // maximum dof number in discretization
@@ -116,12 +116,12 @@ discret_(discret)
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    vector<DRT::Condition*> currentgroup(0);
+    std::vector<DRT::Condition*> currentgroup(0);
     DRT::Condition* tempcond = NULL;
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const vector<int>* group1v = currentgroup[0]->Get<vector<int> >("contact id");
+    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >("contact id");
     if (!group1v) dserror("Contact Conditions does not have value 'contact id'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
@@ -130,7 +130,7 @@ discret_(discret)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const vector<int>* group2v = tempcond->Get<vector<int> >("contact id");
+      const std::vector<int>* group2v = tempcond->Get<std::vector<int> >("contact id");
       if (!group2v) dserror("Contact Conditions does not have value 'contact id'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue; // not in the group
@@ -160,12 +160,12 @@ discret_(discret)
     // find out which sides are Master and Slave
     bool hasslave = false;
     bool hasmaster = false;
-    vector<const string*> sides((int)currentgroup.size());
-    vector<bool> isslave((int)currentgroup.size());
+    std::vector<const std::string*> sides((int)currentgroup.size());
+    std::vector<bool> isslave((int)currentgroup.size());
 
     for (int j=0;j<(int)sides.size();++j)
     {
-      sides[j] = currentgroup[j]->Get<string>("Side");
+      sides[j] = currentgroup[j]->Get<std::string>("Side");
       if (*sides[j] == "Slave")
       {
         hasslave = true;
@@ -184,12 +184,12 @@ discret_(discret)
     if (!hasmaster) dserror("Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
-    vector<const string*> active((int)currentgroup.size());
-    vector<bool> isactive((int)currentgroup.size());
+    std::vector<const std::string*> active((int)currentgroup.size());
+    std::vector<bool> isactive((int)currentgroup.size());
 
     for (int j=0;j<(int)sides.size();++j)
     {
-      active[j] = currentgroup[j]->Get<string>("Initialization");
+      active[j] = currentgroup[j]->Get<std::string>("Initialization");
       if (*sides[j] == "Slave")
       {
         // slave sides must be initialized as "Active"
@@ -211,10 +211,10 @@ discret_(discret)
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we do NOT need redundant storage)
     bool redundant = false;
-    interfaces.push_back(rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
+    interfaces.push_back(Teuchos::rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
 
     // get it again
-    RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size()-1];
+    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size()-1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
@@ -226,7 +226,7 @@ discret_(discret)
     for (int j=0;j<(int)currentgroup.size();++j)
     {
       // get all nodes and add them
-      const vector<int>* nodeids = currentgroup[j]->Nodes();
+      const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
       for (int k=0; k<(int)(*nodeids).size(); ++k)
       {
@@ -237,7 +237,7 @@ discret_(discret)
         if (!node) dserror("Cannot find node with gid %",gid);
 
         // create MortarNode object
-        RCP<MORTAR::MortarNode> mtnode = rcp(new MORTAR::MortarNode(node->Id(),node->X(),
+        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
                                                               node->Owner(),
                                                               Discret().NumDof(node),
                                                               Discret().Dof(node),
@@ -254,7 +254,7 @@ discret_(discret)
     for (int j=0;j<(int)currentgroup.size();++j)
     {
       // get elements from condition j of current group
-      map<int,RCP<DRT::Element> >& currele = currentgroup[j]->Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -269,11 +269,11 @@ discret_(discret)
       Comm().SumAll(&lsize,&gsize,1);
 
 
-      map<int,RCP<DRT::Element> >::iterator fool;
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
       for (fool=currele.begin(); fool != currele.end(); ++fool)
       {
-        RCP<DRT::Element> ele = fool->second;
-        RCP<MORTAR::MortarElement> mtele = rcp(new MORTAR::MortarElement(ele->Id()+ggsize,
+        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<MORTAR::MortarElement> mtele = Teuchos::rcp(new MORTAR::MortarElement(ele->Id()+ggsize,
                                                                    ele->Owner(),
                                                                    ele->Shape(),
                                                                    ele->NumNode(),
@@ -289,27 +289,27 @@ discret_(discret)
     interface->FillComplete(maxdof);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
 
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
   if(Comm().MyPID()==0)
   {
-    cout << "Building meshtying strategy object............";
+    std::cout << "Building meshtying strategy object............";
     fflush(stdout);
   }
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
   //**********************************************************************
 
   //**********************************************************************
@@ -324,8 +324,8 @@ discret_(discret)
   // print parameter list to screen
   if (Comm().MyPID()==0)
   {
-    cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    cout << GetStrategy().Params() << endl;
+    std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
+    std::cout << GetStrategy().Params() << endl;
   }
 
   return;
@@ -418,13 +418,13 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // warnings
   // *********************************************************************
   if (input.get<double>("SEARCH_PARAM") == 0.0)
-    cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
+    std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
 
   // store ParameterList in local parameter list
   mtparams = input;
   
   // no parallel redistribution in the serial case
-  if (Comm().NumProc()==1) mtparams.set<string>("PARALLEL_REDIST","None");
+  if (Comm().NumProc()==1) mtparams.set<std::string>("PARALLEL_REDIST","None");
 
   return true;
 }
@@ -444,7 +444,7 @@ void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output)
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
-                                     RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero)
+                                     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
@@ -459,16 +459,16 @@ void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
 void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
-  RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
-  RCP<Epetra_Vector> traction = rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
-  RCP<Epetra_Vector> tractionexp = rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
+  Teuchos::RCP<Epetra_Vector> traction = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
+  Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
   LINALG::Export(*traction, *tractionexp);
 
   // evaluate slave and master forces
-  RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
-  RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
-  RCP<Epetra_Vector> fcslaveexp = rcp(new Epetra_Vector(*problem));
-  RCP<Epetra_Vector> fcmasterexp = rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> fcslaveexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcmasterexp = Teuchos::rcp(new Epetra_Vector(*problem));
   GetStrategy().DMatrix()->Multiply(true, *traction, *fcslave);
   GetStrategy().MMatrix()->Multiply(true, *traction, *fcmaster);
   LINALG::Export(*fcslave, *fcslaveexp);

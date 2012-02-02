@@ -41,8 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_interface.H"
 
-using namespace std;
-using namespace Teuchos;
 
 /*!
 \brief CONTACT: namespace of the baci contact algorithms
@@ -107,7 +105,7 @@ public:
   \brief Get row map of active nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> ActiveNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> ActiveNodes() const
   {
     if (Filled()) return activenodes_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -118,7 +116,7 @@ public:
   \brief Get row map of active dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> ActiveDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> ActiveDofs() const
   {
     if (Filled()) return activedofs_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -129,7 +127,7 @@ public:
   \brief Get row map of matrix N (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> ActiveNDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> ActiveNDofs() const
   {
     if (Filled()) return activen_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -140,7 +138,7 @@ public:
   \brief Get row map of matrix T (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> ActiveTDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> ActiveTDofs() const
   {
     if (Filled()) return activet_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -151,7 +149,7 @@ public:
   \brief Get row map of slip nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlipNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> SlipNodes() const
   {
     if (Filled()) return slipnodes_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -162,7 +160,7 @@ public:
   \brief Get row map of slip node dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlipDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> SlipDofs() const
   {
     if (Filled()) return slipdofs_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -173,7 +171,7 @@ public:
   \brief Get row map of matrix T for slip nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlipTDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> SlipTDofs() const
   {
     if (Filled()) return slipt_;
     else dserror("CONTACT::Interface::FillComplete was not called");
@@ -210,7 +208,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddCoNode(RCP<CONTACT::CoNode> cnode);
+  virtual void AddCoNode(Teuchos::RCP<CONTACT::CoNode> cnode);
 
   /*!
   \brief Add a CONTACT::CoElement to the interface (Filled()==true is prerequisite)
@@ -220,7 +218,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddCoElement(RCP<CONTACT::CoElement> cele);
+  virtual void AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele);
 
   /*!
   \brief Redistribute contact interface among all procs
@@ -337,7 +335,7 @@ public:
 
   */
   bool IntegrateCoupling(MORTAR::MortarElement* sele,
-                         vector<MORTAR::MortarElement*> mele);
+                         std::vector<MORTAR::MortarElement*> mele);
     
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element
@@ -362,9 +360,9 @@ public:
   evaluated here.
 
   */
-  virtual void EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
-                              const RCP<LINALG::SparseMatrix> dmatrixmod,
-                              const RCP<LINALG::SparseMatrix> doldmod);
+  virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
+                              const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
+                              const Teuchos::RCP<LINALG::SparseMatrix> doldmod);
 
   /*!
   \brief Assemble jump vector into global jump vector
@@ -376,7 +374,7 @@ public:
   \brief Assemble slave coordinates (xs)
 
   */
-  virtual void AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod);
+  virtual void AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod);
   
   /*!
   \brief Evaluate L2 Norm of tangential contact conditions
@@ -606,25 +604,24 @@ protected:
   CoInterface operator = (const CoInterface& old);
   CoInterface(const CoInterface& old);
 
-
-  bool                        selfcontact_;    // flag indicating if this is a self contact interface
-  bool                        friction_;       // flag for frictional contact
-  bool                        wear_;           // flag for wear  
-  bool                        tsi_;            // flag for thermo structure interaction
+  bool                          selfcontact_;    // flag indicating if this is a self contact interface
+  bool                          friction_;       // flag for frictional contact
+  bool                          wear_;           // flag for wear
+  bool                          tsi_;            // flag for thermo structure interaction
   
-  RCP<Epetra_Map>             activenodes_;    // row map of all active slave nodes
-  RCP<Epetra_Map>             activedofs_;     // row map of all active slave dofs
-  RCP<Epetra_Map>             activen_;        // row map of global N-matrix
-  RCP<Epetra_Map>             activet_;        // row map of global T-matrix
-  RCP<Epetra_Map>             slipnodes_;      // row map of all slip slave nodes
-  RCP<Epetra_Map>             slipdofs_;       // row map of all slip slave dofs
-  RCP<Epetra_Map>             slipt_;          // row map of part of T-matrix (slip nodes)
+  Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
+  Teuchos::RCP<Epetra_Map>      activedofs_;     // row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>      activen_;        // row map of global N-matrix
+  Teuchos::RCP<Epetra_Map>      activet_;        // row map of global T-matrix
+  Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
+  Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
+  Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
 
-  RCP<SelfBinaryTree>         binarytreeself_; // binary tree for self contact search
+  Teuchos::RCP<SelfBinaryTree>  binarytreeself_; // binary tree for self contact search
 
-  int                         smpairs_;        // proc local number of slave/master pairs
-  int                         smintpairs_;     // proc local number of slave/master integration pairs
-  int                         intcells_;       // proc local number of integration cells
+  int                           smpairs_;        // proc local number of slave/master pairs
+  int                           smintpairs_;     // proc local number of slave/master integration pairs
+  int                           intcells_;       // proc local number of integration cells
   
 }; // class CoInterface
 } // namespace CONTACT

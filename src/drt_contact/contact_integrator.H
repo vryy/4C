@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_integrator.H"
 
-using namespace std;
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -119,7 +118,7 @@ public:
   */
   void IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      RCP<Epetra_SerialDenseMatrix> dseg);
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
 
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
@@ -131,10 +130,10 @@ public:
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       INPAR::MORTAR::LagMultQuad lmtype,
-      RCP<Epetra_SerialDenseMatrix> dseg,
-      RCP<Epetra_SerialDenseMatrix> mseg,
-      RCP<Epetra_SerialDenseVector> gseg,
-      RCP<Epetra_SerialDenseVector> wseg);
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> wseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -143,10 +142,10 @@ public:
   */
   void IntegrateDerivCell3D(
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      RCP<MORTAR::IntCell> cell,
-      RCP<Epetra_SerialDenseMatrix> dseg,
-      RCP<Epetra_SerialDenseMatrix> mseg,
-      RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<MORTAR::IntCell> cell,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
     
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -156,15 +155,15 @@ public:
   */
   void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg,
-     RCP<Epetra_SerialDenseVector> mdisssegs,
-     RCP<Epetra_SerialDenseVector> mdisssegm,
-     RCP<Epetra_SerialDenseMatrix> aseg,
-     RCP<Epetra_SerialDenseMatrix> bseg,
-     RCP<Epetra_SerialDenseVector> wseg);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
+     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> bseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> wseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -175,11 +174,11 @@ public:
   void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      INPAR::MORTAR::LagMultQuad lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
   
   /*!
   \brief Compute penalty scaling factor kappa on slave element
@@ -187,7 +186,7 @@ public:
   */
   void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                              double* sxia, double* sxib,
-                             RCP<Epetra_SerialDenseVector> gseg);
+                             Teuchos::RCP<Epetra_SerialDenseVector> gseg);
     
   /*!
   \brief Compute penalty scaling factor kappa on slave integration element
@@ -197,7 +196,7 @@ public:
   void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                              MORTAR::IntElement& sintele,
                              double* sxia, double* sxib,
-                             RCP<Epetra_SerialDenseVector> gseg,
+                             Teuchos::RCP<Epetra_SerialDenseVector> gseg,
                              INPAR::MORTAR::LagMultQuad lmtype);
   
   //@}
@@ -211,7 +210,7 @@ public:
   */
   void DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
                    MORTAR::MortarElement& mele, double& mxia, double& mxib,
-                   vector<map<int,double> >& derivxi,
+                   std::vector<std::map<int,double> >& derivxi,
                    bool& startslave, bool& endslave);
 
   /*!
@@ -220,8 +219,8 @@ public:
 
   */
   void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                   double& sxigp, double& mxigp, const map<int,double>& derivsxi,
-                   map<int,double>& derivmxi);
+                   double& sxigp, double& mxigp, const std::map<int,double>& derivsxi,
+                   std::map<int,double>& derivmxi);
   
   /*!
   \brief Compute directional derivative of master Gauss point
@@ -229,8 +228,8 @@ public:
 
   */
   void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                   double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
-                   vector<map<int,double> >& derivmxi, double& alpha);
+                   double* sxigp, double* mxigp, const std::vector<std::map<int,double> >& derivsxi,
+                   std::vector<std::map<int,double> >& derivmxi, double& alpha);
 
   /*!
   \brief Compute directional derivative of slave / master Gauss point
@@ -239,9 +238,9 @@ public:
 
   */
   void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp, double* auxn,
-                   vector<map<int,double> >& derivxi, double& alpha,
-                   const vector<map<int,double> >& derivauxn,
-                   const vector<map<int,double> >& derivgp);
+                   std::vector<std::map<int,double> >& derivxi, double& alpha,
+                   const std::vector<std::map<int,double> >& derivauxn,
+                   const std::vector<std::map<int,double> >& derivgp);
   
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
@@ -346,13 +345,13 @@ protected:
     CoIntegrator operator = (const CoIntegrator& old);
     CoIntegrator(const CoIntegrator& old);
 
-    DRT::Node**                       mynodes_;   // slave element nodes
-    LINALG::SerialDenseMatrix         scoord_;    // slave element nodal coordinates
-    LINALG::SerialDenseMatrix         mcoord_;    // master element nodal coordinates
-    bool                              duallin_;   // flag indicating linearization of dual shape fct.
-    vector<vector<map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
-    LINALG::SerialDenseMatrix         ssecderiv_; // storage for 2nd derivatives of standard shape fct.
-    vector<map<int,double> >          ximaps_;    // storage for 2d segment endpoints derivatives
+    DRT::Node**                                      mynodes_;   // slave element nodes
+    LINALG::SerialDenseMatrix                        scoord_;    // slave element nodal coordinates
+    LINALG::SerialDenseMatrix                        mcoord_;    // master element nodal coordinates
+    bool                                             duallin_;   // flag indicating linearization of dual shape fct.
+    std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
+    LINALG::SerialDenseMatrix                        ssecderiv_; // storage for 2nd derivatives of standard shape fct.
+    std::vector<std::map<int,double> >               ximaps_;    // storage for 2d segment endpoints derivatives
 
 }; // class CoIntegrator
 }  // namespace CONTACT

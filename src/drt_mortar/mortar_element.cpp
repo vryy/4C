@@ -103,7 +103,8 @@ void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarEleDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
+void MORTAR::MortarEleDataContainer::Unpack(std::vector<char>::size_type& position,
+                                            const std::vector<char>& data)
 {
   // area_
   DRT::ParObject::ExtractfromPack(position,data,area_);
@@ -209,15 +210,15 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Unpack(const vector<char>& data)
+void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class DRT::Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Element::Unpack(basedata);
   // shape_
@@ -255,14 +256,14 @@ int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int MORTAR::MortarElement::Evaluate(ParameterList&            params,
-                                DRT::Discretization&      discretization,
-                                vector<int>&              lm,
-                                Epetra_SerialDenseMatrix& elemat1,
-                                Epetra_SerialDenseMatrix& elemat2,
-                                Epetra_SerialDenseVector& elevec1,
-                                Epetra_SerialDenseVector& elevec2,
-                                Epetra_SerialDenseVector& elevec3)
+int MORTAR::MortarElement::Evaluate(ParameterList&         params,
+                                DRT::Discretization&       discretization,
+                                std::vector<int>&          lm,
+                                Epetra_SerialDenseMatrix&  elemat1,
+                                Epetra_SerialDenseMatrix&  elemat2,
+                                Epetra_SerialDenseVector&  elevec1,
+                                Epetra_SerialDenseVector&  elevec2,
+                                Epetra_SerialDenseVector&  elevec3)
 {
   dserror("MORTAR::MortarElement::Evaluate not implemented!");
   return -1;
@@ -442,8 +443,8 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
                                           Epetra_SerialDenseMatrix& elens)
 {
   // empty local basis vectors
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // metrics routine gives local basis vectors
   Metrics(xi,gxi,geta);
@@ -472,8 +473,8 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
   if (!n)  dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
 
   // empty local basis vectors
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // metrics routine gives local basis vectors
   Metrics(xi,gxi,geta);
@@ -494,7 +495,8 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn)
+void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
+                std::vector<std::map<int,double> >& derivn)
 {
   // resize derivn
   if ((int)derivn.size()!=3) derivn.resize(3);
@@ -505,8 +507,8 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi, vector<map<int,doubl
   if (!mynodes) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -526,8 +528,8 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi, vector<map<int,doubl
   for (int i=0;i<3;++i) n[i] /= length;
 
   // non-unit normal derivative
-  vector<map<int,double> > derivnnu(3);
-  typedef map<int,double>::const_iterator CI;
+  std::vector<std::map<int,double> > derivnnu(3);
+  typedef std::map<int,double>::const_iterator CI;
 
   // now the derivative
   for (int n=0;n<nnodes;++n)
@@ -593,7 +595,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi, vector<map<int,doubl
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
-                                       bool isinit)
+                                           bool isinit)
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
@@ -649,7 +651,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
  |  Get lagrange multipliers of the element                gitterle 08/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
-                                       bool isinit)
+                                            bool isinit)
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
@@ -672,8 +674,8 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 /*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Metrics(double* xi, vector<double>& gxi,
-                                vector<double>& geta)
+void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
+                                    std::vector<double>& geta)
 {
   int nnodes = NumNode();
   int dim = 0;
@@ -723,8 +725,8 @@ void MORTAR::MortarElement::Metrics(double* xi, vector<double>& gxi,
 double MORTAR::MortarElement::Jacobian(double* xi)
 {
   double jac = 0.0;
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
@@ -763,7 +765,7 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::DerivJacobian(double* xi, map<int,double>& derivjac)
+void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& derivjac)
 {
   // get element nodes
   int nnodes = NumNode();
@@ -772,8 +774,8 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, map<int,double>& derivjac)
 
   // the Jacobian itself
   double jac = 0.0;
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // evaluate shape functions
   LINALG::SerialDenseVector val(nnodes);
@@ -1111,7 +1113,7 @@ void MORTAR::MortarElement::InitializeDataContainer()
 {
   // only initialize if not yet done
   if (modata_==Teuchos::null)
-    modata_=rcp(new MORTAR::MortarEleDataContainer());
+    modata_=Teuchos::rcp(new MORTAR::MortarEleDataContainer());
 
   return;
 }
@@ -1121,7 +1123,7 @@ void MORTAR::MortarElement::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ResetDataContainer()
 {
-  // reset to null
+  // reset to Teuchos::null
   modata_  = Teuchos::null;
 
   return;

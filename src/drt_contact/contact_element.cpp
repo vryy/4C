@@ -155,9 +155,9 @@ void CONTACT::CoElement::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Unpack(const vector<char>& data)
+void CONTACT::CoElement::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   // extract type
   int type = 0;
@@ -165,7 +165,7 @@ void CONTACT::CoElement::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // extract base class MORTAR::MortarElement
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   MORTAR::MortarElement::Unpack(basedata);
 
@@ -188,13 +188,13 @@ int CONTACT::CoElement::NumDofPerNode(const DRT::Node& node) const
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
 int CONTACT::CoElement::Evaluate(ParameterList&            params,
-                                DRT::Discretization&      discretization,
-                                vector<int>&              lm,
-                                Epetra_SerialDenseMatrix& elemat1,
-                                Epetra_SerialDenseMatrix& elemat2,
-                                Epetra_SerialDenseVector& elevec1,
-                                Epetra_SerialDenseVector& elevec2,
-                                Epetra_SerialDenseVector& elevec3)
+                                 DRT::Discretization&      discretization,
+                                 std::vector<int>&         lm,
+                                 Epetra_SerialDenseMatrix& elemat1,
+                                 Epetra_SerialDenseMatrix& elemat2,
+                                 Epetra_SerialDenseVector& elevec1,
+                                 Epetra_SerialDenseVector& elevec2,
+                                 Epetra_SerialDenseVector& elevec3)
 {
   dserror("CONTACT::CoElement::Evaluate not implemented!");
   return -1;
@@ -204,8 +204,8 @@ int CONTACT::CoElement::Evaluate(ParameterList&            params,
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i,
-                                          Epetra_SerialDenseMatrix& elens,
-                                          vector<map<int,double> >& derivn)
+                                           Epetra_SerialDenseMatrix& elens,
+                                           std::vector<std::map<int,double> >& derivn)
 {
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -224,8 +224,8 @@ void CONTACT::CoElement::DerivNormalAtNode(int nid, int& i,
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
-                                        Epetra_SerialDenseMatrix& elens,
-                                        vector<map<int,double> >& derivn)
+                                         Epetra_SerialDenseMatrix& elens,
+                                         std::vector<std::map<int,double> >& derivn)
 {
   // initialize variables
   int nnodes = NumNode();
@@ -233,8 +233,8 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
   if (!mynodes) dserror("ERROR: DerivNormalAtXi: Null pointer!");
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -291,7 +291,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
-                                const LINALG::SerialDenseMatrix& secderiv)
+                                 const LINALG::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
@@ -313,8 +313,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
-    vector<double> gxi(3);
-    vector<double> geta(3);
+    std::vector<double> gxi(3);
+    std::vector<double> geta(3);
     Metrics(xi,gxi,geta);
 
     double gsec[3] = {0.0, 0.0, 0.0};
@@ -341,8 +341,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
-    vector<double> gxi(3);
-    vector<double> geta(3);
+    std::vector<double> gxi(3);
+    std::vector<double> geta(3);
     Metrics(xi,gxi,geta);
 
     // cross product of gxi and geta

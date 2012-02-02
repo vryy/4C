@@ -48,8 +48,6 @@ Maintainer: Alexander Popp
 #include <Epetra_Export.h>
 #include <Epetra_CrsMatrix.h>
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace LINALG
@@ -94,8 +92,8 @@ namespace MORTAR
   is simply a processor-local 1:1 matching of old and new GIDs.
 
   */
-  RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-                                                   RCP<Epetra_Map> newrowmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                            Teuchos::RCP<Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (only GIDs)
@@ -107,8 +105,8 @@ namespace MORTAR
   1:1 matching of old and new GIDs.
 
   */
-  RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-                                                   RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                            Teuchos::RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (only GIDs)
@@ -120,9 +118,9 @@ namespace MORTAR
   a processor-local 1:1 matching of old and new GIDs.
 
   */
-  RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-                                                      RCP<Epetra_Map> newrowmap,
-                                                      RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                               Teuchos::RCP<Epetra_Map> newrowmap,
+                                                               Teuchos::RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row map of a matrix (parallel distribution)
@@ -131,8 +129,8 @@ namespace MORTAR
   row map with identical GIDs but different parallel distribution.
 
   */
-  RCP<LINALG::SparseMatrix> MatrixRowTransform(RCP<LINALG::SparseMatrix> inmat,
-                                               RCP<Epetra_Map> newrowmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                        Teuchos::RCP<Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (parallel distribution)
@@ -142,8 +140,8 @@ namespace MORTAR
   (and the domain map, accordingly).
 
   */
-  RCP<LINALG::SparseMatrix> MatrixColTransform(RCP<LINALG::SparseMatrix> inmat,
-                                               RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                        Teuchos::RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (parallel distribution)
@@ -153,9 +151,9 @@ namespace MORTAR
   parallel distribution (and the domain map, accordingly).
 
   */
-  RCP<LINALG::SparseMatrix> MatrixRowColTransform(RCP<LINALG::SparseMatrix> inmat,
-                                                  RCP<Epetra_Map> newrowmap,
-                                                  RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
+                                                           Teuchos::RCP<Epetra_Map> newrowmap,
+                                                           Teuchos::RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Parallel redistribution of a sparse matrix
@@ -163,9 +161,9 @@ namespace MORTAR
   Helper method for the MatrixTransform() methods above.
 
   */
-  RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
-                                     const Epetra_Map& permrowmap,
-                                     const Epetra_Map& permdomainmap);
+  Teuchos::RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
+                                              const Epetra_Map& permrowmap,
+                                              const Epetra_Map& permdomainmap);
 
 } // namespace MORTAR
 

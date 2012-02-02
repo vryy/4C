@@ -50,15 +50,13 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../linalg/linalg_utils.H"
 
-using namespace std;
-using namespace Teuchos;
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase::StrategyBase(RCP<Epetra_Map> problemrowmap,
+MORTAR::StrategyBase::StrategyBase(Teuchos::RCP<Epetra_Map> problemrowmap,
                                    Teuchos::ParameterList params,
-                                   int dim, RCP<Epetra_Comm> comm,
+                                   int dim, Teuchos::RCP<Epetra_Comm> comm,
                                    double alphaf, int maxdof) :
 problemrowmap_(problemrowmap),
 comm_(comm),

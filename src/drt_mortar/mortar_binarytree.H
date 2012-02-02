@@ -1,6 +1,8 @@
 /*!----------------------------------------------------------------------
 \file mortar_binarytree.H
 
+\brief A class for performing mortar search in 2D/3D based on binarytrees
+
 <pre>
 -------------------------------------------------------------------------
                         BACI Contact library
@@ -44,8 +46,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Map.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -102,13 +102,13 @@ public:
 
   */
   BinaryTreeNode(BinaryTreeNodeType type, DRT::Discretization& discret,
-                 RCP<BinaryTreeNode> parent, vector<int> elelist,
-                 const Epetra_SerialDenseMatrix& dopnormals, const int& kdop,
-                 const int& dim, const int layer,
-                 vector<vector<RCP<BinaryTreeNode> > > & streenodesmap,
-                 vector<vector<RCP<BinaryTreeNode> > > & mtreenodesmap,
-                 vector<vector<RCP<BinaryTreeNode> > > & sleafsmap,
-                 vector<vector<RCP<BinaryTreeNode> > > & mleafsmap);
+                 Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
+                 const Epetra_SerialDenseMatrix& dopnormals,
+                 const int& kdop, const int& dim, const int layer,
+                 std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & streenodesmap,
+                 std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mtreenodesmap,
+                 std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & sleafsmap,
+                 std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mleafsmap);
 
   /*!
   \brief Destructor
@@ -198,31 +198,31 @@ public:
   \brief Return pointer to right child
 
   */
-  virtual RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
+  virtual Teuchos::RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
 
   /*!
   \brief Return pointer to left child
 
   */
-  virtual RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
+  virtual Teuchos::RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
 
   /*!
   \brief Return pointer to parent
 
   */
-  virtual RCP<BinaryTreeNode> Parent() const { return parent_; }
+  virtual Teuchos::RCP<BinaryTreeNode> Parent() const { return parent_; }
 
   /*!
   \brief Set children of a treenode
 
   */
-  void SetChildren(RCP<BinaryTreeNode> leftchild,RCP<BinaryTreeNode> rightchild);
+  void SetChildren(Teuchos::RCP<BinaryTreeNode> leftchild,Teuchos::RCP<BinaryTreeNode> rightchild);
   
   /*!
   \brief Set parent of treenode
 
   */
-  virtual void SetParent(RCP<BinaryTreeNode> parent) { parent_=parent; }
+  virtual void SetParent(Teuchos::RCP<BinaryTreeNode> parent) { parent_=parent; }
     
   /*!
   \brief Return slabs of DOP
@@ -252,7 +252,7 @@ public:
   \brief Return reference to element list of TreeNode
 
   */
-  virtual vector<int>& Elelist() { return elelist_; }
+  virtual std::vector<int>& Elelist() { return elelist_; }
   
   /*!
   \brief Return dim of Problem
@@ -264,10 +264,10 @@ public:
   \brief Return different maps of tree nodes
 
   */
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Sleafsmap() { return sleafsmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Mleafsmap() { return mleafsmap_; }
 
   //@}
 
@@ -315,19 +315,19 @@ private:
   DRT::Discretization& idiscret_;
 
   //! pointer to the parent BinaryTreeNode
-  RCP<BinaryTreeNode> parent_;
+  Teuchos::RCP<BinaryTreeNode> parent_;
 
   //! pointer to the left child TreeNode
-  RCP<BinaryTreeNode> leftchild_;
+  Teuchos::RCP<BinaryTreeNode> leftchild_;
 
   //! pointer to the right child TreeNode
-  RCP<BinaryTreeNode> rightchild_;
+  Teuchos::RCP<BinaryTreeNode> rightchild_;
 
   //! geometry slabs of TreeNode, saved as Min|Max
   Epetra_SerialDenseMatrix slabs_;
 
   //! list with all elements of BinaryTreeNode
-  vector<int> elelist_;
+  std::vector<int> elelist_;
 
   //! reference to DOP normals
   const Epetra_SerialDenseMatrix& dopnormals_;
@@ -342,16 +342,16 @@ private:
   int layer_;
 
   //! reference to map of all slave treenodes, sorted by layer
-  vector<vector<RCP<BinaryTreeNode> > > & streenodesmap_; 
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & streenodesmap_;
 
   //! reference to map of all master treenodes, sorted by layer
-  vector<vector<RCP<BinaryTreeNode> > > &  mtreenodesmap_;
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > &  mtreenodesmap_;
 
   //! reference to map of all slave leaf treenodes
-  vector<vector<RCP<BinaryTreeNode> > > & sleafsmap_; 
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & sleafsmap_;
 
   //! reference to map of all master leaf treenodes
-  vector<vector<RCP<BinaryTreeNode> > > &  mleafsmap_;
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > &  mleafsmap_;
   
 }; // class BinaryTreeNode
 
@@ -379,10 +379,9 @@ public:
 
   */
   BinaryTree(DRT::Discretization& discret,
-             RCP<Epetra_Map> selements,
-             RCP<Epetra_Map> melements,
-             int dim,
-             double eps);
+             Teuchos::RCP<Epetra_Map> selements,
+             Teuchos::RCP<Epetra_Map> melements,
+             int dim, double eps);
 
   /*!
   \brief Destructor
@@ -396,13 +395,13 @@ public:
   \brief Print full tree
 
   */
-  void PrintTree(RCP<BinaryTreeNode> treenode);
+  void PrintTree(Teuchos::RCP<BinaryTreeNode> treenode);
   
   /*!
   \brief Print full tree out of map of treenodes
   
   */
-  void PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > > & treenodesmap);
+  void PrintTreeOfMap(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & treenodesmap);
 
   //@}
   
@@ -442,31 +441,31 @@ public:
   \brief Return reference to slave treenodesmap
 
   */
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Streenodesmap() { return streenodesmap_; }
 
   /*!
   \brief Return reference to master treenodesmap
 
   */
-  virtual vector<vector<RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& Mtreenodesmap() { return mtreenodesmap_; }
 
   /*!
   \brief Return reference to coupling treenodesmap
 
   */
-  virtual vector<vector<RCP<BinaryTreeNode> > >& CouplingMap() { return couplingmap_; }
+  virtual std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& CouplingMap() { return couplingmap_; }
 
   /*!
   \brief Return pointer to sroot-treenode
 
   */
-  virtual RCP<BinaryTreeNode>& Sroot() { return sroot_; }
+  virtual Teuchos::RCP<BinaryTreeNode>& Sroot() { return sroot_; }
 
   /*!
   \brief Return pointer to mroot-treenode
 
   */
-  virtual RCP<BinaryTreeNode>& Mroot() { return mroot_; }
+  virtual Teuchos::RCP<BinaryTreeNode>& Mroot() { return mroot_; }
 
   /*!
   \brief Return minimal element length
@@ -508,7 +507,7 @@ public:
   \brief Evaluate update of master and slave tree in a topdown way
 
   */
-  void EvaluateUpdateTreeTopDown(RCP<BinaryTreeNode> treenode);
+  void EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode);
 
   /*!
   \brief Updates master and slave tree in a bottom up way
@@ -522,7 +521,7 @@ public:
   \brief Evaluate update of master and slave tree in a bottom up way
 
   */
-  void EvaluateUpdateTreeBottomUp(vector<vector<RCP<BinaryTreeNode> > >& treenodesmap);
+  void EvaluateUpdateTreeBottomUp(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& treenodesmap);
 
   /*!
   \brief Evaluate Binary search tree for separate update and search
@@ -535,8 +534,8 @@ public:
   \brief Evaluate Binary search tree for separate update and search
 
   */
-  void EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
-                              RCP<BinaryTreeNode> mtreenode);
+  void EvaluateSearchSeparate(Teuchos::RCP<BinaryTreeNode> streenode,
+                              Teuchos::RCP<BinaryTreeNode> mtreenode);
 
   /*!
   \brief Evaluate Binary search tree for combined search and update
@@ -555,8 +554,8 @@ public:
   \brief Evaluate Binary search tree for combined search and update
 
   */
-  void EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
-                              RCP<BinaryTreeNode> mtreenode);
+  void EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> streenode,
+                              Teuchos::RCP<BinaryTreeNode> mtreenode);
 
   //@}
 
@@ -567,19 +566,19 @@ protected:
   BinaryTree operator = (const BinaryTree& old);
   BinaryTree(const BinaryTree& old);
 
-  DRT::Discretization&                    idiscret_;       // mortar interface discretization
-  RCP<Epetra_Map>                        selements_;      // all slave elements on surface (column map)
-  RCP<Epetra_Map>                        melements_;      // all master elements on surface (full map)
-  vector<vector<RCP<BinaryTreeNode> > >  streenodesmap_;  // map of all slave treenodes, sorted by layers
-  vector<vector<RCP<BinaryTreeNode> > >  mtreenodesmap_;  // map of all master treenodes, sorted by layers
-  vector<vector<RCP<BinaryTreeNode> > >  couplingmap_;    // map of all treenodes, that possibly couple, st/mt
-  vector<vector<RCP<BinaryTreeNode> > >  sleafsmap_;      // map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
-  vector<vector<RCP<BinaryTreeNode> > >  mleafsmap_;      // map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
-  RCP<BinaryTreeNode>                    sroot_;          // slave root treenode
-  RCP<BinaryTreeNode>                    mroot_;          // master root treenode
-  double                                 minlengthele_;    // minimum of length of fe-elements
+  DRT::Discretization&                   idiscret_;       // mortar interface discretization
+  Teuchos::RCP<Epetra_Map>               selements_;      // all slave elements on surface (column map)
+  Teuchos::RCP<Epetra_Map>               melements_;      // all master elements on surface (full map)
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >  streenodesmap_;  // map of all slave treenodes, sorted by layers
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >  mtreenodesmap_;  // map of all master treenodes, sorted by layers
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >  couplingmap_;    // map of all treenodes, that possibly couple, st/mt
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >  sleafsmap_;      // map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
+  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >  mleafsmap_;      // map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
+  Teuchos::RCP<BinaryTreeNode>           sroot_;          // slave root treenode
+  Teuchos::RCP<BinaryTreeNode>           mroot_;          // master root treenode
+  double                                 minlengthele_;   // minimum of length of fe-elements
   const int                              dim_;            // problem dimension (2D or 3D)
-  double                                  eps_;            // epsilon for enlarging dops (of user)
+  double                                 eps_;            // epsilon for enlarging dops (of user)
   double                                 enlarge_;        // to enlarge dops
   Epetra_SerialDenseMatrix               dopnormals_;     // defining vertices of DOP
   int                                    kdop_;           // sets k for DOP (8 for 2D, 18 for 3D)

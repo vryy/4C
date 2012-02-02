@@ -65,7 +65,7 @@ MORTAR::ManagerBase::ManagerBase()
   //**********************************************************************
 
   // create a simple serial communicator
-  comm_ = rcp(new Epetra_SerialComm());
+  comm_ = Teuchos::rcp(new Epetra_SerialComm());
 
   return;
 }

@@ -53,15 +53,15 @@ Maintainer: Alexander Popp
 MORTAR::BinaryTreeNode::BinaryTreeNode(
                      MORTAR::BinaryTreeNodeType type,
                      DRT::Discretization& discret,
-                     RCP<BinaryTreeNode> parent,
-                     vector<int> elelist,
+                     Teuchos::RCP<BinaryTreeNode> parent,
+                     std::vector<int> elelist,
                      const Epetra_SerialDenseMatrix& dopnormals,
                      const int& kdop, const int& dim,
                      const int layer,
-                     vector<vector<RCP<BinaryTreeNode> > > & streenodesmap,
-                     vector<vector<RCP<BinaryTreeNode> > > & mtreenodesmap,
-                     vector<vector<RCP<BinaryTreeNode> > > & sleafsmap,
-                     vector<vector<RCP<BinaryTreeNode> > > & mleafsmap) :
+                     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & streenodesmap,
+                     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mtreenodesmap,
+                     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & sleafsmap,
+                     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mleafsmap) :
 type_(type),
 idiscret_(discret),
 parent_(parent),
@@ -84,7 +84,7 @@ mleafsmap_(mleafsmap)
 }
 
 /*----------------------------------------------------------------------*
- | get communicator (public)                                   popp 10/08|
+ | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
 const Epetra_Comm& MORTAR::BinaryTreeNode::Comm() const
 {
@@ -252,7 +252,7 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
   // if current treenode is inner node
   if (type_==0||type_==2)
   {
-    //cout <<"\n"<< Comm().MyPID() << " Treenode "<< j <<" is a inner treenode!";
+    //std::cout <<"\n"<< Comm().MyPID() << " Treenode "<< j <<" is a inner treenode!";
     for (int k=0;k<kdop_/2;k++)
     {
       //for minimum
@@ -357,13 +357,13 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
   return;
 }
 /*----------------------------------------------------------------------*
- | Divide treenode (public)                                    popp 10/08|
+ | Divide treenode (public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::DivideTreeNode()
 {
   // map of elements belonging to left / right child treenode
-  vector<int> leftelements(0);
-  vector<int> rightelements(0);
+  std::vector<int> leftelements(0);
+  std::vector<int> rightelements(0);
 
   //if only 2 elements in Treenode, create new treenodes out of them
   if (Elelist().size()==2)
@@ -499,12 +499,12 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
     }
 
     // build left child treenode
-    leftchild_= rcp(new BinaryTreeNode(lefttype,idiscret_, rcp(this, false),
+    leftchild_= Teuchos::rcp(new BinaryTreeNode(lefttype,idiscret_, Teuchos::rcp(this, false),
                     leftelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
                     sleafsmap_, mleafsmap_));
 
     // build right child treenode
-    rightchild_= rcp(new BinaryTreeNode(righttype,idiscret_, rcp(this, false),
+    rightchild_= Teuchos::rcp(new BinaryTreeNode(righttype,idiscret_, Teuchos::rcp(this, false),
                      rightelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
                      sleafsmap_, mleafsmap_));
 
@@ -540,41 +540,41 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 }
 
 /*----------------------------------------------------------------------*
- | Print type of treenode to std::cout (public)                popp 10/08|
+ | Print type of treenode to std::cout (public)               popp 10/08|
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::PrintType()
 {
   if (type_==0)
-    cout << endl << "SLAVE_INNER ";
+    std::cout << endl << "SLAVE_INNER ";
   else if (type_==1)
-    cout << endl << "SLAVE_LEAF ";
+    std::cout << endl << "SLAVE_LEAF ";
   else if (type_==2)
-    cout << endl << "MASTER_INNER ";
+    std::cout << endl << "MASTER_INNER ";
   else if (type_==3)
-    cout << endl << "MASTER_LEAF ";
+    std::cout << endl << "MASTER_LEAF ";
   else if (type_==4)
-    cout << endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
+    std::cout << endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
   else if (type_==5)
-    cout << endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
+    std::cout << endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
   else
-    cout << endl << "UNDEFINED ";
+    std::cout << endl << "UNDEFINED ";
 }
 
 /*----------------------------------------------------------------------*
- | Print slabs to std::cout (public)                           popp 10/08|
+ | Print slabs to std::cout (public)                          popp 10/08|
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::PrintSlabs()
 {
-   cout << endl << Comm().MyPID() << "************************************************************";
+   std::cout << endl << Comm().MyPID() << "************************************************************";
    PrintType();
-   cout << "slabs:";
+   std::cout << "slabs:";
    for (int i=0;i<slabs_.M();i++)
-      cout << "\nslab: "<<i<<" min: "<< slabs_.operator ()(i,0) << " max: "<<slabs_.operator ()(i,1);
-   cout << "\n**********************************************************\n";
+      std::cout << "\nslab: "<<i<<" min: "<< slabs_.operator ()(i,0) << " max: "<<slabs_.operator ()(i,1);
+   std::cout << "\n**********************************************************\n";
 }
 
 /*----------------------------------------------------------------------*
- | Print slabs of dop to file for Gmsh (public)                popp 10/08|
+ | Print slabs of dop to file for Gmsh (public)               popp 10/08|
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 {
@@ -639,11 +639,11 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
     //plot 3D-DOPs
 
     //defines coords of points defining k-DOP
-    vector < vector < double> > coords;
+    std::vector<std::vector<double> > coords;
     coords.resize(1);
 
     //trianglepoints[i] contains all needed points (i of coords[i]) to plot triangles
-    vector< vector < int > > trianglepoints ;
+    std::vector<std::vector<int> > trianglepoints ;
     trianglepoints.resize(kdop_);
 
     double dcurrent;
@@ -669,7 +669,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                     (dopnormals_(j,1)*dopnormals_(j,1))+(dopnormals_(j,2)*dopnormals_(j,2)));
                 double norm2=sqrt((dopnormals_(k,0)*dopnormals_(k,0))+
                     (dopnormals_(k,1)*dopnormals_(k,1))+(dopnormals_(k,2)*dopnormals_(k,2)));
-                // cout << endl << "norm0: " << norm0 << " 1: " << norm1 << " 2: " << norm2;
+                // std::cout << endl << "norm0: " << norm0 << " 1: " << norm1 << " 2: " << norm2;
                 A(0,0)=(dopnormals_(i,0))/norm0;
                 A(0,1)=(dopnormals_(i,1))/norm0;
                 A(0,2)=(dopnormals_(i,2))/norm0;
@@ -798,7 +798,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
         }
      }
     }
-    //cout << endl << "Number needed triangles to plot current treenode: " << count;
+    //std::cout << endl << "Number needed triangles to plot current treenode: " << count;
 
     //delete vector coords
     for (int i=0;i<(int)(coords.size())-1;i++)
@@ -897,7 +897,7 @@ void MORTAR::BinaryTreeNode::SetSlabs(Epetra_SerialDenseMatrix& newslabs)
 }
 
 /*----------------------------------------------------------------------*
- | Enlarge geometry of treenode (public)                        popp 10/08|
+ | Enlarge geometry of treenode (public)                      popp 10/08|
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::EnlargeGeometry(double& enlarge)
 {
@@ -916,10 +916,9 @@ void MORTAR::BinaryTreeNode::EnlargeGeometry(double& enlarge)
  |  ctor BinaryTree(public)                                   popp 10/08|
  *----------------------------------------------------------------------*/
 MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret,
-                                RCP<Epetra_Map> selements,
-                                RCP<Epetra_Map> melements,
-                                int dim,
-                                double eps) :
+                               Teuchos::RCP<Epetra_Map> selements,
+                               Teuchos::RCP<Epetra_Map> melements,
+                               int dim, double eps) :
 idiscret_(discret),
 selements_(selements),
 melements_(melements),
@@ -975,8 +974,8 @@ eps_(eps)
   // initialize binary tree root nodes
   //**********************************************************************
   // create element lists
-  vector<int> slist;
-  vector<int> mlist;
+  std::vector<int> slist;
+  std::vector<int> mlist;
 
   for (int i=0;i<selements_->NumMyElements();++i)
   {
@@ -993,7 +992,7 @@ eps_(eps)
   // check slave root node case
   if (slist.size()>=2)
   {
-    sroot_ = rcp(new BinaryTreeNode(MORTAR::SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
+    sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
@@ -1002,7 +1001,7 @@ eps_(eps)
   }
   else if (slist.size()==1)
   {
-    sroot_ = rcp(new BinaryTreeNode(MORTAR::SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
+    sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -1011,7 +1010,7 @@ eps_(eps)
   }
   else
   {
-    sroot_ = rcp(new BinaryTreeNode(MORTAR::NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
+    sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -1021,7 +1020,7 @@ eps_(eps)
   // check master root node case
   if (mlist.size()>=2)
   {
-    mroot_ = rcp(new BinaryTreeNode(MORTAR::MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
@@ -1030,7 +1029,7 @@ eps_(eps)
   }
   else if (mlist.size()==1)
   {
-    mroot_ = rcp(new BinaryTreeNode(MORTAR::MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
@@ -1039,7 +1038,7 @@ eps_(eps)
   }
   else
   {
-    mroot_ = rcp(new BinaryTreeNode(MORTAR::NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
+    mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
              Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization / error
@@ -1054,10 +1053,10 @@ eps_(eps)
     Comm().Barrier();
     if (Comm().MyPID()==k)
     {
-      cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << endl;
-      cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
+      std::cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << endl;
+      std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTree(sroot_);
-      cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
+      std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       PrintTree(mroot_);
     }
     Comm().Barrier();
@@ -1068,10 +1067,10 @@ eps_(eps)
     Comm().Barrier();
     if (Comm().MyPID()==k)
     {
-      cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << endl;
-      cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
+      std::cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << endl;
+      std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTreeOfMap(streenodesmap_);
-      cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
+      std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
       PrintTreeOfMap(mtreenodesmap_);
     }
     Comm().Barrier();
@@ -1083,7 +1082,7 @@ eps_(eps)
 
 
 /*----------------------------------------------------------------------*
- | get communicator (public)                                   popp 10/08|
+ | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
 const Epetra_Comm& MORTAR::BinaryTree::Comm() const
 {
@@ -1129,19 +1128,19 @@ void MORTAR::BinaryTree::SetEnlarge(bool isinit)
 }
 
 /*----------------------------------------------------------------------*
- | Print tree    (public)                                      popp 10/08|
+ | Print tree (public)                                        popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::PrintTree(RCP<BinaryTreeNode> treenode)
+void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
 {
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
   if (treenode->Type()==4 || treenode->Type()==5)
   {
-    cout <<"\n" <<Comm().MyPID()<< " Tree has no element to print";
+    std::cout <<"\n" <<Comm().MyPID()<< " Tree has no element to print";
     return;
   }
-  cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << treenode->Layer()<< " Elements: ";
+  std::cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << treenode->Layer()<< " Elements: ";
   for (int i=0;i<(int)(treenode->Elelist().size());i++)
-    cout <<" "<<treenode->Elelist()[i];
+    std::cout <<" "<<treenode->Elelist()[i];
 
   // while treenode is inner node
   if (treenode->Type()==0 || treenode->Type()==2)
@@ -1156,21 +1155,21 @@ void MORTAR::BinaryTree::PrintTree(RCP<BinaryTreeNode> treenode)
 /*----------------------------------------------------------------------*
  | Print tree with treenodesmap_ (public)                     popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > >& treenodesmap)
+void MORTAR::BinaryTree::PrintTreeOfMap(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& treenodesmap)
 {
   // print tree, elements listet in brackets (), belong to one treenode!
   for (int i=0;i<(int)(treenodesmap.size());i++)
   {
-    cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << i<< " Elements: ";
+    std::cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << i<< " Elements: ";
     for (int k=0;k<(int)(treenodesmap[i].size());k++)
     {
-      RCP<BinaryTreeNode> currentnode=treenodesmap[i][k];
-      cout << " (";
+      Teuchos::RCP<BinaryTreeNode> currentnode=treenodesmap[i][k];
+      std::cout << " (";
       for (int l=0;l<(int)(currentnode->Elelist().size());l++)
       {
-        cout << currentnode->Elelist()[l] << " ";
+        std::cout << currentnode->Elelist()[l] << " ";
       }
-      cout << ") ";
+      std::cout << ") ";
     }
   }
 
@@ -1178,9 +1177,9 @@ void MORTAR::BinaryTree::PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > >& t
 }
 
 /*----------------------------------------------------------------------*
- | Update tree topdown (public)                                 popp 10/08|
+ | Update tree topdown (public)                               popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(RCP<BinaryTreeNode> treenode)
+void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> treenode)
 {
   //if no slave element on proc-->return
   if (treenode->Elelist().size()==0) return;
@@ -1200,7 +1199,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(RCP<BinaryTreeNode> treenode)
 /*----------------------------------------------------------------------*
  | Update tree bottom up based on list (public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(vector<vector<RCP<BinaryTreeNode> > >& treenodesmap)
+void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > >& treenodesmap)
 {
   // update tree bottom up (for every treelayer)
   for (int i=((int)(treenodesmap.size()-1));i>=0;i=i-1 )
@@ -1213,10 +1212,10 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(vector<vector<RCP<BinaryTree
 }
 
 /*----------------------------------------------------------------------*
- | Search for contact (public)                                 popp 10/08|
+ | Search for contact (public)                                popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
-                                                 RCP<BinaryTreeNode> mtreenode)
+void MORTAR::BinaryTree::EvaluateSearchSeparate(Teuchos::RCP<BinaryTreeNode> streenode,
+                                                Teuchos::RCP<BinaryTreeNode> mtreenode)
 {
   // tree needs to be updated before running contact search!
 
@@ -1251,7 +1250,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
     // slave and master treenodes are inner nodes
     if (streenode->Type()==0 && mtreenode->Type()==2)
     {
-      //cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
+      //std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
       EvaluateSearchSeparate(streenode->Leftchild(),mtreenode->Leftchild());
       EvaluateSearchSeparate(streenode->Leftchild(),mtreenode->Rightchild());
       EvaluateSearchSeparate(streenode->Rightchild(),mtreenode->Leftchild());
@@ -1261,7 +1260,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
     // slave treenode is inner, master treenode is leaf
     if (streenode->Type()==0 && mtreenode->Type()==3)
     {
-      //cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
+      //std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
       EvaluateSearchSeparate(streenode->Leftchild(),mtreenode);
       EvaluateSearchSeparate(streenode->Rightchild(),mtreenode);
     }
@@ -1269,7 +1268,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
     // slave treenode is leaf,  master treenode is inner
     if (streenode->Type()==1 && mtreenode->Type()==2)
     {
-      //cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
+      //std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
       EvaluateSearchSeparate(streenode,mtreenode->Leftchild());
       EvaluateSearchSeparate(streenode,mtreenode->Rightchild());
     }
@@ -1279,7 +1278,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
     {
       int sgid = (int)streenode->Elelist()[0];    //global id of slave element
       int mgid = (int)mtreenode->Elelist()[0];    //global id of masterelement
-      //cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
+      //std::cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
       //     << sgid <<"and master-Element: "<< mgid;
       DRT::Element* element= idiscret_.gElement(sgid);
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);
@@ -1299,10 +1298,10 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 }
 
 /*----------------------------------------------------------------------*
- | Search for contact (public)                                 popp 10/08|
+ | Search for contact (public)                                popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
-                                                RCP<BinaryTreeNode> mtreenode)
+void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> streenode,
+                                                Teuchos::RCP<BinaryTreeNode> mtreenode)
 {
   // root nodes need to be updated before running combined contact search!
 
@@ -1337,7 +1336,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
     // slave and master treenodes are inner nodes
     if (streenode->Type()==0 && mtreenode->Type()==2)
     {
-      //cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
+      //std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
       streenode->Leftchild()->CalculateSlabsDop(false);
       streenode->Leftchild()->EnlargeGeometry(enlarge_);
       streenode->Rightchild()->CalculateSlabsDop(false);
@@ -1356,7 +1355,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
     // slave treenode is inner,  master treenode is leaf
     if (streenode->Type()==0 && mtreenode->Type()==3)
     {
-      //cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
+      //std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
       streenode->Leftchild()->CalculateSlabsDop(false);
       streenode->Leftchild()->EnlargeGeometry(enlarge_);
       streenode->Rightchild()->CalculateSlabsDop(false);
@@ -1369,7 +1368,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
     // slave treenode is leaf,  master treenode is inner
     if (streenode->Type()==1 && mtreenode->Type()==2)
     {
-      //cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
+      //std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
       mtreenode->Leftchild()->CalculateSlabsDop(false);
       mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
       mtreenode->Rightchild()->CalculateSlabsDop(false);
@@ -1382,10 +1381,10 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
     // both treenodes are leaf --> feasible pair
     if (streenode->Type()==1 && mtreenode->Type()==3)
     {
-      //cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!";
+      //std::cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!";
       int sgid = (int)streenode->Elelist()[0]; //global id of slave element
       int mgid = (int)mtreenode->Elelist()[0]; //global id of master element
-      //cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: "
+      //std::cout <<"\n"<< Comm().MyPID() << "TreeCombinedContact found between slave-Element: "
       //     << sgid <<"and master-Element: "<< mgid;
       DRT::Element* element= idiscret_.gElement(sgid);
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);

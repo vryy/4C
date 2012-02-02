@@ -1543,7 +1543,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
  |  1D/2D shape function linearizations repository            popp 05/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::ShapeType shape,
-                                 vector<vector<map<int,double> > >& derivdual)
+                                   std::vector<std::vector<std::map<int,double> > >& derivdual)
 {
   switch(shape)
   {
@@ -1572,8 +1572,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
     // two-dim arrays of maps for linearization of me/de
-    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
-    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
 
     // build me, de, derivme, derivde
     for (int i=0;i<integrator.nGP();++i)
@@ -1583,8 +1583,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       detg = Jacobian(gpc);
 
       // directional derivative of Jacobian
-      map<int,double> testmap;
-      typedef map<int,double>::const_iterator CI;
+      std::map<int,double> testmap;
+      typedef std::map<int,double>::const_iterator CI;
       DerivJacobian(gpc,testmap);
 
       // loop over all entries of me/de
@@ -1617,7 +1617,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (this is done according to a quite complex formula, which
     // we get from the linearization of the biorthogonality condition:
     // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,double>::const_iterator CI;
 
     // loop over all entries of ae (index i,j)
     for (int i=0;i<nnodes;++i)
@@ -1641,12 +1641,12 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       }
     }
 
-    // cout linearization of Ae
-    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    // std::cout linearization of Ae
+    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
     //for (int i=0;i<nnodes;++i)
     //  for (int j=0;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
 
     /*
 #ifdef DEBUG
@@ -1654,7 +1654,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     int thedim=3;
@@ -1700,14 +1700,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         int col= mycnode->Dofs()[dim];
 
-        cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << endl;
 
         // FD solution
         for (int i=0;i<nnodes;++i)
           for (int j=0;j<nnodes;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << endl;
           }
 
         // undo FD
@@ -1744,8 +1744,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
     // two-dim arrays of maps for linearization of me/de
-    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
-    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
 
     // build me, de, derivme, derivde
     for (int i=0;i<integrator.nGP();++i)
@@ -1755,8 +1755,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       detg = Jacobian(gpc);
 
       // directional derivative of Jacobian
-      map<int,double> testmap;
-      typedef map<int,double>::const_iterator CI;
+      std::map<int,double> testmap;
+      typedef std::map<int,double>::const_iterator CI;
       DerivJacobian(gpc,testmap);
 
       // loop over all entries of me/de
@@ -1789,7 +1789,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (this is done according to a quite complex formula, which
     // we get from the linearization of the biorthogonality condition:
     // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,double>::const_iterator CI;
 
     // loop over all entries of ae (index i,j)
     for (int i=0;i<nnodes;++i)
@@ -1813,19 +1813,19 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       }
     }
 
-    // cout linearization of Ae
-    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    // std::cout linearization of Ae
+    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
     //for (int i=0;i<nnodes;++i)
     //  for (int j=0;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     int thedim=3;
@@ -1870,14 +1870,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         int col= mycnode->Dofs()[dim];
 
-        cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << endl;
 
         // FD solution
         for (int i=0;i<nnodes;++i)
           for (int j=0;j<nnodes;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << endl;
           }
 
         // undo FD
@@ -1915,8 +1915,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
 
     // two-dim arrays of maps for linearization of me/de
-    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
-    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
 
     for (int i=0;i<integrator.nGP();++i)
     {
@@ -1926,8 +1926,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       detg = Jacobian(gpc);
 
       // directional derivative of Jacobian
-      map<int,double> testmap;
-      typedef map<int,double>::const_iterator CI;
+      std::map<int,double> testmap;
+      typedef std::map<int,double>::const_iterator CI;
       DerivJacobian(gpc,testmap);
 
       // loop over all entries of me/de
@@ -1967,7 +1967,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (this is done according to a quite complex formula, which
     // we get from the linearization of the biorthogonality condition:
     // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,double>::const_iterator CI;
 
     // loop over all entries of ae (index i,j)
     for (int i=1;i<nnodes;++i)
@@ -1991,19 +1991,19 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       }
     }
 
-    // cout linearization of Ae
-    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    // std::cout linearization of Ae
+    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
     //for (int i=1;i<nnodes;++i)
     //  for (int j=1;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
     LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
 
@@ -2060,14 +2060,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
         int col= mycnode->Dofs()[dim];
 
-        cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << endl;
 
         // FD solution
         for (int i=1;i<nnodes;++i)
           for (int j=1;j<nnodes;++j)
           {
             double val = (ae1(i-1,j-1)-aeref(i-1,j-1))/delta;
-            cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << endl;
           }
 
         // undo FD
@@ -2105,8 +2105,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
 
     // two-dim arrays of maps for linearization of me/de
-    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
-    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+    std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
 
     for (int i=0;i<integrator.nGP();++i)
     {
@@ -2116,8 +2116,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       detg = Jacobian(gpc);
 
       // directional derivative of Jacobian
-      map<int,double> testmap;
-      typedef map<int,double>::const_iterator CI;
+      std::map<int,double> testmap;
+      typedef std::map<int,double>::const_iterator CI;
       DerivJacobian(gpc,testmap);
 
       // loop over all entries of me/de
@@ -2157,7 +2157,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // (this is done according to a quite complex formula, which
     // we get from the linearization of the biorthogonality condition:
     // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,double>::const_iterator CI;
 
     // loop over all entries of ae (index i,j)
     for (int i=0;i<nnodes-1;++i)
@@ -2181,19 +2181,19 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       }
     }
 
-    // cout linearization of Ae
-    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    // std::cout linearization of Ae
+    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
     //for (int i=0;i<nnodes-1;++i)
     //  for (int j=0;j<nnodes-1;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
     LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
 
@@ -2250,14 +2250,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
         int col= mycnode->Dofs()[dim];
 
-        cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << endl;
 
         // FD solution
         for (int i=0;i<nnodes-1;++i)
           for (int j=0;j<nnodes-1;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << endl;
           }
 
         // undo FD
@@ -2401,7 +2401,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of dual shape functions    popp 05/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::DerivShapeDual(vector<vector<map<int,double> > >& derivdual)
+bool MORTAR::MortarElement::DerivShapeDual(std::vector<std::vector<std::map<int,double> > >& derivdual)
 {
   if (!IsSlave()) dserror("ERROR: DerivShapeDual called for master element");
 

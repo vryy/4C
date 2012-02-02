@@ -138,10 +138,10 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         fpm = fopen(filenamemaster.str().c_str(), "a");
       }
 
-      // write output to temporary stringstream
-      std::stringstream gmshfilecontent;
-      std::stringstream gmshfilecontentslave;
-      std::stringstream gmshfilecontentmaster;
+      // write output to temporary std::ostringstream
+      std::ostringstream gmshfilecontent;
+      std::ostringstream gmshfilecontentslave;
+      std::ostringstream gmshfilecontentmaster;
       if (proc==0)
       {
         gmshfilecontent << "View \" Step " << step << " Iter " << iter << " Iface\" {" << endl;
@@ -695,9 +695,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
-      std::stringstream gmshfile;
+      std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {" << endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
@@ -723,12 +723,12 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             std::ostringstream currentfilename;
             currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
             fp = fopen(currentfilename.str().c_str(), "a");
-            std::stringstream gmshfile;
+            std::ostringstream gmshfile;
             gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
           }
-          //cout << endl << "plot streenode level: " << j << "treenode: " << k;
+          //std::cout << endl << "plot streenode level: " << j << "treenode: " << k;
           std::ostringstream currentfilename;
           currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
           binarytree_->Streenodesmap()[j][k]->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -740,7 +740,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             std::ostringstream currentfilename;
             currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
             fp = fopen(currentfilename.str().c_str(), "a");
-            std::stringstream gmshfile;
+            std::ostringstream gmshfile;
             gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
@@ -760,9 +760,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
-      std::stringstream gmshfilecontent;
+      std::ostringstream gmshfilecontent;
       gmshfilecontent  << "};" ;
       fprintf(fp,gmshfilecontent.str().c_str());
       fclose(fp);
@@ -777,9 +777,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
-      std::stringstream gmshfile;
+      std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {" << endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
@@ -801,7 +801,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           std::ostringstream currentfilename;
           currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  j << ".pos";
           fp = fopen(currentfilename.str().c_str(), "a");
-          std::stringstream gmshfile;
+          std::ostringstream gmshfile;
           gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
           fprintf(fp,gmshfile.str().c_str());
           fclose(fp);
@@ -815,7 +815,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
       fp = fopen(currentfilename.str().c_str(), "a");
-      std::stringstream gmshfilecontent;
+      std::ostringstream gmshfilecontent;
       gmshfilecontent << endl << "};";
       fprintf(fp,gmshfilecontent.str().c_str());
       fclose(fp);
@@ -866,9 +866,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
-      std::stringstream gmshfile;
+      std::ostringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
@@ -885,8 +885,8 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         for (int j=0; j<(int)((binarytree_->CouplingMap()[0]).size());j++)
         {
           std::ostringstream currentfilename;
-          std::stringstream gmshfile;
-          std::stringstream newgmshfile;
+          std::ostringstream gmshfile;
+          std::ostringstream newgmshfile;
           
           // create new sheet for slave
           if (lComm()->MyPID()==0 && j==0)
@@ -924,9 +924,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
-      std::stringstream gmshfile;
+      std::ostringstream gmshfile;
       gmshfile  << "};" ;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
@@ -943,34 +943,34 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 void CONTACT::CoInterface::FDCheckNormalDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // create storage for normals / tangents
-  vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
-  vector<double> refny(int(snodecolmapbound_->NumMyElements()));
-  vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newny(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> refny(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newny(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
 
-  vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
-  vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
-  vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
 
-  vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
-  vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
-  vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
-  vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
 
   // compute and print all nodal normals / derivatives (reference)
   for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
@@ -980,43 +980,43 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
     CoNode* jcnode = static_cast<CoNode*>(jnode);
 
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,double>::const_iterator CI;
 
     // print reference data
-    cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
+    std::cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
 
-    cout << "Normal-derivative-maps: " << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    std::cout << "Normal-derivative-maps: " << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
     for (CI p=(jcnode->CoData().GetDerivN()[0]).begin();p!=(jcnode->CoData().GetDerivN()[0]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
     for (CI p=(jcnode->CoData().GetDerivN()[1]).begin();p!=(jcnode->CoData().GetDerivN()[1]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
     for (CI p=(jcnode->CoData().GetDerivN()[2]).begin();p!=(jcnode->CoData().GetDerivN()[2]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << endl;
 
-    cout << "Tangent txi-derivative-maps: " << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    std::cout << "Tangent txi-derivative-maps: " << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
     for (CI p=(jcnode->CoData().GetDerivTxi()[0]).begin();p!=(jcnode->CoData().GetDerivTxi()[0]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
     for (CI p=(jcnode->CoData().GetDerivTxi()[1]).begin();p!=(jcnode->CoData().GetDerivTxi()[1]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
     for (CI p=(jcnode->CoData().GetDerivTxi()[2]).begin();p!=(jcnode->CoData().GetDerivTxi()[2]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << endl;
 
-    cout << "Tangent teta-derivative-maps: " << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    std::cout << "Tangent teta-derivative-maps: " << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
     for (CI p=(jcnode->CoData().GetDerivTeta()[0]).begin();p!=(jcnode->CoData().GetDerivTeta()[0]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
     for (CI p=(jcnode->CoData().GetDerivTeta()[1]).begin();p!=(jcnode->CoData().GetDerivTeta()[1]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
-    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+      std::cout << p->first << '\t' << p->second << endl;
+    std::cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
     for (CI p=(jcnode->CoData().GetDerivTeta()[2]).begin();p!=(jcnode->CoData().GetDerivTeta()[2]).end();++p)
-      cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << endl;
 
     // store reference normals / tangents
     refnx[j] = jcnode->MoData().n()[0];
@@ -1046,7 +1046,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     CoNode* snode = static_cast<CoNode*>(node);
 
     // apply finite difference scheme
-    cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
+    std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
          << " Dof(g): " << snode->Dofs()[i%3] << endl;
 
     // do step forward (modify nodal displacement)
@@ -1119,79 +1119,79 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       // print results (derivatives) to screen
       if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12 || abs(newn[2]-refn[2])>1e-12)
       {
-        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        cout << "Normal derivative (FD):" << endl;
+        std::cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        std::cout << "Normal derivative (FD):" << endl;
         if (abs(newn[0]-refn[0])>1e-12)
         {
           double val = (newn[0]-refn[0])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newn[1]-refn[1])>1e-12)
         {
           double val = (newn[1]-refn[1])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newn[2]-refn[2])>1e-12)
         {
           double val = (newn[2]-refn[2])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
 
       if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 || abs(newtxi[2]-reftxi[2])>1e-12)
       {
-        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        cout << "Tangent txi derivative (FD):" << endl;
+        std::cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        std::cout << "Tangent txi derivative (FD):" << endl;
         if (abs(newtxi[0]-reftxi[0])>1e-12)
         {
           double val = (newtxi[0]-reftxi[0])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newtxi[1]-reftxi[1])>1e-12)
         {
           double val = (newtxi[1]-reftxi[1])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newtxi[2]-reftxi[2])>1e-12)
         {
           double val = (newtxi[2]-reftxi[2])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
 
       if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 || abs(newteta[2]-refteta[2])>1e-12)
       {
-        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        cout << "Tangent teta derivative (FD):" << endl;
+        std::cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        std::cout << "Tangent teta derivative (FD):" << endl;
         if (abs(newteta[0]-refteta[0])>1e-12)
         {
           double val = (newteta[0]-refteta[0])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newteta[1]-refteta[1])>1e-12)
         {
           double val = (newteta[1]-refteta[1])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
 
         if (abs(newteta[2]-refteta[2])>1e-12)
         {
           double val = (newteta[2]-refteta[2])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
-          cout << snode->Dofs()[i%3] << '\t' << val << endl;
+          std::cout << "Row dof id: " << kcnode->Dofs()[2] << endl;
+          std::cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
     }
@@ -1232,18 +1232,18 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 void CONTACT::CoInterface::FDCheckMortarDDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  map<int, map<int,double> > refD; // stores dof-wise the entries of D
-  map<int, map<int,double> > newD;
+  std::map<int, std::map<int,double> > refD; // stores dof-wise the entries of D
+  std::map<int, std::map<int,double> > newD;
 
-  map<int, map<int, map<int,double> > > refDerivD; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int,double> > > refDerivD; // stores old derivm for every node
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
@@ -1257,8 +1257,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 
     int dim = cnode->NumDof();
 
-    typedef map<int,map<int,double> >::const_iterator CID;
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->MoData().GetD().size())==0)
       continue;
@@ -1290,7 +1290,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 
     int sdof = snode->Dofs()[fd%3];
 
-    cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1329,7 +1329,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       if ((int)(kcnode->MoData().GetD().size())==0)
         continue;
 
-      typedef map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator CI;
 
       for( int d=0; d<dim; d++ )
       {
@@ -1350,20 +1350,20 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
 
             if( abs(dev) > 1e-4 )
             {
-              cout << " ***** WARNING ***** ";
+              std::cout << " ***** WARNING ***** ";
               w++;
             }
             else if( abs(dev) > 1e-5 )
             {
-              cout << " ***** warning ***** ";
+              std::cout << " ***** warning ***** ";
               w++;
             }
 
-            cout << endl;
+            std::cout << endl;
           }
         }
       }
@@ -1383,7 +1383,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
@@ -1404,7 +1404,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 
     int mdof = mnode->Dofs()[fd%3];
 
-    cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1443,7 +1443,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       if ((int)(kcnode->MoData().GetD().size())==0)
         continue;
 
-      typedef map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator CI;
 
       for( int d=0; d<dim; d++ )
       {
@@ -1464,20 +1464,20 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
 
             if( abs(dev) > 1e-4 )
             {
-              cout << " ***** WARNING ***** ";
+              std::cout << " ***** WARNING ***** ";
               w++;
             }
             else if( abs(dev) > 1e-5 )
             {
-              cout << " ***** warning ***** ";
+              std::cout << " ***** warning ***** ";
               w++;
             }
 
-            cout << endl;
+            std::cout << endl;
           }
         }
       }
@@ -1497,7 +1497,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       mnode->xspatial()[2] -= delta;
     }
 
-    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
   // back to normal...
@@ -1522,18 +1522,18 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 void CONTACT::CoInterface::FDCheckMortarMDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // create storage for M-Matrix entries
-  map<int, map<int,double> > refM; // stores dof-wise the entries of M
-  map<int, map<int,double> > newM;
+  std::map<int, std::map<int,double> > refM; // stores dof-wise the entries of M
+  std::map<int, std::map<int,double> > newM;
 
-  map<int, map<int, map<int,double> > > refDerivM; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int,double> > > refDerivM; // stores old derivm for every node
 
   // print reference to screen (M-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
@@ -1547,8 +1547,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 
     int dim = cnode->NumDof();
 
-    typedef map<int,map<int,double> >::const_iterator CIM;
-    typedef map<int,double>::const_iterator CI;
+    typedef std::map<int,std::map<int,double> >::const_iterator CIM;
+    typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->MoData().GetM().size())==0)
       continue;
@@ -1580,7 +1580,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 
     int sdof = snode->Dofs()[fd%3];
 
-    cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1619,7 +1619,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       if ((int)(kcnode->MoData().GetM().size())==0)
         continue;
 
-      typedef map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator CI;
 
       for( int d=0; d<dim; d++ )
       {
@@ -1640,20 +1640,20 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
 
             if( abs(dev) > 1e-4 )
             {
-              cout << " ***** WARNING ***** ";
+              std::cout << " ***** WARNING ***** ";
               w++;
             }
             else if( abs(dev) > 1e-5 )
             {
-              cout << " ***** warning ***** ";
+              std::cout << " ***** warning ***** ";
               w++;
             }
 
-            cout << endl;
+            std::cout << endl;
           }
         }
       }
@@ -1673,7 +1673,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
@@ -1694,7 +1694,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 
     int mdof = mnode->Dofs()[fd%3];
 
-    cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -1733,7 +1733,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       if ((int)(kcnode->MoData().GetM().size())==0)
         continue;
 
-      typedef map<int,double>::const_iterator CI;
+      typedef std::map<int,double>::const_iterator CI;
 
       for( int d=0; d<dim; d++ )
       {
@@ -1754,20 +1754,20 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
             // dof: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // mdof: currently modified master dof
-            cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
 
             if( abs(dev) > 1e-4 )
             {
-              cout << " ***** WARNING ***** ";
+              std::cout << " ***** WARNING ***** ";
               w++;
             }
             else if( abs(dev) > 1e-5 )
             {
-              cout << " ***** warning ***** ";
+              std::cout << " ***** warning ***** ";
               w++;
             }
 
-            cout << endl;
+            std::cout << endl;
           }
         }
       }
@@ -1787,7 +1787,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       mnode->xspatial()[2] -= delta;
     }
 
-    cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
   // back to normal...
@@ -1812,8 +1812,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 void CONTACT::CoInterface::FDCheckGapDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
@@ -1821,8 +1821,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> refG(nrow);
-  vector<double> newG(nrow);
+  std::vector<double> refG(nrow);
+  std::vector<double> newG(nrow);
 
   // store reference
   // loop over proc's slave nodes
@@ -1842,8 +1842,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       for (int j=0;j<3;++j)
         defgap-= (cnode->MoData().n()[j])*wii*(cnode->xspatial()[j]);
 
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      map<int,double>::iterator mcurr;
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::map<int,double>::iterator mcurr;
 
       for (int m=0;m<mnodefullmap->NumMyElements();++m)
       {
@@ -1872,7 +1872,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
           defgap+= (cnode->MoData().n()[j]) * mik * mxi[j];
       }
 
-      //cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->CoData().Getg() << " DefGap: " << defgap << endl;
+      //std::cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->CoData().Getg() << " DefGap: " << defgap << endl;
       //cnode->CoData().Getg = defgap;
     }
 
@@ -1895,7 +1895,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
            << " Dof(g): " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -1939,8 +1939,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
         for (int j=0;j<3;++j)
           defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        map<int,double>::iterator mcurr;
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::map<int,double>::iterator mcurr;
 
         for (int m=0;m<mnodefullmap->NumMyElements();++m)
         {
@@ -1969,7 +1969,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
             defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
         }
 
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
+        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
         //kcnode->CoData().Getg = defgap;
       }
 
@@ -1979,13 +1979,13 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       // print results (derivatives) to screen
       if (abs(newG[k]-refG[k]) > 1e-12)
       {
-        cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification
@@ -2020,7 +2020,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
            << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
     }
 
@@ -2064,8 +2064,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
         for (int j=0;j<3;++j)
           defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        map<int,double>::iterator mcurr;
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::map<int,double>::iterator mcurr;
 
         for (int m=0;m<mnodefullmap->NumMyElements();++m)
         {
@@ -2094,7 +2094,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
             defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
         }
 
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
+        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
         //kcnode->CoData().Getg = defgap;
       }
 
@@ -2104,13 +2104,13 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       // print results (derivatives) to screen
       if (abs(newG[k]-refG[k]) > 1e-12)
       {
-        cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
-        //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[mnode->Dofs()[fd%3]] << endl;
+        std::cout << "G-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
+        //std::cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[mnode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[mnode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
 
@@ -2142,8 +2142,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 void CONTACT::CoInterface::FDCheckTangLMDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
@@ -2151,10 +2151,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> refTLMxi(nrow);
-  vector<double> newTLMxi(nrow);
-  vector<double> refTLMeta(nrow);
-  vector<double> newTLMeta(nrow);
+  std::vector<double> refTLMxi(nrow);
+  std::vector<double> newTLMxi(nrow);
+  std::vector<double> refTLMeta(nrow);
+  std::vector<double> newTLMeta(nrow);
 
   // store reference
   // loop over proc's slave nodes
@@ -2258,7 +2258,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%3
            << " Dof(g): " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -2310,7 +2310,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
       // empty vector of master element pointers
-      vector<MORTAR::MortarElement*> melements;
+      std::vector<MORTAR::MortarElement*> melements;
     
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
@@ -2355,18 +2355,18 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // print results (derivatives) to screen
       if (abs(newTLMxi[k]-refTLMxi[k]) > 1e-12)
       {
-        cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-Xi-TLM: " << refTLMxi[k] << endl;
-        //cout << "New-Xi-TLM: " << newTLMxi[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
+        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-Xi-TLM: " << refTLMxi[k] << endl;
+        //std::cout << "New-Xi-TLM: " << newTLMxi[k] << endl;
+        std::cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
       }
       // print results (derivatives) to screen
       if (abs(newTLMeta[k]-refTLMeta[k]) > 1e-12)
       {
-        cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-TLM: " << refTLMeta[k] << endl;
-        //cout << "New-TLM: " << newTLMeta[k] << endl;
-        cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
+        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-TLM: " << refTLMeta[k] << endl;
+        //std::cout << "New-TLM: " << newTLMeta[k] << endl;
+        std::cout << "Deriv: " << snode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
       }
     }
 
@@ -2465,7 +2465,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%3
            << " Dof(g): " << mnode->Dofs()[fd%3] << endl;
     }
 
@@ -2517,7 +2517,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
       // empty vector of master element pointers
-      vector<MORTAR::MortarElement*> melements;
+      std::vector<MORTAR::MortarElement*> melements;
     
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
@@ -2562,18 +2562,18 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // print results (derivatives) to screen
       if (abs(newTLMxi[k]-refTLMxi[k]) > 1e-12)
       {
-        cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-TLM: " << refTLMxi[k] << endl;
-        //cout << "New-TLM: " << newTLMxi[k] << endl;
-        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
+        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-TLM: " << refTLMxi[k] << endl;
+        //std::cout << "New-TLM: " << newTLMxi[k] << endl;
+        std::cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMxi[k]-refTLMxi[k])/delta << endl;
       }
       // print results (derivatives) to screen
       if (abs(newTLMeta[k]-refTLMeta[k]) > 1e-12)
       {
-        cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-TLM: " << refTLMeta[k] << endl;
-        //cout << "New-TLM: " << newTLMeta[k] << endl;
-        cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
+        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-TLM: " << refTLMeta[k] << endl;
+        //std::cout << "New-TLM: " << newTLMeta[k] << endl;
+        std::cout << "Deriv: " << mnode->Dofs()[fd%3] << " " << (newTLMeta[k]-refTLMeta[k])/delta << endl;
       }
     }
 
@@ -2695,7 +2695,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
     // empty vector of master element pointers
-    vector<MORTAR::MortarElement*> melements;
+    std::vector<MORTAR::MortarElement*> melements;
   
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -2726,8 +2726,8 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 void CONTACT::CoInterface::FDCheckStickDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
@@ -2735,10 +2735,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> refCtxi(nrow);
-  vector<double> refCteta(nrow);
-  vector<double> newCtxi(nrow);
-  vector<double> newCteta(nrow);
+  std::vector<double> refCtxi(nrow);
+  std::vector<double> refCteta(nrow);
+  std::vector<double> newCtxi(nrow);
+  std::vector<double> newCteta(nrow);
 
   // store reference
   // loop over proc's slave nodes
@@ -2764,10 +2764,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         jumpteta -= (cnode->CoData().teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
       }
 
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
       set <int> mnodes;
 
       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -2776,7 +2776,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
         mnodes.insert((colcurr->first)/Dim());
 
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
 
       // loop over all master nodes (find adjacent ones to this slip node)
       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -2790,7 +2790,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         double mik = (mmap[0])[mdofs[0]];
         double mikold = (mmapold[0])[mdofs[0]];
 
-        map<int,double>::iterator mcurr;
+        std::map<int,double>::iterator mcurr;
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
@@ -2821,7 +2821,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //   // apply finite difference scheme
 //   if (Comm().MyPID()==snode->Owner())
 //   {
-//     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+//     std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
 //          << " Dof: " << snode->Dofs()[fd%3] << endl;
 //   }
 //
@@ -2865,10 +2865,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //        znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
 //       }
 //
-//       vector<map<int,double> > mmap = kcnode->MoData().GetM();
-//       vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+//       std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+//       std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 //
-//       map<int,double>::iterator colcurr;
+//       std::map<int,double>::iterator colcurr;
 //       set <int> mnodes;
 //
 //       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -2877,7 +2877,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //       for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
 //         mnodes.insert((colcurr->first)/Dim());
 //
-//       set<int>::iterator mcurr;
+//       std::set<int>::iterator mcurr;
 //
 //       // loop over all master nodes (find adjacent ones to this stick node)
 //       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -2890,7 +2890,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //
 //         double mik = (mmap[0])[mdofs[0]];
 //         double mikold = (mmapold[0])[mdofs[0]];
-//         map<int,double>::iterator mcurr;
+//         std::map<int,double>::iterator mcurr;
 //
 //         for (int dim=0;dim<kcnode->NumDof();++dim)
 //         {
@@ -2909,13 +2909,13 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //       // print results (derivatives) to screen
 //       if (abs(newC[k]-refC[k]) > 1e-12)
 //       {
-//         cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
-//         //cout << "Ref-G: " << refG[k] << endl;
-//         //cout << "New-G: " << newG[k] << endl;
-//         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newC[k]-refC[k])/delta << endl;
-//         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+//         std::cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
+//         //std::cout << "Ref-G: " << refG[k] << endl;
+//         //std::cout << "New-G: " << newG[k] << endl;
+//         std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newC[k]-refC[k])/delta << endl;
+//         //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
 //         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-//         //  cout << "***WARNING*****************************************************************************" << endl;
+//         //  std::cout << "***WARNING*****************************************************************************" << endl;
 //       }
 //     }
 //     // undo finite difference modification
@@ -2951,7 +2951,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
            << " Dof: " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -3001,10 +3001,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
           jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
-        map<int,double>::iterator colcurr;
+        std::map<int,double>::iterator colcurr;
         set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3013,7 +3013,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
 
-        set<int>::iterator mcurr;
+        std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
         for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3027,7 +3027,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
 
-          map<int,double>::iterator mcurr;
+          std::map<int,double>::iterator mcurr;
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
@@ -3043,25 +3043,25 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification
@@ -3096,7 +3096,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
            << " Dof: " << mnode->Dofs()[fd%3] << endl;
     }
 
@@ -3146,10 +3146,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
           jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
-        map<int,double>::iterator colcurr;
+        std::map<int,double>::iterator colcurr;
         set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3158,7 +3158,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
 
-        set<int>::iterator mcurr;
+        std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
         for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3172,7 +3172,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
 
-          map<int,double>::iterator mcurr;
+          std::map<int,double>::iterator mcurr;
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
@@ -3188,25 +3188,25 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
 
@@ -3239,8 +3239,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 void CONTACT::CoInterface::FDCheckSlipDeriv()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
@@ -3256,10 +3256,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
 
    // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> refCtxi(nrow);
-  vector<double> refCteta(nrow);
-  vector<double> newCtxi(nrow);
-  vector<double> newCteta(nrow);
+  std::vector<double> refCtxi(nrow);
+  std::vector<double> refCteta(nrow);
+  std::vector<double> newCtxi(nrow);
+  std::vector<double> newCteta(nrow);
 
   // store reference
   // loop over proc's slave nodes
@@ -3292,10 +3292,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         znor += (cnode->MoData().n()[dim])*(cnode->MoData().lm()[dim]);
       }
 
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
       set <int> mnodes;
 
       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3304,7 +3304,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
         mnodes.insert((colcurr->first)/Dim());
 
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
 
       // loop over all master nodes (find adjacent ones to this slip node)
       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3318,7 +3318,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         double mik = (mmap[0])[mdofs[0]];
         double mikold = (mmapold[0])[mdofs[0]];
 
-        map<int,double>::iterator mcurr;
+        std::map<int,double>::iterator mcurr;
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
@@ -3328,7 +3328,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       } //  loop over master nodes
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-      vector<double> sum1 (Dim()-1,0);
+      std::vector<double> sum1 (Dim()-1,0);
       sum1[0] =  ztxi+ct*jumptxi;
       if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
       if (Dim()==2) euclidean = abs(sum1[0]);
@@ -3367,7 +3367,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
            << " Dof: " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -3415,10 +3415,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
-        map<int,double>::iterator colcurr;
+        std::map<int,double>::iterator colcurr;
         set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3427,7 +3427,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
 
-        set<int>::iterator mcurr;
+        std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
         for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3440,7 +3440,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
 
-          map<int,double>::iterator mcurr;
+          std::map<int,double>::iterator mcurr;
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
@@ -3450,7 +3450,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         } //  loop over master nodes
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        vector<double> sum1 (Dim()-1,0);
+        std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
         if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
         if (Dim()==2) euclidean = abs(sum1[0]);
@@ -3477,25 +3477,25 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
        if (abs(newCteta[k]-refCteta[k]) > 1e-12)
        {
-         cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
-         //cout << "Ref-G: " << refG[k] << endl;
-         //cout << "New-G: " << newG[k] << endl;
-         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+         std::cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << endl;
+         //std::cout << "Ref-G: " << refG[k] << endl;
+         //std::cout << "New-G: " << newG[k] << endl;
+         std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
+         //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
          //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-         //  cout << "***WARNING*****************************************************************************" << endl;
+         //  std::cout << "***WARNING*****************************************************************************" << endl;
        }
      }
     // undo finite difference modification
@@ -3529,7 +3529,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
            << " Dof: " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -3586,10 +3586,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
-        map<int,double>::iterator colcurr;
+        std::map<int,double>::iterator colcurr;
         set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3598,7 +3598,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
 
-        set<int>::iterator mcurr;
+        std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
         for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3612,7 +3612,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
 
-          map<int,double>::iterator mcurr;
+          std::map<int,double>::iterator mcurr;
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
@@ -3622,7 +3622,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         } //  loop over master nodes
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        vector<double> sum1 (Dim()-1,0);
+        std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
         if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
         if (Dim()==2) euclidean = abs(sum1[0]);
@@ -3650,25 +3650,25 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification
@@ -3701,7 +3701,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
            << " Dof: " << mnode->Dofs()[fd%3] << endl;
     }
 
@@ -3758,10 +3758,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
-        map<int,double>::iterator colcurr;
+        std::map<int,double>::iterator colcurr;
         set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
@@ -3770,7 +3770,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
 
-        set<int>::iterator mcurr;
+        std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
         for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3784,7 +3784,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           double mik = (mmap[0])[mdofs[0]];
           double mikold = (mmapold[0])[mdofs[0]];
 
-          map<int,double>::iterator mcurr;
+          std::map<int,double>::iterator mcurr;
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
@@ -3794,7 +3794,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         } //  loop over master nodes
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        vector<double> sum1 (Dim()-1,0);
+        std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
         if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
         if (Dim()==2) euclidean = abs(sum1[0]);
@@ -3822,24 +3822,24 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
 
@@ -3872,20 +3872,20 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
 void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  cout << setprecision(14);
+  std::cout << setprecision(14);
 
   // create storage for lm entries
-  map<int, double> reflm;
-  map<int, double> newlm;
+  std::map<int, double> reflm;
+  std::map<int, double> newlm;
 
-  map<int, map<int,double> > deltastorage;
+  std::map<int, std::map<int,double> > deltastorage;
 
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
@@ -3904,13 +3904,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 
       if ((int)(cnode->CoData().GetDerivZ()).size()!=0)
       {
-        typedef map<int,double>::const_iterator CI;
-        map<int,double>& derivzmap = cnode->CoData().GetDerivZ()[d];
+        typedef std::map<int,double>::const_iterator CI;
+        std::map<int,double>& derivzmap = cnode->CoData().GetDerivZ()[d];
 
         // print derivz-values to screen and store
         for (CI p=derivzmap.begin(); p!=derivzmap.end(); ++p)
         {
-          //cout << " (" << cnode->Dofs()[k] << ", " << p->first << ") : \t " << p->second << endl;
+          //std::cout << " (" << cnode->Dofs()[k] << ", " << p->first << ") : \t " << p->second << endl;
           (deltastorage[cnode->Dofs()[d]])[p->first] = p->second;
         }
       }
@@ -3920,7 +3920,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
     }
   }
 
-  cout << "FINITE DIFFERENCE SOLUTION\n" << endl;
+  std::cout << "FINITE DIFFERENCE SOLUTION\n" << endl;
 
   int w = 0;
 
@@ -3940,7 +3940,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 
     int sdof = snode->Dofs()[fd%3];
 
-    cout << "DEVIATION FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+    std::cout << "DEVIATION FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -3991,24 +3991,24 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 
         if( dev )
         {
-          cout << " (" << dof << ", " << sdof << ") :\t fd=" <<  fd
+          std::cout << " (" << dof << ", " << sdof << ") :\t fd=" <<  fd
                     << " derivz=" << deltastorage[dof][sdof] << " DEVIATION: " << dev;
 
           if( abs(dev) > 1e-4 )
           {
-            cout << " **** WARNING ****";
+            std::cout << " **** WARNING ****";
             w++;
           }
           else if( abs(dev) > 1e-5 )
           {
-            cout << " **** warning ****";
+            std::cout << " **** warning ****";
             w++;
           }
-          cout << endl;
+          std::cout << endl;
 
           if( (abs(dev) > 1e-2) )
           {
-             cout << " *************** ERROR *************** " << endl;
+             std::cout << " *************** ERROR *************** " << endl;
              //dserror("un-tolerable deviation");
           }
         }
@@ -4029,7 +4029,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
       snode->xspatial()[2] -= delta;
     }
   }
-  cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
+  std::cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
 
   w = 0;
 
@@ -4049,7 +4049,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 
     int mdof = mnode->Dofs()[fd%3];
 
-    cout << "DEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+    std::cout << "DEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -4101,24 +4101,24 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 
         if( dev )
         {
-          cout << " (" << dof << ", " << mdof << ") :\t fd=" <<  fd
+          std::cout << " (" << dof << ", " << mdof << ") :\t fd=" <<  fd
                     << " derivz=" << deltastorage[dof][mdof] << " DEVIATION: " << dev;
 
           if( abs(dev) > 1e-4 )
           {
-            cout << " **** WARNING ****";
+            std::cout << " **** WARNING ****";
             w++;
           }
           else if( abs(dev) > 1e-5 )
           {
-            cout << " **** warning ****";
+            std::cout << " **** warning ****";
             w++;
           }
-          cout << endl;
+          std::cout << endl;
 
           if( (abs(dev) > 1e-2) )
           {
-             cout << " *************** ERROR *************** " << endl;
+             std::cout << " *************** ERROR *************** " << endl;
              //dserror("un-tolerable deviation");
           }
         }
@@ -4140,7 +4140,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
     }
 
   }
-  cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
+  std::cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
 
   // back to normal...
 
@@ -4166,8 +4166,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 {
   // FD checks only for serial case
-  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
@@ -4180,12 +4180,12 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
    // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
-  vector<double> reftrac1(nrow);
-  vector<double> newtrac1(nrow);
-  vector<double> reftrac2(nrow);
-  vector<double> newtrac2(nrow);
-  vector<double> reftrac3(nrow);
-  vector<double> newtrac3(nrow);
+  std::vector<double> reftrac1(nrow);
+  std::vector<double> newtrac1(nrow);
+  std::vector<double> reftrac2(nrow);
+  std::vector<double> newtrac2(nrow);
+  std::vector<double> reftrac3(nrow);
+  std::vector<double> newtrac3(nrow);
 
   // store reference
   // loop over proc's slave nodes
@@ -4205,8 +4205,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // evaluate traction
     Epetra_SerialDenseMatrix jumpvec(dim,1);
     Epetra_SerialDenseMatrix tanplane(dim,dim);
-    vector<double> trailtraction(dim);
-    vector<double> tractionold(dim);
+    std::vector<double> trailtraction(dim);
+    std::vector<double> tractionold(dim);
     double magnitude = 0;
 
     // fill vectors and matrices
@@ -4311,7 +4311,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
            << " Dof: " << snode->Dofs()[fd%3] << endl;
     }
 
@@ -4356,8 +4356,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // evaluate traction
       Epetra_SerialDenseMatrix jumpvec(dim,1);
       Epetra_SerialDenseMatrix tanplane(dim,dim);
-      vector<double> trailtraction(dim);
-      vector<double> tractionold(dim);
+      std::vector<double> trailtraction(dim);
+      std::vector<double> tractionold(dim);
       double magnitude = 0;
 
       // fill vectors and matrices
@@ -4450,37 +4450,37 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // print results (derivatives) to screen
       if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv0:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv0:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newtrac2[k]-reftrac2[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv1:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv1:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newtrac3[k]-reftrac3[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv2:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv2:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification
@@ -4513,7 +4513,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
            << " Dof: " << mnode->Dofs()[fd%3] << endl;
     }
 
@@ -4558,8 +4558,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // evaluate traction
       Epetra_SerialDenseMatrix jumpvec(dim,1);
       Epetra_SerialDenseMatrix tanplane(dim,dim);
-      vector<double> trailtraction(dim);
-      vector<double> tractionold(dim);
+      std::vector<double> trailtraction(dim);
+      std::vector<double> tractionold(dim);
       double magnitude = 0;
 
       // fill vectors and matrices
@@ -4651,37 +4651,37 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // print results (derivatives) to screen
       if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << mnode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << mnode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newtrac2[k]-reftrac2[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< mnode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< mnode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newtrac3[k]-reftrac3[k]) > 1e-12)
       {
-        //cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //cout << "Ref-G: " << refG[k] << endl;
-        //cout << "New-G: " << newG[k] << endl;
-        cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << mnode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "Ref-G: " << refG[k] << endl;
+        //std::cout << "New-G: " << newG[k] << endl;
+        std::cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << mnode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
+        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  cout << "***WARNING*****************************************************************************" << endl;
+        //  std::cout << "***WARNING*****************************************************************************" << endl;
       }
     }
     // undo finite difference modification

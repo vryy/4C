@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_DEFINES_H
 #define MORTAR_DEFINES_H
 
-using namespace std;
 
 /************************************************************************/
 /* Mortar algorithm options                                             */

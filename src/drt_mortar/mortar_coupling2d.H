@@ -1,6 +1,8 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling2d.H
 
+\brief Classes for mortar coupling in 2D.
+
 <pre>
 -------------------------------------------------------------------------
                         BACI Contact library
@@ -43,8 +45,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "../drt_inpar/inpar_mortar.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -158,13 +158,13 @@ public:
   \brief Get projection status of the four end nodes
 
   */
-  virtual const vector<bool>& HasProj() {return hasproj_;}
+  virtual const std::vector<bool>& HasProj() {return hasproj_;}
 
   /*!
   \brief Get overlap regions in parameter spaces
 
   */
-  virtual const vector<double>& XiProj() {return xiproj_;}
+  virtual const std::vector<double>& XiProj() {return xiproj_;}
 
   /*!
   \brief Get overlap status
@@ -228,8 +228,8 @@ protected:
     MORTAR::MortarElement&        sele_;      // slave element to perform coupling for
     MORTAR::MortarElement&        mele_;      // master element to perform coupling for
 
-    vector<bool>                  hasproj_;   // projection status of the four end nodes
-    vector<double>                xiproj_;    // overlap regions in parameter spaces
+    std::vector<bool>             hasproj_;   // projection status of the four end nodes
+    std::vector<double>           xiproj_;    // overlap regions in parameter spaces
     bool                          overlap_;   // overlap status
 
 }; // class Coupling2d
@@ -262,7 +262,7 @@ public:
   */
   Coupling2dManager(DRT::Discretization& idiscret,
                     int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -274,7 +274,7 @@ public:
   */
   Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
                     int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Destructor
@@ -298,13 +298,13 @@ public:
   \brief Get all coupling master elements
 
   */
-  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
   \brief Get coupling pairs
 
   */
-  virtual vector<RCP<MORTAR::Coupling2d> >& Coupling() { return coup_; }
+  virtual std::vector<Teuchos::RCP<MORTAR::Coupling2d> >& Coupling() { return coup_; }
 
   /*!
   \brief Evaluate coupling pairs
@@ -321,14 +321,14 @@ protected:
     Coupling2dManager operator = (const Coupling2dManager& old);
     Coupling2dManager(const Coupling2dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
-    DRT::Discretization&            idiscret_;  // discretization of the contact interface
-    int                             dim_;       // problem dimension (here: 2D)
-    bool                            quad_;      // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad      lmtype_;    // type of quadratic LM interpolation and testing
-    MORTAR::MortarElement*          sele_;      // slave element
-    vector<MORTAR::MortarElement*>  mele_;      // master elements
-    vector<RCP<Coupling2d> >        coup_;      // coupling pairs
+    const INPAR::MORTAR::ShapeFcn           shapefcn_;  // employed type of shape function set
+    DRT::Discretization&                    idiscret_;  // discretization of the contact interface
+    int                                     dim_;       // problem dimension (here: 2D)
+    bool                                    quad_;      // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad              lmtype_;    // type of quadratic LM interpolation and testing
+    MORTAR::MortarElement*                  sele_;      // slave element
+    std::vector<MORTAR::MortarElement*>     mele_;      // master elements
+    std::vector<Teuchos::RCP<Coupling2d> >  coup_;      // coupling pairs
 
 }; // class Coupling2dManager
 }  // namespace MORTAR

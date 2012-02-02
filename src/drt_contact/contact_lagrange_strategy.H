@@ -42,8 +42,6 @@ Maintainer: Alexander Popp
 
 #include "contact_abstract_strategy.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace CONTACT
 {
@@ -64,9 +62,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     \brief Standard Constructor
 
     */
-    CoLagrangeStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                       vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                       RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    CoLagrangeStrategy(Teuchos::RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
+                       Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -138,13 +136,13 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
     
     */
-    void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+    void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate frictional contact
      
     */
-    void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+    void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Solve linear system of saddle point type
@@ -165,10 +163,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     void SaddlePointSolve(LINALG::Solver& solver,
                           LINALG::Solver& fallbacksolver,
-                          RCP<LINALG::SparseOperator> kdd,
-                          RCP<Epetra_Vector>          fd,
-                          RCP<Epetra_Vector>          sold,
-                          RCP<Epetra_Vector>          dirichtoggle,
+                          Teuchos::RCP<LINALG::SparseOperator> kdd,
+                          Teuchos::RCP<Epetra_Vector>          fd,
+                          Teuchos::RCP<Epetra_Vector>          sold,
+                          Teuchos::RCP<Epetra_Vector>          dirichtoggle,
                           int numiter);
     
 
@@ -181,7 +179,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     conditions can be checked, too.
     
     */
-    void Recover(RCP<Epetra_Vector> disi);
+    void Recover(Teuchos::RCP<Epetra_Vector> disi);
 
     /*!
     \brief Update active set and check for convergence
@@ -232,7 +230,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     \brief Return matrix T
 
     */
-    RCP<LINALG::SparseMatrix> TMatrix() { return tmatrix_; }
+    Teuchos::RCP<LINALG::SparseMatrix> TMatrix() { return tmatrix_; }
     
     //@}
     
@@ -248,9 +246,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     double ConstraintNorm() {return 0.0;}
     void EvaluateRelMovPredict() {}
     double InitialPenalty() {return 0.0;}
-    void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) {}
+    void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
-    void SaveReferenceState(const RCP<Epetra_Vector> dis) {}
+    void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
     void UpdateAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
     
@@ -266,29 +264,29 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     bool activesetconv_;      // convergence flag for fixed-point active set search      
     int  activesetsteps_;     // number of fixed-point active set steps in this time step
     
-    RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
 
-    RCP<LINALG::SparseMatrix> nmatrix_; // global Matrix N containing active node normals
-    RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
-    RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
-    RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> nmatrix_; // global Matrix N containing active node normals
+    Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
+    Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
 
-    RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)
-    RCP<LINALG::SparseMatrix> invd_; // inverse of Mortar matrix D (needed for LM)
-    RCP<LINALG::SparseMatrix> ksn_;  // stiffness block K_sn (needed for LM)
-    RCP<LINALG::SparseMatrix> ksm_;  // stiffness block K_sm (needed for LM)
-    RCP<LINALG::SparseMatrix> kss_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_; // inverse of Mortar matrix D (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksn_;  // stiffness block K_sn (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;  // stiffness block K_sm (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_;  // stiffness block K_ss (needed for LM)
 
-    RCP<LINALG::SparseMatrix>  linslipLM_;   // global matrix containing derivatives (LM) of slip condition
-    RCP<LINALG::SparseMatrix>  linslipDIS_;  // global matrix containing derivatives (DIS) of slip condition
-    RCP<Epetra_Vector>         linslipRHS_;  // r.h.s vector friction slip nodes
-    RCP<LINALG::SparseMatrix>  linstickLM_;  // global matrix containing derivatives (LM) of slip condition
-    RCP<LINALG::SparseMatrix>  linstickDIS_; // global matrix containing derivatives (DIS) of stick condition
-    RCP<Epetra_Vector>         linstickRHS_; // r.h.s vector for friction stick condition
+    Teuchos::RCP<LINALG::SparseMatrix>  linslipLM_;   // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<LINALG::SparseMatrix>  linslipDIS_;  // global matrix containing derivatives (DIS) of slip condition
+    Teuchos::RCP<Epetra_Vector>         linslipRHS_;  // r.h.s vector friction slip nodes
+    Teuchos::RCP<LINALG::SparseMatrix>  linstickLM_;  // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<LINALG::SparseMatrix>  linstickDIS_; // global matrix containing derivatives (DIS) of stick condition
+    Teuchos::RCP<Epetra_Vector>         linstickRHS_; // r.h.s vector for friction stick condition
     
-    RCP<Epetra_Map> zigzagone_;   // active node set of last active set try
-    RCP<Epetra_Map> zigzagtwo_;   // active node set of second-last active set try
-    RCP<Epetra_Map> zigzagthree_; // active node set of third-last active set try
+    Teuchos::RCP<Epetra_Map> zigzagone_;   // active node set of last active set try
+    Teuchos::RCP<Epetra_Map> zigzagtwo_;   // active node set of second-last active set try
+    Teuchos::RCP<Epetra_Map> zigzagthree_; // active node set of third-last active set try
 
 }; // class CoLagrangeStrategy
 } // namespace CONTACT

@@ -121,7 +121,7 @@ void CONTACT::CoInterface::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  add contact node (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
+void CONTACT::CoInterface::AddCoNode(Teuchos::RCP<CONTACT::CoNode> cnode)
 {
   idiscret_->AddNode(cnode);
   return;
@@ -130,7 +130,7 @@ void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
 /*----------------------------------------------------------------------*
  |  add contact element (public)                             mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
+void CONTACT::CoInterface::AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele)
 {
   // check for quadratic 2d slave elements to be modified
   if (cele->IsSlave() && (cele->Shape()==DRT::Element::line3))
@@ -159,14 +159,14 @@ bool CONTACT::CoInterface::Redistribute(int index)
     dserror("ERROR: You are not supposed to be here...");
   
   // some local variables
-  RCP<Epetra_Comm> comm = rcp(Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
   const int myrank  = comm->MyPID();
   const int numproc = comm->NumProc();
   Epetra_Time time(*comm);
-  set<int>::const_iterator iter;
+  std::set<int>::const_iterator iter;
 
   // vector containing all proc ids
-  vector<int> allproc(numproc);
+  std::vector<int> allproc(numproc);
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
   //**********************************************************************
@@ -180,8 +180,8 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   // split slave element row map and build redundant vector of
   // all close / non-close slave node ids on all procs
-  vector<int> closeele, noncloseele;
-  vector<int> localcns, localfns;
+  std::vector<int> closeele, noncloseele;
+  std::vector<int> localcns, localfns;
 
   // loop over all row elements to gather the local information
   for (int i=0; i<SlaveRowElements()->NumMyElements(); ++i)
@@ -219,9 +219,9 @@ bool CONTACT::CoInterface::Redistribute(int index)
   }
 
   // we need an arbitrary preliminary element row map
-  RCP<Epetra_Map> scroweles  = rcp(new Epetra_Map(-1,(int)closeele.size(),&closeele[0],0,Comm()));
-  RCP<Epetra_Map> sncroweles = rcp(new Epetra_Map(-1,(int)noncloseele.size(),&noncloseele[0],0,Comm()));
-  RCP<Epetra_Map> mroweles   = rcp(new Epetra_Map(*MasterRowElements()));
+  Teuchos::RCP<Epetra_Map> scroweles  = Teuchos::rcp(new Epetra_Map(-1,(int)closeele.size(),&closeele[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> sncroweles = Teuchos::rcp(new Epetra_Map(-1,(int)noncloseele.size(),&noncloseele[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> mroweles   = Teuchos::rcp(new Epetra_Map(*MasterRowElements()));
 
   // check for consistency
   if (scroweles->NumGlobalElements()==0 && sncroweles->NumGlobalElements()==0)
@@ -236,7 +236,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
     int cl = scroweles->NumGlobalElements();
     int ncl = sncroweles->NumGlobalElements();
      int ma = mroweles->NumGlobalElements();
-    cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
+    std::cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
   }
 
   // print old parallel distribution
@@ -278,15 +278,15 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // print message
   if (!myrank)
   {
-    cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
-    cout << "\nRedistributing interface using 3-PARMETIS.......";
+    std::cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
+    std::cout << "\nRedistributing interface using 3-PARMETIS.......";
   }
 
   //**********************************************************************
   // (3b) PREPARATIONS build initial node graph
   //**********************************************************************
   // create graph object
-  Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*SlaveRowNodes(),108,false));
+  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*SlaveRowNodes(),108,false));
 
   // loop over all row nodes to fill graph
   for (int k=0;k<SlaveRowNodes()->NumMyElements();++k)
@@ -301,7 +301,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
       // store adjacent nodes
       DRT::Element* ele = node->Elements()[k];
       int numnode = ele->NumNode();
-      vector<int> nodeids(numnode);
+      std::vector<int> nodeids(numnode);
       for (int n=0;n<numnode;++n) nodeids[n] = ele->NodeIds()[n];
 
       int err = graph->InsertGlobalIndices(gid,numnode,&nodeids[0]);
@@ -317,15 +317,15 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // (4) CLOSE SLAVE redistribution
   //**********************************************************************
-  RCP<Epetra_Map> scrownodes = Teuchos::null;
-  RCP<Epetra_Map> sccolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> scrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> sccolnodes = Teuchos::null;
 
   // build redundant vector of all close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
   // transform to sets and then back to vectors)
-  vector<int> globalcns;
-  set<int> setglobalcns;
-  vector<int> scnids;
+  std::vector<int> globalcns;
+  std::set<int> setglobalcns;
+  std::vector<int> scnids;
   LINALG::Gather<int>(localcns,globalcns,numproc,&allproc[0],Comm());
   for (int i=0;i<(int)globalcns.size();++i) setglobalcns.insert(globalcns[i]);
   for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter) scnids.push_back(*iter);
@@ -343,15 +343,15 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // (5) NON-CLOSE SLAVE redistribution
   //**********************************************************************
-  RCP<Epetra_Map> sncrownodes = Teuchos::null;
-  RCP<Epetra_Map> snccolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> sncrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> snccolnodes = Teuchos::null;
 
   // build redundant vector of all non-close slave node ids on all procs
   // (there must not be any double entries in the node lists, thus
   // transform to sets and then back to vectors)
-  vector<int> globalfns;
-  set<int> setglobalfns;
-  vector<int> sncnids;
+  std::vector<int> globalfns;
+  std::set<int> setglobalfns;
+  std::vector<int> sncnids;
   LINALG::Gather<int>(localfns,globalfns,numproc,&allproc[0],Comm());
   for (int i=0;i<(int)globalfns.size();++i) setglobalfns.insert(globalfns[i]);
   for (iter=setglobalfns.begin();iter!=setglobalfns.end();++iter) sncnids.push_back(*iter);
@@ -369,13 +369,13 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // (6) MASTER redistribution
   //**********************************************************************
-  RCP<Epetra_Map> mrownodes = Teuchos::null;
-  RCP<Epetra_Map> mcolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
   // build redundant vector of all master node ids on all procs
   // (do not include crosspoints / boundary nodes if there are any)
-  vector<int> mnids;
-  vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
+  std::vector<int> mnids;
+  std::vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
   for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
     mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
   LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
@@ -394,7 +394,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // (7) Merge global interface node row and column map
   //**********************************************************************
   // merge slave node row map from close and non-close parts
-  RCP<Epetra_Map> srownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
 
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
   if (scrownodes==Teuchos::null || sncrownodes==Teuchos::null)
@@ -405,15 +405,15 @@ bool CONTACT::CoInterface::Redistribute(int index)
   else
   {
     // find intersection set of close and non-close nodes
-    set<int> intersec;
+    std::set<int> intersec;
     for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter)
     {
-      set<int>::const_iterator found = setglobalfns.find(*iter);
+      std::set<int>::const_iterator found = setglobalfns.find(*iter);
       if (found!=setglobalfns.end()) intersec.insert(*found);
     }
 
     // build slave node row map
-    vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
+    std::vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
     int count = scrownodes->NumMyElements();
 
     // first get GIDs of input scrownodes
@@ -424,7 +424,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
     {
       // check for intersection gid
       // don't do anything for intersection gids (scrownodes dominates!!!)
-      set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
+      std::set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
       if (found!=intersec.end()) continue;
 
       // check for overlap
@@ -437,11 +437,11 @@ bool CONTACT::CoInterface::Redistribute(int index)
     }
     mygids.resize(count);
     sort(mygids.begin(),mygids.end());
-    srownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,scrownodes->Comm()));
+    srownodes = Teuchos::rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,scrownodes->Comm()));
   }
 
   // merge interface node row map from slave and master parts
-  RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
+  Teuchos::RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
 
   // IMPORTANT NOTE:
   // While merging from the two different slave parts of the discretization
@@ -454,13 +454,13 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // and by then asking for its column map.
 
    // create the output graph (with new slave node row map) and export to it
-   RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(Copy,*srownodes,108,false));
+   Teuchos::RCP<Epetra_CrsGraph> outgraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*srownodes,108,false));
    Epetra_Export exporter(graph->RowMap(),*srownodes);
    int err = outgraph->Export(*graph,exporter,Add);
    if (err<0) dserror("Graph export returned err=%d",err);
 
   // trash old graph
-  graph=null;
+  graph=Teuchos::null;
 
   // call fill complete and optimize storage
   outgraph->FillComplete();
@@ -469,21 +469,21 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // get column map from the graph -> build slave node column map
   // (do stupid conversion from Epetra_BlockMap to Epetra_Map)
   const Epetra_BlockMap& bcol = outgraph->ColMap();
-  RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),bcol.NumMyElements(),bcol.MyGlobalElements(),0,Comm()));
+  Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),bcol.NumMyElements(),bcol.MyGlobalElements(),0,Comm()));
 
   // trash new graph
-  outgraph=null;
+  outgraph=Teuchos::null;
   
   // merge interface node column map from slave and master parts
-  RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
+  Teuchos::RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
   //**********************************************************************
   // (8) Get partitioning information into discretization
   //**********************************************************************
   // build reasonable element maps from the already valid and final node maps
   // (note that nothing is actually redistributed in here)
-  RCP<Epetra_Map> roweles  = Teuchos::null;
-  RCP<Epetra_Map> coleles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> roweles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> coleles  = Teuchos::null;
   Discret().BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
 
   // export nodes and elements to the row map
@@ -495,7 +495,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Discret().ExportColumnElements(*coleles);
 
   // print message
-  if (!myrank) cout << "done!" << endl;
+  if (!myrank) std::cout << "done!" << endl;
 
   return true;
 }
@@ -541,9 +541,9 @@ void CONTACT::CoInterface::CreateSearchTree()
 #ifdef MORTARGMSHCTN
   if (Dim()==3 && Comm().MyPID()==0)
   {
-    cout << "\n******************************************************************\n";
-    cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
-    cout << "******************************************************************\n";
+    std::cout << "\n******************************************************************\n";
+    std::cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
+    std::cout << "******************************************************************\n";
   }
 #endif // #ifdef MORTARGMSHCTN
 
@@ -554,15 +554,15 @@ void CONTACT::CoInterface::CreateSearchTree()
     if (SelfContact())
     {
       // set state in interface to intialize all kinds of quantities
-      RCP<Epetra_Vector> zero =rcp(new Epetra_Vector(*idiscret_->DofRowMap()));
+      Teuchos::RCP<Epetra_Vector> zero =Teuchos::rcp(new Epetra_Vector(*idiscret_->DofRowMap()));
       SetState("displacement",zero);
 
       // create fully overlapping map of all contact elements
-      RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
+      Teuchos::RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
 
       // create binary tree object for self contact search
       // (TODO: NOTE THAT SELF CONTACT SEARCH IS NOT YET PARALLELIZED!)
-      binarytreeself_ = rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam()));
+      binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam()));
 
     }
     //*****TWO BODY CONTACT*****
@@ -572,10 +572,10 @@ void CONTACT::CoInterface::CreateSearchTree()
       if (!lComm()) return;
 
       // create fully overlapping map of all master elements
-      RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+      Teuchos::RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
       
       // create binary tree object for contact search and setup tree
-      binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
+      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
 
       // initialize active contact nodes via binarytree
       // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
@@ -793,29 +793,29 @@ void CONTACT::CoInterface::SetElementAreas()
 void CONTACT::CoInterface::ExportNodalNormals()
 {
   // create empty data objects
-  map<int,RCP<Epetra_SerialDenseMatrix> > triad;
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
 
-  map<int,vector<int> > n_x_key;
-  map<int,vector<int> > n_y_key;
-  map<int,vector<int> > n_z_key;
-  map<int,vector<int> > txi_x_key;
-  map<int,vector<int> > txi_y_key;
-  map<int,vector<int> > txi_z_key;
-  map<int,vector<int> > teta_x_key;
-  map<int,vector<int> > teta_y_key;
-  map<int,vector<int> > teta_z_key;
+  std::map<int,std::vector<int> > n_x_key;
+  std::map<int,std::vector<int> > n_y_key;
+  std::map<int,std::vector<int> > n_z_key;
+  std::map<int,std::vector<int> > txi_x_key;
+  std::map<int,std::vector<int> > txi_y_key;
+  std::map<int,std::vector<int> > txi_z_key;
+  std::map<int,std::vector<int> > teta_x_key;
+  std::map<int,std::vector<int> > teta_y_key;
+  std::map<int,std::vector<int> > teta_z_key;
 
-  map<int,vector<double> > n_x_val;
-  map<int,vector<double> > n_y_val;
-  map<int,vector<double> > n_z_val;
-  map<int,vector<double> > txi_x_val;
-  map<int,vector<double> > txi_y_val;
-  map<int,vector<double> > txi_z_val;
-  map<int,vector<double> > teta_x_val;
-  map<int,vector<double> > teta_y_val;
-  map<int,vector<double> > teta_z_val;
+  std::map<int,std::vector<double> > n_x_val;
+  std::map<int,std::vector<double> > n_y_val;
+  std::map<int,std::vector<double> > n_z_val;
+  std::map<int,std::vector<double> > txi_x_val;
+  std::map<int,std::vector<double> > txi_y_val;
+  std::map<int,std::vector<double> > txi_z_val;
+  std::map<int,std::vector<double> > teta_x_val;
+  std::map<int,std::vector<double> > teta_y_val;
+  std::map<int,std::vector<double> > teta_z_val;
 
-  map<int,double>::iterator iter;
+  std::map<int,double>::iterator iter;
 
   // build info on row map
   for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
@@ -826,7 +826,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
     CoNode* cnode = static_cast<CoNode*>(node);
 
     // fill nodal matrix
-    RCP<Epetra_SerialDenseMatrix> loc = rcp(new Epetra_SerialDenseMatrix(3,3));
+    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
     (*loc)(0,0) = cnode->MoData().n()[0];
     (*loc)(1,0) = cnode->MoData().n()[1];
     (*loc)(2,0) = cnode->MoData().n()[2];
@@ -840,9 +840,9 @@ void CONTACT::CoInterface::ExportNodalNormals()
     triad[gid] = loc;
 
     // fill nodal derivative vectors
-    vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-    vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-    vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
 
     for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
     {
@@ -930,7 +930,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
     CoNode* cnode = static_cast<CoNode*>(node);
 
     // extract info
-    RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
     cnode->MoData().n()[0]    = (*loc)(0,0);
     cnode->MoData().n()[1]    = (*loc)(1,0);
     cnode->MoData().n()[2]    = (*loc)(2,0);
@@ -942,9 +942,9 @@ void CONTACT::CoInterface::ExportNodalNormals()
     cnode->CoData().teta()[2] = (*loc)(2,2);
 
     // extract derivative info
-    vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-    vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-    vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+    std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
 
     for (int k=0;k<(int)(derivn.size());++k)
       derivn[k].clear();
@@ -1007,7 +1007,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
     // one proc after the other
     if (p==Comm().MyPID())
     {
-      cout << "\n*****\nPROC " << p << "\n*****" << endl;
+      std::cout << "\n*****\nPROC " << p << "\n*****" << endl;
       for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
       {
         int gid = snodecolmapbound_->GID(i);
@@ -1016,31 +1016,31 @@ void CONTACT::CoInterface::ExportNodalNormals()
         CoNode* cnode = static_cast<CoNode*>(node);
 
         // print normal and tangents at each slave node
-        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+        std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " Normal: " << cnode->MoData().n()[0]
              << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
-        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+        std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " TXi: " << cnode->CoData().txi()[0]
              << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << endl;
-        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+        std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " TEta: " << cnode->CoData().teta()[0]
              << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << endl;
 
         // print linearizations at each slave node
-        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
+        std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
         for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
-          cout << "\n" << iter->first << "\t" << iter->second;
-        cout << endl;
-        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
+          std::cout << "\n" << iter->first << "\t" << iter->second;
+        std::cout << endl;
+        std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
         for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
-          cout << "\n" << iter->first << "\t" << iter->second;
-        cout << endl;
-        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
+          std::cout << "\n" << iter->first << "\t" << iter->second;
+        std::cout << endl;
+        std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
         for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
-          cout << "\n" << iter->first << "\t" << iter->second;
-        cout << endl;
+          std::cout << "\n" << iter->first << "\t" << iter->second;
+        std::cout << endl;
       }
-      cout << endl << endl;
+      std::cout << endl << endl;
     }
 
     // barrier
@@ -1184,7 +1184,7 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 
   // do the element integration (integrate and linearize D)
   int nrow = sele.NumNode();
-  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+  Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
 
   // do the assembly into the slave nodes
@@ -1197,7 +1197,7 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
  |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
-                                             vector<MORTAR::MortarElement*> mele)
+                                             std::vector<MORTAR::MortarElement*> mele)
 {
   // increase counter of slave/master pairs
   smpairs_ += (int)mele.size();
@@ -1257,8 +1257,8 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
       for (int m=0;m<(int)mele.size();++m)
       {
         // build linear integration elements from quadratic MortarElements
-        vector<RCP<MORTAR::IntElement> > sauxelements(0);
-        vector<RCP<MORTAR::IntElement> > mauxelements(0);
+        std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
+        std::vector<Teuchos::RCP<MORTAR::IntElement> > mauxelements(0);
         SplitIntElements(*sele,sauxelements);
         SplitIntElements(*mele[m],mauxelements);
 
@@ -1322,7 +1322,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
           
     // build linear integration elements from quadratic CElements
-    vector<RCP<MORTAR::IntElement> > sauxelements(0);
+    std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
     SplitIntElements(sele,sauxelements);
 
     // different options for mortar integration
@@ -1330,7 +1330,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     {
       // do the element integration of kappa and store into gap
       int nrow = sele.NumNode();
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
       CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
@@ -1347,7 +1347,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       {
         // do the int element integration of kappa and store into gap
         int nrow = sauxelements[i]->NumNode();
-        RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+        Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct NumGP and Dim
         CONTACT::CoIntegrator integrator(shapefcn_,sauxelements[i]->Shape());
@@ -1369,7 +1369,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   {
     // do the element integration of kappa and store into gap
     int nrow = sele.NumNode();
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct NumGP and Dim
     CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
@@ -1385,9 +1385,9 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node      gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
-                                          const RCP<LINALG::SparseMatrix> dmatrixmod,
-                                          const RCP<LINALG::SparseMatrix> doldmod)
+void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
+                                          const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
+                                          const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -1456,8 +1456,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
 
     if(activeinfuture==true)
     {
-      vector<map<int,double> > dmap = cnode->MoData().GetD();
-      vector<map<int,double> > dmapold = cnode->FriData().GetDOld();
+      std::vector<std::map<int,double> > dmap = cnode->MoData().GetD();
+      std::vector<std::map<int,double> > dmapold = cnode->FriData().GetDOld();
 
       set <int> snodes = cnode->FriData().GetSNodes();
 
@@ -1465,8 +1465,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
       if(dmapold.size()< 1)
         dserror("Error in Interface::EvaluateRelMov(): No old D-Map!");
 
-      map<int,double>::iterator colcurr;
-      set<int>::iterator scurr;
+      std::map<int,double>::iterator colcurr;
+      std::set<int>::iterator scurr;
 
       // loop over all slave nodes with an entry adjacent to this node
       for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
@@ -1480,7 +1480,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         double dik = (dmap[0])[sdofs[0]];
         double dikold = (dmapold[0])[sdofs[0]];
 
-        map<int,double>::iterator mcurr;
+        std::map<int,double>::iterator mcurr;
 
         for (int dim=0;dim<csnode->NumDof();++dim)
         {
@@ -1489,8 +1489,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         }
       } //  loop over adjacent slave nodes
 
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       set <int> mnodescurrent = cnode->FriData().GetMNodes();
       set <int> mnodesold = cnode->FriData().GetMNodesOld();
@@ -1507,7 +1507,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         dserror ("Error in Interface::EvaluateRelMov(): No old M-Set!"); 
       
       set <int> mnodes;
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
 
       for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
         mnodes.insert(*mcurr);
@@ -1527,7 +1527,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         double mik = (mmap[0])[mdofs[0]];
         double mikold = (mmapold[0])[mdofs[0]];
 
-        map<int,double>::iterator mcurr;
+        std::map<int,double>::iterator mcurr;
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
@@ -1548,7 +1548,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
       
       /*** 01  **********************************************************/
       
-      if(dmatrixmod==null)
+      if(dmatrixmod==Teuchos::null)
       {  
         // loop over according slave nodes 
         for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
@@ -1645,8 +1645,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
 
       /*** 03 ***********************************************************/
       // we need the Lin(D-matrix) entries of this node
-      map<int,map<int,double> >& ddmap = cnode->CoData().GetDerivD();
-      map<int,map<int,double> >::iterator dscurr;
+      std::map<int,std::map<int,double> >& ddmap = cnode->CoData().GetDerivD();
+      std::map<int,std::map<int,double> >::iterator dscurr;
 
       // loop over all slave nodes in the DerivM-map of the stick slave node
       for (dscurr=ddmap.begin();dscurr!=ddmap.end();++dscurr)
@@ -1657,7 +1657,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         CoNode* csnode = static_cast<CoNode*>(snode);
 
         // compute entry of the current stick node / slave node pair
-        map<int,double>& thisdmmap = cnode->CoData().GetDerivD(gid);
+        std::map<int,double>& thisdmmap = cnode->CoData().GetDerivD(gid);
 
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -1677,8 +1677,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
 
       /*** 04 ***********************************************************/
       // we need the Lin(M-matrix) entries of this node
-      map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
-      map<int,map<int,double> >::iterator dmcurr;
+      std::map<int,std::map<int,double> >& dmmap = cnode->CoData().GetDerivM();
+      std::map<int,std::map<int,double> >::iterator dmcurr;
 
       // loop over all master nodes in the DerivM-map of the stick slave node
       for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
@@ -1690,7 +1690,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         double* mxi = cmnode->xspatial();
 
         // compute entry of the current stick node / master node pair
-        map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+        std::map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
         
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -1729,8 +1729,8 @@ void CONTACT::CoInterface::AssembleRelMov(Epetra_Vector& jumpglobal)
     double* jump = cnode->FriData().jump();
 
     Epetra_SerialDenseVector jumpnode(dim);
-    vector<int> jumpdof(dim);
-    vector<int> jumpowner(dim);
+    std::vector<int> jumpdof(dim);
+    std::vector<int> jumpowner(dim);
 
     for( int k=0; k<dim; ++k )
     {
@@ -1749,7 +1749,7 @@ void CONTACT::CoInterface::AssembleRelMov(Epetra_Vector& jumpglobal)
 /*----------------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                        gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod)
+void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
 {
    
   // loop over all slave nodes
@@ -1764,8 +1764,8 @@ void CONTACT::CoInterface::AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod)
     int dim = cnode->NumDof();
 
     Epetra_SerialDenseVector xspatial(dim);
-    vector<int> dof(dim);
-    vector<int> owner(dim);
+    std::vector<int> dof(dim);
+    std::vector<int> owner(dim);
 
     for( int k=0; k<dim; ++k )
     {
@@ -1785,7 +1785,8 @@ void CONTACT::CoInterface::AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 {
-  cnormtan=0;
+  // friction coefficient
+  double frcoeff = IParams().get<double>("FRCOEFF");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -1795,7 +1796,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
 
-    // get some information form node
+    // get some information from node
     double* n = cnode->MoData().n();
     int dim = cnode->NumDof();
 
@@ -1830,41 +1831,40 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     for (int i=0;i<dim;i++)
       jumpvec(i,0) = cnode->FriData().jump()[i];
 
-    // jump vector
-    Epetra_SerialDenseMatrix forcevec(dim,1);
-    for (int i=0;i<dim;i++)
-      forcevec(i,0) = cnode->MoData().lm()[i];
-
     // evaluate jump in tangential direction
     Epetra_SerialDenseMatrix jumptan(dim,1);
     jumptan.Multiply('N','N',1,tanplane,jumpvec,0.0);
 
-    // norm of tangential jumps for stick nodes
+    // force vector
+    Epetra_SerialDenseMatrix forcevec(dim,1);
+    for (int i=0;i<dim;i++)
+      forcevec(i,0) = cnode->MoData().lm()[i];
+
+    // evaluate force in normal direction
+    double forcen = 0.0;
+    for (int k=0;k<dim;++k)
+      forcen += forcevec(k,0) * n[k];
+
+    // norm of constraint violation for stick nodes
     if (cnode->Active()== true and cnode->FriData().Slip()==false)
     {
-      for( int j=0;j<cnode->NumDof();++j)
-        cnormtan+=jumptan(j,0)*jumptan(j,0);
+      for (int j=0;j<dim;j++)
+        cnormtan += jumptan(j,0)*jumptan(j,0);
     }
+    // norm of constraint violation for slip nodes
     else if (cnode->Active()== true and cnode->FriData().Slip()==true)
     {
-      double jumptxi = 0;
-      double jumpteta = 0;
-      double forcen = 0;
-      double forcetxi = 0;
-      double forceteta = 0;
+      double part1 = 0.0;
+      double jumpnorm = 0.0;
 
-      for (int i=0;i<dim;i++)
+      for (int j=0;j<dim;j++)
       {
-        jumptxi+=cnode->CoData().txi()[i]*cnode->FriData().jump()[i];
-        jumpteta+=cnode->CoData().teta()[i]*cnode->FriData().jump()[i];
-
-        forcen+=cnode->MoData().n()[i]*cnode->MoData().lm()[i];
-        forcetxi+=cnode->CoData().txi()[i]*cnode->MoData().lm()[i];
-        forceteta+=cnode->CoData().teta()[i]*cnode->MoData().lm()[i];
+        jumpnorm += jumptan(j,0)*jumptan(j,0);
+        part1    += jumptan(j,0)*forcevec(j,0);
       }
 
-      //cout << "FACTOR-Direction " << (jumptxi/jumpteta)/(forcetxi/forceteta) << endl;
-      //cout << "FACTOR-Magnitude" << (frcoeff*forcen)/(sqrt(forcetxi*forcetxi+forceteta*forceteta))<< endl;
+      jumpnorm = sqrt(jumpnorm);
+      cnormtan += (part1 - frcoeff*forcen*jumpnorm)*(part1 - frcoeff*forcen*jumpnorm);
     }
   } // loop over slave nodes
 
@@ -1949,10 +1949,10 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
         cnode->Active() = true;
         localactivesetchange = true;
 
-        //cout << "node #" << gid << " is now active (";
+        //std::cout << "node #" << gid << " is now active (";
         //for( int j=0; j<dim; j++)
-        //  cout << " " << cnode->Dofs()[j] << " ";
-        //cout << ") gap=" << gap << endl;
+        //  std::cout << " " << cnode->Dofs()[j] << " ";
+        //std::cout << ") gap=" << gap << endl;
     }
 
     else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap < 0) )
@@ -1960,7 +1960,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
         cnode->Active() = false;
         localactivesetchange = true;
 
-        //cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
+        //std::cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
     }
     //********************************************************************
 
@@ -1970,9 +1970,9 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     if( cnode->Active()==true )
     {
 
-//      cout << "GID " << gid << endl;
-//      cout << "LMUZAWAN " << lmuzawan << endl;
-//      cout << "GAP " << gap << endl;
+//      std::cout << "GID " << gid << endl;
+//      std::cout << "LMUZAWAN " << lmuzawan << endl;
+//      std::cout << "GAP " << gap << endl;
 
       localisincontact = true;
 
@@ -1985,12 +1985,12 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
       // compute derivatives of lagrange multipliers and store into node
 
       // contribution of derivative of weighted gap
-      map<int,double>& derivg = cnode->CoData().GetDerivG();
-      map<int,double>::iterator gcurr;
+      std::map<int,double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int,double>::iterator gcurr;
 
       // contribution of derivative of normal
-      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
-      map<int,double>::iterator ncurr;
+      std::vector<std::map<int,double> >& derivn = cnode->CoData().GetDerivN();
+      std::map<int,double>::iterator ncurr;
 
       for( int j=0;j<dim;++j)
       {
@@ -2096,12 +2096,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
 
     // fill vector tractionold
-    vector<double> tractionold(dim);
+    std::vector<double> tractionold(dim);
     for (int i=0;i<dim;i++)
       tractionold[i] = cnode->FriData().tractionold()[i];
 
     // Evaluate trailtraction (tractionold+temptrac in penalty case)
-    vector<double> trailtraction(dim);
+    std::vector<double> trailtraction(dim);
     double magnitude = 0;
     for (int i=0;i<dim;i++)
     {
@@ -2120,7 +2120,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))
     {
-      //cout << "Node " << gid << " is stick" << endl;
+      //std::cout << "Node " << gid << " is stick" << endl;
       cnode->FriData().Slip() = false;
 
       // in the stick case, traction is trailtraction
@@ -2133,7 +2133,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     }
     else
     {
-      //cout << "Node " << gid << " is slip" << endl;
+      //std::cout << "Node " << gid << " is slip" << endl;
       cnode->FriData().Slip() = true;
 
       // in the slip case, traction is evaluated with a return map algorithm
@@ -2153,8 +2153,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     if(cnode->Active() == true && cnode->FriData().Slip() == false)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
+      std::map<int,double>::iterator colcurr;
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2172,7 +2172,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2209,8 +2209,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     {
       /******************** tanplane.deriv(jump).maxtantrac/magnidude ***/
 
-      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
+      std::map<int,double>::iterator colcurr;
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2228,7 +2228,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2260,8 +2260,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->CoData().GetDerivG();
-      map<int,double>::iterator gcurr;
+      std::map<int,double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
       {
@@ -2450,7 +2450,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
 
     // Evaluate trailtraction
-    vector<double> trailtraction(dim);
+    std::vector<double> trailtraction(dim);
     double magnitude = 0;
     for (int i=0;i<dim;i++)
     {
@@ -2468,7 +2468,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     {
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))    {
-      //cout << "Node " << gid << " is stick" << endl;
+      //std::cout << "Node " << gid << " is stick" << endl;
       cnode->FriData().Slip() = false;
 
       // compute lagrange multipliers and store into node
@@ -2477,7 +2477,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     }
     else
     {
-      //cout << "Node " << gid << " is slip" << endl;
+      //std::cout << "Node " << gid << " is slip" << endl;
       cnode->FriData().Slip() = true;
 
       // compute lagrange multipliers and store into node
@@ -2493,8 +2493,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     if(cnode->Active() == true && cnode->FriData().Slip() == false)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
+      std::map<int,double>::iterator colcurr;
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2512,7 +2512,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2551,8 +2551,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     else if (cnode->Active() == true && cnode->FriData().Slip()== true)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
+      std::map<int,double>::iterator colcurr;
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2570,7 +2570,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2605,8 +2605,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->CoData().GetDerivG();
-      map<int,double>::iterator gcurr;
+      std::map<int,double>& derivg = cnode->CoData().GetDerivG();
+      std::map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
       {
@@ -2738,8 +2738,8 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleLinZ: Node ownership inconsistency!");
 
-    // derivz is the vector<map> we want to assemble
-    vector<map<int,double> >& derivz = cnode->CoData().GetDerivZ();
+    // derivz is the std::vector<map> we want to assemble
+    std::vector<std::map<int,double> >& derivz = cnode->CoData().GetDerivZ();
 
     if ( (int) derivz.size()>0 )
     {
@@ -2751,7 +2751,7 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
         if ((int)derivz[j].size() != (int)derivz[j+1].size())
           dserror("ERROR: AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
 
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
 
       // loop over dofs
       for ( int k=0; k<rowsize; ++k )
@@ -2788,7 +2788,7 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
     return;
 
   // nothing to do if no active nodes
-  if (activenodes_==null)
+  if (activenodes_==Teuchos::null)
     return;
 
   // loop over all active slave nodes of the interface
@@ -2810,11 +2810,11 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
     {
       // prepare assembly
       int colsize = cnode->NumDof();
-      vector<int> lmrowN(1);
-      vector<int> lmrowT(1);
-      vector<int> lmrowownerN(1);
-      vector<int> lmrowownerT(1);
-      vector<int> lmcol(colsize);
+      std::vector<int> lmrowN(1);
+      std::vector<int> lmrowT(1);
+      std::vector<int> lmrowownerN(1);
+      std::vector<int> lmrowownerT(1);
+      std::vector<int> lmcol(colsize);
 
       lmrowN[0] = activen_->GID(i);
       lmrowownerN[0] = cnode->Owner();
@@ -2853,11 +2853,11 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
     {
       // prepare assembly
       int colsize = cnode->NumDof();
-      vector<int> lmrowN(1);
-      vector<int> lmrowT(2);
-      vector<int> lmrowownerN(1);
-      vector<int> lmrowownerT(2);
-      vector<int> lmcol(colsize);
+      std::vector<int> lmrowN(1);
+      std::vector<int> lmrowT(2);
+      std::vector<int> lmrowownerN(1);
+      std::vector<int> lmrowownerT(2);
+      std::vector<int> lmcol(colsize);
 
       lmrowN[0] = activen_->GID(i);
       lmrowownerN[0] = cnode->Owner();
@@ -2911,7 +2911,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     return;
 
   // nothing to do if no active nodes
-  if (activenodes_==null)
+  if (activenodes_==Teuchos::null)
     return;
 
   // loop over all active slave nodes of the interface
@@ -2926,15 +2926,15 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
-    map<int,double>& dgmap = cnode->CoData().GetDerivG();
-    map<int,double>::iterator colcurr;
+    std::map<int,double>& dgmap = cnode->CoData().GetDerivG();
+    std::map<int,double>::iterator colcurr;
     int row = activen_->GID(i);
 
     for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      //cout << "Assemble S: " << row << " " << col << " " << val << endl;
+      //std::cout << "Assemble S: " << row << " " << col << " " << val << endl;
       // do not assemble zeros into s matrix
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
     }
@@ -2954,7 +2954,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
     return;
 
   // nothing to do if no active nodes
-  if (activenodes_==null)
+  if (activenodes_==Teuchos::null)
     return;
 
   // loop over all active slave nodes of the interface
@@ -2971,8 +2971,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
     if (Dim()==2)
     {
       // prepare assembly
-      vector<map<int,double> >& dtmap = cnode->CoData().GetDerivTxi();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& dtmap = cnode->CoData().GetDerivTxi();
+      std::map<int,double>::iterator colcurr;
       int colsize = (int)dtmap[0].size();
       int mapsize = (int)dtmap.size();
       int row = activet_->GID(i);
@@ -2984,7 +2984,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
           dserror("ERROR: AssembleP: Column dim. of nodal DerivT-map is inconsistent!");
 
       // begin assembly of P-matrix
-      //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      //std::cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
 
       // loop over all derivative maps (=dimensions)
       for (int j=0;j<mapsize;++j)
@@ -2996,8 +2996,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //cout << "Assemble P: " << row << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
+          //std::cout << "Assemble P: " << row << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
           ++k;
@@ -3010,9 +3010,9 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
     else if (Dim()==3)
     {
       // prepare assembly
-      vector<map<int,double> >& dtximap = cnode->CoData().GetDerivTxi();
-      vector<map<int,double> >& dtetamap = cnode->CoData().GetDerivTeta();
-      map<int,double>::iterator colcurr;
+      std::vector<std::map<int,double> >& dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<std::map<int,double> >& dtetamap = cnode->CoData().GetDerivTeta();
+      std::map<int,double>::iterator colcurr;
       int colsizexi = (int)dtximap[0].size();
       int colsizeeta = (int)dtetamap[0].size();
       int mapsizexi = (int)dtximap.size();
@@ -3029,7 +3029,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
           dserror("ERROR: AssembleS: Column dim. of nodal DerivTEta-map is inconsistent!");
 
       // begin assembly of P-matrix
-      //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      //std::cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
 
       // loop over all derivative maps (=dimensions) for TXi
       for (int j=0;j<mapsizexi;++j)
@@ -3041,8 +3041,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
+          //std::cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
           ++k;
@@ -3062,8 +3062,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
+          //std::cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
           ++k;
@@ -3115,8 +3115,8 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     int dim = cnode->NumDof();
     
     // Mortar matrix D and M derivatives
-    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
-    map<int,map<int,double> >& mderiv = cnode->CoData().GetDerivM();
+    std::map<int,std::map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+    std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
 
     // current Lagrange multipliers
     double* lm = cnode->MoData().lm();
@@ -3124,8 +3124,8 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
     int mastersize = (int)mderiv.size();
-    map<int,map<int,double> >::iterator scurr = dderiv.begin();
-    map<int,map<int,double> >::iterator mcurr = mderiv.begin();
+    std::map<int,std::map<int,double> >::iterator scurr = dderiv.begin();
+    std::map<int,std::map<int,double> >::iterator mcurr = mderiv.begin();
     
     /********************************************** LinDMatrix **********/
     // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
@@ -3139,14 +3139,14 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CoNode* csnode = static_cast<CoNode*>(snode);
 
       // Mortar matrix D derivatives
-      map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      std::map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
  
       // inner product D_{jk,c} * z_j for index j
       for (int prodj=0;prodj<dim;++prodj)
       {
         int row = csnode->Dofs()[prodj];
-        map<int,double>::iterator scolcurr = thisdderiv.begin();
+        std::map<int,double>::iterator scolcurr = thisdderiv.begin();
 
         // loop over all directional derivative entries
         for (int c=0;c<mapsize;++c)
@@ -3158,7 +3158,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           // owner of LM slave node can do the assembly, although it actually
           // might not own the corresponding rows in lindglobal (DISP slave node)
           // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-          //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+          //std::cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
           if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
         }
 
@@ -3186,14 +3186,14 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CoNode* cmnode = static_cast<CoNode*>(mnode);
       
       // Mortar matrix M derivatives
-      map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      std::map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
  
       // inner product M_{jl,c} * z_j for index j
       for (int prodj=0;prodj<dim;++prodj)
       {
         int row = cmnode->Dofs()[prodj];
-        map<int,double>::iterator mcolcurr = thismderiv.begin();
+        std::map<int,double>::iterator mcolcurr = thismderiv.begin();
 
         // loop over all directional derivative entries
         for (int c=0;c<mapsize;++c)
@@ -3205,7 +3205,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           // owner of LM slave node can do the assembly, although it actually
           // might not own the corresponding rows in lindglobal (DISP slave node)
           // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-          //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+          //std::cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
           if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
         }
 
@@ -3249,7 +3249,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
     {
       double gap = cnode->CoData().Getg();
 
-      // cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
+      // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
 
       // check if this inactive node has a feasible projection
@@ -3275,8 +3275,8 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       }
 
       Epetra_SerialDenseVector gnode(1);
-      vector<int> lm(1);
-      vector<int> lmowner(1);
+      std::vector<int> lm(1);
+      std::vector<int> lmowner(1);
 
       gnode(0) = gap;
       lm[0] = cnode->Id();
@@ -3313,8 +3313,8 @@ void CONTACT::CoInterface::AssembleWear(Epetra_Vector& gglobal)
     double wear = frinode->FriDataPlus().Wear();
       
     Epetra_SerialDenseVector wnode(1);
-    vector<int> lm(1);
-    vector<int> lmowner(1);
+    std::vector<int> lm(1);
+    std::vector<int> lmowner(1);
 
     wnode(0) = wear;
     lm[0] = frinode->Id();
@@ -3343,8 +3343,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     return;
 
   // create map of stick nodes
-  RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_,*slipnodes_);
-  RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_,*slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_,*slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_,*slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements()==0)
@@ -3362,8 +3362,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
     // prepare assembly, get information from node
-    vector<map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-    vector<map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+    std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+    std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
     for (int j=0;j<Dim()-1;++j)
       if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
@@ -3382,10 +3382,10 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     double* jump = cnode->FriData().jump();
         
     // iterator for maps
-    map<int,double>::iterator colcurr;
+    std::map<int,double>::iterator colcurr;
 
     // row number of entries
-    vector<int> row (Dim()-1);
+    std::vector<int> row (Dim()-1);
     if (Dim()==2)
     {
       row[0] = stickt->GID(i);
@@ -3414,8 +3414,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     // Entries on right hand side
     /************************************************ (-utxi, -uteta) ***/
     Epetra_SerialDenseVector rhsnode(Dim()-1);
-    vector<int> lm(Dim()-1);
-    vector<int> lmowner(Dim()-1);
+    std::vector<int> lm(Dim()-1);
+    std::vector<int> lmowner(Dim()-1);
 
     rhsnode(0) = -jumptxi;
     lm[0] = cnode->Dofs()[1];
@@ -3434,7 +3434,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     /*** 1 ************************************** tangent.deriv(jump) ***/
 
     // get linearization of jump vector
-    vector<map<int,double> > derivjump = cnode->FriData().GetDerivJump();
+    std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
     
     if (derivjump.size()<1)
       dserror ("AssembleLinStick: Derivative of jump is not exiting!");
@@ -3490,7 +3490,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
 //  have a look to the beginning of the function
 //  // only for coulomb friction
-//  string ftype   = IParams().get<string>("friction type","none");
+//  std::string ftype   = IParams().get<std::string>("friction type","none");
 //  double frcoeff = IParams().get<double>("friction coefficient",0.0);
 //  double cn = IParams().get<double>("semismooth cn",0.0);
 //  double ct = IParams().get<double>("semismooth ct",0.0);
@@ -3504,8 +3504,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    return;
 //
 //  // create map of stick nodes
-//  RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_,*slipnodes_);
-//  RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_,*slipt_);
+//  Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_,*slipnodes_);
+//  Teuchos::RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_,*slipt_);
 //
 //  // nothing to do if no stick nodes
 //  if (sticknodes->NumMyElements()==0)
@@ -3527,15 +3527,15 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 //
 //    // prepare assembly
-//    vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
-//    map<int,double>::iterator colcurr;
+//    std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
+//    std::map<int,double>::iterator colcurr;
 //
 //    // calculate DerivT from DerivN
 //    // only for 2D so far, in this case calculation is very easy
 //    // dty =  dnx
 //    // dtx = -dny
 //
-//    vector <map<int,double> > dtmap(Dim());
+//    vector <std::map<int,double> > dtmap(Dim());
 //
 //    for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
 //      dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
@@ -3564,7 +3564,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    if(nz==wgap and wgap==0)
 //    {
 //      nz=1;
-//      cout << "Warning: Initialization of nz to 1" << endl;
+//      std::cout << "Warning: Initialization of nz to 1" << endl;
 //    }
 //
 //    for (int j=0;j<mapsize-1;++j)
@@ -3575,8 +3575,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /**************************************** frcoeff*cn*wgap*ct*utan ***/
 //
 //    Epetra_SerialDenseVector rhsnode(1);
-//    vector<int> lm(1);
-//    vector<int> lmowner(1);
+//    std::vector<int> lm(1);
+//    std::vector<int> lmowner(1);
 //
 //    rhsnode(0) = -frcoeff*cn*wgap*ct*utan;
 //    lm[0] = cnode->Dofs()[1];
@@ -3608,7 +3608,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    {
 //      int col = cnode->Dofs()[dim];
 //      double val = -frcoeff*(nz-cn*wgap)*ct*(-1)*txi[dim]*(D-Dold);
-//     //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+//     //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 //
 //     // do not assemble zeros into matrix
 //     if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
@@ -3617,8 +3617,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /*************************************************** tan.(M-Mn-1) ***/
 //
 //    // we need the nodal entries of the M-matrix and the old one
-//    vector<map<int,double> > mmap = cnode->MoData().GetM();
-//    vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+//    std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+//    std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 //
 //    // create a set of nodes including nodes according to M entries
 //    // from current and previous time step
@@ -3629,14 +3629,14 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //
 //    if(mmapold.size()<1)
 //    {
-//      cout << "GID " << gid << endl;
+//      std::cout << "GID " << gid << endl;
 //      dserror("vector too small");
 //    }
 //
 //    for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
 //      mnodes.insert((colcurr->first)/Dim());
 //
-//    set<int>::iterator mcurr;
+//    std::set<int>::iterator mcurr;
 //
 //    // loop over all master nodes (find adjacent ones to this stick node)
 //    for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -3656,7 +3656,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      {
 //        int col = cmnode->Dofs()[dim];
 //        double val = -frcoeff*(nz-cn*wgap)*ct*txi[dim]*(mik-mikold);
-//        //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+//        //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 //
 //       // do not assemble zeros into matrix
 //       if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
@@ -3732,7 +3732,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      tdotx += txi[dim]*xi[dim];
 //
 //    // prepare assembly
-//    map<int,double>& ddmap = cnode->CoData().GetDerivD();
+//    std::map<int,double>& ddmap = cnode->CoData().GetDerivD();
 //
 //    // loop over all entries of the current derivative map
 //    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -3746,8 +3746,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /***********************************************   -T.DerivM.x ******/
 //
 //    // we need the Lin(M-matrix) entries of this node
-//    map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
-//    map<int,map<int,double> >::iterator dmcurr;
+//    std::map<int,std::map<int,double> >& dmmap = cnode->CoData().GetDerivM();
+//    std::map<int,std::map<int,double> >::iterator dmcurr;
 //
 //    // loop over all master nodes in the DerivM-map of the active slave node
 //    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
@@ -3764,7 +3764,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //        tdotx += txi[dim]*mxi[dim];
 //
 //      // compute matrix entry of the current active node / master node pair
-//      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+//      std::map<int,double>& thisdmmap = cnode->GetDerivM(gid);
 //
 //      // loop over all entries of the current derivative map
 //      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -3779,13 +3779,13 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /**************************************-frcoeff*cn*ct*utan*DerivG ***/
 //
 //    // prepare assembly
-//    map<int,double>& dgmap = cnode->CoData().GetDerivG();
+//    std::map<int,double>& dgmap = cnode->CoData().GetDerivG();
 //
 //    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
 //    {
 //      int col = colcurr->first;
 //      double val = +frcoeff*cn*ct*utan*colcurr->second;
-//      //cout << "Assemble LinStick: " << row << " " << col << " " << val << endl;
+//      //std::cout << "Assemble LinStick: " << row << " " << col << " " << val << endl;
 //      // do not assemble zeros into matrix
 //      if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
 //    }
@@ -3857,9 +3857,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
-      vector<map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
-      vector<map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -3886,10 +3886,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double& wgap = cnode->CoData().Getg();
 
       // iterator for maps
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
 
       // row number of entries
-      vector<int> row (Dim()-1);
+      std::vector<int> row (Dim()-1);
       if (Dim()==2)
       {
         row[0] = slipt_->GID(i);
@@ -3923,7 +3923,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       }
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-      vector<double> sum1 (Dim()-1,0);
+      std::vector<double> sum1 (Dim()-1,0);
       sum1[0] = ztxi+ct*jumptxi;
       if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
       if (Dim()==2) euclidean = abs(sum1[0]);
@@ -4032,8 +4032,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         double valuetxi5 = -(frcoeff*(znor-cn*wgap))*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
 
         Epetra_SerialDenseVector rhsnode(Dim()-1);
-        vector<int> lm(Dim()-1);
-        vector<int> lmowner(Dim()-1);
+        std::vector<int> lm(Dim()-1);
+        std::vector<int> lmowner(Dim()-1);
 
         rhsnode(0) = (valuetxi1+valuetxi2+valuetxi3+valuetxi4+valuetxi5);
         lm[0] = cnode->Dofs()[1];
@@ -4058,7 +4058,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
 
         // get linearization of jump vector
-        vector<map<int,double> > derivjump = cnode->FriData().GetDerivJump();
+        std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
         for (int dim=0;dim<cnode->NumDof();++dim)
@@ -4091,7 +4091,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
          {
             int col = colcurr->first;
             
-            //cout << "val " << colcurr->second << endl;
+            //std::cout << "val " << colcurr->second << endl;
 
             double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*colcurr->second;
             double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*colcurr->second;
@@ -4279,7 +4279,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
           /*** 7 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
           // prepare assembly
-          map<int,double>& dgmap = cnode->CoData().GetDerivG();
+          std::map<int,double>& dgmap = cnode->CoData().GetDerivG();
 
           // loop over all entries of the current derivative map
           for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
@@ -4316,12 +4316,12 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
 
       // iterator
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
 
-      vector <map<int,double> > dtmap(Dim());
+      vector <std::map<int,double> > dtmap(Dim());
 
       for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
         dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
@@ -4395,8 +4395,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double value3 = +sum*ztan+prefactor*ztan*ztan;
 
       Epetra_SerialDenseVector rhsnode(1);
-      vector<int> lm(1);
-      vector<int> lmowner(1);
+      std::vector<int> lm(1);
+      std::vector<int> lmowner(1);
 
       rhsnode(0) = (value1+value2+value3);
 
@@ -4422,7 +4422,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       {
         int col = cnode->Dofs()[dim];
         double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-       //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+       //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4436,15 +4436,15 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
       set <int> mnodes;
 
       // iterator
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
 
       set <int> mnodescurrent = cnode->FriData().GetMNodes();
       set <int> mnodesold = cnode->FriData().GetMNodesOld();
@@ -4473,7 +4473,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cmnode->Dofs()[dim];
           double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-          //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4491,7 +4491,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       {
         int col = cnode->Dofs()[dim];
         double val = (frcoeff*znor)*ct*txi[dim]*(D-Dold);
-        //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+        //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4520,7 +4520,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cmnode->Dofs()[dim];
           double val = (frcoeff*znor)*(-1)*ct*txi[dim]*(mik-mikold);
-          //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4546,7 +4546,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = sum*(colcurr->second)*z[j];
-            //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4573,7 +4573,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*(colcurr->second)*z[j]*ztan;
-            //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
@@ -4600,7 +4600,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-            //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4623,14 +4623,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
+        std::map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
         {
           int col = colcurr->first;
           double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-          //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4643,8 +4643,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
-        map<int,map<int,double> >::iterator dmcurr;
+        std::map<int,std::map<int,double> >& dmmap = cnode->CoData().GetDerivM();
+        std::map<int,std::map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
         for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
@@ -4661,14 +4661,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+          std::map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
           {
             int col = colcurr->first;
             double val = prefactor*ct*tdotx*colcurr->second*ztan;
-            //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4691,7 +4691,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*(frcoeff*znor)*(colcurr->second)*z[j];
-            //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4718,7 +4718,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*(frcoeff*znor)*ct*(colcurr->second)*jump[j];
-            //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4745,7 +4745,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
          {
            int col = colcurr->first;
            double val = (-1)*(-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
-           //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+           //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4772,14 +4772,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+           std::map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
            {
              int col = colcurr->first;
              double val = (-1)*(frcoeff*znor)*ct*tdotx*colcurr->second;
-            //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4802,7 +4802,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
          {
            int col = colcurr->first;
            double val = (-1)*(ztan+ct*jumptan)*frcoeff*(colcurr->second)*z[j];
-           //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+           //std::cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val =0;
@@ -4843,12 +4843,12 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
 
       // iterator
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
 
-      vector <map<int,double> > dtmap(Dim());
+      vector <std::map<int,double> > dtmap(Dim());
 
       for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
         dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
@@ -4924,8 +4924,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double value2= -frbound*ztan+sum*ztan+prefactor*ztan*ztan;
 
       Epetra_SerialDenseVector rhsnode(1);
-      vector<int> lm(1);
-      vector<int> lmowner(1);
+      std::vector<int> lm(1);
+      std::vector<int> lmowner(1);
       rhsnode(0) = (value1+value2);
 
 #ifdef CONTACTFRICTIONLESSFIRST
@@ -4953,7 +4953,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       {
         int col = cnode->Dofs()[dim];
         double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-       //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+       //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
@@ -4965,15 +4965,15 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
       set <int> mnodes;
 
       // iterator
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
 
       set <int> mnodescurrent = cnode->FriData().GetMNodes();
       set <int> mnodesold = cnode->FriData().GetMNodesOld();
@@ -5002,7 +5002,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cmnode->Dofs()[dim];
           double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-          //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5020,7 +5020,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       {
         int col = cnode->Dofs()[dim];
         double val = frbound*ct*txi[dim]*(D-Dold);
-        //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+        //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5049,7 +5049,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cmnode->Dofs()[dim];
           double val = frbound*(-1)*ct*txi[dim]*(mik-mikold);
-          //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5074,7 +5074,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = sum*(colcurr->second)*z[j];
-            //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
             if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5101,7 +5101,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*(colcurr->second)*z[j]*ztan;
-            //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
@@ -5128,7 +5128,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-            //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5151,14 +5151,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
+        std::map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
         {
           int col = colcurr->first;
           double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-          //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5171,8 +5171,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
-        map<int,map<int,double> >::iterator dmcurr;
+        std::map<int,std::map<int,double> >& dmmap = cnode->CoData().GetDerivM();
+        std::map<int,std::map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
         for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
@@ -5189,14 +5189,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+          std::map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
           {
             int col = colcurr->first;
             double val = prefactor*ct*tdotx*colcurr->second*ztan;
-            //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5219,7 +5219,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*frbound*(colcurr->second)*z[j];
-            //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5246,7 +5246,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*frbound*ct*(colcurr->second)*jump[j];
-            //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5273,7 +5273,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
          {
            int col = colcurr->first;
            double val = (-1)*(-1)*frbound*ct*tdotx*colcurr->second;
-           //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+           //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5300,14 +5300,14 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
+           std::map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
            {
              int col = colcurr->first;
              double val = (-1)*frbound*ct*tdotx*colcurr->second;
-            //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -5330,10 +5330,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 bool CONTACT::CoInterface::BuildActiveSet(bool init)
 {
   // define local variables
-  vector<int> mynodegids(0);
-  vector<int> mydofgids(0);
-  vector<int> myslipnodegids(0);
-  vector<int> myslipdofgids(0);
+  std::vector<int> mynodegids(0);
+  std::vector<int> mydofgids(0);
+  std::vector<int> myslipnodegids(0);
+  std::vector<int> myslipdofgids(0);
 
   // loop over all slave nodes
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -5414,14 +5414,14 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   }
 
   // create active node map and active dof map
-  activenodes_ = rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
-  activedofs_  = rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
+  activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
+  activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
   if (friction_)
   {
     // create slip node map and slip dof map
-    slipnodes_ = rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
-    slipdofs_  = rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
+    slipnodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
+    slipdofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
   }
 
   // split active dofs and slip dofs
@@ -5436,27 +5436,27 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
 bool CONTACT::CoInterface::SplitActiveDofs()
 {
   // get out of here if active set is empty
-  if (activenodes_==null)
+  if (activenodes_==Teuchos::null)
   {
-    activen_ = rcp(new Epetra_Map(0,0,Comm()));
-    activet_ = rcp(new Epetra_Map(0,0,Comm()));
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    activen_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    activet_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
   else if (activenodes_->NumGlobalElements()==0)
   {
-    activen_ = rcp(new Epetra_Map(0,0,Comm()));
-    activet_ = rcp(new Epetra_Map(0,0,Comm()));
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    activen_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    activet_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
   // define local variables
   int countN=0;
   int countT=0;
-  vector<int> myNgids(activenodes_->NumMyElements());
-  vector<int> myTgids((Dim()-1)*activenodes_->NumMyElements());
+  std::vector<int> myNgids(activenodes_->NumMyElements());
+  std::vector<int> myTgids((Dim()-1)*activenodes_->NumMyElements());
 
   // dimension check
   double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
@@ -5497,8 +5497,8 @@ bool CONTACT::CoInterface::SplitActiveDofs()
     dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
-  activet_ = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
+  activen_ = Teuchos::rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
+  activet_ = Teuchos::rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
   
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -5509,21 +5509,21 @@ bool CONTACT::CoInterface::SplitActiveDofs()
     return true; 
   
   // get out of here if slip set is empty
-  if (slipnodes_==null)
+  if (slipnodes_==Teuchos::null)
   {
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
   if (slipnodes_->NumGlobalElements()==0)
   {
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
   // define local variables
   int countslipT=0;
-  vector<int> myslipTgids((Dim()-1)*slipnodes_->NumMyElements());
+  std::vector<int> myslipTgids((Dim()-1)*slipnodes_->NumMyElements());
 
   // dimension check
   dimcheck =(slipdofs_->NumGlobalElements())/(slipnodes_->NumGlobalElements());
@@ -5554,7 +5554,7 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   Comm().SumAll(&countslipT,&gcountslipT,1);
 
   // create Tslipmap objects
-  slipt_   = rcp(new Epetra_Map(gcountslipT,countslipT,&myslipTgids[0],0,Comm()));
+  slipt_   = Teuchos::rcp(new Epetra_Map(gcountslipT,countslipT,&myslipTgids[0],0,Comm()));
 
   return true;
 }
@@ -5583,7 +5583,7 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
     /**************************************************** A-matrix ******/
     if ((frinode->FriDataPlus().GetA()).size()>0)
     {
-      vector<map<int,double> > amap = frinode->FriDataPlus().GetA();
+      std::vector<std::map<int,double> > amap = frinode->FriDataPlus().GetA();
       int rowsize = frinode->NumDof();
       int colsize = (int)amap[0].size();
 
@@ -5591,7 +5591,7 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
         if ((int)amap[j].size() != (int)amap[j+1].size())
           dserror("ERROR: AssembleA: Column dim. of nodal A-map is inconsistent!");
 
-      map<int,double>::iterator colcurr;
+      std::map<int,double>::iterator colcurr;
 
       for (int j=0;j<rowsize;++j)
       {

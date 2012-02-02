@@ -41,8 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_manager_base.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -141,8 +139,8 @@ public:
   
   */
   void ReadRestart(IO::DiscretizationReader& reader,
-                   RCP<Epetra_Vector> dis,
-                   RCP<Epetra_Vector> zero);
+                   Teuchos::RCP<Epetra_Vector> dis,
+                   Teuchos::RCP<Epetra_Vector> zero);
   
   /*!
   \brief Write interface tractions for postprocessing

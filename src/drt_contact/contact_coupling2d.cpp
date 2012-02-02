@@ -140,12 +140,12 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     int ncol = MasterElement().NumNode();
     int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
     if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-    RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+    Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+    Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+    Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
     if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
-      wseg = rcp(new Epetra_SerialDenseVector(nrow));
+      wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,lmtype,dseg,mseg,gseg,wseg);
 
@@ -188,7 +188,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
                                                   int dim, bool quad,
                                                   INPAR::MORTAR::LagMultQuad lmtype,
                                                   MORTAR::MortarElement* sele,
-                                                  vector<MORTAR::MortarElement*> mele) :
+                                                  std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
@@ -211,7 +211,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn 
                                                  int dim, bool quad,
                                                  INPAR::MORTAR::LagMultQuad lmtype,
                                                  MORTAR::MortarElement* sele,
-                                                 vector<MORTAR::MortarElement*> mele) :
+                                                 std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
@@ -235,7 +235,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   for (int m=0;m<(int)MasterElements().size();++m)
   {
     // create CoCoupling2d object and push back
-    Coupling().push_back(rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+    Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
 
     // project the element pair
     Coupling()[m]->Project();

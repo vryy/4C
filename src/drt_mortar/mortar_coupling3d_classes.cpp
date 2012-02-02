@@ -56,7 +56,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner,
                                const DRT::Element::DiscretizationType& shape,
                                const int numnode,
                                const int* nodeids,
-                               vector<DRT::Node*> nodes,
+                               std::vector<DRT::Node*> nodes,
                                const bool isslave) :
 MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave),
 lid_(lid),
@@ -253,11 +253,11 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 /*----------------------------------------------------------------------*
  |  map IntElement coord derivatives to Element (public)      popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntElement::MapToParent(const vector<map<int,double> >& dxi,
-                                     vector<map<int,double> >& dparxi)
+bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& dxi,
+                                     std::vector<std::map<int,double> >& dparxi)
 {
   // map iterator
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // *********************************************************************
   // do mapping for given IntElement and Element
@@ -464,12 +464,12 @@ bool MORTAR::IntElement::MapToParent(const vector<map<int,double> >& dxi,
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 MORTAR::IntCell::IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                          double* auxn, const DRT::Element::DiscretizationType& shape,
-                          bool auxplane,
-                          vector<map<int,double> >& linv1,
-                          vector<map<int,double> >& linv2,
-                          vector<map<int,double> >& linv3,
-                          vector<map<int,double> >& linauxn) :
+                         double* auxn, const DRT::Element::DiscretizationType& shape,
+                         bool auxplane,
+                         std::vector<std::map<int,double> >& linv1,
+                         std::vector<std::map<int,double> >& linv2,
+                         std::vector<std::map<int,double> >& linv3,
+                         std::vector<std::map<int,double> >& linauxn) :
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
@@ -516,8 +516,8 @@ shape_(shape)
  |  Get global coords for given local coords (IntCell)        popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::IntCell::LocalToGlobal(const double* xi,
-                                     double* globcoord,
-                                     int inttype)
+                                    double* globcoord,
+                                    int inttype)
 {
   // check input
   if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
@@ -566,7 +566,8 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi,
  |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::IntCell::EvaluateShape(const double* xi,
-    LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv)
+                                    LINALG::SerialDenseVector& val,
+                                    LINALG::SerialDenseMatrix& deriv)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape (IntCell) called with xi=NULL");
@@ -594,8 +595,8 @@ bool MORTAR::IntCell::EvaluateShape(const double* xi,
 double MORTAR::IntCell::Jacobian(double* xi)
 {
   double jac = 0.0;
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // 2D linear case (2noded line element)
   if (Shape()==DRT::Element::tri3)
@@ -610,12 +611,12 @@ double MORTAR::IntCell::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 12/08|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(double* xi, vector<double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(double* xi, std::vector<double>& derivjac)
 {
   // initialize parameters
   int nnodes = NumVertices();
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   // evaluate shape functions
   LINALG::SerialDenseVector val(nnodes);
@@ -664,16 +665,16 @@ void MORTAR::IntCell::DerivJacobian(double* xi, vector<double>& derivjac)
 
   /*
   // finite difference check
-  typedef map<int,double>::const_iterator CI;
-  cout << "Analytical IntCell jac derivative:" << endl;
+  typedef std::map<int,double>::const_iterator CI;
+  std::cout << "Analytical IntCell jac derivative:" << endl;
   for (CI p = derivjac.begin(); p != derivjac.end(); ++p)
   {
-    cout << "dof: " << p->first << " " << p->second << endl;
+    std::cout << "dof: " << p->first << " " << p->second << endl;
   }
 
   double delta = 1.0e-8;
   double jacfd = 0.0;
-  cout << "FD IntCell jac derivative:" << endl;
+  std::cout << "FD IntCell jac derivative:" << endl;
 
   for (int i=0;i<nnodes;++i)
   {
@@ -694,11 +695,11 @@ void MORTAR::IntCell::DerivJacobian(double* xi, vector<double>& derivjac)
       cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
 
       jacfd = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-      cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << endl;
+      std::cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << endl;
       Coords()(j,i) -= delta;
     }
   }
-  cout << endl;
+  std::cout << endl;
   */
 
   return;
@@ -707,11 +708,11 @@ void MORTAR::IntCell::DerivJacobian(double* xi, vector<double>& derivjac)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(double* xi, map<int,double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
 {
   // metrics routine gives local basis vectors
-  vector<double> gxi(3);
-  vector<double> geta(3);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
   for (int k=0;k<3;++k)
   {
@@ -726,7 +727,7 @@ void MORTAR::IntCell::DerivJacobian(double* xi, map<int,double>& derivjac)
   cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
 
   double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // 2D linear case (2noded line element)
   if (Shape()==DRT::Element::tri3)
@@ -806,7 +807,7 @@ void MORTAR::IntCell::DerivJacobian(double* xi, map<int,double>& derivjac)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Vertex::Vertex(vector<double> coord, Vertex::vType type, vector<int> nodeids,
+MORTAR::Vertex::Vertex(std::vector<double> coord, Vertex::vType type, std::vector<int> nodeids,
                         Vertex* next, Vertex* prev, bool intersect,
                         bool entryexit, Vertex* neighbor, double alpha) :
 coord_(coord),

@@ -126,7 +126,8 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
+void CONTACT::FriNodeDataContainer::Unpack(std::vector<char>::size_type& position,
+                                           const std::vector<char>& data)
 {
   // jump_
   DRT::ParObject::ExtractfromPack(position,data,jump_,3*sizeof(double));
@@ -185,8 +186,8 @@ deltawear_(0.0)
  |  ctor (public)                                             mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
-                          const int numdof, const vector<int>& dofs, const bool isslave,
-                          const bool initactive) :
+                          const int numdof, const std::vector<int>& dofs,
+                          const bool isslave, const bool initactive) :
 CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive),
 mechdiss_(0.0)
 {
@@ -268,9 +269,9 @@ void CONTACT::FriNode::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Unpack(const vector<char>& data)
+void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   // extract type
   int type = 0;
@@ -278,7 +279,7 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // extract base class MORTAR::MortarNode
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   CONTACT::CoNode::Unpack(basedata);
 
@@ -382,7 +383,7 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
     dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = FriData().GetDerivJump()[row];
+  std::map<int,double>& zmap = FriData().GetDerivJump()[row];
   zmap[col] += val;
 
   return;
@@ -408,7 +409,7 @@ void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
     dserror("ERROR: AddAValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& amap = FriDataPlus().GetA()[row];
+  std::map<int,double>& amap = FriDataPlus().GetA()[row];
   amap[col] += val;
 
   return;
@@ -429,7 +430,7 @@ void CONTACT::FriNode::AddBValue(int& row, int& col, double& val)
     dserror("ERROR: AddBValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& bmap = GetB()[row];
+  std::map<int,double>& bmap = GetB()[row];
   bmap[col] += val;
 
   return;
@@ -505,9 +506,9 @@ void CONTACT::FriNode::InitializeDataContainer()
   // only initialize if not yet done
   if (modata_==Teuchos::null && codata_==Teuchos::null && fridata_==Teuchos::null)
   {
-    modata_=rcp(new MORTAR::MortarNodeDataContainer());
-    codata_ =rcp(new CONTACT::CoNodeDataContainer());
-    fridata_=rcp(new CONTACT::FriNodeDataContainer());
+    modata_=Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    codata_ =Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    fridata_=Teuchos::rcp(new CONTACT::FriNodeDataContainer());
   }
   
   // initialize data container for wear and tsi problems 
@@ -515,7 +516,7 @@ void CONTACT::FriNode::InitializeDataContainer()
      (DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
   {
      if (fridataplus_==Teuchos::null)
-      fridataplus_=rcp(new CONTACT::FriNodeDataContainerPlus());
+      fridataplus_=Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());
   }
 
   return;
@@ -526,7 +527,7 @@ void CONTACT::FriNode::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::ResetDataContainer()
 {
-  // reset to null
+  // reset to Teuchos::null
   fridata_     = Teuchos::null;
   fridataplus_ = Teuchos::null; 
   codata_      = Teuchos::null;

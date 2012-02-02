@@ -43,7 +43,6 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-using namespace std;
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -157,7 +156,7 @@ public:
   */
   virtual void IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      RCP<Epetra_SerialDenseMatrix> dseg);
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
 
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
@@ -168,9 +167,9 @@ public:
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       INPAR::MORTAR::LagMultQuad& lmtype,
-      RCP<Epetra_SerialDenseMatrix> dseg,
-      RCP<Epetra_SerialDenseMatrix> mseg,
-      RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
 
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -181,7 +180,7 @@ public:
   the interface is curved (but only for mesh tying)!
 
   */
-  RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(
+  Teuchos::RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(
        MORTAR::MortarElement& sele,
        double& sxia, double& sxib,
        MORTAR::MortarElement& mele,
@@ -194,10 +193,10 @@ public:
   */
   virtual void IntegrateDerivCell3D(
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      RCP<MORTAR::IntCell> cell,
-      RCP<Epetra_SerialDenseMatrix> dseg,
-      RCP<Epetra_SerialDenseMatrix> mseg,
-      RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<MORTAR::IntCell> cell,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
     
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -207,10 +206,10 @@ public:
   */
   virtual void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -221,11 +220,11 @@ public:
   virtual void IntegrateDerivCell3DQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::IntCell> cell,
+     Teuchos::RCP<MORTAR::IntCell> cell,
      INPAR::MORTAR::LagMultQuad& lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -236,11 +235,11 @@ public:
   virtual void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      INPAR::MORTAR::LagMultQuad& lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
   
   //@}
   
@@ -304,7 +303,7 @@ protected:
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
-    vector<double>                weights_;     // Gauss point weights
+    std::vector<double>           weights_;     // Gauss point weights
 
 }; // class MortarIntegrator
 }  // namespace MORTAR

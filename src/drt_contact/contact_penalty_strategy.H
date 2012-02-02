@@ -42,8 +42,6 @@ Maintainer: Alexander Popp
 
 #include "contact_abstract_strategy.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace CONTACT
 {
@@ -68,9 +66,9 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   \brief Standard Constructor
 
   */
-  CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                    vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                    RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+  CoPenaltyStrategy(Teuchos::RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
+                    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
   /*!
   \brief Destructor
@@ -120,7 +118,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   for a penalty strategy since the weighted gap determines the lagrangian multipliers.
    
   */
-  void SaveReferenceState(const RCP<Epetra_Vector> dis);
+  void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis);
   
   /*!
   \brief Evaluate relative movement of contact bodies in predictor
@@ -150,7 +148,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   stiffness contributions to kteff and extra contact forces to feff. 
   
   */
-  void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+  void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
   /*!
   \brief Evaluate frictional contact
@@ -158,7 +156,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   This includes the evaluation of of the frictional contact forces.  
   
   */
-  void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+  void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
   /*!
   \brief Reset penalty parameter to intial value
@@ -186,7 +184,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   and finally Evaluate().
      
   */
-  void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+  void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
     
   /*!
   \brief Compute L2-norm of active constraints
@@ -221,8 +219,8 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   bool ActiveSetConverged() {return true;}
   int ActiveSetSteps() {return 0;}
   void ResetActiveSet() {}
-  void Recover(RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) { cout << "WARNING: no saddlepoint solver in contact penalty strategy" << endl;}
+  void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) { std::cout << "WARNING: no saddlepoint solver in contact penalty strategy" << endl;}
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}
 
@@ -235,11 +233,11 @@ protected:
   CoPenaltyStrategy operator = (const CoPenaltyStrategy& old);
   CoPenaltyStrategy(const CoPenaltyStrategy& old);
 
-  RCP<LINALG::SparseMatrix> linzmatrix_;         // global matrix LinZ with derivatives of LM
-  double                    constrnorm_;         // L2-norm of normal contact constraints
-  double                    constrnormtan_;      // L2-norm of tangential contact constraints
-  double                    initialpenalty_;     // initial penalty parameter
-  double                    initialpenaltytan_;  // initial tangential penalty parameter   
+  Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;        // global matrix LinZ with derivatives of LM
+  double                             constrnorm_;        // L2-norm of normal contact constraints
+  double                             constrnormtan_;     // L2-norm of tangential contact constraints
+  double                             initialpenalty_;    // initial penalty parameter
+  double                             initialpenaltytan_; // initial tangential penalty parameter
 
 }; // class CoPenaltyStrategy
 }  // namespace CONTACT

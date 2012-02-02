@@ -42,8 +42,6 @@ Maintainer: Alexander Popp
 
 #include "meshtying_abstract_strategy.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace CONTACT
 {
@@ -66,9 +64,11 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \brief Standard Constructor
 
   */
-  MtPenaltyStrategy(DRT::Discretization& discret,RCP<Epetra_Map> problemrowmap,
-                    Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
-                    int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+  MtPenaltyStrategy(DRT::Discretization& discret,
+                    Teuchos::RCP<Epetra_Map> problemrowmap,
+                    Teuchos::ParameterList params,
+                    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+                    int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
   /*!
   \brief Destructor
@@ -100,7 +100,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   Only do this ONCE for meshtying upon initialization!
   
   */
-  void MortarCoupling(const RCP<Epetra_Vector> dis);
+  void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
   \brief Mesh intialization for rotational invariance
@@ -125,8 +125,8 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \param dis (in): current displacement state
     
   */
-  void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff,
-                         RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis);
+  void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
   \brief Initialize Uzawa step
@@ -136,7 +136,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   create an out-of-balance force again.
      
   */
-  void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+  void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
   
   /*!
   \brief Reset penalty parameter to intial value
@@ -181,8 +181,8 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   // All these functions only have functionality in Lagrange meshtying simulations,
   // thus they are defined empty here in the case of Penalty meshtying.
   
-  void Recover(RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) { cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << endl;};
+  void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
+  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) { std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << endl;};
   
   //@}
   
@@ -195,10 +195,10 @@ protected:
   double                     constrnorm_;         // L2-norm of normal contact constraints
   double                     initialpenalty_;     // initial penalty parameter
   
-  RCP<LINALG::SparseMatrix>  mtm_;                // mortar matrix product: M(^T)*M
-  RCP<LINALG::SparseMatrix>  mtd_;                // mortar matrix product: M(^T)*D
-  RCP<LINALG::SparseMatrix>  dtm_;                // mortar matrix product: D(^T)*M
-  RCP<LINALG::SparseMatrix>  dtd_;                // mortar matrix product: D(^T)*D
+  Teuchos::RCP<LINALG::SparseMatrix>  mtm_;       // mortar matrix product: M(^T)*M
+  Teuchos::RCP<LINALG::SparseMatrix>  mtd_;       // mortar matrix product: M(^T)*D
+  Teuchos::RCP<LINALG::SparseMatrix>  dtm_;       // mortar matrix product: D(^T)*M
+  Teuchos::RCP<LINALG::SparseMatrix>  dtd_;       // mortar matrix product: D(^T)*D
   
 
 }; // class MtPenaltyStrategy

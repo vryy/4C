@@ -151,7 +151,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      RCP<Epetra_SerialDenseMatrix> dseg)
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg)
 {
   //**********************************************************************
   dserror("ERROR: IntegrateDerivSlave2D3D method is outdated!");
@@ -235,9 +235,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      INPAR::MORTAR::LagMultQuad& lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 { 
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -315,9 +315,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
-      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
     }
 
@@ -464,10 +464,11 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
  |  element coordinates given by mxia and mxib                          |
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::MortarElement& sele,
-                                                                 double& sxia, double& sxib,
-                                                                 MORTAR::MortarElement& mele,
-                                                                 double& mxia, double& mxib)
+Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(
+                                       MORTAR::MortarElement& sele,
+                                       double& sxia, double& sxib,
+                                       MORTAR::MortarElement& mele,
+                                       double& mxia, double& mxib)
 {
   //**********************************************************************
   dserror("ERROR: IntegrateMmod2D method is outdated!");
@@ -489,7 +490,7 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
   int nrowdof = Dim();
   int ncol  = mele.NumNode();
   int ncoldof = Dim();
-  RCP<Epetra_SerialDenseMatrix> mmodseg = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
+  Teuchos::RCP<Epetra_SerialDenseMatrix> mmodseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -518,9 +519,9 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
-      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-      cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-      cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+      std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       dserror("ERROR: IntegrateMmod2D: Gauss point projection failed!");
     }
 
@@ -606,10 +607,10 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::IntCell> cell,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<MORTAR::IntCell> cell,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -624,7 +625,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
-  if (cell==null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3D called without integration cell");
 
   // number of nodes (slave, master)
@@ -671,22 +672,22 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
     else
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-        cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
 
@@ -795,10 +796,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -814,7 +815,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
-  if (cell==null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
   // number of nodes (slave, master)
@@ -860,20 +861,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
       }
     }
     else
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
       }
     }
 
@@ -882,20 +883,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
     else
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
 
@@ -1001,31 +1002,31 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
 void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::IntCell> cell,
+     Teuchos::RCP<MORTAR::IntCell> cell,
      INPAR::MORTAR::LagMultQuad& lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
 
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DQuad called without specific shape function defined!");
 
-  /*cout << endl;
-  cout << "Slave type: " << sele.Shape() << endl;
-  cout << "SlaveElement Nodes:";
-  for (int k=0;k<sele.NumNode();++k) cout << " " << sele.NodeIds()[k];
-  cout << "\nMaster type: " << mele.Shape() << endl;
-  cout << "MasterElement Nodes:";
-  for (int k=0;k<mele.NumNode();++k) cout << " " << mele.NodeIds()[k];
-  cout << endl;
-  cout << "SlaveSub type: " << sintele.Shape() << endl;
-  cout << "SlaveSubElement Nodes:";
-  for (int k=0;k<sintele.NumNode();++k) cout << " " << sintele.NodeIds()[k];
-  cout << "\nMasterSub type: " << mintele.Shape() << endl;
-  cout << "MasterSubElement Nodes:";
-  for (int k=0;k<mintele.NumNode();++k) cout << " " << mintele.NodeIds()[k];  */
+  /*std::cout << endl;
+  std::cout << "Slave type: " << sele.Shape() << endl;
+  std::cout << "SlaveElement Nodes:";
+  for (int k=0;k<sele.NumNode();++k) std::cout << " " << sele.NodeIds()[k];
+  std::cout << "\nMaster type: " << mele.Shape() << endl;
+  std::cout << "MasterElement Nodes:";
+  for (int k=0;k<mele.NumNode();++k) std::cout << " " << mele.NodeIds()[k];
+  std::cout << endl;
+  std::cout << "SlaveSub type: " << sintele.Shape() << endl;
+  std::cout << "SlaveSubElement Nodes:";
+  for (int k=0;k<sintele.NumNode();++k) std::cout << " " << sintele.NodeIds()[k];
+  std::cout << "\nMasterSub type: " << mintele.Shape() << endl;
+  std::cout << "MasterSubElement Nodes:";
+  for (int k=0;k<mintele.NumNode();++k) std::cout << " " << mintele.NodeIds()[k];  */
 
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
@@ -1036,7 +1037,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DQuad called on a wrong type of MortarElement pair!");
-  if (cell==null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DQuad called without integration cell");
 
   // number of nodes (slave, master)
@@ -1110,20 +1111,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
     else
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
 
@@ -1134,10 +1135,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
     sintele.MapToParent(sxi,psxi);
     mintele.MapToParent(mxi,pmxi);
 
-    //cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
-    //cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
-    //cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
-    //cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
+    //std::cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
+    //std::cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
+    //std::cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
+    //std::cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (bound)
@@ -1332,31 +1333,31 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
 void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::IntCell> cell, double* auxn,
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      INPAR::MORTAR::LagMultQuad& lmtype,
-     RCP<Epetra_SerialDenseMatrix> dseg,
-     RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
   
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
   
-  /*cout << endl;
-  cout << "Slave type: " << sele.Shape() << endl;
-  cout << "SlaveElement Nodes:";
-  for (int k=0;k<sele.NumNode();++k) cout << " " << sele.NodeIds()[k];
-  cout << "\nMaster type: " << mele.Shape() << endl;
-  cout << "MasterElement Nodes:";
-  for (int k=0;k<mele.NumNode();++k) cout << " " << mele.NodeIds()[k];
-  cout << endl;
-  cout << "SlaveSub type: " << sintele.Shape() << endl;
-  cout << "SlaveSubElement Nodes:";
-  for (int k=0;k<sintele.NumNode();++k) cout << " " << sintele.NodeIds()[k];
-  cout << "\nMasterSub type: " << mintele.Shape() << endl;
-  cout << "MasterSubElement Nodes:";
-  for (int k=0;k<mintele.NumNode();++k) cout << " " << mintele.NodeIds()[k];  */
+  /*std::cout << endl;
+  std::cout << "Slave type: " << sele.Shape() << endl;
+  std::cout << "SlaveElement Nodes:";
+  for (int k=0;k<sele.NumNode();++k) std::cout << " " << sele.NodeIds()[k];
+  std::cout << "\nMaster type: " << mele.Shape() << endl;
+  std::cout << "MasterElement Nodes:";
+  for (int k=0;k<mele.NumNode();++k) std::cout << " " << mele.NodeIds()[k];
+  std::cout << endl;
+  std::cout << "SlaveSub type: " << sintele.Shape() << endl;
+  std::cout << "SlaveSubElement Nodes:";
+  for (int k=0;k<sintele.NumNode();++k) std::cout << " " << sintele.NodeIds()[k];
+  std::cout << "\nMasterSub type: " << mintele.Shape() << endl;
+  std::cout << "MasterSubElement Nodes:";
+  for (int k=0;k<mintele.NumNode();++k) std::cout << " " << mintele.NodeIds()[k];  */
 
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
@@ -1368,7 +1369,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
-  if (cell==null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
   // number of nodes (slave, master)
@@ -1441,20 +1442,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
       }
     }
     else
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
       }
     }
 
@@ -1463,20 +1464,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
     else
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
       }
     }
 
@@ -1487,10 +1488,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     sintele.MapToParent(sxi,psxi);
     mintele.MapToParent(mxi,pmxi);
 
-    //cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
-    //cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
-    //cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
-    //cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
+    //std::cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
+    //std::cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
+    //std::cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
+    //std::cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
 
     // evaluate Lagrange multiplier shape functions (on slave element)  
     if (bound)
@@ -1680,8 +1681,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
  |  element to the D map of the adjacent slave nodes.                   |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
-                                    MORTAR::MortarElement& sele,
-                                    Epetra_SerialDenseMatrix& dseg)
+                                         MORTAR::MortarElement& sele,
+                                          Epetra_SerialDenseMatrix& dseg)
 {
   // get adjacent nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
@@ -1748,9 +1749,9 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
-                                    MORTAR::MortarElement& sele,
-                                    MORTAR::IntElement& sintele,
-                                    Epetra_SerialDenseMatrix& dseg)
+                                         MORTAR::MortarElement& sele,
+                                         MORTAR::IntElement& sintele,
+                                         Epetra_SerialDenseMatrix& dseg)
 {
   // get adjacent int nodes to assemble to
   DRT::Node** sintnodes = sintele.Nodes();
@@ -1799,9 +1800,9 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
  |  overlap pair to the M map of the adjacent slave nodes.              |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
-                                    MORTAR::MortarElement& sele,
-                                    MORTAR::MortarElement& mele,
-                                    Epetra_SerialDenseMatrix& mseg)
+                                         MORTAR::MortarElement& sele,
+                                         MORTAR::MortarElement& mele,
+                                         Epetra_SerialDenseMatrix& mseg)
 {
   // get adjacent slave nodes and master nodes
   DRT::Node** snodes = sele.Nodes();
@@ -1855,9 +1856,9 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
-                                    MORTAR::IntElement& sintele,
-                                    MORTAR::MortarElement& mele,
-                                    Epetra_SerialDenseMatrix& mseg)
+                                         MORTAR::IntElement& sintele,
+                                         MORTAR::MortarElement& mele,
+                                         Epetra_SerialDenseMatrix& mseg)
 {
   // get adjacent slave int nodes and master nodes
   DRT::Node** sintnodes = sintele.Nodes();
@@ -1904,9 +1905,9 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
  |  overlap pair to the Mmod map of the adjacent slave nodes.            |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarIntegrator::AssembleMmod(const Epetra_Comm& comm,
-                                       MORTAR::MortarElement& sele,
-                                       MORTAR::MortarElement& mele,
-                                       Epetra_SerialDenseMatrix& mmodseg)
+                                            MORTAR::MortarElement& sele,
+                                            MORTAR::MortarElement& mele,
+                                            Epetra_SerialDenseMatrix& mmodseg)
 {
   //**********************************************************************
   dserror("ERROR: AssembleMmod method is outdated!");
@@ -1957,18 +1958,18 @@ bool MORTAR::MortarIntegrator::AssembleMmod(const Epetra_Comm& comm,
     }
     /*
 #ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetMmod())[0];
-    map<int, double> nodemap1 = (snode->GetMmod())[1];
-    typedef map<int,double>::const_iterator CI;
+    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    std::map<int, double> nodemap0 = (snode->GetMmod())[0];
+    std::map<int, double> nodemap1 = (snode->GetMmod())[1];
+    typedef std::map<int,double>::const_iterator CI;
 
-    cout << "Row dof id: " << sdofs[0] << endl;;
+    std::cout << "Row dof id: " << sdofs[0] << endl;;
     for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << endl;
 
-    cout << "Row dof id: " << sdofs[1] << endl;
+    std::cout << "Row dof id: " << sdofs[1] << endl;
     for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << endl;
 #endif // #ifdef DEBUG
      */
   }

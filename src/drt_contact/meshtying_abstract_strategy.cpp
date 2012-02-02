@@ -53,16 +53,16 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-using namespace std;
-using namespace Teuchos;
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
+CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret,
+                                                Teuchos::RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
-                                                vector<RCP<MORTAR::MortarInterface> > interface,
-                                                int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+                                                std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+                                                int dim, Teuchos::RCP<Epetra_Comm> comm,
+                                                double alphaf, int maxdof) :
 MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf,maxdof),
 probdiscret_(discret),
 interface_(interface),
@@ -76,10 +76,10 @@ dualquadslave3d_(false)
   // redistribution of slave and master sides)
   if (ParRedist())
   {
-    pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-    pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
-    pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
-    pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+    pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
+    pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
+    pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+    pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
   }
 
   return;
@@ -100,7 +100,7 @@ ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
   // initialize time measurement
-  vector<double> times((int)interface_.size());
+  std::vector<double> times((int)interface_.size());
 
   // do some more stuff with interfaces
   for (int i=0; i<(int)interface_.size();++i)
@@ -151,7 +151,7 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
     Comm().Barrier();
     double t_sum = Teuchos::Time::wallTime()-t_start;
     for (int i=0; i<(int)interface_.size();++i) t_sum += times[i];
-    if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+    if (Comm().MyPID()==0) std::cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
   }
 
   return;
@@ -217,9 +217,9 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // ------------------------------------------------------------------------   
 
   // setup Lagrange multiplier vectors
-  z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -246,17 +246,17 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     // for the MORTARTRAFO case consider both slave and master DOFs
     // else, only consider slave DOFs
 #ifdef MORTARTRAFO
-    trafo_    = rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
-    invtrafo_ = rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
 
 #else
-    trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-    invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
 #endif // #ifdef MORTARTRAFO
 
     // set of already processed nodes
     // (in order to avoid double-assembly for N interfaces)
-    set<int> donebefore;
+    std::set<int> donebefore;
 
     // for all interfaces
     for (int i=0; i<(int)interface_.size(); ++i)
@@ -273,8 +273,8 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(RCP<Epetra_Vector> dis,
-     RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, bool predictor)
+void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, bool predictor)
 {
   // mortar initialization and evaluation
   SetState("displacement",dis);
@@ -299,8 +299,8 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(RCP<Epetra_Vector> dis,
 /*----------------------------------------------------------------------*
  | set current deformation state                             popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::SetState(const string& statename,
-                                           const RCP<Epetra_Vector> vec)
+void CONTACT::MtAbstractStrategy::SetState(const std::string& statename,
+                                           const Teuchos::RCP<Epetra_Vector> vec)
 {
   if (statename=="displacement" || statename=="olddisplacement")
   {
@@ -315,7 +315,7 @@ void CONTACT::MtAbstractStrategy::SetState(const string& statename,
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
 { 
   //********************************************************************
   // initialize and evaluate interfaces
@@ -339,8 +339,8 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // initialize and evaluate global mortar stuff
   //********************************************************************
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-  dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-  mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsdofrowmap_,true);
 
   // assemble D- and M-matrix on all interfaces
@@ -352,13 +352,13 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
 
   // compute g-vector at global level
-  RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-  RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
   AssembleCoords("slave",true,xs);
   AssembleCoords("master",true,xm);
-  RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false,*xs,*Dxs);
-  RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   mmatrix_->Multiply(false,*xm,*Mxm);
   g_->Update(1.0,*Dxs,1.0);
   g_->Update(-1.0,*Mxm,1.0);
@@ -384,7 +384,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // print message
   if (Comm().MyPID()==0)
   {
-    cout << "*RMZ*...............";
+    std::cout << "*RMZ*...............";
     fflush(stdout);
   }
 
@@ -426,10 +426,10 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   if (ParRedist())
   {
     // allreduce restricted slave dof row map in new distribution
-    RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+    Teuchos::RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
 
     // map data to be filled
-    vector<int> data;
+    std::vector<int> data;
 
     // loop over all entries of allreduced map
     for (int k=0;k<fullsdofs->NumMyElements();++k)
@@ -444,7 +444,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     }
 
     // re-setup old slave dof row map (with restriction now)
-    pgsdofrowmap_ = rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
+    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
   }
 
   return;
@@ -453,7 +453,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 /*----------------------------------------------------------------------*
  |  mesh intialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemod)
+void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
   //**********************************************************************
   // (1) perform mesh initialization node by node
@@ -489,8 +489,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // export Xslavemod to fully overlapping column map for current interface
-    RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
-    RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
+    Teuchos::RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
+    Teuchos::RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
     Epetra_Vector Xslavemodcol(*fullsdofs,false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
     
@@ -545,7 +545,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
           if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
 
           // find DOFs of current node in Xslavemod and extract this node's position
-          vector<int> locindex(numdof);
+          std::vector<int> locindex(numdof);
 
           for (int dof=0;dof<numdof;++dof)
           {
@@ -610,13 +610,13 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
-  RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-  RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
   AssembleCoords("slave",true,xs);
   AssembleCoords("master",true,xm);
-  RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false,*xs,*Dxs);
-  RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   mmatrix_->Multiply(false,*xm,*Mxm);
   g_->Update(1.0,*Dxs,1.0);
   g_->Update(-1.0,*Mxm,1.0);
@@ -632,8 +632,9 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff,
-                                           RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                                           Teuchos::RCP<Epetra_Vector>& feff,
+                                           Teuchos::RCP<Epetra_Vector> dis)
 {
   // trivial (no choice as for contact)
   EvaluateMeshtying(kteff,feff,dis);
@@ -652,7 +653,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
 
     // get global quantity to be stored in nodes
-    RCP<Epetra_Vector> vectorglobal = null;
+    Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
     switch (type)
     {
       case MORTAR::StrategyBase::lmcurrent:
@@ -676,14 +677,14 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         break;
       }
       default:
-        dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
+        dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
     } // switch
 
     // export global quantity to current interface slave dof row map
-    RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
-    RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
+    Teuchos::RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
+    Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofrowmap));
 
-    if (vectorglobal != null) LINALG::Export(*vectorglobal, *vectorinterface);
+    if (vectorglobal != Teuchos::null) LINALG::Export(*vectorglobal, *vectorinterface);
     else dserror("ERROR: StoreNodalQuantities: Null vector handed in!");
 
     // loop over all slave row nodes on the current interface
@@ -701,7 +702,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
       // find indices for DOFs of current node in Epetra_Vector
       // and extract this node's quantity from vectorinterface
-      vector<int> locindex(dim);
+      std::vector<int> locindex(dim);
 
       for (int dof=0;dof<dim;++dof)
       {
@@ -736,7 +737,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           break;
         }
         default:
-          dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
+          dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
         } // switch
       }
     }
@@ -748,7 +749,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into MortarNode               popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps)
+void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -786,7 +787,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor>
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
@@ -809,16 +810,16 @@ void CONTACT::MtAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
  |  read restart information for meshtying                    popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
-                                                RCP<Epetra_Vector> dis)
+                                                Teuchos::RCP<Epetra_Vector> dis)
 {
   // set displacement state
   SetState("displacement",dis);
     
   // read restart information on Lagrange multipliers
-  z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMult(),"lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
-  zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMultOld(),"lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
   
@@ -826,7 +827,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
   if (st == INPAR::CONTACT::solution_auglag)
   {
-    zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     reader.ReadVector(LagrMultUzawa(),"lagrmultold");
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
@@ -847,35 +848,35 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   if (emtype==INPAR::CONTACT::output_none) return;
     
   // compute discrete slave and master interface forces
-  RCP<Epetra_Vector> fcslavetemp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> fcslavetemp = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> fcmastertemp = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   dmatrix_->Multiply(true, *z_, *fcslavetemp);
   mmatrix_->Multiply(true, *z_, *fcmastertemp);
   
   // export the interface forces to full dof layout
-  RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(*problemrowmap_));
-  RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcslavetemp, *fcslave);
   LINALG::Export(*fcmastertemp, *fcmaster);
 
   // interface forces and moments
-  vector<double> gfcs(3);
-  vector<double> ggfcs(3);
-  vector<double> gfcm(3);
-  vector<double> ggfcm(3);
-  vector<double> gmcs(3);
-  vector<double> ggmcs(3);
-  vector<double> gmcm(3);
-  vector<double> ggmcm(3);
+  std::vector<double> gfcs(3);
+  std::vector<double> ggfcs(3);
+  std::vector<double> gfcm(3);
+  std::vector<double> ggfcm(3);
+  std::vector<double> gmcs(3);
+  std::vector<double> ggmcs(3);
+  std::vector<double> gmcm(3);
+  std::vector<double> ggmcm(3);
 
-  vector<double> gmcsnew(3);
-  vector<double> ggmcsnew(3);
-  vector<double> gmcmnew(3);
-  vector<double> ggmcmnew(3);
+  std::vector<double> gmcsnew(3);
+  std::vector<double> ggmcsnew(3);
+  std::vector<double> gmcmnew(3);
+  std::vector<double> ggmcmnew(3);
 
   // weighted gap vector
-  RCP<Epetra_Vector> gapslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> gapmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> gapslave  = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> gapmaster = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -888,8 +889,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-      vector<double> nodeforce(3);
-      vector<double> position(3);
+      std::vector<double> nodeforce(3);
+      std::vector<double> position(3);
 
       // forces and positions
       for (int d=0;d<Dim();++d)
@@ -902,7 +903,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       }
 
       // moments
-      vector<double> nodemoment(3);
+      std::vector<double> nodemoment(3);
       nodemoment[0] = position[1]*nodeforce[2]-position[2]*nodeforce[1];
       nodemoment[1] = position[2]*nodeforce[0]-position[0]*nodeforce[2];
       nodemoment[2] = position[0]*nodeforce[1]-position[1]*nodeforce[0];
@@ -911,8 +912,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 
       // weighted gap
       Epetra_SerialDenseVector posnode(Dim());
-      vector<int> lm(Dim());
-      vector<int> lmowner(Dim());
+      std::vector<int> lm(Dim());
+      std::vector<int> lmowner(Dim());
       for (int d=0;d<Dim();++d)
       {
         posnode[d] = mtnode->xspatial()[d];
@@ -930,8 +931,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-      vector<double> nodeforce(3);
-      vector<double> position(3);
+      std::vector<double> nodeforce(3);
+      std::vector<double> position(3);
 
       // forces and positions
       for (int d=0;d<Dim();++d)
@@ -944,7 +945,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       }
 
       // moments
-      vector<double> nodemoment(3);
+      std::vector<double> nodemoment(3);
       nodemoment[0] = position[1]*nodeforce[2]-position[2]*nodeforce[1];
       nodemoment[1] = position[2]*nodeforce[0]-position[0]*nodeforce[2];
       nodemoment[2] = position[0]*nodeforce[1]-position[1]*nodeforce[0];
@@ -953,8 +954,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 
       // weighted gap
       Epetra_SerialDenseVector posnode(Dim());
-      vector<int> lm(Dim());
-      vector<int> lmowner(Dim());
+      std::vector<int> lm(Dim());
+      std::vector<int> lmowner(Dim());
       for (int d=0;d<Dim();++d)
       {
         posnode[d] = mtnode->xspatial()[d];
@@ -966,11 +967,11 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   }
 
   // weighted gap
-  RCP<Epetra_Vector> gapslavefinal  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> gapmasterfinal = rcp(new Epetra_Vector(mmatrix_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> gapslavefinal  = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> gapmasterfinal = Teuchos::rcp(new Epetra_Vector(mmatrix_->RowMap()));
   dmatrix_->Multiply(false,*gapslave,*gapslavefinal);
   mmatrix_->Multiply(false,*gapmaster,*gapmasterfinal);
-  RCP<Epetra_Vector> gapfinal = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> gapfinal = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
   gapfinal->Update(1.0,*gapslavefinal,0.0);
   gapfinal->Update(-1.0,*gapmasterfinal,1.0);
 
@@ -986,9 +987,9 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-      vector<double> lm(3);
-      vector<double> nodegaps(3);
-      vector<double> nodegapm(3);
+      std::vector<double> lm(3);
+      std::vector<double> nodegaps(3);
+      std::vector<double> nodegapm(3);
 
       // LMs and gaps
       for (int d=0;d<Dim();++d)
@@ -1001,8 +1002,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       }
 
       // moments
-      vector<double> nodemoments(3);
-      vector<double> nodemomentm(3);
+      std::vector<double> nodemoments(3);
+      std::vector<double> nodemomentm(3);
       nodemoments[0] = nodegaps[1]*lm[2]-nodegaps[2]*lm[1];
       nodemoments[1] = nodegaps[2]*lm[0]-nodegaps[0]*lm[2];
       nodemoments[2] = nodegaps[0]*lm[1]-nodegaps[1]*lm[0];
@@ -1090,7 +1091,7 @@ void CONTACT::MtAbstractStrategy::Print(ostream& os) const
   Comm().Barrier();
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    cout << *(interface_[i]);
+    std::cout << *(interface_[i]);
   }
   Comm().Barrier();
 
@@ -1116,10 +1117,10 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   }
 
   // create storage for local and global data
-  vector<int>    lnid, gnid;
-  vector<double> llmx, glmx;
-  vector<double> llmy, glmy;
-  vector<double> llmz, glmz;
+  std::vector<int>    lnid, gnid;
+  std::vector<double> llmx, glmx;
+  std::vector<double> llmy, glmy;
+  std::vector<double> llmz, glmz;
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1149,7 +1150,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   }
 
   // we want to gather data from on all procs
-  vector<int> allproc(Comm().NumProc());
+  std::vector<int> allproc(Comm().NumProc());
   for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
@@ -1196,8 +1197,8 @@ void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
 /*----------------------------------------------------------------------*
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::AssembleCoords(const string& sidename, bool ref,
-                                                 RCP<Epetra_Vector> vec)
+void CONTACT::MtAbstractStrategy::AssembleCoords(const std::string& sidename, bool ref,
+                                                 Teuchos::RCP<Epetra_Vector> vec)
 {
   // NOTE:
   // An alternative way of doing this would be to loop over
@@ -1208,7 +1209,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(const string& sidename, bool re
   // entries in the Epetra_Vector instead of using Assemble().
 
   // decide which side (slave or master)
-  RCP<Epetra_Map> sidemap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> sidemap = Teuchos::null;
   if (sidename=="slave")       sidemap = gsnoderowmap_;
   else if (sidename=="master") sidemap = gmnoderowmap_;
   else                         dserror("ERROR: Unknown sidename");
@@ -1235,8 +1236,8 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(const string& sidename, bool re
 
     // prepare assembly
     Epetra_SerialDenseVector val(Dim());
-    vector<int> lm(Dim());
-    vector<int> lmowner(Dim());
+    std::vector<int> lm(Dim());
+    std::vector<int> lmowner(Dim());
 
     for (int k=0;k<Dim();++k)
     {

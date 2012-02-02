@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_coupling2d.H"
 
-using namespace std;
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -153,7 +152,7 @@ public:
   */
   CoCoupling2dManager(DRT::Discretization& idiscret,
                       int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -165,7 +164,7 @@ public:
   */
   CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
                       int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Destructor
@@ -189,13 +188,13 @@ public:
   \brief Get all coupling master elements
 
   */
-  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
   \brief Get coupling pairs
 
   */
-  virtual vector<RCP<CONTACT::CoCoupling2d> >& Coupling() { return coup_; }
+  virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling2d> >& Coupling() { return coup_; }
 
   /*!
   \brief Evaluate coupling pairs
@@ -212,14 +211,14 @@ protected:
     CoCoupling2dManager operator = (const CoCoupling2dManager& old);
     CoCoupling2dManager(const CoCoupling2dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
-    DRT::Discretization&            idiscret_;  // discretization of the contact interface
-    int                             dim_;       // problem dimension (here: 2D)
-    bool                            quad_;      // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad      lmtype_;    // type of quadratic LM interpolation and testing
-    MORTAR::MortarElement*          sele_;      // slave element
-    vector<MORTAR::MortarElement*>  mele_;      // master elements
-    vector<RCP<CoCoupling2d> >      coup_;      // coupling pairs
+    const INPAR::MORTAR::ShapeFcn             shapefcn_;  // employed type of shape function set
+    DRT::Discretization&                      idiscret_;  // discretization of the contact interface
+    int                                       dim_;       // problem dimension (here: 2D)
+    bool                                      quad_;      // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad                lmtype_;    // type of quadratic LM interpolation and testing
+    MORTAR::MortarElement*                    sele_;      // slave element
+    std::vector<MORTAR::MortarElement*>       mele_;      // master elements
+    std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs
 
 }; // class CoCoupling2dManager
 

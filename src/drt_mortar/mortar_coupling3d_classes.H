@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d_classes.H
 
+\brief A class for mortar coupling of ONE slave element and ONE master
+       element of a mortar interface in 3D (definition of sub-classes).
+
 <pre>
 -------------------------------------------------------------------------
                         BACI Contact library
@@ -41,7 +44,6 @@ Maintainer: Alexander Popp
 
 #include "mortar_element.H"
 
-using namespace std;
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -88,7 +90,7 @@ public:
              const DRT::Element::DiscretizationType& shape,
              const int numnode,
              const int* nodeids,
-             vector<DRT::Node*> nodes,
+             std::vector<DRT::Node*> nodes,
              const bool isslave);
 
   /*!
@@ -135,8 +137,8 @@ public:
   \brief Affine map of IntElement coordinate derivatives to parent element
 
   */
-  virtual bool MapToParent(const vector<map<int,double> >& dxi,
-                             vector<map<int,double> >& dparxi);
+  virtual bool MapToParent(const std::vector<std::map<int,double> >& dxi,
+                           std::vector<std::map<int,double> >& dparxi);
 
 protected:
 
@@ -144,9 +146,9 @@ protected:
   IntElement operator = (const IntElement& old);
   IntElement(const IntElement& old);
 
-  int                  lid_;        // local IntElement id
-  vector<DRT::Node*>   quadnode_;   // explicit node pointers
-  DRT::Element::DiscretizationType   parshape_;   // shape of parent element
+  int                               lid_;        // local IntElement id
+  std::vector<DRT::Node*>           quadnode_;   // explicit node pointers
+  DRT::Element::DiscretizationType  parshape_;   // shape of parent element
 
 }; //class IntElement
 
@@ -180,10 +182,10 @@ public:
   IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
           double* auxn, const DRT::Element::DiscretizationType& shape,
           bool auxplane,
-          vector<map<int,double> >& linv1,
-          vector<map<int,double> >& linv2,
-          vector<map<int,double> >& linv3,
-          vector<map<int,double> >& linauxn);
+          std::vector<std::map<int,double> >& linv1,
+          std::vector<std::map<int,double> >& linv2,
+          std::vector<std::map<int,double> >& linv3,
+          std::vector<std::map<int,double> >& linauxn);
 
   /*!
   \brief Destructor
@@ -250,7 +252,7 @@ public:
   is addressed by an int-variable and checked internally.
 
   */
-  virtual vector<map<int,double> >& GetDerivVertex(int i)
+  virtual std::vector<std::map<int,double> >& GetDerivVertex(int i)
   {
     if (i<0 || i>2) dserror("ERROR: IntCell has 3 vertex linearizations only!");
     return linvertex_[i];
@@ -260,7 +262,7 @@ public:
   \brief Return the 'DerivAuxn' map (vector) of this intcell
 
   */
-  virtual vector<map<int,double> >& GetDerivAuxn() { return linauxn_; }
+  virtual std::vector<std::map<int,double> >& GetDerivAuxn() { return linauxn_; }
 
   //@}
 
@@ -300,8 +302,8 @@ public:
          vertices, which themselves have to be linearized later, of course!
          Two versions for (a) slave parameter space (b) AuxPlane case.
   */
-  virtual void DerivJacobian(double* xi, vector<double>& derivjac);
-  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
+  virtual void DerivJacobian(double* xi, std::vector<double>& derivjac);
+  virtual void DerivJacobian(double* xi, std::map<int,double>& derivjac);
 
   //@}
 
@@ -317,10 +319,10 @@ protected:
   Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
   double                     auxn_[3];         // normal of auxiliary plane (3D)
 
-  bool                               auxplane_;  // flag indicating coupling strategy (true = aux. plane)
-  DRT::Element::DiscretizationType   shape_;     // shape of this element (always tri3)
-  vector<vector<map<int,double> > >  linvertex_; // derivatives of the 3 vertices
-  vector<map<int,double> >           linauxn_;   // derivatives of auxiliary plane normal
+  bool                                              auxplane_;  // flag indicating coupling strategy (true = auxplane)
+  DRT::Element::DiscretizationType                  shape_;     // shape of this element (always tri3)
+  std::vector<std::vector<std::map<int,double> > >  linvertex_; // derivatives of the 3 vertices
+  std::vector<std::map<int,double> >                linauxn_;   // derivatives of auxiliary plane normal
 
 }; // class IntCell
 
@@ -361,8 +363,8 @@ public:
   performed in parallel by individual processes.
 
   */
-  Vertex(vector<double> coord, Vertex::vType type,
-         vector<int> nodeids, Vertex* next, Vertex* prev,
+  Vertex(std::vector<double> coord, Vertex::vType type,
+         std::vector<int> nodeids, Vertex* next, Vertex* prev,
          bool intersect, bool entryexit, Vertex* neighbor,
          double alpha);
 
@@ -386,7 +388,7 @@ public:
   \brief Return vector of vertex coordinates (length 3)
 
   */
-  virtual vector<double>& Coord() {return coord_; }
+  virtual std::vector<double>& Coord() {return coord_; }
 
   /*!
   \brief Return vertex type (slave, projmaster or lineclip)
@@ -467,7 +469,7 @@ public:
   corresponding slave and master lines which intersect!
 
   */
-  virtual vector<int>& Nodeids()
+  virtual std::vector<int>& Nodeids()
   { //if(type_==Vertex::slave && nodeids_.size()!=1) dserror("Error: Vertex Ids");
     //if(type_==Vertex::projmaster && nodeids_.size()!=1) dserror("Error: Vertex Ids");
     //if(type_==Vertex::lineclip && nodeids_.size()!=4) dserror("Error: Vertex Ids");
@@ -478,15 +480,15 @@ public:
 
 protected:
 
-  vector<double>   coord_;        // vertex coordinates (length 3)
-  Vertex::vType    type_;         // vertex type (slave,projmaster,lineclip)
-  vector<int>      nodeids_;      // relevant ids (1 if slave or master, 4 if lineclip)
-  Vertex*          next_;         // pointer to next vertex on polygon
-  Vertex*          prev_;         // pointer to previous vertex on polygon
-  bool             intersect_;    // if true, this is an intersection vertex
-  bool             entryexit_;    // if true, this is an entry vertex
-  Vertex*          neighbor_;     // pointer to neighbor vertex on other polygon
-  double           alpha_;        // intersection parameter
+  std::vector<double>  coord_;        // vertex coordinates (length 3)
+  Vertex::vType        type_;         // vertex type (slave,projmaster,lineclip)
+  std::vector<int>     nodeids_;      // relevant ids (1 if slave or master, 4 if lineclip)
+  Vertex*              next_;         // pointer to next vertex on polygon
+  Vertex*              prev_;         // pointer to previous vertex on polygon
+  bool                 intersect_;    // if true, this is an intersection vertex
+  bool                 entryexit_;    // if true, this is an entry vertex
+  Vertex*              neighbor_;     // pointer to neighbor vertex on other polygon
+  double               alpha_;        // intersection parameter
 
 }; // class Vertex
 

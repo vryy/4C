@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mortar_analytical.H
+\file mortar_analytical.cpp
 \brief A set of analytical solutions for convergence analysis of mortar methods
 
 <pre>
@@ -333,11 +333,11 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     derivsphere(2,2) =  0.0;
     derivanalyt.MultiplyNN(derivsphere,Jinv);
 
-    //cout << "\nA: " << A << " B: " << B << " u: " << usphere(0,0) << endl;
-    //cout << "x: " << pos(0,0) << " y: " << pos(1,0) << " z: " << pos(2,0) << endl;
-    //cout << "r: " << r << " phi: " << phi*180/M_PI << "° theta: " << theta*180/M_PI << "°" << endl;
-    //cout << "u: " << usphere(0,0) << " v: " << usphere(1,0) << "w: " << usphere(2,0) << endl;
-    //cout << trafo << endl << endl;
+    //std::cout << "\nA: " << A << " B: " << B << " u: " << usphere(0,0) << endl;
+    //std::cout << "x: " << pos(0,0) << " y: " << pos(1,0) << " z: " << pos(2,0) << endl;
+    //std::cout << "r: " << r << " phi: " << phi*180/M_PI << "° theta: " << theta*180/M_PI << "°" << endl;
+    //std::cout << "u: " << usphere(0,0) << " v: " << usphere(1,0) << "w: " << usphere(2,0) << endl;
+    //std::cout << trafo << endl << endl;
   }
 
   //----------------------------------------------------------------------

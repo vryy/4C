@@ -39,12 +39,8 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_NODE_H
 #define MORTAR_NODE_H
 
-
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-
-using namespace std;
-using namespace Teuchos;
 
 
 /*!
@@ -62,7 +58,7 @@ public:
 
   static MortarNodeType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -115,7 +111,8 @@ public:
   class exists.
 
   */
-  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
+  virtual void Unpack(std::vector<char>::size_type& position,
+                      const std::vector<char>& data);
 
   //@}
 
@@ -144,17 +141,17 @@ public:
   /*!
   \brief Return the 'D' map (vector) of this node
   */
-  virtual vector<map<int,double> >& GetD() { return drows_; }
+  virtual std::vector<std::map<int,double> >& GetD() { return drows_; }
 
   /*!
   \brief Return the 'M' map (vector) of this node
   */
-  virtual vector<map<int,double> >& GetM() { return mrows_; }
+  virtual std::vector<std::map<int,double> >& GetM() { return mrows_; }
 
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
-  virtual vector<map<int,double> >& GetMmod() { return mmodrows_; }
+  virtual std::vector<std::map<int,double> >& GetMmod() { return mmodrows_; }
 
   //@}
 
@@ -169,9 +166,9 @@ protected:
   double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
   double          lmuzawa_[3];     // Uzawa Lagrange multiplier value (last Uzawa step k)
 
-  vector<map<int,double> >      drows_;      // nodal rows of D matrix
-  vector<map<int,double> >      mrows_;      // nodal rows of M matrix
-  vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
+  std::vector<std::map<int,double> >      drows_;      // nodal rows of D matrix
+  std::vector<std::map<int,double> >      mrows_;      // nodal rows of M matrix
+  std::vector<std::map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
 
 }; // class MortarNodeDataContainer
 
@@ -210,7 +207,7 @@ public:
 
   */
   MortarNode(int id, const double* coords, const int owner,
-             const int numdof, const vector<int>& dofs, const bool isslave);
+             const int numdof, const std::vector<int>& dofs, const bool isslave);
 
   /*!
   \brief Copy Constructor
@@ -255,7 +252,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -428,9 +425,9 @@ public:
   \param mindist (out):       Distance to closest node
 
   */
-  virtual MORTAR::MortarNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
-                                          const RCP<Epetra_Map> nodesearchmap,
-                                          double& mindist);
+  virtual MORTAR::MortarNode* FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
+                                              const Teuchos::RCP<Epetra_Map> nodesearchmap,
+                                              double& mindist);
 
   /*!
   \brief Check if mesh re-initialization for this node was feasible
@@ -461,7 +458,7 @@ public:
   \brief Resets the data container of the node
 
   With this function, the container with contact specific quantities/information
-  is deleted / reset to null pointer
+  is deleted / reset to Teuchos::null pointer
 
   */
   virtual void ResetDataContainer();
@@ -471,18 +468,18 @@ public:
 
 protected:
 
-  bool            isslave_;        // true if cnode is on slave side of contact problem
-  bool            istiedslave_;    // true if cnode is on slave side and actually tied
-  bool            isonbound_;      // true if cnode is on slave side boundary
-  bool            isdbc_;          // true if cnode has D.B.C.applied to at least one dof
-  int             numdof_;         // number of degrees of freedom (length of dofs_)
-  vector<int>     dofs_;           // degrees of freedom of this node
-  double          xspatial_[3];    // current configuration
-  double          uold_[3];        // old displacement (last converged state)
-  bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
-  bool            hassegment_;     // true if some integration segment / cell attached (slave nodes only)
+  bool              isslave_;        // true if cnode is on slave side of contact problem
+  bool              istiedslave_;    // true if cnode is on slave side and actually tied
+  bool              isonbound_;      // true if cnode is on slave side boundary
+  bool              isdbc_;          // true if cnode has D.B.C.applied to at least one dof
+  int               numdof_;         // number of degrees of freedom (length of dofs_)
+  std::vector<int>  dofs_;           // degrees of freedom of this node
+  double            xspatial_[3];    // current configuration
+  double            uold_[3];        // old displacement (last converged state)
+  bool              hasproj_;        // true if feasible projection within search set (slave nodes only)
+  bool              hassegment_;     // true if some integration segment / cell attached (slave nodes only)
 
-  RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
+  Teuchos::RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
 
 }; // class MortarNode
 } // namespace MORTAR

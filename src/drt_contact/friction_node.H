@@ -41,8 +41,6 @@ Maintainer: Markus Gitterle
 
 #include "contact_node.H"
 
-using namespace std;
-using namespace Teuchos;
 
 /*!
 \brief CONTACT: namespace of the baci contact and meshtying algorithms
@@ -59,7 +57,7 @@ public:
 
   static FriNodeType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -112,7 +110,8 @@ public:
   class exists.
 
   */
-  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
+  virtual void Unpack(std::vector<char>::size_type& position,
+                      const std::vector<char>& data);
 
   //@}
 
@@ -136,27 +135,27 @@ public:
   /*!
   \brief Return the old 'D' map (vector) of this node (last converged state)
   */
-  virtual inline vector<map<int,double> >& GetDOld() { return drowsold_; }
+  virtual inline std::vector<std::map<int,double> >& GetDOld() { return drowsold_; }
 
   /*!
   \brief Return the old 'M' map (vector) of this node (last converged state)
   */
-  virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
+  virtual inline std::vector<std::map<int,double> >& GetMOld() { return mrowsold_; }
 
   /*!
   \brief Return the map with according master nodes
   */
-  virtual inline set<int>& GetSNodes() { return snodes_; }
+  virtual inline std::set<int>& GetSNodes() { return snodes_; }
 
   /*!
   \brief Return the map with according master nodes
   */
-  virtual inline set<int>& GetMNodes() { return mnodes_; }
+  virtual inline std::set<int>& GetMNodes() { return mnodes_; }
 
   /*!
   \brief Return the old map with according master nodes
   */
-  virtual inline set<int>& GetMNodesOld() { return mnodesold_; }
+  virtual inline std::set<int>& GetMNodesOld() { return mnodesold_; }
 
    /*!
   \brief Return the 'DerivJump' map (vector) of this node
@@ -166,7 +165,7 @@ public:
   A vector is used because the jump itself is a vector (2 or 3 components).
 
   */
-  virtual inline vector<map<int,double> >& GetDerivJump() { return derivjump_; }
+  virtual inline std::vector<std::map<int,double> >& GetDerivJump() { return derivjump_; }
 
   /*!
   \brief Return current penalty traction (length 3)
@@ -190,17 +189,17 @@ protected:
   bool            activeold_;   // true if cnode was in contact (last converged state n)
   bool            slip_;        // true if cnode slips (contact force reaches friction bound)
 
-  vector<map<int,double> >      drowsold_;     // nodal rows of old D matrix
-  vector<map<int,double> >      mrowsold_;     // nodal rows of old M matrix
-  set<int>                      snodes_;       // nodal set of according slave nodes
-  set<int>                      mnodes_;       // nodal set of according master nodes
-  set<int>                      mnodesold_;    // nodal set of old according masternodes
+  std::vector<std::map<int,double> > drowsold_;     // nodal rows of old D matrix
+  std::vector<std::map<int,double> > mrowsold_;     // nodal rows of old M matrix
+  std::set<int>                      snodes_;       // nodal set of according slave nodes
+  std::set<int>                      mnodes_;       // nodal set of according master nodes
+  std::set<int>                      mnodesold_;    // nodal set of old according masternodes
 
-  vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
+  std::vector<std::map<int,double> > derivjump_;    // directional derivative of nodal weighted jump vector
 
   // penalty related quantities
-  double                        traction_[3];     // traction vector of current time step
-  double                        tractionold_[3];  // traction vector of previous time step
+  double                             traction_[3];  // traction vector of current time step
+  double                          tractionold_[3];  // traction vector of previous time step
 
 }; // class FriNodeDataContainer
 
@@ -238,12 +237,12 @@ public:
   /*!
   \brief Return the old 'A' map (vector) of this node (last converged state)
   */
-  virtual inline vector<map<int,double> >& GetA() { return arows_; }
+  virtual inline std::vector<std::map<int,double> >& GetA() { return arows_; }
   
   /*!
   \brief Return the map with according slave nodes
   */
-  virtual inline set<int>& GetANodes() { return anodes_; }
+  virtual inline std::set<int>& GetANodes() { return anodes_; }
 
   /*!
   \brief Return the weighted wear per node (length 1)
@@ -264,12 +263,12 @@ protected:
   FriNodeDataContainerPlus(const FriNodeDataContainerPlus& old);
 
   // tsi with contact related quantities
-  vector<map<int,double> >      arows_;        // nodal rows of matrix A
-  set<int>                      anodes_;       // nodal set of according slave nodes
+  std::vector<std::map<int,double> > arows_;        // nodal rows of matrix A
+  std::set<int>                      anodes_;       // nodal set of according slave nodes
   
   // wear related quantities
-  double                        wear_;            // weighted wear
-  double                        deltawear_;       // deltawear 
+  double                             wear_;         // weighted wear
+  double                             deltawear_;    // deltawear
   
 }; // class FriNodeDataContainerPlus
 
@@ -308,7 +307,7 @@ public:
 
   */
   FriNode(int id, const double* coords, const int owner,
-         const int numdof, const vector<int>& dofs, const bool isslave,
+         const int numdof, const std::vector<int>& dofs, const bool isslave,
          const bool initactive);
 
   /*!
@@ -354,7 +353,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -373,12 +372,12 @@ public:
   /*!
   \brief Return the 'B' map (vector) of this node 
     */
-  virtual inline vector<map<int,double> >& GetB() { return brows_; }
+  virtual inline std::vector<std::map<int,double> >& GetB() { return brows_; }
   
   /*!
   \brief Return the map with according master nodes
   */
-  virtual inline set<int>& GetBNodes() { return bnodes_; }
+  virtual inline std::set<int>& GetBNodes() { return bnodes_; }
 
   /*!
   \brief Return of data container of this node
@@ -501,7 +500,7 @@ public:
   \brief Resets the data container of the node
 
   With this function, the container with contact specific quantities/information
-  is deleted / reset to null pointer
+  is deleted / reset to Teuchos::null pointer
 
   */
   virtual void ResetDataContainer();
@@ -511,12 +510,12 @@ public:
 protected:
   
   // thermo contact related quantities
-  double                        mechdiss_;      // mechanical dissipation 
-  vector<map<int,double> >      brows_;        // nodal rows of matrix A
-  set<int>                      bnodes_;       // nodal set of according slave nodes
+  double                              mechdiss_;     // mechanical dissipation
+  std::vector<std::map<int,double> >  brows_;        // nodal rows of matrix A
+  std::set<int>                       bnodes_;       // nodal set of according slave nodes
 
-  RCP<CONTACT::FriNodeDataContainer>     fridata_;       // additional information of proc's friction nodes
-  RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_;   // additional information to proc's data container
+  Teuchos::RCP<CONTACT::FriNodeDataContainer>     fridata_;       // additional information of proc's friction nodes
+  Teuchos::RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_;   // additional information to proc's data container
 
 }; // class FriNode
 

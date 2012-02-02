@@ -44,8 +44,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace IO
@@ -127,7 +125,7 @@ public:
   // integrator), these functions need to be defined purely virtual here.
 
   virtual void PostprocessTractions(IO::DiscretizationWriter& output) = 0;
-  virtual void ReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero) = 0;
+  virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
   virtual void WriteRestart(IO::DiscretizationWriter& output) = 0;
   
   //@}
@@ -137,8 +135,8 @@ protected:
   // don't want cctor (= operator impossible anyway for abstract class)
   ManagerBase(const ManagerBase& old);
 
-  RCP<Epetra_Comm>               comm_;     // communicator
-  RCP<MORTAR::StrategyBase>      strategy_; // strategy object
+  Teuchos::RCP<Epetra_Comm>               comm_;     // communicator
+  Teuchos::RCP<MORTAR::StrategyBase>      strategy_; // strategy object
 
 }; // class ManagerBase
 } // namespace MORTAR

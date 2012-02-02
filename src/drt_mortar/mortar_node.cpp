@@ -99,7 +99,8 @@ void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
+void MORTAR::MortarNodeDataContainer::Unpack(std::vector<char>::size_type& position,
+                                             const std::vector<char>& data)
 {
   // n_
   DRT::ParObject::ExtractfromPack(position,data,n_,3*sizeof(double));
@@ -118,7 +119,7 @@ void MORTAR::MortarNodeDataContainer::Unpack(vector<char>::size_type& position, 
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner,
-                const int numdof, const vector<int>& dofs, const bool isslave) :
+          const int numdof, const std::vector<int>& dofs, const bool isslave) :
 DRT::Node(id,coords,owner),
 isslave_(isslave),
 istiedslave_(isslave),
@@ -249,15 +250,15 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Unpack(const vector<char>& data)
+void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class DRT::Node
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Node::Unpack(basedata);
   // isslave_
@@ -318,7 +319,7 @@ void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = MoData().GetD()[row];
+  std::map<int,double>& dmap = MoData().GetD()[row];
   dmap[col] += val;
 
   return;
@@ -344,7 +345,7 @@ void MORTAR::MortarNode::AddMValue(int& row, int& col, double& val)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmap = MoData().GetM()[row];
+  std::map<int,double>& mmap = MoData().GetM()[row];
   mmap[col] += val;
 
   return;
@@ -370,7 +371,7 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
     dserror("ERROR: AddMmodValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmodmap = MoData().GetMmod()[row];
+  std::map<int,double>& mmodmap = MoData().GetMmod()[row];
   mmodmap[col] += val;
 
   return;
@@ -383,7 +384,7 @@ void MORTAR::MortarNode::InitializeDataContainer()
 {
   // only initialize if not yet done
   if (modata_==Teuchos::null)
-    modata_=rcp(new MORTAR::MortarNodeDataContainer());
+    modata_=Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
 
   return;
 }
@@ -393,7 +394,7 @@ void MORTAR::MortarNode::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::ResetDataContainer()
 {
-  // reset to null
+  // reset to Teuchos::null
   modata_  = Teuchos::null;
 
   return;
@@ -447,8 +448,8 @@ void MORTAR::MortarNode::BuildAveragedNormal()
 /*----------------------------------------------------------------------*
  |  Find closest node from given node set                     popp 01/08|
  *----------------------------------------------------------------------*/
-MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
-                                                        const RCP<Epetra_Map> nodesearchmap, double& mindist)
+MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
+                                                        const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist)
 {
   MortarNode* closestnode = NULL;
 
@@ -507,11 +508,11 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
     if (relocation > limit * minedgesize)
     {
       // print information to screen
-      cout << "\n*****************WARNING***********************" << endl;
-      cout << "Checking distortion for CNode:     " << Id() << endl;
-      cout << "Relocation distance:               " << relocation << endl;
-      cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit*minedgesize << endl;
-      cout << "*****************WARNING***********************" << endl;
+      std::cout << "\n*****************WARNING***********************" << endl;
+      std::cout << "Checking distortion for CNode:     " << Id() << endl;
+      std::cout << "Relocation distance:               " << relocation << endl;
+      std::cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit*minedgesize << endl;
+      std::cout << "*****************WARNING***********************" << endl;
 
       // set return parameter and stop
       ok = false;

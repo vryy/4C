@@ -53,10 +53,11 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap,
+CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(Teuchos::RCP<Epetra_Map> problemrowmap,
                                               Teuchos::ParameterList params,
-                                              vector<RCP<CONTACT::CoInterface> > interface,
-                                              int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+                                              std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+                                              int dim, Teuchos::RCP<Epetra_Comm> comm,
+                                              double alphaf, int maxdof) :
 CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf,maxdof)
 {
   // initialize constraint norm and initial penalty
@@ -69,7 +70,7 @@ CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf,maxdof)
 /*----------------------------------------------------------------------*
  |  save the gap-scaling kappa from reference config          popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
+void CONTACT::CoPenaltyStrategy::SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis)
 {
   // initialize the displacement field
   SetState("displacement", dis);
@@ -116,7 +117,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis
       // (this removes the scaling introduced by weighting the gap!!!)
       cnode->CoData().Kappa() = 1.0/gap;
 
-      //cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << endl;
+      //std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << endl;
     }
   }
 }
@@ -144,7 +145,7 @@ void CONTACT::CoPenaltyStrategy::Initialize()
   z_ = LINALG::CreateVector(*gsdofrowmap_, true);
   
   // (re)setup global matrix containing lagrange multiplier derivatives
-  linzmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
 
   return;
 }
@@ -152,8 +153,8 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate contact and create linear system                  popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
-                                                 RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                                                 Teuchos::RCP<Epetra_Vector>& feff)
 {
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
@@ -204,14 +205,14 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     isincontact_=false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
-    cout << "ACTIVE SET HAS CHANGED..." << endl;
+    std::cout << "ACTIVE SET HAS CHANGED..." << endl;
 
   // (re)setup active global Epetra_Maps
   // the map of global active nodes is needed for the penalty case, too.
   // this is due to the fact that we want to monitor the constraint norm
   // of the active nodes
-  gactivenodes_ = null;
-  gslipnodes_ = null;
+  gactivenodes_ = Teuchos::null;
+  gslipnodes_ = Teuchos::null;
   
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -256,8 +257,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   if (Dualquadslave3d())
   {
     // modify lindmatrix_ and dmatrix_
-    RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
-    RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
     lindmatrix_ = temp1;
      dmatrix_    = temp2;
   }
@@ -273,14 +274,14 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     {
       if(ftype==INPAR::CONTACT::friction_coulomb )
       {
-        cout << "LINZMATRIX" << *linzmatrix_ << endl;
+        std::cout << "LINZMATRIX" << *linzmatrix_ << endl;
         interface_[i]->FDCheckPenaltyTracFric();
       }
       else if (ftype==INPAR::CONTACT::friction_none)
       {
-        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        std::cout << "-- CONTACTFDDERIVZ --------------------" << endl;
         interface_[i]->FDCheckPenaltyTracNor();
-        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        std::cout << "-- CONTACTFDDERIVZ --------------------" << endl;
       }
       else
         dserror("Error: FD Check for this friction type not implemented!");
@@ -312,8 +313,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
   // multiply Mortar matrices D and M with LinZ
-  RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
-  RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
 
   // transform if necessary
   if (ParRedist())
@@ -335,9 +336,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     // we initialize fcmdold with dold-rowmap instead of gsdofrowmap
     // (this way, possible self contact is automatically included)
 
-    RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
+    Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
     dold_->Multiply(true, *zold_, *fcmdold);
-    RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+    Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmdold, *fcmdoldtemp);
     feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
   }
@@ -346,25 +347,25 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     // we initialize fcmmold with mold-domainmap instead of gmdofrowmap
     // (this way, possible self contact is automatically included)
 
-    RCP<Epetra_Vector> fcmmold = rcp(new Epetra_Vector(mold_->DomainMap()));
+    Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
     mold_->Multiply(true, *zold_, *fcmmold);
-    RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+    Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmmold, *fcmmoldtemp);
     feff->Update(alphaf_, *fcmmoldtemp, 1.0);
   }
 
   {
-    RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(true, *z_, *fcmd);
-    RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
+    Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmd, *fcmdtemp);
     feff->Update(-(1-alphaf_), *fcmdtemp, 1.0);
   }
 
   {
-    RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
     mmatrix_->Multiply(true, *z_, *fcmm);
-    RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap_));
+    Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmm, *fcmmtemp);
     feff->Update(1-alphaf_, *fcmmtemp, 1.0);
   }
@@ -372,9 +373,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 #ifdef CONTACTFDGAP
    // FD check of weighted gap g derivatives (non-penetr. condition)
 
-  cout << "-- CONTACTFDGAP -----------------------------" << endl;
+  std::cout << "-- CONTACTFDGAP -----------------------------" << endl;
   interface_[0]->FDCheckGapDeriv();
-  cout << "-- CONTACTFDGAP -----------------------------" << endl;
+  std::cout << "-- CONTACTFDGAP -----------------------------" << endl;
 
 #endif // #ifdef CONTACTFDGAP
 
@@ -384,8 +385,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 /*----------------------------------------------------------------------*
  | evaluate frictional contact and create linear system gitterle   10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
-                                                  RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                                                  Teuchos::RCP<Epetra_Vector>& feff)
 {
   // this is almost the same as in the frictionless contact
   // whereas we chose the EvaluateContact routine with
@@ -434,8 +435,8 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
 /*----------------------------------------------------------------------*
  | intialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kteff,
-                                                 RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                                                 Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
@@ -449,8 +450,8 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
 
   // multiply Mortar matrices D and M with LinZ
-  RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false,false,false,true);
-  RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
 
   // transform if necessary
   if (ParRedist())
@@ -466,34 +467,34 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // remove old force terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
 
-  RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
+  Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
   dold_->Multiply(true, *zold_, *fcmdold);
-  RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmdold, *fcmdoldtemp);
   feff->Update(alphaf_, *fcmdoldtemp, 1.0);
 
-  RCP<Epetra_Vector> fcmmold = rcp(new Epetra_Vector(mold_->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
   mold_->Multiply(true, *zold_, *fcmmold);
-  RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmmold, *fcmmoldtemp);
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
 
-  RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true, *z_, *fcmd);
-  RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmd, *fcmdtemp);
   feff->Update(1-alphaf_, *fcmdtemp, 1.0);
 
-  RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
   mmatrix_->Multiply(true, *z_, *fcmm);
-  RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmm, *fcmmtemp);
   feff->Update(-(1-alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // reset nodal derivZ values
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -515,7 +516,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   Initialize();
 
   // and finally redo Evaluate()
-  RCP<Epetra_Vector> nullvec = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
   Evaluate(kteff,feff,nullvec);
   
   // complete stiffness matrix
@@ -555,7 +556,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   else
   {
     // export weighted gap vector to gactiveN-map
-    RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
+    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
     if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
 
     // compute constraint norm
@@ -625,15 +626,15 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   // output to screen
   if (Comm().MyPID()==0)
   {
-    cout << "********************************************\n";
-    cout << "Normal Constraint Norm: " << cnorm << "\n";
+    std::cout << "********************************************\n";
+    std::cout << "Normal Constraint Norm: " << cnorm << "\n";
     if (friction_)
-      cout << "Tangential Constraint Norm: " << cnormtan << "\n";
+      std::cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
-      cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+      std::cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
     if (updatepenaltytan == true && friction_)
-     cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
-    cout << "********************************************\n";
+     std::cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
+    std::cout << "********************************************\n";
   }
   
   return;
@@ -648,7 +649,7 @@ void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
   // (note that this is also done after the last Uzawa step of one
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
-  zuzawa_ = rcp(new Epetra_Vector(*z_));
+  zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
   return;

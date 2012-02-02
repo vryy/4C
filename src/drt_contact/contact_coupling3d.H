@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_coupling3d.H"
 
-using namespace std;
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -155,8 +154,8 @@ public:
   slave element paramater space. NOT implemented for AuxPlane case!
 
   */
-  virtual bool VertexLinearization(vector<vector<map<int,double> > >& linvertex,
-                           map<int,double>& projpar, bool printderiv=false);
+  virtual bool VertexLinearization(std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                   std::map<int,double>& projpar, bool printderiv=false);
 
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -165,8 +164,8 @@ public:
   ONLY necessary for for AuxPlane case!
 
   */
-  virtual bool SlaveVertexLinearization(vector<map<int,double> >& currlin,
-                                int sid);
+  virtual bool SlaveVertexLinearization(std::vector<std::map<int,double> >& currlin,
+                                        int sid);
 
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -176,10 +175,10 @@ public:
 
   */
   virtual bool MasterVertexLinearization(MORTAR::Vertex& currv,
-                                 vector<map<int,double> >& currlin,
-                                 int mid, double alpha);
-  virtual bool MasterVertexLinearization(vector<map<int,double> >& currlin,
-                                 int mid);
+                                         std::vector<std::map<int,double> >& currlin,
+                                         int mid, double alpha);
+  virtual bool MasterVertexLinearization(std::vector<std::map<int,double> >& currlin,
+                                         int mid);
 
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -192,16 +191,16 @@ public:
 
   */
   virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                   vector<map<int,double> >& currlin,
-                                   MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-                                   MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                   map<int,double>& projpar);
+                                           std::vector<std::map<int,double> >& currlin,
+                                           MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
+                                           MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
+                                           std::map<int,double>& projpar);
   virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                   vector<map<int,double> >& currlin,
-                                   MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-                                   MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                   vector<vector<map<int,double> > >& linsnodes,
-                                           vector<vector<map<int,double> > >& linmnodes);
+                                           std::vector<std::map<int,double> >& currlin,
+                                           MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
+                                           MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
+                                           std::vector<std::vector<std::map<int,double> > >& linsnodes,
+                                           std::vector<std::vector<std::map<int,double> > >& linmnodes);
 
   /*!
   \brief Linearization of clip vertex coordinates (3D)
@@ -212,8 +211,8 @@ public:
   for AuxPlane case!
 
   */
-  virtual bool CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
-                           vector<map<int,double> >& lincenter);
+  virtual bool CenterLinearization(const std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                   std::vector<std::map<int,double> >& lincenter);
   
   //@}
 
@@ -322,7 +321,7 @@ protected:
 
     MORTAR::IntElement&            sintele_;     // slave sub-integration element
     MORTAR::IntElement&            mintele_;     // slave sub-integration element
-    INPAR::MORTAR::LagMultQuad&  lmtype_;      // type of LM interpolation and testing
+    INPAR::MORTAR::LagMultQuad&    lmtype_;      // type of LM interpolation and testing
 
 }; // class CoCoupling3dQuad
 
@@ -354,7 +353,7 @@ public:
   */
   CoCoupling3dManager(DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
-                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -367,7 +366,7 @@ public:
   CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
                       DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
-                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Destructor
@@ -391,13 +390,13 @@ public:
   \brief Get all coupling master elements
 
   */
-  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
   \brief Get coupling pairs
 
   */
-  virtual vector<RCP<CONTACT::CoCoupling3d> >& Coupling() { return coup_; }
+  virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling3d> >& Coupling() { return coup_; }
 
   /*!
   \brief Get number of integration cells
@@ -419,15 +418,15 @@ protected:
     CoCoupling3dManager operator = (const CoCoupling3dManager& old);
     CoCoupling3dManager(const CoCoupling3dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn   shapefcn_;    // employed type of shape function set
-    DRT::Discretization&            idiscret_;    // discretization of the contact interface
-    int                             dim_;         // problem dimension (here: 3D)
-    bool                            quad_;        // flag indicating coupling type (true = quadratic)
-    bool                            auxplane_;    // flag indicating coupling strategy (true = aux. plane)
-    MORTAR::MortarElement*          sele_;        // slave element
-    vector<MORTAR::MortarElement*>  mele_;        // master elements
-    vector<RCP<CoCoupling3d> >      coup_;        // coupling pairs
-    int                             ncells_;      // total number of integration cells
+    const INPAR::MORTAR::ShapeFcn             shapefcn_;    // employed type of shape function set
+    DRT::Discretization&                      idiscret_;    // discretization of the contact interface
+    int                                       dim_;         // problem dimension (here: 3D)
+    bool                                      quad_;        // flag indicating coupling type (true = quadratic)
+    bool                                      auxplane_;    // flag indicating coupling strategy (true = aux. plane)
+    MORTAR::MortarElement*                    sele_;        // slave element
+    std::vector<MORTAR::MortarElement*>       mele_;        // master elements
+    std::vector<Teuchos::RCP<CoCoupling3d> >  coup_;        // coupling pairs
+    int                                       ncells_;      // total number of integration cells
 
 }; // class CoCoupling3dManager
 }  // namespace CONTACT

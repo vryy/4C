@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-using namespace std;
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms

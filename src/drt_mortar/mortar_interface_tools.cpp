@@ -642,7 +642,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {" << endl;
@@ -675,7 +675,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
           }
-          //cout << endl << "plot streenode level: " << j << "treenode: " << k;
+          //std::cout << endl << "plot streenode level: " << j << "treenode: " << k;
           std::ostringstream currentfilename;
           currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
           binarytree_->Streenodesmap()[j][k]->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -707,7 +707,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfilecontent;
       gmshfilecontent  << "};" ;
@@ -724,7 +724,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  i << ".pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {" << endl;
@@ -813,7 +813,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
       gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << endl;
@@ -871,7 +871,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfile;
       gmshfile  << "};" ;

@@ -63,26 +63,26 @@ MORTAR::ManagerBase(),
 discret_(discret)
 {
   // overwrite base class communicator
-  comm_ = rcp(Discret().Comm().Clone());
+  comm_ = Teuchos::rcp(Discret().Comm().Clone());
 
   // welcome message
 
   // create some local variables (later to be stored in strategy)
-  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
+  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
   if (dim!= 2 && dim!=3) dserror("ERROR: Contact problem must be 2D or 3D");
-  vector<RCP<CONTACT::CoInterface> > interfaces;
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
   if(Comm().MyPID()==0)
   {
-    cout << "Checking contact input parameters...........";
+    std::cout << "Checking contact input parameters...........";
     fflush(stdout);
   }
   ReadAndCheckInput(cparams);
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -92,11 +92,11 @@ discret_(discret)
   // for each group, create a contact interface and store it
   if(Comm().MyPID()==0)
   {
-    cout << "Building contact interface(s)...............";
+    std::cout << "Building contact interface(s)...............";
     fflush(stdout);
   }
 
-  vector<DRT::Condition*> contactconditions(0);
+  std::vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
 
   // there must be more than one contact condition
@@ -105,14 +105,14 @@ discret_(discret)
     dserror("Not enough contact conditions in discretization");
   if ((int)contactconditions.size()==1)
   {
-    const string* side = contactconditions[0]->Get<string>("Side");
+    const std::string* side = contactconditions[0]->Get<std::string>("Side");
     if (*side != "Selfcontact")
       dserror("Not enough contact conditions in discretization");
   }
 
   // find all pairs of matching contact conditions
   // there is a maximum of (conditions / 2) groups
-  vector<int> foundgroups(0);
+  std::vector<int> foundgroups(0);
   int numgroupsfound = 0;
 
   // maximum dof number in discretization
@@ -123,25 +123,25 @@ discret_(discret)
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    vector<DRT::Condition*> currentgroup(0);
+    std::vector<DRT::Condition*> currentgroup(0);
     DRT::Condition* tempcond = NULL;
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const vector<int>* group1v = currentgroup[0]->Get<vector<int> >("contact id");
+    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >("contact id");
     if (!group1v) dserror("Contact Conditions does not have value 'contact id'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
     // only one surface per group is ok for self contact
-    const string* side = contactconditions[i]->Get<string>("Side");
+    const std::string* side = contactconditions[i]->Get<std::string>("Side");
     if (*side == "Selfcontact") foundit = true;
 
     for (int j=0; j<(int)contactconditions.size(); ++j)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const vector<int>* group2v = tempcond->Get<vector<int> >("contact id");
+      const std::vector<int>* group2v = tempcond->Get<std::vector<int> >("contact id");
       if (!group2v) dserror("Contact Conditions does not have value 'contact id'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue; // not in the group
@@ -171,13 +171,13 @@ discret_(discret)
     // find out which sides are Master and Slave
     bool hasslave = false;
     bool hasmaster = false;
-    vector<const string*> sides((int)currentgroup.size());
-    vector<bool> isslave((int)currentgroup.size());
-    vector<bool> isself((int)currentgroup.size());
+    std::vector<const std::string*> sides((int)currentgroup.size());
+    std::vector<bool> isslave((int)currentgroup.size());
+    std::vector<bool> isself((int)currentgroup.size());
 
     for (int j=0;j<(int)sides.size();++j)
     {
-      sides[j] = currentgroup[j]->Get<string>("Side");
+      sides[j] = currentgroup[j]->Get<std::string>("Side");
       if (*sides[j] == "Slave")
       {
         hasslave = true;
@@ -212,12 +212,12 @@ discret_(discret)
     }
 
     // find out which sides are initialized as Active
-    vector<const string*> active((int)currentgroup.size());
-    vector<bool> isactive((int)currentgroup.size());
+    std::vector<const std::string*> active((int)currentgroup.size());
+    std::vector<bool> isactive((int)currentgroup.size());
 
     for (int j=0;j<(int)sides.size();++j)
     {
-      active[j] = currentgroup[j]->Get<string>("Initialization");
+      active[j] = currentgroup[j]->Get<std::string>("Initialization");
       if (*sides[j] == "Slave")
       {
         // slave sides may be initialized as "Active" or as "Inactive"
@@ -249,10 +249,10 @@ discret_(discret)
     // (the only exception is self contact where a redundant slave is needed)
     bool redundant = false;
     if (isself[0]) redundant = true;
-    interfaces.push_back(rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,cparams,isself[0],redundant)));
+    interfaces.push_back(Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,cparams,isself[0],redundant)));
 
     // get it again
-    RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size()-1];
+    Teuchos::RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size()-1];
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
@@ -267,7 +267,7 @@ discret_(discret)
     for (int j=0;j<(int)currentgroup.size();++j)
     {
       // get all nodes and add them
-      const vector<int>* nodeids = currentgroup[j]->Nodes();
+      const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
       for (int k=0; k<(int)(*nodeids).size(); ++k)
       {
@@ -301,7 +301,7 @@ discret_(discret)
         // and found for the second, third, ... time!
         if (ftype != INPAR::CONTACT::friction_none)
         {
-           RCP<CONTACT::FriNode> cnode = rcp(new CONTACT::FriNode(node->Id(),node->X(),
+           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),node->X(),
                                                              node->Owner(),
                                                              Discret().NumDof(node),
                                                              Discret().Dof(node),
@@ -316,7 +316,7 @@ discret_(discret)
         }
         else
         {
-          RCP<CONTACT::CoNode> cnode = rcp(new CONTACT::CoNode(node->Id(),node->X(),
+          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),node->X(),
                                                            node->Owner(),
                                                            Discret().NumDof(node),
                                                            Discret().Dof(node),
@@ -336,7 +336,7 @@ discret_(discret)
     for (int j=0;j<(int)currentgroup.size();++j)
     {
       // get elements from condition j of current group
-      map<int,RCP<DRT::Element> >& currele = currentgroup[j]->Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -351,11 +351,11 @@ discret_(discret)
       Comm().SumAll(&lsize,&gsize,1);
 
 
-      map<int,RCP<DRT::Element> >::iterator fool;
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
       for (fool=currele.begin(); fool != currele.end(); ++fool)
       {
-        RCP<DRT::Element> ele = fool->second;
-        RCP<CONTACT::CoElement> cele = rcp(new CONTACT::CoElement(ele->Id()+ggsize,
+        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(ele->Id()+ggsize,
                                                                 ele->Owner(),
                                                                 ele->Shape(),
                                                                 ele->NumNode(),
@@ -371,27 +371,27 @@ discret_(discret)
     interface->FillComplete(maxdof);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
 
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
   if(Comm().MyPID()==0)
   {
-    cout << "Building contact strategy object............";
+    std::cout << "Building contact strategy object............";
     fflush(stdout);
   }
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << endl;
   //**********************************************************************
 
   // print initial parallel redistribution
@@ -405,8 +405,8 @@ discret_(discret)
   // print parameter list to screen
   if (Comm().MyPID()==0)
   {
-    cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    cout << GetStrategy().Params() << endl;
+    std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
+    std::cout << GetStrategy().Params() << endl;
   }
 
   return;
@@ -510,13 +510,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   // check for self contact
-  vector<DRT::Condition*> coco(0);
+  std::vector<DRT::Condition*> coco(0);
   Discret().GetCondition("Contact",coco);
   bool self = false;
 
   for (int k=0;k<(int)coco.size();++k)
   {
-    const string* side = coco[k]->Get<string>("Side");
+    const std::string* side = coco[k]->Get<std::string>("Side");
     if (*side == "Selfcontact") self = true;
   }
 
@@ -586,13 +586,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // warnings
   // *********************************************************************
   if (input.get<double>("SEARCH_PARAM") == 0.0)
-    cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
+    std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
 
   // store ParameterList in local parameter list
   cparams = input;
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc()==1) cparams.set<string>("PARALLEL_REDIST","None");
+  if (Comm().NumProc()==1) cparams.set<std::string>("PARALLEL_REDIST","None");
 
   return true;
 }
@@ -603,9 +603,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
 {
   // quantities to be written for restart
-  RCP<Epetra_Vector> activetoggle;
-  RCP<Epetra_Vector> sliptoggle;
-  RCP<Epetra_Vector> weightedwear;
+  Teuchos::RCP<Epetra_Vector> activetoggle;
+  Teuchos::RCP<Epetra_Vector> sliptoggle;
+  Teuchos::RCP<Epetra_Vector> weightedwear;
 
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear);
@@ -628,7 +628,7 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
-                                     RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero)
+                                     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // this is contact, thus we need the displacement state for restart
   // let strategy object do all the work
@@ -645,13 +645,13 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // *********************************************************************
   // active contact set and slip set
   // *********************************************************************
-  RCP<Epetra_Vector> activeset = rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+  Teuchos::RCP<Epetra_Vector> activeset = Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
   activeset->PutScalar(1.0);
   if (GetStrategy().Friction())
   {
-    RCP<Epetra_Vector> slipset = rcp(new Epetra_Vector(*GetStrategy().SlipRowNodes()));
+    Teuchos::RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*GetStrategy().SlipRowNodes()));
     slipset->PutScalar(1.0);
-    RCP<Epetra_Vector> slipsetexp = rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+    Teuchos::RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
     LINALG::Export(*slipset, *slipsetexp);
     activeset->Update(1.0,*slipsetexp,1.0);
   }
@@ -665,16 +665,16 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   GetStrategy().OutputStresses();
   
   // problem row map  
-  RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
+  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
 
   // normal direction
-  RCP<Epetra_Vector> normalstresses = GetStrategy().ContactNorStress();
-  RCP<Epetra_Vector> normalstressesexp = rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().ContactNorStress();
+  Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problem));
   LINALG::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
-  RCP<Epetra_Vector> tangentialstressesexp = rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
+  Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problem));
   LINALG::Export(*tangentialstresses, *tangentialstressesexp);
   
   // write to output
@@ -689,16 +689,16 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // in normal and tangential direction
   // *********************************************************************
   // vectors for contact forces
-  RCP<Epetra_Vector> fcslavenor = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
-  RCP<Epetra_Vector> fcslavetan = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
-  RCP<Epetra_Vector> fcmasternor = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
-  RCP<Epetra_Vector> fcmastertan = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> fcslavenor = Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  Teuchos::RCP<Epetra_Vector> fcslavetan = Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  Teuchos::RCP<Epetra_Vector> fcmasternor = Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  Teuchos::RCP<Epetra_Vector> fcmastertan = Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
   
   // vectors with problemrowmap
-  RCP<Epetra_Vector> fcslavenorexp = rcp(new Epetra_Vector(*problem));
-  RCP<Epetra_Vector> fcslavetanexp = rcp(new Epetra_Vector(*problem));
-  RCP<Epetra_Vector> fcmasternorexp = rcp(new Epetra_Vector(*problem));
-  RCP<Epetra_Vector> fcmastertanexp = rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcslavenorexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcslavetanexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcmasternorexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> fcmastertanexp = Teuchos::rcp(new Epetra_Vector(*problem));
 
   // multiplication
   GetStrategy().DMatrix()->Multiply(true, *normalstresses, *fcslavenor);
@@ -715,9 +715,9 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   if (dim == 2)
     dserror("Only working for 3D");
 
-  vector<int>  lnid, gnid;
+  std::vector<int>  lnid, gnid;
 
-  //cout << "MasterNor" << fcmasternor->MyLength() << endl;
+  //std::cout << "MasterNor" << fcmasternor->MyLength() << endl;
 
   for (int i=0; i<fcmasternor->MyLength(); i=i+3)
   {
@@ -730,13 +730,13 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   }
 
   // we want to gather data from on all procs
-  vector<int> allproc(Comm().NumProc());
+  std::vector<int> allproc(Comm().NumProc());
   for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
   LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
   
-  //cout << " size of gnid:" << gnid.size() << endl;
+  //std::cout << " size of gnid:" << gnid.size() << endl;
   
   ////////////////
   ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
@@ -744,19 +744,19 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   MORTAR::StrategyBase& myStrategy = GetStrategy();
   CoAbstractStrategy& myContactStrategy = static_cast<CoAbstractStrategy&>(myStrategy);
   
-  vector<RCP<CONTACT::CoInterface> > myInterface = myContactStrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > myInterface = myContactStrategy.ContactInterfaces();
   
   //check interface size - just doing this now for a single interface
   
   if (myInterface.size() != 1)
     dserror("Interface size should be 1");
   
-  cout << "OUTPUT OF MASTER NODE IN CONTACT" << endl;
-  //cout << "Master_node_in_contact x_dis y_dis z_dis" << endl;
+  std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << endl;
+  //std::cout << "Master_node_in_contact x_dis y_dis z_dis" << endl;
   for (int i=0; i<(int)gnid.size(); ++i)
   {
       int myGid = gnid[i];
-      cout << gnid[i] << endl; // << " " << myUx << " " << myUy << " " << myUz << endl;
+      std::cout << gnid[i] << endl; // << " " << myUx << " " << myUy << " " << myUz << endl;
   }
   
 #endif  //MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact 
@@ -786,8 +786,8 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     GetStrategy().OutputWear();
 
     // write output
-    RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
-    RCP<Epetra_Vector> wearoutputexp = rcp(new Epetra_Vector(*problem));
+    Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
+    Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problem));
     LINALG::Export(*wearoutput, *wearoutputexp);
     output.WriteVector("wear",wearoutputexp);
   }

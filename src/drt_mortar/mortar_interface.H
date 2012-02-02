@@ -1,6 +1,8 @@
 /*!----------------------------------------------------------------------
 \file mortar_interface.H
 
+\brief One mortar coupling interface
+
 <pre>
 -------------------------------------------------------------------------
                         BACI Contact library
@@ -48,8 +50,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -142,7 +142,7 @@ public:
   \brief Get global -> local processor map
 
   */
-  virtual map<int,int>& Procmap(){ return procmap_;}
+  virtual std::map<int,int>& Procmap(){ return procmap_;}
 
   //! @name Access methods
 
@@ -202,7 +202,7 @@ public:
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> OldColNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> OldColNodes() const
   {
     if (Filled()) return oldnodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -213,7 +213,7 @@ public:
   \brief Get column map of all interface elements (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> OldColElements() const
+  virtual const Teuchos::RCP<Epetra_Map> OldColElements() const
   {
     if (Filled()) return oldelecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -224,7 +224,7 @@ public:
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveRowNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() const
   {
     if (Filled()) return snoderowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -235,7 +235,7 @@ public:
   \brief Get row map of master nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterRowNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterRowNodes() const
   {
     if (Filled()) return mnoderowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -246,7 +246,7 @@ public:
   \brief Get column map of slave nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveColNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveColNodes() const
   {
     if (Filled()) return snodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -257,7 +257,7 @@ public:
   \brief Get column map of master nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterColNodes() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterColNodes() const
   {
     if (Filled()) return mnodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -268,7 +268,7 @@ public:
   \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveRowNodesBound() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodesBound() const
   {
     if (Filled()) return snoderowmapbound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -279,7 +279,7 @@ public:
   \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveColNodesBound() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveColNodesBound() const
   {
     if (Filled()) return snodecolmapbound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -290,7 +290,7 @@ public:
   \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterRowNodesNoBound() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterRowNodesNoBound() const
   {
     if (Filled()) return mnoderowmapnobound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -301,7 +301,7 @@ public:
   \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterColNodesNoBound() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterColNodesNoBound() const
   {
     if (Filled()) return mnodecolmapnobound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -312,7 +312,7 @@ public:
   \brief Get row map of slave elements (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveRowElements() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveRowElements() const
   {
     if (Filled()) return selerowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -323,7 +323,7 @@ public:
   \brief Get row map of master elements (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterRowElements() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterRowElements() const
   {
     if (Filled()) return melerowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -334,7 +334,7 @@ public:
   \brief Get column map of slave elements (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveColElements() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveColElements() const
   {
     if (Filled()) return selecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -345,7 +345,7 @@ public:
   \brief Get column map of master elements (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterColElements() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterColElements() const
   {
     if (Filled()) return melecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -356,7 +356,7 @@ public:
   \brief Get row map of slave dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveRowDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveRowDofs() const
   {
     if (Filled()) return sdofrowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -367,7 +367,7 @@ public:
   \brief Get column map of slave dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> SlaveColDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> SlaveColDofs() const
   {
     if (Filled()) return sdofcolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -378,7 +378,7 @@ public:
   \brief Get row map of master dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterRowDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterRowDofs() const
   {
     if (Filled()) return mdofrowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -389,7 +389,7 @@ public:
   \brief Get column map of master dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> MasterColDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> MasterColDofs() const
   {
     if (Filled()) return mdofcolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -400,7 +400,7 @@ public:
   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
   */
-  virtual const RCP<Epetra_Map> LagMultDofs() const
+  virtual const Teuchos::RCP<Epetra_Map> LagMultDofs() const
   {
     if (Filled()) return lmdofmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -429,7 +429,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode);
+  virtual void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
 
   /*!
   \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
@@ -439,7 +439,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddMortarElement(RCP<MORTAR::MortarElement> mrtrele);
+  virtual void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
 
   /*!
   \brief Finalize construction of mortar interface
@@ -546,7 +546,7 @@ public:
 
   */
   virtual void SetState(const string& statename,
-                        const RCP<Epetra_Vector> vec);
+                        const Teuchos::RCP<Epetra_Vector> vec);
 
   /*!
   \brief Set element areas
@@ -614,14 +614,14 @@ public:
   
   */
   virtual bool IntegrateCoupling(MORTAR::MortarElement* sele,
-                                 vector<MORTAR::MortarElement*> mele);
+                                 std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Split MortarElements into IntElements for 3D quadratic coupling
 
   */
   virtual bool SplitIntElements(MORTAR::MortarElement& ele,
-                                vector<RCP<MORTAR::IntElement> >& auxele);
+                                std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
   
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
@@ -656,7 +656,7 @@ public:
   */
   virtual void AssembleTrafo(LINALG::SparseMatrix& trafo,
                              LINALG::SparseMatrix& invtrafo,
-                             set<int>& donebefore);
+                             std::set<int>& donebefore);
 
   /*!
   \brief Detect actual meshtying zone (node by node)
@@ -678,7 +678,7 @@ public:
   \brief Print shape function type (enum)
 
   */
-  void PrintShapeFcn() { cout << shapefcn_ << endl; };
+  void PrintShapeFcn() { std::cout << shapefcn_ << endl; };
   
   //@}
 
@@ -688,45 +688,45 @@ protected:
   MortarInterface operator = (const MortarInterface& old);
   MortarInterface(const MortarInterface& old);
 
-  int                         id_;            // unique interface id
-  const Epetra_Comm&          comm_;          // communicator
-  RCP<Epetra_Comm>            lcomm_;         // interface local communicator
-  map<int,int>                procmap_;       // mapping global -> local communicator PIDs
+  int                                id_;            // unique interface id
+  const Epetra_Comm&                 comm_;          // communicator
+  Teuchos::RCP<Epetra_Comm>          lcomm_;         // interface local communicator
+  std::map<int,int>                  procmap_;       // mapping global -> local communicator PIDs
 
-  RCP<DRT::Discretization>    idiscret_;      // the discretization of the mortar interface
-  int                         dim_;           // dimension of problem (2D or 3D)
-  Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
-  INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
-  bool                        quadslave_;     // flag indicating quadratic 2d/3d slave elements
-  bool                        redundant_;     // flag indicating fully redundant storage of interface
+  Teuchos::RCP<DRT::Discretization>  idiscret_;      // the discretization of the mortar interface
+  int                                dim_;           // dimension of problem (2D or 3D)
+  Teuchos::ParameterList             icontact_;      // containing contact input parameters of interface
+  INPAR::MORTAR::ShapeFcn            shapefcn_;      // employed type of shape function set
+  bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
+  bool                               redundant_;     // flag indicating fully redundant storage of interface
   
-  RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
-  RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)
+  Teuchos::RCP<Epetra_Map>           oldnodecolmap_; // column map of all interface nodes (overlap=1)
+  Teuchos::RCP<Epetra_Map>           oldelecolmap_;  // column map of all interface elements (overlap=1)
     
-  RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
-  RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
-  RCP<Epetra_Map>             mnoderowmap_;   // row map of all master nodes
-  RCP<Epetra_Map>             mnodecolmap_;   // column map of all master nodes
+  Teuchos::RCP<Epetra_Map>           snoderowmap_;   // row map of all slave nodes
+  Teuchos::RCP<Epetra_Map>           snodecolmap_;   // column map of all slave nodes
+  Teuchos::RCP<Epetra_Map>           mnoderowmap_;   // row map of all master nodes
+  Teuchos::RCP<Epetra_Map>           mnodecolmap_;   // column map of all master nodes
 
-  RCP<Epetra_Map>             snoderowmapbound_;    // row map of slave nodes (+ boundary nodes)
-  RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
-  RCP<Epetra_Map>             mnoderowmapnobound_;  // row map of master nodes (- boundary nodes)
-  RCP<Epetra_Map>             mnodecolmapnobound_;  // col map of master nodes (- boundary nodes)
+  Teuchos::RCP<Epetra_Map>           snoderowmapbound_;    // row map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>           snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>           mnoderowmapnobound_;  // row map of master nodes (- boundary nodes)
+  Teuchos::RCP<Epetra_Map>           mnodecolmapnobound_;  // col map of master nodes (- boundary nodes)
 
-  RCP<Epetra_Map>             selerowmap_;    // row map of all slave elements
-  RCP<Epetra_Map>             selecolmap_;    // column map of all slave elements
-  RCP<Epetra_Map>             melerowmap_;    // row map of all master elements
-  RCP<Epetra_Map>             melecolmap_;    // column map of all master elements
+  Teuchos::RCP<Epetra_Map>           selerowmap_;    // row map of all slave elements
+  Teuchos::RCP<Epetra_Map>           selecolmap_;    // column map of all slave elements
+  Teuchos::RCP<Epetra_Map>           melerowmap_;    // row map of all master elements
+  Teuchos::RCP<Epetra_Map>           melecolmap_;    // column map of all master elements
 
-  RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
-  RCP<Epetra_Map>             sdofcolmap_;    // column map of all slave dofs
-  RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
-  RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
+  Teuchos::RCP<Epetra_Map>           sdofrowmap_;    // row map of all slave dofs
+  Teuchos::RCP<Epetra_Map>           sdofcolmap_;    // column map of all slave dofs
+  Teuchos::RCP<Epetra_Map>           mdofrowmap_;    // row map of all master dofs
+  Teuchos::RCP<Epetra_Map>           mdofcolmap_;    // column map of all master dofs
 
-  RCP<Epetra_Map>             lmdofmap_;      // row map of all Lagrange multiplier dofs
-  int                         maxdofglobal_;  // maximum dof ID in global discretization
+  Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
+  int                                maxdofglobal_;  // maximum dof ID in global discretization
   
-  RCP<MORTAR::BinaryTree>     binarytree_;    // binary searchtree
+  Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;    // binary searchtree
 
 }; // class MortarInterface
 } // namespace MORTAR

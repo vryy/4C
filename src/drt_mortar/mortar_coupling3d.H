@@ -1,6 +1,8 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d.H
 
+\brief Classes for mortar coupling in 3D.
+
 <pre>
 -------------------------------------------------------------------------
                         BACI Contact library
@@ -44,15 +46,12 @@ Maintainer: Alexander Popp
 #include "mortar_coupling3d_classes.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
 {
   class Discretization;
 }
-
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -211,31 +210,31 @@ public:
   \brief Return vector of (projected) slave node vertex objects
 
   */
-  virtual vector<Vertex>& SlaveVertices() {return svertices_; }
+  virtual std::vector<Vertex>& SlaveVertices() {return svertices_; }
 
   /*!
   \brief Return vector of projected master node vertex objects
 
   */
-  virtual vector<Vertex>& MasterVertices() {return mvertices_; }
+  virtual std::vector<Vertex>& MasterVertices() {return mvertices_; }
 
   /*!
   \brief Return vector of clip polygon vertex objects
 
   */
-  virtual vector<Vertex>& Clip() {return clip_; }
+  virtual std::vector<Vertex>& Clip() {return clip_; }
 
   /*!
   \brief Return vector of integration cells
 
   */
-  virtual vector<RCP<IntCell> >& Cells() {return cells_; }
+  virtual std::vector<Teuchos::RCP<IntCell> >& Cells() {return cells_; }
 
   /*!
   \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
   */
-  virtual vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
+  virtual std::vector<std::map<int,double> >& GetDerivAuxn() { return derivauxn_; }
   
   /*!
   \brief Return the LM interpolation / testing type for quadratic FE
@@ -337,9 +336,9 @@ public:
   \param tol (in): clipping tolerance for close vertices detection
 
   */
-  virtual void PolygonClipping(vector<Vertex>& poly1list,
-                               vector<Vertex>& poly2list,
-                               vector<Vertex>& respoly,
+  virtual void PolygonClipping(std::vector<Vertex>& poly1list,
+                               std::vector<Vertex>& poly2list,
+                               std::vector<Vertex>& respoly,
                                double& tol);
   
   /*!
@@ -375,9 +374,9 @@ public:
   \param tol (in): clipping tolerance for close vertices detection
 
   */
-  virtual bool PolygonClippingConvexHull(vector<Vertex>& poly1list,
-                                         vector<Vertex>& poly2list,
-                                         vector<Vertex>& respoly,
+  virtual bool PolygonClippingConvexHull(std::vector<Vertex>& poly1list,
+                                         std::vector<Vertex>& poly2list,
+                                         std::vector<Vertex>& respoly,
                                          double& tol);
 
   /*!
@@ -431,9 +430,9 @@ public:
   Thus, CenterTriangulation() is NOT used anymore.
 
   */
-  virtual bool Triangulation(map<int,double>& projpar, double tol);
-  virtual bool DelaunayTriangulation(vector<vector<map<int,double> > >& linvertex, double tol);
-  virtual bool CenterTriangulation(vector<vector<map<int,double> > >& linvertex, double tol);
+  virtual bool Triangulation(std::map<int,double>& projpar, double tol);
+  virtual bool DelaunayTriangulation(std::vector<std::vector<std::map<int,double> > >& linvertex, double tol);
+  virtual bool CenterTriangulation(std::vector<std::vector<std::map<int,double> > >& linvertex, double tol);
 
   /*!
   \brief Integrate the integration cells (3D)
@@ -466,8 +465,8 @@ public:
   \brief Linearization of clip vertex coordinates (3D)
 
   */
-  virtual bool VertexLinearization(vector<vector<map<int,double> > >& linvertex,
-                                map<int,double>& projpar, bool printderiv=false)
+  virtual bool VertexLinearization(std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                   std::map<int,double>& projpar, bool printderiv=false)
   {
     return true;
   }
@@ -476,8 +475,8 @@ public:
   \brief Linearization of clip vertex coordinates (3D)
 
   */
-  virtual bool CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
-                                                  vector<map<int,double> >& lincenter)
+  virtual bool CenterLinearization(const std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                   std::vector<std::map<int,double> >& lincenter)
   {
     return true;
   }
@@ -490,7 +489,7 @@ protected:
     Coupling3d operator = (const Coupling3d& old);
     Coupling3d(const Coupling3d& old);
 
-    const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
+    const INPAR::MORTAR::ShapeFcn shapefcn_; // employed type of shape function set
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
@@ -502,12 +501,12 @@ protected:
     double                     auxc_[3];     // center of auxiliary plane
     double                     auxn_[3];     // normal of auxiliary plane
     double                     lauxn_;       // length of interpolated Auxn() before normalization
-    vector<Vertex>             svertices_;   // slave node vertex objects
-    vector<Vertex>             mvertices_;   // master node vertex objects
-    vector<Vertex>             clip_;        // clipped polygon vertex objects
+    std::vector<Vertex>        svertices_;   // slave node vertex objects
+    std::vector<Vertex>        mvertices_;   // master node vertex objects
+    std::vector<Vertex>        clip_;        // clipped polygon vertex objects
 
-    vector<RCP<IntCell> >      cells_;       // vector of integration cells
-    vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal
+    std::vector<Teuchos::RCP<IntCell> >  cells_;       // vector of integration cells
+    std::vector<std::map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal
 
 }; // class Coupling3d
 
@@ -634,7 +633,7 @@ public:
   */
   Coupling3dManager(DRT::Discretization& idiscret,
                     int dim, bool quad, bool auxplane,
-                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -647,7 +646,7 @@ public:
   Coupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
                     DRT::Discretization& idiscret,
                     int dim, bool quad, bool auxplane,
-                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Destructor
@@ -671,13 +670,13 @@ public:
   \brief Get all coupling master elements
 
   */
-  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
   \brief Get coupling pairs
 
   */
-  virtual vector<RCP<MORTAR::Coupling3d> >& Coupling() { return coup_; }
+  virtual std::vector<Teuchos::RCP<MORTAR::Coupling3d> >& Coupling() { return coup_; }
 
   /*!
   \brief Evaluate coupling pairs
@@ -693,14 +692,14 @@ protected:
     Coupling3dManager operator = (const Coupling3dManager& old);
     Coupling3dManager(const Coupling3dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn    shapefcn_;    // employed type of shape function set
-    DRT::Discretization&             idiscret_;    // discretization of the contact interface
-    int                              dim_;         // problem dimension (here: 3D)
-    bool                             quad_;        // flag indicating coupling type (true = quadratic)
-    bool                             auxplane_;    // flag indicating coupling strategy (true = aux. plane)
-    MORTAR::MortarElement*           sele_;        // slave element
-    vector<MORTAR::MortarElement*>   mele_;        // master elements
-    vector<RCP<MORTAR::Coupling3d> > coup_;        // coupling pairs
+    const INPAR::MORTAR::ShapeFcn        shapefcn_;         // employed type of shape function set
+    DRT::Discretization&                 idiscret_;         // discretization of the contact interface
+    int                                  dim_;              // problem dimension (here: 3D)
+    bool                                 quad_;             // flag indicating coupling type (true = quadratic)
+    bool                                 auxplane_;         // flag indicating coupling strategy (true = aux. plane)
+    MORTAR::MortarElement*               sele_;             // slave element
+    std::vector<MORTAR::MortarElement*>  mele_;             // master elements
+    std::vector<Teuchos::RCP<MORTAR::Coupling3d> >  coup_;  // coupling pairs
 
 }; // class Coupling3dManager
 }  // namespace MORTAR

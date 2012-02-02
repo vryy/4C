@@ -41,9 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_node.H"
 
-using namespace std;
-using namespace Teuchos;
-
 
 /*!
 \brief CONTACT: namespace of the baci contact and meshtying algorithms
@@ -60,7 +57,7 @@ public:
 
   static CoNodeType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -113,7 +110,7 @@ public:
   class exists.
 
   */
-  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
+  virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
   //@}
 
@@ -142,7 +139,7 @@ public:
   A vector is used because the normal itself is a vector (2 or 3 components).
 
   */
-  virtual vector<map<int,double> >& GetDerivN() { return derivn_; }
+  virtual std::vector<std::map<int,double> >& GetDerivN() { return derivn_; }
 
   /*!
   \brief Return the 'DerivTxi' map (vector) of this node
@@ -152,7 +149,7 @@ public:
   A vector is used because the tangent itself is a vector (2 or 3 components).
 
   */
-  virtual vector<map<int,double> >& GetDerivTxi() { return derivtxi_; }
+  virtual std::vector<std::map<int,double> >& GetDerivTxi() { return derivtxi_; }
 
   /*!
   \brief Return the 'DerivTeta' map (vector) of this node
@@ -162,7 +159,7 @@ public:
   A vector is used because the tangent itself is a vector (2 or 3 components).
 
   */
-  virtual vector<map<int,double> >& GetDerivTeta() { return derivteta_; }
+  virtual std::vector<std::map<int,double> >& GetDerivTeta() { return derivteta_; }
 
   /*!
   \brief Return the 'DerivD' map of this node
@@ -177,7 +174,7 @@ public:
   support arbitrary types of shape functions, this is not possible anymore.
 
   */
-  virtual map<int,map<int,double> >& GetDerivD() { return derivd_; }
+  virtual std::map<int,std::map<int,double> >& GetDerivD() { return derivd_; }
 
   /*!
   \brief Return the 'DerivM' map of maps of this node
@@ -189,7 +186,7 @@ public:
   all directional derivatives l existing for M_ik.
 
   */
-  virtual map<int,map<int,double> >& GetDerivM() { return derivm_; }
+  virtual std::map<int,std::map<int,double> >& GetDerivM() { return derivm_; }
 
   /*!
   \brief Return one specific 'DerivD' map of this node
@@ -198,9 +195,9 @@ public:
   specific D-matrix D_ik entry of this node i.
 
   */
-  virtual map<int,double>& GetDerivD(int& k)
+  virtual std::map<int,double>& GetDerivD(int& k)
   {
-    typedef map<int,map<int,double> >::const_iterator CI;
+    typedef std::map<int,std::map<int,double> >::const_iterator CI;
     CI p =derivd_.find(k);
     if (p==derivd_.end())
      dserror("ERROR: GetDerivD: No map entry existing for given index");
@@ -214,9 +211,9 @@ public:
   specific M-matrix M_ik entry of this node i.
 
   */
-  virtual map<int,double>& GetDerivM(int& k)
+  virtual std::map<int,double>& GetDerivM(int& k)
   {
-    typedef map<int,map<int,double> >::const_iterator CI;
+    typedef std::map<int,std::map<int,double> >::const_iterator CI;
     CI p =derivm_.find(k);
     if (p==derivm_.end())
      dserror("ERROR: GetDerivM: No map entry existing for given index");
@@ -230,7 +227,7 @@ public:
   weighted gap entry g~ with respect to the slave/master displacements.
 
   */
-  virtual map<int,double>& GetDerivG() { return derivg_; }
+  virtual std::map<int,double>& GetDerivG() { return derivg_; }
 
   /*!
   \brief Return scaling factor for weighted gap
@@ -249,7 +246,7 @@ public:
   Note: This is only calculated when performing a penalty strategy
 
    */
-  virtual vector<map<int,double> >& GetDerivZ() { return derivz_; }
+  virtual std::vector<std::map<int,double> >& GetDerivZ() { return derivz_; }
 
   //@}
 
@@ -263,16 +260,16 @@ protected:
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          grow_;           // nodal entry of g vector
 
-  vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
-  vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
-  vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
-  map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
-  map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
-  map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
+  std::vector<std::map<int,double> >      derivn_;     // directional derivative of nodal normal
+  std::vector<std::map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
+  std::vector<std::map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
+  std::map<int,std::map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
+  std::map<int,std::map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
+  std::map<int,double>                    derivg_;     // directional derivative of nodal weighted gap value
 
   // Penalty-related quantities
-  double                        kappa_;      // gap-scaling factor kappa
-  vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
+  double                                  kappa_;      // gap-scaling factor kappa
+  std::vector<std::map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
 
 }; // class CoNodeDataContainer
 
@@ -312,7 +309,7 @@ public:
 
   */
   CoNode(int id, const double* coords, const int owner,
-         const int numdof, const vector<int>& dofs, const bool isslave,
+         const int numdof, const std::vector<int>& dofs, const bool isslave,
          const bool initactive);
 
   /*!
@@ -358,7 +355,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -470,7 +467,7 @@ public:
   \brief Resets the data container of the node
 
   With this function, the container with contact specific quantities/information
-  is deleted / reset to null pointer
+  is deleted / reset to Teuchos::null pointer
 
   */
   virtual void ResetDataContainer();
@@ -496,7 +493,7 @@ protected:
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            initactive_;     // true if node is initialized as active node
 
-  RCP<CONTACT::CoNodeDataContainer> codata_;   // additional information of proc's contact nodes
+  Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_;   // additional information of proc's contact nodes
 
 }; // class CoNode
 } // namespace CONTACT

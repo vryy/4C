@@ -45,8 +45,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace LINALG
@@ -109,9 +107,9 @@ class StrategyBase
     \param maxdof (in): Highest dof number in global problem
 
     */
-    StrategyBase(RCP<Epetra_Map> problemrowmap,
+    StrategyBase(Teuchos::RCP<Epetra_Map> problemrowmap,
                  Teuchos::ParameterList params,
-                 int dim, RCP<Epetra_Comm> comm,
+                 int dim, Teuchos::RCP<Epetra_Comm> comm,
                  double alphaf, int maxdof);
 
     /*!
@@ -144,7 +142,7 @@ class StrategyBase
     \brief Return row map of global problem
 
     */
-    const RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
+    const Teuchos::RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
         
     //@}
 
@@ -155,21 +153,21 @@ class StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
-    virtual const RCP<Epetra_Map> ActiveRowNodes() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
-    virtual void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, bool predictor = false) = 0;
+    virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, bool predictor = false) = 0;
     virtual double ConstraintNorm() = 0;
-    virtual RCP<Epetra_Vector> ContactNorStress() = 0;
-    virtual RCP<Epetra_Vector> ContactTanStress() = 0;
-    virtual RCP<Epetra_Vector> ContactWear() = 0;  
-    virtual RCP<LINALG::SparseMatrix> DMatrix() = 0;
-    virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle,RCP<Epetra_Vector>& weightedwear) = 0;
-    virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
-    virtual RCP<LINALG::SparseMatrix> EvaluateNormals(RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec) = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
+    virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear) = 0;
+    virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void EvaluateReferenceState(int step,const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual void ForceRefConfig() = 0;
@@ -177,34 +175,34 @@ class StrategyBase
     virtual void InitEvalInterface() = 0;
     virtual void InitEvalMortar() = 0;
     virtual void Initialize() = 0;
-    virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
+    virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void InterfaceForces(bool output = false) = 0;
     virtual bool IsInContact() = 0;
-    virtual RCP<Epetra_Vector> LagrMult() = 0; 
-    virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
+    virtual Teuchos::RCP<Epetra_Vector> LagrMult() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
     virtual void MeshInitialization() = 0;
-    virtual RCP<LINALG::SparseMatrix> MMatrix() = 0;
-    virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
+    virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual const int NumberOfActiveNodes() = 0;
     virtual const int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
     virtual void OutputWear() = 0;
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
-    virtual void Recover(RCP<Epetra_Vector> disi) = 0;
-    virtual void RedistributeContact(RCP<Epetra_Vector> dis) = 0;
+    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
+    virtual void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void RedistributeMeshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
-    virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
-    virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
-    virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
-    virtual const RCP<Epetra_Map> SlipRowNodes() = 0;
-    virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
+    virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
+    virtual void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void SetState(const string& statename, const Teuchos::RCP<Epetra_Vector> vec) = 0;
+    virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
+    virtual void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
-    virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;
+    virtual void Update(int istep, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
@@ -221,13 +219,13 @@ class StrategyBase
     // don't want cctor (= operator impossible anyway for abstract class)
     StrategyBase(const StrategyBase& old);
 
-    RCP<Epetra_Map>        problemrowmap_;  // global problem dof row map (not only interfaces)
-    RCP<Epetra_Comm>       comm_;           // communicator
-    Teuchos::ParameterList scontact_;       // containing contact input parameters
-    int                    dim_;            // dimension of problem (2D or 3D)
-    double                 alphaf_;         // Generalized-alpha parameter (0.0 for statics)
-    bool                   parredist_;      // flag indicating parallel redistribution status
-    int                    maxdof_;         // highest dof number in problem discretization
+    Teuchos::RCP<Epetra_Map>   problemrowmap_;  // global problem dof row map (not only interfaces)
+    Teuchos::RCP<Epetra_Comm>  comm_;           // communicator
+    Teuchos::ParameterList     scontact_;       // containing contact input parameters
+    int                        dim_;            // dimension of problem (2D or 3D)
+    double                     alphaf_;         // Generalized-alpha parameter (0.0 for statics)
+    bool                       parredist_;      // flag indicating parallel redistribution status
+    int                        maxdof_;         // highest dof number in problem discretization
 
 }; // class StrategyBase
 } // namespace MORTAR

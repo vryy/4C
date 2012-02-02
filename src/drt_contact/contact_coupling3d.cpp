@@ -67,8 +67,8 @@ MORTAR::Coupling3d(idiscret,dim,quad,auxplane,sele,mele)
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3d::CoCoupling3d(const INPAR::MORTAR::ShapeFcn shapefcn,
-                               DRT::Discretization& idiscret, int dim, bool quad,
-         bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
+         DRT::Discretization& idiscret, int dim, bool quad, bool auxplane,
+         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
 MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele)
 {
   // empty constructor
@@ -112,9 +112,9 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
   // also compute linearization of the unit normal vector
   SlaveIntElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
   
-  //cout << "Slave Element: " << SlaveIntElement().Id() << endl;
-  //cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
-  //cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
+  //std::cout << "Slave Element: " << SlaveIntElement().Id() << endl;
+  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
+  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
 
   return true;
 }
@@ -180,26 +180,26 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       int ncol = MasterElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
       if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
-      RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
-      RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
-      RCP<Epetra_SerialDenseMatrix> aseg = Teuchos::null;
-      RCP<Epetra_SerialDenseMatrix> bseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseMatrix> bseg = Teuchos::null;
       if (DRT::Problem::Instance()->ProblemType()=="tsi")
       {
-        mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
-        mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
-        aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-        bseg = rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
+        mdisssegs = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+        mdisssegm = Teuchos::rcp(new Epetra_SerialDenseVector(ncol));
+        aseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+        bseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
       }
 
-      RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
       if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
       {
-        wseg = rcp(new Epetra_SerialDenseVector(nrow));
+        wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       }
 
       
@@ -261,9 +261,9 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       int ncol = MasterElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
       if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       
       // static_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
@@ -297,9 +297,9 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       int nintrow = SlaveIntElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
       if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nintrow));
       
       // static_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
@@ -335,10 +335,10 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 /*----------------------------------------------------------------------*
  |  Linearization of clip polygon vertices (3D)               popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::VertexLinearization(vector<vector<map<int,double> > >& linvertex,
-                                                map<int,double>& projpar, bool printderiv)
+bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                                std::map<int,double>& projpar, bool printderiv)
 {
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // linearize all aux.plane slave and master nodes only ONCE
   // and use these linearizations later during lineclip linearization
@@ -350,8 +350,8 @@ bool CONTACT::CoCoupling3d::VertexLinearization(vector<vector<map<int,double> > 
   int nmrows = MasterIntElement().NumNode();
 
   // prepare storage for slave and master linearizations
-  vector<vector<map<int,double> > > linsnodes(nsrows,vector<map<int,double> >(3));
-  vector<vector<map<int,double> > > linmnodes(nmrows,vector<map<int,double> >(3));
+  std::vector<std::vector<std::map<int,double> > > linsnodes(nsrows,std::vector<std::map<int,double> >(3));
+  std::vector<std::vector<std::map<int,double> > > linmnodes(nmrows,std::vector<std::map<int,double> >(3));
 
   if (CouplingInAuxPlane())
   {
@@ -378,7 +378,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(vector<vector<map<int,double> > 
   {
     // references to current vertex and its linearization
     MORTAR::Vertex& currv = Clip()[i];
-    vector<map<int,double> >& currlin = linvertex[i];
+    std::vector<std::map<int,double> >& currlin = linvertex[i];
 
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType()==MORTAR::Vertex::slave)
@@ -433,7 +433,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(vector<vector<map<int,double> > 
         int mid = currv.Nodeids()[0];
         double alpha = projpar[mid];
 
-        //cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
+        //std::cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
 
         // do master vertex linearization
         MasterVertexLinearization(currv,currlin,mid,alpha);
@@ -489,7 +489,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(vector<vector<map<int,double> > 
 /*----------------------------------------------------------------------*
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::SlaveVertexLinearization(vector<map<int,double> >& currlin,
+bool CONTACT::CoCoupling3d::SlaveVertexLinearization(std::vector<std::map<int,double> >& currlin,
                                                      int sid)
 {
   // we first need the slave element center:
@@ -521,7 +521,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(vector<map<int,double> >& c
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
 
   for (int i=0;i<nrow;++i)
   {
@@ -535,10 +535,10 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(vector<map<int,double> >& c
   MORTAR::MortarNode* mrtrsnode = static_cast<MORTAR::MortarNode*>(snode);
 
   // map iterator
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // linearization of element center Auxc()
-  vector<map<int,double> > linauxc(3);
+  std::vector<std::map<int,double> > linauxc(3);
 
   for (int i=0;i<nrow;++i)
   {
@@ -548,7 +548,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(vector<map<int,double> >& c
   }
 
   // linearization of element normal Auxn()
-  vector<map<int,double> >& linauxn = GetDerivAuxn();
+  std::vector<std::map<int,double> >& linauxn = GetDerivAuxn();
 
   // put everything together for slave vertex linearization
 
@@ -608,7 +608,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(vector<map<int,double> >& c
 /*----------------------------------------------------------------------*
  |  Linearization of projmaster vertex (3D) AuxPlane          popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::MasterVertexLinearization(vector<map<int,double> >& currlin,
+bool CONTACT::CoCoupling3d::MasterVertexLinearization(std::vector<std::map<int,double> >& currlin,
                                                     int mid)
 {
   // we first need the slave element center:
@@ -640,7 +640,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(vector<map<int,double> >& 
 
   // we need all participating slave nodes
   DRT::Node** snodes = SlaveIntElement().Nodes();
-  vector<MORTAR::MortarNode*> smrtrnodes(nrow);
+  std::vector<MORTAR::MortarNode*> smrtrnodes(nrow);
 
   for (int i=0;i<nrow;++i)
   {
@@ -654,10 +654,10 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(vector<map<int,double> >& 
   MORTAR::MortarNode* mrtrmnode = static_cast<MORTAR::MortarNode*>(mnode);
 
   // map iterator
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // linearization of element center Auxc()
-  vector<map<int,double> > linauxc(3);
+  std::vector<std::map<int,double> > linauxc(3);
 
   for (int i=0;i<nrow;++i)
   {
@@ -667,7 +667,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(vector<map<int,double> >& 
   }
 
   // linearization of element normal Auxn()
-  vector<map<int,double> >& linauxn = GetDerivAuxn();
+  std::vector<std::map<int,double> >& linauxn = GetDerivAuxn();
 
   // put everything together for master vertex linearization
 
@@ -728,7 +728,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(vector<map<int,double> >& 
  |  Linearization of projmaster vertex (3D)                   popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
-                                                      vector<map<int,double> >& currlin,
+                                                      std::vector<std::map<int,double> >& currlin,
                                                       int mid, double alpha)
 {
   // get current vertex coordinates (in slave param. space)
@@ -777,7 +777,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
   lmatrix.Invert();
   
   // start to fill linearization maps for current vertex
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
   
   // (1) master node coordinates part
   DRT::Node* mnode = Discret().gNode(mid);
@@ -808,7 +808,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
   
     // (3) all slave nodes normals part
     // get nodal normal derivative maps (x,y and z components)
-    vector<map<int,double> >& derivn = static_cast<CONTACT::CoNode*>(snode)->CoData().GetDerivN();
+    std::vector<std::map<int,double> >& derivn = static_cast<CONTACT::CoNode*>(snode)->CoData().GetDerivN();
   
     for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
     {
@@ -835,18 +835,18 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                           vector<map<int,double> >& currlin,
+                                           std::vector<std::map<int,double> >& currlin,
                                            MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
                                            MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                           vector<vector<map<int,double> > >& linsnodes,
-                                           vector<vector<map<int,double> > >& linmnodes)
+                                           std::vector<std::vector<std::map<int,double> > >& linsnodes,
+                                           std::vector<std::vector<std::map<int,double> > >& linmnodes)
 {
   // number of nodes
   int nsrows = SlaveIntElement().NumNode();
   int nmrows = MasterIntElement().NumNode();
 
   // iterator
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   // compute factor Z
   double crossZ[3] = {0.0, 0.0, 0.0};
@@ -915,7 +915,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k==nsrows) dserror("ERROR: Slave Id1 not found!");
 
   // get the correct slave node linearization
-  vector<map<int,double> >& slavelin0 = linsnodes[k];
+  std::vector<std::map<int,double> >& slavelin0 = linsnodes[k];
 
   k=0;
   while (k<nsrows){
@@ -927,7 +927,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k==nsrows) dserror("ERROR: Slave Id2 not found!");
 
   // get the correct slave node linearization
-  vector<map<int,double> >& slavelin1 = linsnodes[k];
+  std::vector<std::map<int,double> >& slavelin1 = linsnodes[k];
 
   // master vertex linearization (2x)
   int mid1 = currv.Nodeids()[2];
@@ -944,7 +944,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k==nmrows) dserror("ERROR: Master Id1 not found!");
 
   // get the correct master node linearization
-  vector<map<int,double> >& masterlin0 = linmnodes[k];
+  std::vector<std::map<int,double> >& masterlin0 = linmnodes[k];
 
   k=0;
   while (k<nmrows){
@@ -956,10 +956,10 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   if (k==nmrows) dserror("ERROR: Master Id2 not found!");
 
   // get the correct master node linearization
-  vector<map<int,double> >& masterlin1 = linmnodes[k];
+  std::vector<std::map<int,double> >& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  vector<map<int,double> >& linauxn = GetDerivAuxn();
+  std::vector<std::map<int,double> >& linauxn = GetDerivAuxn();
 
   // bring everything together -> lineclip vertex linearization
   for (int k=0;k<3;++k)
@@ -1017,10 +1017,10 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
  |  Linearization of lineclip vertex (3D)                     popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                           vector<map<int,double> >& currlin,
+                                           std::vector<std::map<int,double> >& currlin,
                                            MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
                                            MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                           map<int,double>& projpar)
+                                           std::map<int,double>& projpar)
 {
   // compute factor Z
   double crossZ[3] = {0.0, 0.0, 0.0};
@@ -1063,7 +1063,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   crossdN1[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
 
   // master vertex linearization (2x)
-  vector<vector<map<int,double> > > masterlin(2,vector<map<int,double> >(3));
+  std::vector<std::vector<std::map<int,double> > > masterlin(2,std::vector<std::map<int,double> >(3));
 
   int mid1 = currv.Nodeids()[2];
   double alpha1 = projpar[mid1];
@@ -1102,7 +1102,7 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
   MasterVertexLinearization(*masterv2,masterlin[1],mid2,alpha2);
 
   // bring everything together -> lineclip vertex linearization
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
   for (int k=0;k<3;++k)
   {
     for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
@@ -1130,14 +1130,14 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
 /*----------------------------------------------------------------------*
  |  Linearization of clip polygon center (3D)                 popp 02/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
-                                                vector<map<int,double> >& lincenter)
+bool CONTACT::CoCoupling3d::CenterLinearization(const std::vector<std::vector<std::map<int,double> > >& linvertex,
+                                                std::vector<std::map<int,double> >& lincenter)
 {
   // preparations
   int clipsize = (int)(Clip().size());
-  typedef map<int,double>::const_iterator CI;
+  typedef std::map<int,double>::const_iterator CI;
 
-  vector<double> clipcenter(3);
+  std::vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
   double fac = 0.0;
 
@@ -1190,7 +1190,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(const vector<vector<map<int,doub
   double n = fac;
 
   // first we need linearization of node averaged center
-  vector<map<int,double> > linnac(3);
+  std::vector<std::map<int,double> > linnac(3);
 
   for (int i=0;i<clipsize;++i)
     for (int k=0;k<3;++k)
@@ -1233,7 +1233,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(const vector<vector<map<int,doub
     double Atri = 0.5 * sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
 
     // linearization of cross
-    vector<map<int,double> > lincross(3);
+    std::vector<std::map<int,double> > lincross(3);
 
     for (CI p=linvertex[i][0].begin();p!=linvertex[i][0].end();++p)
     {
@@ -1290,7 +1290,7 @@ bool CONTACT::CoCoupling3d::CenterLinearization(const vector<vector<map<int,doub
     }
 
     // linearization of triangle area
-    map<int,double> linarea;
+    std::map<int,double> linarea;
     for (int k=0;k<3;++k)
       for (CI p=lincross[k].begin();p!=lincross[k].end();++p)
         linarea[p->first] += 0.25 / Atri * cross[k] * (p->second);
@@ -1375,7 +1375,7 @@ lmtype_(lmtype)
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3dManager::CoCoupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
                                                   bool auxplane, MORTAR::MortarElement* sele,
-                                                  vector<MORTAR::MortarElement*> mele) :
+                                                  std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
@@ -1396,7 +1396,7 @@ mele_(mele)
 CONTACT::CoCoupling3dManager::CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
                                                   DRT::Discretization& idiscret, int dim, bool quad,
                                                   bool auxplane, MORTAR::MortarElement* sele,
-                                                  vector<MORTAR::MortarElement*> mele) :
+                                                  std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
@@ -1421,7 +1421,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   for (int m=0;m<(int)MasterElements().size();++m)
   {
     // create CoCoupling3d object and push back
-    Coupling().push_back(rcp(new CoCoupling3d(shapefcn_,idiscret_,dim_,false,auxplane_,
+    Coupling().push_back(Teuchos::rcp(new CoCoupling3d(shapefcn_,idiscret_,dim_,false,auxplane_,
                                               SlaveElement(),MasterElement(m))));
 
     // do coupling

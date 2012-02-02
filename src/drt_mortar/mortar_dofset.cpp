@@ -67,9 +67,9 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
   int nummyrow = dofrowmap_->NumMyElements();
-  vector<int> myrow(nummyrow);
+  std::vector<int> myrow(nummyrow);
   int nummycol = dofcolmap_->NumMyElements();
-  vector<int> mycol(nummycol);
+  std::vector<int> mycol(nummycol);
 
   // now we loop all nodes in dis and create the new dof vectors
   for (int i=0; i<dis.NumMyColNodes(); ++i)
@@ -77,7 +77,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
     DRT::Node* node = dis.lColNode(i);
     if (!node) dserror("Cannot find local column node %d",i);
     // get dofs of node as created by base class DofSet
-    vector<int> gdofs = Dof(node);
+    std::vector<int> gdofs = Dof(node);
     // get dofs of node as we want them
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
@@ -99,8 +99,8 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
   }
 
   // we have new vectors, so recreate epetra maps and replace old ones with them
-  RCP<Epetra_Map> newdofrowmap = rcp(new Epetra_Map(-1,nummyrow,&myrow[0],0,dofrowmap_->Comm()));
-  RCP<Epetra_Map> newdofcolmap = rcp(new Epetra_Map(-1,nummycol,&mycol[0],0,dofcolmap_->Comm()));
+  Teuchos::RCP<Epetra_Map> newdofrowmap = Teuchos::rcp(new Epetra_Map(-1,nummyrow,&myrow[0],0,dofrowmap_->Comm()));
+  Teuchos::RCP<Epetra_Map> newdofcolmap = Teuchos::rcp(new Epetra_Map(-1,nummycol,&mycol[0],0,dofcolmap_->Comm()));
 
   // be a little psychotic in checking whether everything is ok....
   if (newdofrowmap->NumMyElements() != dofrowmap_->NumMyElements() ||

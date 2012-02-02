@@ -41,8 +41,6 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_element.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 
@@ -63,7 +61,7 @@ public:
 
   static CoElementType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -148,7 +146,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual CoElementType & ElementType() const
   { return CoElementType::Instance(); }
@@ -202,7 +200,7 @@ public:
   */
   virtual int Evaluate(ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -228,10 +226,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(ParameterList&            params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL)
   { return 0; }
@@ -240,7 +238,7 @@ public:
   \brief Build element normal derivative at node passed in
   */
   virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
-                                 vector<map<int,double> >& derivn);
+                                 std::vector<std::map<int,double> >& derivn);
 
   /*!
   \brief Compute element normal derivative at local coordinate xi
@@ -248,7 +246,7 @@ public:
          integrated into the whole nodal normal calculation process.
   */
   virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
-                               vector<map<int,double> >& derivn);
+                               std::vector<std::map<int,double> >& derivn);
 
   /*!
   \brief Evaluate derivative J,xi of Jacobian determinant

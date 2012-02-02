@@ -61,8 +61,8 @@ dim_(dim)
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
-                                            MORTAR::MortarElement& ele,
-                                            double* xi)
+                                                 MORTAR::MortarElement& ele,
+                                                 double* xi)
 {
   bool ok = true;
   if (Dim()==2)
@@ -94,7 +94,7 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
       // This iteration sometimes diverges, when the projection is far off.
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
-      //cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
+      //std::cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
       //     << node.Id() << " and MortarElementID " << ele.Id() << endl;
     }
 
@@ -102,7 +102,7 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
     // Newton iteration converged
     else
     {
-      cout << "Newton iteration converged in " << k << " step(s)!" << endl
+      std::cout << "Newton iteration converged in " << k << " step(s)!" << endl
            << "The result is: " << xi[0] << endl;
     }*/
   }
@@ -116,8 +116,8 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
-                                              MORTAR::MortarElement& ele,
-                                              double* xi)
+                                                   MORTAR::MortarElement& ele,
+                                                   double* xi)
 {
   bool ok = true;
   if (Dim()==2)
@@ -149,7 +149,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
       // This iteration sometimes diverges, when the projection is far off.
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
-      //cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
+      //std::cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
       //     << node.Id() << " and MortarElementID " << ele.Id() << endl;
     }
 
@@ -157,7 +157,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
     // Newton iteration converged
     else
     {
-      cout << "Newton iteration converged in " << k << " step(s)!" << endl
+      std::cout << "Newton iteration converged in " << k << " step(s)!" << endl
            << "The result is: " << xi[0] << endl;
     }*/
   }
@@ -171,8 +171,8 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
  |  Project a node along element's normal field (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
-                                                MORTAR::MortarElement& ele,
-                                                double* xi, double& par)
+                                                     MORTAR::MortarElement& ele,
+                                                     double* xi, double& par)
 {
   if (Dim()==3)
   {
@@ -202,7 +202,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
     {
       EvaluateFElementNormal3D(f,node,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
 
@@ -224,7 +224,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
     xi[0]=eta[0];
     xi[1]=eta[1];
     par=alpha;
-    //cout << "Newton iteration converged in " << k << " steps!" << endl;
+    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
   }
 
   else dserror("ERROR: ProjectElementNormal: Called 3D version for 2D problem!");
@@ -236,9 +236,9 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
-                                           const double* gpeta,
-                                           MORTAR::MortarElement& ele,
-                                           double* xi)
+                                                const double* gpeta,
+                                                MORTAR::MortarElement& ele,
+                                                double* xi)
 {
   bool ok = true;
   if (Dim()==2)
@@ -304,7 +304,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
     /*
     else
     {
-      cout << "GP Newton iteration converged in " << k << " step(s)!" << endl
+      std::cout << "GP Newton iteration converged in " << k << " step(s)!" << endl
            << "The result is: " << xi[0] << endl;
     }*/
   }
@@ -318,9 +318,9 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
-                                             const double* gpeta,
-                                             MORTAR::MortarElement& ele,
-                                             double* xi, double& par)
+                                                  const double* gpeta,
+                                                  MORTAR::MortarElement& ele,
+                                                  double* xi, double& par)
 {
   if (Dim()==3)
   {
@@ -381,7 +381,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
     {
       EvaluateFGaussPoint3D(f,gpx,gpn,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
 
@@ -403,7 +403,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
     xi[0]=eta[0];
     xi[1]=eta[1];
     par=alpha;
-    //cout << "Newton iteration converged in " << k << " steps!" << endl;
+    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
   }
 
   else dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");
@@ -414,9 +414,9 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
-                                                 const double* auxn,
-                                                 MORTAR::MortarElement& ele,
-                                                 double* xi, double& par)
+                                                      const double* auxn,
+                                                      MORTAR::MortarElement& ele,
+                                                      double* xi, double& par)
 {
   if (Dim()==3)
   {
@@ -446,7 +446,7 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
     {
       EvaluateFGaussPointAuxn3D(f,globgp,auxn,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFGaussPointAuxn3D(df,globgp,auxn,ele,eta,alpha);
 
@@ -468,7 +468,7 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
     xi[0]=eta[0];
     xi[1]=eta[1];
     par = alpha;
-    //cout << "Newton iteration converged in " << k << " steps!" << endl;
+    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
   }
 
   else dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");
@@ -480,8 +480,8 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
-                                                MORTAR::MortarElement& ele,
-                                                const double* eta)
+                                                     MORTAR::MortarElement& ele,
+                                                     const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - xs ) x ns,
      or to be more precise the third component of this vector function!
@@ -511,8 +511,8 @@ double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
  |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
-                                                    MORTAR::MortarElement& ele,
-                                                    const double* eta)
+                                                         MORTAR::MortarElement& ele,
+                                                         const double* eta)
 {
   /* Evaluate the function GradF(eta)
      = Ni,eta * xim * nys - Ni,eta * yim * nxs,
@@ -539,8 +539,8 @@ double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& nod
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
-                                                  MORTAR::MortarElement& ele,
-                                                  const double* eta)
+                                                       MORTAR::MortarElement& ele,
+                                                       const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xis - xm ) x ( Nj * njs),
      or to be more precise the third component of this vector function!
@@ -597,8 +597,8 @@ double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
  |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
-                                                      MORTAR::MortarElement& ele,
-                                                      const double* eta)
+                                                           MORTAR::MortarElement& ele,
+                                                           const double* eta)
 {
   /* Evaluate the function GradF(eta)
       = ( Ni,eta * xis ) * ( Nj * nyjs )
@@ -799,9 +799,9 @@ bool MORTAR::MortarProjector::EvaluateGradFElementNormal3D(
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
-                                               const double* gpn,
-                                               MORTAR::MortarElement& ele,
-                                               const double* eta)
+                                                    const double* gpn,
+                                                    MORTAR::MortarElement& ele,
+                                                    const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
      or to be more precise the third component of this vector function!
@@ -833,8 +833,8 @@ double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarProjector::EvaluateGradFGaussPoint(const double* gpn,
-                                                      MORTAR::MortarElement& ele,
-                                                      const double* eta)
+                                                        MORTAR::MortarElement& ele,
+                                                        const double* eta)
 {
   /* Evaluate the function GradF(eta)
       = Ni,eta * xim * gpny - Ni,eta * yim * gpnx,

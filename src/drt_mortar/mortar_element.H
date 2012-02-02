@@ -44,8 +44,6 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace LINALG
@@ -69,7 +67,7 @@ public:
 
   static MortarElementType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -127,7 +125,7 @@ public:
   class exists.
 
   */
-  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
+  virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
   //@}
 
@@ -149,7 +147,7 @@ public:
   \brief Return global ids of potentially contacting elements
 
   */
-  virtual vector<int>& SearchElements() {return searchelements_; }
+  virtual std::vector<int>& SearchElements() {return searchelements_; }
 
   //@}
 
@@ -160,7 +158,7 @@ protected:
   MortarEleDataContainer(const MortarEleDataContainer& old);
 
   double            area_;           // element length/area in current configuration
-  vector<int>       searchelements_; // global ids of potentially contacting elements
+  std::vector<int>  searchelements_; // global ids of potentially contacting elements
 
 }; // class MortarEleDataContainer
 
@@ -294,7 +292,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
   { return MortarElementType::Instance(); }
@@ -325,9 +323,9 @@ public:
   \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines()
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines()
   {
-   vector<RCP<DRT::Element> > lines(0);
+   std::vector<Teuchos::RCP<DRT::Element> > lines(0);
    return lines;
   }
 
@@ -335,9 +333,9 @@ public:
   \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces()
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces()
   {
-   vector<RCP<DRT::Element> > surfaces(0);
+   std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
    return surfaces;
   }
 
@@ -451,7 +449,7 @@ public:
   */
   virtual int Evaluate(ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -477,10 +475,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL)
   { return 0; }
@@ -520,7 +518,7 @@ public:
          This function is a real stand-alone function to be called
          for a CoElement in order to compute a unit normal derivative at any point.
   */
-  virtual void DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn);
+  virtual void DerivUnitNormalAtXi(double* xi, std::vector<std::map<int,double> >& derivn);
 
   /*!
   \brief Get nodal reference / spatial coords of current element
@@ -549,7 +547,7 @@ public:
   /*!
   \brief Evaluate element metrics (local basis vectors)
   */
-  virtual void Metrics(double* xi, vector<double>& gxi, vector<double>& geta);
+  virtual void Metrics(double* xi, std::vector<double>& gxi, std::vector<double>& geta);
 
   /*!
   \brief Evaluate Jacobian determinant for parameter space integration
@@ -559,7 +557,7 @@ public:
   /*!
   \brief Compute Jacobian determinant derivative
   */
-  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
+  virtual void DerivJacobian(double* xi, std::map<int,double>& derivjac);
 
   /*!
   \brief Compute length/area of the element
@@ -581,7 +579,7 @@ public:
                          (= derivatives of the dual coefficient matrix Ae)
   */
   void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
-                                   vector<vector<map<int,double> > >& derivdual);
+                                   std::vector<std::vector<std::map<int,double> > >& derivdual);
 
   /*!
   \brief Evaluate displacement shape functions and derivatives
@@ -617,7 +615,7 @@ public:
   \param derivdual (in): derivative maps to be filled
                          (= derivatives of the dual coefficient matrix Ae)
   */
-  virtual bool DerivShapeDual(vector<vector<map<int,double> > >& derivdual);
+  virtual bool DerivShapeDual(std::vector<std::vector<std::map<int,double> > >& derivdual);
 
   /*!
   \brief Interpolate global coordinates for given local element coordinates
@@ -672,7 +670,7 @@ public:
   \brief Resets the data container of the element
 
   With this function, the container with mortar specific quantities/information
-  is deleted / reset to null pointer
+  is deleted / reset to Teuchos::null pointer
 
   */
   virtual void ResetDataContainer();
@@ -681,10 +679,10 @@ public:
 
 protected:
 
-  DRT::Element::DiscretizationType    shape_;          // shape of this element
-  bool                                isslave_;        // indicating slave or master side
+  DRT::Element::DiscretizationType              shape_;      // shape of this element
+  bool                                          isslave_;    // indicating slave or master side
 
-  RCP<MORTAR::MortarEleDataContainer> modata_;         // additional information
+  Teuchos::RCP<MORTAR::MortarEleDataContainer>  modata_;     // additional information
 
 }; // class MortarElement
 
@@ -740,7 +738,7 @@ protected:
 
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
-    vector<double>                weights_;     // Gauss point weights
+    std::vector<double>           weights_;     // Gauss point weights
 
 }; // class ElementIntegrator
 } // namespace MORTAR
