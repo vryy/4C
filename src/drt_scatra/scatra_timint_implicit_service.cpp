@@ -595,6 +595,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   eleparams.set("action","get_material_parameters");
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("isale",isale_);
+  // provide displacement field in case of ALE
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
   discret_->Evaluate(eleparams,null,null,null,null,null);
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
 
@@ -726,8 +728,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars

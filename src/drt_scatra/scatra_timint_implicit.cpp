@@ -786,6 +786,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   SetTimeForNeumannEvaluation(p);
   p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
+  // provide displacement field in case of ALE
+  if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
 
   discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
