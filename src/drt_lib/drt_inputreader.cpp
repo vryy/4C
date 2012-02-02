@@ -1028,30 +1028,39 @@ bool DatFileReader::PrintUnknownSections()
   // is finished. Only then we have a proper protocol of (in-)valid section names
 
   bool printout(false);
-  map<string,bool>::iterator iter;
-  // is there at least one unknown section?
-  for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
+
+  // Only PROC 0 decides whether an unknown sections was detected or not.
+  // Otherwise a processor different from PROC 0 stops with a dserror
+  // before(!) the list of unknown sections was printed to screen by PROC 0.
+  // Thus, the whole task is left to PROC 0.
+  if(Comm()->MyPID()==0)
   {
-    if (iter->second == false)
-    {
-      printout = true;
-      break;
-    }
-  }
-  // now it's time to create noise on the screen
-  if ((printout == true) and (Comm()->MyPID()==0))
-  {
-    if (Comm()->MyPID()==0)
-    cout<<"\nWARNING!"<<"\n--------"<<
-        "\nThe following input file sections remained unused (obsolete or typo?):"
-        <<endl;
+    map<string,bool>::iterator iter;
+    // is there at least one unknown section?
     for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
     {
       if (iter->second == false)
-        cout<<iter->first<<endl;
+      {
+        printout = true;
+        break;
+      }
     }
-    cout<<endl;
-  }
+    // now it's time to create noise on the screen
+    if (printout == true)
+    {
+      cout<<"\nERROR!"<<"\n--------"<<
+          "\nThe following input file sections remained unused (obsolete or typo?):"
+          <<endl;
+      for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
+      {
+        if (iter->second == false)
+          cout<<iter->first<<endl;
+      }
+      cout<<endl;
+      // empty stream buffer: print everything to cout NOW!
+      cout.flush();
+    }
+  } // if(Comm()->MyPID()==0)
 
   return printout;
 }
