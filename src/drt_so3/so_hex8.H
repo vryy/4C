@@ -233,24 +233,27 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
-    switch (genprob.probtyp)
+    if (nds==1)
     {
-    case prb_tsi:{
-		// in case of TSI: nds=1 (second discretization) temperature: 1Dof/Node
-		if (nds==1){return 1;}
-		break;
+      switch (genprob.probtyp)
+      {
+      // in case of TSI/TFSI_Aero: nds=1 (second discretization) temperature: 1Dof/Node
+      case prb_tsi:
+      case prb_tfsi_aero:
+        return 1;
+        break;
+      // in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
+      case prb_poroelast:
+        return genprob.ndim+1;
+        break;
+      default:
+        dserror("Unknown problem type with a second dofset!");
+      break;
+      }
     }
-    case prb_poroelast:{
-    	// in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
-    	if (nds==1){return genprob.ndim+1;}
-    	break;
-    }
-    default:
-		break;
-    }
-	// structure, 3D: 3 Dofs per node
-	//    return 3;
-	return NumDofPerNode(node);
+    // structure, 3D: 3 Dofs per node
+    //    return 3;
+    return NumDofPerNode(node);
   };
 
 
