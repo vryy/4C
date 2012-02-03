@@ -1029,12 +1029,6 @@ bool DatFileReader::PrintUnknownSections()
 
   bool printout(false);
 
-  // Only PROC 0 decides whether an unknown sections was detected or not.
-  // Otherwise a processor different from PROC 0 stops with a dserror
-  // before(!) the list of unknown sections was printed to screen by PROC 0.
-  // Thus, the whole task is left to PROC 0.
-  if(Comm()->MyPID()==0)
-  {
     map<string,bool>::iterator iter;
     // is there at least one unknown section?
     for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
@@ -1046,7 +1040,7 @@ bool DatFileReader::PrintUnknownSections()
       }
     }
     // now it's time to create noise on the screen
-    if (printout == true)
+    if ((printout == true) and (Comm()->MyPID()==0))
     {
       cout<<"\nERROR!"<<"\n--------"<<
           "\nThe following input file sections remained unused (obsolete or typo?):"
@@ -1060,7 +1054,13 @@ bool DatFileReader::PrintUnknownSections()
       // empty stream buffer: print everything to cout NOW!
       cout.flush();
     }
-  } // if(Comm()->MyPID()==0)
+
+  // we wait till all procs are here. Otherwise a hang up might occur where
+  // one proc ended with dserror but other procs were not finished and waited...
+  // we also want to have the printing above being finished.
+  Comm()->Barrier();
+  if (printout)
+    dserror("Unknown sections detected. Correct this!");
 
   return printout;
 }
