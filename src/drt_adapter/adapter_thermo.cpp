@@ -68,14 +68,15 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
 
   // major switch to different time integrators
-  switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP"))
+  INPAR::THR::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
+  switch (timinttype)
   {
   case INPAR::THR::dyna_statics :
   case INPAR::THR::dyna_onesteptheta :
   case INPAR::THR::dyna_gemm :
   case INPAR::THR::dyna_genalpha :
   case INPAR::THR::dyna_expleuler :
-    SetupTimIntImpl(prbdyn);   // <-- here is the show
+    SetupTimInt(prbdyn, timinttype);   // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", tdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -87,7 +88,10 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
 /*----------------------------------------------------------------------*
  | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
+void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
+  const Teuchos::ParameterList& prbdyn,
+  INPAR::THR::DynamicType timinttype
+  )
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t
@@ -153,8 +157,23 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
 
   // create marching time integrator
   Teuchos::RCP<Thermo> tmpthr;
-  tmpthr = Teuchos::rcp(new ThermoTimInt(ioflags, tdyn, xparams,
-                                         actdis, solver, output));
+  switch (timinttype)
+  {
+  case INPAR::THR::dyna_statics :
+  case INPAR::THR::dyna_onesteptheta :
+  case INPAR::THR::dyna_gemm :
+  case INPAR::THR::dyna_genalpha :
+    tmpthr = Teuchos::rcp(new ThermoTimInt(ioflags, tdyn, xparams,
+                                           actdis, solver, output));
+    break;
+  case INPAR::THR::dyna_expleuler :
+    tmpthr = Teuchos::rcp(new ThermoTimIntExpl(ioflags, tdyn, xparams,
+                                               actdis, solver, output));
+    break;
+  default :
+    dserror("unknown time integration scheme '%s'", timinttype);
+    break;
+  }
 
   // link/store thermal field solver
   thermo_ = tmpthr;

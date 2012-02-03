@@ -46,6 +46,7 @@ STR::TimIntExplEuler::TimIntExplEuler
     contactsolver,
     output
   ),
+  modexpleuler_(DRT::INPUT::IntegralValue<int>(sdynparams,"MODIFIEDEXPLEULER")==1),
   fextn_(Teuchos::null),
   fintn_(Teuchos::null),
   fviscn_(Teuchos::null),
@@ -55,7 +56,7 @@ STR::TimIntExplEuler::TimIntExplEuler
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with forward Euler" << std::endl
+    std::cout << "with " <<  (modexpleuler_?"modified":"standard") << " forward Euler" << std::endl
               << "lumping activated: " << (lumpmass_?"true":"false") << std::endl
               << std::endl;
   }
@@ -94,13 +95,17 @@ void STR::TimIntExplEuler::IntegrateStep()
 
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
 
-  // new displacements \f$D_{n+1}\f$
-  disn_->Update(1.0, *(*dis_)(0), 0.0);
-  disn_->Update(dt, *(*vel_)(0), 1.0);
-
   // new velocities \f$V_{n+1}\f$
   veln_->Update(1.0, *(*vel_)(0), 0.0);
   veln_->Update(dt, *(*acc_)(0), 1.0);
+
+  // new displacements \f$D_{n+1}\f$, modified expl Euler uses veln_ for
+  // updating disn_
+  disn_->Update(1.0, *(*dis_)(0), 0.0);
+  if(modexpleuler_==true)
+    disn_->Update(dt, *(*veln_)(0), 1.0);
+  else
+    disn_->Update(dt, *(*vel_)(0), 1.0);
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);

@@ -80,6 +80,7 @@ THR::TimInt::TimInt(
   stepmax_(tdynparams.get<int>("NUMSTEP")),
   step_(Teuchos::null),
   stepn_(0),
+  lumpcond_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCOND")==1),
   zeros_(Teuchos::null),
   temp_(Teuchos::null),
   rate_(Teuchos::null),
@@ -184,6 +185,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     p.set("action", "calc_thermo_fintcapa");
     // type of calling time integrator
     p.set<int>("time integrator", MethodName());
+    p.set<bool>("lump cond matrix", lumpcond_);
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
@@ -221,9 +223,12 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   }
 
   // We need to reset the tangent matrix because its graph (topology)
-  // is not finished yet in case of constraints and posssibly other side
+  // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
-  tang_->Reset();
+  // BUT: in case of explicit time integration, the conductivity matrix
+  // is stored in tang_ which is needed throughout the simulation
+  if(MethodName() != INPAR::THR::dyna_expleuler)
+    tang_->Reset();
 
   // leave this hell
   return;

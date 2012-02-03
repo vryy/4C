@@ -1078,6 +1078,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Lump the mass matrix for explicit time integration",
                                yesnotuple,yesnovalue,&sdyn);
 
+  setStringToIntegralParameter<int>("MODIFIEDEXPLEULER","Yes",
+                               "Use the modified explicit Euler time integration scheme",
+                               yesnotuple,yesnovalue,&sdyn);
+
   /*--------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in structural dynamics */
   Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY",false,"");
@@ -1775,6 +1779,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                               yesnotuple,yesnovalue,&tdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
+
+  setStringToIntegralParameter<int>("LUMPCOND","No",
+                               "Lump the conductivity matrix for explicit time integration",
+                               yesnotuple,yesnovalue,&tdyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */

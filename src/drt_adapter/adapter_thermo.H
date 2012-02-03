@@ -263,7 +263,10 @@ namespace ADAPTER
     void SetupThermo(const Teuchos::ParameterList& prbdyn);
 
     /// setup thermo algorithm of THR::TimIntImpl type
-    void SetupTimIntImpl(const Teuchos::ParameterList& prbdyn);
+    void SetupTimInt(
+      const Teuchos::ParameterList& prbdyn,
+      INPAR::THR::DynamicType timinttype
+      );
 
     /// thermal field solver
     Teuchos::RCP<Thermo> thermo_;

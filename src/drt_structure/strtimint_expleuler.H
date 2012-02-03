@@ -151,8 +151,7 @@ namespace STR
 
   protected:
 
-    //! Initialise
-    void Init();
+    bool modexpleuler_;  //!< modified explicit Euler equation (veln_ instead of vel_ for calc of disn_), default: true
 
     //! @name Global forces at \f$t_{n+1}\f$
     //@{

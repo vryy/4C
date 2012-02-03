@@ -210,7 +210,8 @@ Teuchos::RCP<THR::ThermoContactMan> ADAPTER::ThermoTimIntExpl::ThermoContactMana
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimIntExpl::PrepareTimeStep()
 {
-  dserror("not implemented");
+  //do nothing: there is no predictor for explicit time integration
+  return;
 }
 
 
@@ -291,7 +292,7 @@ void ADAPTER::ThermoTimIntExpl::PrepareThermoContact(Teuchos::RCP<MORTAR::Manage
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimIntExpl::Solve()
 {
-  dserror("not implemented");
+  thermo_->IntegrateStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -323,6 +324,25 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimIntExpl::ExtractTempnp()
   return Teuchos::null;
 }
 
+/*----------------------------------------------------------------------*
+ | update Newton step                                        dano 02/11 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimIntExpl::UpdateNewton(
+  Teuchos::RCP<const Epetra_Vector> temp
+  )
+{
+  dserror("not implemented");
+}
+
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix, rhs/force residual    dano 02/11 |
+ | Monolithic TSI accesses the linearised thermo problem                |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimIntExpl::Evaluate()
+{
+  dserror("not implemented");
+}
+
 
 /*----------------------------------------------------------------------*
  | apply current displacements and velocities needed in TSI  dano 01/12 |
@@ -334,6 +354,41 @@ void ADAPTER::ThermoTimIntExpl::ApplyStructVariables(
 {
   // pass current displacements and velocities to the thermo field
   thermo_->ApplyStructVariables(disp,vel);
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate the residual forces, use the last converged      dano 12/10 |
+ | solution for predictor                                               |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimIntExpl::PreparePartitionStep()
+{
+  dserror("not yet checked in ADAPTER::ThermoTimIntExpl::PreparePartitionStep()!");
+//  thermo_->PreparePartitionStep();
+}
+
+
+/*----------------------------------------------------------------------*
+ | external interface loads (heat fluxes) are applied to                |
+ | the thermo field                                         ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimIntExpl::ApplyInterfaceForces
+(
+  Teuchos::RCP<Epetra_Vector> ithermoload
+)
+{
+  thermo_->SetForceInterface(ithermoload);
+}
+
+
+/*----------------------------------------------------------------------*
+ | map extractor is set to communicate external loads       ghamm 12/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimIntExpl::SetSurfaceTFSI
+(
+  Teuchos::RCP<const LINALG::MapExtractor> tfsisurface  //!< the TFSI surface
+)
+{
+  thermo_->SetSurfaceTFSI(tfsisurface);
 }
 
 

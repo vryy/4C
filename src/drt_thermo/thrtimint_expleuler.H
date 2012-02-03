@@ -29,8 +29,8 @@ namespace THR
   /*!
    * \brief Forward Euler
    *        explicit time integrator
-   * \author bborn
-   * \date 06/08
+   * \author dano
+   * \date 01/12
    */
   class TimIntExplEuler : public TimIntExpl
   {
@@ -61,7 +61,7 @@ namespace THR
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep();
+    void ResizeMStep(){dserror("not a multistep method");}
 
     //@}
 
@@ -130,9 +130,6 @@ namespace THR
 
 
   protected:
-
-    //! Initialise
-    void Init();
 
     //! @name Global forces at \f$t_{n+1}\f$
     //@{

@@ -547,32 +547,31 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // copy capacity matrix if available
     //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
 
-    // lump the capacity matrix in case of explicit time integration
-    // check the time integrator
-    const INPAR::THR::DynamicType timint
-      = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
-    switch (timint)
+    if(params.get<bool>("lump cond matrix"))
     {
-      case INPAR::THR::dyna_expleuler :
+      const INPAR::THR::DynamicType timint
+        = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
+      switch (timint)
       {
-        // TODO 30.01.12 
-        cout << "in lump matrix thr element!" << endl;
-        CalculateLumpMatrix(&ecapa);
-        break;
-      }
-      case INPAR::THR::dyna_genalpha :
-      case INPAR::THR::dyna_onesteptheta :
-      case INPAR::THR::dyna_statics :
-      {
-        break;
-      }
-      case INPAR::THR::dyna_undefined :
-      default :
-      {
-        dserror("Don't know what to do...");
-        break;
-      }
-    }  // end of switch(timint)
+        case INPAR::THR::dyna_expleuler :
+        {
+          CalculateLumpMatrix(&ecapa);
+          break;
+        }
+        case INPAR::THR::dyna_genalpha :
+        case INPAR::THR::dyna_onesteptheta :
+        case INPAR::THR::dyna_statics :
+        {
+          break;
+        }
+        case INPAR::THR::dyna_undefined :
+        default :
+        {
+          dserror("Undefined time integration scheme for thermal problem!");
+          break;
+        }
+      }  // end of switch(timint)
+    }  // end of lumping
 
   }  // action == "calc_thermo_fintcapa"
 

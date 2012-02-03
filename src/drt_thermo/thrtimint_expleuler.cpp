@@ -47,7 +47,8 @@ THR::TimIntExplEuler::TimIntExplEuler
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with forward Euler"
+    std::cout << "with forward Euler" << std::endl
+              << "lumping activated: " << (lumpcond_?"true":"false") << std::endl
               << std::endl;
   }
 
@@ -89,9 +90,6 @@ void THR::TimIntExplEuler::IntegrateStep()
   // initialise internal forces
   fintn_->PutScalar(0.0);
 
-//  // initialise conductivity matrix to zero
-//  tang_->Zero();
-
   // ordinary internal force and conductivity matrix
   {
     // displacement increment in step
@@ -115,11 +113,22 @@ void THR::TimIntExplEuler::IntegrateStep()
     raten_->PutScalar(0.0);
   }
 
-  // extract the diagonal values of the capacity matrix
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(tang_->RowMap(),false);
-  tang_->ExtractDiagonalCopy(*diag);
-  // R_{n+1} = C^{-1} . ( -fint + fext )
-  raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
+  if (lumpcond_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_)==Teuchos::null)
+  {
+    // refactor==false: This is not necessary, because we always
+    // use the same constant mass matrix, which was firstly factorised
+    // in TimInt::DetermineMassDampConsistAccel
+    solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, false, true);
+  }
+  // direct inversion based on lumped mass matrix
+  else
+  {
+    // extract the diagonal values of the mass matrix
+    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(),false);
+    (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
+    // A_{n+1} = M^{-1} . ( -fint + fext )
+    raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
+  }
 
   // TIMING
   //if (!myrank_) cout << "T_linsolve: " << timer_->WallTime() - dtcpu << endl;
