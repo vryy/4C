@@ -217,10 +217,12 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
     if (ilt)
     {
       for (int j=0; j<elestrength->MyLength(); ++j)
-      {
+      {	
+	// contribution of local ilt thickness to strength; lower and
+	// upper bounds for the ilt thickness are 0 and 36
 	// Careful! ilt thickness is still normalized! Multiply with max
 	// ilt thickness.
-	(*elestrength)[j] = spatialconst - 379000 * (pow(((*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))]/10*maxiltthick),0.5) - 0.81); //from Vande Geest strength formula
+	(*elestrength)[j] = spatialconst - 379000 * (pow((max(0., min(36., (*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))])) /10*maxiltthick),0.5) - 0.81); //from Vande Geest strength formula
     
       }
     }
@@ -234,7 +236,8 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
     {
       for (int j=0; j< elestrength->MyLength(); ++j)
       {
-	(*elestrength)[j] -= 15600 * ( 2 * (*locrad)[locrad->Map().LID(dis.ElementRowMap()->GID(j))]/subrendia - 2.46); //from Vande Geeststrength formula
+	// contribution of local diameter to strength; lower and upper bounds for the normalized diameter are 1.0 and 3.9
+	(*elestrength)[j] -= 156000 * (   max(1., min(3.9, 2 * (*locrad)[locrad->Map().LID(dis.ElementRowMap()->GID(j))]/subrendia))   - 2.46); //from Vande Geeststrength formula
       }
     }
   }
