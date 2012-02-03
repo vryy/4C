@@ -72,6 +72,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     p.set("total time",time_);
     p.set<int>("scatratype",scatratype_);
     p.set("isale",isale_);
+    // provide displacement field in case of ALE
+    if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
     discret_->ClearState();
     discret_->EvaluateNeumann(p,*neumann_loads_);
     discret_->ClearState();
