@@ -420,7 +420,10 @@ namespace ELEMENTS
                                 const LINALG::Matrix<nen_,1>    &    escabofoaf,
                                 const LINALG::Matrix<nsd_,nen_> &    eveln,
                                 const LINALG::Matrix<nen_,1>    &    escaam,
+                                const LINALG::Matrix<nsd_,nen_> &    edispnp,
+                                const LINALG::Matrix<nsd_,nen_> &    egridv,
                                 Teuchos::RCP<MAT::Material>          mat,
+                                bool                                 isale,
                                 double                               CsDeltaSq,
                                 const DRT::UTILS::GaussIntegration & intpoints);
 
@@ -526,6 +529,8 @@ namespace ELEMENTS
                                const LINALG::Matrix<nen_,1>&        escadtam,
                                const LINALG::Matrix<nen_,1>&        escabofoaf,
                                const LINALG::Matrix<nsd_,nen_>&     emhist,
+                               const LINALG::Matrix<nsd_,nen_>&     edispnp,
+                               const LINALG::Matrix<nsd_,nen_>&     egridv,
                                LINALG::Matrix<(nsd_+1)*nen_,nen_>&  estif,
                                const double                         thermpressaf,
                                const double                         thermpressam,
@@ -533,6 +538,7 @@ namespace ELEMENTS
                                const double                         thermpressdtam,
                                Teuchos::RCP<const MAT::Material>    material,
                                double&                              Cs_delta_sq,
+                               bool                                 isale,
                                const DRT::UTILS::GaussIntegration & intpoints);
 
 
@@ -748,10 +754,11 @@ namespace ELEMENTS
     //! compute additional Galerkin terms on right-hand side of continuity equation
     //! (only required for variable-density flow at low Mach number)
     void ComputeGalRHSContEq(
-        const LINALG::Matrix<nsd_,nen_>&          eveln,   ///< velocity at time n
-        const LINALG::Matrix<nen_,1>&             escaaf,  ///< scalar at time n+alpha_F/n+1
-        const LINALG::Matrix<nen_,1>&             escaam,  ///< scalar at time n+alpha_M/n
-        const LINALG::Matrix<nen_,1>&             escadtam ///< acceleration at time n+alpha_M/n
+        const LINALG::Matrix<nsd_,nen_>&  eveln,    ///< velocity at time n
+        const LINALG::Matrix<nen_,1>&     escaaf,   ///< scalar at time n+alpha_F/n+1
+        const LINALG::Matrix<nen_,1>&     escaam,   ///< scalar at time n+alpha_M/n
+        const LINALG::Matrix<nen_,1>&     escadtam, ///< acceleration at time n+alpha_M/n
+        bool                              isale     ///< flag for ALE case
         );
 
     //! compute residual of scalar equation and subgrid-scale part of scalar
@@ -1152,7 +1159,9 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> velhativelhatjdiv_;
     //! filtered velocity divergence
     double velhatdiv_;
-    //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
+    //! grid velocity u_G at integration point
+    LINALG::Matrix<nsd_,1> gridvelint_;
+    //! ale convective velocity c=u-u_G at integration point
     LINALG::Matrix<nsd_,1> convvelint_;
     //! acceleration vector in gausspoint
     LINALG::Matrix<nsd_,1> accint_;
@@ -1240,8 +1249,8 @@ namespace ELEMENTS
     double scaconvfacn_;
     //! addition to continuity equation due to thermodynamic pressure
     double thermpressadd_;
-    //! velocity vector in gausspoint at t_(n)
-    LINALG::Matrix<nsd_,1> velintn_;
+    //! convective velocity vector in gausspoint at t_(n)
+    LINALG::Matrix<nsd_,1> convvelintn_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
     LINALG::Matrix<nsd_,nsd_> vderxyn_;
     //! velocity divergenceat at t_(n)

@@ -202,6 +202,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     reystresshatdiv_ (true),
     velhativelhatjdiv_ (true),
     velhatdiv_(0.0),
+    gridvelint_(true),
     convvelint_(true),
     accint_(true),
     gradp_(true),
@@ -234,7 +235,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
-    velintn_(true),
+    convvelintn_(true),
     vderxyn_(true),
     vdivn_(0.0),
     grad_scaaf_(true),
@@ -1330,7 +1331,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //  mesh-movement-dependent) convective velocity, avoiding
     //  various ALE terms used to be calculated before)
     convvelint_.Update(velint_);
-    if (isale) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
+    if (isale)
+    {
+      gridvelint_.Multiply(egridv,funct_);
+      convvelint_.Update(-1.0,gridvelint_,1.0);
+    }
 
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1567,7 +1572,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
-      ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam);
+      ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam,isale);
 
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
@@ -4869,10 +4874,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeGalRHSContEq(
-    const LINALG::Matrix<nsd_,nen_>&          eveln,
-    const LINALG::Matrix<nen_,1>&             escaaf,
-    const LINALG::Matrix<nen_,1>&             escaam,
-    const LINALG::Matrix<nen_,1>&             escadtam)
+    const LINALG::Matrix<nsd_,nen_>&  eveln,
+    const LINALG::Matrix<nen_,1>&     escaaf,
+    const LINALG::Matrix<nen_,1>&     escaam,
+    const LINALG::Matrix<nen_,1>&     escadtam,
+    bool                              isale)
 {
   //----------------------------------------------------------------------
   // compute additional Galerkin terms on right-hand side of continuity
@@ -4895,7 +4901,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeGalRHSContEq(
   grad_scaaf_.Multiply(derxy_,escaaf);
 
   // convective scalar term at n+alpha_F/n+1
-  conv_scaaf_ = velint_.Dot(grad_scaaf_);
+  conv_scaaf_ = convvelint_.Dot(grad_scaaf_);
 
   // add to rhs of continuity equation
   rhscon_ = scaconvfacaf_*conv_scaaf_;
@@ -4914,8 +4920,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeGalRHSContEq(
     // instationary case
     if (not f3Parameter_->is_stationary_)
     {
-      // get velocity at n
-      velintn_.Multiply(eveln,funct_);
+      // get velocity at n (including grid velocity in ALE case)
+      convvelintn_.Multiply(eveln,funct_);
+      if (isale) convvelintn_.Update(-1.0,gridvelint_,1.0);
 
       // get velocity derivatives at n
       vderxyn_.MultiplyNT(eveln,derxy_);
@@ -4937,7 +4944,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeGalRHSContEq(
       grad_scan_.Multiply(derxy_,escaam);
 
       // convective scalar term at n
-      conv_scan_ = velintn_.Dot(grad_scan_);
+      conv_scan_ = convvelintn_.Dot(grad_scan_);
 
       // add to rhs of continuity equation
       // (prepared for later multiplication by theta*dt in
@@ -17631,6 +17638,18 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
 
   if (not f3Parameter_->is_genalpha_) eaccam.Clear();
 
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  LINALG::Matrix<nsd_, nen_> egridv(true);
+
+  if (ele->IsAle())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
+  }
+
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
@@ -17663,7 +17682,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
     escabofoaf,
     eveln,
     escaam,
+    edispnp,
+    egridv,
     mat,
+    ele->IsAle(),
     ele->CsDeltaSq(),
     intpoints);
 
@@ -17689,7 +17711,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
   const LINALG::Matrix<nen_,1>    &    escabofoaf,
   const LINALG::Matrix<nsd_,nen_> &    eveln,
   const LINALG::Matrix<nen_,1>    &    escaam,
+  const LINALG::Matrix<nsd_,nen_> &    edispnp,
+  const LINALG::Matrix<nsd_,nen_> &    egridv,
   Teuchos::RCP<MAT::Material>          mat,
+  bool                                 isale,
   double                               CsDeltaSq,
   const DRT::UTILS::GaussIntegration & intpoints )
 {
@@ -17738,6 +17763,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
                         escadtam,
                         escabofoaf,
                         emhist,
+                        edispnp,
+                        egridv,
                         elemat1,
                         thermpressaf,
                         thermpressam,
@@ -17745,6 +17772,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
                         thermpressdtam,
                         mat,
                         Cs_delta_sq,
+                        isale,
                         intpoints);
 
   return 0;
@@ -17769,6 +17797,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
   const LINALG::Matrix<nen_,1>&        escadtam,
   const LINALG::Matrix<nen_,1>&        escabofoaf,
   const LINALG::Matrix<nsd_,nen_>&     emhist,
+  const LINALG::Matrix<nsd_,nen_>&     edispnp,
+  const LINALG::Matrix<nsd_,nen_>&     egridv,
   LINALG::Matrix<(nsd_+1)*nen_,nen_>&  estif,
   const double                         thermpressaf,
   const double                         thermpressam,
@@ -17776,6 +17806,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
   const double                         thermpressdtam,
   Teuchos::RCP<const MAT::Material>    material,
   double&                              Cs_delta_sq,
+  bool                                 isale,
   const DRT::UTILS::GaussIntegration & intpoints
   )
 {
@@ -17783,6 +17814,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
   // and energy-conservation equation
   LINALG::Matrix<nen_,1> lin_resC_DT(true);
   LINALG::Matrix<nen_,1> lin_resE_DT(true);
+
+  // add displacement when fluid nodes move in the ALE case
+  if (isale) xyze_ += edispnp;
 
   // evaluate shape functions and derivatives at element center
   EvalShapeFuncAndDerivsAtEleCenter(eid);
@@ -17826,9 +17860,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    velint_.Multiply(evelaf,funct_);
+    // get convective velocity at integration point
+    // (including grid velocity in ALE case,
+    // values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    convvelint_.Multiply(evelaf,funct_);
+    if (isale)
+    {
+      gridvelint_.Multiply(egridv,funct_);
+      convvelint_.Update(-1.0,gridvelint_,1.0);
+    }
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters, subgrid viscosity
@@ -17856,11 +17896,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
     }
 
     // evaluation of convective operator
-    conv_c_.MultiplyTN(derxy_,velint_);
+    conv_c_.MultiplyTN(derxy_,convvelint_);
 
     // compute additional Galerkin terms on right-hand side of continuity equation
     // -> different for generalized-alpha and other time-integration schemes
-    ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam);
+    ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam,isale);
     
 #ifdef SGSCALSCALAR
     // compute subgrid-scale part of scalar
@@ -17927,7 +17967,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
       histmom_.Multiply(emhist,funct_);
 
       // convective term from previous iteration
-      conv_old_.Multiply(vderxy_,velint_);
+      conv_old_.Multiply(vderxy_,convvelint_);
 
       // compute viscous term from previous iteration
       if (is_higher_order_ele_) CalcDivEps(evelaf);
