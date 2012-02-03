@@ -15008,16 +15008,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PoroSysmat(
     // (only required for one-step-theta and BDF2 time-integration schemes)
     histmom_.Multiply(emhist,funct_);
 
-    // get displacement at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    LINALG::Matrix<nsd_,1>           dispint;
-    dispint.Multiply(edispnp,funct_);
-
-    // get displacement at integration point
-    // (values at n+)
-    LINALG::Matrix<nsd_,1>           dispnint;
-    dispnint.Multiply(edispn,funct_);
-
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     LINALG::Matrix<nsd_,1>             gridvelint;
@@ -16337,11 +16327,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PoroSysmatCoupl(int eid,
       // get momentum history data at integration point
       // (only required for one-step-theta and BDF2 time-integration schemes)
       histmom_.Multiply(emhist,funct_);
-
-      // get mesh displacement at integration point
-      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      LINALG::Matrix<nsd_,1> dispint;
-      dispint.Multiply(edispnp,funct_);
 
       // get velocity at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)

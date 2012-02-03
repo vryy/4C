@@ -622,21 +622,4 @@ void ADAPTER::StructureTimIntImpl::ApplyDisMat(
 }
 
 /*----------------------------------------------------------------------*/
-/* build linear system stiffness matrix and rhs/force residual
- *
- * Monolithic FSI accesses the linearised structure problem. */
-
-/*
-void ADAPTER::StructureTimIntImpl::PoroEvaluate(
-  Teuchos::RCP<const Epetra_Vector> disiterinc
-)
-{
-  structure_->UpdateIterIncrementally(disiterinc);
-
-  // builds tangent, residual and applies DBC
-  structure_->PoroEvaluateForceStiffResidual();
-  structure_->PrepareSystemForNewtonSolve();
-}*/
-
-/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
