@@ -2784,8 +2784,16 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
     }
     else
     {
-      int largerlid = max((int)LID(0,0), (int)LID(1,0));
-      map<int,LINALG::Matrix<3,1> >::const_iterator updatedpos = currentpositions.find(largerlid);
+      int chosenlid = max((int)LID(0,0), (int)LID(1,0));
+      // in case of a loom network, we want the crosslinker position to lie on the horizontal filament
+      if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
+        for(int i=0; i<LID.M(); i++)
+          if((*filamentnumber_)[(int)LID(i,0)] == 0)
+          {
+            chosenlid = (int)LID(i,0);
+            break;
+          }
+      map<int,LINALG::Matrix<3,1> >::const_iterator updatedpos = currentpositions.find(chosenlid);
       for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
         (*crosslinkerpositions_)[i][crosslinkernumber] = (updatedpos->second)(i);
     }
