@@ -166,6 +166,7 @@ namespace ELEMENTS
     int Evaluate(int                                           eid,
                  Teuchos::ParameterList&                       params,
                  const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
+                 const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
                  LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
@@ -408,6 +409,7 @@ namespace ELEMENTS
     int LomaMonoODBlockEvaluate(int                                  eid,
                                 Teuchos::ParameterList&              params,
                                 const LINALG::Matrix<nsd_,nen_> &    ebofoaf,
+                                const LINALG::Matrix<nsd_,nen_> &    eprescpgaf,
                                 LINALG::Matrix<(nsd_+1)*nen_,nen_> & elemat1,
                                 const LINALG::Matrix<nsd_,nen_> &    evelaf,
                                 const LINALG::Matrix<nen_,1>    &    epreaf,
@@ -427,6 +429,7 @@ namespace ELEMENTS
 
       \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
+      \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for turbulent channel flow)
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param eveln            (i) nodal velocities at n
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -454,6 +457,7 @@ namespace ELEMENTS
       */
     void Sysmat(int                                            eid,
                 const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
+                const LINALG::Matrix<nsd_,nen_> &              eprescpgaf,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_> &              evelnp,
@@ -490,6 +494,7 @@ namespace ELEMENTS
 
       \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
+      \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for turbulent channel flow)
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
@@ -511,6 +516,7 @@ namespace ELEMENTS
       */
     void LomaMonoODBlockSysmat(int                                  eid,
                                const LINALG::Matrix<nsd_,nen_> &    ebofoaf,
+                               const LINALG::Matrix<nsd_,nen_> &    eprescpgaf,
                                const LINALG::Matrix<nsd_,nen_>&     evelaf,
                                const LINALG::Matrix<nsd_,nen_>&     eveln,
                                const LINALG::Matrix<nen_,1>&        epreaf,
@@ -638,6 +644,7 @@ namespace ELEMENTS
       DRT::ELEMENTS::Fluid3*               ele,         //< pointer to element
       DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter, //< pointer to fluid parameter
       LINALG::Matrix<nsd_,nen_> &          ebofoaf,     //< body force at nodes
+      LINALG::Matrix<nsd_,nen_> &          eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
       LINALG::Matrix<nen_,1> &             escabofoaf   //< scatra body force at nodes
       );
 
@@ -1119,6 +1126,8 @@ namespace ELEMENTS
     LINALG::Matrix<numderiv2_,nen_> derxy2_;
     //! bodyforce in gausspoint
     LINALG::Matrix<nsd_,1> bodyforce_;
+    //! prescribed pressure gradient (required for turbulent channel flow!)
+    LINALG::Matrix<nsd_,1> prescribedpgrad_;
     //! vector containing all values from previous timelevel n for momentum equation
     LINALG::Matrix<nsd_,1> histmom_;
     //! direction of flow (normed velocity vector)

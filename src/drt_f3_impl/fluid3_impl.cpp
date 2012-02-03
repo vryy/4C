@@ -189,6 +189,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     derxy_(true),
     derxy2_(true),
     bodyforce_(true),
+    prescribedpgrad_(true),
     histmom_(true),
     velino_(true),
     velint_(true),
@@ -827,13 +828,15 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes,
-  // with scatra body force included for variable-density flow
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
+  LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,f3Parameter_,ebofoaf,escabofoaf);
+  BodyForce(ele,f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
@@ -976,6 +979,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     ele->Id(),
     params,
     ebofoaf,
+    eprescpgaf,
     elemat1,
     elemat2,
     elevec1,
@@ -1018,6 +1022,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   int                                           eid,
   Teuchos::ParameterList&                       params,
   const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
+  const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
   LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
@@ -1086,6 +1091,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // ---------------------------------------------------------------------
   Sysmat(eid,
          ebofoaf,
+         eprescpgaf,
          evelaf,
          eveln,
          evelnp,
@@ -1156,6 +1162,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   int                                           eid,
   const LINALG::Matrix<nsd_,nen_>&              ebofoaf,
+  const LINALG::Matrix<nsd_,nen_>&             eprescpgaf,
   const LINALG::Matrix<nsd_,nen_>&              evelaf,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              evelnp,
@@ -1336,6 +1343,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     bodyforce_.Multiply(ebofoaf,funct_);
+    // get prescribed pressure gradient acting as body force
+    // (required for turbulent channel flow)
+    prescribedpgrad_.Multiply(eprescpgaf,funct_);
+
 
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
@@ -2174,6 +2185,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(
            DRT::ELEMENTS::Fluid3*               ele,
            DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,
            LINALG::Matrix<nsd_,nen_>&           ebofoaf,
+           LINALG::Matrix<nsd_,nen_> &          eprescpgaf,
            LINALG::Matrix<nen_,1>&              escabofoaf)
 {
   vector<DRT::Condition*> myneumcond;
@@ -2191,6 +2203,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(
 
   if (myneumcond.size()==1)
   {
+    const string* condtype = myneumcond[0]->Get<string>("type");
+
     // check for potential time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
@@ -2239,7 +2253,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(
         }
         else functionfac = 1.0;
 
-        ebofoaf(isd,jnode) = num*functionfac;
+        // get usual body foce
+        if (*condtype == "neum_dead" or *condtype == "neum_live")
+          ebofoaf(isd,jnode) = num*functionfac;
+        // get prescribed pressure gradient
+        else if (*condtype == "neum_pgrad")
+          eprescpgaf(isd,jnode) = num*functionfac;
+        else
+          dserror("Unknown Neumann condition");
       }
     }
   }
@@ -4652,6 +4673,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
 
     // rhs of momentum equation: density*bodyforce at n+alpha_F
     rhsmom_.Update(densaf_,bodyforce_,0.0);
+    // and pressure gradient prescribed as body force
+    // caution: not density weighted
+    rhsmom_.Update(1.0,prescribedpgrad_,1.0);
 
     // get acceleration at time n+alpha_M at integration point
     accint_.Multiply(eaccam,funct_);
@@ -4660,7 +4684,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
     for (int rr=0;rr<nsd_;++rr)
     {
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr);
+                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr)-prescribedpgrad_(rr);
     }
   }
   else
@@ -4672,9 +4696,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+      {
         rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,deltadens_,bodyforce_);
+        // and pressure gradient prescribed as body force
+        // caution: not density weighted
+        rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+      }
       else
+      {
         rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,densaf_,bodyforce_);
+        // and pressure gradient prescribed as body force
+        // caution: not density weighted
+        rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+      }
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
@@ -4690,9 +4724,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ComputeSubgridScaleVelocity(
       // rhs of stationary momentum equation: density*bodyforce
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
+      // and pressure gradient prescribed as body force (not density weighted)
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
-           rhsmom_.Update(deltadens_,bodyforce_, 0.0);
-      else rhsmom_.Update(densaf_,bodyforce_,0.0);
+           rhsmom_.Update(deltadens_,bodyforce_, 1.0,prescribedpgrad_);
+      else rhsmom_.Update(densaf_,bodyforce_,1.0,prescribedpgrad_);
 
       // compute stationary momentum residual:
       for (int rr=0;rr<nsd_;++rr)
@@ -8209,8 +8244,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   // get bodyforce
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> ebofo(true);
+  LINALG::Matrix<nsd_,nen_> epgrad(true);
   LINALG::Matrix<nen_,1>    escabofo(true);
-  BodyForce(ele, f3Parameter_, ebofo, escabofo);
+  BodyForce(ele, f3Parameter_, ebofo, epgrad, escabofo);
 
   // working arrays for the quantities we want to compute
   double eps_visc        = 0.0;
@@ -8251,6 +8287,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
     conv_old_.Multiply(vderxy_,convvelint_);
     // get bodyforce at integration point
     bodyforce_.Multiply(ebofo,funct_);
+    // prescribed pressure gradient
+    prescribedpgrad_.Multiply(epgrad,funct_);
     // get acceleration at integration point
     accint_.Multiply(eacc,funct_);
 
@@ -8282,7 +8320,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
     */
     for (int rr=0;rr<nsd_;rr++)
     {
-      momres_old_(rr,0) = densaf_ * (accint_(rr,0) + conv_old_(rr,0) + gradp_(rr,0) - bodyforce_(rr,0));
+      momres_old_(rr,0) = densaf_ * (accint_(rr,0) + conv_old_(rr,0) + gradp_(rr,0) - bodyforce_(rr,0)) - prescribedpgrad_(rr,0);
     }
     // get second derivative of the viscous term:
     // div(epsilon(u))
@@ -8479,6 +8517,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
     convvelint_.Clear();
     conv_old_.Clear();
     bodyforce_.Clear();
+    prescribedpgrad_.Clear();
     accint_.Clear();
     velinthat_.Clear();
     reystressinthat_.Clear();
@@ -14623,13 +14662,16 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::PoroEvaluate(DRT::ELEMENTS::Fluid3*     
   // elevec2 and elevec3 are currently not in use
 
   // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
+  // call routine for calculation of body force in element nodes,
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
+  LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,f3Parameter_,ebofoaf,escabofoaf);
+  BodyForce(ele,f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -15976,13 +16018,16 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::PoroEvaluateCoupl(
   // elevec2 and elevec3 are currently not in use
 
   // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
+  // call routine for calculation of body force in element nodes,
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  LINALG::Matrix<nsd_, nen_> ebofoaf(true);
-  LINALG::Matrix<nen_, 1> escabofoaf(true);
-  BodyForce(ele, f3Parameter_, ebofoaf, escabofoaf);
+  LINALG::Matrix<nsd_,nen_> ebofoaf(true);
+  LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
+  LINALG::Matrix<nen_,1>    escabofoaf(true);
+  BodyForce(ele,f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -17543,13 +17588,16 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
   LINALG::Matrix<(nsd_+1)*nen_,nen_> elemat1(elemat1_epetra,true);
 
   // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
+  // call routine for calculation of body force in element nodes,
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
+  LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,f3Parameter_,ebofoaf,escabofoaf);
+  BodyForce(ele,f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -17604,6 +17652,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
     ele->Id(),
     params,
     ebofoaf,
+    eprescpgaf,
     elemat1,
     evelaf,
     epreaf,
@@ -17629,6 +17678,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
   int                                  eid,
   Teuchos::ParameterList&              params,
   const LINALG::Matrix<nsd_,nen_> &    ebofoaf,
+  const LINALG::Matrix<nsd_,nen_> &    eprescpgaf,
   LINALG::Matrix<(nsd_+1)*nen_,nen_> & elemat1,
   const LINALG::Matrix<nsd_,nen_> &    evelaf,
   const LINALG::Matrix<nen_,1>    &    epreaf,
@@ -17678,6 +17728,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
   // ---------------------------------------------------------------------
   LomaMonoODBlockSysmat(eid,
                         ebofoaf,
+                        eprescpgaf,
                         evelaf,
                         eveln,
                         epreaf,
@@ -17708,6 +17759,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
   int                                  eid,
   const LINALG::Matrix<nsd_,nen_>&     ebofoaf,
+  const LINALG::Matrix<nsd_,nen_>&     eprescpgaf,
   const LINALG::Matrix<nsd_,nen_>&     evelaf,
   const LINALG::Matrix<nsd_,nen_>&     eveln,
   const LINALG::Matrix<nen_,1>&        epreaf,
@@ -17866,6 +17918,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
       // get bodyforce at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
       bodyforce_.Multiply(ebofoaf,funct_);
+      // get prescribed pressure gradient acting as body force
+      // (required for turbulent channel flow)
+      prescribedpgrad_.Multiply(eprescpgaf,funct_);
 
       // get momentum history data at integration point
       // (only required for one-step-theta and BDF2 time-integration schemes)

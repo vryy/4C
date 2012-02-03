@@ -1773,7 +1773,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // coefficient B of fine-scale velocity
   LINALG::Matrix<nsd_,1> B_mfs(true);
   // coefficient D of fine-scale scalar
-  LINALG::Matrix<nsd_,1> D_mfs(true);
+  double D_mfs = 0.0;
   if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     if (not BD_gp)
@@ -2048,7 +2048,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
           fsgradphi_.Multiply(derxy_,fsphinp_[k]);
           for (int idim=0; idim<nsd_; idim++)
-            mfsggradphi_(idim,0) = fsgradphi_(idim,0) * D_mfs(idim,0);
+            mfsggradphi_(idim,0) = fsgradphi_(idim,0) * D_mfs;
+//          if (eid_==10000)
+//           std::cout << mfsggradphi_ <<std::endl;
         }
         else
         {
@@ -3769,7 +3771,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcCharEleLength(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     LINALG::Matrix<nsd_,1>&                     B_mfs, ///< coefficient for fine-scale velocity (will be filled)
-    LINALG::Matrix<nsd_,1>&                     D_mfs, ///< coefficient for fine-scale scalar (will be filled)
+    double &                                    D_mfs, ///< coefficient for fine-scale scalar (will be filled)
     const double                                Csgs_sgvel, ///< parameter of multifractal subgrid-scales (velocity)
     const double                                alpha, ///< grid-filter to test-filter ratio
     const bool                                  calc_N, ///< flag to activate calculation of N
@@ -4065,8 +4067,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
 //   std::cout << Pr << std::endl;
 
   // allocate vector for parameter N
-  // N may depend on the direction -> currently unused
-  vector<double> Nphi (3);
+  double Nphi = 0.0;
   // ratio of dissipation scale to element length
   double scale_ratio_phi = 0.0;
 
@@ -4086,13 +4087,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     //         |   Delta     |
     //  N =log | ----------- |
     //        2|  lambda_nu  |
-   double N_re_pr = log(scale_ratio_phi)/log(2.0);
-   if (N_re_pr < 0.0)
+   Nphi = log(scale_ratio_phi)/log(2.0);
+   if (Nphi < 0.0)
       dserror("Something went wrong when calculating N!");
-
-   // store calculated N
-   for (int i=0; i<nsd_; i++)
-     Nphi[i] = N_re_pr;
   }
   else
    dserror("Multifractal subgrid-scales for loma with calculation of N, only!");
@@ -4108,7 +4105,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //          (ii) cutoff in the viscous-convective range (fluid field fully resolved, easier)
   //               k^(-1) scaling -> gamma = 2
   // rare:
-  // Pr << 1: fluid field could be fully resolved, not necessary
+  // Pr << 1: scatra field could be fully resolved, not necessary
   //          k^(-5/3) scaling -> gamma = 4/3
   // Remark: case 2.(i) not implemented, yet
 
@@ -4117,7 +4114,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     gamma = 4.0/3.0;
   else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
     gamma = 2.0;
-  else if (Pr > 2.0 and Nvel[0]<Nphi[0])
+  else if (Pr > 2.0 and Nvel[0]<Nphi)
     dserror("Inertial-convective and viscous-convective range?");
   else
     dserror("Could not determine D!");
@@ -4134,12 +4131,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
   //                                        |                   |
   //
-  for (int dim=0; dim<nsd_; dim++)
-  {
-    D_mfs(dim,0) = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi[dim]/2.0) * sqrt((pow(2.0,gamma*Nphi[dim])-1));
+  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
 //    if (eid_ == 10000)
 //     std::cout << "D  " << setprecision(10) << D_mfs(dim,0) << std::endl;
-  }
 
   return;
 }

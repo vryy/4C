@@ -287,7 +287,7 @@ public:
     //! calculate coefficients of mutifractal subgrid-scale modeling
     virtual void CalcBAndDForMultifracSubgridScales(
         LINALG::Matrix<nsd_,1>&                     B_mfs, ///< coefficient for fine-scale velocity (will be filled)
-        LINALG::Matrix<nsd_,1>&                     D_mfs, ///< coefficient for fine-scale scalar (will be filled)
+        double &                                    D_mfs, ///< coefficient for fine-scale scalar (will be filled)
         const double                                Csgs_sgvel, ///< parameter of multifractal subgrid-scales (velocity)
         const double                                alpha, ///< grid-filter to test-filter ratio
         const bool                                  calc_N, ///< flag to activate calculation of N
