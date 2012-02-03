@@ -5,10 +5,10 @@
 
        example input line:
        MAT 1 MAT_Struct_Robinson  KIND Arya_NarloyZ  YOUNG POLY 2 1.47e9 -7.05e5
-        NUE 0.34  DENS 8.89e-3  THEXPANS 0.0  HRDN_FACT 3.847e-12  HRDN_EXPO 4.0
-        SHRTHRSHLD POLY 2 69.88e8 -0.067e8   RCVRY 6.083e-3  ACTV_ERGY 40000.0
-        ACTV_TMPR 811.0  G0 0.04  M_EXPO 4.365  BETA POLY 3 0.8 0.0 0.533e-6
-        H_FACT 1.67e16
+        NUE 0.34  DENS 8.89e-3  THEXPANS 0.0  INITTEMP 293.15
+        HRDN_FACT 3.847e-12  HRDN_EXPO 4.0  SHRTHRSHLD POLY 2 69.88e8 -0.067e8
+        RCVRY 6.083e-3  ACTV_ERGY 40000.0  ACTV_TMPR 811.0  G0 0.04  M_EXPO 4.365
+        BETA POLY 3 0.8 0.0 0.533e-6  H_FACT 1.67e16
 
   Robinson's visco-plastic material                        bborn 03/07
   material parameters
@@ -69,27 +69,29 @@ MAT::PAR::Robinson::Robinson(
   )
 : Parameter(matdata),
   kind_((matdata->Get<std::string>("KIND"))),
-  youngsnum_(matdata->GetInt("YOUNGNUM")),
   youngs_(*(matdata->Get<vector<double> >("YOUNG"))),
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   thermexpans_(matdata->GetDouble("THEXPANS")),
+  inittemp_(matdata->GetDouble("INITTEMP")),
   hrdn_fact_(matdata->GetDouble("HRDN_FACT")),
   hrdn_expo_(matdata->GetDouble("HRDN_EXPO")),
-  shrthrshldnum_(matdata->GetInt("SHRTHRSHLDNUM")),
   shrthrshld_(*(matdata->Get<vector<double> >("SHRTHRSHLD"))),
   rcvry_(matdata->GetDouble("RCVRY")),
   actv_ergy_(matdata->GetDouble("ACTV_ERGY")),
   actv_tmpr_(matdata->GetDouble("ACTV_TMPR")),
   g0_(matdata->GetDouble("G0")),
   m_(matdata->GetDouble("M_EXPO")),
-  betanum_(matdata->GetInt("BETANUM")),
   beta_(*(matdata->Get<vector<double> >("BETA"))),
   h_(matdata->GetDouble("H_FACT"))
 {
-//    cout << "matdata" << *matdata<< endl;
-//    cout << "kind_ = " << *kind_ << endl;
-//    cout << "youngs_ = " << (*youngs_)[0] << endl;
+//    cout << "matdata = " << *matdata<< endl;
+//    for (unsigned i=0; i<youngs_.size(); ++i )
+//      cout << "youngs_ = " << (youngs_)[i] << endl;
+//    for (unsigned i=0; i<shrthrshld_.size(); ++i )
+//      cout << "shrthrshld_ = " << (shrthrshld_)[i] << endl;
+//    for (unsigned i=0; i<beta_.size(); ++i )
+//      cout << "beta_ = " << (beta_)[i] << endl;
 }
 
 
@@ -114,7 +116,10 @@ DRT::ParObject* MAT::RobinsonType::Create( const std::vector<char> & data )
  | constructor (public)                                      dano 11/11 |
  *----------------------------------------------------------------------*/
 MAT::Robinson::Robinson()
-: params_(NULL)
+: params_(NULL),
+  tempnp_(293.15)  // be careful, we initialise tempnp_ = 293.15, because in
+                   // first call, i.e. in linstiffmass tempnp_ from THR is not
+                   // yet is available
 {
 }
 
@@ -124,7 +129,8 @@ MAT::Robinson::Robinson()
  *----------------------------------------------------------------------*/
 MAT::Robinson::Robinson(MAT::PAR::Robinson* params)
 : plastic_step(false),
-  params_(params)
+  params_(params),
+  tempnp_(293.15)
 {
 }
 
@@ -258,7 +264,6 @@ void MAT::Robinson::Unpack(const vector<char>& data)
  *---------------------------------------------------------------------*/
 void MAT::Robinson::Setup(
   const int numgp,
-//  KinematicType kintype
   DRT::INPUT::LineDefinition* linedef
   )
 {
@@ -274,7 +279,7 @@ void MAT::Robinson::Setup(
   {
    kintype_ = soh8_totlag;
   }
-  else dserror ("Reading SO_HEX8 element failed");
+  else dserror("Reading kinematic type of SO_HEX8 element failed");
 
   // initialise history variables
   strainpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -340,17 +345,16 @@ void MAT::Robinson::Update()
   kvarva_->resize(numgp);
   kvakvae_->resize(numgp);
 
-  const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  const LINALG::Matrix<1,1> emptyvec1(true);
-  const LINALG::Matrix<2*NUM_STRESS_3D,1> emptyvec2(true);
-  const LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> emptyvec3(true);
+  const LINALG::Matrix<NUM_STRESS_3D,1> emptymat(true);
+  const LINALG::Matrix<2*NUM_STRESS_3D,1> emptymat1(true);
+  const LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> emptymat2(true);
 
   for (int i=0; i<numgp; i++)
   {
-    strainplcurr_->at(i) = emptyvec;
-    backstresscurr_->at(i) = emptyvec;
-    kvarva_->at(i) = emptyvec2;
-    kvakvae_->at(i) = emptyvec3;
+    strainplcurr_->at(i) = emptymat;
+    backstresscurr_->at(i) = emptymat;
+    kvarva_->at(i) = emptymat1;
+    kvakvae_->at(i) = emptymat2;
   }
 
   return;
@@ -387,7 +391,8 @@ void MAT::Robinson::Evaluate(
   LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
   )
 {
-  cout << "params" << params << endl;
+  for (int i=0; i<gp; i++)
+    cout << "Robinson::Evaluate()" << endl;
   // name: Baci --> CCARAT:
 
   // STRAIN
@@ -427,24 +432,7 @@ void MAT::Robinson::Evaluate(
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kaa(true);
 
   // get material parameters
-  // TODO pass time step size from element to the material
-//   const double dt = params->delta time; dyn->dt;
-  // Young's modulus
-  // get the vector of the temperature dependent youngs modulus
-  const vector<double> youngvec = params_->youngs_;
-  double young = youngvec[0]; //0.0;
-  // Poisson's ratio
-  double nu = params_->poissonratio_;
-  // initialise the thermal expansion coefficient
-  const double thermexpans = params_->thermexpans_;
-
-  // lame constant
-  // shear modulus parameter mu == G
-  double G = 0.0;
-  G = young / ( 2.0 * (1.0 + nu) );
-  // bulk modulus kappa = E /( 3 ( 1 - 2 nu) )= lambda + 2/3 * mu
-  double kappa = 0.0;
-  kappa = young /( 3 * (1 - 2 * nu) );
+  const double dt_ = params.get<double>("delta time");
 
   // build Cartesian identity 2-tensor I_{AB}
   LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
@@ -458,16 +446,18 @@ void MAT::Robinson::Evaluate(
 
   // --------------------------------------------------- temperatures
   // get initial and current temperature
-  // 12.01.12 TODO pass current, initial temperature from thermo field to the material
   // initial temperature at Gauss point
-  double tempinit; // CCARAT: tempr0 --> so3_tsi_temper0()
+  const double tempinit = params_->inittemp_; // CCARAT: tempr0 --> so3_tsi_temper0()
   // current temperature at Gauss point
-  double tempnp;  // CCARAT: tempr --> so3_tsi_temper()
+    // 12.01.12 TODO pass current, from thermo field to the material
+  // tempnp_  // CCARAT: tempr --> so3_tsi_temper()
 
   // ------------------------------------------------- thermal strain
   // thermal strain vector stnthr
+  // initialise the thermal expansion coefficient
+  const double thermexpans = params_->thermexpans_;
   LINALG::Matrix<NUM_STRESS_3D,1> strain_t(true);
-  for (int i=0; i<3; ++i) strain_t(i) = thermexpans * (tempnp - tempinit);
+  for (int i=0; i<3; ++i) strain_t(i) = thermexpans * (tempnp_ - tempinit);
   //  strain_t(i) = 2*E_xy = 2*E_yz = 2*E_zx = 0.0
   // for (int i=3; i<6; ++i) strain_t = 0.0;
 
@@ -497,7 +487,7 @@ void MAT::Robinson::Evaluate(
   // cmat = kee = pd(sig)/pd(eps)
   // CCARAT: so3_mat_robinson_elmat(mat_robin, tempr, cmat);
   // pass the current temperature to calculate the current youngs modulus
-  SetupCmat(tempnp, cmat);
+  SetupCmat(tempnp_, cmat);
 
   // ------------------------------------ tangents of stress equation
   // kev = pd(sigma)/pd(eps^v)
@@ -543,12 +533,12 @@ void MAT::Robinson::Evaluate(
 
   // ---------------------------------------------------- back stress
   // TODO 17.01.12 not sure, if this is correct here: bckstsr represents residual of backstress
-  // new back stress at beta_{n+1}^i
+  // new back stress at t_{n+1} backstress_{n+1}^i
   // CCARAT: actso3->miv_rob->bacstsn.a.da[ip]
   LINALG::Matrix<NUM_STRESS_3D,1> backstress_np(true);
   for (size_t i=0; i<NUM_STRESS_3D; i++)
     backstress_np(i,0) = backstresscurr_->at(gp)(i,0);
-  // old back stress at beta_{n}
+  // old back stress at t_{n} backstress_{n}
   LINALG::Matrix<NUM_STRESS_3D,1> backstress_n(true);
   for (size_t i=0; i<NUM_STRESS_3D; i++)
     backstress_n(i,0) = backstresslast_->at(gp)(i,0);
@@ -556,7 +546,7 @@ void MAT::Robinson::Evaluate(
   // ------------------------------------------ over/relativestress
   // overstress Sig_{n+1}^i = s_{n+1}^i - al_{n+1}^i
   // (i): input vector devstn
-  // (i): input vector beta
+  // (i): input vector backstress_np
   // (o): output vector stsovr: subtract 2 vectors
   // CCARAT: so3_mv6_v_sub(devstsn, actso3->miv_rob->bacstsn.a.da[ip], stsovrn);
   // eta_{n+1} = devstress_{n+1} - backstress_{n+1}
@@ -571,12 +561,9 @@ void MAT::Robinson::Evaluate(
   //                                     devstsn, stsovrn,
   //                                     &(actso3->miv_rob->vscstns.a.iv[ip]),
   //                                     vscstnr, kve, kvv, kva);
-  // TODO 13.01.12 pass the time step from element to the material, or implement
-  // possibility to ask element from the material
-  const double dt = 0.1;
   CalcBEViscousStrainRate(
-    dt,
-    tempnp,
+    dt_,
+    tempnp_,
     strain_p,
     strain_pn,
     devstress,
@@ -598,8 +585,8 @@ void MAT::Robinson::Evaluate(
   //                                     &(actso3->miv_rob->bckstss.a.iv[ip]), --> no backstressmode in baci
   //                                     bckstsr, kae, kav, kaa);
   CalcBEBackStressFlow(
-    dt,
-    tempnp,
+    dt_,
+    tempnp_,
     strain_p,
     strain_pn,
     devstress,
@@ -652,8 +639,7 @@ void MAT::Robinson::SetupCmat(
   // Young's modulus
   // get the vector of the temperature dependent youngs modulus
   // Young's modulus (modulus of elasticity)
-  double emod;
-  GetMatParameterAtTempnp(&(params_->youngs_), tempnp, emod);
+  double emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
   // Poisson's ratio
   double nu = params_->poissonratio_;
 
@@ -709,15 +695,15 @@ void MAT::Robinson::Stress(
  | compute relative deviatoric stress tensor                 dano 11/11 |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::RelDevStress(
-  const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  //!< deviatoric stress tensor
-  const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< back stress tensor
-  LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
+  const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  // (i) deviatoric stress tensor
+  const LINALG::Matrix<NUM_STRESS_3D,1>& backstress,  // (i) back stress tensor
+  LINALG::Matrix<NUM_STRESS_3D,1>& eta  // (o) relative stress
   )
 {
   // relative stress = deviatoric - back stress
-  // eta = s - beta
+  // eta = s - backstress
   eta.Update( 1.0, devstress, 0.0 );
-  eta.Update( (-1.0), beta, 1.0);
+  eta.Update( (-1.0), backstress, 1.0);
 
 }  // RelDevStress()
 
@@ -727,66 +713,49 @@ void MAT::Robinson::RelDevStress(
  | at Gauss point                                                       |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::CalcBEViscousStrainRate(
-//  \param   ele          ELEMENT*      (i)   element
-//  \param   mat_robin    VP_ROBINSON*  (i)   element Robinson material
-  const double dt,  // (i) time step size --> BE CAREFUL: dt=0.1;
-  // TODO 12.01.12 check what temperature is needed here
-  double tempnp,  //       DOUBLE        (i)   temperature
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_p,  // DOUBLE[]      (i)   viscous strain at t_n
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_pn,  // DOUBLE[]      (i)   viscous strain at t_{n+1}^<i>
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  devstress,  // DOUBLE[]      (i)   stress deviator at t_{n+1}^<i>
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  eta,  // DOUBLE[]      (i)   over stress at t_{n+1}^<i>
-  LINALG::Matrix<NUM_STRESS_3D,1>& strain_pres,  // DOUBLE[]      (o)   viscous strain residual
+  const double dt,  // (i) time step size
+  double tempnp,  // (i) current temperature
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_p,  // (i) viscous strain at t_n
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_pn,  // (i) viscous strain at t_{n+1}^<i>
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  devstress,  // (i) stress deviator at t_{n+1}^<i>
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  eta,  // over stress at t_{n+1}^<i>
+  LINALG::Matrix<NUM_STRESS_3D,1>& strain_pres,  // (o) viscous strain residual
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kve,  // (o)
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kvv,  // (o)
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kva  // (o)
   )
 {
   // initialise
-  // J2-invariant
-  // CCARAT: 'J_2' = j2
-  double J2 = 0.0;
-  // shear threshold 'K^2'
-  double kksq = 0.0;;
-  // hardening factor 'A'
-  double aa = 0.0;;
-  // hardening exponent 'N'
-  // TODO nn so definiert? 13.01.12
-  double nn = 0.0;
-  // 'F'
-  double ff = 0.0;;
-  // ss = 1/2 * eta : devstress
-  // CCARAT: ss = 1/2 * s : Sig
-  double ss;
+  // hardening exponent 'N' -->  nn
+  double nn = params_->hrdn_expo_;
 
   // viscous strain rate
   // CCARAT: dvscstn[NUMSTR_SOLID3]
   // strainrate_p --> dvscstn
   LINALG::Matrix<NUM_STRESS_3D,1> strainrate_p(true);
-  // kvs = d strain_p / d eta
-  // CCARAT: d eps^v/d Sig
-  // kvs[NUMSTR_SOLID3][NUMSTR_SOLID3];
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kvs(true);
 
   // identity tensor in vector notation
   LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
   for (int i=0; i<3; i++) id2(i) = 1.0;
 
   // -------------------------------------------------- preliminaries
+  // J2-invariant
   // J2 = 1/2 eta : eta
   // J2 = 1/2 (eta11^2 + eta22^2 + eta33^2 + 2 . eta12^2 + 2 . eta23^2 + 2 . eta13^2)
   // CCARAT: 1.) so3_mv6_v_dblctr(ovrstsn, ovrstsn, &(j2));
   //         2.) j2 *= 0.5;
   //         --> J_2 = 1/2 * Sig : Sig  with Sig...overstress
+  double J2 = 0.0;
   J2 = 1/2.0 * ( eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) ) +
        + eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5);
 
-  // Bingham-Prager shear stress threshold at current temperature
-  // calculate non-linear material parameter
+  // Bingham-Prager shear stress threshold at current temperature 'K^2'
   // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tmpr, &(kksq));
-  GetMatParameterAtTempnp(&(params_->shrthrshld_), tempnp, kksq);
+  double kksq = 0.0;
+  kksq = GetMatParameterAtTempnp(&(params_->shrthrshld_), tempnp);
 
-  // F = (J_2 - K^2)/K_2
+  // F = (J_2 - K^2) / K^2 = (sqrt(J_2) / K^2) - 1
+  double ff = 0.0;
   if (fabs(kksq) <= EPS10)  // shrthrshld = kksq
   {
     ff = -1.0;
@@ -801,11 +770,14 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   // ss = 1/2 * devstress : eta
   // with  eta: overstress, devstress:.deviat.stress
   // CCARAT: double contraction of 2vectors: so3_mv6_v_dblctr(ovrstsn, devstsn, &(ss));
+  // CCARAT: ss = 1/2 * s : Sig
+  double ss = 0.0;
   ss = 1/2.0 * ( devstress(0)*eta(0) + devstress(1)*eta(1) + devstress(2)*eta(2) ) +
          + devstress(3)*eta(3) + devstress(4)*eta(4) + devstress(5)*eta(5);
 
-  // hardening factor aa
+  // hardening factor 'A' --> aa
   // calculate the temperature dependent material constant \bar{\mu} := aa
+  double aa = 0.0;
   if (*(params_->kind_) == "Arya_CrMoSteel")
   {
     double mu = params_->hrdn_fact_;
@@ -816,17 +788,13 @@ void MAT::Robinson::CalcBEViscousStrainRate(
     {
       dserror("Infinite theta1");
     }
-    // \bar{\mu} = \mu . exp(- theta1), vgl. (12)
+    // \f$\bar{\mu} = \mu . exp(- theta1)\f$, vgl. (12)
     aa = 0.5/(mu*exp(-th1));
   }
   else
   {
     aa = params_->hrdn_fact_;
   }
-
-  // hardening exponent nn
-  // TODO 13.01.12 if possible define at the beginning of the function
-  nn = params_->hrdn_expo_;
 
   //-------------------------------------------------------------------
   // check plastic admissibility
@@ -845,18 +813,17 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //  if (*vscstns == so3_mat_robinson_state_vague)
 
   //-------------------------------------------------------------------
-  // IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
+  // IF plastic step ( F > 0.0, ss > 0.0 )
   // violated consistency condition
-  // TODO 13.01.12: ff = Phi_trial, ss = Dgamma???
   //-------------------------------------------------------------------
   // --------------------------------------------------- viscous mode
   // residual of viscous strain rate at t_{n+1}
   // CCARAT: else if (*vscstns == so3_mat_robinson_state_inelastic)
   if ( (ff > 0.0) && (ss > 0.0) )
   {
-    // inelastic/viscous strain residual:
+    // inelastic/viscous strain residual
+    // fct = A . F^n
     // CCARAT: double fct = aa * pow(ff, nn) / sqrt(j2);
-    // 10.11.11 TODO what does 'pow'???
     double fct = aa * pow(ff, nn) / sqrt(J2);
     // calculate the viscous strain rate respecting that strain vector component
     // has a doubled shear component, but stress vectors not!
@@ -874,9 +841,9 @@ void MAT::Robinson::CalcBEViscousStrainRate(
     strainrate_p.Scale(fct);
   }
   //-------------------------------------------------------------------
-  // ELSE IF elastic step (Phi_trial <= 0.0, Dgamma = 0.0)
+  // ELSE IF elastic step (F <= 0.0, ss <= 0.0)
   //-------------------------------------------------------------------
-  else   // CCARAT: if (*vscstns == so3_mat_robinson_state_elastic)
+  else  // CCARAT: if (*vscstns == so3_mat_robinson_state_elastic)
   {
     // elastic step, no inelastic strains: strain_n^v' == 0
     // CCARAT: so3_mv6_v_zero(dvscstn);
@@ -886,7 +853,6 @@ void MAT::Robinson::CalcBEViscousStrainRate(
 
   //-------------------------------------------------------------------
   // ----------------------------------------------- viscous residual
-  //-------------------------------------------------------------------
   // res_{n+1}^v = (strain_{n+1}^v - strain_n^v)/dt - deps_{n+1}^v
   {
     for (size_t i=0; i<NUM_STRESS_3D; i++)
@@ -900,21 +866,27 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // --------------------------------- derivative of viscous residual
   // derivative of viscous residual with respect to over stress eta
+  // kvs = d(strain_pres) / d (eta)
   // CCARAT: kvs = pd(res^v)/pd(Sig) -- d eps^v/d Sig
-  //  kvs = d(strain_pres) / d (eta)
+  // CCARAT: d eps^v/d Sig
+  // kvs[NUMSTR_SOLID3][NUMSTR_SOLID3];
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kvs(true);
 
   // IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
   if ( (ff > 0.0) && (ss > 0.0) ) //  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     // add facu to all diagonal terms matrix kvs
+    // facu = - A . F^n / sqrt(J2)
     // CCARAT: so3_mv6_m_idscl(facu, kvs);
     double facu = -aa * pow(ff, nn) / sqrt(J2);
     for (size_t i=0; i<NUM_STRESS_3D; i++)
       kvs(i,i) = facu;
 
     // update matrix with scaled dyadic vector product
-    // CCARAT: so3_mv6_m_upddydscl(faco, ovrstsn, ovrstsn, kvs); // Update matrix with scaled dyadic vector product
+    // CCARAT: so3_mv6_m_upddydscl(faco, ovrstsn, ovrstsn, kvs);
     // contribution: kvs = kvs + faco . (eta \otimes eta^T)
+    // faco = -n . a . F^(n-1) / (kappa . sqrt(J2))
+    //        + a . F^n / (2. J2^{1.5})
     double faco = -nn * aa * pow(ff, (nn-1.0)) / (kksq * sqrt(J2))
                   + aa * pow(ff, nn) / (2.0 * pow(J2, 1.5));
     kvs.MultiplyNT(faco,eta,eta,1.0);
@@ -939,7 +911,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
     }
 
   } // inelastic
-  // ELSE IF elastic step (Phi_trial <= 0.0, Dgamma = 0.0)
+  // ELSE IF elastic step (F <= 0.0, (devstress . eta) <= 0.0)
   else //  (*vscstns == so3_mat_robinson_state_elastic)
   {
     //so3_mv6_m_zero(kvs);
@@ -948,11 +920,11 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   }
 
   //-------------------------------------------------------------------
-  // derivative of viscous residual with respect to total strain eps
+  // - derivative of viscous residual with respect to total strain eps
   // CCARAT: kve = ( pd(res_{n+1}^v)/pd(eps_{n+1}) )|^<i>
   // kve = ( pd strain_pres^{n+1} )/ (pd strain^{n+1})|^<i>
 
-  // IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
+  // IF plastic step ( F > 0.0, (devstress . eta) >= 0.0 )
   if ( (ff > 0.0) && (ss > 0.0) ) //  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     // calculate elastic material tangent with temperature-dependent Young's modulus
@@ -962,11 +934,6 @@ void MAT::Robinson::CalcBEViscousStrainRate(
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> kse(true);
     // pass the current temperature to calculate the current youngs modulus
     SetupCmat(tempnp, kse);
-
-//    // build Cartesian identity 2-tensor I_{AB}
-//    // CCARAT: so3_mv6_v_id(iv);
-//    LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
-//    for (int i=0; i<3; i++) id2(i) = 1.0;
 
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     // CCARAT: so3_mv6_v_assmvp(kse, iv, civ);
@@ -1005,7 +972,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
 //    }
   } // inelastic
 
-  // ELSE IF elastic step
+  // ELSE IF elastic step (F <= 0.0, (devstress . eta) <= 0.0)
   else //  (*vscstns == so3_mat_robinson_state_elastic)
   {
     // in case of an elastic step, no contribution to kvs
@@ -1015,7 +982,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
 
   //-------------------------------------------------------------------
   // derivative of viscous residual with respect to viscous strain strain_p
-  // IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
+  // IF plastic step ( F > 0.0, (1/2 * devstress : eta) >= 0.0 )
   if ( (ff > 0.0) && (ss > 0.0) ) //  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     // derivative ksv = (pd eta) / (pd strain_p)
@@ -1067,7 +1034,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
 //      }
 //    }
   }
-  // ELSE IF elastic step
+  // ELSE IF elastic step (F <= 0.0, (1/2 * devstress : eta) <= 0.0)
   else //  (*vscstns == so3_mat_robinson_state_elastic)
   {
     // so3_mv6_m_idscl(1.0/dt, kvv);  // scale a matrix kvv with 1.0/dt
@@ -1076,20 +1043,20 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   }
 
   //-------------------------------------------------------------------
-  // derivative of viscous residual with respect to back stress beta
-  // beta --> alpha
-  // kva = (pd res_{n+1}^v) / (pd beta)
+  // derivative of viscous residual with respect to back stress
+  // backstress --> alpha
+  // kva = (pd res_{n+1}^v) / (pd backstress)
   // CCARAT: kva = pd(res^v)/pd(al)
-  // IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
+  // IF plastic step ( F > 0.0, (1/2 * devstress : eta) >= 0.0 )
   if ( (ff > 0.0) && (ss > 0.0) ) //  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     // assign vector by another vector and scale it
     // kva = kvs . ksa = kva . (-Id)
-    // with ksa = (pd eta) / (pd beta) = - Id; eta = s - beta
+    // with ksa = (pd eta) / (pd backstress) = - Id; eta = s - backstress
     // CCARAT: ksa = pd(Sig)/pd(al) = -Id
     kva.Update(-1.0, kvs, 0.0);  // so3_mv6_m_assscl(-1.0, kvs, kva);
   }
-  // ELSE IF elastic step
+  // ELSE IF elastic step (F <= 0.0, (1/2 * devstress : eta) <= 0.0)
   else // (*vscstns == so3_mat_robinson_state_elastic)
   {
     for (int i=0; i<6; i++)
@@ -1101,54 +1068,34 @@ void MAT::Robinson::CalcBEViscousStrainRate(
 
 /*----------------------------------------------------------------------*
  | residual of BE-discretised back stress and its            dano 11/11 |
- | consistent tangent                                                   |
- | residual of BE-discretised back stress rate flow rule at Gauss point |
+ | consistent tangent according to the flow rule at Gauss point         |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::CalcBEBackStressFlow(
   const double dt,
   const double tempnp,
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_p,  // double vscstn[NUMSTR_SOLID3],
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_pn,  // double vscstnn[NUMSTR_SOLID3],
-  const LINALG::Matrix<NUM_STRESS_3D,1>&  devstress,  // double devstsn[NUMSTR_SOLID3],
-  const LINALG::Matrix<NUM_STRESS_3D,1>& backstresslast, //  const double bacsts[NUMSTR_SOLID3],
-  const LINALG::Matrix<NUM_STRESS_3D,1>& backstresscurr, //const double bacstsn[NUMSTR_SOLID3],
-  //TODO 22.11.11INT* bckstss --> mode is not needed in BACI,
-  LINALG::Matrix<NUM_STRESS_3D,1>& backstress_res, // double bckstsr[NUMSTR_SOLID3],
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kae, // double kae[NUMSTR_SOLID3][NUMSTR_SOLID3],
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kav, // double kav[NUMSTR_SOLID3][NUMSTR_SOLID3],
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kaa // double kaa[NUMSTR_SOLID3][NUMSTR_SOLID3])
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_p,
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  strain_pn,
+  const LINALG::Matrix<NUM_STRESS_3D,1>&  devstress,
+  const LINALG::Matrix<NUM_STRESS_3D,1>& backstresslast,
+  const LINALG::Matrix<NUM_STRESS_3D,1>& backstresscurr,
+  LINALG::Matrix<NUM_STRESS_3D,1>& backstress_res,
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kae,
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kav,
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& kaa
   )
 {
   // get parameters
-  // 'I_2'
-  double i2;
-  // activation temperature
-  double tem0;
-  // shear threshold 'K_0^2'
-  double kk0sq;
-  // 'H'
-  double hh;
-  // 'beta'
-  double beta;
   // 'm'
-  double mm;
-  // activation energy
-  double q0;
-  // recovery factor 'R_0'
-  double rr0;
-  // recovery term 'R'
-  double rr;
-  // 'G_0'
-  double gg0;
-  // 'G'
-  double gg;
-  // double contraction of backstress and devstress, scale by 1/2
-  double sa;
+  double mm = params_->m_;
+  // activation energy 'Q_0'
+  double q0 = params_->actv_ergy_;
 
   // -------------------------------------------------- preliminaries
   // I_2 = 1/2 * Alpha : Alpha  with Alpha...back stress
   // CCARAT: so3_mv6_v_dblctr(backstresscurr, backstresscurr, &i2);
   // CCARAT: i2 *= 0.5;
+  // 'I_2'
+  double i2;
   i2 = 1/2.0 * ( backstresscurr(0)*backstresscurr(0) +
                  backstresscurr(1)*backstresscurr(1) +
                  backstresscurr(2)*backstresscurr(2)
@@ -1157,24 +1104,24 @@ void MAT::Robinson::CalcBEBackStressFlow(
        + backstresscurr(4)*backstresscurr(4) +
        + backstresscurr(5)*backstresscurr(5);
 
-  // activation temperature
-  tem0 = params_->actv_tmpr_;
-  // Bingham-Prager shear stress threshold at activation temperature
+  // Bingham-Prager shear stress threshold 'K_0^2' at activation temperature
   // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tem0, &(kk0sq));
-  GetMatParameterAtTempnp(&(params_->shrthrshld_), tem0, kk0sq);
+  double kk0sq = 0.0;
+  // activation temperature
+  double tem0 = params_->actv_tmpr_;
+  kk0sq = GetMatParameterAtTempnp(&(params_->shrthrshld_), tem0);
 
   // 'beta' at current temperature
   // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &(beta));
-  GetMatParameterAtTempnp(&(params_->beta_), tempnp, beta);
+  double beta = GetMatParameterAtTempnp(&(params_->beta_), tempnp);
 
-  // 'm'
-  mm = params_->m_;
   // 'H' at current temperature
+  double hh = 0.0;
   // CCARAT: if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
   if (*(params_->kind_) == "Arya_NarloyZ")
   {
     // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
-    GetMatParameterAtTempnp(params_->h_, tempnp, hh);
+    hh = GetMatParameterAtTempnp(params_->h_, tempnp);
     hh *= pow(6.896,1.0+beta) / (3.0*kk0sq);
   }
   // CCARAT: else if (mat_robin->kind == vp_robinson_kind_arya_crmosteel)
@@ -1182,35 +1129,34 @@ void MAT::Robinson::CalcBEBackStressFlow(
   {
     double mu = params_->hrdn_fact_;
     // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
-    GetMatParameterAtTempnp(params_->h_, tempnp, hh);
+    hh = GetMatParameterAtTempnp(params_->h_, tempnp);
     hh *= 2.0 * mu;
   }
   else
   {
     // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
-    GetMatParameterAtTempnp(params_->h_, tempnp, hh);
+    hh = GetMatParameterAtTempnp(params_->h_, tempnp);
   }
 
-  // 'Q_0'
-  q0 = params_->actv_ergy_;
-
-  // recovery factor 'R_0'
+  // recovery/softening factor 'R_0'
+  double rr0 = 0.0;
   // CCARAT: if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
   if (*(params_->kind_) == "Arya_NarloyZ")
   {
     // pressure unit scale : cN/cm^2 = 10^-4 MPa
     const double pus = 1.0e-4;
     // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
-    GetMatParameterAtTempnp(params_->rcvry_, tempnp, rr0);
+    rr0 = GetMatParameterAtTempnp(params_->rcvry_, tempnp);
     rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);  /* TODO '*' of '/' ? */
   }
   else
   {
     // CCARAT: so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
-    GetMatParameterAtTempnp(params_->rcvry_, tempnp, rr0);
+    rr0 = GetMatParameterAtTempnp(params_->rcvry_, tempnp);
   }
 
-  // 'R'
+  // recovery/softening term 'R'
+  double rr = 0.0;
   // T_{n+1} . T_0 < (1.0E-12)
   if (fabs(tempnp*tem0) <= EPS12)
   {
@@ -1236,9 +1182,10 @@ void MAT::Robinson::CalcBEBackStressFlow(
   }
 
   // 'G_0'
-  gg0 = params_->g0_;
+  double gg0 = params_->g0_;
 
   // G = I_2/K_0^2
+  double gg = 0.0;
   // K_0^2 < 1.0E-10
   if (fabs(kk0sq) <= EPS10)
   {
@@ -1255,6 +1202,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   // CCARAT: sa = 1/2 . Alpha . s, with Alpha:bacstsn, s: devstsn
   // CCARAT: so3_mv6_v_dblctr(bacstsn, devstsn, &(sa));
   // CCARAT: sa *= 0.5;
+  double sa = 0.0;
   sa = 1/2.0 * ( backstresscurr(0)*devstress(0) + backstresscurr(1)*devstress(1)
                  + backstresscurr(2)*devstress(2) ) +
        + backstresscurr(3)*devstress(3) +
@@ -1262,14 +1210,14 @@ void MAT::Robinson::CalcBEBackStressFlow(
        + backstresscurr(5)*devstress(5);
 
   // ------------------------------------------------- determine mode
-  // viscous mode
   // CCARAT: *bckstss = so3_mat_robinson_state_inelastic;
+  // IF inelastic step (G > G_0, (devstress . backstress) > 0.0)
   if ( (gg > gg0) && (sa > 0.0) )
   {
 
   }
-  // elastic mode
   // CCARAT: *bckstss = so3_mat_robinson_state_elastic;
+  // ELSE IF elastic step (G <= G_0, (devstress . backstress) <= 0.0)
   else
   {
 
@@ -1421,19 +1369,18 @@ void MAT::Robinson::CalcBEBackStressFlow(
 
 
 /*----------------------------------------------------------------------*
- | Get temperature-dependent material parameter at           dano 11/11 |
- | current temperature --> polynomial type                              |
+ | return temperature-dependent material parameter           dano 02/12 |
+ | at current temperature --> polynomial type                              |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::GetMatParameterAtTempnp(
-  const vector<double>* paramvector, //  (i) given parameter is a vector
-  double tempnp,  // tmpr (i) current temperature
-  double parambytempnp // prmbytempr (o) parameter at current temperature
+double MAT::Robinson::GetMatParameterAtTempnp(
+  const vector<double>* paramvector,  // (i) given parameter is a vector
+  double tempnp  // tmpr (i) current temperature
   )
 {
   // polynomial type
 
   // initialise the temperature dependent material parameter
-  parambytempnp = 0.0;
+  double parambytempnp = 0.0;
   double tempnp_pow = 1.0;
 
   // Param = a + b . T + c . T^2 + d . T^3 + ...
@@ -1446,6 +1393,8 @@ void MAT::Robinson::GetMatParameterAtTempnp(
     tempnp_pow *= tempnp;
   }
 
+  return parambytempnp;
+
 }  // GetMatParameterAtTempnp()
 
 
@@ -1453,14 +1402,13 @@ void MAT::Robinson::GetMatParameterAtTempnp(
  | Get temperature-dependent material parameter at           dano 11/11 |
  | current temperature                                                  |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::GetMatParameterAtTempnp(
+double MAT::Robinson::GetMatParameterAtTempnp(
   const double paramconst, // (i) given parameter is a constant
-  double tempnp,  // tmpr (i) current temperature
-  double parambytempnp // prmbytempr (o) parameter at current temperature
+  double tempnp  // tmpr (i) current temperature
   )
 {
   // initialise the temperature dependent material parameter
-  parambytempnp = 0.0;
+  double parambytempnp = 0.0;
 
   // constant
   if (paramconst != 0.0)
@@ -1468,6 +1416,8 @@ void MAT::Robinson::GetMatParameterAtTempnp(
     // now calculate the parameter
     parambytempnp = paramconst;
   }
+
+  return parambytempnp;
 
 }  // GetMatParameterAtTempnp()
 
@@ -1547,26 +1497,26 @@ void MAT::Robinson::CalculateCondensedSystem(
       }
     } //  rows: i=1--6
 
-    // second NUM_STRESS_3D rows (i=6--12)
-    for (size_t i=NUM_STRESS_3D; i<(2*NUM_STRESS_3D); i++)
+    // second NUM_STRESS_3D rows, i.e. (i=6--12)
+    for (size_t i=0; i<NUM_STRESS_3D; i++)
     {
       // residual vector (i=7--12,j=1)
       // add residual of backstresses
-      kvarva(6+i) = backstress_res(i);
+      kvarva(NUM_STRESS_3D+i,0) = backstress_res(i);
 
       // first NUM_STRESS_3D columns
       for(size_t j=0; j<NUM_STRESS_3D; j++)
       {
         // tangent (i=6--12,j=1--6)
-        kvvkvakavkaa(i,j) = kav(i,j);
+        kvvkvakavkaa(NUM_STRESS_3D+i,j) = kav(i,j);
         // RHS (i=6--12,j=1--6)
-        kvakvae(i,j) = kae(i,j);
+        kvakvae(NUM_STRESS_3D+i,j) = kae(i,j);
       }
       // second NUM_STRESS_3D columns
       for(size_t j=0; j<NUM_STRESS_3D; j++)
       {
         // tangent (i=6--12,j=6--12)
-        kvvkvakavkaa(i,(j+NUM_STRESS_3D)) = kaa(i,j);
+        kvvkvakavkaa(NUM_STRESS_3D+i,(j+NUM_STRESS_3D)) = kaa(i,j);
       }
     } //  rows: i=6--12
 
@@ -1684,9 +1634,9 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
 
   // get the new back stresses
   // CCARAT: DOUBLE* bckstsn = actso3->miv_rob->bacstsn.a.da[ip];
-  LINALG::Matrix<NUM_STRESS_3D,1> beta(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> backstress(true);
   for (size_t i=0; i<NUM_STRESS_3D; i++)
-    beta(i,0) = backstresscurr_->at(gp)(i,0);
+    backstress(i,0) = backstresscurr_->at(gp)(i,0);
 
   // TODO 18.01.12 check if strain_pn used here is really the correct variable,
   // because ONLY the increment of the total strain is used as proposed by Burkhard!! epsii
@@ -1724,11 +1674,11 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
     {
       // back stress residual contribution
       // CCARAT: DOUBLE rcsum = kvarva[NUM_STRESS_3D+istr];
-      // Delta beta(i) = [ kav  kaa ]^{-1} [ res^v  ] for i=7--12
+      // Delta backstress(i) = [ kav  kaa ]^{-1} [ res^v  ] for i=7--12
       double rcsum = kvarva(NUM_STRESS_3D+i);
 
       // tangent contribution
-      // Delta beta(i)+ = [ kav  kaa ]^{-1} ( - [ kae ] [ iinc eps ] )
+      // Delta backstress(i)+ = [ kav  kaa ]^{-1} ( - [ kae ] [ iinc eps ] )
       //   for i=7--12, j=1--6
       for (size_t j=0; j<NUM_STRESS_3D; j++)
       {
@@ -1737,7 +1687,7 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
         // increment of strain epsii (j=1--6)
         rcsum += kvakvae(NUM_STRESS_3D+i,j) * epsii(j);
       }
-      beta(i) -= rcsum;
+      backstress(i) -= rcsum;
     }
   } // end update back stress
 
@@ -1747,11 +1697,11 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
   //                         + = [ kvv  kva ]^{-1} ( - [ kve ] [ iinc eps ] )
   //   for i=1--6, j=1--6
   strainplcurr_->at(gp) = strain_pn;
-  // beta^{n+1} = beta^{n} + Delta beta^{n+1}
-  // with Delta beta^{n+1} = [ kav  kaa ]^{-1} ( [ res^v  ]
-  //                       + = [ kav  kaa ]^{-1} ( - [ kae ] [ iinc eps ] )
+  // backstress^{n+1} = backstress^{n} + Delta backstress^{n+1}
+  // with Delta backstress^{n+1} = [ kav  kaa ]^{-1} ( [ res^v  ]
+  //                               + [ kav  kaa ]^{-1} ( - [ kae ] [ iinc eps ] )
   //   for i=7--12, j=1--6
-  backstresscurr_->at(gp) = beta;
+  backstresscurr_->at(gp) = backstress;
 
 }  // IterativeUpdateOfInternalVariables()
 
@@ -1820,9 +1770,6 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
   // viscous strain (CCARAT: vscstn)
   LINALG::Matrix<NUM_STRESS_3D,1> strain_p(true);
 
-  // temperature (CCARAT: tem)
-  double tempnp;
-
   // ----------------------------------------------------------------
   // TODO 18.01.12 check difference between
   // CCARAT: gds->stnengv, L1577 and
@@ -1830,7 +1777,6 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
   // total strain at t_{n}
   if (kintype_ == soh8_geolin) // CCARAT: so3_geo_lin
   {
-    cout << "kintype_ "<< kintype_ << endl;
     // linear (engineering) strain vector
     // CCARAT: so3_mv6_v_ass(gds->stnengv, totstn);
     // assign gds->stnengv (in) by assigned vector totstn (output)
@@ -1849,7 +1795,7 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
     // totstn[i] = gds->stnglv[i];
     for (int i=0; i<6; i++)
     {
-      // totstn[i] = gds->stnengv[i];
+      // totstn[i] = gds->stnglv[i];
 //      strain(i,0) = strain;
     }
   }
@@ -1861,11 +1807,11 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
   // --------------------------------- temperature and thermal strain
 
   {
-    // temperature at Gauss point
-    // TODO 09.12.11 calculate strain due to temperature evaluation:
-    // return current temperature solution tempnp, formerly: tem
-    // CCARAT_ so3_tsi_temper(container, ele,gds->gpc[0], gds->gpc[1],
+    // calculate strain due to temperature evaluation:
+    // CCARAT: so3_tsi_temper(container, ele,gds->gpc[0], gds->gpc[1],
     //                        gds->gpc[2],&tem);
+    //         th3_temper_caln(container, ele->e.so3->therm_ele, r, s, t, temper);
+    // return current temperature solution tempnp = N . T, CCARAT: tem
 
     // coefficient of linear thermal expansion
     // initialise the thermal expansion coefficient
@@ -1874,11 +1820,12 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
 
     // thermal strain vector (only volumetric strains)
     for (int i=0; i<3; i++)
-      strain_t(i,0) = thermexpans * tempnp;
+      strain_t(i,0) = thermexpans * tempnp_;
   }
 
   // ---------------------------------------- viscous strain at t_{n}
   // CCARAT: so3_mv6_v_ass(actso3->miv_rob->vicstn.a.da[ip], vscstn);
+  strain_p.Update(1.0,(strainpllast_->at(gp)),0.0);
 
   // ---------------------------------------- elastic strain at t_{n}
   {
@@ -1891,7 +1838,7 @@ void MAT::Robinson::SelectRobinsonsMaterialBEReturnStress(
 
   // ---------------------------------------------- elasticity tensor
   // CCARAT: so3_mat_robinson_elmat(mat_robin, tem, cmat);
-  SetupCmat(tempnp,cmat);
+  SetupCmat(tempnp_,cmat);
 
   // ------------------------------------------------ stress at t_{n}
   // index i: stress

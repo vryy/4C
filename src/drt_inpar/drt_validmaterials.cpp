@@ -456,9 +456,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
+    AddNamedReal(m,"INITTEMP","initial temperature");
     AddNamedReal(m,"HRDN_FACT","hardening factor 'A'");
     AddNamedReal(m,"HRDN_EXPO","hardening power 'n'");
-    AddNamedInt(m,"SHRTHRSHLDNUM","number of K^2' in list");
+    AddNamedInt(m,"SHRTHRSHLDNUM","number of shear stress threshold 'K^2'in list");
     AddNamedRealVector(m,"SHRTHRSHLD","Bingam-Prager shear stress threshold 'K^2'", "SHRTHRSHLDNUM");
     AddNamedReal(m,"RCVRY","recovery factor 'R_0'");
     AddNamedReal(m,"ACTV_ERGY","activation energy 'Q_0'");
