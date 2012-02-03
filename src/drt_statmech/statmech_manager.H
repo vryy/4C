@@ -308,6 +308,9 @@ protected:
   //! \brief iterate vector in order to obtain close approximation to actual (structure) vector
   void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
 
+  //! \brief output distances between doubly bound crosslinkers in case of a loom setup
+  void LoomOutput(const std::ostringstream& filename);
+
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
 

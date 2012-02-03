@@ -466,6 +466,16 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       }
     }
     break;
+    case INPAR::STATMECH::statout_avgdistloom:
+    {
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      {
+        std::ostringstream filename;
+        filename << "./DoubleBondDistance_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        LoomOutput(filename);
+      }
+    }
+    break;
     case INPAR::STATMECH::statout_none:
     default:
     break;
@@ -3920,6 +3930,58 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
         }
   return;
 }//StatMechManager::DDCorrFunction()
+
+/*------------------------------------------------------------------------------*                                                 |
+ | Output of distances between doubly bound linkers of the horizontal filament  |
+ | in a loom type network                                                       |
+ |                                                       (private) mueller 2/12 |
+ *------------------------------------------------------------------------------*/
+void StatMechManager::LoomOutput(const std::ostringstream& filename)
+{
+  if(discret_.Comm().MyPID()==0)
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+    std::stringstream distances;
+
+    std::vector<double> previouspos(3,0.0);
+    bool addvalues = false;
+    for(int i=0; i<filamentnumber_->MyLength(); i++)
+    {
+      if((*filamentnumber_)[i]==0)
+      {
+        // crosslinker element
+        if((*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
+        {
+          std::vector<double> currcrosspos(3,0.0);
+          for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
+            currcrosspos.at(j) = (*crosslinkerpositions_)[j][(int)(*bspotstatus_)[i]];
+          if(addvalues)
+          {
+            LINALG::Matrix<3,1> diff;
+            for(int j=0; j<(int)diff.M(); j++)
+            {
+              diff(j) = currcrosspos.at(j) - previouspos.at(j);
+              previouspos.at(j) = currcrosspos.at(j);
+            }
+            distances<<diff.Norm2()<<endl;
+          }
+          else
+          {
+            previouspos = currcrosspos;
+            addvalues = true;
+          }
+        }
+      }
+      else
+        break;
+    }
+
+    fprintf(fp, distances.str().c_str());
+    fclose(fp);
+  }
+  return;
+}
 
 /*------------------------------------------------------------------------------*                                                 |
  | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
