@@ -6447,7 +6447,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
       preforce(vi) -= temp*conv_c_(vi);
     }
 
-    if (f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab)
+    if (f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
     {
       for (int vi=0; vi<nen_; ++vi)
       {
