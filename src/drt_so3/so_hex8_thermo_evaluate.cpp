@@ -427,381 +427,387 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   }
   break;
 
-  //==================================================================================
-  // nonlinear stiffness and internal force vector for poroelasticity
-  case calc_poroelast_nlnstiff:
-  {
-    // stiffness
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
-    // internal force vector
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-    // elemat2,elevec2+3 are not used anyway
+//==================================================================================
+    // nonlinear stiffness and internal force vector for poroelasticity
+    case calc_poroelast_nlnstiff:
+    {
+      // stiffness
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
+      // internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+      // elemat2,elevec2+3 are not used anyway
 
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState(0,"velocity");
-    if (disp==null )
+      // need current displacement, velocities and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
+      if (disp==null )
       dserror("Cannot get state vector 'displacement' ");
-    if (vel==null )
+      if (vel==null )
       dserror("Cannot get state vector 'velocity' ");
-    // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+      // build the location vector only for the structure field
+      vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
+      vector<double> mydisp((lm).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      vector<double> myres((lm).size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-    vector<double> myvel((lm).size());
-	  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      vector<double> myvel((lm).size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
-    if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-    //        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+      if (elemat1.IsInitialized()) matptr = &elemat1;
+      // call the well-known soh8_nlnstiffmass for the normal structure solution
+      // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+      //        INPAR::STR::stress_none,INPAR::STR::strain_none);
       soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
-    // need current fluid state,
-    // call the fluid discretization: fluid equates 2nd dofset
-    // disassemble velocities and pressures
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
 
-    if (discretization.HasState(1,"fluidvel"))
-	    {
-		    //  dof per node
-		    const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-		    // number of nodes per element
-		    const int nen_ = 8;
+      if (discretization.HasState(1,"fluidvel"))
+      {
+        //  dof per node
+        const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
+        // number of nodes per element
+        const int nen = 8;
 
-	      LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
-	      LINALG::Matrix<NUMNOD_SOH8,1>    myepreaf(true);
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
+        LINALG::Matrix<NUMNOD_SOH8,1> myepreaf(true);
 
-		    if (la[1].Size() != nen_*numdofpernode_)
-		      dserror("Location vector length for velocities does not match!");
+        if (la[1].Size() != nen*numdofpernode)
+        dserror("Location vector length for velocities does not match!");
 
-		    // check if you can get the velocity state
-		    Teuchos::RCP<const Epetra_Vector> velnp
-		     = discretization.GetState(1,"fluidvel");
-		    //if there are no velocities or pressures, set them to zero
-		    if (velnp==Teuchos::null)
-		    {
-			    dserror("Cannot get state vector 'fluidvel' ");
-		    }
-		    else
-		    {
+        // check if you can get the velocity state
+        Teuchos::RCP<const Epetra_Vector> velnp
+        = discretization.GetState(1,"fluidvel");
+        //if there are no velocities or pressures
+        if (velnp==Teuchos::null)
+        {
+          dserror("Cannot get state vector 'fluidvel' ");
+        }
+        else
+        {
           // extract local values of the global vectors
           std::vector<double> mymatrix(la[1].lm_.size());
           DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
 
-          for (int inode=0; inode<NUMNOD_SOH8; ++inode)  // number of nodes
+          for (int inode=0; inode<NUMNOD_SOH8; ++inode) // number of nodes
+
           {
             for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+
+            {
+              (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+            } // end for(idim)
+
+            (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode)];
+          }
+        }
+
+        soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,&elemat2,&elevec1,NULL,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+    }
+    break;
+
+    //==================================================================================
+    // nonlinear stiffness, mass matrix and internal force vector for poroelasticity
+    case calc_poroelast_nlnstiffmass:
+    {
+      // stiffness
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
+      // mass
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
+      // internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+      // elemat2,elevec2+3 are not used anyway
+
+      // need current displacement, velocities and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
+      if (disp==null )
+      dserror("Cannot get state vector 'displacement' ");
+      if (vel==null )
+      dserror("Cannot get state vector 'velocity' ");
+      // build the location vector only for the structure field
+      vector<int> lm = la[0].lm_;
+
+      vector<double> mydisp((lm).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
+
+      vector<double> myres((lm).size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+      vector<double> myvel((lm).size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+      if (elemat1.IsInitialized()) matptr = &elemat1;
+      // call the well-known soh8_nlnstiffmass for the normal structure solution
+      // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+      //        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      soh8_nlnstiffmass(lm,mydisp,myres,matptr,&elemat2,&elevec1,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+
+      //scale mass matrix
+      const double initporosity = params.get<double>("initporosity");
+      elemat2.Scale(1-initporosity);
+
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
+
+      if (discretization.HasState(1,"fluidvel"))
+      {
+        //  dof per node
+        const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+        // number of nodes per element
+        const int nen_ = 8;
+
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
+        LINALG::Matrix<NUMNOD_SOH8,1> myepreaf(true);
+
+        if (la[1].Size() != nen_*numdofpernode_)
+        dserror("Location vector length for velocities does not match!");
+
+        // check if you can get the velocity state
+        Teuchos::RCP<const Epetra_Vector> velnp
+        = discretization.GetState(1,"fluidvel");
+        //if there are no velocities or pressures, set them to zero
+        if (velnp==Teuchos::null)
+        {
+          dserror("Cannot get state vector 'fluidvel' ");
+        }
+        else
+        {
+          // extract local values of the global vectors
+          std::vector<double> mymatrix(la[1].lm_.size());
+          DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
+
+          for (int inode=0; inode<NUMNOD_SOH8; ++inode) // number of nodes
+
+          {
+            for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+
             {
               (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-            }  // end for(idim)
+            } // end for(idim)
 
             (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode_)];
           }
-		    }
+        }
 
-		    soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,&elemat2,&elevec1,NULL,NULL,NULL,params,
-	                          INPAR::STR::stress_none,INPAR::STR::strain_none);
-	    }
+        soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
 
-  }
-  break;
+    }
+    break;
 
-  //==================================================================================
-  // nonlinear stiffness, mass matrix and internal force vector for poroelasticity
-  case calc_poroelast_nlnstiffmass:
-  {
-    // stiffness
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
-    // mass
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
-    // internal force vector
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-    // elemat2,elevec2+3 are not used anyway
+    //==================================================================================
+    // coupling terms in force-vector and stiffness matrix for poroelasticity
+    case calc_poroelast_structurecoupling:
+    {
+      // stiffness
+      LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8> elemat2(elemat2_epetra.A(),true);
 
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState(0,"velocity");
-    if (disp==null )
+      // internal force vector
+      //LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+      //LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+
+      // elemat2,elevec2+3 are not used anyway
+
+      // need current displacement, velocities and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
+      if (disp==null )
       dserror("Cannot get state vector 'displacement' ");
-    if (vel==null )
+      if (vel==null )
       dserror("Cannot get state vector 'velocity' ");
-    // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+      // build the location vector only for the structure field
+      vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
+      vector<double> mydisp((lm).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      vector<double> myvel((lm).size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-    vector<double> myvel((lm).size());
-		DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8>* matptr = NULL;
+      if (elemat1.IsInitialized()) matptr = &elemat1;
 
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
-    if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-    //        INPAR::STR::stress_none,INPAR::STR::strain_none);
-       soh8_nlnstiffmass(lm,mydisp,myres,matptr,&elemat2,&elevec1,NULL,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
+      if (discretization.HasState(1,"fluidvel"))
+      {
+        //  dof per node
+        const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+        // number of nodes per element
+        const int nen_ = 8;
 
-    //scale mass matrix
-    const double initporosity   = params.get<double>("initporosity");
-    elemat2.Scale(1-initporosity);
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myvelnp(true);
+        LINALG::Matrix<NUMNOD_SOH8,1> myepreaf(true);
 
-    // need current fluid state,
-    // call the fluid discretization: fluid equates 2nd dofset
-    // disassemble velocities and pressures
+        // check if you can get the velocity state
+        Teuchos::RCP<const Epetra_Vector> velnp
+        = discretization.GetState(1,"fluidvel");
+        if (velnp==Teuchos::null)
+        dserror("Cannot get state vector 'fluidvel'");
 
-    if (discretization.HasState(1,"fluidvel"))
-	  {
-		  //  dof per node
-		  const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-		  // number of nodes per element
-		  const int nen_ = 8;
+        if (la[1].Size() != nen_*numdofpernode_)
+        dserror("Location vector length for fluid velocities and pressures does not match!");
 
-	    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
-	    LINALG::Matrix<NUMNOD_SOH8,1>    myepreaf(true);
-
-		  if (la[1].Size() != nen_*numdofpernode_)
-		    dserror("Location vector length for velocities does not match!");
-
-	    // check if you can get the velocity state
-	    Teuchos::RCP<const Epetra_Vector> velnp
-	      = discretization.GetState(1,"fluidvel");
-	    //if there are no velocities or pressures, set them to zero
-	    if (velnp==Teuchos::null)
-	    {
-		    dserror("Cannot get state vector 'fluidvel' ");
-	    }
-	    else
-	    {
-        // extract local values of the global vectors
+        // extract the current velocitites and pressures of the global vectors
         std::vector<double> mymatrix(la[1].lm_.size());
         DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
 
-        for (int inode=0; inode<NUMNOD_SOH8; ++inode)  // number of nodes
+        for (int inode=0; inode<NUMNOD_SOH8; ++inode) // number of nodes
+
         {
           for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+
           {
-            (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-          }  // end for(idim)
+            (myvelnp)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
+          } // end for(idim)
 
           (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode_)];
         }
-	    }
 
-	    soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_coupling_poroelast(lm,mydisp,myvel,myvelnp,myepreaf,matptr,NULL,NULL,NULL,params);
+      }
+
     }
+    break;
 
-  }
-  break;
+    //==================================================================================
+    // nonlinear stiffness and internal force vector for poroelasticity
+    case calc_poroelast_internalforce:
+    {
+      // stiffness
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
+      // internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+      LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+      // elemat2,elevec2+3 are not used anyway
 
-  //==================================================================================
-  // coupling terms in force-vector and stiffness matrix for poroelasticity
-  case calc_poroelast_structurecoupling:
-  {
-    // stiffness
-    LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8> elemat2(elemat2_epetra.A(),true);
-
-    // internal force vector
-    //LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-    //LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-
-    // elemat2,elevec2+3 are not used anyway
-
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState(0,"velocity");
-    if (disp==null )
+      // need current displacement, velocities and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
+      if (disp==null )
       dserror("Cannot get state vector 'displacement' ");
-    if (vel==null )
+      if (vel==null )
       dserror("Cannot get state vector 'velocity' ");
-    // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+      // build the location vector only for the structure field
+      vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
+      vector<double> mydisp((lm).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myvel((lm).size());
-	  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      vector<double> myres((lm).size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
-    LINALG::Matrix<NUMDOF_SOH8,(NUMDIM_SOH8+1)*NUMNOD_SOH8>* matptr = NULL;
-    if (elemat1.IsInitialized())  matptr = &elemat1;
+      vector<double> myvel((lm).size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-	  // need current fluid state,
-	  // call the fluid discretization: fluid equates 2nd dofset
-	  // disassemble velocities and pressures
-    if (discretization.HasState(1,"fluidvel"))
-	  {
-		  //  dof per node
-		  const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-		  // number of nodes per element
-		  const int nen_ = 8;
+      //  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+      //  if (elemat1.IsInitialized()) matptr = &elemat1;
+      // call the well-known soh8_nlnstiffmass for the normal structure solution
+      // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+      //        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,&elevec1,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
-	    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myvelnp(true);
-	    LINALG::Matrix<NUMNOD_SOH8,1>    myepreaf(true);
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
 
-		  // check if you can get the velocity state
-		  Teuchos::RCP<const Epetra_Vector> velnp
-		    = discretization.GetState(1,"fluidvel");
-		  if (velnp==Teuchos::null)
-		    dserror("Cannot get state vector 'fluidvel'");
-
-		  if (la[1].Size() != nen_*numdofpernode_)
-		    dserror("Location vector length for fluid velocities and pressures does not match!");
-
-		  // extract the current velocitites and pressures of the global vectors
-      std::vector<double> mymatrix(la[1].lm_.size());
-      DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
-
-      for (int inode=0; inode<NUMNOD_SOH8; ++inode)  // number of nodes
+      if (discretization.HasState(1,"fluidvel"))
       {
-          for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+        //  dof per node
+        const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+        // number of nodes per element
+        const int nen_ = 8;
+
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
+        LINALG::Matrix<NUMNOD_SOH8,1> myepreaf(true);
+
+        if (la[1].Size() != nen_*numdofpernode_)
+        dserror("Location vector length for velocities does not match!");
+
+        // check if you can get the velocity state
+        Teuchos::RCP<const Epetra_Vector> velnp
+        = discretization.GetState(1,"fluidvel");
+        //if there are no velocities or pressures, set them to zero
+        if (velnp==Teuchos::null)
+        {
+          dserror("Cannot get state vector 'fluidvel' ");
+        }
+        else
+        {
+          // extract local values of the global vectors
+          std::vector<double> mymatrix(la[1].lm_.size());
+          DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
+
+          for (int inode=0; inode<NUMNOD_SOH8; ++inode) // number of nodes
+
           {
-            (myvelnp)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-          }  // end for(idim)
-
-          (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode_)];
-	    }
-
-		  soh8_coupling_poroelast(lm,mydisp,myvel,myvelnp,myepreaf,matptr,NULL,NULL,NULL,params);
-	  }
-
-  }
-  break;
-
-  //==================================================================================
-  // nonlinear stiffness and internal force vector for poroelasticity
-  case calc_poroelast_internalforce:
-  {
-    // stiffness
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
-    // internal force vector
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-    LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
-    // elemat2,elevec2+3 are not used anyway
-
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState(0,"velocity");
-    if (disp==null )
-    dserror("Cannot get state vector 'displacement' ");
-    if (vel==null )
-    dserror("Cannot get state vector 'velocity' ");
-    // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-
-    vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
-
-    vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
-    vector<double> myvel((lm).size());
-    DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
-    //  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
-    //  if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-    //        INPAR::STR::stress_none,INPAR::STR::strain_none);
-       soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,&elevec1,NULL,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-
-    // need current fluid state,
-    // call the fluid discretization: fluid equates 2nd dofset
-    // disassemble velocities and pressures
-
-  if (discretization.HasState(1,"fluidvel"))
-	  {
-		  //  dof per node
-		  const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-		  // number of nodes per element
-		  const int nen_ = 8;
-
-	      LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> myfluidvel(true);
-	      LINALG::Matrix<NUMNOD_SOH8,1>    myepreaf(true);
-
-		  if (la[1].Size() != nen_*numdofpernode_)
-		    dserror("Location vector length for velocities does not match!");
-
-		  // check if you can get the velocity state
-		  Teuchos::RCP<const Epetra_Vector> velnp
-		   = discretization.GetState(1,"fluidvel");
-		  //if there are no velocities or pressures, set them to zero
-		  if (velnp==Teuchos::null)
-		  {
-			  dserror("Cannot get state vector 'fluidvel' ");
-		  }
-		  else
-		  {
-	        // extract local values of the global vectors
-	        std::vector<double> mymatrix(la[1].lm_.size());
-	        DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
-
-	        for (int inode=0; inode<NUMNOD_SOH8; ++inode)  // number of nodes
-	        {
             for(int idim=0; idim<NUMDIM_SOH8; ++idim) // number of dimensions
+
             {
               (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-            }  // end for(idim)
+            } // end for(idim)
 
             (myepreaf)(inode,0) = mymatrix[NUMDIM_SOH8+(inode*numdofpernode_)];
-	        }
-		  }
+          }
+        }
 
-		  soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,NULL,NULL,NULL,params,
-	                        INPAR::STR::stress_none,INPAR::STR::strain_none);
-	  }
-	}
-	break;
-  //==================================================================================
-  // linear stiffness, internal force vector, and consistent mass matrix
-  case calc_struct_stifftemp:
-  {
-    // mechanical-thermal system matrix
-    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> stiffmatrixcoupl(elemat1_epetra.A(),true);
-    // elemat2,elevec1-3 are not used anyway
+        soh8_nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,NULL,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+    }
+    break;
+    //==================================================================================
+    // linear stiffness, internal force vector, and consistent mass matrix
+    case calc_struct_stifftemp:
+    {
+      // mechanical-thermal system matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> stiffmatrixcoupl(elemat1_epetra.A(),true);
+      // elemat2,elevec1-3 are not used anyway
 
-    // need current displacement and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp
       = discretization.GetState(0,"displacement");
-    if (disp==null)
+      if (disp==null)
       dserror("Cannot get state vectors 'displacement'");
-    vector<double> mydisp((la[0].lm_).size());
-    // build the location vector only for the structure field
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+      vector<double> mydisp((la[0].lm_).size());
+      // build the location vector only for the structure field
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
-    // calculate the mechanical-thermal system matrix
-    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
-  }
-  break;
+      // calculate the mechanical-thermal system matrix
+      soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
+    }
+    break;
 
-  //==================================================================================
-  default:
+    //==================================================================================
+    default:
     dserror("Unknown type of action for So_hex8");
-  } // action
+    } // action
 
-  return 0;
-} // Evaluate
+    return 0;
+  } // Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -1361,12 +1367,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
   //get fluid material
   const MAT::FluidPoro* fluidmat = static_cast<const MAT::FluidPoro*>((fluidele->Material()).get());
   if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
-  dserror("invalid fluid material for poroelasticity");
+    dserror("invalid fluid material for poroelasticity");
 
   //get structure material
   MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((Material()).get());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-  dserror("invalid structure material for poroelasticity");
+    dserror("invalid structure material for poroelasticity");
 
   double reacoeff = fluidmat->ComputeReactionCoeff();
   const double bulkmodulus = structmat->Bulkmodulus();
@@ -2392,12 +2398,12 @@ void DRT::ELEMENTS::So_hex8::soh8_coupling_poroelast(vector<int>& lm, // locatio
   //get fluid material
   const MAT::FluidPoro* fluidmat = static_cast<const MAT::FluidPoro*>((fluidele->Material()).get());
   if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
-  dserror("invalid fluid material for poroelasticity");
+    dserror("invalid fluid material for poroelasticity");
 
   //get structure material
   const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((Material()).get());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-  dserror("invalid structure material for poroelasticity");
+    dserror("invalid structure material for poroelasticity");
 
   const double reacoeff = fluidmat->ComputeReactionCoeff();
   const double bulkmodulus = structmat->Bulkmodulus();

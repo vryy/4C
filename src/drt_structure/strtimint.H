@@ -199,8 +199,6 @@ namespace STR
     //! Make damping and mass matrix
     void DetermineMassDampConsistAccel();
 
-    void PoroDetermineMassDampConsistAccel();
-
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC
     (

@@ -1768,7 +1768,7 @@ void STR::TimInt::ApplyTemperatures(
 }
 
 /*----------------------------------------------------------------------*/
-/* get the velocites and pressures from the fluid discretization    */
+/* get the velocites and pressures from the fluid discretization  vuong 01/12*/
 void STR::TimInt::ApplyVelAndPress(
   Teuchos::RCP<const Epetra_Vector> veln  ///< the current velocities
   )
@@ -1896,111 +1896,6 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
     return locsysman_->Trafo();
 
   return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*/
-/* equilibrate system at initial state
- * and identify consistent accelerations */
-void STR::TimInt::PoroDetermineMassDampConsistAccel()
-{
-  // temporary force vectors in this routine
-  Teuchos::RCP<Epetra_Vector> fext
-    = LINALG::CreateVector(*dofrowmap_, true); // external force
-  Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
-
-  // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
-
-  // get external force
-  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
-
-  // initialise matrices
-  stiff_->Zero();
-  mass_->Zero();
-
-  // get initial internal force and stiffness and mass
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    //p.set("action", "calc_poroelast_nlnstiffmass");
-    p.set("action", "calc_struct_nlnstiffmass");
-    // other parameters that might be needed by the elements
-    p.set("total time", (*time_)[0]);
-    p.set("delta time", (*dt_)[0]);
-    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
-    // set vector values needed by elements
-    discret_->ClearState();
-    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-    discret_->SetState(0,"residual displacement", zeros_);
-    discret_->SetState(0,"displacement", (*dis_)(0));
-    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
-    // set the temperature for the coupled problem
-    if(tempn_!=Teuchos::null)
-    {
-      discret_->SetState(1,"temperature",tempn_);
-    }
-    if(fluidveln_!=Teuchos::null)
-      discret_->SetState(1,"fluidveln",fluidveln_);
-    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
-  }
-
-  // finish mass matrix
-  mass_->Complete();
-
-  // close stiffness matrix
-  stiff_->Complete();
-
-  // build Rayleigh damping matrix if desired
-  if (damping_ == INPAR::STR::damp_rayleigh)
-  {
-    damp_->Add(*stiff_, false, dampk_, 0.0);
-    damp_->Add(*mass_, false, dampm_, 1.0);
-    damp_->Complete();
-  }
-
-  // in case of C0 pressure field, we need to get rid of
-  // pressure equations
-  Teuchos::RCP<LINALG::SparseOperator> mass = Teuchos::null;
-  if (pressure_ != Teuchos::null)
-  {
-    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
-    mass->ApplyDirichlet(*(pressure_->CondMap()));
-  }
-  else
-  {
-    mass = mass_;
-  }
-
-  // calculate consistent initial accelerations
-  // WE MISS:
-  //   - surface stress forces
-  //   - potential forces
-  {
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
-    if (damping_ == INPAR::STR::damp_rayleigh)
-    {
-      damp_->Multiply(false, (*vel_)[0], *rhs);
-    }
-    rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
-
-    // blank RHS on DBC DOFs
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    if (pressure_ != Teuchos::null)
-      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
-
-    solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
-  }
-
-  // We need to reset the stiffness matrix because its graph (topology)
-  // is not finished yet in case of constraints and posssibly other side
-  // effects (basically managers).
-  stiff_->Reset();
-
-  // leave this hell
-  return;
 }
 
 /*----------------------------------------------------------------------*/

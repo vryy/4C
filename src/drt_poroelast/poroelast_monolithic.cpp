@@ -67,45 +67,51 @@ POROELAST::MonolithicBase::MonolithicBase(const Epetra_Comm& comm) :
   // check if FluidField has 2 discretizations, so that coupling is possible
   if (FluidField().Discretization()->AddDofSet(structdofset) != 1)
     dserror("unexpected dof sets in fluid field");
-    if (StructureField().Discretization()->AddDofSet(fluiddofset)!=1)
+  if (StructureField().Discretization()->AddDofSet(fluiddofset)!=1)
     dserror("unexpected dof sets in structure field");
 
-    // access the problem-specific parameter lists
-    const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
-    const Teuchos::ParameterList& fdyn
-    = DRT::Problem::Instance()->FluidDynamicParams();
+  // access the problem-specific parameter lists
+  const Teuchos::ParameterList& sdyn
+  = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& fdyn
+  = DRT::Problem::Instance()->FluidDynamicParams();
 
-    // check time integration algo -> currently only one-step-theta scheme supported
-    INPAR::STR::DynamicType structtimealgo
-    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
-    INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
-    = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+  // check time integration algo -> currently only one-step-theta scheme supported
+  INPAR::STR::DynamicType structtimealgo
+  = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
+  INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
+  = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
-    if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
-        fluidtimealgo != INPAR::FLUID::timeint_one_step_theta )
-    dserror("monolithic Poroelasticity is limited in functionality (only one-step-theta scheme possible)");
+  if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
+      fluidtimealgo != INPAR::FLUID::timeint_one_step_theta )
+  dserror("monolithic Poroelasticity is limited in functionality (only one-step-theta scheme possible)");
 
-    // the fluid-ale coupling always matches
-    const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-    const Epetra_Map* structurenodemap = StructureField().Discretization()->NodeRowMap();
+  // the fluid-ale coupling always matches
+  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* structurenodemap = StructureField().Discretization()->NodeRowMap();
 
-    coupfa_.SetupCoupling(*FluidField().Discretization(),
-        *StructureField().Discretization(),
-        *fluidnodemap,
-        *structurenodemap,
-        genprob.ndim);
+  coupfa_.SetupCoupling(*FluidField().Discretization(),
+      *StructureField().Discretization(),
+      *fluidnodemap,
+      *structurenodemap,
+      genprob.ndim);
 
-    FluidField().SetMeshMap(coupfa_.MasterDofMap());
+  FluidField().SetMeshMap(coupfa_.MasterDofMap());
 
-    //extractor for constraints on structure phase
-    consplitter_=LINALG::MapExtractor(*StructureField().DofRowMap(),
-        StructureField().DofRowMap(0));
+  //extractor for constraints on structure phase
+  //
+  // when using constraints applied via Lagrange-Multipliers there is a
+  // difference between StructureField().DofRowMap() and StructureField().DofRowMap(0).
+  // StructureField().DofRowMap(0) returns the DofRowMap
+  // known to the discretization (without lagrange multipliers)
+  // while StructureField().DofRowMap() returns the DofRowMap known to
+  // the constraint manager (with lagrange multipliers)
+  consplitter_=LINALG::MapExtractor(*StructureField().DofRowMap(),
+      StructureField().DofRowMap(0));
 
-    //map of fluid and structure dofs for no flux constraint
-    BuidNoPenetrationMap();
-
-  }
+  //map of fluid and structure dofs for no flux constraint
+  BuidNoPenetrationMap();
+}
 
 /*----------------------------------------------------------------------*
  | destructor (public)                                    vuong 01/12   |
@@ -200,49 +206,54 @@ void POROELAST::MonolithicBase::BuidNoPenetrationMap()
   vector<DRT::Condition*> nopencond_struct;
 
   FluidField().Discretization()->GetCondition("NoPenetration", nopencond_fluid);
-  StructureField().Discretization()->GetCondition("NoPenetration",
-      nopencond_struct);
+  StructureField().Discretization()->GetCondition("NoPenetration",nopencond_struct);
 
   if (nopencond_fluid.size() != nopencond_struct.size())
     dserror("something went wrong!");
 
-    if (nopencond_fluid.size())
+  if (nopencond_fluid.size())
+  {
+    Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+    Teuchos::RCP<DRT::Discretization> structuredis = StructureField().Discretization();
+
+    for (unsigned int i=0; i<nopencond_fluid.size();i++)
     {
-      Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-      Teuchos::RCP<DRT::Discretization> structuredis = StructureField().Discretization();
-      //Teuchos::RCP<DRT::DofSet> mydofset = fluiddis->GetDofSet(0);
-      //Teuchos::RCP<DRT::DofSet> otherdofset = fluiddis->GetDofSet(1);
+      //get GIDs of Nodes with condition
+      const vector< int > * nID_fluid = nopencond_fluid[i]->Nodes();
+      const vector< int > * nID_structure = nopencond_struct[i]->Nodes();
 
-      for (unsigned int i=0; i<nopencond_fluid.size();i++)
-      {
-        //get GIDs of Nodes with condition
-        const vector< int > * nID_fluid = nopencond_fluid[i]->Nodes();
-        const vector< int > * nID_structure = nopencond_struct[i]->Nodes();
+      int normaldir = (*(nopencond_fluid[i]->Get<vector<int> >("normalDir")))[0];
 
-        int normaldir = (*(nopencond_fluid[i]->Get<vector<int> >("normalDir")))[0];
-
-        if(nID_fluid->size() != nID_structure->size())
+      if(nID_fluid->size() != nID_structure->size())
         dserror("something went wrong!");
 
-        for (unsigned int j=0; j<nID_fluid->size();j++)
-        {
-          int nid_fluid = (*nID_fluid)[j];
-          int nid_structure = (*nID_structure)[j];
+      for (unsigned int j=0; j<nID_fluid->size();j++)
+      {
+        int nid_fluid = (*nID_fluid)[j];
+        int nid_structure = (*nID_structure)[j];
 
-          if(nid_fluid != nid_structure)
+        if(nid_fluid != nid_structure)
           dserror("something went wrong!");
 
+       // if (fluiddis->HaveGlobalNode(nid_fluid) and structuredis->HaveGlobalNode(nid_structure))
+        if (fluiddis->HaveGlobalNode(nid_fluid) and structuredis->HaveGlobalNode(nid_structure))
+        {
           DRT::Node * fluidnode = fluiddis->gNode(nid_fluid);
-          DRT::Node * structurenode = structuredis->gNode(nid_structure);
           vector<int> fluiddofs = fluiddis->Dof(0,fluidnode);
+
+          DRT::Node * structurenode = structuredis->gNode(nid_structure);
           vector<int> structuredofs = structuredis->Dof(0,structurenode);
 
-          (*nopenetrationmap_)[fluiddofs[normaldir]]=structuredofs[normaldir];
+          if(fluiddofs.size() and structuredofs.size())
+            (*nopenetrationmap_)[fluiddofs[normaldir]]=structuredofs[normaldir];
         }
+      //  else
+      //    dserror("fluid and structure node not on same processor");
       }
     }
-    return;
   }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | monolithic                                              vuong 01/12  |
@@ -532,7 +543,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   if (StructureField().HaveConstraint())
   {
-    //displacment vector without lagrange-multipliers
+    //displacement vector without lagrange-multipliers
     dispn_ = consplitter_.ExtractCondVector(StructureField().Dispnp());
   }
   else
@@ -600,12 +611,22 @@ void POROELAST::Monolithic::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
   // use its own DofRowMap, that is the 0th map of the discretization
-  vecSpaces.push_back(StructureField().DofRowMap(0));
+  //
+  // when using constraints applied via Lagrange-Multipliers there is a
+  // difference between StructureField().DofRowMap() and StructureField().DofRowMap(0).
+  // StructureField().DofRowMap(0) returns the DofRowMap
+  // known to the discretization (without lagrange multipliers)
+  // while StructureField().DofRowMap() returns the DofRowMap known to
+  // the constraint manager (with lagrange multipliers)
+  // In the constrained case we want the "whole" RowDofMap,
+  // otherwise both calls are equivalent
+
+  vecSpaces.push_back(StructureField().DofRowMap());
   vecSpaces.push_back(FluidField().DofRowMap(0));
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
     dserror("No structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements()==0)
+  if (vecSpaces[1]->NumGlobalElements()==0)
     dserror("No fluid equation. Panic.");
 
     SetDofRowMaps(vecSpaces);
