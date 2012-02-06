@@ -325,6 +325,8 @@ public:
   {
     if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
       return 1.0/(theta_ * dta_);
+    else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+      return alphaM_/(gamma_*dta_);
     else if (timealgo_ == INPAR::FLUID::timeint_stationary)
       return 1.0;
     else

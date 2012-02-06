@@ -416,8 +416,16 @@ void SysmatDomainNitsche(
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densaf);
 
-      for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = bodyforce(isd) + noscalebodyforce(isd);
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+      }
 
       //-----------------------------------------------------------------------
       // compute numerical representation of some single operators (not scaled)
@@ -494,8 +502,12 @@ void SysmatDomainNitsche(
       if (genalpha)
       {
         for (size_t isd = 0; isd < nsd; ++isd)
-          res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
-        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+          res_old(isd) = densaf*conv_old(isd) + gradp(isd) - 2.0*dynvisc*visc_old(isd) - bodyforce(isd);
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpaccam(isd);
+        }
       }
       else
       {
@@ -509,13 +521,15 @@ void SysmatDomainNitsche(
         }
       }
       // integration factors and coefficients of single terms
-      const double timefacfac = timefac * fac;
+      double rhsfac     = fac;
+      if (genalpha)
+        rhsfac *= timefac / ga_alphaF; // (fac * gamma * dt ) / alpha_M
 
       //----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          assembler, shp, shp, fac, timefac, rhsfac, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
           instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -903,8 +917,16 @@ void SysmatDomainNitscheGalerkin(
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densaf);
 
-      for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = bodyforce(isd) + noscalebodyforce(isd);
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
+      }
 
       //-----------------------------------------------------------------------
       // compute numerical representation of some single operators (not scaled)
@@ -981,8 +1003,12 @@ void SysmatDomainNitscheGalerkin(
       if (genalpha)
       {
         for (size_t isd = 0; isd < nsd; ++isd)
-          res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
-        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+          res_old(isd) = densaf*conv_old(isd) + gradp(isd) - 2.0*dynvisc*visc_old(isd) - bodyforce(isd);
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpaccam(isd);
+        }
       }
       else
       {
@@ -996,7 +1022,9 @@ void SysmatDomainNitscheGalerkin(
         }
       }
       // integration factors and coefficients of single terms
-      const double timefacfac = timefac * fac;
+      double rhsfac = fac;
+      if (genalpha)
+        rhsfac *= timefac / ga_alphaF; // (fac * gamma * dt ) / alpha_M
 
       if (ASSTYPE== XFEM::xfem_assembly)
       {
@@ -1098,7 +1126,7 @@ void SysmatDomainNitscheGalerkin(
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          assembler, shp, shp, fac, timefac, rhsfac, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
           instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -1582,12 +1610,13 @@ if (intpoints.nquad != 8)
       }
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
+      const double rhsfac     = timefacfac / ga_alphaF;
 
       //----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          assembler, shp, shp, fac, timefac, timefacfac, rhsfac, ga_alphaM, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
           instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -2759,6 +2788,9 @@ void SysmatBoundaryNitsche(
     const bool                                 smoothed_boundary_integration
 )
 {
+  if (timealgo == INPAR::FLUID::timeint_afgenalpha)
+    dserror("SysmatBoundaryNitsche: Genalpha does not function properly in this method.");
+
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG

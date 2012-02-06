@@ -592,7 +592,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       } // for i
     }
 
-    if ((is_genalpha_ and not is_incremental_) or (scatratype == INPAR::SCATRA::scatratype_levelset))
+    if (is_genalpha_ and not is_incremental_)
     {
       // extract additional local values from global vector
       RefCountPtr<const Epetra_Vector> phin = discretization.GetState("phin");

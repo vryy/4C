@@ -861,6 +861,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_, true);
+      if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+      {
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.accam_,true);
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.velaf_,true);
+      }
       // velocities and pressures at time n+1, n and n-1
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,true); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,true);
@@ -871,6 +876,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,false);
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_ ,false);
+      if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+      {
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.accam_,false);
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.velaf_,false);
+      }
       // velocities and pressures at time n+1, n and n-1
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,false); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
@@ -881,6 +891,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
       SetEnrichmentField(dofmanager,newdofrowmap); // set initial (enrichment) field
+
+    if (timealgo_ == INPAR::FLUID::timeint_afgenalpha
+        and (xfemtimeint_!=INPAR::COMBUST::xfemtimeint_donothing
+        or ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic))))
+      dserror("Genalpha has not been tested with anything but Timeint DoNothing and TimeintEnr DoNothing/QuasiStatic.");
 
     if (step_ > 0) // reference solution update not in first update
     {
@@ -1314,16 +1329,17 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         // set scheme-specific element parameters and vector values
-        //if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-        //  discret_->SetState("velaf",state_.velaf_);
-        //else
-        discret_->SetState("velnp",state_.velnp_);
+        if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+          discret_->SetState("velaf",state_.velaf_);
+        else
+          discret_->SetState("velnp",state_.velnp_);
 
         discret_->SetState("veln" ,state_.veln_);
         discret_->SetState("velnm",state_.velnm_);
         discret_->SetState("accn" ,state_.accn_);
 
-        //discret_->SetState("accam",state_.accam_);
+        if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+          discret_->SetState("accam",state_.accam_);
 
         discret_->SetState("velpres nodal iterinc",oldinc_);
 

@@ -842,8 +842,16 @@ void SysmatDomainStress(
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densaf);
 
-      for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = histvec(isd) + timefac*bodyforce(isd);
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = bodyforce(isd);
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = histvec(isd) + timefac*bodyforce(isd);
+      }
 
       //-----------------------------------------------------------------------
       // compute numerical representation of some single operators (not scaled)
@@ -917,23 +925,45 @@ void SysmatDomainStress(
 
       // evaluate residual once for all stabilisation right hand sides
       LINALG::Matrix<nsd,1> res_old(true);
-      for (size_t isd = 0; isd < nsd; ++isd)
-        res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
-
-      if (instationary)
+      if (genalpha)
       {
-        for(size_t isd=0; isd < nsd; ++isd)
-          res_old(isd) += densaf * gpvelnp(isd);
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = densaf*conv_old(isd) + gradp(isd) - 2.0*dynvisc*visc_old(isd) - bodyforce(isd);
+
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpaccam(isd);
+        }
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpvelnp(isd);
+        }
+
       }
 
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
+      double rhsfac = fac;
+      if (genalpha)
+        rhsfac *= timefac / ga_alphaF;
+
       //----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
+      if (genalpha)
+        dserror("SysmatDomainStress: Genalpha has not been tested for this, use at your own risk.");
+
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, densaf, dynvisc,
+          assembler, shp, shp, fac, timefac, rhsfac, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
           instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);

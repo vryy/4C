@@ -1384,6 +1384,9 @@ void SysmatBoundarySurfaceTension(
     const bool                                 smoothed_boundary_integration
 )
 {
+  if (timealgo == INPAR::FLUID::timeint_afgenalpha)
+    dserror("SysmatBoundarySurfaceTension: Genalpha does not work with surface tension.");
+
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG

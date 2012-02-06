@@ -122,8 +122,6 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_gen_alpha)
       cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
-
-    dserror("Generalized alpha time integration scheme for combustion is not working yet");
     break;
   }
   default:

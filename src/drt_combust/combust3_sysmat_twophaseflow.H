@@ -460,8 +460,9 @@ void SysmatTwoPhaseFlow(
       //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
       //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
       //            }
-      const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
+      histvec.Scale(densaf);
 
       // get velocity (np,i) derivatives at integration point
       // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -552,7 +553,9 @@ void SysmatTwoPhaseFlow(
           tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_wall
 
       // integration factors and coefficients of single terms
-      const double timefacfac = timefac * fac;
+      double rhsfac = fac;
+      if (genalpha)
+        rhsfac *= timefac / ga_alphaF; // (fac * gamma * dt ) / alpha_M
 
       /*------------------------- evaluate rhs vector at integration point ---*/
       LINALG::Matrix<nsd,1> rhsint;
@@ -585,8 +588,16 @@ void SysmatTwoPhaseFlow(
       //std::cout << bodyforce(2) << std::endl;
       bodyforce.Scale(densaf);
 
-      for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = densaf*histvec(isd) + (bodyforce(isd) + noscalebodyforce(isd)) * timefac;
+      if (genalpha)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = bodyforce(isd) + noscalebodyforce(isd);
+      }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          rhsint(isd) = histvec(isd) + (bodyforce(isd) + noscalebodyforce(isd)) * timefac;
+      }
 
       /*----------------- get numerical representation of single operators ---*/
       /* Convective term  u_old * grad u_old: */
@@ -603,15 +614,28 @@ void SysmatTwoPhaseFlow(
       // evaluate residual once for all stabilisation right hand sides
       // pres?
       LINALG::Matrix<nsd,1> res_old;
-      for (size_t isd = 0; isd < nsd; ++isd)
-        res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
-
-      if (instationary)
+      if (genalpha)
       {
-        for(size_t isd=0; isd<nsd; ++isd)
-          res_old(isd) += densaf * gpvelnp(isd);
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = densaf*conv_old(isd) + gradp(isd) - 2.0*dynvisc*visc_old(isd) - bodyforce(isd) - noscalebodyforce(isd);
+        if (instationary)
+        {
+          for (size_t isd = 0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpaccam(isd);
+        }
       }
-      //res_old += gpvelnp;
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+
+        if (instationary)
+        {
+          for(size_t isd=0; isd<nsd; ++isd)
+            res_old(isd) += densaf * gpvelnp(isd);
+        }
+        //res_old += gpvelnp;
+      }
 
 
       /* Reactive term  u:  funct */
@@ -764,7 +788,7 @@ void SysmatTwoPhaseFlow(
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-         assembler, shpvel, shppres, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+         assembler, shpvel, shppres, fac, timefac, rhsfac, densaf, dynvisc,
          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c_, enr_conv_c_sg, enr_viscs2,
          instationary, genalpha, newton, pstab, supg, cstab,
          tau_stab_M, tau_stab_Mp, tau_stab_C);
