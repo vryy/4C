@@ -1174,9 +1174,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
        bgslist.set("global_iter",1);
        bgslist.set("global_omega",1.0);
 
-       // currently, the order of blocks in the given EpetraOperator is not changed
-       // in the Gauss-Seidel procedure
-       bgslist.set("fliporder",false);
+       // the order of blocks in the given EpetraOperator can be changed in the
+       // Gauss-Seidel procedure,
+       // default: fliporder == 0, i.e., solve block1 --> block2
+       std::string fliporder = inparams.get<std::string>("BGS2X2_FLIPORDER");
+       bgslist.set("fliporder",(fliporder=="block1_block0_order") ? true : false);
 
        // currently, the number of Richardson iteratios and the relaxation
        // parameter on the individual block level are set to 1 and 1.0, respectively
@@ -1687,9 +1689,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       bgslist.set("global_iter",1);
       bgslist.set("global_omega",1.0);
 
-      // currently, the order of blocks in the given EpetraOperator is not changed
-      // in the Gauss-Seidel procedure
-      bgslist.set("fliporder",false);
+      // the order of blocks in the given EpetraOperator can be changed in the
+      // Gauss-Seidel procedure,
+      // default: fliporder == 0, i.e., solve block1 --> block2
+      std::string fliporder = inparams.get<std::string>("BGS2X2_FLIPORDER");
+      bgslist.set("fliporder",(fliporder=="block1_block0_order") ? true : false);
 
       // currently, the number of Richardson iteratios and the relaxation
       // parameter on the individual block level are set to 1 and 1.0, respectively

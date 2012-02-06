@@ -264,7 +264,7 @@ MAXTIME                         1.0 // 000
 NORMCOMBI_RESFINC               And
 NORM_INC                        Abs
 NORM_RESF                       Rel // Abs,RelIter0
-NUMSTEP                         2000
+NUMSTEP                         10
 RESTARTEVRY                     5
 TIMESTEP                        0.1 // 0.05
 UPRES                           5
@@ -292,6 +292,7 @@ AZSOLVE                         GMRES //     CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,
 AZSUB                           300
 AZTOL                           1e-08
 DWINDTAU                        1.5
+BGS2X2_FLIPORDER                block1_block0_order // default: block0_block1_order
 IFPACKCOMBINE                   Add //     Add,Insert,Zero
 IFPACKFILL                      1
 IFPACKGFILL                     0

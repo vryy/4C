@@ -4618,6 +4618,13 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
+  // switch order of blocks in BGS2x2 preconditioner
+  setStringToIntegralParameter<int>(
+    "BGS2X2_FLIPORDER","block0_block1_order","BGS2x2 flip order parameter",
+    tuple<std::string>("block0_block1_order","block1_block0_order"),
+    tuple<int>(0,1),
+    &list);
+
   // the only one stratimikos specific parameter
   setNumericStringParameter("STRATIMIKOS_XMLFILE","",
                               "xml file for stratimikos parameters",

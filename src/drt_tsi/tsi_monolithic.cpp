@@ -110,7 +110,7 @@ void TSI::MonolithicBase::ReadRestart(int step)
                                      StructureField().ExtractVelnp());
   StructureField().ApplyTemperatures(ThermoField().Tempnp());
 
-  // second ReadRestart needed due to the coupling variables 
+  // second ReadRestart needed due to the coupling variables
   ThermoField().ReadRestart(step);
   StructureField().ReadRestart(step);
 
@@ -301,8 +301,6 @@ void TSI::Monolithic::CreateLinearSolver()
   solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
   solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
 
-  // TODO (TW) handling of flip flag in Lena's BGS2x2???
-
   // prescribe rigid body modes
   StructureField().Discretization()->ComputeNullSpaceIfNecessary(
                                        solver_->Params().sublist("Inverse1")
@@ -310,6 +308,10 @@ void TSI::Monolithic::CreateLinearSolver()
   ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
                                     solver_->Params().sublist("Inverse2")
                                     );
+
+  // HINT: change order of blocks in BGS2X2 via flag
+  //       BGS2X2_FLIPORDER = block1_block0_order in section TSI MONOLITHIC SOLVER
+
 }
 
 /*----------------------------------------------------------------------*

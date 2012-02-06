@@ -45,6 +45,10 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
   {
     firstind_ = 1;
     secind_ = 0;
+
+    // switch parameter lists according to fliporder
+    list2_ = list1;
+    list1_ = list2;
   }
 
   A_ = rcp_dynamic_cast<BlockSparseMatrixBase>(A);
