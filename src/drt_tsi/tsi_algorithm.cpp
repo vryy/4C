@@ -189,7 +189,7 @@ void TSI::Algorithm::Output()
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
   if ( (upres!=0 and (Step()%upres == 0))
-    or (uprestart != 0) and (Step()%uprestart == 0) )
+    or ( (uprestart != 0) and (Step()%uprestart == 0) ) )
     {
       // displacement field
       // (get noderowmap of discretisation for creating this multivector)
