@@ -28,10 +28,6 @@ extern struct _FILES  allfiles;
 #endif
 #endif
 
-
-using namespace NOX;
-using namespace NOX::LineSearch;
-
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                              Teuchos::ParameterList& params)
   : utils_(utils)

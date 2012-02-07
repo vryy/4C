@@ -20,9 +20,6 @@
 #include "../drt_io/io_control.H"
 #endif
 
-using namespace Teuchos;
-
-
 NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                                Teuchos::ParameterList& params)
   : utils_(utils)
@@ -68,7 +65,7 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
   const NOX::Abstract::Vector& x = grp.getX();
 
   std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > epslist(maxcol_+1);
-  epslist[0] = rcp(new NOX::Epetra::Vector(dynamic_cast<const NOX::Epetra::Vector&>(x)));
+  epslist[0] = Teuchos::rcp(new NOX::Epetra::Vector(dynamic_cast<const NOX::Epetra::Vector&>(x)));
 
   Teuchos::RefCountPtr<NOX::Epetra::Vector> wg1;
   Teuchos::RefCountPtr<NOX::Epetra::Vector> wg2;
@@ -87,20 +84,20 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
     const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
 
     // We have to work on the scaled residual here.
-    RefCountPtr<NOX::Epetra::Vector> y = rcp(new NOX::Epetra::Vector(f));
+    Teuchos::RefCountPtr<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     indm = k+1;
     if (indm > maxcol_)
       indm = maxcol_;
 
-    wg2 = rcp(new NOX::Epetra::Vector(*epslist[0]));
+    wg2 = Teuchos::rcp(new NOX::Epetra::Vector(*epslist[0]));
     wg2->update(1., *y, 1.);
 
     for (int i=0; i<indm; ++i)
     {
       // epsilon extrapolation without care for instabilities
-      wg1 = rcp(new NOX::Epetra::Vector(*wg2));
+      wg1 = Teuchos::rcp(new NOX::Epetra::Vector(*wg2));
       wg1->update(-1., *epslist[i], 1.);
 
       double rd = wg1->norm();

@@ -29,9 +29,6 @@
 #endif
 
 
-using namespace Teuchos;
-
-
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                                Teuchos::ParameterList& params)
   : utils_(utils)
@@ -93,7 +90,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
     const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
 
     // We have to work on the scaled residual here.
-    RefCountPtr<NOX::Epetra::Vector> y = rcp(new NOX::Epetra::Vector(f));
+    Teuchos::RefCountPtr<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     // modified Gram-Schmidt
