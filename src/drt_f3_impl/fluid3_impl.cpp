@@ -8134,8 +8134,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   vector<int>&               lm,
   RefCountPtr<MAT::Material> mat)
 {
-  dserror("Don't use this function");
+  dserror("This function is currently not used! -> Check it!");
   // -> has to be adapted to changes in Sysmat()
+  // -> implemented for scale similarity model
+  // -> not adapted to multifractal subgrid-scale modeling
+  // -> (residual-based) cross- and Reynolds-stress terms not included, yet
   // -> has to be merged with corresponding function of np-gen-alpha (Gammis Code)
 
   // create matrix objects for nodal values
@@ -8201,6 +8204,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
   // element area or volume
   const double vol = fac_;
+
+  // get velocity at integration point
+  velint_.Multiply(evel,funct_);
+  // convective term
+  convvelint_.Update(velint_);
 
   if (f3Parameter_->mat_gp_ or f3Parameter_->tau_gp_)
    dserror ("Evaluation of material or stabilization parameters at gauss point not supported,yet!");
