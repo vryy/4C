@@ -1164,7 +1164,7 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 /*----------------------------------------------------------------------*
  |  Update contact constraint norm                            popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
+void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm, int* convstatus)
 {
   // some local variables
   int j=0;
@@ -1231,9 +1231,13 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   // (only possible for AUGMENTED LAGRANGE strategy)
   bool updatepp = false;
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
-  
   if (soltype==INPAR::CONTACT::solution_auglag)
-    updatepp = UpdateCurrentpp(globnorm);
+  {
+    if(convstatus!=NULL)
+      updatepp = DecreaseCurrentpp(*convstatus);
+    if(!updatepp)
+      updatepp = IncreaseCurrentpp(globnorm);
+  }
   
    // print results to screen
   if (Comm().MyPID()==0 && cnorm==NULL)
@@ -1254,7 +1258,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
 }
 
 /*----------------------------------------------------------------------*
- |  Shift normal vector to "normal_old_"                       meier 10/10|
+ |  Shift normal vector to "normal_old_"                     meier 10/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ShiftAllNormal()
 {
@@ -1324,17 +1328,31 @@ void CONTACT::Beam3cmanager::UpdateUzawaIter()
 /*----------------------------------------------------------------------*
  |  Update penalty parameter                                  popp 04/10|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::UpdateCurrentpp(const double& globnorm)
+bool CONTACT::Beam3cmanager::IncreaseCurrentpp(const double& globnorm)
 {
   // check convergence rate of Uzawa iteration
   // if too slow then empirically increase the penalty parameter
   bool update = false;
   if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter_ >= 2) )
   {
-    currentpp_ = currentpp_ * 2.0;
+    currentpp_ = currentpp_ * 1.6;
     update = true;
   }
-  
+  return update;
+}
+
+/*----------------------------------------------------------------------*
+ |  Reduce penalty parameter                               mueller 02/12|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Beam3cmanager::DecreaseCurrentpp(int& unconverged)
+{
+  bool update = false;
+
+  if(unconverged==0)
+  {
+    currentpp_ = currentpp_ / 1.4;
+    update = true;
+  }
   return update;
 }
 

@@ -471,7 +471,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
       {
         std::ostringstream filename;
-        filename << "./DoubleBondDistance_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        filename << "./DoubleBondDistances.dat";
         LoomOutput(filename);
       }
     }

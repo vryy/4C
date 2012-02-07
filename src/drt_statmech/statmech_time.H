@@ -54,13 +54,10 @@ public:
   virtual void FullNewton(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool uzawa = false);
+  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
   void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
-
-  //!\brief special evaluation for force-based unbinding of crosslinker elements
-  void EvaluateForceDepUnlinking(double& dt, RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief writing output including restart information
   virtual void Output();
@@ -74,6 +71,36 @@ protected:
   StatMechTime operator = (const StatMechTime& old);
   StatMechTime(const StatMechTime& old);
 
+  //! \brief Initialize StatMechManager and BeamContactManager
+  void InitializeManagers(int& currstep, int& startstep, int& ndim, double& dt, bool& buildoctree);
+
+  //! \brief switch time step size at given point in time
+  void StatMechManagerTimeUpdate(double& time, double& dt);
+
+  //! \brife call Update() method of statmechmanager_ according to options chosen
+  void StatMechManagerUpdate(int& istep, int& ndim, double& dt, bool buildoctree);
+
+  //! \brief evaluates beam contact according to options chosen in the input file
+  void BeamContactNonlinearSolve(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+
+  //! \brief beam contact penalty approach
+  void BeamContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+
+  //! \brief beam contact augmented lagrange approach
+  void BeamContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+
+  //! \brief call Output() method of statmechmanager_ according to options chosen
+  void StatMechManagerOutput(int& istep, int& ndim, double& time, double& dt);
+
+  //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
+  void ResetBeforeTimeStepRepeat(bool& buildoctree);
+
+  //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
+  void PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnormdivergent, bool* redouzawastep = NULL);
+
+  //! \brief set PTC status to unconverged
+  void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
+
   //! \brief manager for administration of statistical mechanics stuff
   RCP<StatMechManager> statmechmanager_;
 
@@ -85,6 +112,17 @@ protected:
 
   //! \brief object for managing beam contact
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
+
+  //! \brief enum beam contact solution strategy
+  enum beamcstrategy
+  {
+      contact_none,
+      contact_penalty,
+      contact_auglag,
+      contact_lagmult
+  };
+
+  StatMechTime::beamcstrategy contactstrategy_;
 
 }; // class StatMechTime
 

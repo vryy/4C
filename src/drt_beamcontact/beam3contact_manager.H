@@ -140,6 +140,9 @@ public:
   */
   const int GetUzawaIter() { return uzawaiter_; }
 
+  // \brief Get current penalty parameter
+  const double GetCurrentpp() { return currentpp_; }
+
   //@}
 
   //! @name Public evaluation methods
@@ -197,9 +200,10 @@ public:
   penalty parameter is also applied to speed up Uzawa convergence.
 
   \param cnorm (in/out) read-only (no norm update) if cnorm is not the null pointer
+  \param convstatus (in) status of convergence, default value NULL for converged
 
   */
-  void UpdateConstrNorm(double* cnorm = NULL);
+  void UpdateConstrNorm(double* cnorm = NULL, int* convstatus = NULL);
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
@@ -435,7 +439,10 @@ private:
   experience. It moght also be problem-dependent.
 
   */
-  bool UpdateCurrentpp(const double& GlobalConstrNorm);
+  bool IncreaseCurrentpp(const double& GlobalConstrNorm);
+
+  //\brief Reduce penalty paramater, when it is apparent that the latest increase due to UpdateCurrentpp() was to steep
+  bool DecreaseCurrentpp(int& unconverged);
 
   /*!
   \brief Set displacment state
