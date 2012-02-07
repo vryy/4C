@@ -105,12 +105,8 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_2WC::PrepareTimeStep()
 {
-  // set mesh displacement field for present time step
-  SetMeshDisp();
-
-  // set velocity fields from fluid and structure solution
-  // for present time step
-  SetVelocityFields();
+  // set mesh displacement and velocity fields for present time step
+  SetFSISolution();
 
   // prepare time step for both fluid- and structure-based scatra field
   // (+ computation of initial scalar time derivative in first time step)
@@ -122,7 +118,7 @@ void FS3I::PartFS3I_2WC::PrepareTimeStep()
   if (consthermpress_=="No_energy")
     fluidscatra_->ScaTraField().PredictThermPressure();
 
-  // prepare time step for fluid, structure and ALE
+  // prepare time step for fluid, structure and ALE fields
   fsi_->PrepareTimeStep();
 
   return;
@@ -180,8 +176,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
     // set FSI values required in scatra (will be done in the following
     // routine, for the time being)
     //SetFSIValuesInScaTra();
-
-    // set velocity fields and mesh displacement
+    // set mesh displacement and velocity fields
     SetFSISolution();
 
     // solve scalar transport equation
