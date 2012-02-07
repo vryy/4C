@@ -1,15 +1,23 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lung_overlapprec.H
+\brief BGS preconditioner for volume-coupled FSI
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
-#include <Epetra_Time.h>
 #include <EpetraExt_MatrixMatrix.h>
 
-#include "fsi_overlapprec.H"
 #include "fsi_lung_overlapprec.H"
-#include "fsi_debugwriter.H"
 #include "../drt_io/io_control.H"
-
-
-extern struct _GENPROB     genprob;
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

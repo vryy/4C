@@ -1,13 +1,33 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lungmonolithic_fluidsplit.H
+\brief Volume-coupled FSI (fluid-split)
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef FSI_LUNG_MONOLITHIC_FLUIDSPLIT_H
 #define FSI_LUNG_MONOLITHIC_FLUIDSPLIT_H
 
 #include "fsi_lungmonolithic.H"
-#include "fsi_matrixtransform.H"
 
 namespace FSI
 {
+  // forward declarations
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
 
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a specific class of bio problems (FSI airway
@@ -71,36 +91,36 @@ namespace FSI
   private:
 
     /// transformation of fluid matrix
-    UTILS::MatrixRowColTransform fggtransform_;
-    UTILS::MatrixRowTransform fgitransform_;
-    UTILS::MatrixRowTransform fgGtransform_;
-    UTILS::MatrixColTransform figtransform_;
-    UTILS::MatrixColTransform fGgtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> fgGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fGgtransform_;
 
     /// transformation of shape derivative matrix
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmGitransform_;
-    UTILS::MatrixRowColTransform fmgitransform_;
-    UTILS::MatrixColTransform fmigtransform_;
-    UTILS::MatrixColTransform fmGgtransform_;
-    UTILS::MatrixRowColTransform fmggtransform_;
-    UTILS::MatrixColTransform fmiGtransform_;
-    UTILS::MatrixColTransform fmGGtransform_;
-    UTILS::MatrixRowColTransform fmgGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmGitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmGgtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmGGtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgGtransform_;
 
     /// transformation of additional shape derivative matrix (volume constraint)
-    UTILS::MatrixColTransform addfmGGtransform_;
-    UTILS::MatrixColTransform addfmGgtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> addfmGGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> addfmGgtransform_;
 
     /// transformation of fluid constraint matrix
-    UTILS::MatrixRowTransform fcgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> fcgitransform_;
 
     /// transformation of ale matrix
-    UTILS::MatrixColTransform aigtransform_;
-    UTILS::MatrixColTransform aiGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aiGtransform_;
 
     /// transformation of constraint "ale" matrix
-    UTILS::MatrixColTransform caiGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> caiGtransform_;
 
   };
 }

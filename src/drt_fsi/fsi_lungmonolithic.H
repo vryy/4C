@@ -1,19 +1,43 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lungmonolithic.H
+\brief Volume-coupled FSI (base class)
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef FSI_LUNG_MONOLITHIC_H
 #define FSI_LUNG_MONOLITHIC_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_lung_overlapprec.H"
 #include "fsi_monolithic_nox.H"
+
+// forward declarations
 
 namespace UTILS
 {
   class ConstraintDofSet;
 }
 
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+}
+
+
 namespace FSI
 {
+
+  // forward declaration
+  class OverlappingBlockMatrix;
 
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a specific class of bio problems (FSI airway
@@ -58,7 +82,7 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);

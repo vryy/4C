@@ -1,13 +1,33 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lungmonolithic_structuresplit.H
+\brief Volume-coupled FSI (structure-split)
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
 #define FSI_LUNG_MONOLITHICSTRUCTURESPLIT_H
 
 #include "fsi_lungmonolithic.H"
-#include "fsi_monolithicstructuresplit.H"
 
 namespace FSI
 {
+  // forward declarations
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
 
   /// monolithic FSI algorithm with overlapping interface equations
   /// for simulation of a specific class of bio problems (FSI airway
@@ -70,24 +90,24 @@ namespace FSI
 
   private:
 
-    UTILS::MatrixRowColTransform sggtransform_;
-    UTILS::MatrixRowTransform sgitransform_;
-    UTILS::MatrixColTransform sigtransform_;
-    UTILS::MatrixColTransform aigtransform_;
-    UTILS::MatrixColTransform aiGtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aiGtransform_;
 
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmGitransform_;
-    UTILS::MatrixColTransform fmgitransform_;
-    UTILS::MatrixColTransform fmiGtransform_;
-    UTILS::MatrixColTransform fmGGtransform_;
-    UTILS::MatrixColTransform fmgGtransform_;
-    UTILS::MatrixColTransform addfmGGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmGitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmGGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmgGtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> addfmGGtransform_;
 
     /// split of constraint matrices
-    UTILS::MatrixRowTransform scgitransform_;
-    UTILS::MatrixColTransform csigtransform_;
-    UTILS::MatrixColTransform caiGtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> scgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> csigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> caiGtransform_;
   };
 }
 

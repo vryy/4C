@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lung_overlapprec.H
+\brief BGS preconditioner for volume-coupled FSI
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef FSI_LUNG_OVERLAPPREC_H

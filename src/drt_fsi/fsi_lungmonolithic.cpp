@@ -1,20 +1,27 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lungmonolithic.cpp
+\brief Volume-coupled FSI (base class)
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "fsi_lungmonolithic.H"
-#include "fsi_overlapprec_fsiamg.H"
-#include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
-#include "fsi_monolithic_linearsystem.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
-#include "../drt_io/io_control.H"
-
-
+#include "fsi_lung_overlapprec.H"
 #include "../drt_adapter/adapter_structure_lung.H"
 #include "../drt_adapter/adapter_fluid_lung.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "fsi_statustest.H"
+#include "../drt_io/io_control.H"
+#include "fsi_monolithic_linearsystem.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_constraint/constraintdofset.H"
 
 /*----------------------------------------------------------------------*
@@ -619,13 +626,13 @@ FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
     linSys =
       Teuchos::rcp(new //NOX::Epetra::LinearSystemAztecOO(
                      FSI::MonolithicLinearSystem(
-                                                               printParams,
-                                                               *lsParams,
-                                                               Teuchos::rcp(iJac,false),
-                                                               J,
-                                                               Teuchos::rcp(iPrec,false),
-                                                               M,
-                                                               noxSoln));
+                       printParams,
+                       *lsParams,
+                       Teuchos::rcp(iJac,false),
+                       J,
+                       Teuchos::rcp(iPrec,false),
+                       M,
+                       noxSoln));
     break;
   case INPAR::FSI::BGSAitken:
   case INPAR::FSI::BGSVectorExtrapolation:
@@ -943,4 +950,11 @@ void FSI::LungMonolithic::PrepareTimeStep()
   IncLagrMultVec_->PutScalar(0.0);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMatrix() const
+{
+  return systemmatrix_;
+}
 #endif

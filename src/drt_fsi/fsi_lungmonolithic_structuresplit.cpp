@@ -1,20 +1,24 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_lungmonolithic_structuresplit.cpp
+\brief Volume-coupled FSI (structure-split)
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
 #ifdef CCADISCRET
 
 #include "fsi_lungmonolithic_structuresplit.H"
-#include "fsi_overlapprec_fsiamg.H"
-#include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
-#include "fsi_monolithic_linearsystem.H"
-
+#include "fsi_matrixtransform.H"
+#include "fsi_lung_overlapprec.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
-#include "../drt_io/io_control.H"
-
-
 #include "../drt_adapter/adapter_structure_lung.H"
 #include "../drt_adapter/adapter_fluid_lung.H"
+#include "../drt_io/io_control.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -22,6 +26,24 @@ FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(const Epetra_Com
                                                                 const Teuchos::ParameterList& timeparams)
   : LungMonolithic(comm,timeparams)
 {
+  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmGitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmGGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  addfmGGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  scgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  csigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  caiGtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
   return;
 }
 
@@ -338,66 +360,66 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
     mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
     mat.Matrix(1,1).Add(fmGg,false,1./timescale,1.0);
 
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   false);
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   true);
-    fmGitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmGi,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   true);
+    (*fmgitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      false);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      true);
+    (*fmGitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmGi,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      true);
 
-    fmgGtransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgG,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfsout_),
-                   mat.Matrix(1,0),
-                   true,
-                   false);
-    fmiGtransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmiG,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfsout_),
-                   mat.Matrix(1,0),
-                   true,
-                   true);
-    fmGGtransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmGG,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfsout_),
-                   mat.Matrix(1,0),
-                   true,
-                   true);
-
-    mat.Matrix(1,1).Add(addfmGg,false,1./timescale,1.0);
-
-    addfmGGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
-                      AddFluidShapeDerivMatrix_->FullColMap(),
-                      addfmGG,
+    (*fmgGtransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgG,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfsout_),
+                      mat.Matrix(1,0),
+                      true,
+                      false);
+    (*fmiGtransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmiG,
                       1.,
                       ADAPTER::Coupling::MasterConverter(coupfsout_),
                       mat.Matrix(1,0),
                       true,
                       true);
+    (*fmGGtransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmGG,
+                      1.,
+                      ADAPTER::Coupling::MasterConverter(coupfsout_),
+                      mat.Matrix(1,0),
+                      true,
+                      true);
+
+    mat.Matrix(1,1).Add(addfmGg,false,1./timescale,1.0);
+
+    (*addfmGGtransform_)(AddFluidShapeDerivMatrix_->FullRowMap(),
+                         AddFluidShapeDerivMatrix_->FullColMap(),
+                         addfmGG,
+                         1.,
+                         ADAPTER::Coupling::MasterConverter(coupfsout_),
+                         mat.Matrix(1,0),
+                         true,
+                         true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -428,28 +450,28 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   mat.Assign(0,0,View,sii);
 
-  sigtransform_(blocks->FullRowMap(),
-                blocks->FullColMap(),
-                sig,
-                1./timescale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(0,1));
+  (*sigtransform_)(blocks->FullRowMap(),
+                   blocks->FullColMap(),
+                   sig,
+                   1./timescale,
+                   ADAPTER::Coupling::MasterConverter(coupsf),
+                   mat.Matrix(0,1));
 
-  sggtransform_(sgg,
-                1./(scale*timescale),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(1,1),
-                true,
-                true);
+  (*sggtransform_)(sgg,
+                   1./(scale*timescale),
+                   ADAPTER::Coupling::MasterConverter(coupsf),
+                   ADAPTER::Coupling::MasterConverter(coupsf),
+                   mat.Matrix(1,1),
+                   true,
+                   true);
 
-  sgitransform_(sgi,
-                1./scale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(1,0),
-                true);
+  (*sgitransform_)(sgi,
+                   1./scale,
+                   ADAPTER::Coupling::MasterConverter(coupsf),
+                   mat.Matrix(1,0),
+                   true);
 
- /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
   // structure constraint part
 
   // split in two blocks according to inner and fsi structure dofs
@@ -473,11 +495,11 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   // add interface part to fluid block
 
   mat.Matrix(1,3).UnComplete();
-  scgitransform_(scgi,
-                 1./scale,
-                 ADAPTER::Coupling::MasterConverter(coupsf),
-                 mat.Matrix(1,3),
-                 true);
+  (*scgitransform_)(scgi,
+                    1./scale,
+                    ADAPTER::Coupling::MasterConverter(coupsf),
+                    mat.Matrix(1,3),
+                    true);
 
   /*----------------------------------------------------------------------*/
   // ale part
@@ -493,18 +515,18 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
   LINALG::SparseMatrix& aiG = a->Matrix(0,3);
 
-  aiGtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aiG,
-                1.,
-                ADAPTER::Coupling::SlaveConverter(coupsaout_),
-                mat.Matrix(2,0));
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
-                mat.Matrix(2,1));
+  (*aiGtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aiG,
+                   1.,
+                   ADAPTER::Coupling::SlaveConverter(coupsaout_),
+                   mat.Matrix(2,0));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1./timescale,
+                   ADAPTER::Coupling::SlaveConverter(icoupfa_),
+                   mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -528,27 +550,27 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   mat.Assign(3,0,View,csii);
 
   mat.Matrix(3,1).UnComplete();
-  csigtransform_(*coupsf.MasterDofMap(),
-                 csig.ColMap(),
-                 csig,
-                 1./timescale,
-                 ADAPTER::Coupling::MasterConverter(coupsf),
-                 mat.Matrix(3,1),
-                 true,
-                 true);
+  (*csigtransform_)(*coupsf.MasterDofMap(),
+                    csig.ColMap(),
+                    csig,
+                    1./timescale,
+                    ADAPTER::Coupling::MasterConverter(coupsf),
+                    mat.Matrix(3,1),
+                    true,
+                    true);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> ale
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0,3);
-  caiGtransform_(*coupfsout_.MasterDofMap(),
-                 caiG.ColMap(),
-                 caiG,
-                 1.0,
-                 ADAPTER::Coupling::MasterConverter(coupfsout_),
-                 mat.Matrix(3,0),
-                 true,
-                 true);
+  (*caiGtransform_)(*coupfsout_.MasterDofMap(),
+                    caiG.ColMap(),
+                    caiG,
+                    1.0,
+                    ADAPTER::Coupling::MasterConverter(coupfsout_),
+                    mat.Matrix(3,0),
+                    true,
+                    true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
