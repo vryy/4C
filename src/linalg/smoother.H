@@ -18,14 +18,11 @@
 // Trilinos includes
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
 
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_utils.H"
-#include "linalg_ana.H"
 
-using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace LINALG
 {

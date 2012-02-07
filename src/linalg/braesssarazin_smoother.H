@@ -19,7 +19,8 @@
 #include "linalg_utils.H"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace LINALG
 {
@@ -50,7 +51,7 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
      *  \param A22: matrix block (2,2)
      *  \param params: parameter list
      */
-    explicit BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const ParameterList& params);
+    explicit BraessSarazin_Smoother(Teuchos::RCP<const SparseMatrix> A11, Teuchos::RCP<const SparseMatrix> A12, Teuchos::RCP<const SparseMatrix> A21, Teuchos::RCP<const SparseMatrix> A22, const ParameterList& params);
     virtual ~BraessSarazin_Smoother() {};
 
     virtual const char* Label() const { return "Braess-Sarazin Smoother"; }
@@ -116,28 +117,28 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
   private:
     bool Setup();
 
-    RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete = true); ///< matrix-matrix-matrix multiplication
+    Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete = true); ///< matrix-matrix-matrix multiplication
 #if 0
-    RCP<SparseMatrix>                  diagFinv_;   // inverse diagonal of fluid operator
+    Teuchos::RCP<SparseMatrix>                  diagFinv_;   // inverse diagonal of fluid operator
 #else
-    RCP<Epetra_Vector>                 diagFinv_;   ///< inverse diagonal of fluid operator (vector)
+    Teuchos::RCP<Epetra_Vector>                 diagFinv_;   ///< inverse diagonal of fluid operator (vector)
 #endif
-    RCP<const SparseMatrix>                  F_;    ///< fluid operator
-    RCP<const SparseMatrix>                  G_;    ///< pressure gradient operator
-    RCP<const SparseMatrix>                  D_;    ///< divergence operator
-    RCP<const SparseMatrix>                  Z_;    ///< pressure stabilization terms or null block
-    RCP<SparseMatrix>                        S_;    ///< Schur complement matrix of F_
+    Teuchos::RCP<const SparseMatrix>                  F_;    ///< fluid operator
+    Teuchos::RCP<const SparseMatrix>                  G_;    ///< pressure gradient operator
+    Teuchos::RCP<const SparseMatrix>                  D_;    ///< divergence operator
+    Teuchos::RCP<const SparseMatrix>                  Z_;    ///< pressure stabilization terms or null block
+    Teuchos::RCP<SparseMatrix>                        S_;    ///< Schur complement matrix of F_
 
-    ParameterList             params_;              ///< parameter list for Braess-Sarazin smoother
+    Teuchos::ParameterList             params_;              ///< parameter list for Braess-Sarazin smoother
 
-    double                    omega_;               ///< damping factor for Braess Sarazin
+    double                             omega_;               ///< damping factor for Braess Sarazin
 
-    RCP<Epetra_Operator>      Pp_;                  ///< "preconditioner" for "solving" pressure correction equation (ILU, Jacobi, Gauss-Seidel etc)
+    Teuchos::RCP<Epetra_Operator>      Pp_;                  ///< "preconditioner" for "solving" pressure correction equation (ILU, Jacobi, Gauss-Seidel etc)
 
-    const Epetra_Map          velmap_;              ///< map for velocity dofs (primary variables)
-    const Epetra_Map          premap_;              ///< map for pressure dofs (Lagrange multipliers)
+    const Epetra_Map                   velmap_;              ///< map for velocity dofs (primary variables)
+    const Epetra_Map                   premap_;              ///< map for pressure dofs (Lagrange multipliers)
 
-    int                       nSweeps_;             ///< number of Braess-Sarazin sweeps
+    int                                nSweeps_;             ///< number of Braess-Sarazin sweeps
 
 };
 

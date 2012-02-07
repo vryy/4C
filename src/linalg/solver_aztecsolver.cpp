@@ -5,10 +5,13 @@
  *      Author: wiesner
  */
 
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-#include <Epetra_CrsMatrix.h>
+// Aztec headers
+#include "AztecOO.h"
+#include "AztecOO_StatusTestResNorm.h"
+#include "AztecOO_StatusTestCombo.h"
+#include "AztecOO_StatusTestMaxIters.h"
 
+// BACI headers
 #include "../drt_lib/drt_dserror.H"
 #include "solver_aztecsolver.H"
 

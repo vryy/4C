@@ -12,12 +12,6 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_BLOCKPRECONDITIONERS_H_
 #define SOLVER_BLOCKPRECONDITIONERS_H_
 
-#include "bgs2x2_operator.H"                   // Lena's BGS implementation
-#include "simpler_operator.H"                  // Michael's SIMPLE(R) for fluid
-#include "simpler_operator_ex.H"               // Tobias' SIMPLE
-#include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
-#include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
-
 #include "solver_preconditionertype.H"
 
 namespace LINALG
@@ -97,7 +91,7 @@ namespace LINALG
 
       Teuchos::ParameterList & params_;
       Teuchos::ParameterList & bgslist_;
-      Teuchos::RCP<LINALG::BGS2x2_Operator> P_;
+      Teuchos::RCP<Epetra_Operator>    P_;
     };
   }
 }

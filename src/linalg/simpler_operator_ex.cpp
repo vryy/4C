@@ -11,9 +11,16 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+// Trilinos headers
 #include <Ifpack.h>
+#include "ml_MultiLevelPreconditioner.h"
 
+// BACI headers
+#include "linalg_solver.H"
+#include "linalg_utils.H"
+#include "linalg_ana.H"
 #include "linalg_downwindmatrix.H"
+
 #include "simpler_operator_ex.H"
 
 #include <EpetraExt_OperatorOut.h>

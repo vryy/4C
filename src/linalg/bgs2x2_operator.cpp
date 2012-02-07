@@ -10,8 +10,15 @@ Maintainer: Lena Wiechert
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#include "bgs2x2_operator.H"
+
+#include "ml_MultiLevelPreconditioner.h"
+
+#include "linalg_precond.H"
+#include "linalg_utils.H"
 #include "linalg_solver.H"
+
+#include "bgs2x2_operator.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

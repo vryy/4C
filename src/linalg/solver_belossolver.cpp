@@ -5,8 +5,15 @@
  *      Author: wiesner
  */
 
-#include "solver_belossolver.H"
+// Belos headers
+#include "BelosConfigDefs.hpp"
+#include "BelosLinearProblem.hpp"
+#include "BelosEpetraAdapter.hpp"
+#include "BelosBlockCGSolMgr.hpp"
+#include "BelosBlockGmresSolMgr.hpp"
 
+// BACI headers
+#include "solver_belossolver.H"
 #include "solver_pointpreconditioner.H"
 #include "solver_blockpreconditioners.H"
 #include "solver_krylovprojectionpreconditioner.H"

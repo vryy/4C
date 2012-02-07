@@ -8,6 +8,7 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
+#include <az_aztec_defs.h> // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
 #include "../drt_lib/drt_dserror.H"
 #include "solver_krylovsolver.H"

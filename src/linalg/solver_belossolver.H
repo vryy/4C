@@ -15,16 +15,6 @@ Created on: Jul 4, 2011
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-#include <Epetra_CrsMatrix.h>
-
-#include "BelosConfigDefs.hpp"
-#include "BelosLinearProblem.hpp"
-#include "BelosEpetraAdapter.hpp"
-#include "BelosBlockCGSolMgr.hpp"
-#include "BelosBlockGmresSolMgr.hpp"
-
 #include "solver_krylovsolver.H"
 #include "solver_preconditionertype.H"
 

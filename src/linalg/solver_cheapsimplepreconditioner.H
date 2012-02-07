@@ -32,6 +32,7 @@ namespace LINALG
 class Solver;
 class SparseMatrixBase;
 class MultiMapExtractor;
+class DownwindMatrix;
 namespace ANA {
 class Vector;
 }
@@ -39,10 +40,6 @@ class Vector;
 
 namespace SOLVER
 {
-
-// forward declarations
-class DownwindMatrix;
-
 
 /*!
 \brief A Semi-implicit Method for Pressure Linked Equations (SIMPLE)

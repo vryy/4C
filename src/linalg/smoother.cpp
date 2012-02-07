@@ -7,7 +7,13 @@
 
 #ifdef CCADISCRET
 
+// Trilinos headers
+#include <Epetra_MultiVector.h>
+#include <Epetra_CrsMatrix.h>
 #include <Ifpack.h>
+
+// BACI headers
+#include "linalg_sparsematrix.H" // for SmootherFactory::Create
 
 #include "smoother.H"
 
@@ -47,7 +53,7 @@ LINALG::Smoother_Ifpack::Smoother_Ifpack(string type, const RCP<Epetra_CrsMatrix
   if(prec->IsComputed()==false)
     dserror("Smoother_Ifpack: smoother is not computed?");
 
-  prec_ = rcp(prec);
+  prec_ = Teuchos::rcp(prec);
 }
 
 LINALG::Smoother_Ifpack::~Smoother_Ifpack()
@@ -65,8 +71,8 @@ int LINALG::Smoother_Ifpack::ApplyInverse(const Epetra_MultiVector& X, Epetra_Mu
     Y.NormInf(&normY);
     if(normY != 0.0)
     {
-      RCP<Epetra_MultiVector> rhs_tmp = rcp(new Epetra_MultiVector(X));
-      RCP<Epetra_MultiVector> sol_tmp = rcp(new Epetra_MultiVector(Y));
+      RCP<Epetra_MultiVector> rhs_tmp = Teuchos::rcp(new Epetra_MultiVector(X));
+      RCP<Epetra_MultiVector> sol_tmp = Teuchos::rcp(new Epetra_MultiVector(Y));
 
       A_->Apply(Y,*rhs_tmp);
       rhs_tmp->Update(-1.0,X,1.0); // rhs_tmp is difference of new rhs and old rhs
@@ -107,14 +113,14 @@ RCP<LINALG::Smoother> LINALG::SmootherFactory::Create(const string SmootherType,
     else
         throw string("SmootherType not known");
 
-    return rcp(sm);
+    return Teuchos::rcp(sm);
   }
   catch(string str)
   {
     cout << "Error: SmootherFactory::Create: " << str << endl;
     dserror("upps");
   }
-  return null;
+  return Teuchos::null;
 }
 
 #endif

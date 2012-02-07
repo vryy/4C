@@ -42,18 +42,22 @@ Maintainer: Michael Gee
 #ifndef LINALG_SOLVER_H
 #define LINALG_SOLVER_H
 
-#include <vector>
-#include <string>
+#include <vector>  // this can probably removed
+#include <string>  // this can probably removed
 
-#include "Epetra_Comm.h"
+// This is probably not the right place to include Epetra headers!!!!
+// REMOVE THIS
+/*#include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
+#include "Epetra_CrsMatrix.h"			// should be included by our LINALG::SparseMatrix! but not here!
 #include "Epetra_Vector.h"
-#include "Epetra_Export.h"
+#include "Epetra_Export.h"       		// including Epetra_Export and Epetra_Import here seems to be very strange
 #include "Epetra_Import.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
+#include "Epetra_SerialDenseMatrix.h"   // this should be included somewhere in the element code, but not here
+#include "Epetra_SerialDenseVector.h"*/
+
+#include <Ifpack.h> // for condest
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
@@ -61,7 +65,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
 
-#include <Ifpack.h> // for condest
+
 
 #include "solver_solvertype.H"
 #include "solver_preconditionertype.H"

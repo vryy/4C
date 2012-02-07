@@ -14,34 +14,30 @@ Maintainer: Michael Gee
 #define SIMPLER_BLOCKPRECONDITIONER_H
 
 // Trilinos includes
-#include <Epetra_CrsMatrix.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
 
-#include "ml_MultiLevelPreconditioner.h"
-
+// BACI includes
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_blocksparsematrix.H"
-#include "linalg_solver.H"
-#include "linalg_utils.H"
-#include "linalg_ana.H"
+#include "linalg_mapextractor.H"      // for mmex_ (mmex_ is a reference by intention)
+
+#include "linalg_blocksparsematrix.H" // TODO remove me
 
 using namespace std;
 using Teuchos::RCP;
 using Teuchos::ParameterList;
 
-
 namespace LINALG
 {
+  //class BlockSparseMatrixBase;
+  class DownwindMatrix;
+  class Solver;
+  namespace ANA {
+	class Vector;
+  }
+
   namespace SOLVER
   {
-
-// forward declarations
-class DownwindMatrix;
-
-
 /*!
 \brief A Semi-implicit Method for Pressure Linked Equations (SIMPLE)
        preconditioner

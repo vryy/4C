@@ -12,13 +12,12 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_AZTECSOLVER_H_
 #define SOLVER_AZTECSOLVER_H_
 
-#include "AztecOO.h"
-#include "AztecOO_StatusTestResNorm.h"
-#include "AztecOO_StatusTestCombo.h"
-#include "AztecOO_StatusTestMaxIters.h"
-
 #include "solver_krylovsolver.H"
 
+// Aztec forward declarations
+class AztecOO_StatusTestResNorm;
+class AztecOO_StatusTestCombo;
+class AztecOO_StatusTestMaxIters;
 
 namespace LINALG
 {

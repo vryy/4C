@@ -5,6 +5,20 @@
  *      Author: wiesner
  */
 
+// Amesos headers
+#include <Amesos_Klu.h>
+#include <Amesos_Lapack.h>
+#ifndef HAVENOT_UMFPACK
+#include <Amesos_Umfpack.h>
+#endif
+#ifndef HAVENOT_SUPERLU
+#include <Amesos_Superludist.h>
+#endif
+
+// EpetraExt headers
+#include <EpetraExt_Reindex_LinearProblem.h>
+
+// BACI headers
 #include "solver_directsolver.H"
 
 //----------------------------------------------------------------------------------

@@ -14,21 +14,19 @@ Maintainer: Lena Wiechert
 #define BGS2X2_OPERATOR_H
 
 // Trilinos includes
-#include <Epetra_CrsMatrix.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
 
-#include "ml_MultiLevelPreconditioner.h"
-
+// BACI headers
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_blocksparsematrix.H"
-#include "linalg_precond.H"
-#include "linalg_utils.H"
+#include "linalg_mapextractor.H"       // for mmex_ ( mmex is a reference by intention)
+#include "linalg_blocksparsematrix.H"  // TODO remove me
 
 namespace LINALG
 {
+
+// forward declaration
+class Preconditioner;
 
 /// Block Gauss-Seidel preconditioner for a 2x2 system
 class  BGS2x2_Operator : public Epetra_Operator
@@ -39,8 +37,8 @@ public:
   \brief Standard Constructor
   */
   explicit BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
-                           const ParameterList& list1,
-                           const ParameterList& list2,
+                           const Teuchos::ParameterList& list1,
+                           const Teuchos::ParameterList& list2,
                            int global_iter,
                            double global_omega,
                            int block1_iter,
@@ -131,8 +129,8 @@ private:
 
 
   FILE*                                               outfile_; // error file to write output to or NULL
-  ParameterList                                       list1_;   // list for solver of first diagonal block
-  ParameterList                                       list2_;   // list for solver of second diagonal block
+  Teuchos::ParameterList                              list1_;   // list for solver of first diagonal block
+  Teuchos::ParameterList                              list2_;   // list for solver of second diagonal block
 
   MultiMapExtractor                                   mmex_;    // a  multimapetxractor to handle extracts
   Teuchos::RCP<BlockSparseMatrixBase>                 A_;       // 2x2 block matrix
