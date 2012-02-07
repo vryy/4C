@@ -12,9 +12,6 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
 #define SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_
 
-#include "linalg_projected_operator.H"
-#include "linalg_projected_precond.H"
-
 #include "solver_preconditionertype.H"
 
 class Epetra_Operator;
@@ -22,6 +19,9 @@ class Epetra_MultiVector;
 
 namespace LINALG
 {
+  class LinalgProjectedOperator;
+  class KrylovProjector;
+
   namespace SOLVER
   {
     /// krylov projection for undefined pressure value in incompressible fluids
