@@ -1780,8 +1780,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                               yesnotuple,yesnovalue,&tdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
 
-  setStringToIntegralParameter<int>("LUMPCOND","No",
-                               "Lump the conductivity matrix for explicit time integration",
+  setStringToIntegralParameter<int>("LUMPCAPA","No",
+                               "Lump the capacity matrix for explicit time integration",
                                yesnotuple,yesnovalue,&tdyn);
 
   /*----------------------------------------------------------------------*/

@@ -48,7 +48,7 @@ THR::TimIntExplEuler::TimIntExplEuler
   if (myrank_ == 0)
   {
     std::cout << "with forward Euler" << std::endl
-              << "lumping activated: " << (lumpcond_?"true":"false") << std::endl
+              << "lumping activated: " << (lumpcapa_?"true":"false") << std::endl
               << std::endl;
   }
 
@@ -113,14 +113,14 @@ void THR::TimIntExplEuler::IntegrateStep()
     raten_->PutScalar(0.0);
   }
 
-  if (lumpcond_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_)==Teuchos::null)
+  if (lumpcapa_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_)==Teuchos::null)
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant mass matrix, which was firstly factorised
     // in TimInt::DetermineMassDampConsistAccel
     solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, false, true);
   }
-  // direct inversion based on lumped mass matrix
+  // direct inversion based on lumped capacity matrix
   else
   {
     // extract the diagonal values of the mass matrix

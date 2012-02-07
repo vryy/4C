@@ -80,7 +80,7 @@ THR::TimInt::TimInt(
   stepmax_(tdynparams.get<int>("NUMSTEP")),
   step_(Teuchos::null),
   stepn_(0),
-  lumpcond_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCOND")==1),
+  lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCAPA")==1),
   zeros_(Teuchos::null),
   temp_(Teuchos::null),
   rate_(Teuchos::null),
@@ -185,7 +185,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     p.set("action", "calc_thermo_fintcapa");
     // type of calling time integrator
     p.set<int>("time integrator", MethodName());
-    p.set<bool>("lump cond matrix", lumpcond_);
+    p.set<bool>("lump capa matrix", lumpcapa_);
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);

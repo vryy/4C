@@ -547,7 +547,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // copy capacity matrix if available
     //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
 
-    if(params.get<bool>("lump cond matrix"))
+    if(params.get<bool>("lump capa matrix"))
     {
       const INPAR::THR::DynamicType timint
         = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
@@ -562,6 +562,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         case INPAR::THR::dyna_onesteptheta :
         case INPAR::THR::dyna_statics :
         {
+          dserror("Lumped capacity matrix has not yet been tested");
           break;
         }
         case INPAR::THR::dyna_undefined :
@@ -1793,12 +1794,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
 
 
 /*----------------------------------------------------------------------*
- |  lump mass matrix (private)                               dano 01/12 |
+ |  lump capacity matrix (private)                           dano 01/12 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa)
 {
-  // lump mass matrix
+  // lump capacity matrix
   if (ecapa != NULL)
   {
     // we assume #elemat2 is a square matrix
