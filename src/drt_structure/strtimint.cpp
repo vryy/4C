@@ -48,6 +48,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_beamcontact/beam3contact_manager.H"
 
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_solver.H"
 
 #include "../drt_so3/so_sh8p8.H"
 
@@ -1825,7 +1826,7 @@ void STR::TimInt::AttachEnergyFile()
   }
   return;
 }
-  
+
 /*----------------------------------------------------------------------*/
 /* Poroelasticity: evaluate ordinary internal force, its stiffness at state */
 void STR::TimInt::PoroApplyForceStiffInternal

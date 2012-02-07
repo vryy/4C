@@ -5,8 +5,8 @@
 \brief class for handling of micro-macro transitions
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -15,17 +15,9 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "matpar_bundle.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
-
-
-using namespace std;
-using namespace Teuchos;
-using namespace IO;
-
+#include "../drt_lib/drt_globalproblem.H"
 
 
 // Be careful when adding new member functions of MicroMaterial that

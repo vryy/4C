@@ -16,6 +16,7 @@ Maintainer: Lena Wiechert
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "matpar_parameter.H"
+#include "matpar_bundle.H"
 
 #include "material.H"
 #include "newtonianfluid.H"

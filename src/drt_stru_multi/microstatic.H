@@ -2,8 +2,8 @@
 \file microstatic.H
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -15,39 +15,42 @@ Maintainer: Lena Wiechert
 
 #ifdef CCADISCRET
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_surfstress/drt_surfstress_manager.H"
-
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-#include "ml_common.h"
-#include "ml_include.h"
-#include "nlnml_preconditioner.H"
-#include "nlnml_linearsystem.H"
-#include "nlnml_finelevelnoxinterface.H"
+#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Time.h>
 
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_parobject.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure/stru_aux.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
+// forward declarations
 
-using namespace Teuchos;
-using namespace std;
-using namespace IO;
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace UTILS
+{
+  class SurfStressManager;
+}
+
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 
 /*!
 \brief Namespace for structural multi-scale related algorithms
 
-\author wiechert (wiechert@lnm.mw.tum.de)
+\author yoshihara (yoshihara@lnm.mw.tum.de)
 */
 namespace STRUMULTI
 {
@@ -61,7 +64,7 @@ alpha time integration. Corresponding functions (e.g. UpdateNewTimeStep,
 but also calls to SurfaceStressManager!) need to be adapted accordingly
 if usage of other time integration schemes should be enabled.
 
-\author wiechert (wiechert@lnm.mw.tum.de)
+\author yoshihara (yoshihara@lnm.mw.tum.de)
 */
 
 class MicroStatic
@@ -85,10 +88,10 @@ public:
 
   */
   void ReadRestart(int step,
-                   RCP<Epetra_Vector> dis,
-                   RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                   RCP<UTILS::SurfStressManager> surf_stress_man,
-                   string name);
+                   Teuchos::RCP<Epetra_Vector> dis,
+                   Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                   Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man,
+                   std::string name);
 
   /*!
   \brief Return time from parameter list
@@ -128,12 +131,12 @@ public:
   alpha time integration
 
   */
-  void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
-                         RefCountPtr<Epetra_Vector> dism,
-                         RefCountPtr<Epetra_Vector> disn,
-                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
-                         RefCountPtr<UTILS::SurfStressManager> surf_stress_man);
+  void UpdateNewTimeStep(Teuchos::RCP<Epetra_Vector> dis,
+                         Teuchos::RCP<Epetra_Vector> dism,
+                         Teuchos::RCP<Epetra_Vector> disn,
+                         Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
+                         Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > alpha,
+                         Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man);
 
   /*!
   \brief Calculate stresses and strains
@@ -145,7 +148,7 @@ public:
   \brief Write output and (possibly) restart
 
   */
-  void Output(RefCountPtr<DiscretizationWriter> output,
+  void Output(Teuchos::RCP<IO::DiscretizationWriter> output,
               const double time,
               const int istep,
               const double dt);
@@ -161,24 +164,24 @@ public:
   associated macroscale deformation gradient
 
   */
-  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd, RefCountPtr<Epetra_Vector> disp);
+  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
 
   /*!
   \brief Set old state given from micromaterialgp
 
   */
-  void SetState(RefCountPtr<Epetra_Vector> dis,
-                RefCountPtr<Epetra_Vector> dism,
-                RefCountPtr<Epetra_Vector> disn,
-                RefCountPtr<UTILS::SurfStressManager> surfman,
-                RefCountPtr<std::vector<char> > stress,
-                RefCountPtr<std::vector<char> > strain,
-                RefCountPtr<std::vector<char> > plstrain,
-                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
-                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
-                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
-                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda);
+  void SetState(Teuchos::RCP<Epetra_Vector> dis,
+                Teuchos::RCP<Epetra_Vector> dism,
+                Teuchos::RCP<Epetra_Vector> disn,
+                Teuchos::RCP<UTILS::SurfStressManager> surfman,
+                Teuchos::RCP<std::vector<char> > stress,
+                Teuchos::RCP<std::vector<char> > strain,
+                Teuchos::RCP<std::vector<char> > plstrain,
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas,
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv,
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda);
 
   /*!
   \brief Set time and step
@@ -222,7 +225,7 @@ public:
   Dover, pg. 215
   */
   void ConvertMat(const Epetra_MultiVector& cmatpf,
-                  const LINALG::Matrix<3,3>& inv_defgrd,
+                  const LINALG::Matrix<3,3>&  inv_defgrd,
                   const LINALG::Matrix<6,1>& S,
                   LINALG::Matrix<6,6>& cmat);
 
@@ -266,10 +269,10 @@ protected:
   MicroStatic operator = (const MicroStatic& old);
   MicroStatic(const MicroStatic& old);
 
-  RefCountPtr<UTILS::SurfStressManager>   surf_stress_man_;
+  Teuchos::RCP<UTILS::SurfStressManager>   surf_stress_man_;
 
-  RCP<DRT::Discretization>      discret_;
-  RCP<LINALG::Solver>           solver_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<LINALG::Solver>           solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
 
@@ -314,33 +317,33 @@ protected:
   double                        ref_disinorm_;
   double                        disinorm_;
 
-  RefCountPtr<LINALG::SparseMatrix> stiff_;
-  RefCountPtr<LINALG::SparseMatrix> stiff_dirich_;
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_dirich_;
 
-  RefCountPtr<Epetra_Vector>    dirichtoggle_;
-  RefCountPtr<Epetra_Vector>    invtoggle_;
-  RefCountPtr<Epetra_Vector>    zeros_;
-  RefCountPtr<Epetra_Vector>    dis_;
-  RefCountPtr<Epetra_Vector>    disn_;
-  RefCountPtr<Epetra_Vector>    dism_;
-  RefCountPtr<Epetra_Vector>    disi_;
-  RefCountPtr<Epetra_Vector>    fintm_;
-  RefCountPtr<Epetra_Vector>    fresm_;
-  RefCountPtr<Epetra_Vector>    freactm_;
+  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
+  Teuchos::RCP<Epetra_Vector>    invtoggle_;
+  Teuchos::RCP<Epetra_Vector>    zeros_;
+  Teuchos::RCP<Epetra_Vector>    dis_;
+  Teuchos::RCP<Epetra_Vector>    disn_;
+  Teuchos::RCP<Epetra_Vector>    dism_;
+  Teuchos::RCP<Epetra_Vector>    disi_;
+  Teuchos::RCP<Epetra_Vector>    fintm_;
+  Teuchos::RCP<Epetra_Vector>    fresm_;
+  Teuchos::RCP<Epetra_Vector>    freactm_;
 
   Teuchos::RCP<std::vector<char> > stress_;
   Teuchos::RCP<std::vector<char> > strain_;
   Teuchos::RCP<std::vector<char> > plstrain_;
 
   //EAS history data
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda_;
 
-  RefCountPtr<Epetra_MultiVector> D_;  //!< D Matrix following Miehe et al., 2002
-  RefCountPtr<Epetra_MultiVector> rhs_; //!< exported transpose of D (pdof -> dofrowmap)
+  Teuchos::RCP<Epetra_MultiVector> D_;  //!< D Matrix following Miehe et al., 2002
+  Teuchos::RCP<Epetra_MultiVector> rhs_; //!< exported transpose of D (pdof -> dofrowmap)
 
   int                   microdisnum_;  //!< number of RVE
 
@@ -349,12 +352,12 @@ protected:
 
   int                          ndof_;  //!< number of dofs overall
   int                            np_;  //!< number of boundary dofs
-  RefCountPtr<Epetra_Vector>     Xp_;  //!< vector containing material
+  Teuchos::RCP<Epetra_Vector>     Xp_;  //!< vector containing material
                                        //!< coordinates of boundary nodes
-  RefCountPtr<Epetra_Map>      pdof_;  //!< prescribed dofs
-  RefCountPtr<Epetra_Map>      fdof_;  //!< free dofs
-  RefCountPtr<Epetra_Import> importp_;
-  RefCountPtr<Epetra_Import> importf_;
+  Teuchos::RCP<Epetra_Map>      pdof_;  //!< prescribed dofs
+  Teuchos::RCP<Epetra_Map>      fdof_;  //!< free dofs
+  Teuchos::RCP<Epetra_Import> importp_;
+  Teuchos::RCP<Epetra_Import> importf_;
 };
 
 

@@ -5,8 +5,8 @@
 \brief class for handling of micro-macro transitions
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -18,38 +18,18 @@ Maintainer: Lena Wiechert
 
 #ifdef CCADISCRET
 
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <set>
-#include <list>
-#include <string>
-#include <algorithm>
-
-#include <Epetra_Comm.h>
 #include <Teuchos_RefCountPtr.hpp>
 
-#include "../drt_io/io.H"
-
-#include "../drt_lib/drt_discret.H"
 #include "material.H"
-#include "matpar_bundle.H"
+#include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-//#include "../drt_stru_multi/microstrugenalpha.H"
-#include "../drt_stru_multi/microstatic.H"
-
-using namespace std;
-using namespace Teuchos;
-using namespace IO;
 
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for micro material
     class MicroMaterial : public Parameter
@@ -148,7 +128,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -192,7 +172,7 @@ private:
 
   private:
 
-    std::map<int,RefCountPtr<MicroMaterialGP> > matgp_;
+    std::map<int,Teuchos::RCP<MicroMaterialGP> > matgp_;
 
     /// my material parameters
     MAT::PAR::MicroMaterial* params_;

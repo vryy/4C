@@ -13,11 +13,11 @@ Maintainer: Lena Yoshihara
 
 #ifdef CCADISCRET
 
+#include <Epetra_SerialComm.h>
+
 #include "microstatic.H"
-
-#include <vector>
-
-using namespace IO;
+#include "../drt_structure/stru_aux.H"
+#include "../linalg/linalg_utils.H"
 
 
 //-----------------------------------------------------------------------

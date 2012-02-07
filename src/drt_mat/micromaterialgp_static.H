@@ -5,8 +5,8 @@
 \brief class for handling of micro-macro transitions
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -18,12 +18,27 @@ Maintainer: Lena Wiechert
 
 #ifdef CCADISCRET
 
-#include "micromaterial.H"
-#include "../drt_surfstress/drt_surfstress_manager.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RefCountPtr.hpp>
 
-using namespace std;
-using namespace Teuchos;
-using namespace IO;
+#include "../linalg/linalg_fixedsizematrix.H"
+
+// forward declarations
+
+namespace UTILS
+{
+  class SurfStressManager;
+}
+
+namespace STRUMULTI
+{
+  class MicroStatic;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 namespace MAT
 {
@@ -80,31 +95,31 @@ private:
   const int microdisnum_;
 
   /// microstructure "time integration" classes (one for each micro-discretization)
-  static std::map<int, RefCountPtr<STRUMULTI::MicroStatic> > microstaticmap_;
+  static std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic> > microstaticmap_;
 
   static std::map<int, int> microstaticcounter_;
 
   /// microstructure discretization writer
-  RefCountPtr<DiscretizationWriter> micro_output_;
+  Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
 
   /// my vector of old displacements
-  RefCountPtr<Epetra_Vector> dis_;
+  Teuchos::RCP<Epetra_Vector> dis_;
 
   /// my vector of displacements at the generalized midpoint
-  RefCountPtr<Epetra_Vector> dism_;
+  Teuchos::RCP<Epetra_Vector> dism_;
 
   /// my vector of new displacements
-  RefCountPtr<Epetra_Vector> disn_;
+  Teuchos::RCP<Epetra_Vector> disn_;
 
   /// my manager of surface stresses
-  RefCountPtr<UTILS::SurfStressManager> surf_stress_man_;
+  Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
   // my EAS history data -> note that microstructure is not parallel
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv_;
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda_;
 
   /// my stresses and strains
   Teuchos::RCP<std::vector<char> > stress_;
@@ -127,7 +142,7 @@ private:
   double dt_;
 
   /// restart name
-  string restartname_;
+  std::string restartname_;
 
   /// flag for modified Newton on macroscale
   bool mod_newton_;

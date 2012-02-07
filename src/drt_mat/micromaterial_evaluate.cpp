@@ -15,19 +15,10 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
-//#include "micromaterialgp.H"
 #include "micromaterialgp_static.H"
+#include "matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
-
-#include "../drt_stru_multi/microstatic.H"
-
-using namespace std;
-using namespace Teuchos;
-using namespace IO;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -61,7 +52,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
-  RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+  Teuchos::RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
@@ -69,10 +60,10 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
   }
 
-  RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
 
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
   actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density);
@@ -86,10 +77,10 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
 void MAT::MicroMaterial::Update()
 {
-  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  std::map<int, Teuchos::RCP<MicroMaterialGP> >::iterator it;
   for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->Update();
   }
 }
@@ -97,10 +88,10 @@ void MAT::MicroMaterial::Update()
 
 void MAT::MicroMaterial::PrepareOutput()
 {
-  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  std::map<int, Teuchos::RCP<MicroMaterialGP> >::iterator it;
   for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->PrepareOutput();
   }
 }
@@ -108,10 +99,10 @@ void MAT::MicroMaterial::PrepareOutput()
 
 void MAT::MicroMaterial::Output()
 {
-  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  std::map<int, Teuchos::RCP<MicroMaterialGP> >::iterator it;
   for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->Output();
   }
 }
@@ -123,20 +114,20 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   {
     int microdisnum = MicroDisNum();
     double V0 = InitVol();
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
   }
 
-  RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
   actmicromatgp->ReadRestart();
 }
 
 
 void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
 {
-  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  std::map<int, Teuchos::RCP<MicroMaterialGP> >::iterator it;
   for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->ResetTimeAndStep();
     std::string newfilename;
     actmicromatgp->NewResultFile(eleowner, newfilename);

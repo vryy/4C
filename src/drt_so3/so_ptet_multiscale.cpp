@@ -3,8 +3,8 @@
 \brief
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -16,10 +16,7 @@ Maintainer: Lena Wiechert
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-using namespace std; // cout etc.
-
 extern struct _GENPROB     genprob;
-
 
 /*----------------------------------------------------------------------*
  |  homogenize material density (public)                        lw 07/07|

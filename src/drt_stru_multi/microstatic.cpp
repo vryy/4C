@@ -4,8 +4,8 @@
 analyses
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -19,22 +19,20 @@ Maintainer: Lena Wiechert
 #ifndef HAVENOT_UMFPACK
 #include <Amesos_Umfpack.h>
 #endif
-#include <Amesos_Klu.h>
 
 #include "microstatic.H"
-
-#include <vector>
-
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_structure/stru_aux.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_shw6.H"
+#include "../drt_lib/drt_elementtype.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../drt_io/io_control.H"
 
-using namespace IO;
 
 /*----------------------------------------------------------------------*
  | general problem data                                                 |
@@ -77,7 +75,7 @@ V0_(V0)
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  solver_ = rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->StructSolverParams(),
+  solver_ = Teuchos::rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->StructSolverParams(),
                                     discret_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
@@ -197,11 +195,11 @@ V0_(V0)
   //
   // -------------------------------------------------------------------
   {
-    lastalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
-    oldalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
-    oldfeas_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
-    oldKaainv_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
-    oldKda_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   }
 
   // -------------------------------------------------------------------
@@ -700,7 +698,7 @@ void STRUMULTI::MicroStatic::PrepareOutput()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
+void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> output,
                                     const double time,
                                     const int step,
                                     const double dt)
@@ -718,9 +716,9 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     if (surf_stress_man_->HaveSurfStress())
       surf_stress_man_->WriteRestart(step, time);
 
-    //RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
+    //Teuchos::RCP<std::vector<char> > lastalphadata = Teuchos::rcp(new std::vector<char>());
 
-    RCP<Epetra_SerialDenseMatrix> emptyalpha = rcp(new Epetra_SerialDenseMatrix(1, 1));
+    Teuchos::RCP<Epetra_SerialDenseMatrix> emptyalpha = Teuchos::rcp(new Epetra_SerialDenseMatrix(1, 1));
 
     DRT::PackBuffer data;
 
@@ -823,12 +821,12 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::ReadRestart(int step,
-                                         RCP<Epetra_Vector> dis,
-                                         RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                                         RefCountPtr<UTILS::SurfStressManager> surf_stress_man,
+                                         Teuchos::RCP<Epetra_Vector> dis,
+                                         Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                                         Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man,
                                          string name)
 {
-  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, true));
+  Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
@@ -858,13 +856,13 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
 
 
 void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
-                                             RefCountPtr<Epetra_Vector> disp)
+                                             Teuchos::RCP<Epetra_Vector> disp)
 {
-  vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
+    const std::vector<int>* nodeids = conds[i]->Get<std::vector<int> >("Node Ids");
     if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
@@ -900,7 +898,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
         disp_prescribed[k] = dis;
       }
 
-      vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->Dof(actnode);
 
       for (int l=0; l<3; ++l)
       {
@@ -914,18 +912,18 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
   }
 }
 
-void STRUMULTI::MicroStatic::SetState(RefCountPtr<Epetra_Vector> dis,
-                                      RefCountPtr<Epetra_Vector> dism,
-                                      RefCountPtr<Epetra_Vector> disn,
-                                      RefCountPtr<UTILS::SurfStressManager> surfman,
-                                      RefCountPtr<std::vector<char> > stress,
-                                      RefCountPtr<std::vector<char> > strain,
-                                      RefCountPtr<std::vector<char> > plstrain,
-                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
-                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
-                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
-                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
+void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
+                                      Teuchos::RCP<Epetra_Vector> dism,
+                                      Teuchos::RCP<Epetra_Vector> disn,
+                                      Teuchos::RCP<UTILS::SurfStressManager> surfman,
+                                      Teuchos::RCP<std::vector<char> > stress,
+                                      Teuchos::RCP<std::vector<char> > strain,
+                                      Teuchos::RCP<std::vector<char> > plstrain,
+                                      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                                      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
+                                      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas,
+                                      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv,
+                                      Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda)
 {
   dis_ = dis;
   dism_ = dism;
@@ -944,12 +942,12 @@ void STRUMULTI::MicroStatic::SetState(RefCountPtr<Epetra_Vector> dis,
   oldKda_    = oldKda;
 }
 
-void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
-                                               RefCountPtr<Epetra_Vector> dism,
-                                               RefCountPtr<Epetra_Vector> disn,
-                                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
-                                               RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                                               RefCountPtr<UTILS::SurfStressManager> surf_stress_man)
+void STRUMULTI::MicroStatic::UpdateNewTimeStep(Teuchos::RCP<Epetra_Vector> dis,
+                                               Teuchos::RCP<Epetra_Vector> dism,
+                                               Teuchos::RCP<Epetra_Vector> disn,
+                                               Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > alpha,
+                                               Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
+                                               Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man)
 {
   // these updates hold for an imr-like generalized alpha time integration
   // -> if another time integration scheme should be used, this needs
@@ -989,7 +987,7 @@ void STRUMULTI::MicroStatic::SetTime(const double time, const double timen, cons
   stepn_ = stepn;
 }
 
-//RefCountPtr<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
+//Teuchos::RCP<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return Teuchos::rcp(new Epetra_Vector(*dism_)); }
 
 void STRUMULTI::MicroStatic::ClearState()
 {
@@ -1022,7 +1020,7 @@ void STRUMULTI::MicroStatic::SetEASData()
       Epetra_SerialDenseVector elevector1;
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
-      vector<int> lm;
+      std::vector<int> lm;
 
       actele->Evaluate(p,*discret_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     }
