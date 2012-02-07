@@ -11,12 +11,19 @@ Maintainer: Tobias Wiesner
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+// Trilinos headers
+#include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>
+#include <ml_MultiLevelPreconditioner.h>
+
+// BACI headers
+#include "linalg_ana.H"
+#include "linalg_solver.H"
+#include "linalg_blocksparsematrix.H"
+#include "linalg_utils.H"				// helper functions (linear Algebra related)
 
 #include "linalg_downwindmatrix.H"
 #include "solver_cheapsimplepreconditioner.H"
-
-#include <EpetraExt_OperatorOut.h>
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve

@@ -7,35 +7,38 @@ Maintainer: Tobias Wiesner
             http://www.lnm.mw.tum.de
 </pre>
 
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef SOLVER_CHEAPSIMPLE_H
 #define SOLVER_CHEAPSIMPLE_H
 
 // Trilinos includes
-#include <Epetra_CrsMatrix.h>
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
-
-#include "ml_MultiLevelPreconditioner.h"
+//#include <Epetra_CrsMatrix.h>      // temporarely deactivated
+//#include <Epetra_Time.h>           // temporarely deactivated
+//#include <Teuchos_RefCountPtr.hpp> // temporarely deactivated
+//#include <Teuchos_ParameterList.hpp> // temporarely deactivated
 
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_blocksparsematrix.H"
-#include "linalg_solver.H"
-#include "linalg_utils.H"
-#include "linalg_ana.H"
 
-using namespace std;
-using Teuchos::RCP;
-using Teuchos::ParameterList;
+#include "linalg_mapextractor.H" // This is for mmex_ (reference, not RCP by intention)
 
+using Teuchos::RCP;				// it's ok to use Teuchos::RCP and Teuchos::ParameterList
+using Teuchos::ParameterList;   // note, we do not include a whole namespacae!
 
 namespace LINALG
 {
-  namespace SOLVER
-  {
+////////////////////////////////////
+// forward declarations
+class Solver;
+class SparseMatrixBase;
+class MultiMapExtractor;
+namespace ANA {
+class Vector;
+}
+////////////////////////////////////
+
+namespace SOLVER
+{
 
 // forward declarations
 class DownwindMatrix;
@@ -61,61 +64,61 @@ A Multigrid Preconditioned Newton-Krylov method for the incomp.
 Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)
 
 \author gee (gee@lnm.mw.tum.de)
-*/
+ */
 class  CheapSIMPLE_BlockPreconditioner : public virtual Epetra_Operator
 {
 public:
 
-  /*!
+	/*!
   \brief Standard Constructor
-  */
-  explicit CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
-                            const ParameterList& velocitylist,
-                            const ParameterList& pressurelist,
-                            FILE* outfile = NULL);
+	 */
+	explicit CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
+			const ParameterList& velocitylist,
+			const ParameterList& pressurelist,
+			FILE* outfile = NULL);
 
-  /*!
+	/*!
   \brief Destructor
-  */
-  virtual ~CheapSIMPLE_BlockPreconditioner()
-  {
-    vsolver_ = Teuchos::null; // solver objects only generated for SIMPLE and SIMPLER (not for CheapSIMPLE)
-    psolver_ = Teuchos::null;
-    Ppredict_ = Teuchos::null;
-    Pschur_ = Teuchos::null;
-  }
+	 */
+	virtual ~CheapSIMPLE_BlockPreconditioner()
+	{
+		vsolver_ = Teuchos::null; // solver objects only generated for SIMPLE and SIMPLER (not for CheapSIMPLE)
+		psolver_ = Teuchos::null;
+		Ppredict_ = Teuchos::null;
+		Pschur_ = Teuchos::null;
+	}
 
-  /*!
+	/*!
   \brief Returns the label of this class.
-  */
-  const char* Label() const { return "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner"; }
+	 */
+	const char* Label() const { return "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner"; }
 
-  /*!
+	/*!
   \brief get Comm of this class
 
   Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
-  */
-  const Epetra_Comm& Comm() const {return(A_->Comm());}
+	 */
+	const Epetra_Comm& Comm() const {return(A_->Comm());}
 
 
-  /*!
+	/*!
   \brief Get fine level OperatorDomainMap
 
   Derived from Epetra_Operator, get fine level OperatorDomainMap
 
-  */
-  const Epetra_Map& OperatorDomainMap() const {return A_->FullDomainMap();}
+	 */
+	const Epetra_Map& OperatorDomainMap() const {return A_->FullDomainMap();}
 
-  /*!
+	/*!
   \brief Get fine level OperatorRangeMap
 
   Derived from Epetra_Operator, get fine level OperatorRangeMap
 
-  */
-  const Epetra_Map& OperatorRangeMap() const {return A_->FullRangeMap();}
+	 */
+	const Epetra_Map& OperatorRangeMap() const {return A_->FullRangeMap();}
 
-  /*!
+	/*!
   \brief ApplyInverse the preconditioner
 
    ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
@@ -124,124 +127,124 @@ public:
    \param X   (In) : Epetra_MultiVector matching the fine level map of this
                      preconditioner
    \param Y (Out)  : Epetra_MultiVector containing the result on output
-  */
-  int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;
+	 */
+	int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;
 
-  /*!
+	/*!
   \brief not implemented
-  */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-  {
-    dserror("Apply does not make sense for LINALG::SIMPLER_Operator");
-    return(-1);
-  }
+	 */
+	int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+	{
+		dserror("Apply does not make sense for LINALG::SIMPLER_Operator");
+		return(-1);
+	}
 
-  /*!
+	/*!
   \brief not implemented
-  */
-  int SetUseTranspose(bool UseTranspose)
-  {
-    dserror("SetUseTranspose not impl.");
-    return -1;
-  }
+	 */
+	int SetUseTranspose(bool UseTranspose)
+	{
+		dserror("SetUseTranspose not impl.");
+		return -1;
+	}
 
-  /*!
+	/*!
   \brief not implemented
-  */
-  double NormInf() const
-  {
-    dserror("NormInf not impl.");
-    return(-1.0);
-  }
+	 */
+	double NormInf() const
+	{
+		dserror("NormInf not impl.");
+		return(-1.0);
+	}
 
 
-  /*!
+	/*!
   \brief not implemented
-  */
-  bool UseTranspose() const
-  {
-	// TAW: we can safely remove this. The (new) Belos now always checks the UseTransposed flag.
-    //dserror("UseTranspose not impl.");
-    return false;
-  }
+	 */
+	bool UseTranspose() const
+	{
+		// TAW: we can safely remove this. The (new) Belos now always checks the UseTransposed flag.
+		//dserror("UseTranspose not impl.");
+		return false;
+	}
 
-  /*!
+	/*!
   \brief not implemented
-  */
-  bool HasNormInf() const
-  {
-    dserror("HasNormInf not impl.");
-    return false;
-  }
+	 */
+	bool HasNormInf() const
+	{
+		dserror("HasNormInf not impl.");
+		return false;
+	}
 
 private:
 
-  // don't want copy-ctor and = operator
-  CheapSIMPLE_BlockPreconditioner(CheapSIMPLE_BlockPreconditioner& old);
-  CheapSIMPLE_BlockPreconditioner operator = (const CheapSIMPLE_BlockPreconditioner& old);
+	// don't want copy-ctor and = operator
+	CheapSIMPLE_BlockPreconditioner(CheapSIMPLE_BlockPreconditioner& old);
+	CheapSIMPLE_BlockPreconditioner operator = (const CheapSIMPLE_BlockPreconditioner& old);
 
-  /*!
+	/*!
   \brief setup phase of preconditioner
-  */
-  void Setup(RCP<Epetra_Operator> A,
-             const ParameterList& origvlist,
-             const ParameterList& origplist);
+	 */
+	void Setup(RCP<Epetra_Operator> A,
+			const ParameterList& origvlist,
+			const ParameterList& origplist);
 
-  /*!
+	/*!
   \brief do one sweep of simple or simplec preconditioning
-  */
-  void Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
-              LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
+	 */
+	void Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+			LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
-  /*!
+	/*!
   \brief do one sweep of simpler preconditioning
-  */
-  void Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
-               LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
+	 */
+	void Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+			LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
 
-  /*!
+	/*!
   \brief do one sweep of simple or simplec preconditioning without subsolves
-  */
-  void CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
-                   LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
+	 */
+	void CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+			LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
-  FILE*                                               outfile_; // error file to write output to or NULL
-  ParameterList                                       predictSolver_list_;     // list for primary solver
-  ParameterList                                       schurSolver_list_;   // list for secondary solver
-  double                                              alpha_;   // pressure damping \in (0,1]
+	FILE*                                               outfile_; // error file to write output to or NULL
+	ParameterList                                       predictSolver_list_;     // list for primary solver
+	ParameterList                                       schurSolver_list_;   // list for secondary solver
+	double                                              alpha_;   // pressure damping \in (0,1]
 
-  MultiMapExtractor                                   mmex_;    // a  multimapetxractor to handle extracts
-  RCP<BlockSparseMatrixBase>                          A_;       // 2x2 block matrix
-  RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
-  RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
+	MultiMapExtractor                                   mmex_;    // a multimapetxractor to handle extracts (reference not an RCP by intention!)
+	RCP<BlockSparseMatrixBase>                          A_;       // 2x2 block matrix
+	RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
+	RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
 
-  RCP<Epetra_Operator>                                Ppredict_;        // preconditioner for primary prediction subproblem
-  RCP<Epetra_Operator>                                Pschur_;      // preconditioner for Schur-complement subproblem
+	RCP<Epetra_Operator>                                Ppredict_;        // preconditioner for primary prediction subproblem
+	RCP<Epetra_Operator>                                Pschur_;      // preconditioner for Schur-complement subproblem
 
-  RCP<LINALG::ANA::Vector>                            vx_;      // velocity solution
-  RCP<LINALG::ANA::Vector>                            px_;      // pressure solution
-  RCP<LINALG::ANA::Vector>                            vb_;      // velocity rhs
-  RCP<LINALG::ANA::Vector>                            pb_;      // pressure rhs
-  RCP<LINALG::ANA::Vector>                            vwork1_;   // working vector velocity dimension
-  RCP<LINALG::ANA::Vector>                            vwork2_;   // working vector velocity dimension
-  RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
-  RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
+	RCP<LINALG::ANA::Vector>                            vx_;      // velocity solution
+	RCP<LINALG::ANA::Vector>                            px_;      // pressure solution
+	RCP<LINALG::ANA::Vector>                            vb_;      // velocity rhs
+	RCP<LINALG::ANA::Vector>                            pb_;      // pressure rhs
+	RCP<LINALG::ANA::Vector>                            vwork1_;   // working vector velocity dimension
+	RCP<LINALG::ANA::Vector>                            vwork2_;   // working vector velocity dimension
+	RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
+	RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
 
-  RCP<LINALG::Solver>                                 vsolver_; // velocity solver // not used for CheapSIMPLE
-  RCP<LINALG::Solver>                                 psolver_; // pressure solver // not used for CheapSIMPLE
+	RCP<LINALG::Solver>                                 vsolver_; // velocity solver // not used for CheapSIMPLE
+	RCP<LINALG::Solver>                                 psolver_; // pressure solver // not used for CheapSIMPLE
 
-  bool                                                vdw_;     // indicate downwinding for velocity subproblem
-  RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
-  RCP<Epetra_CrsMatrix>                               dwA00_;
-  RCP<LINALG::ANA::Vector>                            vdwin_;   // working vector
-  RCP<LINALG::ANA::Vector>                            vdwout_;  // working vector
+	bool                                                vdw_;     // indicate downwinding for velocity subproblem
+	RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
+	RCP<Epetra_CrsMatrix>                               dwA00_;
+	RCP<LINALG::ANA::Vector>                            vdwin_;   // working vector
+	RCP<LINALG::ANA::Vector>                            vdwout_;  // working vector
 
-  bool                                                pdw_;     // indicate downwinding for velocity subproblem
-  RCP<LINALG::DownwindMatrix>                         pdwind_;  // downwinding reindexer for velocity subproblem
-  RCP<Epetra_CrsMatrix>                               dwS_;
-  RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
-  RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
+	bool                                                pdw_;     // indicate downwinding for velocity subproblem
+	RCP<LINALG::DownwindMatrix>                         pdwind_;  // downwinding reindexer for velocity subproblem
+	RCP<Epetra_CrsMatrix>                               dwS_;
+	RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
+	RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
 
 }; // class  CheapSIMPLE_Operator : public virtual Epetra_Operator
 } // namespace SOLVER
