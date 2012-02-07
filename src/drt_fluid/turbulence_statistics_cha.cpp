@@ -1121,7 +1121,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
-      s.append(".loma_statistics");
+      if (inflowchannel_)
+        s.append(".inflow.loma_statistics");
+      else
+        s.append(".loma_statistics");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
       (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)\n\n";
