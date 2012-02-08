@@ -1635,35 +1635,35 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t NUMDOF,
           class M1, class M2, class M3, class V1, class V2>
 void Nitsche_SysmatBoundaryCell(
-    GEO::BoundaryIntCell              cell,
-    const DRT::UTILS::GaussRule2D&    intrule2D,
-    M2&                               xyze,
-    const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
-    const bool&                       higher_order_ele,
-    const M1&                         evelnp,
-    const V1&                         eprenp,
-    const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-    const V2&                         ecurv,
-    const double&                     flamespeed,
-    const double&                     marksteinlength,
-    const double&                     dens_minus,
-    const double                      dens_plus,
-    const double&                       timefac,
+    GEO::BoundaryIntCell           cell,
+    const DRT::UTILS::GaussRule2D& intrule2D,
+    M2&                            xyze,
+    const DRT::ELEMENTS::Combust3* ele,                ///< the element those matrix is calculated
+    const bool&                    higher_order_ele,
+    const M1&                      evelnp,
+    const V1&                      eprenp,
+    const M3&                      grad_ephi_smoothed, ///< smoothed nodal G-function gradient values for this element
+    const V2&                      ecurv,
+    const double&                  flamespeed,
+    const double&                  marksteinlength,
+    const double&                  dens_minus,
+    const double                   dens_plus,
+    const double&                  timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
     const XFEM::ElementEnrichmentValues&       enrvals_minus,
-    const double&                        kappa_plus,    /// weights of average in plus domain
-    const double&                        kappa_minus,    /// weights of average in minus domain
-    const double&                        visc_plus,    /// viscosity in plus domain
-    const double&                        visc_minus,   /// viscosity in minus domain
-    const double&                        alphau,       /// Nitsche's stabilization parameter
-    const double&                        alpha_conv,   /// stabilization parameter for convection dominated flows
-    const double&                        wallfac,      /// wall factor to fade jump at walls
+    const double&                              kappa_plus,          ///< weights of average in plus domain
+    const double&                              kappa_minus,         ///< weights of average in minus domain
+    const double&                              visc_plus,           ///< viscosity in plus domain
+    const double&                              visc_minus,          ///< viscosity in minus domain
+    const double&                              alphau,              ///< Nitsche's stabilization parameter
+    const double&                              alpha_conv,          ///< stabilization parameter for convection dominated flows
+    const double&                              wallfac,             ///< wall factor to fade jump at walls
     const size_t&                              numparamvelx,
     const size_t&                              numparampres,
-    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff,   ///<
-    const bool                                 connected_interface,
+    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,      ///<
+    const double                               surftenscoeff,       ///<
+    const bool                                 connected_interface, ///<
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
     const bool                                 smoothed_boundary_integration
@@ -1680,9 +1680,6 @@ void Nitsche_SysmatBoundaryCell(
   //----------------------------------------------
   // get Gaussian points for this integration cell
   //----------------------------------------------
-  // TODO: are 6 Gaussian points enough?
-  //const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
-  //const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
   const DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
 
   // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
@@ -1741,10 +1738,8 @@ void Nitsche_SysmatBoundaryCell(
     // coordinates of this integration point in element coordinates \xi^domain
     GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
-
     static LINALG::Matrix<3,numnode> deriv_xi3D;
     DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
-
 
     // calculate dx3Ddxi3D
     static LINALG::Matrix<3,3> dX3DdXi3D;
@@ -1991,12 +1986,12 @@ void Nitsche_SysmatBoundaryCell(
     xjm.MultiplyNT(deriv,xyze);
     // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
     const double detXtoXi = xjm.Determinant();
-    //#ifdef DEBUG
+
     if (detXtoXi < 0.0)
     {
       dserror("negative Jacobian determinant detXtoXi: %f for element %d!", detXtoXi, ele->Id());
     }
-    //#endif
+
     // inverse of jacobian
     static LINALG::Matrix<nsd,nsd> xji;
     xji.Clear();
@@ -2824,12 +2819,10 @@ void SysmatBoundaryNitsche(
   //---------------------------------------------------------------------------
   // density \rho
   double dens_plus = -1.0;
-  //cout << "plus density: " << dens_plus << endl;
   // dynamic viscosity \mu
   double dynvisc_plus = -1.0;
   // density \rho
   double dens_minus = -1.0;
-  //cout << "minus density: " << dens_minus << endl;
   // dynamic viscosity \mu
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
@@ -2883,30 +2876,25 @@ void SysmatBoundaryNitsche(
   // get maximum of the viscosities of all fluid materials
   const double dynvisc_max = max(dynvisc_plus,dynvisc_minus);
 
-  double ele_meas = ele_meas_plus + ele_meas_minus;
-
-  //const double a_plus = ele_meas_plus/ele_meas;
-  //const double a_minus = ele_meas_minus/ele_meas;
-  //const double denominator = dynvisc_plus*a_minus + dynvisc_minus*a_plus;
-
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
   //const double alphau = 1.0/hk_eleDiam * 4.0*nitschevel*(dynvisc_plus*dynvisc_minus);
-  //cout << "alpha_u: " << alphau << endl;
 
-  // Benedikt:
   // the input parameter alphap is used for the stabilization term for convection dominated flows
-  // new convective stabilization parameter
+  // convective stabilization parameter
   const double alpha_conv = 1.0/hk_eleDiam * nitschepres;
 
   //-----------------------------------------------------------------------------------------
   // get weights for average operators { () } = kappa_plus * ()_plus + kappa_minus * ()_minus
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
   //-----------------------------------------------------------------------------------------
-
-  //if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
+  double ele_meas = ele_meas_plus + ele_meas_minus;
+  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   double kappa_plus  = ele_meas_plus/ele_meas;
   double kappa_minus = ele_meas_minus/ele_meas;
+  //const double a_plus = ele_meas_plus/ele_meas;
+  //const double a_minus = ele_meas_minus/ele_meas;
+  //const double denominator = dynvisc_plus*a_minus + dynvisc_minus*a_plus;
   //const double kappa_plus = dynvisc_minus*a_plus / denominator;
   //const double kappa_minus = dynvisc_plus*a_minus / denominator;
 

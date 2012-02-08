@@ -1375,14 +1375,15 @@ namespace COMBUST
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void NitscheErrors(
-    ParameterList&                         eleparams,
-    const INPAR::COMBUST::NitscheError&  NitscheErrorType,
-    const DRT::ELEMENTS::Combust3*         ele,            ///< the element those matrix is calculated
-    const COMBUST::InterfaceHandleCombust*  ih,   ///< connection to the interface handler
-    const XFEM::ElementDofManager&                       dofman,         ///< dofmanager of the current element
-    const DRT::ELEMENTS::Combust3::MyState&              mystate, ///< element state variables
-    Teuchos::RCP<const MAT::Material>                    material,       ///< fluid material
-    const bool                                           smoothed_boundary_integration
+    ParameterList&                          eleparams,
+    const INPAR::COMBUST::NitscheError&     NitscheErrorType,
+    const DRT::ELEMENTS::Combust3*          ele,                          ///< the element those matrix is calculated
+    const COMBUST::InterfaceHandleCombust*  ih,                           ///< connection to the interface handler
+    const XFEM::ElementDofManager&          dofman,                       ///< dofmanager of the current element
+    const DRT::ELEMENTS::Combust3::MyState& mystate,                      ///< element state variables
+    Teuchos::RCP<const MAT::Material>       material,                     ///< fluid material
+    const double                            time,                         ///< current time
+    const bool                              smoothed_boundary_integration
 )
 {
   const int NUMDOF = 4;
@@ -1449,7 +1450,7 @@ void NitscheErrors(
   double ele_meas_minus = 0.0;	// for different averages <> and {}
 
   COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-      eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, material, ele_meas_plus, ele_meas_minus);
+      eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, material, time, ele_meas_plus, ele_meas_minus);
 
   if (ele->Bisected() or ele->Touched() )
   {
@@ -1470,16 +1471,17 @@ void NitscheErrors(
 
 
 /*----------------------------------------------------------------------*
- *----------------------------------------- schott Jun 15, 2010---------*/
+ *----------------------------------------- ----------------------------*/
 void COMBUST::callNitscheErrors(
     ParameterList&                              eleparams,        ///< list of parameters
-    const INPAR::COMBUST::NitscheError& NitscheErrorType, ///<
+    const INPAR::COMBUST::NitscheError&         NitscheErrorType, ///<
     const XFEM::AssemblyType                    assembly_type,    ///<
     const DRT::ELEMENTS::Combust3*              ele,              ///<
-    const COMBUST::InterfaceHandleCombust*      ih,     ///<
+    const COMBUST::InterfaceHandleCombust*      ih,               ///<
     const XFEM::ElementDofManager&              eleDofManager,    ///<
     const DRT::ELEMENTS::Combust3::MyState&     mystate,          ///< element state variables
-    Teuchos::RCP<const MAT::Material>           material,          ///<
+    Teuchos::RCP<const MAT::Material>           material,         ///<
+    const double                                time,             ///< current time
     const bool                                  smoothed_boundary_integration
 )
 {
@@ -1489,7 +1491,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::standard_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material, time, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -1525,7 +1527,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::xfem_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,time, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(

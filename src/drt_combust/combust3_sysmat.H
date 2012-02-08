@@ -418,8 +418,9 @@ void BlendMaterial(
       const DRT::ELEMENTS::Combust3*                         ele,
       const COMBUST::InterfaceHandleCombust*                 ih,
       const XFEM::ElementDofManager&                         eleDofManager,
-      const DRT::ELEMENTS::Combust3::MyState&                mystate,   ///< element state variables
+      const DRT::ELEMENTS::Combust3::MyState&                mystate,            ///< element state variables
       Teuchos::RCP<const MAT::Material>                      material,
+      const double                                           time,               ///< current time
       const bool                                             smoothed_boundary_integration
   );
 

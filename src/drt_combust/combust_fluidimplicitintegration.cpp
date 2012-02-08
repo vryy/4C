@@ -1959,7 +1959,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 #endif
 
   //--------------------
-  // compute error norms // schott Aug 6, 2010
+  // compute error norms
   //--------------------
   INPAR::COMBUST::NitscheError errortype = DRT::INPUT::IntegralValue<INPAR::COMBUST::NitscheError>(params_.sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
   if(errortype != INPAR::COMBUST::nitsche_error_none)
@@ -2538,9 +2538,6 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
-
-  // TODO @Florian: copied from Axel, needed here?
-  oldinc_= Teuchos::null;
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
@@ -4622,6 +4619,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 
     const double radius = 0.025;
     const double velrad = 1.0;
+    const double velgrad = 40.0;
+    const double densu = 1.0;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -4634,19 +4633,19 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifndef COMBUST_NORMAL_ENRICHMENT
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(0)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(0)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(0)/coordsnorm;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(0)/coordsnorm;
 
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(1)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(1)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(1)/coordsnorm;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(1)/coordsnorm;
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(2)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*1.0 + 0.5*gfuncval*4.0)*coords(2)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(2)/coordsnorm;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(2)/coordsnorm;
 #ifdef COMBUST_2D
           (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
           (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
@@ -4656,15 +4655,15 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
         if (fieldenr->getField() == XFEM::PHYSICS::Veln)
         {
           // -0.5 *jump + 0.5*dist*kink
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*1.0 + 0.5*gfuncval*4.0;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*1.0 + 0.5*gfuncval*4.0;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*velrad + 0.5*gfuncval*velgrad;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*velrad + 0.5*gfuncval*velgrad;
         }
 #endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           // -0.5 *jump + 0.5*dist*kink
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*(1.0) + 0.5*gfuncval*4.0; // 0.5*(7.0)
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*(1.0) + 0.5*gfuncval*4.0; // 0.5*(7.0)
+          //(*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*(0.92) - 0.5*gfuncval*40.0; // 0.5*(7.0)
+          //(*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*(0.92) - 0.5*gfuncval*40.0; // 0.5*(7.0)
         }
       } // end if jump enrichment
       else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
@@ -4680,26 +4679,34 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = -1.5; //-6.5;
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = -1.5; //-6.5;
+            //(*state_.veln_)[dofrowmap.LID(dofpos)] = -1.42; //-6.5;
+            //(*state_.velnp_)[dofrowmap.LID(dofpos)] = -1.42; //-6.5;
           }
         }
         else // Standard dofs ausshalb des Kreises
         {
           if (fieldenr->getField() == XFEM::PHYSICS::Velx)
           {
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(0)/(coordsnorm*coordsnorm*coordsnorm);
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(0)/(coordsnorm*coordsnorm*coordsnorm);
+#ifdef COMBUST_2D
             (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(0)/(coordsnorm*coordsnorm);
             (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(0)/(coordsnorm*coordsnorm);
+#endif
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
           {
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(1)/(coordsnorm*coordsnorm*coordsnorm);
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(1)/(coordsnorm*coordsnorm*coordsnorm);
+#ifdef COMBUST_2D
             (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(1)/(coordsnorm*coordsnorm);
             (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(1)/(coordsnorm*coordsnorm);
+#endif
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
           {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(2)/(coordsnorm*coordsnorm);
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*velrad*coords(2)/(coordsnorm*coordsnorm);
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(2)/(coordsnorm*coordsnorm*coordsnorm);
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = radius*radius*velrad*coords(2)/(coordsnorm*coordsnorm*coordsnorm);
 #ifdef COMBUST_2D
             (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.0;
             (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
@@ -4707,8 +4714,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*radius*radius/(coordsnorm*coordsnorm);
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*radius*radius/(coordsnorm*coordsnorm);
+            //(*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*densu*radius*velrad*radius*velrad/(coordsnorm*coordsnorm);
+            //(*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*densu*radius*velrad*radius*velrad/(coordsnorm*coordsnorm);
           }
         }
       }
@@ -4806,9 +4813,9 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   cout0_ << "done" << std::endl;
 #endif
 
-#ifdef GMSH_REF_FIELDS
+//#ifdef GMSH_REF_FIELDS
   OutputToGmsh((char*)"mod_start_field_pres",(char*)"mod_start_field_vel",Step(), Time());
-#endif
+//#endif
 }
 
 
@@ -5475,10 +5482,8 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   // create parameters for discretization
   ParameterList eleparams;
 
-  // a new ActionType in combust3.H:	"calc_nitsche_error"
   eleparams.set("action", "calc_nitsche_error");
   eleparams.set<int>("Nitsche_Compare_Analyt", NitscheErrorType);
-  // switch different test cases -> set "flowproblem" for elements
 
   // smoothed normal vectors for boundary integration terms
   eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
@@ -5499,13 +5504,9 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   eleparams.set<double>("L2 integrated flux jump interface error Combustion", 0.0);
   eleparams.set("flamespeed",flamespeed_);
 
-  // TODO @Benedikt: check wether H1 pressure norm is needed ????
-
-  // TODO @Benedikt: relative error norms!!!
-
   // call loop over elements (but do not assemble anything)
-  // discret_->Evaluate calls combust3_evaluate for each element
-  discret_->Evaluate(eleparams,null,null,null,null,null); // only ele->Evaluate is called (see combust3_evaluate.cpp)
+  // discret_->Evaluate calls combust3_evaluate for each element, but without assemply
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   discret_->ClearState();
 
@@ -5538,21 +5539,20 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   double VelJumpErr       = 0.0;
   double FluxJumpErr      = 0.0;
 
-  // TODO @Benedikt: check wether Comm() works also for interface integrals ? Benedikt: seems so!
-  discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1); // sum over processors, each list (list of a processor) has length 1
-  discret_->Comm().SumAll(&locGradVelDomErr,&GradVelDomErr,1);
-  discret_->Comm().SumAll(&locViscInterfErr,&ViscInterfErr,1);
+  // sum over processors, each list (list of a processor) has length 1
+  discret_->Comm().SumAll(&locVelDomErr,       &VelDomErr,       1);
+  discret_->Comm().SumAll(&locGradVelDomErr,   &GradVelDomErr,   1);
+  discret_->Comm().SumAll(&locViscInterfErr,   &ViscInterfErr,   1);
   discret_->Comm().SumAll(&locVelJumpInterfErr,&VelJumpInterfErr,1);
-  discret_->Comm().SumAll(&locPresDomErr,&PresDomErr,1);
-  discret_->Comm().SumAll(&locGradPresDomErr, &GradPresDomErr,1);
+  discret_->Comm().SumAll(&locPresDomErr,      &PresDomErr,      1);
+  discret_->Comm().SumAll(&locGradPresDomErr,  &GradPresDomErr,  1);
   discret_->Comm().SumAll(&locWeightPresDomErr,&WeightPresDomErr,1);
-  discret_->Comm().SumAll(&locNitscheErr,&NitscheErr,1);
-  discret_->Comm().SumAll(&locDivErr,&DivErr,1);
-  discret_->Comm().SumAll(&locDivErrPlus,&DivErrPlus,1);
-  discret_->Comm().SumAll(&locDivErrMinus,&DivErrMinus,1);
-  discret_->Comm().SumAll(&locVelJumpErr,&VelJumpErr,1);
-  discret_->Comm().SumAll(&locFluxJumpErr,&FluxJumpErr,1);
-
+  discret_->Comm().SumAll(&locNitscheErr,      &NitscheErr,      1);
+  discret_->Comm().SumAll(&locDivErr,          &DivErr,          1);
+  discret_->Comm().SumAll(&locDivErrPlus,      &DivErrPlus,      1);
+  discret_->Comm().SumAll(&locDivErrMinus,     &DivErrMinus,     1);
+  discret_->Comm().SumAll(&locVelJumpErr,      &VelJumpErr,      1);
+  discret_->Comm().SumAll(&locFluxJumpErr,     &FluxJumpErr,     1);
 
   // for the norms, we need the square roots
   VelDomErr        = sqrt(VelDomErr);
@@ -5582,11 +5582,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
     printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",       GradPresDomErr);
     printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",     WeightPresDomErr);
     printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",       NitscheErr);
-    printf("\n  || div(u) ||_L2(Omega)\t\t\t\t%15.8e",                     DivErr);
-    printf("\n  || div(u) ||_L2(Omega+)\t\t\t\t%15.8e",                    DivErrPlus);
-    printf("\n  || div(u) ||_L2(Omega-)\t\t\t\t%15.8e",                    DivErrMinus);
+    printf("\n  || div(u) ||_L2(Omega)\t\t\t\t%15.8e",                   DivErr);
+    printf("\n  || div(u) ||_L2(Omega+)\t\t\t\t%15.8e",                  DivErrPlus);
+    printf("\n  || div(u) ||_L2(Omega-)\t\t\t\t%15.8e",                  DivErrMinus);
     printf("\n  || [| u |] - ju*n ||_L2(Gamma)\t\t\t%15.8e",             VelJumpErr);
-    printf("\n  || [| sigma*n - jflux*n |] ||_L2(Gamma)\t\t%15.8e",    FluxJumpErr);
+    printf("\n  || [| sigma*n - jflux*n |] ||_L2(Gamma)\t\t%15.8e",      FluxJumpErr);
     printf("\n======================================================================="
            "\n=======================================================================\n");
   }

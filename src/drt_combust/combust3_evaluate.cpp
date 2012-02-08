@@ -457,11 +457,25 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // stationary formulation
         const bool instationary = false;
         const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
+
+        const double time = params.get<double>("time");
+
         bool genalpha = false;
         if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
-        // smoothed gradient of phi required (surface tension application)
-        const bool gradphi = true;
+
+        // general parameters for two-phase flow and premixed combustion problems
+        const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+        const INPAR::COMBUST::SmoothGradPhi smoothgradphi  = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
+
         const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
+        // smoothed gradient of phi required (surface tension application)
+        bool gradphi = true;
+        if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
+            smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
+        {
+          gradphi = false;
+        }
+
         const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
@@ -472,7 +486,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
             *eleDofManager_, NumNode(), NodeIds());
 
         // calculate Nitsche norms
-        COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_, mystate, material,smoothed_boundary_integration);
+        COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_,
+            mystate, material, time, smoothed_boundary_integration);
       }
     }
     break;

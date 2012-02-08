@@ -142,7 +142,8 @@ namespace INPAR
       nitsche_error_couette_20x20x1,
       nitsche_error_straight_bodyforce,
       nitsche_error_ellipsoid_bubble_2D,
-      nitsche_error_ellipsoid_bubble_3D
+      nitsche_error_ellipsoid_bubble_3D,
+      nitsche_error_beltrami
     };
 
   }  // namespace COMBUST
