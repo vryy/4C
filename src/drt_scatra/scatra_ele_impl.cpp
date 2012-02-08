@@ -441,24 +441,24 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // get definition for stabilization parameter tau
-    INPAR::SCATRA::TauType whichtau = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+    whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
     // set correct stationary definition for stabilization parameter automatically
     // and ensure that exact stabilization parameter is only used in stationary case
     if (is_stationary_)
     {
-      if (whichtau == INPAR::SCATRA::tau_taylor_hughes_zarins)
-        whichtau = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
-      else if (whichtau == INPAR::SCATRA::tau_franca_valentin)
-        whichtau = INPAR::SCATRA::tau_franca_valentin_wo_dt;
-      else if (whichtau == INPAR::SCATRA::tau_shakib_hughes_codina)
-        whichtau = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
-      else if (whichtau == INPAR::SCATRA::tau_codina)
-        whichtau = INPAR::SCATRA::tau_codina_wo_dt;
+      if (whichtau_ == INPAR::SCATRA::tau_taylor_hughes_zarins)
+        whichtau_ = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
+      else if (whichtau_ == INPAR::SCATRA::tau_franca_valentin)
+        whichtau_ = INPAR::SCATRA::tau_franca_valentin_wo_dt;
+      else if (whichtau_ == INPAR::SCATRA::tau_shakib_hughes_codina)
+        whichtau_ = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
+      else if (whichtau_ == INPAR::SCATRA::tau_codina)
+        whichtau_ = INPAR::SCATRA::tau_codina_wo_dt;
     }
     else
     {
-      if (whichtau == INPAR::SCATRA::tau_exact_1d)
+      if (whichtau_ == INPAR::SCATRA::tau_exact_1d)
         dserror("exact stabilization parameter only available for stationary case");
     }
 
@@ -469,7 +469,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     switch(stabinp)
     {
     case INPAR::SCATRA::stabtype_no_stabilization:
-      whichtau = INPAR::SCATRA::tau_zero;
+      whichtau_ = INPAR::SCATRA::tau_zero;
       break;
     case INPAR::SCATRA::stabtype_SUPG:
       diffreastafac_ = 0.0;
@@ -769,7 +769,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       dt,
       timefac,
       alphaF,
-      whichtau,
       whichassgd,
       whichfssgd,
       assgd,
@@ -802,7 +801,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         dt,
         timefac,
         alphaF,
-        whichtau,
         whichassgd,
         whichfssgd,
         assgd,
@@ -919,24 +917,24 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       ParameterList& stablist = params.sublist("STABILIZATION");
 
       // get definition for stabilization parameter tau
-      INPAR::SCATRA::TauType whichtau = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+      whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
       // set correct stationary definition for stabilization parameter automatically
       // and ensure that exact stabilization parameter is only used in stationary case
       if (is_stationary_)
       {
-        if (whichtau == INPAR::SCATRA::tau_taylor_hughes_zarins)
-          whichtau = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
-        else if (whichtau == INPAR::SCATRA::tau_franca_valentin)
-          whichtau = INPAR::SCATRA::tau_franca_valentin_wo_dt;
-        else if (whichtau == INPAR::SCATRA::tau_shakib_hughes_codina)
-          whichtau = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
-        else if (whichtau == INPAR::SCATRA::tau_codina)
-          whichtau = INPAR::SCATRA::tau_codina_wo_dt;
+        if (whichtau_ == INPAR::SCATRA::tau_taylor_hughes_zarins)
+          whichtau_ = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
+        else if (whichtau_ == INPAR::SCATRA::tau_franca_valentin)
+          whichtau_ = INPAR::SCATRA::tau_franca_valentin_wo_dt;
+        else if (whichtau_ == INPAR::SCATRA::tau_shakib_hughes_codina)
+          whichtau_ = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
+        else if (whichtau_ == INPAR::SCATRA::tau_codina)
+          whichtau_ = INPAR::SCATRA::tau_codina_wo_dt;
       }
       else
       {
-        if (whichtau == INPAR::SCATRA::tau_exact_1d)
+        if (whichtau_ == INPAR::SCATRA::tau_exact_1d)
           dserror("exact stabilization parameter only available for stationary case");
       }
 
@@ -947,7 +945,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       switch(stabinp)
       {
       case INPAR::SCATRA::stabtype_no_stabilization:
-        whichtau = INPAR::SCATRA::tau_zero;
+        whichtau_ = INPAR::SCATRA::tau_zero;
         break;
       case INPAR::SCATRA::stabtype_SUPG:
         diffreastafac_ = 0.0;
@@ -1018,7 +1016,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         dt,
         timefac,
         meshsize,
-        whichtau,
         reinitswitch,
         reinit_pseudo_timestepsize_factor,
         smoothedSignType,
@@ -1366,7 +1363,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    INPAR::SCATRA::TauType whichtau = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+    whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
     // get time-step length
     const double dt   = params.get<double>("time-step length");
@@ -1399,7 +1396,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       ele,
       elemat1_epetra,
       elevec1_epetra,
-      whichtau,
       dt,
       timefac,
       scatratype
@@ -1653,7 +1649,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const double                          dt, ///< current time-step length
   const double                          timefac, ///< time discretization factor
   const double                          alphaF, ///< factor for generalized-alpha time integration
-  const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
   const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
   const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
   const bool                            assgd, ///< all-scale subgrid-diff. flag
@@ -1744,11 +1739,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
 #ifdef ACTIVATEBINARYELECTROLYTE
       if (twoionsystem && (abs(valence_[k])>EPS10))
-        CalTau(ele,resdiffus,dt,timefac,whichtau,vol,k,frt,false);
+        CalTau(ele,resdiffus,dt,timefac,vol,k,frt,false);
       else
 #endif
-        // calculation of stabilization parameter at element center
-        CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
+      // calculation of stabilization parameter at element center
+      CalTau(ele,diffus_[k],dt,timefac,vol,k,frt,migrationintau_);
     }
 
     // compute stabilization parameter for eliminated ion species
@@ -1758,11 +1753,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       {
 #ifdef ACTIVATEBINARYELECTROLYTE
         if (twoionsystem && (abs(valence_[numscal_])>EPS10))
-          CalTau(ele,resdiffus,dt,timefac,whichtau,vol,numscal_,frt,false);
+          CalTau(ele,resdiffus,dt,timefac,vol,numscal_,frt,false);
         else
 #endif
-          // calculation of stabilization parameter at element center
-          CalTau(ele,diffus_[numscal_],dt,timefac,whichtau,vol,numscal_,frt,migrationintau_);
+        // calculation of stabilization parameter at element center
+        CalTau(ele,diffus_[numscal_],dt,timefac,vol,numscal_,frt,migrationintau_);
       }
     }
   }
@@ -1873,11 +1868,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 #ifdef ACTIVATEBINARYELECTROLYTE
           // use resulting diffusion coefficient for binary electrolyte solutions
           if (twoionsystem && (abs(valence_[k])>EPS10))
-            CalTau(ele,resdiffus,dt,timefac,whichtau,vol,k,frt,false);
+            CalTau(ele,resdiffus,dt,timefac,vol,k,frt,false);
           else
 #endif
             // calculation of stabilization parameter at integration point
-            CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
+            CalTau(ele,diffus_[k],dt,timefac,vol,k,frt,migrationintau_);
         }
 
         if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -1888,11 +1883,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
 #ifdef ACTIVATEBINARYELECTROLYTE
           if (twoionsystem && (abs(valence_[numscal_])>EPS10))
-            CalTau(ele,resdiffus,dt,timefac,whichtau,vol,numscal_,frt,false);
+            CalTau(ele,resdiffus,dt,timefac,vol,numscal_,frt,false);
           else
 #endif
             // calculation of stabilization parameter at element center
-            CalTau(ele,diffus_[numscal_],dt,timefac,whichtau,vol,numscal_,frt,migrationintau_);
+            CalTau(ele,diffus_[numscal_],dt,timefac,vol,numscal_,frt,migrationintau_);
         }
       }
 
@@ -2011,7 +2006,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           {
             // calculation of stabilization parameter related to fluid momentum
             // equation at integration point
-            CalTau(ele,visc_,dt,timefac,whichtau,vol,k,0.0,false);
+            CalTau(ele,visc_,dt,timefac,vol,k,0.0,false);
 
             if (scatratype != INPAR::SCATRA::scatratype_levelset)
               CalcSubgrVelocity(ele,time,dt,timefac,k,scatratype);
@@ -2023,7 +2018,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           }
 
           // calculation of stabilization parameter at integration point
-          CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
+          CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
         }
 
         // prepare multifractal subgrid-scale modeling
@@ -2397,7 +2392,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     reacoeff_[0] = actmat->ReaCoeff();
     if (reacoeff_[0] > EPS14) reaction_ = true;
     if (reacoeff_[0] < -EPS14)
-      dserror("Reaction coefficient for species %d is not positive: %f",0, reacoeff_[0]);
+      dserror("Reaction coefficient is not positive: %f",0, reacoeff_[0]);
 
     reacoeffderiv_[0] = reacoeff_[0];
 
@@ -2713,8 +2708,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // (value divided by density here for its intended use on right-hand side)
     shc_ = actmat->Capacity()/densnp_[0];
 
+    // set flag for conservative formulation (overruling for solid-based
+    // scalar transport in FS3I-type problems, to allow for simultaneously
+    // using convective formulation in fluid-based scalar transport)
+    conservative_ = true;
+
     // compute velocity divergence required for reaction coefficient
+    // and conservative formulation
     GetDivergence(vdiv_,evelnp_,derxy_);
+
+    // set stabilization parameter to zero (overruling for solid-based
+    // scalar transport in FS3I-type problems, to allow for simultaneously
+    // using non-zero stabilization in fluid-based scalar transport)
+    whichtau_ = INPAR::SCATRA::tau_zero;
 
     // compute reaction coefficient
     // (divided by density due to later multiplication by density in CalMatAndRHS)
@@ -2723,9 +2729,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // set reaction flag to true, check whether reaction coefficient is positive
     // and set derivative of reaction coefficient
-    if (reacoeff_[0] > EPS14) reaction_ = true;
-    if (reacoeff_[0] < -EPS14)
-      dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0, reacoeff_[0]);
+    if (reacoeff_[0] > EPS14 or reacoeff_[0] < -EPS14) reaction_ = true;
     reacoeffderiv_[0] = reacoeff_[0];
 
     // set temperature rhs for reactive equation system to zero
@@ -3272,7 +3276,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   double                                diffus,
   const double                          dt,
   const double                          timefac,
-  const enum INPAR::SCATRA::TauType     whichtau,
   const double                          vol,
   const int                             k,
   const double                          frt,
@@ -3287,7 +3290,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   //----------------------------------------------------------------------
   // computation of stabilization parameters depending on definition used
   //----------------------------------------------------------------------
-  switch (whichtau)
+  switch (whichtau_)
   {
   case INPAR::SCATRA::tau_taylor_hughes_zarins:
   case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
@@ -3356,7 +3359,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to be zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_[k];
-    if (whichtau == INPAR::SCATRA::tau_taylor_hughes_zarins) sigma_tot += 1.0/dt;
+    if (whichtau_ == INPAR::SCATRA::tau_taylor_hughes_zarins) sigma_tot += 1.0/dt;
 
     // computation of various values derived from covariant metric tensor
     double G;
@@ -3599,7 +3602,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to be zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_[k];
-    if (whichtau == INPAR::SCATRA::tau_shakib_hughes_codina) sigma_tot += 1.0/dt;
+    if (whichtau_ == INPAR::SCATRA::tau_shakib_hughes_codina) sigma_tot += 1.0/dt;
 
     // calculate characteristic element length
     const double h = CalcCharEleLength(vol,vel_norm);
@@ -3640,7 +3643,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to be zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_[k];
-    if (whichtau == INPAR::SCATRA::tau_codina) sigma_tot += 1.0/dt;
+    if (whichtau_ == INPAR::SCATRA::tau_codina) sigma_tot += 1.0/dt;
 
     // calculate characteristic element length
     const double h = CalcCharEleLength(vol,vel_norm);
@@ -3704,7 +3707,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   }
   break;
   default: dserror("unknown definition for stabilization parameter tau\n");
-  } //switch (whichtau)
+  } //switch (whichtau_)
 
 #if 0
   cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
@@ -5650,7 +5653,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
   DRT::Element*                         ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
-  const enum INPAR::SCATRA::TauType     whichtau,
   const double                          dt,
   const double                          timefac,
   const enum INPAR::SCATRA::ScaTraType  scatratype
@@ -5683,7 +5685,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
+        CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
       }
     }
   }
@@ -5725,7 +5727,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
       // calculation of stabilization parameter at integration point
-      if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
+      if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
 
       const double fac_tau = fac*tau_[k];
 
@@ -7200,7 +7202,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
   const double                          dt,
   const double                          timefac,
   const double                          alphaF,
-  const enum INPAR::SCATRA::TauType     whichtau,
   const enum INPAR::SCATRA::AssgdType   whichassgd,
   const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
   const bool                            assgd,
@@ -7322,7 +7323,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         dt,
         timefac,
         alphaF,
-        whichtau,
         whichassgd,
         whichfssgd,
         assgd,
@@ -9989,7 +9989,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
   const double                          dt, ///< current time-step length
   const double                          timefac,
   const double                          meshsize,
-  const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
   const bool                            reinitswitch,
   const double                          reinit_pseudo_timestepsize_factor,
   const INPAR::SCATRA::SmoothedSignType smoothedSignType,
@@ -10065,11 +10064,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 //
 //	#ifdef ACTIVATEBINARYELECTROLYTE
 //	      if (twoionsystem && (abs(valence_[k])>EPS10))
-//	        CalTau(ele,resdiffus,dt,timefac,whichtau,vol,k,frt,false);
+//	        CalTau(ele,resdiffus,dt,timefac,vol,k,frt,false);
 //	      else
 //	#endif
 //	      // calculation of stabilization parameter at element center
-//	      CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
+//	      CalTau(ele,diffus_[k],dt,timefac,vol,k,frt,migrationintau_);
 //	    }
 ////	  dserror("stabilization should be called at each gaussian point for reinitialization problems!");
 //  }
@@ -10196,7 +10195,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 //          {
 //            // calculation of stabilization parameter related to fluid momentum
 //            // equation at integration point
-//            CalTau(ele,visc_,dt,timefac,whichtau,vol,k,0.0,false);
+//            CalTau(ele,visc_,dt,timefac,vol,k,0.0,false);
 //
 //            if (scatratype != INPAR::SCATRA::scatratype_levelset)
 //                 CalcSubgrVelocity(ele,time,dt,timefac,k);
@@ -10208,7 +10207,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 //          }
 
         // calculation of stabilization parameter at integration point
-        CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
+        CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
       }
 
       // get history data (or acceleration)

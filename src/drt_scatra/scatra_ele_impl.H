@@ -163,7 +163,6 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
         const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
         const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
@@ -209,7 +208,6 @@ public:
         DRT::Element*                         ele, ///< the element
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
@@ -271,7 +269,6 @@ public:
         double                                diffus,
         const double                          dt,
         const double                          timefac,
-        const enum INPAR::SCATRA::TauType     whichtau,
         const double                          vol,
         const int                             k,
         const double                          frt,
@@ -596,7 +593,6 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const double                          alphaF, ///< factor for generalized-alpha time integration
-        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
         const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
         const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
         const bool                            assgd, ///< all-scale subgrid-diff. flag
@@ -699,7 +695,6 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac,
         const double                          meshsize,
-        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
         const bool                            reinitswitch,
         const double                          reinit_pseudo_timestepsize_factor,
         const INPAR::SCATRA::SmoothedSignType smoothedSignType,
@@ -740,6 +735,8 @@ public:
     bool mat_gp_;
     //! flag for stabilization parameter evaluation at Gaussian integration points
     bool tau_gp_;
+    //! stabilization parameter definition
+    enum INPAR::SCATRA::TauType whichtau_;
     //! turbulence model
     enum INPAR::FLUID::TurbModelAction turbmodel_;
 
