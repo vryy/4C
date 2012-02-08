@@ -570,7 +570,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E  | %10.3E  |",
           itnum, itmax, ittol, conincnorm_L2/connorm_L2, potincnorm_L2/potnorm_L2, velincnorm_L2/velnorm_L2);
       printf("\n");
-      printf("+------------+-------------------+-------------+--------------+-------------+\n");
+      printf("+------------+-------------------+--------------+-------------+-------------+\n");
       }
 
       // Converged or Not
@@ -599,23 +599,6 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
         }
       }
 
-      // warn if itemax is reached without convergence, but proceed to next timestep
-      if (itnum == itmax)
-      {
-        if ((conincnorm_L2/connorm_L2 > ittol) ||
-            (potincnorm_L2/potnorm_L2 > ittol) ||
-            (velincnorm_L2/velnorm_L2 > ittol))
-        {
-          stopnonliniter=true;
-          if ((Comm().MyPID() == 0))
-          {
-            printf("|     >>>>>> not converged in itemax steps!     |\n");
-            printf("+-----------------------------------------------+\n");
-            printf("\n");
-            printf("\n");
-          }
-        }
-      }
     }
     else
     {
@@ -633,9 +616,28 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       printf("|  %3d/%3d   | %10.3E[L_2 ]  |       -      |      -      |      -      |",
           itnum, itmax, ittol);
       printf("\n");
-      printf("+------------+-------------------+-------------+--------------+-------------+\n");
+      printf("+------------+-------------------+--------------+-------------+-------------+\n");
     }
   }
+
+    // warn if itemax is reached without convergence, but proceed to next timestep
+    // itemax = 1 is also possible for segregated coupling approaches (not fully implicit)
+    if (itnum == itmax)
+    {
+      if (((conincnorm_L2/connorm_L2 > ittol) ||
+          (potincnorm_L2/potnorm_L2 > ittol) ||
+          (velincnorm_L2/velnorm_L2 > ittol)) or (itmax==1))
+      {
+        stopnonliniter=true;
+        if ((Comm().MyPID() == 0))
+        {
+          printf("|     >>>>>> not converged in itemax steps!     |\n");
+          printf("+-----------------------------------------------+\n");
+          printf("\n");
+          printf("\n");
+        }
+      }
+    }
 
   return stopnonliniter;
 }
