@@ -1225,7 +1225,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                   if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                     break;
                   // do not do anything in case of a Loom set up if conditions hereafter are not met
-                  if(!SetCrosslinkerLoom(LID))
+                  if(!SetCrosslinkerLoom(LID, currentpositions, bspottriadscol))
                     break;
 
                   //unit direction vector between currently considered two nodes
@@ -1503,40 +1503,78 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
  | setting of crosslinkers for loom network setup                       |
  | (private)                                              mueller (2/12)|
  *----------------------------------------------------------------------*/
-bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID)
+bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
   {
     bool setcrosslinker = true;
-    // if a crosslink between two vertical filaments is considered, do not set a linker
+    // 1) if a crosslink between two vertical filaments is considered, do not set a linker
     if((*filamentnumber_)[(int)LID(0,0)]!= 0 && (*filamentnumber_)[(int)LID(1,0)]!=0)
       setcrosslinker = false;
-
-    if(setcrosslinker)
+    else
     {
-      // determine which node LID entry is the non-zero entry
-      int currfilnumber = -1;
-      for(int k=0; k<(int)LID.M(); k++)
+      // 2) consider direction of the crosslinker
+      LINALG::Matrix<3,1> crossdir;
+      // retrieve tangential vector from binding spot quaternions
+      std::vector<double> alpha((int)LID.M(),0.0);
+      for(int i=0; i<LID.M(); i++)
       {
-        if((int)(*filamentnumber_)[(int)LID(k,0)]!= 0)
+        if(i==0)
         {
-          currfilnumber = (int)(*filamentnumber_)[(int)LID(k,0)];
-          break;
+          map<int, LINALG::Matrix<3, 1> >::const_iterator pos0 = currentpositions.find((int)LID(0,0));
+          map<int, LINALG::Matrix<3, 1> >::const_iterator pos1 = currentpositions.find((int)LID(1,0));
+          for(int j=0; j<(int)crossdir.M(); j++)
+            crossdir(j) = (pos1->second)(j) - (pos0->second)(j);
+          crossdir.Scale(1.0/crossdir.Norm2());
         }
+
+        LINALG::Matrix<3,1> firstdir;
+        LINALG::Matrix<3,3> bspottriad;
+        // auxiliary variable for storing a triad in quaternion form
+        LINALG::Matrix<4, 1> qnode;
+        // triad of node on first filament which is affected by the new crosslinker
+        for (int l=0; l<4; l++)
+          qnode(l) = bspottriadscol[l][(int)LID(i,0)];
+        LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+
+        for (int l=0; l<(int)bspottriad.M(); l++)
+         firstdir(l) = bspottriad(l,0);
+        firstdir.Scale(1.0/firstdir.Norm2());
+
+        alpha.at(i) = acos(fabs(firstdir.Dot(crossdir)));
       }
-      for(int k=0; k<filamentnumber_->MyLength(); k++)
+      // angle: impose orthogonality
+      if(alpha.at(0) < 4.0/9.0*M_PI || alpha.at(1) < 4.0/9.0*M_PI)
       {
-        // skip the rest of the nodes when having reached the end of the current filament
-        if((*filamentnumber_)[k]==currfilnumber+1)
-          break;
-        // check if any of the filament's nodes has a linker attached
-        if((*filamentnumber_)[k]==currfilnumber && (*numbond_)[(int)(*bspotstatus_)[k]]>1.9)
+        setcrosslinker = false;
+      }
+      else
+      {
+        // 3) determine which node LID entry is the non-zero entry
+        int currfilnumber = -1;
+        for(int k=0; k<(int)LID.M(); k++)
         {
-          setcrosslinker = false;
-          break;
+          if((int)(*filamentnumber_)[(int)LID(k,0)]!= 0)
+          {
+            currfilnumber = (int)(*filamentnumber_)[(int)LID(k,0)];
+            break;
+          }
+        }
+        for(int k=0; k<filamentnumber_->MyLength(); k++)
+        {
+          // skip the rest of the nodes when having reached the end of the current filament
+          if((*filamentnumber_)[k]==currfilnumber+1)
+            break;
+          // check if any of the filament's nodes has a linker attached
+          if((*filamentnumber_)[k]==currfilnumber && (*numbond_)[(int)(*bspotstatus_)[k]]>1.9)
+          {
+            setcrosslinker = false;
+            break;
+          }
         }
       }
     }
+
     return setcrosslinker;
   }
   else

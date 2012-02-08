@@ -210,7 +210,7 @@ protected:
                                    RCP<CONTACT::Beam3cmanager> beamcmanager);
 
   //! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
-  bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID);
+  bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol);
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in)  set of nodal coordinates

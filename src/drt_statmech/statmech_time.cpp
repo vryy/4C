@@ -1019,14 +1019,26 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
     else
       PTCEvaluateOutcome(numiter, maxiter, fresmnormdivergent);
 
-    // exit condition
-    if(redouzawastep)
-      repeats--;
-    else
+    // exit conditions
+    if(isconverged_==1)
+      break;
+    else if(isconverged_==0)
+    {
+      if(redouzawastep && repeats>0)
+      {
+        numiter = 0;
+        repeats--;
+      }
+      else if(repeats==0)
+        redouzawastep = false;
+    }
+
+    PTCConsoleOutput(redouzawastep, fresmnormdivergent,numiter);
+
+    if(!redouzawastep || contactstrategy_!=StatMechTime::contact_auglag)
       break;
   }
   while(repeats>0);
-
 
   if(isconverged_==1 and !myrank_ and printscreen)
     PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
@@ -1035,7 +1047,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 
   if(!discret_.Comm().MyPID() and printscreen)
   	std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
-
   return;
 } // StatMechTime::PTC()
 
@@ -1044,7 +1055,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
  *----------------------------------------------------------------------*/
 void StatMechTime::PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnormdivergent, bool* redouzawastep)
 {
-  bool printscreen = params_.get<bool>  ("print to screen",true);
   //if no convergence arises within maxiter iterations...
   if(numiter>=maxiter)
   {
@@ -1091,21 +1101,26 @@ void StatMechTime::PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnorm
       ConvergenceStatusUpdate(false,false);
     }
   }
+  return;
+}
 
-  if(numiter>=maxiter || fresmnormdivergent)
+/*----------------------------------------------------------------------*
+ |  PTC console output when divergence occurs              mueller 02/12|
+ *----------------------------------------------------------------------*/
+void StatMechTime::PTCConsoleOutput(bool redouzawastep, bool fresmnormdivergent, int& numiter)
+{
+  if((numiter>=params_.get<int>("max iterations",10) || fresmnormdivergent) &&
+      discret_.Comm().MyPID()==0 && params_.get<bool>  ("print to screen",true))
   {
-    if(discret_.Comm().MyPID()==0 and printscreen)
+    if(contactstrategy_==StatMechTime::contact_auglag)
     {
-      if(contactstrategy_==StatMechTime::contact_auglag)
-      {
-        if(*redouzawastep==false)
-          std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
-        else
-          cout<<"\n\n  Repeating Uzawa step with reduced penalty parameter "<<beamcmanager_->GetCurrentpp()<<endl;
-      }
-      else if(redouzawastep==NULL)
-        std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+      if(redouzawastep==false)
+        std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
+      else
+        cout<<"\n\n  Repeating Uzawa step with reduced penalty parameter "<<beamcmanager_->GetCurrentpp()<<endl;
     }
+    else
+      std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
     //dserror("FullNewton unconverged in %d iterations",numiter);
   }
   return;

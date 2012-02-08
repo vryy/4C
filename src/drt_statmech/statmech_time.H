@@ -98,6 +98,9 @@ protected:
   //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
   void PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnormdivergent, bool* redouzawastep = NULL);
 
+  //! \brief PTC console output
+  void PTCConsoleOutput(bool redouzawastep, bool fresmnormdivergent, int& numiter);
+
   //! \brief set PTC status to unconverged
   void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
 
