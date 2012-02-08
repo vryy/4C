@@ -22,7 +22,18 @@ namespace INPAR
   /// Input parameters used in multi level monte carlo
   namespace MLMC
   {
-
+  enum CorrStruct
+      {
+        corr_gaussian, ///< gaussian correlation structure
+        // more to follow
+      };
+  enum MarginalPdf
+        {
+          pdf_gaussian,// normal distribution
+          pdf_beta,    // beta distribution
+          pdf_lognormal,// lognormal distribution
+          // more to follow
+        };
     /// To be filled with input params
   }  // namespace MLMC
 

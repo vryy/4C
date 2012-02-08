@@ -1177,8 +1177,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("NEW_FILES","yes",
                                     "new result files for each run",
                                     yesnotuple,yesnovalue,&iap);
-
   /*----------------------------------------------------------------------*/
+
   /* parameters for multi-level monte carlo */
   Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",false,"");
 
@@ -1198,7 +1198,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("OUTPUT_FILE_OF_LOWER_LEVEL","level0",
                             "filename of controlfiles of next lower level",
                             &mlmcp);
-  setStringToIntegralParameter<int>("PROLONGATERES","Yes",
+  setStringToIntegralParameter<int>("PROLONGATERES","No",
                                     "Prolongate Displacements to finest Discretization",
                                     yesnotuple,yesnovalue,&mlmcp);
   //Parameter for Newton loop to find background element
@@ -1206,15 +1206,34 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",10e-5,"Convergence tolerance for Newton loop",&mlmcp);
   IntParameter("INITRANDOMSEED",1000,"Random seed for first Monte Carlo run",&mlmcp);
   IntParameter("LEVELNUMBER",0,"Level number for Multi Level Monte Carlo", &mlmcp);
-  // Parameters to simulate random field
-  IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
-  DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
-  //DoubleParameter("CorrLength",3000,"Correlation length of Random Field",&mlmcp);
-  IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
   IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTATS (only for polongated Dis",&mlmcp);
   setStringToIntegralParameter<int>("REDUCED_OUTPUT","NO",
                                     "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
                                     yesnotuple,yesnovalue,&mlmcp);
+  // Parameters to simulate random fields
+  IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
+  DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
+  DoubleParameter("CORRLENGTH",30,"Correlation length of Random Field",&mlmcp);
+  IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
+  DoubleParameter("SIGMA",1.0,"sigma of random field",&mlmcp);
+  DoubleParameter("MEAN",0.0,"Mean value of random field",&mlmcp);
+  setStringToIntegralParameter<int>("CORRSTRUCT","gaussian",
+                              "Correlation structure of random field",
+                              tuple<std::string>("Gaussian","gaussian"),
+                              tuple<int>(
+                                  INPAR::MLMC::corr_gaussian,INPAR::MLMC::corr_gaussian),
+                              &mlmcp);
+  setStringToIntegralParameter<int>("MARGINALPDF","gaussian","Target marginal probability distribution function",
+                                    tuple<std::string>("Gaussian","gaussian",
+                                                        "Beta", "beta",
+                                                        "lognormal", "Lognormal"),
+                                    tuple<int>(
+                                        INPAR::MLMC::pdf_gaussian,INPAR::MLMC::pdf_gaussian,
+                                        INPAR::MLMC::pdf_beta,INPAR::MLMC::pdf_beta,
+                                        INPAR::MLMC::pdf_lognormal,INPAR::MLMC::pdf_lognormal),
+                                 &mlmcp);
+  DoubleParameter("NONGAUSSPARAM1",0,"First parameter for non-gaussian pdf",&mlmcp);
+  DoubleParameter("NONGAUSSPARAM2",0,"Second parameter for non-gaussian pdf",&mlmcp);
 
   /*----------------------------------------------------------------------*/
   /* parameters for meshtying and contact */
