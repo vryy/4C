@@ -26,7 +26,8 @@ Maintainer: Jonas Biehler
 #include "randomfield.H"
 #include "gen_randomfield.H"
 
-
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 //for file output
 #include <fstream>
 
@@ -858,6 +859,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
          cout << "in setupStochamt LINE " << __LINE__ << endl;
          MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
          if (!params) dserror("Cannot cast material parameters");
+         // these matparams are not needed anymore
          sigma = params->sigma_0_;
          corrlength = params->corrlength_;
          beta_mean =params->beta_mean_;
@@ -878,27 +880,19 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
           }
   // get elements on proc use col map to init ghost elements as well
   Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  GenRandomField field(random_seed,sigma,corrlength,discret_);
+
+  GenRandomField field(random_seed,discret_);
   field.WriteRandomFieldToFile();
 
-  for(int i=0;i<5000;i++)
-  {
-    field.CreateNewSample(i);
-    vector <double> loc(3,12.45);
-    field.EvalFieldAtLocation(loc,true);
-    if(i%100==0)
-      cout << "Num Run:  " << i << endl;
-  }
+  //for(int i=0;i<10000;i++)
+  //{
+  //  field.CreateNewSample(i);
+  //  vector <double> loc(3,12.45);
+  ///  field.EvalFieldAtLocation(loc,true);
+  //  if(i%100==0)
+  //    cout << "Num Run:  " << i << endl;
+  //}
   //dserror("stop right here");
-  //field.ComputeBoundingBox(discret_);
-
-  //double test2 = field.EvalFieldAtLocation(test);
-
-  //field.CalcDiscretePSD();
-  //field.EvalRandomFieldFFT(3.4, 3.3 ,3.3);
-  //field.Integrate(-4.0,4.0,-4.0,4.0,0.3);
-  //field.TranslateToNonGaussian();
-
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
@@ -914,21 +908,14 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       //compute x coord
       ele_center[0]=phi*25;
       ele_center[1]=ele_center[2];
-      //beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
-      // there is a lower threshold
-      // call FFT Field from here for testing reasons
-     // cout << "calling FFT Routine " << endl;
+
       //youngs = youngs_mean+field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
       //youngs = field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
-      youngs = field.EvalFieldAtLocation(ele_center,false)+2.0;
-
-
-      aaa_stopro->Init(youngs,"youngs");
-
-
+      youngs = field.EvalFieldAtLocation(ele_center,false);
+      aaa_stopro->Init(youngs,"beta");
       }
     } // EOF loop elements
-  //cout << RED_LIGHT << "HACK IN USE: PROBLEM SPECIFIC INPUT NEEDED FOR EVALUATION OF RANDOM FIELD" END_COLOR << endl;
+
 }
 
 // calculate some statistics

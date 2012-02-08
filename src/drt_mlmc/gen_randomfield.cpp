@@ -22,6 +22,7 @@ Maintainer: Jonas Biehler
 #include <iostream>
 #include <complex>
 #include <cmath>
+
 // boost currently not in use, use blitz instead
 //#include <boost/random.hpp>
 // include fftw++ tsuff for multidimensional FFT
@@ -33,6 +34,8 @@ Maintainer: Jonas Biehler
 #include <boost/math/distributions/beta.hpp> // for beta_distribution.
 #include <boost/math/distributions/normal.hpp> // for normal_distribution.
 #include <boost/math/distributions/lognormal.hpp>
+#include "../drt_inpar/inpar_mlmc.H"
+//include <boost/math/distributions.hpp>
 using boost::math::beta_distribution;
 using boost::math::lognormal_distribution;
 using boost::math::normal_distribution;
@@ -41,7 +44,7 @@ using boost::math::normal_distribution;
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-GenRandomField::GenRandomField(unsigned int  seed,double sigma, double corr_length,Teuchos::RCP<DRT::Discretization> discret)
+GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret)
 {
 
   // Init the necessesary stuff
@@ -52,14 +55,51 @@ GenRandomField::GenRandomField(unsigned int  seed,double sigma, double corr_leng
       dserror("Dimension of random field must be 2 or 3, fix your input file");
   N_= mlmcp.get<int>("NUM_COS_TERMS");
   seed_ = seed;
-  d_ = corr_length;
-  sigma_0_ = sigma;
+  d_ = mlmcp.get<double>("CORRLENGTH");
+  sigma_0_ = mlmcp.get<double>("SIGMA");
   pi_=M_PI;
   periodicity_=mlmcp.get<double>("PERIODICITY");
-  M_=N_*8;
+  M_=N_*4;
   dx_=periodicity_/M_;
-  marginal_pdf_=lognormal;
-  //marginal_pdf_=normal;
+  // distribution parameters of non gauss pdf
+  distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM1"));
+  distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM2"));
+  // Get correlation structure
+  INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(mlmcp,"CORRSTRUCT");
+  switch(cstruct){
+    case INPAR::MLMC::corr_gaussian:
+      //blebla
+      break;
+    default:
+      dserror("Unknown Correlation structure");
+  }
+  double upper_bound;
+  INPAR::MLMC::MarginalPdf mpdf = DRT::INPUT::IntegralValue<INPAR::MLMC::MarginalPdf>(mlmcp,"MARGINALPDF");
+  switch(mpdf){
+    case INPAR::MLMC::pdf_gaussian:
+      marginal_pdf_=normal;
+      break;
+    case INPAR::MLMC::pdf_beta:
+      marginal_pdf_=beta;
+      // compute bounds of distribution
+      // using mu_b = 0 and sigma_b = 1 the lower and upper bounds can be computed according to Yamazaki1988
+      //lower bound
+      distribution_params_.push_back(-1.0*sqrt(distribution_params_[0]*(distribution_params_[0]+distribution_params_[1]+1)/distribution_params_[1]));
+      // upper bound
+      upper_bound =(-1.0*sqrt(distribution_params_[1]*(distribution_params_[0]+distribution_params_[1]+1)/distribution_params_[0]));
+      // I need abs(lB)+abs(uB) hence
+      distribution_params_.push_back(abs(upper_bound)+abs(distribution_params_[2]));
+      cout << "Distribution parameter of beta distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << " " << distribution_params_[3] << endl;
+      break;
+    case INPAR::MLMC::pdf_lognormal:
+      marginal_pdf_=lognormal;
+      // Calculate mean of lognormal distribution based mu and sigma
+      distribution_params_.push_back(exp(distribution_params_[0]+0.5*pow(distribution_params_[1],2)));
+      cout << "Distribution parameter of lognormal distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << endl;
+      break;
+    default:
+      dserror("Unknown Marginal pdf");
+  }
 
   // create Multidimesional array to store the values
   values_ = new double[M_*M_];
@@ -69,6 +109,9 @@ GenRandomField::GenRandomField(unsigned int  seed,double sigma, double corr_leng
   //N_ = (int)ceil( 600.0 / ( pi_ * d_ ) );
 // Heuristic: PSD is of `insignificant magnitude' for
    //   abs(kappa) <= 6/d
+
+
+
 
   dkappa_ = 2*pi_/(mlmcp.get<double>("PERIODICITY"));
   cout << "dkappa " << dkappa_ << endl;
@@ -161,9 +204,6 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
 // compute power spectral density
 void GenRandomField::CalcDiscretePSD()
 {
-  // check wether pdf is gaussian
-  //if(marginal_pdf_==normal)
-  //{
     // just compute PSD
     for (int j=0;j<N_;j++)
       {
@@ -174,19 +214,15 @@ void GenRandomField::CalcDiscretePSD()
       }
 
   //}
-  if(marginal_pdf_==lognormal)
+  if(marginal_pdf_!=normal)
   {
     // compute underlying gaussian distribution based on shields2011
     SpectralMatching();
-    //dserror("Beta Distribution not supported yet");
-  }
-  else if (marginal_pdf_==normal)
-  {
-    cout << " Nothing to to marginal pdf gaussian " << endl;
+
   }
   else
   {
-    dserror("Only normal and beta distribution supported fix your input file");
+    cout << " Nothing to do marginal pdf gaussian " << endl;
   }
 }
 
@@ -198,7 +234,6 @@ void GenRandomField::SimGaussRandomFieldFFT()
   // double for loops to compute coefficients
   double A; // store some stuff
   // store coefficients
-
 
   complex<double>* b1;
   complex<double>* b2;
@@ -224,14 +259,14 @@ void GenRandomField::SimGaussRandomFieldFFT()
       {
         //A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
         A=sqrt(2*(discrete_PSD_[k+j*N_]*(pow(dkappa_,2))));
-        real(b1[k+M_*j])=A*sqrt(2)*cos(Phi_1_[k+M_*j]);
-        imag(b1[k+M_*j])= A*sqrt(2)*sin(Phi_1_[k+M_*j]);
-        real(b2[k+M_*j])= A*sqrt(2)*cos(Phi_2_[k+M_*j]);
-        imag(b2[k+M_*j])= A*sqrt(2)*sin(Phi_2_[k+M_*j]);
+        real(b1[k+M_*j])=A*sqrt(2)*cos(Phi_0_[k+N_*j]);
+        imag(b1[k+M_*j])= A*sqrt(2)*sin(Phi_0_[k+N_*j]);
+        real(b2[k+M_*j])= A*sqrt(2)*cos(Phi_1_[k+N_*j]);
+        imag(b2[k+M_*j])= A*sqrt(2)*sin(Phi_1_[k+N_*j]);
+        // last 4 lines was M_ before
       }
      }
   }
-
 
 
   int rank = 1; /* not 2: we are computing 1d transforms */
@@ -284,7 +319,6 @@ void GenRandomField::SimGaussRandomFieldFFT()
 
   fftw_execute(ifft_of_rows);
   fftw_execute(ifft_of_rows2);
-
   complex<double> scaling (M_,M_);
   // transpose d1
    for (int k=0;k<M_*M_;k++)
@@ -309,7 +343,6 @@ void GenRandomField::SimGaussRandomFieldFFT()
    delete d2;
    fftw_destroy_plan(ifft_of_rows);
    fftw_destroy_plan(ifft_of_collums);
-
 }
 void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
@@ -376,13 +409,14 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
   // Compute indices
   index_x=int(floor((location[0]-bb_min_[0])/dx_));
   // HACH SET z to y
-  //cout << "hack in use" << endl;
-  index_y=int(floor((location[1]-bb_min_[1])/dx_));
+  cout << "hack in use" << endl;
+  index_y=int(floor((location[1]-bb_min_[2])/dx_));
   index_z=int(floor((location[2]-bb_min_[2])/dx_));
   if (writetofile)
   {
     ofstream File;
     File.open("RFatPoint.txt",ios::app);
+    // use at() to get an error massage just in case
     File << setprecision (9) << values_[index_x+M_*index_y]<< endl;
     File.close();
   }
@@ -395,11 +429,11 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
 // theory
 void GenRandomField::TranslateToNonGaussian()
 {
-  normal_distribution<>  my_norm(0,1);
+  normal_distribution<>  my_norm(0,sigma_0_);
+
   // check wether pdf is gaussian
   switch(marginal_pdf_)
   {
-
     case normal:
       //cout << RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
     break;
@@ -407,28 +441,33 @@ void GenRandomField::TranslateToNonGaussian()
     case beta:
     {
       // init a prefixed beta distribution
-      double a_beta = 4.0;
-      double b_beta = 2.0;
-      beta_distribution<> my_beta(a_beta,b_beta);
+      //double a_beta = 4.0;
+      //double b_beta = 2.0;
+      beta_distribution<> my_beta(distribution_params_[0],distribution_params_[1]);
       //translate
       for(int i=0;i<M_*M_;i++)
       {
-        values_[i]=quantile(my_beta,cdf(my_norm, values_[i]))*5.61-3.74;;
+        //cout << "value[i] " << values_[i] << endl;
+        values_[i]=quantile(my_beta,cdf(my_norm, values_[i]))*distribution_params_[3]+distribution_params_[2];;
       }
     }
     break;
 
     case lognormal:
     {
+      normal_distribution<>  my_norm2(distribution_params_[2],sigma_0_);
       // init params for logn distribution based on shields paper
-      double mu_bar=1.8;
-      double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
-      double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
-      lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
+      //double mu_bar=1.8;
+      //double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
+      //double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
+      //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
+      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
       //Translate the data
       for(int i=0;i<M_*M_;i++)
       {
-        values_[i]=quantile(my_lognorm,cdf(my_norm, values_[i]))-1.8;
+        //cout << "value[i] " << values_[i] << endl;
+        //values_[i]=quantile(my_lognorm,cdf(my_norm, values_[i]))-distribution_params_[2];
+        values_[i]=quantile(my_lognorm,cdf(my_norm2, values_[i]+distribution_params_[2]));
       }
     }
     break;
@@ -442,6 +481,10 @@ void GenRandomField::SpectralMatching()
 {
   // PSD of underlying gaussian field
   //vector<double> PSD_ul_g;
+  //error to target psd init with 100 %
+  double psd_error=100;
+  double error_numerator;
+  double error_denominator;
   // Target PSD of non gassian field
   vector<double> PSD_ng_target;
 
@@ -469,35 +512,35 @@ void GenRandomField::SpectralMatching()
   PSD_ng_complex= new complex<double>[2*N_*2*N_];
 
   for (int j=0;j<N_*2;j++)
+  {
+    for (int k=0;k<N_*2;k++)
     {
-      for (int k=0;k<N_*2;k++)
+      //A=sqrt(2*(pow(sigma_0_,2)*d_/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
+      // sort entries ro w major style
+      // set first elements to zero
+      //if(k==0||j==0||j>(N_-1)||k>(N_-1))
+      if(j>(N_-1)||k>(N_-1))
       {
-        //A=sqrt(2*(pow(sigma_0_,2)*d_/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
-        // sort entries ro w major style
-        // set first elements to zero
-        //if(k==0||j==0||j>(N_-1)||k>(N_-1))
-        if(j>(N_-1)||k>(N_-1))
+        real(PSD_ul_g_complex[k+N_*2*j])=0.0;
+        imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
+      }
+      else
+      {
+        real(PSD_ul_g_complex[k+N_*2*j])=discrete_PSD_[k+j*N_];
+        imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
+        if(k==0||j==0)
         {
-          real(PSD_ul_g_complex[k+N_*2*j])=0.0;
-          imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
+          //real(PSD_ul_g_complex[k+N_*2*j])=real(PSD_ul_g_complex[k+N_*2*j])*0.5;
+          //imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
         }
-        else
+        else if (k==0&&j==0)
         {
-          real(PSD_ul_g_complex[k+N_*2*j])=discrete_PSD_[k+j*N_];
-          imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
-          if(k==0||j==0)
-          {
-           real(PSD_ul_g_complex[k+N_*2*j])=real(PSD_ul_g_complex[k+N_*2*j])*0.5;
-           imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
-          }
-          else if (k==0&&j==0)
-          {
-            real(PSD_ul_g_complex[k+N_*2*j])=0;
-            imag(PSD_ul_g_complex[k+N_*2*j])=0;
-          }
+          real(PSD_ul_g_complex[k+N_*2*j])=0;
+          imag(PSD_ul_g_complex[k+N_*2*j])=0;
         }
       }
     }
+  }
 
   for(int i=0;i<(2*N_*N_*2);i++)
   {
@@ -508,91 +551,93 @@ void GenRandomField::SpectralMatching()
   }
 
 
-   // TWO DIM FFTS for spectral matching
-   int rank = 1; /* not 2: we are computing 1d transforms */
-   //int n[] = {1024}; /* 1d transforms of length 10 */
-   int N_fftw = 2*N_;
-   int howmany = 2*N_; // same here
-   int idist = 2*N_;
-   int    odist = 2*N_;
-   int istride =1;
-   int ostride = 1; /* distance between two elements in the same column */
+  // TWO DIM FFTS for spectral matching
+  int rank = 1; /* not 2: we are computing 1d transforms */
+  //int n[] = {1024}; /* 1d transforms of length 10 */
+  int N_fftw = 2*N_;
+  int howmany = 2*N_; // same here
+  int idist = 2*N_;
+  int    odist = 2*N_;
+  int istride =1;
+  int ostride = 1; /* distance between two elements in the same column */
 
 
-   fftw_plan ifft_of_rows_of_psd;
-   fftw_plan ifft_of_columns_of_psd;
+  fftw_plan ifft_of_rows_of_psd;
+  fftw_plan ifft_of_columns_of_psd;
   // ifft for autocorr
   fftw_plan ifft_of_rows_of_autocorr_ng;
   fftw_plan ifft_of_columns_of_autocorr_ng;
 
-   ifft_of_rows_of_psd = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(PSD_ul_g_complex)),
+  ifft_of_rows_of_psd = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(PSD_ul_g_complex)),
        NULL,istride, idist,(reinterpret_cast<fftw_complex*>(almost_autocorr)),
-                   NULL,
+       NULL,
                    ostride,
                    odist,
                   FFTW_BACKWARD,
                   FFTW_ESTIMATE);
 
-   ifft_of_rows_of_autocorr_ng = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(autocorr_ng)),
-          NULL,istride, idist,(reinterpret_cast<fftw_complex*>(almost_PSD_ng_complex)),
-                      NULL,
+  ifft_of_rows_of_autocorr_ng = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(autocorr_ng)),
+      NULL,istride, idist,(reinterpret_cast<fftw_complex*>(almost_PSD_ng_complex)),
+            NULL,
                       ostride,
                       odist,
                      FFTW_BACKWARD,
                      FFTW_ESTIMATE);
 
 
-   istride =2*N_;
-   ostride=2*N_;
-   idist=1;
-   odist=1;
-   ifft_of_columns_of_psd = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(almost_autocorr)),
-        NULL,istride, idist,(reinterpret_cast<fftw_complex*>(autocorr)),
-                    NULL,
+  istride =2*N_;
+  ostride=2*N_;
+  idist=1;
+  odist=1;
+  ifft_of_columns_of_psd = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(almost_autocorr)),
+       NULL,istride, idist,(reinterpret_cast<fftw_complex*>(autocorr)),
+                   NULL,
                    ostride,
                    odist,
                    FFTW_BACKWARD,
                    FFTW_ESTIMATE);
-   ifft_of_columns_of_autocorr_ng = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(almost_PSD_ng_complex)),
-           NULL,istride, idist,(reinterpret_cast<fftw_complex*>(PSD_ng_complex)),
-                       NULL,
+  ifft_of_columns_of_autocorr_ng = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(almost_PSD_ng_complex)),
+         NULL,istride, idist,(reinterpret_cast<fftw_complex*>(PSD_ng_complex)),
+                      NULL,
                       ostride,
                       odist,
                       FFTW_BACKWARD,
                       FFTW_ESTIMATE);
- // end of two dim ffts for spectral matching
+  // end of two dim ffts for spectral matching
 
 
   // iteration without errorcheck for now
 
-  for(int i =0;i<10;i++)
+  //for(int i =0;i<5;i++)
+  int i =0;
+  do
   {
     if(i!=0)// set new psd_ul_g
     {
       for (int j=0;j<N_*2;j++)
-         {
-           for (int k=0;k<N_*2;k++)
-           {
-             if(j>(N_-1)||k>(N_-1))
-             {
-               real(PSD_ul_g_complex[k+N_*2*j])=0.0;
-               imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
-             }
-             else
-             {
-               real(PSD_ul_g_complex[k+N_*2*j])=PSD_ul_g[k+j*N_];
-               imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
-               if(k==0||j==0)
-               {
-               // real(PSD_ul_g_complex[k+N_*2*j])=real(PSD_ul_g_complex[k+N_*2*j])*0.5;
-               }
-             }
-           }
-         }
+      {
+        for (int k=0;k<N_*2;k++)
+        {
+          if(j>(N_-1)||k>(N_-1))
+          {
+            real(PSD_ul_g_complex[k+N_*2*j])=0.0;
+            imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
+          }
+          else
+          {
+            real(PSD_ul_g_complex[k+N_*2*j])=PSD_ul_g[k+j*N_];
+            imag(PSD_ul_g_complex[k+N_*2*j])=0.0;
+            if(k==0||j==0)
+            {
+              // real(PSD_ul_g_complex[k+N_*2*j])=real(PSD_ul_g_complex[k+N_*2*j])*0.5;
+            }
+          }
+        }
+      }
     }
 
     fftw_execute(ifft_of_rows_of_psd);
-   // delete real part
+    // delete real part
     for(int k=0;k<2*N_*2*N_;k++)
     {
       //imag(almost_autocorr[k])=0.0;
@@ -601,15 +646,21 @@ void GenRandomField::SpectralMatching()
 
     fftw_execute(ifft_of_columns_of_psd);
     double scaling_fac= 2*pi_;
-     scaling_fac=dkappa_*N_;
+     //scaling_fac=dkappa_*N_;
          //scaling_fac=1.5707963;
     // loop over vectorlength
     for(int k=0;k<2*N_*2*N_;k++)
     {
-      //cout << "N_ " << N_ << endl;
+      //if(i==5)
+      //cout << "rho[k] " << rho[k] << endl;
 
-     rho[k] = real(autocorr[k])*2*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
-     real(autocorr_ng[k])=Integrate(-18.0,7.0,-18.0,7.0,rho[k]);
+    rho[k] = real(autocorr[k])*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
+    //rho[k] = real(autocorr[k])*2*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
+    real(autocorr_ng[k])=Integrate(-8.0,8.0,-8.0,8.0,rho[k]);
+    // maybe intergration is different for beta
+    //real(autocorr_ng[k])=Integrate(0.0,0.97,0.0,0.97,rho[k]);
+    // if (k==N_)
+       //  dserror("stop here");
     }
     // test
     //autocorr_ng[0]=0;
@@ -617,89 +668,98 @@ void GenRandomField::SpectralMatching()
     fftw_execute(ifft_of_rows_of_autocorr_ng);
     fftw_execute(ifft_of_columns_of_autocorr_ng);
     for (int j=0;j<N_*2;j++)
-        {
-          for (int k=0;k<N_*2;k++)
-          {
-            // sort entries ro w major style
-            // set first elements to zero
-            //if(k==0||j==0||j>(N_-1)||k>(N_-1))
-            if(j>(N_-1)||k>(N_-1))
-            {}
-            //else if (j==0&& k== 0)
-             // PSD_ng[k+j*N_]=0.0;
-            else
-            {
-              PSD_ng[k+j*N_]=real(PSD_ng_complex[k+j*2*N_])/(pow(scaling_fac,2));//*(pow((N_*2.0),2));
-              //PSD_ng[k+j*N_]=real(PSD_ng_complex[k+j*2*N_])/(4*pow(pi_,2));//*(pow((N_*2.0),2));
-              PSD_ul_g[k+j*N_]=real(PSD_ul_g_complex[k+j*2*N_]);
-            }
-          }
+    {
+      for (int k=0;k<N_*2;k++)
+      {
+       // sort entries ro w major style
+       // set first elements to zero
+       //if(k==0||j==0||j>(N_-1)||k>(N_-1))
+       if(j>(N_-1)||k>(N_-1))
+       {}
+       //else if (j==0&& k== 0)
+       // PSD_ng[k+j*N_]=0.0;
+       else
+       {
+         PSD_ng[k+j*N_]=real(PSD_ng_complex[k+j*2*N_])/(pow(scaling_fac,2));//*(pow((N_*2.0),2));
+         //PSD_ng[k+j*N_]=real(PSD_ng_complex[k+j*2*N_])/(4*pow(pi_,2));//*(pow((N_*2.0),2));
+          PSD_ul_g[k+j*N_]=real(PSD_ul_g_complex[k+j*2*N_]);
         }
+      }
+    }
 
     PSD_ng[0]=0.0;
     for(int k=0;k<N_*N_;k++)
     {
       if(PSD_ng[k]>10e-10)
-        PSD_ul_g[k]=pow(PSD_ng_target[k]/PSD_ng[k],1.4)*PSD_ul_g[k];
-       // do not set to zero because if once zero you'll never get it non-zero again
-      else
-        PSD_ul_g[k]=10e-10;
+      PSD_ul_g[k]=pow(PSD_ng_target[k]/PSD_ng[k],1.4)*PSD_ul_g[k];
+      // do not set to zero because if once zero you'll never get it non-zero again
+    else
+      PSD_ul_g[k]=10e-10;
     }
 
 
-         ofstream File2;
-            File2.open("Psd_coplex.txt",ios::app);
-            for (int j=0;j<2*N_;j++)
-                    {
-                      for (int k=0;k<2*N_;k++)
-                      {
-                        File2 << k << " " << j << " " << real(PSD_ng_complex[k+j*2*N_])/(4*pow(pi_,2)) << endl;
-
-                      }
-
-                    }
-             File2.close();
-
+    //ofstream File2;
+    //File2.open("Psd_coplex.txt",ios::app);
+    //for (int j=0;j<2*N_;j++)
+     // {
+      //for (int k=0;k<2*N_;k++)
+       // {
+        //File2 << k << " " << j << " " << real(PSD_ng_complex[k+j*2*N_])/(4*pow(pi_,2)) << endl;
+        //}
+     //}
+     //File2.close();
+     // compute error based on equation(19) from shield2011
+    error_numerator=0.0;
+    error_denominator=0.0;
+    for(int g=0;g<N_*N_;g++)
+    {
+      error_numerator+=pow((PSD_ng[g]-PSD_ng_target[g]),2);
+      error_denominator+=pow((PSD_ng_target[g]),2);
+    }
+    psd_error=100*sqrt(error_numerator/error_denominator);
+    cout<< "Error to target PSD: " << psd_error << endl;
+    // increase counter
+    i++;
   }
+  // set error threshold for spectral matching to 0.5 %
+  while(psd_error >0.5);
 
 
 
   // free memory
-    delete autocorr;
-    delete almost_autocorr;
-    delete PSD_ul_g_complex;
-    delete PSD_ng_complex;
-    fftw_destroy_plan(ifft_of_columns_of_psd);
-    fftw_destroy_plan(ifft_of_rows_of_psd);
-    fftw_destroy_plan(ifft_of_rows_of_autocorr_ng);
-    fftw_destroy_plan(ifft_of_columns_of_autocorr_ng);
+  delete autocorr;
+  delete almost_autocorr;
+  delete PSD_ul_g_complex;
+  delete PSD_ng_complex;
+  fftw_destroy_plan(ifft_of_columns_of_psd);
+  fftw_destroy_plan(ifft_of_rows_of_psd);
+  fftw_destroy_plan(ifft_of_rows_of_autocorr_ng);
+  fftw_destroy_plan(ifft_of_columns_of_autocorr_ng);
 
 
-    // Write PSD_ul_g PSD_ng_target and PSD_ng to a file
-    // Dimensioj is 128* 128
+  // Write PSD_ul_g PSD_ng_target and PSD_ng to a file
+  // Dimension is 128* 128
 
-     for(int h=0;h<N_*N_;h++)
-     {
-       if(PSD_ng[h]>10e-10)// change that
-         discrete_PSD_[h]=PSD_ul_g[h];
-       else
-         //remove all the very small entries to get rid of the wiggles
-         discrete_PSD_[h]=0.0;
-     }
-     ofstream File;
-        File.open("Psd.txt",ios::app);
-        for (int j=0;j<N_;j++)
-                {
-                  for (int k=0;k<N_;k++)
-                  {
-                    File << k << " " << j << " " << PSD_ng_target[k+j*N_] << " " << PSD_ng[k+j*N_]<< " "  << PSD_ul_g[k+j*N_] << endl;
+  for(int h=0;h<N_*N_;h++)
+  {
+    if(PSD_ng[h]>10e-10)// change that
+      discrete_PSD_[h]=PSD_ul_g[h];
+    else
+      //remove all the very small entries to get rid of the wiggles
+      discrete_PSD_[h]=0.0;
+  }
+  ofstream File;
+  File.open("Psd.txt",ios::app);
+  for (int j=0;j<N_;j++)
+  {
+    for (int k=0;k<N_;k++)
+    {
+      File << k << " " << j << " " << PSD_ng_target[k+j*N_] << " " << PSD_ng[k+j*N_]<< " "  << PSD_ul_g[k+j*N_] << endl;
+    }
+  }
+  File.close();
 
-                  }
-
-                }
-         File.close();
-
-
+  cout<< "Spectral Matching done "<< endl;
 }
 
 // Routine to calculate
@@ -716,22 +776,56 @@ double GenRandomField::Integrate(double xmin, double xmax, double ymin, double y
   for (int i=0; i<gp->NumPoints(); i++)
   {
     integral_value+=gp->Weight(i)*jdet*Testfunction(xmin+hx/2*(1+gp->Point(i)[0]),ymin+hy/2*(1+gp->Point(i)[1]),rho);
+    //cout << "intergral value"  << integral_value << endl;
   }
+  //cout << "intergral value all"  << integral_value << endl;
   return integral_value;
 }
 
 double GenRandomField::Testfunction(double argument_x ,double argument_y, double rho)
 {
-  double result;
-  double mu_bar = 1.8;
-  double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
-  double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
-  lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
-  normal_distribution<> my_normal(0,1);
+  double result = 0.0;
+  //double mu_bar = 1.8;
+  //double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
+  //double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
+  //beta_distribution<>
+  //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
+  normal_distribution<> my_normal(0,sigma_0_);
+  //get parametres
+  switch(marginal_pdf_)
+  {
+    case lognormal:
+    {
+      //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
+      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
+
+      result=quantile(my_lognorm,(cdf(my_normal,(argument_x))))*quantile(my_lognorm,(cdf(my_normal,argument_y)))*
+      (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
+      /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
+
+    }
+    break;
+    case beta:
+    {
+      beta_distribution<>  my_beta(distribution_params_[0],distribution_params_[1]);
+      result=(quantile(my_beta,(cdf(my_normal,(argument_x))))*distribution_params_[3]+distribution_params_[2])*(quantile(my_beta,(cdf(my_normal,argument_y)))*distribution_params_[3]+distribution_params_[2])*
+       (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
+       /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
+       // cout << " quantile " << quantile(my_beta,0.9) << endl;
+        //cout << "distribution_params_[0],distribution_params_[1] " << distribution_params_[0] << " " << distribution_params_[1]<< endl;
+    }
+    break;
+    default:
+    dserror("Only Beta and Lognorm distribution supported so far fix your input file");
+    break;
+  }
   // calc function value
-  result=quantile(my_lognorm,(cdf(my_normal,argument_x)))*quantile(my_lognorm,(cdf(my_normal,argument_y)))*
-      (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow(argument_x,2)+pow(argument_y,2)-2*rho*argument_x*argument_y)
-          /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
+
+   //Testing do with to gauss distributions
+  //result=quantile(my_normal,(cdf(my_normal,(argument_x))))*quantile(my_normal,(cdf(my_normal,argument_y)))*
+    //    (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
+      //      /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
+
   return result;
 }
 
@@ -740,7 +834,7 @@ void GenRandomField::WriteRandomFieldToFile()
 {
   ofstream File;
   File.open("RandomField.txt",ios::out);
-  for(int i=0;i<N_*N_;i++)
+  for(int i=0;i<M_*M_;i++)
   {
     File << values_[i]<< endl;
   }

@@ -97,17 +97,17 @@ private:
 
 public:
   // Standard constructor
-   GenRandomField(unsigned int seed,double sigma_0, double corr_length,Teuchos::RCP<DRT::Discretization> discret);
+  GenRandomField(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret);
 
-   // generates new realization
-   void CreateNewSample(unsigned int seed);
+  // generates new realization
+  void CreateNewSample(unsigned int seed);
 
-   // Get Value of Random Field at a specific location
-   double EvalFieldAtLocation(vector<double> location, bool writetofile);
+  // Get Value of Random Field at a specific location
+  double EvalFieldAtLocation(vector<double> location, bool writetofile);
 
 
-   // Write Random Field To file
-   void WriteRandomFieldToFile();
+  // Write Random Field To file
+  void WriteRandomFieldToFile();
 
 
 

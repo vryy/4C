@@ -14,6 +14,7 @@ Maintainer: Jonas Biehler
 #ifdef HAVE_FFTW
 
 #include "randomfield.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "mlmc.H"
 #include <ctime>
 #include <cstdlib>

@@ -43,6 +43,7 @@ namespace IO
 {
   class DiscretizationWriter;
   class OutputControl;
+  class ErrorFileControl;
 }
 
 namespace STR
