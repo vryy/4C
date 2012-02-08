@@ -570,7 +570,6 @@ namespace FLD
     if(timeint.special_flow_=="bubbly_channel_flow")
     {
       flow_=bubbly_channel_flow;
-      dserror("TO DO");
 
       // do the time integration independent setup
       Setup();
@@ -1168,8 +1167,8 @@ namespace FLD
                                                 Teuchos::RCP<Epetra_Vector>     velnp,
                                                 Teuchos::RCP<Epetra_Vector>     force,
                                                 Teuchos::RCP<Epetra_Vector>     phi,
-                                                Teuchos::RCP<const DRT::DofSet> stddofset
-                                                //Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp /*= Teuchos::null */ // needed for 'bubbly_channel_flow'
+                                                Teuchos::RCP<const DRT::DofSet> stddofset,
+                                                Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp /*= Teuchos::null */ // needed for 'bubbly_channel_flow'
 )
   {
     // sampling takes place only in the sampling period
@@ -1187,14 +1186,12 @@ namespace FLD
         if(statistics_channel_multiphase_ == null)
           dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
 
-        dserror("Hier gibts noch was zu tun!");
+        if (velnp == Teuchos::null        or force == Teuchos::null
+            or stddofset == Teuchos::null or discretmatchingvelnp == Teuchos::null
+            or phi == Teuchos::null)
+            dserror("The multi phase channel statistics need a current velnp, force, stddofset, discretmatchingvelnp, phinp.");
 
-//        if (velnp == Teuchos::null        or force == Teuchos::null
-//            or stddofset == Teuchos::null or discretmatchingvelnp == Teuchos::null
-//            or phinp == Teuchos::null)
-//            dserror("The multi phase channel statistics need a current velnp, force, stddofset, discretmatchingvelnp, phinp.");
-//
-//        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, discretmatchingvelnp, phinp);
+        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, discretmatchingvelnp, phi);
         break;
       }
       case combust_oracles:

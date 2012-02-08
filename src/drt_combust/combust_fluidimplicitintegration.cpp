@@ -123,7 +123,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
-  project_(false)
+  project_(false),
+  samstart_(-1),
+  samstop_(-1)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -359,7 +361,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
+  {
     samstart_ = modelparams->get<int>("SAMPLING_START",1);
+    samstop_  = modelparams->get<int>("SAMPLING_STOP",1);
+  }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -2670,7 +2675,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
           velnp_out,
           trueresidual_out,
           flamefront_->Phinp(),
-          standarddofset_);
+          standarddofset_,
+          state_.velnp_);
     }
 
     if (write_visualization_data)

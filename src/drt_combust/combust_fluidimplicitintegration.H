@@ -550,7 +550,7 @@ protected:
   //! @name parameters for sampling/dumping period
   int samstart_;
   int samstop_;
-  int dumperiod_;
+  //int dumperiod_;
   //@}
 
   /// pointer to manager for turbulent inflow transfer condition
