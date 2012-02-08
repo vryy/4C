@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "Sacado.hpp"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_structure.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;

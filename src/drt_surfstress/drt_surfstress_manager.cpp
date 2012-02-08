@@ -5,8 +5,8 @@
 and containing all necessary history data
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -14,14 +14,17 @@ Maintainer: Lena Wiechert
 *--------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include "drt_surfstress_manager.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include <cstdlib>
-//#include <m1.h>
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -423,6 +426,18 @@ void UTILS::SurfStressManager::SurfactantModel(
   gamma = (1.-alphaf_)*(*gamma_current_)[LID]+alphaf_*(*gamma_last_)[LID];
 
   return;
+}
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                   lw 12/07|
+|                                                                    |
+| Write restart (current gamma, Gamma, A)                            |
+*--------------------------------------------------------------------*/
+void UTILS::SurfStressManager::WriteRestart(const int istep, const double timen)
+{
+  surfoutput_->WriteMesh(istep,timen);
+  WriteResults(istep, timen);
 }
 
 #endif

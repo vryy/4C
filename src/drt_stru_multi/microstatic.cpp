@@ -29,9 +29,11 @@ Maintainer: Lena Yoshihara
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*

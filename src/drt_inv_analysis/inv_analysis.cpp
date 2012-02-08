@@ -13,21 +13,15 @@ Maintainer: Sophie Rausch
 #ifdef CCADISCRET
 
 #include "inv_analysis.H"
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/global_inp_control2.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_io/io_hdf.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_ana.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/lung_ogden.H"
-#include "../drt_mat/lung_penalty.H"
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_structure/strtimint.H"
 #include "../drt_structure/strtimint_create.H"
-#include "../drt_mat/elasthyper.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_matelast/elast_coupanisoexpotwo.H"
 #include "../drt_matelast/elast_coupanisoneohooketwo.H"
 #include "../drt_matelast/elast_coupblatzko.H"
@@ -41,16 +35,14 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/lung_ogden.H"
+#include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/micromaterial.H"
-
-//using namespace LINALG::ANA;
-using namespace std;
-using namespace DRT;
-using namespace MAT;
-
-
-#include "../drt_structure/stru_resulttest.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/elasthyper.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*/

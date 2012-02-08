@@ -2,8 +2,8 @@
 \file drt_surfstress_manager.H
 
 <pre>
-Maintainer: Lena Wiechert
-            wiechert@lnm.mw.tum.de
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -14,21 +14,28 @@ Maintainer: Lena Wiechert
 #define SURFSTRESS_MANAGER_H
 
 #include <Teuchos_RefCountPtr.hpp>
-#include "Teuchos_ParameterList.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-
 #include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
-#include "../drt_inpar/inpar_structure.H"
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
 
 
-using namespace std;
-using namespace Teuchos;
+// forward declarations
 
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class SparseOperator;
+}
 
 namespace UTILS
 {
@@ -55,8 +62,8 @@ public:
     macro-scale element and at which macro-scale GP).
   */
   SurfStressManager(Teuchos::RCP<DRT::Discretization> discret,
-                    ParameterList sdynparams,
-                    const string file_prefix);
+                    Teuchos::ParameterList sdynparams,
+                    const std::string file_prefix);
 
 
   /*!
@@ -81,17 +88,13 @@ public:
   /*!
     \brief Write restart (current gamma, Gamma, A)
   */
-  void WriteRestart(const int istep, const double timen)
-  {
-    surfoutput_->WriteMesh(istep,timen);
-    WriteResults(istep, timen);
-  }
+  void WriteRestart(const int istep, const double timen);
 
   /*!
     \brief Read restart (current gamma, Gamma, A)
   */
   void ReadRestart(const int step,
-                   const string file_prefix,
+                   const std::string file_prefix,
                    const bool serial = false);
 
   /*!
@@ -104,11 +107,11 @@ public:
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
   */
-  void EvaluateSurfStress(ParameterList& p,
-                          const RefCountPtr<Epetra_Vector> dism,
-                          const RefCountPtr<Epetra_Vector> disn,
-                          RefCountPtr<Epetra_Vector> fint,
-                          RefCountPtr<LINALG::SparseOperator> stiff);
+  void EvaluateSurfStress(Teuchos::ParameterList& p,
+                          const Teuchos::RCP<Epetra_Vector> dism,
+                          const Teuchos::RCP<Epetra_Vector> disn,
+                          Teuchos::RCP<Epetra_Vector> fint,
+                          Teuchos::RCP<LINALG::SparseOperator> stiff);
 
   /*!
     \brief Update history variables
@@ -145,10 +148,10 @@ public:
   */
   void StiffnessAndInternalForces(const int curvenum,
                                   const double& A,
-                                  const RCP<Epetra_SerialDenseVector> Adiff,
-                                  const RCP<Epetra_SerialDenseMatrix> Adiff2,
+                                  const Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
+                                  const Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2,
                                   const double& Anew,
-                                  const RCP<Epetra_SerialDenseVector> Adiffnew,
+                                  const Teuchos::RCP<Epetra_SerialDenseVector> Adiffnew,
                                   Epetra_SerialDenseVector& fint,
                                   Epetra_SerialDenseMatrix& stiff,
                                   const int ID,
@@ -221,25 +224,25 @@ private:
   Teuchos::RCP<IO::DiscretizationWriter> surfoutput_;
 
   // row map of surfaces
-  RCP<Epetra_Map> surfrowmap_;
+  Teuchos::RCP<Epetra_Map> surfrowmap_;
 
   // current surface areas (n+1)^i
-  RefCountPtr<Epetra_Vector> A_current_;
+  Teuchos::RCP<Epetra_Vector> A_current_;
 
   // surface areas of former time step (n)
-  RefCountPtr<Epetra_Vector> A_last_;
+  Teuchos::RCP<Epetra_Vector> A_last_;
 
   // current non-dimensionalized surfactant concentrations (n+1)^i
-  RefCountPtr<Epetra_Vector> con_current_;
+  Teuchos::RCP<Epetra_Vector> con_current_;
 
   // non-dimensionalized surfactant concentrations of former time step (n)
-  RefCountPtr<Epetra_Vector> con_last_;
+  Teuchos::RCP<Epetra_Vector> con_last_;
 
   // current surface stresses (n+1)^i
-  RefCountPtr<Epetra_Vector> gamma_current_;
+  Teuchos::RCP<Epetra_Vector> gamma_current_;
 
   // surface stresses of former time step (n)
-  RefCountPtr<Epetra_Vector> gamma_last_;
+  Teuchos::RCP<Epetra_Vector> gamma_last_;
 
   //@}
 }; //class

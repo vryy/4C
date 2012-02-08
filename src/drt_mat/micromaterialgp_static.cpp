@@ -18,10 +18,12 @@ Maintainer: Lena Yoshihara
 #include "../drt_lib/drt_discret.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

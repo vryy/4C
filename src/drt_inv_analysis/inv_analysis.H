@@ -14,36 +14,32 @@ Maintainer: Sophie Rausch
 #ifndef INV_ANALYSIS_H
 #define INV_ANALYSIS_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
+#include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_LAPACK.h"
-#include "Epetra_Vector.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include <Teuchos_RefCountPtr.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include <math.h>
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_structure/strugenalpha.H"
-#include "../drt_structure/strtimint.H"
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_matelast/elast_summand.H"
 
+// forward declarations
+
+namespace STR
+{
+  class TimInt;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace DRT
+{
+  class Condition;
+  class Discretization;
+}
 
 namespace STR
 {
@@ -107,8 +103,8 @@ private:
   Epetra_SerialDenseVector error_s_;
   //@}
 
-  vector<DRT::Condition*> surfneum_;
-  vector<DRT::Condition*> surfdir_;
+  std::vector<DRT::Condition*> surfneum_;
+  std::vector<DRT::Condition*> surfdir_;
 
   int reset_out_count_;
 
@@ -138,7 +134,7 @@ public:
   void PrecondParameters();
 
   /// fitting the material parameters using the Levenberg-Marquart algorithm
-  void CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vector<double> inc);
+  void CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  std::vector<double> inc);
 
   Epetra_SerialDenseVector CalcCvector(bool outputtofile);
 

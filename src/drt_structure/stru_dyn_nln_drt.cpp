@@ -26,6 +26,7 @@ Maintainer: Thomas Klöppel
 #include <mpi.h>
 #endif
 
+#include "../drt_adapter/adapter_structure.H"
 #include "stru_dyn_nln_drt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
