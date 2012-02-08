@@ -404,7 +404,7 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
 
   if (curritnumFRS_>=itemaxFRS_) finished = true;
 
-  if (totalitnumFRS_>=1) // check whether the algorithms require additional iterations
+  if (curritnumFRS_>=1) // check whether the algorithms require additional iterations
   {
     if (step_<1) // stationary solution just one time
       finished = true;
@@ -414,7 +414,8 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     case INPAR::COMBUST::xfemtimeintenr_donothing:
     case INPAR::COMBUST::xfemtimeintenr_quasistatic:
     case INPAR::COMBUST::xfemtimeintenr_project:
-    case INPAR::COMBUST::xfemtimeintenr_project_scalar: break;
+    case INPAR::COMBUST::xfemtimeintenr_project_scalar:
+      break;
     default:
       dserror("enrichment recomputation approach in XFEM time integration not implemented");
     }
@@ -422,9 +423,14 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     switch (xfemtimeint_)
     {
     case INPAR::COMBUST::xfemtimeint_donothing:
-    case INPAR::COMBUST::xfemtimeint_extrapolation: finished = true; // the above standard value computations don't require -> iterations
+    case INPAR::COMBUST::xfemtimeint_extrapolation:
+    {
+      finished = true; // the above standard value computations don't require -> iterations
+      break;
+    }
     case INPAR::COMBUST::xfemtimeint_semilagrange:
-    case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol: break;
+    case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+      break;
     default:
       dserror("standard recomputation approach in XFEM time integration not implemented");
     }
