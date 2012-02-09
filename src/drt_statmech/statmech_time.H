@@ -54,7 +54,7 @@ public:
   virtual void FullNewton(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep);
+  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* redoptc=NULL);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
   void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
@@ -93,13 +93,13 @@ protected:
   void StatMechManagerOutput(int& istep, int& ndim, double& time, double& dt);
 
   //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
-  void ResetBeforeTimeStepRepeat(bool& buildoctree);
+  void RestoreOldConvergedState(bool buildoctree);
+
+  //! \brief Compute Statistical Forces and Damping Matrix for Brownian Dynamics Applications
+  void PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc);
 
   //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
-  void PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnormdivergent, bool* redouzawastep = NULL);
-
-  //! \brief PTC console output
-  void PTCConsoleOutput(bool redouzawastep, bool fresmnormdivergent, int& numiter);
+  bool PTCRepeat(int& numiter, int& maxiter, bool fresmnormdivergent);
 
   //! \brief set PTC status to unconverged
   void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);

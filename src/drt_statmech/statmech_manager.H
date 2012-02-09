@@ -104,6 +104,9 @@ public:
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int ndim, const double& dt);
 
+  //! \brief Get current binding spot positions
+  void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
+
   //! \brief sets crosslinkers  whereever possible before the first time step
   void SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
@@ -218,8 +221,6 @@ protected:
     \param broken (in/out)  continuous==false, broken==true*/
   void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
 
-  //! \brief Get current binding spot positions
-  void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
      \param dis     (in)      current displacement vector

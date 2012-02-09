@@ -401,6 +401,9 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
   return;
 } // StatMechManager::Update()
 
+/*----------------------------------------------------------------------*
+ | Retrieve nodal positions                     (public)   mueller 09/08|
+ *----------------------------------------------------------------------*/
 void StatMechManager::GetNodePositions(Epetra_Vector& discol,
                                        std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                        std::map<int,LINALG::Matrix<3,1> >& currentrotations,
@@ -3178,7 +3181,7 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
 
     // Vectors hold zero->ok, since no displacement at this stage of the simulation
     Epetra_Vector discol(*discret_.DofColMap(), true);
-    GetNodePositions(discol, currentpositions, currentrotations);
+    GetNodePositions(discol, currentpositions, currentrotations, true);
     // do initial octree build
     if(beamcmanager!=Teuchos::null)
       beamcmanager->OcTree()->OctTreeSearch(currentpositions);
