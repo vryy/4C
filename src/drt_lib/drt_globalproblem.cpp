@@ -1396,11 +1396,6 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         int microdisnum = micromat->MicroDisNum();
 
         RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
-#ifdef PARALLEL
-        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
-#else
-        RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-#endif
 
         string micro_inputfile_name = micromat->MicroInputFileName();
 
@@ -1415,7 +1410,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
           }
         }
 
-        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, reader.Comm(), 1);
 
         RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis(genprob.numsf, structdis_micro);
@@ -1472,14 +1467,9 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
     string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
 
     RCP<DRT::Problem> multilevel_problem = DRT::Problem::Instance(1);
-    #ifdef PARALLEL
-          RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
-    #else
-          RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-    #endif
 
     // Read in other level
-    DRT::INPUT::DatFileReader multilevel_reader(second_input_file, serialcomm, 1);
+    DRT::INPUT::DatFileReader multilevel_reader(second_input_file, reader.Comm(), 1);
 
     RCP<DRT::Discretization> structdis_multilevel = rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
 
