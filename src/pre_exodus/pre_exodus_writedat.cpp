@@ -175,7 +175,6 @@ void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& da
 void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat)
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
-  vector<string> allsectionnames;
 
   // count how often we have one specific condition
   map<string,vector<int> > count_cond;
@@ -189,7 +188,13 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   {
     size_t linelength = 66;
     string sectionname = (*condlist)[i]->SectionName();
-    allsectionnames.push_back(sectionname);
+
+    // ignore conditions occurring zero times
+    count = count_cond.find(sectionname);
+    if (count == count_cond.end())
+      continue;
+
+    // only write conditions provided by user
     string dash(linelength-sectionname.size(),'-');
     dat << dash << sectionname << endl;
     DRT::Condition::GeometryType gtype = (*condlist)[i]->GeometryType();
@@ -203,46 +208,41 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
     default:
       dserror("geometry type unspecified");
     }
-    count = count_cond.find(sectionname);
-    if (count == count_cond.end())
-      dat << geo << "0" << endl;
-    else
-    {
-      dat << geo << (count->second).size() << endl;
-      for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c)
-      {
-        EXODUS::cond_def actcon = condefs[*i_c];
-        string name;
-        string pname;
-        if (actcon.me==EXODUS::bcns){
-          name = (mymesh.GetNodeSet(actcon.id).GetName());
-          pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
-        } else if (actcon.me==EXODUS::bceb){
-          name = (mymesh.GetElementBlock(actcon.id)->GetName());
-        } else if (actcon.me==EXODUS::bcss){
-          name = (mymesh.GetSideSet(actcon.id).GetName());
-        } else dserror ("Unidentified Actcon");
-        if((name!="")){
-          dat << "// " << name;
-          if (pname!="none"){ dat << " " << pname;}
-          dat << endl;
-        } else if (pname!="none") dat << "// " << pname << endl;
 
-        // write the condition
-        if (actcon.desc != ""){
-          dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
-        } else if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me==EXODUS::bcns)) {
-          // special case for locsys conditions: calculate normal
-          vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
-          dat << "E " << actcon.e_id << " - ";
-          for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  setprecision (10) << fixed << normtang[i] << " ";
-          dat << endl;
-        } else
-          dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
-      }
-      // remove sectionname from map, since writing is done
-      count_cond.erase(sectionname);
+    dat << geo << (count->second).size() << endl;
+    for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c)
+    {
+      EXODUS::cond_def actcon = condefs[*i_c];
+      string name;
+      string pname;
+      if (actcon.me==EXODUS::bcns){
+        name = (mymesh.GetNodeSet(actcon.id).GetName());
+        pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
+      } else if (actcon.me==EXODUS::bceb){
+        name = (mymesh.GetElementBlock(actcon.id)->GetName());
+      } else if (actcon.me==EXODUS::bcss){
+        name = (mymesh.GetSideSet(actcon.id).GetName());
+      } else dserror ("Unidentified Actcon");
+      if((name!="")){
+        dat << "// " << name;
+        if (pname!="none"){ dat << " " << pname;}
+        dat << endl;
+      } else if (pname!="none") dat << "// " << pname << endl;
+
+      // write the condition
+      if (actcon.desc != ""){
+        dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
+      } else if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me==EXODUS::bcns)) {
+        // special case for locsys conditions: calculate normal
+        vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
+        dat << "E " << actcon.e_id << " - ";
+        for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  setprecision (10) << fixed << normtang[i] << " ";
+        dat << endl;
+      } else
+        dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
     }
+    // remove sectionname from map, since writing is done
+    count_cond.erase(sectionname);
   }
   if (count_cond.size() > 0) // there are conditions left that were not recognized!!
   {
