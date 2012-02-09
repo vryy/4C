@@ -381,18 +381,6 @@ DSURF  0
 DVOL   0
 ---------------------------------------DESIGN SURFACE INV ANALYSIS
 DSURF  0
--------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
-DPOINT 0
--------------DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT
-DLINE  0
------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
-DPOINT 0
------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT 0
-------------------------DESIGN NODE 1D ARTERY IN_OUTLET CONDITIONS
-DPOINT 0
 ----------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF 1
 E 2 - default // for flux calculation on this boundary
