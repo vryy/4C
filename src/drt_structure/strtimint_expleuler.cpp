@@ -155,7 +155,7 @@ void STR::TimIntExplEuler::IntegrateStep()
 
   // TIMING
   //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
-  
+
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
@@ -164,7 +164,7 @@ void STR::TimIntExplEuler::IntegrateStep()
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
-  
+
   if (HaveContactMeshtying())
   {
     frimpn_->Update(1.0, *fcmtn_, 1.0);
@@ -252,7 +252,7 @@ void STR::TimIntExplEuler::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntExplEuler::ReadRestartForce()
 {
-  dserror("No restart ability for forward Euler time integrator!");
+  // do nothing
   return;
 }
 

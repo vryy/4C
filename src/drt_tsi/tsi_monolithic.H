@@ -24,10 +24,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_thermo.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
-
+#include "tsi_algorithm.H"
 #include "../drt_inpar/inpar_tsi.H"
 
 /*----------------------------------------------------------------------*
@@ -47,7 +44,7 @@ namespace FS3I
   class AeroTFSI;
 }
 
-/// TSI: Thermo-Structure Interaction
+//! TSI: Thermo-Structure Interaction
 namespace TSI
 {
   namespace UTILS
@@ -56,8 +53,7 @@ namespace TSI
     class ThermoStructureCloneStrategy;
   }
 
-  /// monolithic TSI algorithm base
-  //!
+  //! monolithic TSI algorithm
   //!
   //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
   //!  ThermoBaseAlgorithm with temperature field.
@@ -76,61 +72,27 @@ namespace TSI
   //!
   //!  \author u.kue
   //!  \date 02/08
-  class MonolithicBase : public ADAPTER::AlgorithmBase,
-                         public ADAPTER::StructureBaseAlgorithm,
-                         public ADAPTER::ThermoBaseAlgorithm
-  {
-    friend class FS3I::AeroTFSI;
-  public:
-
-    /// create using a Epetra_Comm
-    explicit MonolithicBase(const Epetra_Comm& comm);
-
-    /// virtual destructor to support polymorph destruction
-    virtual ~MonolithicBase();
-
-    /// read restart data
-    virtual void ReadRestart(
-      int step  ///< step number where the calculation is continued
-      );
-
-  protected:
-
-    //! @name Time loop building blocks
-
-    /// start a new time step
-    virtual void PrepareTimeStep();
-
-    /// take current results for converged and save for next time step
-    virtual void Update();
-
-    /// calculate stresses, strains, energies
-    virtual void PrepareOutput()
-    {
-      StructureField().PrepareOutput();
-    }
-
-    //@}
-
-  }; // MonolithicBase
-
-
-  /// base class of all monolithic TSI algorithms
+  //! base class of all monolithic TSI algorithms
   /*!
+  Monolithic TSI is a Netwon solver on a block matrix with field blocks.
 
-    Monolithic TSI is a Netwon solver on a block matrix with field blocks.
-
-    \author u.kue
-    \date 02/08
-   */
-  class Monolithic : public MonolithicBase
+  \author u.kue
+  \date 02/08
+  */
+  class Monolithic : public Algorithm
   {
     friend class FS3I::AeroTFSI;
+
   public:
+
     explicit Monolithic(
       const Epetra_Comm& comm,
       const Teuchos::ParameterList& sdynparams
       );
+
+    //! virtual destructor to support polymorph destruction
+    virtual ~Monolithic();
+
 
     /*! do the setup for the monolithic system
 
@@ -147,55 +109,55 @@ namespace TSI
     directly in the constructor. This is necessary since during restart (if
     ReadMesh is called), the dofmaps for the blocks might get invalid.
     */
-    // Setup the monolithic TSI system
+    //! Setup the monolithic TSI system
     virtual void SetupSystem();
 
-    /// outer level TSI time loop
-    void TimeLoop(
-      const Teuchos::ParameterList& sdynparams  //!< structural dynamic input parameters
+    //! outer level TSI time loop
+    virtual void TimeLoop();
+
+    //! read restart data
+    virtual void ReadRestart(
+      int step  //!< step number where the calculation is continued
       );
 
     //! @name Apply current field state to system
 
-    /// setup composed right hand side from field solvers
-    // implemented in FSI in the "split level"
+    //! setup composed right hand side from field solvers
     void SetupRHS();
 
-    /// setup composed system matrix from field solvers
-    void SetupSystemMatrix(const Teuchos::ParameterList& sdynparams);
+    //! setup composed system matrix from field solvers
+    void SetupSystemMatrix();
 
-    /// composed system matrix
+    //! composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
     {
       return systemmatrix_;
     }
 
-    /// solve linear TSI system
+    //! solve linear TSI system
     void LinearSolve();
 
-    /// create linear solver (setup of parameter lists, etc...)
+    //! create linear solver (setup of parameter lists, etc...)
     void CreateLinearSolver();
 
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
-      Teuchos::RCP<LINALG::SparseMatrix> k_st,  //!< mechanical-thermal stiffness matrix
-      const Teuchos::ParameterList& sdynparams
+      Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
       );
 
     //! Evaluate thermal-mechanical system matrix
     void ApplyThrCouplMatrix(
-      Teuchos::RCP<LINALG::SparseMatrix> k_ts,  //!< thermal-mechanical tangent matrix
-      const Teuchos::ParameterList& sdynparams
+      Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
       );
 
     //@}
 
-    /// evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+    //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
       Teuchos::RCP<Epetra_Vector> stepinc //!< increment between time step n and n+1
       );
 
-    /// extract initial guess from fields
+    //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
@@ -204,8 +166,8 @@ namespace TSI
     //! \author lw  \date 12/07
     bool Converged();
 
-    /// outer iteration loop
-    void NewtonFull(const Teuchos::ParameterList& sdyn);
+    //! outer iteration loop
+    void NewtonFull();
 
     //! @name Output
 
@@ -232,12 +194,10 @@ namespace TSI
 
   protected:
 
-    //! @name Access methods
+    //! @name Time loop building blocks
 
-    //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(
-      Teuchos::RCP<const Epetra_Vector> dispnp
-      );
+    //! start a new time step
+    virtual void PrepareTimeStep();
 
     //@}
 
@@ -331,19 +291,6 @@ namespace TSI
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
 
-    /// write output
-    void Output();
-
-    /// communicate displacement vector to thermal field to enable their
-    /// visualisation on the deformed body
-    void OutputDeformationInThr(
-      Teuchos::RCP<const Epetra_Vector> dispnp,
-      Teuchos::RCP<DRT::Discretization> structdis
-      );
-
-    /// displacements at time n+1 for thermal output
-    Teuchos::RCP<Epetra_MultiVector> dispnp_;
-
     //@}
 
     //! @name Global vectors
@@ -388,6 +335,7 @@ namespace TSI
     int ns_;  //!< length of structural residual forces
     int nt_;  //!< length of thermal residual forces
     int ntsi_;  //!< length of TSI residual forces
+    const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
     //@}
 

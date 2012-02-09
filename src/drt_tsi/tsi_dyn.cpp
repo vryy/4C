@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_dyn.H"
 #include "tsi_algorithm.H"
+#include "tsi_partitioned.H"
 #include "tsi_monolithic.H"
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
@@ -91,7 +92,7 @@ void tsi_dyn_drt()
     tsi->SetupSystem();
 
     // solve the whole tsi problem
-    tsi->TimeLoop(sdynparams);
+    tsi->TimeLoop();
 
     // summarize the performance measurements
     Teuchos::TimeMonitor::summarize();
@@ -109,7 +110,7 @@ void tsi_dyn_drt()
   {
     // Any partitioned algorithm. Stable of working horses.
     // create an TSI::Algorithm instance
-    Teuchos::RCP<TSI::Algorithm> tsi = Teuchos::rcp(new TSI::Algorithm(comm));
+    Teuchos::RCP<TSI::Partitioned> tsi = Teuchos::rcp(new TSI::Partitioned(comm));
 
     if (genprob.restart)
     {
@@ -136,6 +137,7 @@ void tsi_dyn_drt()
 
   return;
 } // tsi_dyn_drt()
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

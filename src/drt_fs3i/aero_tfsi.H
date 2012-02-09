@@ -139,8 +139,6 @@ namespace FS3I
 
   Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
 
-  const Teuchos::ParameterList& sdynparams_;  ///< structural parameter list
-
   Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
 
   }; // AeroTFSI

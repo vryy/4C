@@ -36,9 +36,10 @@ FS3I::AeroTFSI::AeroTFSI(
   const Epetra_Comm& lcomm
   ) :
   FS3I_Base(),
-  lcomm_(lcomm),
-  sdynparams_(DRT::Problem::Instance()->StructuralDynamicParams())
+  lcomm_(lcomm)
 {
+  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+
   // check if INCA is called first when starting the coupled simulation
   int worldrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &worldrank);
@@ -67,7 +68,7 @@ FS3I::AeroTFSI::AeroTFSI(
   TSI::UTILS::SetupTSI(lcomm);
 
   // create an TSI::Monolithic instance
-  tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams_));
+  tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
 
   // setup of the helper class
   aerocoupling_ = rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField().Discretization(),
@@ -134,7 +135,7 @@ void FS3I::AeroTFSI::Timeloop()
     tsi_->PrepareTimeStep();
 
     // TSI system is solved with a Newton-Raphson iteration
-    tsi_->NewtonFull(sdynparams_);
+    tsi_->NewtonFull();
 
     // calculate stresses, strains, energies
     tsi_->PrepareOutput();

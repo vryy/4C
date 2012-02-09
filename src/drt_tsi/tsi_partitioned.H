@@ -18,25 +18,22 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef TSI_ALGORITHM_H
-#define TSI_ALGORITHM_H
-
+#ifndef TSI_PARTITIONED_H
+#define TSI_PARTITIONED_H
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_thermo.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "tsi_algorithm.H"
 
 
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
  *----------------------------------------------------------------------*/
-//! TSI: Thermo-Structure Interaction
+/// TSI: Thermo-Structure Interaction
 namespace TSI
 {
-  //! TSI algorithm base
+  /// TSI algorithm base
   //!
   //!
   //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
@@ -53,72 +50,90 @@ namespace TSI
   //!
   //!  \author u.kue
   //!  \date 02/08
-  class Algorithm : public ADAPTER::AlgorithmBase,
-                    public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::ThermoBaseAlgorithm
+  class Partitioned : public Algorithm
   {
   public:
 
-    //! create using a Epetra_Comm
-    explicit Algorithm(const Epetra_Comm& comm);
+    /// create using a Epetra_Comm
+    explicit Partitioned(const Epetra_Comm& comm);
 
-    //! virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    /// virtual destructor to support polymorph destruction
+    virtual ~Partitioned();
 
-    //! outer level time loop (to be implemented by deriving classes)
-    virtual void TimeLoop() = 0;
+    /// outer level time loop (to be implemented by deriving classes)
+    virtual void TimeLoop();
 
-    //! read restart data
+    /// time loop for TSI algorithm with one-way coupling
+    void TimeLoopSequStagg();
+
+    /// time loop for TSI algorithm with one-way coupling
+    void TimeLoopOneWay();
+
+    /// time loop for TSI algorithm with iteration between fields (full coupling)
+    void TimeLoopFull();
+
+    /// read restart data
     virtual void ReadRestart(
-      int step  //!< step number where the calculation is continued
-      ) = 0;
+      int step  ///< step number where the calculation is continued
+      );
+
 
   protected:
 
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep() = 0;
-
-    //! calculate stresses, strains, energies
-    void PrepareOutput()
-    {
-      StructureField().PrepareOutput();
-    }
-
-    //! take current results for converged and save for next time step
-    virtual void Update();
-
-    //! write output
-    virtual void Output();
-
-    //! communicate displacement vector to thermal field to enable their
-    //! visualisation on the deformed body
-    void OutputDeformationInThr(
-      Teuchos::RCP<const Epetra_Vector> dispnp,
-      Teuchos::RCP<DRT::Discretization> structdis
-      );
+    virtual void PrepareTimeStep();
 
     //@}
 
+    //! @name Solve
 
-    //! @name Access methods
+    /// solve temperature equations for current time step
+    void DoThermoStep();
 
-    //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(
-      Teuchos::RCP<const Epetra_Vector> dispnp
-      );
+    /// solve displacement equations for current time step
+    void DoStructureStep();
 
-    //! displacements at time n+1 for thermal output
-    Teuchos::RCP<Epetra_MultiVector> dispnp_;
+    // two-way coupling (iterative staggered)
+
+    /// outer iteration loop
+    void OuterIterationLoop();
 
     //@}
+
+    /// convergence check for iterative staggered TSI solver
+    bool ConvergenceCheck(int itnum, int itmax, double ittol);
+
+    /// maximum iteration steps
+    int itmax_;
+    /// convergence tolerance
+    double ittol_;
+
+    /// temperature increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> tempincnp_;
+    /// displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> dispincnp_;
 
   private:
 
-  };  // Algorithm
-}  // namespace TSI
+    /// displacements from time step begin (t_n)
+    Teuchos::RCP<Epetra_Vector> dispn_;
+    /// velocities from time step begin (t_n)
+    Teuchos::RCP<Epetra_Vector> veln_;
+    /// velocities from time step begin (t_n+1)
+    Teuchos::RCP<Epetra_Vector> velnp_;
 
+    /// temperature from time step begin (t_n)
+    Teuchos::RCP<Epetra_Vector> tempn_;
+
+    /// we couple based on displacements
+    bool displacementcoupling_;
+    /// quasi-static solution of the mechancial equation
+    bool quasistatic_;
+
+  };  // Partitioned
+}  // namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_ALGORITHM_H

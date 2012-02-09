@@ -67,9 +67,6 @@ THR::TimIntExplEuler::TimIntExplEuler
 /* Integrate step */
 void THR::TimIntExplEuler::IntegrateStep()
 {
-  // time this step
-  //timer_->ResetStartTime();
-
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
 
   // new displacements \f$D_{n+}\f$
@@ -116,22 +113,20 @@ void THR::TimIntExplEuler::IntegrateStep()
   if (lumpcapa_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_)==Teuchos::null)
   {
     // refactor==false: This is not necessary, because we always
-    // use the same constant mass matrix, which was firstly factorised
-    // in TimInt::DetermineMassDampConsistAccel
+    // use the same constant capacity matrix, which was firstly factorised
+    // in TimInt::DetermineCapaConsistTempRate
     solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, false, true);
   }
   // direct inversion based on lumped capacity matrix
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(),false);
+    Teuchos::RCP<Epetra_Vector> diag
+      = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(),false);
     (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
     // A_{n+1} = M^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }
-
-  // TIMING
-  //if (!myrank_) cout << "T_linsolve: " << timer_->WallTime() - dtcpu << endl;
 
   // apply Dirichlet BCs on temperature rates
   ApplyDirichletBC(timen_, Teuchos::null, raten_, false);
@@ -168,7 +163,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
   // action for elements
   // --> be careful: this action does nothing
   p.set("action", "calc_thermo_update_istep");
-  // go to elements
+  // go to elements and do nothing
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
 }
@@ -177,7 +172,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
 /* read restart forces */
 void THR::TimIntExplEuler::ReadRestartForce()
 {
-  dserror("No restart ability for forward Euler time integrator!");
+  // do nothing
   return;
 }
 
