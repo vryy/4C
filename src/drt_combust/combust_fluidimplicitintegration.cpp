@@ -5499,6 +5499,8 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
   // smoothed normal vectors for boundary integration terms
   eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
+  eleparams.set("flamespeed",flamespeed_);
+  eleparams.set("time",time_);
 
   // set parameters for parts of the whole Nitsche-error (mesh-dependent norms), here norms not square rooted
   eleparams.set<double>("L2 integrated velocity domain error", 0.0);
@@ -5514,7 +5516,6 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   eleparams.set<double>("L2 Divergence error in omega-", 0.0);
   eleparams.set<double>("L2 integrated velocity jump interface error Combustion", 0.0);
   eleparams.set<double>("L2 integrated flux jump interface error Combustion", 0.0);
-  eleparams.set("flamespeed",flamespeed_);
 
   // call loop over elements (but do not assemble anything)
   // discret_->Evaluate calls combust3_evaluate for each element, but without assemply

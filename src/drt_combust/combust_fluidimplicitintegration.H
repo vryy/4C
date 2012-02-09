@@ -547,12 +547,6 @@ protected:
   /// pointer to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> turbstatisticsmanager_;
 
-  //! @name parameters for sampling/dumping period
-  int samstart_;
-  int samstop_;
-  //int dumperiod_;
-  //@}
-
   /// pointer to manager for turbulent inflow transfer condition
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
@@ -562,6 +556,12 @@ protected:
   Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
+
+  //! @name parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  //int dumperiod_;
+  //@}
 
   /// flag for physical type of fluid flow (standard: incompressible)
   enum INPAR::FLUID::PhysicalType physicaltype_;

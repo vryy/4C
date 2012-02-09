@@ -455,13 +455,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if(this->Owner() == discretization.Comm().MyPID())
       {
         // stationary formulation
-        const bool instationary = false;
-        const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
-
         const double time = params.get<double>("time");
-
-        bool genalpha = false;
-        if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
 
         // general parameters for two-phase flow and premixed combustion problems
         const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
@@ -479,7 +473,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
-        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, genalpha, gradphi, this, ih_);
+        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, false, false, gradphi, this, ih_);
 
         // get assembly type
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(

@@ -1392,8 +1392,8 @@ void NitscheErrors(
   const int shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-  LINALG::Matrix<shpVecSize,1> epreaf;
-  LINALG::Matrix<3,shpVecSize> evelaf;
+  LINALG::Matrix<shpVecSize,1> eprenp;
+  LINALG::Matrix<3,shpVecSize> evelnp;
   LINALG::Matrix<numnode,1> ephi;
 
 
@@ -1418,28 +1418,15 @@ void NitscheErrors(
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
 
-  if (mystate.genalpha_)
-  {
     for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-      evelaf(0,iparam) = mystate.velaf_[velxdof[iparam]];
+      evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
     for (size_t iparam=0; iparam<numparamvely; ++iparam)
-      evelaf(1,iparam) = mystate.velaf_[velydof[iparam]];
+      evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
     for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-      evelaf(2,iparam) = mystate.velaf_[velzdof[iparam]];
+      evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
     for (size_t iparam=0; iparam<numparampres; ++iparam)
-      epreaf(iparam) = mystate.velaf_[presdof[iparam]];
-  }
-  else
-  {
-    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-      evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamvely; ++iparam)
-      evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
-    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-      evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
-    for (size_t iparam=0; iparam<numparampres; ++iparam)
-      epreaf(iparam) = mystate.velnp_[presdof[iparam]];
-  }
+      eprenp(iparam) = mystate.velnp_[presdof[iparam]];
+
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
@@ -1450,7 +1437,7 @@ void NitscheErrors(
   double ele_meas_minus = 0.0;	// for different averages <> and {}
 
   COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-      eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, material, time, ele_meas_plus, ele_meas_minus);
+      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, time, ele_meas_plus, ele_meas_minus);
 
   if (ele->Bisected() or ele->Touched() )
   {
@@ -1462,7 +1449,7 @@ void NitscheErrors(
       COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
     COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-        eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
+        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
   }
 
   return;
