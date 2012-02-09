@@ -133,7 +133,7 @@ namespace THR
     //! prepare thermal contact
     void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                               Teuchos::RCP<DRT::Discretization> discretstruct);
-    
+
     //! Do time integration of multiple steps
     void Integrate();
 
@@ -439,7 +439,7 @@ namespace THR
     {
       return dbcmaps_;
     }
-    
+
     //! Return thermal contact manager
     Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() {return thermcontman_;}
 
@@ -525,10 +525,10 @@ namespace THR
                                          //!< at \f$t_{n+1}\f$
 
     // global coupling variables of the structure field
-    Teuchos::RCP<const Epetra_Vector> disn_;  //!< global displacements
+    Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
                                               //!< \f${D}_{n+1}\f$
                                               //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> veln_;  //!< global velocities
+    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
                                               //!< \f${V}_{n+1}\f$
                                               //!< at \f$t_{n+1}\f$
 
@@ -540,9 +540,9 @@ namespace THR
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
     //Teuchos::RCP<LINALG::SparseMatrix> capa_;
-    
+
     //@}
-    
+
     //! @name Managed stuff
     //@{
 

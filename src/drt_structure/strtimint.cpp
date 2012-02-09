@@ -129,6 +129,7 @@ STR::TimInt::TimInt
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
+  tempn_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
   damp_(Teuchos::null),
@@ -1754,16 +1755,19 @@ bool STR::TimInt::UseContactSolver()
 /*----------------------------------------------------------------------*/
 /* get the temperature from the temperature discretization   dano 03/10 */
 void STR::TimInt::ApplyTemperatures(
-  Teuchos::RCP<const Epetra_Vector> temp  ///< current temperature T_n+1
+  Teuchos::RCP<const Epetra_Vector> temp  ///< temperature vector T
   )
 {
-  if(temp != Teuchos::null)
-  {
-    // temperatures T_{n+1} at t_{n+1}
+  if (tempn_ == Teuchos::null)
     tempn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-    tempn_ = temp;
+
+  if( (temp != Teuchos::null) && (tempn_->Map().SameAs(temp->Map())) )
+  {
+    // temperatures T at chosen time t dependent on call in coupled algorithm
+    tempn_->Update(1.0, *temp, 0.0);
   }
-  else dserror("no temperatures available for TSI");
+  else dserror("no temperatures available for TSI or maps not equal");
+
   // where the fun starts
   return;
 }

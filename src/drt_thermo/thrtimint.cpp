@@ -86,6 +86,8 @@ THR::TimInt::TimInt(
   rate_(Teuchos::null),
   tempn_(Teuchos::null),
   raten_(Teuchos::null),
+  disn_(Teuchos::null),  // needed for TSI
+  veln_(Teuchos::null),  // needed for TSI
   tang_(Teuchos::null)
 //  capa_(Teuchos::null)
 {
@@ -854,11 +856,11 @@ void THR::TimInt::ApplyForceTangInternal(
   // set displacements and velocities for the coupled TSI problem
   if(disn_!=Teuchos::null)
   {
-    discret_->SetState(1,"displacement",disn_);
+    discret_->SetState(1,"displacement", disn_);
   }
   if(veln_!=Teuchos::null)
   {
-    discret_->SetState(1,"velocity",veln_);
+    discret_->SetState(1,"velocity", veln_);
   }
   // call the element Evaluate()
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
@@ -896,11 +898,11 @@ void THR::TimInt::ApplyForceInternal(
   // set displacements and velocities for the coupled TSI problem
   if(disn_!=Teuchos::null)
   {
-    discret_->SetState(1,"displacement",disn_);
+    discret_->SetState(1,"displacement", disn_);
   }
   if(veln_!=Teuchos::null)
   {
-    discret_->SetState(1,"velocity",veln_);
+    discret_->SetState(1,"velocity", veln_);
   }
   // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -921,29 +923,32 @@ void THR::TimInt::ApplyStructVariables(
   Teuchos::RCP<const Epetra_Vector> vel  ///< the current velocities
   )
 {
-  // TODO: check if the implementation is good this way, cf. talk with Georg 07.06.11
-  // disp = copied pointer of the structural displacement vector
-  // here: disn_ is also a pointer, but is set equal to a new created vector???
-
-  if(disp!=Teuchos::null)
-  {
-    // temperatures T_{n+1} at t_{n+1}
+  // displacements
+  if (disn_ == Teuchos::null)
     disn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-    disn_ = disp;
-  }
-  else dserror("no displacements available for TSI");
 
-  if(vel!=Teuchos::null)
+  if( (disp != Teuchos::null) && (disn_->Map().SameAs(disp->Map())) )
   {
-    // temperatures T_{n+1} at t_{n+1}
-    veln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-    veln_ = vel;
+    // displacements D at chosen time t dependent on call in coupled algorithm
+    disn_->Update(1.0, *disp, 0.0);
   }
-  else dserror("no velocities available for TSI");
+  else dserror("no displacements available for TSI or maps not equal");
+
+  // velocities
+  if (veln_ == Teuchos::null)
+    veln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+
+  if( (vel != Teuchos::null) && (veln_->Map().SameAs(disp->Map())) )
+  {
+    // velocities V at chosen time t dependent on call in coupled algorithm
+    veln_->Update(1.0, *vel, 0.0);
+  }
+  else dserror("no velocities available for TSI or maps not equal");
 
   // where the fun starts
   return;
-}
+
+}  // ApplyStructVariables()
 
 
 /*----------------------------------------------------------------------*
