@@ -224,7 +224,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntExpl::FExtn()
 /* prepare time step */
 void ADAPTER::StructureTimIntExpl::PrepareTimeStep()
 {
-  dserror("not implemented");
+  // do nothing
+  return;
 }
 
 
@@ -279,7 +280,7 @@ void ADAPTER::StructureTimIntExpl::ReadRestart(int step)
 /* find iteratively solution */
 void ADAPTER::StructureTimIntExpl::Solve()
 {
-  dserror("not implemented");
+  structure_->IntegrateStep();
 }
 
 
@@ -410,7 +411,8 @@ void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
   Teuchos::RCP<const Epetra_Vector> temp
   )
 {
-  dserror("not implemented");
+  // This will add the provided temperature to the structure problem
+  structure_->ApplyTemperatures(temp);
 }
 
 /*----------------------------------------------------------------------*

@@ -236,8 +236,8 @@ void ADAPTER::ThermoTimIntExpl::Update()
   thermo_->UpdateStepState();
   // update time and step
   thermo_->UpdateStepTime();
-  // TODO 30.01.12
-  // thermo_->UpdateStepElement();
+  // currently nothing, can include history dependency of materials
+  thermo_->UpdateStepElement();
   return;
 }
 

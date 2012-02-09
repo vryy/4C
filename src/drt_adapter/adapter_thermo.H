@@ -43,12 +43,12 @@ namespace ADAPTER
 
   /// general thermal field interface
   /*!
-  The point is to keep TSI as far apart from our field solvers as
+  The point is to keep T(F)SI as far apart from our field solvers as
   possible. Each thermal field solver we want to use should get its own
-  subclass of this. The TSI algorithm should be able to extract all the
+  subclass of this. The T(F)SI algorithm should be able to extract all the
   information from the thermal field it needs using this interface.
 
-  All TSI algorithms use this adapter to communicate with the thermal
+  All T(F)SI algorithms use this adapter to communicate with the thermal
   field. There are different ways to use this adapter.
 
   In all cases you need to tell the thermal algorithm about your time
@@ -57,15 +57,13 @@ namespace ADAPTER
 
   <h3>Dirichlet-Neumann coupled TSI</h3>
 
-  A good starting temperature can be guessed with PredictInterfaceTempnp().
+  Dirichlet-Neumann coupled TSI will need to Solve() the linear thermal problem
+  for each time step after the structure displacements/velocities have been
+  applied (ApplyStructVariables()). Solve() will be called many times for each
+  time step until the equilibrium is reached. The thermal algorithm has to
+  preserve its state until Update() is called.
 
-  Dirichlet-Neumann coupled TSI will need to Solve() the nonlinear
-  thermal problem for each time step after the structure forces have been
-  applied (ApplyInterfaceForces()). Solve() will be called many times for each
-  time step until the interface equilibrium is reached. The thermal
-  algorithm has to preserve its state until Update() is called.
-
-  After each Solve() you get the interface forces by ExtractTempnp().
+  After each Solve() you get the new temperatures by Tempnp().
 
   <h3>Monolithic TSI</h3>
 
