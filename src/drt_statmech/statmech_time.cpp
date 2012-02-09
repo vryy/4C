@@ -1096,6 +1096,10 @@ void StatMechTime::PTCEvaluateOutcome(int& numiter, int& maxiter, bool fresmnorm
 
     if(contactstrategy_==StatMechTime::contact_auglag)
     {
+      double cnorm = 1e6;
+      // get the constraint norm and decrease penalty parameter
+      beamcmanager_->UpdateConstrNorm(&cnorm, &isconverged_);
+
       if(beamcmanager_->GetUzawaIter()>=2)
         *redouzawastep = true;
       ConvergenceStatusUpdate(false,false);
