@@ -123,9 +123,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
-  project_(false),
   samstart_(-1),
-  samstop_(-1)
+  samstop_(-1),
+  project_(false)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
