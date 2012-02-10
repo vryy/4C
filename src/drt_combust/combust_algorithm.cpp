@@ -453,6 +453,11 @@ void COMBUST::Algorithm::DoReinitialization()
   // update flamefront and interfacehandle according to reinitialized G-function field
   if(reinitialization_accepted_)
   {
+    // reinitilization is done every fgi -> this is neither good nor cheap,
+    // but we didn't find a better solution...
+    if (fgitermax_>1)
+      cout << "WARNING: reinitialization done every FLI" << endl;
+
     // update flame front according to reinitialized G-function field
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
 

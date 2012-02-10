@@ -513,6 +513,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid_lung.cpp
   src/drt_adapter/adapter_fluid_moving_boundary.cpp
   src/drt_adapter/adapter_fluid_projection.cpp
+  src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_fluid_xfem.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
@@ -530,6 +531,9 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_thermo_timint_expl.cpp
+  src/drt_adapter/adapter_topopt.cpp
+  src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
+  src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
   src/drt_adapter/adapter_xfluid2_impl.cpp
   src/drt_adapter/adapter_fluid_fluid_impl.cpp
@@ -783,7 +787,6 @@ set(OBJS_DRT_SCATRA
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
   src/drt_tsi/tsi_monolithic.cpp
-  src/drt_tsi/tsi_partitioned.cpp
   src/drt_tsi/tsi_dyn.cpp
   src/drt_tsi/tsi_utils.cpp
 )
@@ -996,15 +999,13 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_nurbs_discret/drt_nurbs_discret.cpp
 )
 set(OBJS_DRT_TOPOPT
-  src/drt_adapter/adapter_fluid_topopt_algo.cpp
-  src/drt_adapter/adapter_topopt.cpp
-  src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
-  src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
   src/drt_opti/topopt_algorithm.cpp
   src/drt_opti/topopt_dyn.cpp
-  src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
   src/drt_opti/topopt_optimizer.cpp
   src/drt_opti/topopt_utils.cpp
+)
+set(OBJS_DRT_TOPOPT_ADJOINT
+  src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
@@ -1229,6 +1230,8 @@ set(OBJS_DRT_F3_LIB
 set(OBJS_DRT_F3_IMPL_LIB
   src/drt_f3_impl/fluid3_impl.cpp
   src/drt_f3_impl/fluid3_impl_parameter.cpp
+  src/drt_opti/topopt_fluidAdjoint3_impl.cpp
+  src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
 )
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
@@ -1587,8 +1590,8 @@ add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
-
 add_library(alg_stk_fsi ${OBJS_STK_FSI})
+add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -1599,6 +1602,7 @@ set(MULTIFIELD_LIBRARIES
   alg_stru_ale
   alg_poroelast
   alg_fs3i
+  alg_topopt
   )
 
 # the adapter layer
@@ -1617,7 +1621,7 @@ add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
-add_library(alg_topopt ${OBJS_DRT_TOPOPT})
+add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 
 add_library(alg_stk_structure ${OBJS_STK_STRUCTURE})
 add_library(alg_stk_fluid ${OBJS_STK_FLUID})
@@ -1637,7 +1641,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_contact
   alg_stk_structure
   alg_stk_fluid
-  alg_topopt
+  alg_fluid_adjoint
   )
 
 # general framework
@@ -2518,6 +2522,8 @@ baci_test(two_phase_beltrami_8x8x8_afgenalpha_2iter 2 "")
 baci_test(two_phase_couette_flow 1 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128 1 4)
 baci_test(two_phase_rayleigh_taylor_instability_32x128 2 4)
+baci_test(two_phase_rayleigh_taylor_instability_32x128_FGI 1 "")
+baci_test(two_phase_rayleigh_taylor_instability_32x128_FGI 2 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128_redis 3 "")
 baci_test(two_phase_stat_bubble_surftens_20x20x20 2 "")
 baci_test(two_phase_stat_bubble_surftens_50x50x1 1 "")
