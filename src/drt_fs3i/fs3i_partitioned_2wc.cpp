@@ -35,8 +35,16 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   consthermpress_ = fs3icontrol.get<string>("CONSTHERMPRESS");
 
   // define fluid- and structure-based scalar transport problem
-  fluidscatra_    = scatravec_[0];
+  fluidscatra_     = scatravec_[0];
   structurescatra_ = scatravec_[1];
+
+  // generate proxy of dof set for structure-based scalar transport
+  // problem to be used by structure field
+  Teuchos::RCP<DRT::DofSet> structurescatradofset = structurescatra_->ScaTraField().Discretization()->GetDofSetProxy();
+
+  // check number of dof sets in structure field
+  if (fsi_->StructureField().Discretization()->AddDofSet(structurescatradofset)!=1)
+    dserror("Incorrect number of dof sets in structure field!");
 }
 
 /*----------------------------------------------------------------------*/
