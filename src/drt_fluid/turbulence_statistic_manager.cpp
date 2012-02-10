@@ -1475,8 +1475,8 @@ namespace FLD
 
 
       // dump general mean value output in combination with a restart/output
-      // don't write output if turbulent inflow is computed
-      if (!inflow)
+      // don't write output if turbulent inflow or twophaseflow is computed
+      if (!inflow and flow_ != bubbly_channel_flow)
       {
         int upres    =params_.get<int>("write solution every");
         int uprestart=params_.get<int>("write restart every" );

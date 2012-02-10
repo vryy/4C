@@ -136,8 +136,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
 
   // FGI vectors are initialized
-  velnpi_ = rcp(new Epetra_Vector(FluidField().ExtractInterfaceVeln()->Map()),true);//*fluiddis->DofRowMap()),true);
-  velnpi_->Update(1.0,*FluidField().ExtractInterfaceVeln(),0.0);
+  velnpi_ = rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
+  velnpi_->Update(1.0,*FluidField().StdVelnp(),0.0);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
 
@@ -225,7 +225,9 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
   {
     // extract convection velocity from fluid solution
-    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+    const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+                                               ?(FluidField().StdVelaf())
+                                               :(FluidField().StdVelnp());
     ScaTraField().SetVelocityField(
 //        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
@@ -641,7 +643,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
     std::cout << "\n--- overwriting Navier-Stokes solution with field defined by FUNCT1... " << std::flush;
 
   // get fluid (Navier-Stokes) velocity vector in standard FEM configuration (no XFEM dofs)
-  const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+  const Teuchos::RCP<Epetra_Vector> convel = FluidField().StdVelnp();
   // velocity function number = 1 (FUNCT1)
   const int velfuncno = 1;
 
@@ -694,7 +696,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
 )
 {
   // needed for lids
-  const Teuchos::RCP<Epetra_Vector> & convel = FluidField().ExtractInterfaceVeln();
+  const Teuchos::RCP<Epetra_Vector> & convel = FluidField().StdVelnp();
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -877,7 +879,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
  | protected: compute flame velocity                                                  henke 07/09 |
  *------------------------------------------------------------------------------------------------*/
 const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
-    const Teuchos::RCP<Epetra_Vector>& convel,
+    const Teuchos::RCP<const Epetra_Vector>& convel,
     const Teuchos::RCP<const DRT::DofSet>& dofset
     //const Teuchos::RCP<const Epetra_Map >& dbcmap
     )
@@ -1199,8 +1201,8 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
   if (fgiter_ > 0) // nothing to do for FGI = 0
   {
-    RCP<const Epetra_Vector> velnpip = FluidField().ExtractInterfaceVeln();
-    RCP<const Epetra_Vector> phinpip = ScaTraField().Phinp();
+    const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField().StdVelnp();
+    const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField().Phinp();
 
     double velnormL2 = 1.0;
     double gfuncnormL2 = 1.0;
@@ -1315,7 +1317,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 
     ScaTraField().SetVelocityField(
       //OverwriteFluidVel(),
-      FluidField().ExtractInterfaceVeln(),
+      FluidField().StdVelnp(),
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
@@ -1338,7 +1340,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
 
     // extract convection velocity from fluid solution
-    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+    const Teuchos::RCP<const Epetra_Vector> convel = FluidField().StdVelnp();
 
     ScaTraField().SetVelocityField(
 //        OverwriteFluidVel(),
@@ -1465,6 +1467,11 @@ void COMBUST::Algorithm::DoGfuncField()
   {
     cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
   }
+
+  // get the convel at the correct time
+  const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+                                                   ?(FluidField().StdVelaf())
+                                                   :(FluidField().StdVelnp());
   // assign the fluid velocity field to the G-function as convective velocity field
   switch(combusttype_)
   {
@@ -1477,27 +1484,21 @@ void COMBUST::Algorithm::DoGfuncField()
 
     if (extract_interface_vel_) // replace computed velocity field by the interface velocity
     {
-      ScaTraField().SetVelocityField(
-        //OverwriteFluidVel(),
-        ManipulateFluidFieldForGfunc(FluidField().ExtractInterfaceVeln(), FluidField().DofSet()),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().DofSet(),
-        FluidField().Discretization()
-      );
+      ScaTraField().SetVelocityField(ManipulateFluidFieldForGfunc(convel, FluidField().DofSet()),
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
     }
     else // transfer the computed velocity as convective velocity to the g-function solver
     {
-      ScaTraField().SetVelocityField(
-        //OverwriteFluidVel(),
-        FluidField().ExtractInterfaceVeln(),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().DofSet(),
-        FluidField().Discretization()
-      );
+      ScaTraField().SetVelocityField(convel,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
 
       // Transfer history vector only for subgrid-velocity
       //ScaTraField().SetVelocityField(
@@ -1509,15 +1510,11 @@ void COMBUST::Algorithm::DoGfuncField()
       //    FluidField().Discretization()
       //);
     }
-
     break;
   }
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
-
-    // extract convection velocity from fluid solution
-    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
 
 #if 0
     //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
@@ -1540,21 +1537,17 @@ void COMBUST::Algorithm::DoGfuncField()
     cout << "number of identical velocity components: " << counter << endl;
 #endif
 
-    ScaTraField().SetVelocityField(
-        //OverwriteFluidVel(),
-        //FluidField().ExtractInterfaceVeln(),
-        ComputeFlameVel(convel,FluidField().DofSet()),
-        //ComputeFlameVel(convel,FluidField().DofSet(),FluidField().GetDBCMapExtractor()->CondMap()),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().DofSet(),
-        FluidField().Discretization()
-    );
+    ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+                                   Teuchos::null,
+                                   Teuchos::null,
+                                   Teuchos::null,
+                                   FluidField().DofSet(),
+                                   FluidField().Discretization());
     break;
   }
   default:
     dserror("unknown type of combustion problem");
+    break;
   }
 
   //solve convection-diffusion equation
@@ -1595,9 +1588,17 @@ void COMBUST::Algorithm::UpdateTimeStep()
 
   if (stepreinit_ and reinitialization_accepted_)
   {
-    //if(Comm().MyPID()==0)
-    //  cout << "UpdateReinit" << endl;
+    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    {
+      ScaTraField().SetVelocityField(FluidField().StdVeln(), //as the fluid has already been updated, we need veln here
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
+    }
     ScaTraField().UpdateReinit();
+    // for genalpha there is no need to write velaf into the scatra field, as it will be done at the beginning of the next timestep anyways
   }
   else
   {
@@ -1757,8 +1758,8 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
  |                                                                                rasthofer 08/11 |
  |                                                                                    DA wichmann |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ManipulateFluidFieldForGfunc(
-    const Teuchos::RCP<Epetra_Vector>& convel,
+const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidFieldForGfunc(
+    const Teuchos::RCP<const Epetra_Vector>& convel,
     const Teuchos::RCP<const DRT::DofSet>& dofset
     )
 {
@@ -2295,12 +2296,18 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     dserror("scalar field must be read from input file for restart from standard fluid");
 
   // read level-set field from input file instead of restart file
-  Teuchos::RCP<Epetra_Vector> oldphinp = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> oldphin  = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> oldphidtn  = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> oldphin    = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> oldphinm   = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> oldphinp   = Teuchos::null;
   if (restartscatrainput)
   {
-    oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
     oldphin  = rcp(new Epetra_Vector(*(ScaTraField().Phin())));
+    oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
+    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+      oldphidtn= rcp(new Epetra_Vector(*(ScaTraField().Phidtn())));
+    else
+      oldphinm = rcp(new Epetra_Vector(*(ScaTraField().Phinm())));
   }
 
   // restart of scalar transport (G-function) field
@@ -2366,10 +2373,18 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     // now overwrite restart phis w/ the old phis
     ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
     ScaTraField().Phin() ->Update(1.0, *(oldphin),  0.0);
-    ScaTraField().Phidtn()->PutScalar(0.0);
-    ScaTraField().ComputeTimeDerivative();
-    ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
-    ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
+    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    {
+      ScaTraField().Phidtn() ->Update(1.0, *(oldphidtn),  0.0);
+      ScaTraField().ComputeIntermediateValues();
+    }
+    else
+    {
+      ScaTraField().Phidtn()->PutScalar(0.0);
+      ScaTraField().ComputeTimeDerivative();
+      ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
+      ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
+    }
     if (Comm().MyPID()==0)
       std::cout << "done" << std::endl;
 
@@ -2402,6 +2417,15 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
         gmshfilecontent << "};" << endl;
       }
+      if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+      {
+        // add 'View' to Gmsh postprocessing file
+        gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+        // draw scalar field 'Phidtn' for every element
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
+        gmshfilecontent << "};" << endl;
+      }
+      else
       {
         // add 'View' to Gmsh postprocessing file
         gmshfilecontent << "View \" " << "Phinm \" {" << endl;
@@ -2437,7 +2461,9 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
           true);
 
       *ScaTraField().Phin() = *ScaTraField().Phinp();
-      *ScaTraField().Phinm() = *ScaTraField().Phinp();
+      if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
+        *ScaTraField().Phinm() = *ScaTraField().Phinp();
+      //TODO: what should be done for gen alpha and does not phidtx have to be updated too?
 
       // update flame front according to reinitialized G-function field
       flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
@@ -2469,6 +2495,15 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
       gmshfilecontent << "};" << endl;
     }
+    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+      // draw scalar field 'Phidtn' for every element
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
+      gmshfilecontent << "};" << endl;
+    }
+    else
     {
       // add 'View' to Gmsh postprocessing file
       gmshfilecontent << "View \" " << "Phinm \" {" << endl;
@@ -3112,7 +3147,7 @@ void COMBUST::Algorithm::Redistribute()
       if (velnpi_ != Teuchos::null)
       {
         old = velnpi_;
-        velnpi_ = rcp(new Epetra_Vector(FluidField().ExtractInterfaceVeln()->Map()),true);
+        velnpi_ = rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);
         LINALG::Export(*old, *velnpi_);
       }
 

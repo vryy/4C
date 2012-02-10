@@ -78,6 +78,21 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::ConvectiveVel()
   return fluid_.Velnp();
 }
 
+const Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::StdVeln()
+{
+  return fluid_.StdVeln();
+}
+
+const Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::StdVelnp()
+{
+  return fluid_.StdVelnp();
+}
+
+const Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::StdVelaf()
+{
+  return fluid_.StdVelaf();
+}
+
 /*------------------------------------------------------------------------------------------------*
  | return history vector                                                          rasthofer 01/10 |
  *------------------------------------------------------------------------------------------------*/
@@ -264,15 +279,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceForces()
 {
   dserror("Don't use this function, I don't know what it does!");
   return Teuchos::null;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | henke 07/09 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidCombust::ExtractInterfaceVeln()
-{
-  // get convection velocity vector (including pressure) for transfer to scalar transport field
-  return fluid_.ConVelnp();
 }
 
 /*------------------------------------------------------------------------------------------------*

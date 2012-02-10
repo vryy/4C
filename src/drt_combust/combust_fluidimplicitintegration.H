@@ -124,8 +124,26 @@ public:
   /// import the flame front from the combustion algorithm
   void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
-  /// get convection velocity vector for transfer to scalar transport field
-  const Teuchos::RCP<Epetra_Vector> ConVelnp();
+  /*!
+  \brief get the velocity vector based on standard dofs
+
+  \return RCP to a copy of Veln with only standard dofs
+   */
+  const Teuchos::RCP<Epetra_Vector> StdVeln();
+
+  /*!
+  \brief get the velocity vector based on standard dofs
+
+  \return RCP to a copy of Velnp with only standard dofs
+   */
+  const Teuchos::RCP<Epetra_Vector> StdVelnp();
+
+  /*!
+  \brief get the velocity vector based on standard dofs
+
+  \return RCP to a copy of Velaf with only standard dofs
+   */
+  const Teuchos::RCP<Epetra_Vector> StdVelaf();
 
   /// get history vector for transfer to scalar transport field
   const Teuchos::RCP<Epetra_Vector> Hist();

@@ -877,10 +877,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
         dofswitch.mapVectorToNewDofDistributionCombust(state_.accam_,true);
         dofswitch.mapVectorToNewDofDistributionCombust(state_.velaf_,true);
       }
+      else
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,true); //TODO: is this needed for genalpha?
       // velocities and pressures at time n+1, n and n-1
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,true); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,true);
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,true);
     }
     else
     {
@@ -892,10 +893,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
         dofswitch.mapVectorToNewDofDistributionCombust(state_.accam_,false);
         dofswitch.mapVectorToNewDofDistributionCombust(state_.velaf_,false);
       }
+      else
+        dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,false);
       // velocities and pressures at time n+1, n and n-1
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,false); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,false);
     }
     cout0_ << "done" << endl;
 
@@ -1095,9 +1097,9 @@ void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(const Teuchos::RCP<COMBUS
 
 
 /*------------------------------------------------------------------------------------------------*
- | get convection velocity vector for transfer to scalar transport field              henke 07/09 |
+ | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ConVelnp()
+const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVeln(void)
 {
   // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
   // cannot handle XFEM dofs at enriched nodes
@@ -1113,19 +1115,66 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ConVelnp()
   //       (here in every nonlinear iteration, and in the Output() function after every time step)
 
   // convection velocity vector
-  Teuchos::RCP<Epetra_Vector> convel = Teuchos::null;
-  if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
-  {
-    convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
-        *state_.velaf_, *standarddofset_,
-        state_.nodalDofDistributionMap_, outputfields);
-  }
-  else
-  {
-    convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
-        *state_.velnp_, *standarddofset_,
-        state_.nodalDofDistributionMap_, outputfields);
-  }
+  const Teuchos::RCP<Epetra_Vector> convel = dofmanagerForOutput_->transformXFEMtoStandardVector(*state_.veln_,
+                                                               *standarddofset_,
+                                                               state_.nodalDofDistributionMap_,
+                                                               outputfields);
+  return convel;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelnp(void)
+{
+  // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
+  // cannot handle XFEM dofs at enriched nodes
+  // remark: has to include pressure, since ScaTraTimIntImpl::SetVelocityField() expects it!
+  std::set<XFEM::PHYSICS::Field> outputfields;
+  outputfields.insert(XFEM::PHYSICS::Velx);
+  outputfields.insert(XFEM::PHYSICS::Vely);
+  outputfields.insert(XFEM::PHYSICS::Velz);
+  outputfields.insert(XFEM::PHYSICS::Pres);
+
+  // TODO: check performance time to built convel vector; if this is costly, it could be stored as
+  //       a private member variable of the time integration scheme, since it is built in two places
+  //       (here in every nonlinear iteration, and in the Output() function after every time step)
+
+  // convection velocity vector
+  const Teuchos::RCP<Epetra_Vector> convel = dofmanagerForOutput_->transformXFEMtoStandardVector(*state_.velnp_,
+                                                               *standarddofset_,
+                                                               state_.nodalDofDistributionMap_,
+                                                               outputfields);
+  return convel;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelaf(void)
+{
+  if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
+    dserror("Velaf is only available for genalpha time int scheme.");
+
+  // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
+  // cannot handle XFEM dofs at enriched nodes
+  // remark: has to include pressure, since ScaTraTimIntImpl::SetVelocityField() expects it!
+  std::set<XFEM::PHYSICS::Field> outputfields;
+  outputfields.insert(XFEM::PHYSICS::Velx);
+  outputfields.insert(XFEM::PHYSICS::Vely);
+  outputfields.insert(XFEM::PHYSICS::Velz);
+  outputfields.insert(XFEM::PHYSICS::Pres);
+
+  // TODO: check performance time to built convel vector; if this is costly, it could be stored as
+  //       a private member variable of the time integration scheme, since it is built in two places
+  //       (here in every nonlinear iteration, and in the Output() function after every time step)
+
+  // convection velocity vector
+  const Teuchos::RCP<Epetra_Vector> convel = dofmanagerForOutput_->transformXFEMtoStandardVector(*state_.velaf_,
+                                                               *standarddofset_,
+                                                               state_.nodalDofDistributionMap_,
+                                                               outputfields);
   return convel;
 }
 
@@ -2907,6 +2956,13 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->WriteVector("accnp", state_.accnp_);
     //std::cout << state_.accn_->GlobalLength() << std::endl;
     output_->WriteVector("accn" , state_.accn_);
+    if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+    {
+      //std::cout << state_.velaf_->GlobalLength() << std::endl;
+      output_->WriteVector("velaf" , state_.velaf_);
+      //std::cout << state_.accam_->GlobalLength() << std::endl;
+      output_->WriteVector("accam" , state_.accam_);
+    }
     cout0_ << "done" << std::endl;
   }
 
@@ -3037,6 +3093,13 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   //std::cout << state_.accnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.accn_ ,"accn");
   //std::cout << state_.accn_->GlobalLength() << std::endl;
+  if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+  {
+    reader.ReadVector(state_.velaf_ ,"velaf");
+    //std::cout << state_.velaf_->GlobalLength() << std::endl;
+    reader.ReadVector(state_.accam_ ,"accam");
+    //std::cout << state_.accam_->GlobalLength() << std::endl;
+  }
 }
 
 /*------------------------------------------------------------------------------------------------*

@@ -168,6 +168,15 @@ namespace ADAPTER {
     /// fine-scale velocity
     virtual Teuchos::RCP<const Epetra_Vector> FsVel() = 0;
 
+    /// velocities (and pressures) at t(n) w/out enriched dofs
+    virtual const Teuchos::RCP<Epetra_Vector> StdVeln() = 0;
+
+    /// velocities (and pressures) at t(n+1) w/out enriched dofs
+    virtual const Teuchos::RCP<Epetra_Vector> StdVelnp() = 0;
+
+    /// velocities (and pressures) at t(n+alpha_F) w/out enriched dofs
+    virtual const Teuchos::RCP<Epetra_Vector> StdVelaf() = 0;
+
     //@}
 
     //! @name Misc

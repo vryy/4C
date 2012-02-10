@@ -671,6 +671,8 @@ void SCATRA::TimIntGenAlpha::CalcPhidtReinit()
 
     eleparams.set("time-step length",dta_);
     eleparams.set("time factor",genalphafac_*dta_);
+    if (MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+      eleparams.set("alpha_F",alphaF_);
 
     // parameters for stabilization (here required for material evaluation location)
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");

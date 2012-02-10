@@ -241,6 +241,9 @@ public:
   ///  compute time derivative of thermodynamic pressure after solution
   virtual void ComputeThermPressureTimeDerivative() = 0;
 
+  /// compute values at intermediate time steps (required for generalized-alpha)
+  virtual void ComputeIntermediateValues() = 0;
+
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void UpdateThermPressure() = 0;
 
@@ -535,9 +538,6 @@ protected:
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   /// note: VM3 solver still needs an explicit toggle vector for construction
   const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
-
-  /// compute values at intermediate time steps (required for generalized-alpha)
-  virtual void ComputeIntermediateValues() = 0;
 
   /// compute values of thermodynamic pressure at intermediate time steps
   /// (required for generalized-alpha)

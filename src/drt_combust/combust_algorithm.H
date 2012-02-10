@@ -86,7 +86,7 @@ namespace COMBUST
     const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();
 
     /// compute flame velocity
-    const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& velnp,
+    const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<const Epetra_Vector>& velnp,
                                                       const Teuchos::RCP<const DRT::DofSet>& dofset
                                                       //const Teuchos::RCP<const Epetra_Map >& dbcmap
     );
@@ -128,8 +128,8 @@ namespace COMBUST
     void printMassConservationCheck(const double volume_start, const double volume_end);
 
     /// manipulate the fluid field passed to the scatra
-    const Teuchos::RCP<Epetra_Vector> ManipulateFluidFieldForGfunc(const Teuchos::RCP<Epetra_Vector>& convel,
-                                                                   const Teuchos::RCP<const DRT::DofSet>& dofset);
+    const Teuchos::RCP<const Epetra_Vector> ManipulateFluidFieldForGfunc(const Teuchos::RCP<const Epetra_Vector>& convel,
+                                                                         const Teuchos::RCP<const DRT::DofSet>& dofset);
 
     /// correct the volume of the minus(-) domain after reinitialization
     void CorrectVolume(const double targetvol, const double currentvol);

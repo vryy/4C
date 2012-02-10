@@ -170,6 +170,11 @@ namespace ADAPTER
       return fluid_.TurbulenceStatisticManager();
     }
 
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()    { dserror("not used any longer. Use stdvelnp or stdvelaf instead.");
+                                                                         return Teuchos::null; }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!");
+                                                                         return Teuchos::null; };
+
     /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used
      *
@@ -187,6 +192,11 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Vector> FsVel(){ dserror("not implemented"); return Teuchos::null; };
+
+    /// the same as above, but w/out enriched DOFs
+    virtual const Teuchos::RCP<Epetra_Vector> StdVeln();
+    virtual const Teuchos::RCP<Epetra_Vector> StdVelnp();
+    virtual const Teuchos::RCP<Epetra_Vector> StdVelaf();
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
@@ -267,9 +277,7 @@ namespace ADAPTER
     virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { fluid_.TransferVectorsToNewDistribution(interfacehandle); return; }
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!");
-                                                                         return Teuchos::null; };
+
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// extract the velocity part of a vector of unknowns
