@@ -241,10 +241,6 @@ namespace ADAPTER
     /// the actual explicit thermo algorithm
     Teuchos::RCP<THR::TimIntExpl> thermo_;
 
-    /// sum of temperature vectors already applied,
-    /// i.e. the incremental temperature
-    Teuchos::RCP<Epetra_Vector> tempinc_;
-
     /// @name local copies of input parameters
     //{@
     Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation

@@ -34,6 +34,7 @@ Maintainer: Caroline Danowski
 //#define DEBUGMATERIAL        /* flag for material debug output */
 //#define MonTSIwithoutTHR     /* flag to comment out all coupling terms in STR field */
 //#define MonTSIwithoutSTR     /* flag to comment out all coupling terms in THR field */
+//#define TFSI                 /* flag to reduce the output to screen */
 
 #endif  // #ifndef TSI_DEFINES_H
 #endif  // #ifdef CCADISCRET

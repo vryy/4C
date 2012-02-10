@@ -525,20 +525,6 @@ void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
   Teuchos::RCP<const Epetra_Vector> temp
   )
 {
-/*
-  // Play it save. In the first iteration everything is already set up
-  // properly. However, all following iterations need to calculate the
-  // stiffness matrix here. Furthermore we are bound to reset fextm_
-  // before we add our special contribution.
-  // So we calculate the stiffness anyway (and waste the available
-  // stiffness in the first iteration).
-  structure_->ApplyExternalForce(interface_,iforce);
-*/
-//  // This will add the provided interface force onto the residual forces
-//  // The sign convention of the interface force is external-force-like.
-//  structure_->SetForceInterface(interface_, iforce);
-//  structure_->Predict();
-
   // This will add the provided temperature to the structure problem
   structure_->ApplyTemperatures(temp);
 }

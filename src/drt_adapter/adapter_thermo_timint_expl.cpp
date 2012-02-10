@@ -57,10 +57,6 @@ ADAPTER::ThermoTimIntExpl::ThermoTimIntExpl(
   if (thermo_ == Teuchos::null)
     dserror("Failed to create thermal integrator");
 
-  // initialise temperature increments to 0 (in words zero)
-  // DofRowMap for multiple dofsets
-  tempinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap(0)),true));
-
   // good bye
   return;
 }
@@ -93,7 +89,7 @@ Teuchos::RCP<THR::TimIntExpl> ADAPTER::ThermoTimIntExpl::Create(
     // Everything else
     default :
     {
-      // do nothing
+      dserror("no further explicit time integration scheme for thermal field available.");
       break;
     }
   } // switch
@@ -210,7 +206,7 @@ Teuchos::RCP<THR::ThermoContactMan> ADAPTER::ThermoTimIntExpl::ThermoContactMana
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimIntExpl::PrepareTimeStep()
 {
-  //do nothing: there is no predictor for explicit time integration
+  // in explicit time integration no predictor exists
   return;
 }
 
@@ -309,8 +305,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimIntExpl::CreateFieldTest()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimIntExpl::ExtractTempn()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return thermo_->Temp();
 }
 
 
@@ -320,8 +315,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimIntExpl::ExtractTempn()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimIntExpl::ExtractTempnp()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return thermo_->TempNew();
 }
 
 /*----------------------------------------------------------------------*
@@ -362,8 +356,8 @@ void ADAPTER::ThermoTimIntExpl::ApplyStructVariables(
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimIntExpl::PreparePartitionStep()
 {
-  dserror("not yet checked in ADAPTER::ThermoTimIntExpl::PreparePartitionStep()!");
-//  thermo_->PreparePartitionStep();
+  // we do not need to predict the state
+  return;
 }
 
 

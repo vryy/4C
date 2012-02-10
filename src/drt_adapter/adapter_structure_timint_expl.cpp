@@ -440,7 +440,8 @@ void ADAPTER::StructureTimIntExpl::ApplyDisMat(
 /* (iterative staggered partitioned schemes)                            */
 void ADAPTER::StructureTimIntExpl::PreparePartitionStep()
 {
-  dserror("not implemented");
+  // we do not need to predict the state
+  return;
 }
 
 
