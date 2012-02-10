@@ -119,7 +119,7 @@ STR::TimInt::TimInt
   dt_(Teuchos::null),
   timemax_(sdynparams.get<double>("MAXTIME")),
   stepmax_(sdynparams.get<int>("NUMSTEP")),
-  step_(Teuchos::null),
+  step_(0),
   stepn_(0),
   lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS")==1),
   zeros_(Teuchos::null),
