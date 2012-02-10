@@ -23,8 +23,6 @@ Maintainer: Georg Bauer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_inpar/inpar_scatra.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace DRT
 {
@@ -60,7 +58,7 @@ protected:
       const bool isnurbs);
 
   /// returns conditions names to be copied (source and target name)
-  map<std::string,std::string> ConditionsToCopy();
+  std::map<std::string,std::string> ConditionsToCopy();
 
   /// check for correct material
   void CheckMaterialType(const int matid);

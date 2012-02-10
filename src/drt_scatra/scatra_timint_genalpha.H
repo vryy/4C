@@ -27,11 +27,11 @@ class TimIntGenAlpha : public ScaTraTimIntImpl
 public:
 
   /// Standard Constructor
-  TimIntGenAlpha(RCP<DRT::Discretization>       dis,
-                 RCP<LINALG::Solver>            solver,
-                 RCP<ParameterList>             params,
-                 RCP<ParameterList>             extraparams,
-                 RCP<IO::DiscretizationWriter>  output);
+  TimIntGenAlpha(Teuchos::RCP<DRT::Discretization>       dis,
+      Teuchos::RCP<LINALG::Solver>            solver,
+      Teuchos::RCP<Teuchos::ParameterList>    params,
+      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
+      Teuchos::RCP<IO::DiscretizationWriter>  output);
 
   /// Destructor
   virtual ~TimIntGenAlpha();
@@ -80,7 +80,7 @@ public:
   void ReadRestart(int step);
 
   // routine to return scalar field phi at time step n-1
-  Teuchos::RCP<Epetra_Vector> Phinm() { return null; }
+  Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
 
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf() { return phiaf_; }
@@ -122,7 +122,7 @@ protected:
   void ExplicitPredictor();
 
   /// set time for evaluation of Neumann boundary conditions
-  void SetTimeForNeumannEvaluation(ParameterList& params);
+  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
   /// add actual Neumann loads with time factor
   void AddNeumannToResidual();
@@ -131,7 +131,7 @@ protected:
   void AVM3Separation();
 
   /// add parameters specific for time-integration scheme
-  void AddSpecificTimeIntegrationParameters(ParameterList& params);
+  void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
 
   /// write additional data required for restart
   void OutputRestart();
@@ -152,14 +152,14 @@ protected:
 private:
 
   /// scalar at time n+alpha_F and n+alpha_M
-  RCP<Epetra_Vector>  phiaf_;
-  RCP<Epetra_Vector>  phiam_;
+  Teuchos::RCP<Epetra_Vector>  phiaf_;
+  Teuchos::RCP<Epetra_Vector>  phiam_;
 
   /// scalar time derivative at time n+alpha_M
-  RCP<Epetra_Vector>  phidtam_;
+  Teuchos::RCP<Epetra_Vector>  phidtam_;
 
   /// fine-scale part at time n+alpha_F
-  RCP<Epetra_Vector>  fsphiaf_;
+  Teuchos::RCP<Epetra_Vector>  fsphiaf_;
 
   /// time factors for generalized-alpha time integration
   double alphaM_;

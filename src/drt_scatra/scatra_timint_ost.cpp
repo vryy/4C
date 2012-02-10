@@ -28,11 +28,11 @@ Maintainer: Georg Bauer
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
-  RCP<DRT::Discretization>      actdis,
-  RCP<LINALG::Solver>           solver,
-  RCP<ParameterList>            params,
-  RCP<ParameterList>            extraparams,
-  RCP<IO::DiscretizationWriter> output)
+  Teuchos::RCP<DRT::Discretization>      actdis,
+  Teuchos::RCP<LINALG::Solver>           solver,
+  Teuchos::RCP<Teuchos::ParameterList>   params,
+  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
+  Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
   theta_(params_->get<double>("THETA"))
 {

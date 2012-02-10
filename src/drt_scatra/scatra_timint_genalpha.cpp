@@ -27,11 +27,11 @@ Maintainer: Volker Gravemeier
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntGenAlpha::TimIntGenAlpha(
-  RCP<DRT::Discretization>      actdis,
-  RCP<LINALG::Solver>           solver,
-  RCP<ParameterList>            params,
-  RCP<ParameterList>            extraparams,
-  RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<DRT::Discretization>      actdis,
+  Teuchos::RCP<LINALG::Solver>           solver,
+  Teuchos::RCP<Teuchos::ParameterList>   params,
+  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
+  Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
   alphaM_(params_->get<double>("ALPHA_M")),
   alphaF_(params_->get<double>("ALPHA_F")),

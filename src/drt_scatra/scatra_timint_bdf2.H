@@ -26,11 +26,11 @@ class TimIntBDF2 : public ScaTraTimIntImpl
 {
 public:
   /// Standard Constructor
-  TimIntBDF2(RCP<DRT::Discretization>       dis,
-             RCP<LINALG::Solver>            solver,
-             RCP<ParameterList>             params,
-             RCP<ParameterList>             extraparams,
-             RCP<IO::DiscretizationWriter>  output);
+  TimIntBDF2(Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<LINALG::Solver>            solver,
+      Teuchos::RCP<Teuchos::ParameterList>    params,
+      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
+      Teuchos::RCP<IO::DiscretizationWriter>  output);
 
   /// Destructor
   virtual ~TimIntBDF2();
@@ -73,16 +73,16 @@ public:
   void ReadRestart(int step);
 
   // routine to return scalar field phi at time step n-1
-  Teuchos::RCP<Epetra_Vector> Phinm() { return null; }
+  Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
 
   /// routine to return scalar field phi at time step n+alpha_F
-  Teuchos::RCP<Epetra_Vector> Phiaf(){return null;}
+  Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
 
   /// routine to return scalar field phi at time step n+alpha_M
-  Teuchos::RCP<Epetra_Vector> Phiam(){return null;}
+  Teuchos::RCP<Epetra_Vector> Phiam(){return Teuchos::null;}
 
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
-  Teuchos::RCP<Epetra_Vector> Phidtam(){return null;}
+  Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
 
   /// routine to reset phi vector due to reinitialization
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
@@ -122,7 +122,7 @@ protected:
   void ExplicitPredictor();
 
   /// set time for evaluation of Neumann boundary conditions
-  void SetTimeForNeumannEvaluation(ParameterList& params);
+  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
   /// add actual Neumann loads with time factor
   void AddNeumannToResidual();
@@ -131,7 +131,7 @@ protected:
   void AVM3Separation();
 
   /// add parameters specific for time-integration scheme
-  void AddSpecificTimeIntegrationParameters(ParameterList& params);
+  void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
 
   /// write additional data required for restart
   void OutputRestart();
@@ -148,10 +148,10 @@ protected:
 private:
 
   /// solution vector phi at time n-1
-  RCP<Epetra_Vector>    phinm_;
+  Teuchos::RCP<Epetra_Vector>  phinm_;
 
   /// fine-scale solution vector at time n+1
-  RCP<Epetra_Vector>  fsphinp_;
+  Teuchos::RCP<Epetra_Vector>  fsphinp_;
 
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;

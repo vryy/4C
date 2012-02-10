@@ -20,7 +20,6 @@ Maintainer: Georg Bauer
 #define DRT_SCATRA_ELEMENT_H
 
 
-using namespace std;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"

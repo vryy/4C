@@ -70,8 +70,6 @@ namespace FLD
   class Meshtying;
 }
 
-using namespace std;
-using namespace Teuchos;
 
 /// Algorithm and time integration classes for scalar transport problems
 namespace SCATRA{
@@ -87,11 +85,11 @@ class ScaTraTimIntImpl
 public:
 
   /// Standard Constructor
-  ScaTraTimIntImpl(RCP<DRT::Discretization>       dis,
-                   RCP<LINALG::Solver>            solver,
-                   RCP<ParameterList>             params,
-                   RCP<ParameterList>             xparams,
-                   RCP<IO::DiscretizationWriter>  output);
+  ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization>       dis,
+                   Teuchos::RCP<LINALG::Solver>            solver,
+                   Teuchos::RCP<Teuchos::ParameterList>    params,
+                   Teuchos::RCP<Teuchos::ParameterList>    xparams,
+                   Teuchos::RCP<IO::DiscretizationWriter>  output);
 
   /// Destructor
   virtual ~ScaTraTimIntImpl();
@@ -326,7 +324,7 @@ public:
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   /// routine to return information on periodic bondary conditions (row map)
-  Teuchos::RCP<map<int,vector<int> > > PBCmap() { return pbcmapmastertoslave_; };
+  Teuchos::RCP<std::map<int,std::vector<int> > > PBCmap() { return pbcmapmastertoslave_; };
 
   /// routine to return the periodic boundary condition member
   Teuchos::RCP<PeriodicBoundaryConditions> PBC() { return pbc_; }
@@ -394,8 +392,8 @@ public:
 
   /// compute contribution of permeable surface/interface
   void SurfacePermeability(
-      RCP<LINALG::SparseOperator> matrix,
-      RCP<Epetra_Vector>          rhs);
+      Teuchos::RCP<LINALG::SparseOperator> matrix,
+      Teuchos::RCP<Epetra_Vector>          rhs);
 
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
@@ -458,13 +456,13 @@ protected:
   virtual void SetOldPartOfRighthandside() = 0;
 
   /// set time for evaluation of Neumann boundary conditions
-  virtual void SetTimeForNeumannEvaluation(ParameterList& params) = 0;
+  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   /// add actual Neumann loads multipl. with time factor to the residual
   virtual void AddNeumannToResidual() = 0;
 
   /// add parameters specific for time-integration scheme
-  virtual void AddSpecificTimeIntegrationParameters(ParameterList& params) = 0;
+  virtual void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params) = 0;
 
   /// Apply Dirichlet boundary conditions on provided state vector
   void ApplyDirichletBC
@@ -514,7 +512,7 @@ protected:
   void ReinitializeInfo(bool printtoscreen = true, bool printtofile = true); //schott
 
   /// add reinitialization specific parameters
-  void AddReinitializationParameters(ParameterList& params);
+  void AddReinitializationParameters(Teuchos::ParameterList& params);
 
   /// solve linear system
   void LinearSolve();
@@ -552,7 +550,7 @@ protected:
   virtual void AVM3Separation()=0;
 
   /// scaling of AVM3-based subgrid-diffusivity matrix
-  void AVM3Scaling(ParameterList& eleparams);
+  void AVM3Scaling(Teuchos::ParameterList& eleparams);
 
   /// is output needed for the current time step?
   bool DoOutput()
@@ -579,24 +577,24 @@ protected:
 
   /// compute contribution of electrode kinetics to eq. system
   void EvaluateElectrodeKinetics(
-      RCP<LINALG::SparseOperator> matrix,
-      RCP<Epetra_Vector>          rhs);
+      Teuchos::RCP<LINALG::SparseOperator> matrix,
+      Teuchos::RCP<Epetra_Vector>          rhs);
 
   /// evaluate Neumann inflow boundary condition
   void ComputeNeumannInflow(
-      RCP<LINALG::SparseOperator> matrix,
-      RCP<Epetra_Vector>          rhs);
+      Teuchos::RCP<LINALG::SparseOperator> matrix,
+      Teuchos::RCP<Epetra_Vector>          rhs);
 
   /// evaluate boundary condition due to convective heat transfer
   void EvaluateConvectiveHeatTransfer(
-      RCP<LINALG::SparseOperator> matrix,
-      RCP<Epetra_Vector>          rhs);
+      Teuchos::RCP<LINALG::SparseOperator> matrix,
+      Teuchos::RCP<Epetra_Vector>          rhs);
 
   /// return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
 
   /// write flux vectors to BINIO
-  void OutputFlux(RCP<Epetra_MultiVector> flux);
+  void OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux);
 
   /// computes different conductivity expressions for electrolyte solutions (ELCH)
   Epetra_SerialDenseVector ComputeConductivity();
@@ -605,10 +603,10 @@ protected:
   bool ApplyGalvanostaticControl();
 
   /// check for negative values of concentrations (ELCH)
-  void CheckConcentrationValues(RCP<Epetra_Vector> vec);
+  void CheckConcentrationValues(Teuchos::RCP<Epetra_Vector> vec);
 
   //! compute outward pointing unit normal vectors at given bc's
-  RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);
+  Teuchos::RCP<Epetra_MultiVector> ComputeNormalVectors(const std::vector<std::string>& condnames);
 
   //! update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate(const bool init = false) = 0;
@@ -622,15 +620,15 @@ protected:
       );
 
   /// the scalar transport discretization
-  RCP<DRT::Discretization>   discret_;
+  Teuchos::RCP<DRT::Discretization>   discret_;
   /// the solver
-  RCP<LINALG::Solver>        solver_;
+  Teuchos::RCP<LINALG::Solver>        solver_;
   /// the parameter list
-  RCP<ParameterList>         params_;
+  Teuchos::RCP<Teuchos::ParameterList> params_;
   /// the parameter list containing extra parameters (application dependent)
-  RCP<ParameterList>         extraparams_;
+  Teuchos::RCP<Teuchos::ParameterList> extraparams_;
   /// the discretization writer
-  RCP<IO::DiscretizationWriter>  output_;
+  Teuchos::RCP<IO::DiscretizationWriter>  output_;
   /// processor id
   int                        myrank_;
 
@@ -679,7 +677,7 @@ protected:
   INPAR::SCATRA::FluxType writeflux_;
 
   /// ids of scalars for which flux vectors are written (starting with 1)
-  vector<int> writefluxids_;
+  std::vector<int> writefluxids_;
 
   /// flag for printing out mean values of scalars
   const bool outmean_;
@@ -737,84 +735,84 @@ protected:
   double initialmass_;
 
   /// system matrix (either sparse matrix or block sparse matrix)
-  RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RCP<Epetra_Vector>    zeros_;
+  Teuchos::RCP<Epetra_Vector>    zeros_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// the vector containing body and surface forces
-  RCP<Epetra_Vector>    neumann_loads_;
+  Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
   /// The residual vector
-  RCP<Epetra_Vector>    residual_;
+  Teuchos::RCP<Epetra_Vector>    residual_;
 
   /// phi at times n+1 and n
-  RCP<Epetra_Vector>    phinp_;
-  RCP<Epetra_Vector>    phin_;
+  Teuchos::RCP<Epetra_Vector>    phinp_;
+  Teuchos::RCP<Epetra_Vector>    phin_;
 
   /// phi at time 0 as reference for reinitialization procedure
-  RCP<Epetra_Vector>    phistart_;
+  Teuchos::RCP<Epetra_Vector>    phistart_;
 
   /// time derivative of phi at times n+1 and n
-  RCP<Epetra_Vector>  phidtnp_;
-  RCP<Epetra_Vector>  phidtn_;
+  Teuchos::RCP<Epetra_Vector>  phidtnp_;
+  Teuchos::RCP<Epetra_Vector>  phidtn_;
 
   /// true (rescaled) residual vector without zeros at Dirichlet conditions
-  RCP<Epetra_Vector>    trueresidual_;
+  Teuchos::RCP<Epetra_Vector>    trueresidual_;
 
   /// density (nodebased!) at times n+1, n and n-1 for ELCH natural convection algorithm
-  RCP<Epetra_Vector>    elchdensnp_;
-  RCP<Epetra_Vector>    elchdensn_;
-  RCP<Epetra_Vector>    elchdensnm_;
+  Teuchos::RCP<Epetra_Vector>    elchdensnp_;
+  Teuchos::RCP<Epetra_Vector>    elchdensn_;
+  Teuchos::RCP<Epetra_Vector>    elchdensnm_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)
-  RCP<Epetra_Vector>    hist_;
+  Teuchos::RCP<Epetra_Vector>    hist_;
 
   /// fluid velocity
-  RCP<Epetra_MultiVector> vel_;
+  Teuchos::RCP<Epetra_MultiVector> vel_;
 
   /// convective velocity
-  RCP<Epetra_MultiVector>    convel_;
+  Teuchos::RCP<Epetra_MultiVector>    convel_;
 
   /// subgrid-scale velocity required for multifractal subgrid-scale modeling
-  RCP<Epetra_MultiVector>    fsvel_;
+  Teuchos::RCP<Epetra_MultiVector>    fsvel_;
 
   /// acceleration and pressure required for computation of subgrid-scale velocity
-  RCP<Epetra_MultiVector>    accpre_;
+  Teuchos::RCP<Epetra_MultiVector>    accpre_;
 
   /// displacements at time n+1 for ALE formulation
-  RCP<Epetra_MultiVector>    dispnp_;
+  Teuchos::RCP<Epetra_MultiVector>    dispnp_;
 
   /// Nonlinear iteration increment vector
-  RCP<Epetra_Vector>    increment_;
+  Teuchos::RCP<Epetra_Vector>    increment_;
 
   /// subgrid-diffusivity(-scaling) vector
-  RCP<Epetra_Vector>    subgrdiff_;
+  Teuchos::RCP<Epetra_Vector>    subgrdiff_;
 
   /// only necessary for AVM3: fine-scale subgrid-diffusivity matrix
-  RCP<LINALG::SparseMatrix> sysmat_sd_;
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_sd_;
 
   /// only necessary for AVM3: scale-separation matrix
-  RCP<LINALG::SparseMatrix> Sep_;
+  Teuchos::RCP<LINALG::SparseMatrix> Sep_;
 
   /// only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix
-  RCP<LINALG::SparseMatrix> Mnsv_;
+  Teuchos::RCP<LINALG::SparseMatrix> Mnsv_;
 
   /// flux vector fields
-  RCP<Epetra_MultiVector> flux_;
+  Teuchos::RCP<Epetra_MultiVector> flux_;
 
   /// Extractor used for convergence check either in ELCH or LOMA case
-  RCP<LINALG::MapExtractor> splitter_;
+  Teuchos::RCP<LINALG::MapExtractor> splitter_;
 
   /// Periodic Boundary Conditions. Guess what.
-  RCP<PeriodicBoundaryConditions> pbc_;
+  Teuchos::RCP<PeriodicBoundaryConditions> pbc_;
 
   /// connection between master and slave row nodes
-  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   /// time measurement
   double dtele_;
@@ -824,7 +822,7 @@ protected:
   FILE* errfile_;
 
   /// vector for statistical evaluation of normal fluxes
-  RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
+  Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
 
   /// number of transported scalars
   int numscal_;
@@ -842,19 +840,19 @@ protected:
   double gstatincrement_;
 
   /// magnetic field (3D vector field)
-  RCP<Epetra_MultiVector> magneticfield_;
+  Teuchos::RCP<Epetra_MultiVector> magneticfield_;
 
   /// conductivity of the single species and the whole electrolyte
   Epetra_SerialDenseVector sigma_;
 
   /// unit outer normal vector field for flux output
-  RCP<Epetra_MultiVector> normals_;
+  Teuchos::RCP<Epetra_MultiVector> normals_;
 
   /// densification coefficients for ELCH natural convection
-  vector<double> densific_;
+  std::vector<double> densific_;
 
   /// initial concentrations of the electrolyte solution (ELCH)
-  vector<double> c0_;
+  std::vector<double> c0_;
 
   /// flag for Krylov space projection
   bool                             project_;
@@ -864,7 +862,7 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> c_;
 
   /// coupling of fluid-fluid at an internal interface
-  RCP<FLD::Meshtying>   meshtying_;
+  Teuchos::RCP<FLD::Meshtying>   meshtying_;
 
   // options for meshtying
   int msht_;
