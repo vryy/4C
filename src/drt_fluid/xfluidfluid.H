@@ -12,12 +12,13 @@
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
-#include "../drt_xfem/xfluidfluid_timeInt.H"
-#include "../drt_xfem/xfem_fluiddofset.H"
 
 #include "../drt_lib/drt_dofset_independent.H"
 #include "fluid_utils_mapextractor.H"
+
+#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_xfem/xfluidfluid_timeInt.H"
+#include "../drt_xfem/xfem_fluiddofset.H"
 
 namespace DRT
 {
@@ -55,12 +56,6 @@ namespace FLD
     public:
 
       explicit XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol );
-
-      void Evaluate          ( Teuchos::ParameterList & eleparams,
-                               INPAR::XFEM::CouplingStrategy & coupling_strategy,
-                               DRT::Discretization    & bgdis,
-                               DRT::Discretization    & cutdiscret,
-                               DRT::Discretization    & embdis);
 
       void EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
                                DRT::Discretization    & bgdis,
@@ -271,16 +266,18 @@ namespace FLD
     /// statistics
     void StatisticsAndOutput();
 
+    void EvaluateErrorComparedToAnalyticalSol();
+
     void SetDirichletNeumannBC();
+
+    void SetHistoryValues();
 
     /// determine grid velocity
     void UpdateGridv();
 
     void CutAndSaveBgFluidStatus();
 
-    void SetBgStateVectorsAndPrepareTimeStep();
-
-    void SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle();
+    void SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp);
 
     void UpdateMonolithicFluidSolution();
 
@@ -288,8 +285,6 @@ namespace FLD
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
       );
-
-    void EvaluateErrorComparedToAnalyticalSol();
 
     void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
                         const LINALG::MultiMapExtractor& domainmaps,
@@ -310,7 +305,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
     Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
     Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { return alevelnp_; }
     Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
     Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
     Teuchos::RCP<Epetra_Vector> GridVel() {return gridv_; }
@@ -385,6 +380,8 @@ namespace FLD
 
      /// linearization with respect to mesh motion
     RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+
+    Teuchos::RCP<LINALG::SparseOperator> shapederivativestest_;
 
     /// maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<LINALG::MapExtractor> aledbcmaps_;
@@ -542,7 +539,7 @@ namespace FLD
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
-    enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;            // xfluidfluid time integration approach
+    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;            // xfluidfluid time integration approach
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
     //@}
@@ -630,6 +627,7 @@ namespace FLD
 
     bool   monolithicfluidfluidfsi_;
     bool   samemaps_; // same maps for the current cut and the last cut
+    int relaxing_ale_;
 
     // used for monolithic_fixedale_partitioned
     Teuchos::RCP<Epetra_Vector>    toggle_;
@@ -644,7 +642,10 @@ namespace FLD
 
     int gmsh_count_;
 
+    // action used for boundary coupling approach (stress based or nitsche)
     string action_;
+
+    string monotype_;
   };
 }
 

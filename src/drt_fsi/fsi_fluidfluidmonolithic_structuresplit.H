@@ -142,6 +142,10 @@ namespace FSI
     FLD::UTILS::FluidXFluidMapExtractor xfluidfluidsplitter_;
 
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
+
+    int currentstep_;
+
+    int relaxing_ale_;
   };
 }
 

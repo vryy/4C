@@ -151,26 +151,6 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::XFluidFluidState::Evaluate( Teuchos::ParameterList & eleparams,
-                                                   INPAR::XFEM::CouplingStrategy & coupling_strategy,
-                                                   DRT::Discretization & discret,
-                                                   DRT::Discretization & cutdiscret,
-                                                   DRT::Discretization & alediscret )
-{
-
-//   if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring)
-//   {
-    EvaluateFluidFluid( eleparams, discret, cutdiscret, alediscret);
-//   }
-//   else
-//   {
-//     EvaluateFluidFluid_TwoSidedMortaring( eleparams, discret, cutdiscret, alediscret);
-//   }
-
-}
-
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
                                                              DRT::Discretization & discret,
                                                              DRT::Discretization & cutdiscret,
@@ -239,7 +219,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
 
   DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-  DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,Teuchos::null,xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
+  DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_,xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
 
   Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,false,false));
   if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
@@ -528,7 +508,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
         if ( vc->Position()==GEO::CUT::Point::outside )
         {
-          const std::vector<int> & nds = vc->NodalDofSet();
+          //const std::vector<int> & nds = vc->NodalDofSet();
 
           // one set of dofsets
           std::vector<int>  ndstest;
@@ -691,7 +671,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                 strategy.Elematrix2(),
                                 strategy.Elevector1(),
                                 strategy.Elevector2(),
-                                strategy.Elevector3() );
+                                strategy.Elevector3());
 
       if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
 
@@ -769,7 +749,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
       int eid = actaleele->Id();
       alestrategy.AssembleMatrix1(eid,alela[0].lm_,alela[0].lm_,alela[0].lmowner_,alela[0].stride_);
-//       strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
+      alestrategy.AssembleMatrix2(eid,alela[0].lm_,alela[0].lm_,alela[0].lmowner_,alela[0].stride_);
       alestrategy.AssembleVector1(alela[0].lm_,alela[0].lmowner_);
 //       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
 //       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
@@ -794,6 +774,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   dserror("D_FLUID3 required");
 #endif
 }
+
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -905,16 +886,17 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
         GEO::CUT::VolumeCell * vc = *i;
         if ( vc->Position()==GEO::CUT::Point::outside )
         {
+#ifdef DOFSETS_NEW
           const std::vector<int> & nds = vc->NodalDofSet();
-
+          if ( e->IsCut() )
+            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, nds );
+#else
           std::vector<int>  ndstest;
           for (int t=0;t<8; ++t)
             ndstest.push_back(0);
-
           if ( e->IsCut() )
-          {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, nds );
-          }
+             GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, ndstest );
+#endif
           else
           {
             GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, col_vel );
@@ -1419,20 +1401,22 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   VolumeCellGaussPointBy_    = params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
   BoundCellGaussPointBy_ = params_.sublist("XFEM").get<string>("BOUNDARY_GAUSS_POINTS_BY");
 
-  // get XFEM Couping specific input parameters
+  // get XFEM Coupling specific input parameters
   boundIntType_       = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_.sublist("XFEM"),"EMBEDDED_BOUNDARY");
   coupling_strategy_  = DRT::INPUT::get<INPAR::XFEM::CouplingStrategy>(params_.sublist("XFEM"),"COUPLING_STRATEGY");
   nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
   monolithic_approach_= DRT::INPUT::get<INPAR::XFEM::Monolithic_xffsi_Approach>(params_.sublist("XFEM"),"MONOLITHIC_XFFSI_APPROACH");
-  timeintapproach_ = DRT::INPUT::get<INPAR::XFEM::XFluidFluidTimeInt>(params.sublist("XFEM"),"XFLUIDFLUID_TIMEINT");
+  xfem_timeintapproach_ = DRT::INPUT::get<INPAR::XFEM::XFluidFluidTimeInt>(params.sublist("XFEM"),"XFLUIDFLUID_TIMEINT");
+  relaxing_ale_ = params_.sublist("XFEM").get<int>("RELAXING_ALE");
 
   gmsh_count_ = 0;
 
   // set the element name for boundary elements BELE3 or BELE3_4
   string element_name;
 
-  // check input parameters set for boundary/interface coupling
+  // check input parameters set for boundary/interface coupling and
+  // set the action
   switch (boundIntType_)
   {
   case INPAR::XFEM::BoundaryTypeSigma:
@@ -1462,8 +1446,27 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     break;
   default:
     dserror("BoundaryType unknown!!!");
-
   }
+
+  if (monolithicfluidfluidfsi_)
+  {
+    switch (monolithic_approach_)
+    {
+    case INPAR::XFEM::XFFSI_FixedALE_Partitioned:
+      monotype_ = "fixedale_partitioned";
+      break;
+    case INPAR::XFEM::XFFSI_Full_Newton:
+      monotype_ = "fully_newton";
+      break;
+    case INPAR::XFEM::XFFSI_FixedALE_Interpolation:
+      monotype_ = "fixedale_interpolation";
+      break;
+    default:
+      dserror("monolithic type unknown");
+    }
+  }
+  else
+    monotype_ = "no monolithicfsi";
 
 //  boundIntType_ = params_.sublist("XFEM").get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY");
 
@@ -2038,8 +2041,18 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
   if (alefluid_)
     CutAndSaveBgFluidStatus();
 
-  SetBgStateVectorsAndPrepareTimeStep();
+  if (not monolithicfluidfluidfsi_)
+    SetBgStateVectors(aledispn_);
+  else if(monotype_ == "fixedale_partitioned" or monotype_ == "fixedale_interpolation")
+    SetBgStateVectors(aledispnpoldstate_);
+  else if(monotype_ == "fully_newton")
+    SetBgStateVectors(aledispnp_);
+  else
+    dserror("Unknowm type in PrepareNonlinearSolve! ");
 
+  SetHistoryValues();
+
+  SetDirichletNeumannBC();
 }
 
 // ----------------------------------------------------------------
@@ -2066,12 +2079,6 @@ void FLD::XFluidFluid::NonlinearSolve()
   dtfilter_ = 0.0;
 
 
-//   //if (step_>1 and alefluid_ and (not monolithicfluidfluidfsi_))
-//   if (alefluid_ and (not monolithicfluidfluidfsi_))
-//   {
-//     CutAndSaveBgFluidStatus();
-//     SetBgStateVectorsAndPrepareTimeStep();
-//   }
 
   if (myrank_ == 0)
   {
@@ -2133,10 +2140,6 @@ void FLD::XFluidFluid::NonlinearSolve()
       embdis_->ClearState();
       embdis_->SetState("velaf",alevelnp_);
 
-#ifdef JEFFERYHAMELFLOW
-      double L2 = 0.0;
-      eleparams.set("L2",L2);
-#endif
 
       int itemax  = params_.get<int>("max nonlin iter steps");
 
@@ -2146,7 +2149,7 @@ void FLD::XFluidFluid::NonlinearSolve()
           or
        (params_.get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
       {
-        state_->Evaluate( eleparams, coupling_strategy_, *bgdis_, *boundarydis_, *embdis_ );
+         state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_);
       }
 
 
@@ -2154,17 +2157,9 @@ void FLD::XFluidFluid::NonlinearSolve()
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
 
-#ifdef JEFFERYHAMELFLOW
-      const double L2_result = sqrt(eleparams.get<double>("L2"));
-      //cout << "L2 norm = " << scientific << L2_result << endl;
-      const std::string fname("L2.txt");
-      std::ofstream f(fname.c_str(),std::fstream::trunc);
-      f.setf(ios::scientific,ios::floatfield);
-      f.precision(12);
-      f << L2_result;
-      f.close();
-#endif
     }
+
+
 
     // scaling to get true residual vector
     state_->trueresidual_->Update(ResidualScaling(),*state_->residual_,0.0);
@@ -2181,7 +2176,7 @@ void FLD::XFluidFluid::NonlinearSolve()
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
     aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alezeros_), aleresidual_);
 
-    if (monolithicfluidfluidfsi_ and monolithic_approach_==INPAR::XFEM::XFFSI_FixedALE_Partitioned)
+    if(monotype_ == "fixedale_partitioned")
     {
       // set the aleresidual values to zeros at the fsi-interface
       for (int iter=0; iter<toggle_->MyLength();++iter)
@@ -2342,12 +2337,14 @@ void FLD::XFluidFluid::NonlinearSolve()
     std::vector<Teuchos::RCP<const Epetra_Map> > maps;
     maps.push_back(state_->dbcmaps_->CondMap());
     maps.push_back(aledbcmaps_->CondMap());
-    if (monolithicfluidfluidfsi_ and monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
-      maps.push_back(fixedfsidofmap_);
 
     state_->fluidfluiddbcmaps_ = LINALG::MultiMapExtractor::MergeMaps(maps);
 
     LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
+
+    // set the fsi dirichlet values for monolithic_fixedale_partitioned
+    if(monotype_ == "fixedale_partitioned")
+      LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,toggle_);
 
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -2468,11 +2465,12 @@ void FLD::XFluidFluid::Evaluate(
     *state_->velnp_ = *stepinc_bg_tmp;
     *alevelnp_ = *stepinc_emb_tmp;
 
-    // prepare new iteration
-    if (monolithic_approach_==INPAR::XFEM::XFFSI_Full_Newton)
+    // prepare new iteration for fully_newton approach
+    if(monotype_ == "fully_newton")
     {
       // cut and set state vectors
       PrepareNonlinearSolve();
+
       stepinc_bg = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
 
       // calculate the stepinc for both fluids. This is needed in
@@ -2520,8 +2518,7 @@ void FLD::XFluidFluid::Evaluate(
   eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-  state_->Evaluate(eleparams, coupling_strategy_, *bgdis_,*boundarydis_,*embdis_);
-
+  state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_);
 
   // scaling to get true residual vector
   state_->trueresidual_->Update(ResidualScaling(),*state_->residual_,0.0);
@@ -2536,8 +2533,13 @@ void FLD::XFluidFluid::Evaluate(
   state_->fluidfluidsysmat_->Add(*state_->Cuiui_,false,1.0,1.0);
   state_->fluidfluidsysmat_->Complete();
 
-  // hier shapederivatives_ !!!!!!!!!!!!
-
+  if (shapederivatives_ != Teuchos::null)
+  {
+    shapederivatives_->Complete();
+    // apply Dirichlet conditions to a non-diagonal matrix
+    // (The Dirichlet rows will become all zero, no diagonal one.)
+    shapederivatives_->ApplyDirichlet(*(aledbcmaps_->CondMap()),false);
+  }
 
   state_->fluidfluidincvel_->PutScalar(0.0);
 
@@ -2556,8 +2558,14 @@ void FLD::XFluidFluid::Evaluate(
   LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,
                                  state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
 
-  state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
-                     aledispnp_);
+//if (monolithic_approach_==INPAR::XFEM::XFFSI_Full_Newton)
+//   if(monotype_ == "fully_newton")
+//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
+//                        aledispnp_);
+//   else
+//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
+//                        aledispnp_);
+
 
   // save the old state of the ale displacement
   aledispnpoldstate_->Update(1.0,*aledispnp_,0.0);
@@ -2621,6 +2629,23 @@ void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoa
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::TimeUpdate()
 {
+  // parameter for monolithic_approach_fixedale, do not move
+  // the embedded mesh in this monolithic step
+  bool NoCutandJustUpdate = true;
+
+  if (step_%relaxing_ale_==0)
+    NoCutandJustUpdate = false;
+
+  if ((monotype_ == "fixedale_partitioned" or monotype_ == "fixedale_interpolation")
+      and (NoCutandJustUpdate == false))
+  {
+    // cut and do xfluidfluid time integration.
+    PrepareNonlinearSolve();
+
+    if (monotype_ == "fixedale_partitioned")
+      UpdateMonolithicFluidSolution();
+  }
+
   ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
@@ -2716,42 +2741,30 @@ void FLD::XFluidFluid::TimeUpdate()
     LINALG::Export(*aleonlyaccnp,*aleaccnp_);
   }
 
-  if (monolithicfluidfluidfsi_ and monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
+  // update old acceleration
+  state_->accn_->Update(1.0,*state_->accnp_,0.0);
+  aleaccn_->Update(1.0,*aleaccnp_,0.0);
+
+  // velocities/pressures of this step become most recent
+  // velocities/pressures of the last step
+  state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
+  state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
+
+  alevelnm_->Update(1.0,*aleveln_ ,0.0);
+  aleveln_ ->Update(1.0,*alevelnp_,0.0);
+
+  if (alefluid_)
   {
-    // we have a new ale displacement so do the cut again
-    CutAndSaveBgFluidStatus();
-
-    // interpolate bg-nodes and/or embedded nodes
-    SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle();
-
-    if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
-      UpdateMonolithicFluidSolution();
+    aledispnm_->Update(1.0,*aledispn_,0.0);
+    aledispn_->Update(1.0,*aledispnp_,0.0);
   }
 
-  // Note: for monolithic_fixed_Ale the update happens in
-  // SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle
-    if ((not monolithicfluidfluidfsi_) or (monolithicfluidfluidfsi_
-          and monolithic_approach_==INPAR::XFEM::XFFSI_Full_Newton))
+  if (monolithicfluidfluidfsi_)
   {
-    // update old acceleration
-    state_->accn_->Update(1.0,*state_->accnp_,0.0);
-    aleaccn_->Update(1.0,*aleaccnp_,0.0);
+    SetHistoryValues();
 
-    // velocities/pressures of this step become most recent
-    // velocities/pressures of the last step
-    state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
-    state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
-
-    alevelnm_->Update(1.0,*aleveln_ ,0.0);
-    aleveln_ ->Update(1.0,*alevelnp_,0.0);
-
-    if (alefluid_)
-    {
-      aledispnm_->Update(1.0,*aledispn_,0.0);
-      aledispn_->Update(1.0,*aledispnp_,0.0);
-    }
+    SetDirichletNeumannBC();
   }
-
 } //XFluidFluid::TimeUpdate()
 
 // -------------------------------------------------------------------
@@ -2785,11 +2798,11 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
 //
 // - Create Patch boxes which are not used at the moment (todo)
 // - Set new bg state vectors: veln_, velnm_, accn_
-// - Set the right hand sides hist_ and alehist_
 // - Set velnp_ and alevelnp_ to the veln_ and aleveln_ as start values
-// - Evaluate Dirichlet and Neumann boundary conditions
+// - disp is the displacment of the embedded fluid at the time we want to
+//   interpolate values from it
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::SetBgStateVectorsAndPrepareTimeStep()
+void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
 {
 // create patch boxes of embedded elements
 //  std::map<int,GEO::CUT::BoundingBox> patchboxes;
@@ -2800,157 +2813,45 @@ void FLD::XFluidFluid::SetBgStateVectorsAndPrepareTimeStep()
   INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
   int startfuncno = fdyn.get<int>("STARTFUNCNO");
 
-  if (not monolithicfluidfluidfsi_)
+  if ((not monolithicfluidfluidfsi_ and step_>1 and alefluid_) or monolithicfluidfluidfsi_)
   {
-    if (step_>1 and alefluid_)
+    if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
+        (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) )
     {
-      if (timeintapproach_ != INPAR::XFEM::Xff_TimeInt_ProjIfMoved or
-          (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) )
-      {
-        xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,aledispn_);
-        xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,aledispn_);
-        xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccn_,aledispn_);
-      }
-      // Note: if Xff_TimeInt_ProjIfMoved is chosen this enriched
-      // values are not projected from the embedded fluid anymore.
-      else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
-      {
-        state_->veln_->Update(1.0,*staten_->veln_,0.0);
-        state_->velnm_->Update(1.0,*staten_->velnm_,0.0);
-        state_->accn_->Update(1.0,*staten_->accn_,0.0);
-      }
-
-      //velocity as start velue
-      state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start velue
-      alevelnp_->Update(1.0,*aleveln_,0.0); // use old velocity as start velue
+      cout << "do the full projection ..." << endl;
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnp_,disp);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,disp);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,disp);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccn_,disp);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnp_,disp);
     }
-    else if(step_==1 and initfield != INPAR::FLUID::initfield_zero_field)
-      SetInitialFlowField(initfield,startfuncno);
-  }
-  // for full-newton monolithic only
-  else if (monolithicfluidfluidfsi_)
-  {
-    if (timeintapproach_ != INPAR::XFEM::Xff_TimeInt_ProjIfMoved or
-        (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)))
+    // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
+    // the enriched values are not projected from the embedded fluid anymore.
+    else if(xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
     {
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnp_,aledispnp_);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,aledispnp_);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,aledispnp_);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnp_,aledispnp_);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccn_,aledispnp_);
-    }
-    else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
-    {
+      // we use the old velocity as start value
+      cout << "samemaps ..." << endl;
       state_->velnp_->Update(1.0,*staten_->velnp_,0.0);
       state_->veln_->Update(1.0,*staten_->veln_,0.0);
       state_->velnm_->Update(1.0,*staten_->velnm_,0.0);
-      state_->accnp_->Update(1.0,*staten_->accnp_,0.0);
       state_->accn_->Update(1.0,*staten_->accn_,0.0);
+      state_->accnp_->Update(1.0,*staten_->accnp_,0.0);
     }
-    else if(step_==1 and initfield != INPAR::FLUID::initfield_zero_field)
-      SetInitialFlowField(initfield,startfuncno);
   }
+  else if(step_==1 and initfield != INPAR::FLUID::initfield_zero_field)
+    SetInitialFlowField(initfield,startfuncno);
 
-
-  // -------------------------------------------------------------------
-  // set part(s) of the rhs vector(s) belonging to the old timestep
-  // (only meaningful for momentum part)
-  //
-  // stationary/af-generalized-alpha: hist_ = 0.0
-  //
-  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
-  //
-  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
-  //
-  //
-  // ------------------------------------------------------------------
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
-                                                timealgo_, dta_, theta_, state_->hist_);
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
-                                                timealgo_, dta_, theta_, alehist_);
-
-  // debug output
-  // int count = -1; // no counter for standard solution output
-  // state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", count, step_, state_->veln_, aleveln_, aledispnp_);
-  // state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", count, step_, state_->velnm_, alevelnm_, aledispnp_);
-
-  SetDirichletNeumannBC();
-
-}//SetBgStateVectorsAndPrepareTimeStep()
-
-// -------------------------------------------------------------------
-// In this function: **Just for monolithic-fixed-Ale**
-//
-// - Create Patch boxes which are not used at the moment (todo)
-// - Set new bg state vectors: velnp_, veln_, accnp_
-// - Set the right hand sides hist_ and alehist_
-// - Evaluate Dirichlet and Neumann boundary conditions
-// - Update the state vectors
-// -------------------------------------------------------------------
-void FLD::XFluidFluid::SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle()
-{
-// create patch boxes of embedded elements
-//  std::map<int,GEO::CUT::BoundingBox> patchboxes;
-//   if (alefluid_)
-//     CreatePatchBoxes(patchboxes);
-
-  xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,aledispnpoldstate_);
-  xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnp_,aledispnpoldstate_);
-  xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnp_,aledispnpoldstate_);
-
-  if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation)
+  if (monotype_ == "fixedale_interpolation")
   {
     // set the embedded state vectors to the new ale displacement
     // before updating the vectors of the old time step
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, *alevelnp_, alevelnp_, aledispnp_, aledispnpoldstate_);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , *aleveln_ , aleveln_ , aledispnp_, aledispnpoldstate_);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, *aleaccnp_, aleaccnp_, aledispnp_, aledispnpoldstate_);
+    cout << "Interpolate the embedded state vectors ... " << endl;
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, *alevelnp_, alevelnp_, aledispnp_, disp);
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , *aleveln_ , aleveln_ , aledispnp_, disp);
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, *aleaccnp_, aleaccnp_, aledispnp_, disp);
   }
 
-  //-- Update for monolithic ------------------
-  // update old acceleration
-  state_->accn_->Update(1.0,*state_->accnp_,0.0);
-  aleaccn_->Update(1.0,*aleaccnp_,0.0);
-
-  // velocities/pressures of this step become most recent
-  // velocities/pressures of the last step
-  state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
-  state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
-
-  alevelnm_->Update(1.0,*aleveln_ ,0.0);
-  aleveln_ ->Update(1.0,*alevelnp_,0.0);
-
-  if (alefluid_)
-  {
-    aledispnm_->Update(1.0,*aledispn_,0.0);
-    aledispn_->Update(1.0,*aledispnp_,0.0);
-  }
-
-  // -------------------------------------------------------------------
-  // set part(s) of the rhs vector(s) belonging to the old timestep
-  // (only meaningful for momentum part)
-  //
-  // stationary/af-generalized-alpha: hist_ = 0.0
-  //
-  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
-  //
-  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
-  //
-  //
-  // ------------------------------------------------------------------
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
-                                                timealgo_, dta_, theta_, state_->hist_);
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
-                                                timealgo_, dta_, theta_, alehist_);
-
-  // debug output
-  // int count = -1; // no counter for standard solution output
-  // state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", count, step_, state_->veln_, aleveln_, aledispnp_);
-  // state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", count, step_, state_->velnm_, alevelnm_, aledispnp_);
-
-  SetDirichletNeumannBC();
-
-}//SetBgStateVectorsAndPrepareTimeStepMonolithicFixedAle()
+}//SetBgStateVectors()
 
 // -------------------------------------------------------------------
 // Update the fluid solution for the monolithic timestep
@@ -2959,40 +2860,35 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
 {
 
   DRT::UTILS::ConditionSelector conds(*embdis_, "FSICoupling");
-   std::vector<int> conddofs;
-   for (int lnid=0; lnid<embdis_->NumMyRowNodes(); lnid++)
-   {
-     DRT::Node* embnode = embdis_->lRowNode(lnid);
-     if(conds.ContainsNode(embnode->Id()))
-     {
-       std::vector<int> pgdofs(4);
-       embdis_->Dof(embnode,0,pgdofs);
+  std::vector<int> conddofs;
+  for (int lnid=0; lnid<embdis_->NumMyRowNodes(); lnid++)
+  {
+    DRT::Node* embnode = embdis_->lRowNode(lnid);
+    if(conds.ContainsNode(embnode->Id()))
+    {
+      std::vector<int> pgdofs(4);
+      embdis_->Dof(embnode,0,pgdofs);
 
-       conddofs.push_back(pgdofs[0]);
-       conddofs.push_back(pgdofs[1]);
-       conddofs.push_back(pgdofs[2]);
-       //conddofs.push_back(pgdofs[3]); //dirichlet for pressure?
-     }
-   }
+      conddofs.push_back(pgdofs[0]);
+      conddofs.push_back(pgdofs[1]);
+      conddofs.push_back(pgdofs[2]);
+      //conddofs.push_back(pgdofs[3]); //dirichlet for pressure?
+    }
+  }
 
-   fixedfsidofmap_ = rcp(new Epetra_Map(-1, conddofs.size(), &conddofs[0], 0, embdis_->Comm()));
+  fixedfsidofmap_ = rcp(new Epetra_Map(-1, conddofs.size(), &conddofs[0], 0, embdis_->Comm()));
 
-   toggle_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
 
-   for (int iter=0; iter<toggle_->MyLength();++iter)
-   {
-     int gid = toggle_->Map().GID(iter);
-     if (fixedfsidofmap_->MyGID(gid))
-       (*toggle_)[toggle_->Map().LID(gid)]=1;
-   }
+  toggle_ = LINALG::CreateVector(*state_->fluidfluiddofrowmap_,true);
 
-   NonlinearSolve();
+  for (int iter=0; iter<toggle_->MyLength();++iter)
+  {
+    int gid = toggle_->Map().GID(iter);
+    if (fixedfsidofmap_->MyGID(gid))
+      (*toggle_)[toggle_->Map().LID(gid)]=1;
+  }
 
-   monolithicfluidfluidfsi_ = false;
-
-   TimeUpdate();
-
-   monolithicfluidfluidfsi_ = true;
+  NonlinearSolve();
 }
 
 // -------------------------------------------------------------------
@@ -3037,7 +2933,29 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
     embdis_->ClearState();
   }
 }
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::SetHistoryValues()
+{
 
+  // -------------------------------------------------------------------
+  // set part(s) of the rhs vector(s) belonging to the old timestep
+  // (only meaningful for momentum part)
+  //
+  // stationary/af-generalized-alpha: hist_ = 0.0
+  //
+  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
+  //
+  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
+  //
+  //
+  // ------------------------------------------------------------------
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+                                                timealgo_, dta_, theta_, state_->hist_);
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
+                                                timealgo_, dta_, theta_, alehist_);
+}
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -3589,6 +3507,7 @@ void FLD::XFluidFluid::GenAlphaUpdateAcceleration()
 {
   state_->GenAlphaUpdateAcceleration();
 }
+
 //----------------------------------------------------------------------------
 //
 //----------------------------------------------------------------------------
@@ -4143,6 +4062,7 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
 {
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
+
   if (splitmatrix)
   {
     // (re)allocate system matrix
@@ -4152,11 +4072,12 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
   }
 
   // if we never build the matrix nothing will be done
-//   if (params_.get<bool>("shape derivatives"))
-//   {
-//     // allocate special mesh moving matrix
-//     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-//     mat->SetCondElements(condelements);
-//     shapederivatives_ = mat;
-//   }
+  // here we initialize the shapederivates..
+  if (params_.get<bool>("shape derivatives"))
+  {
+    // allocate special mesh moving matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    shapederivatives_ = mat;
+  }
 }

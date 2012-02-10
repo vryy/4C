@@ -565,7 +565,7 @@ void FSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << std::setw(7)<< iter_;
+  oss << std::setw(7)<< iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement

@@ -4200,6 +4200,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                        ),
                                    &xfem_general);
 
+  // How many monolithic steps we keep the fluidfluid-boundary fix
+  IntParameter("RELAXING_ALE",1,"Relaxing Ale after how many monolithic steps",&xfem_general);
 
   // xfluidfluid time integration approach
   setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT","Xff_TimeInt_FullProj","The xfluidfluid-timeintegration approach",
@@ -4337,7 +4339,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastmonsolver = list->sublist("POROELASTICITY MONOLITHIC SOLVER",false,"solver parameters for monoltihic poroelasticity");
   SetValidSolverParameters(poroelastmonsolver);
-  
+
   return list;
 }
 

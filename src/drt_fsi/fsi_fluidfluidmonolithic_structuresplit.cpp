@@ -30,6 +30,8 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
   const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
   monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
                           (xdyn,"MONOLITHIC_XFFSI_APPROACH");
+  currentstep_ = 0;
+  relaxing_ale_ = xdyn.get<int>("RELAXING_ALE");
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -212,7 +214,13 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool fi
 
       veln->Scale(-1.*Dt());
 
-      Extractor().AddVector(*veln,1,f);
+      // add veln (embedded mesh dofs) to a fluidfluidtmp which contains the
+      // whole fluidfluid dofs
+
+      fluidfluidtmp->PutScalar(0.0);
+      xfluidfluidsplitter_.InsertFluidVector(veln,fluidfluidtmp);
+      Extractor().AddVector(*fluidfluidtmp,1,f);
+
     }
  }
 }
@@ -595,7 +603,13 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::Update()
 {
-  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton)
+  currentstep_ ++;
+
+//  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_<< endl;
+  bool aleupdate = false;
+  if (currentstep_%relaxing_ale_==0) aleupdate = true;
+
+  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
     AleField().SolveAleXFluidFluidFSI();
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
@@ -606,7 +620,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
   AleField().      Update();
 
 
-  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton )
+  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
     // build ale system matrix for the next time step. Here first we
     // update the vectors then we set the fluid-fluid dirichlet values
