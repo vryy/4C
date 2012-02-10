@@ -19,6 +19,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterListExceptions.hpp>
 
 #include <Epetra_Time.h>
+#include <Epetra_Comm.h>
 
 #include "drt_conditiondefinition.H"
 #include "drt_materialdefinition.H"
@@ -1397,6 +1398,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
 
+				RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+
         string micro_inputfile_name = micromat->MicroInputFileName();
 
         if (micro_inputfile_name[0]!='/')
@@ -1410,7 +1413,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
           }
         }
 
-        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, reader.Comm(), 1);
+        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
 
         RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis(genprob.numsf, structdis_micro);
@@ -1468,6 +1471,9 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 
     RCP<DRT::Problem> multilevel_problem = DRT::Problem::Instance(1);
 
+
+    if(reader.Comm()->NumProc() != 1)
+      dserror("ReadMultiLevelDiscretization only available in serial!");
     // Read in other level
     DRT::INPUT::DatFileReader multilevel_reader(second_input_file, reader.Comm(), 1);
 
