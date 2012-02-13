@@ -165,7 +165,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       soh8_nlnstifftemp(la,mydisp,myres,mytempnp,&elemat1,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
 
-      // 08.04.11 aus thermo_lin
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -1205,124 +1204,6 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
 
 }
 
-
-/*----------------------------------------------------------------------*
- | evaluate only the mechanical-thermal stiffness term       dano 03/11 |
- | for monolithic TSI (private)                                         |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
-  DRT::Element::LocationArray& la,
-  vector<double>& disp,
-  // element mechanical-thermal stiffness matrix
-  LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixnlncoupl // (nsd_*nen_ x nen_)
-  )
-{
-/* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
-** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
-/* ============================================================================*/
-
-  // update element geometry (8x3)
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // X, material coord. of element
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // x, current  coord. of element
-  DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOH8; ++i)
-  {
-    const double* x = nodes[i]->X();
-    xrefe(i,0) = x[0];
-    xrefe(i,1) = x[1];
-    xrefe(i,2) = x[2];
-
-    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
-  }
-
-  /* =========================================================================*/
-  /* ================================================= Loop over Gauss Points */
-  /* =========================================================================*/
-  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
-  // build deformation gradient wrt to material configuration
-  // in case of prestressing, build defgrd wrt to last stored configuration
-  // CAUTION: defgrd(true): filled with zeros
-  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-
-  // identical shapefunctions for the displacements and the temperatures
-  LINALG::Matrix<NUMNOD_SOH8,1> shapetemp(true);
-
-  /* =========================================================================*/
-  /* ================================================= Loop over Gauss Points */
-  /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
-  {
-
-    /* get the inverse of the Jacobian matrix which looks like:
-    **            [ x_,r  y_,r  z_,r ]^-1
-    **     J^-1 = [ x_,s  y_,s  z_,s ]
-    **            [ x_,t  y_,t  z_,t ]
-    */
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp],derivs[gp]); // (6.21)
-    double detJ = detJ_[gp]; // (6.22)
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
-
-    // Linear B-operator B = N_XYZ, e.g. with defgrd == I
-    LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> bop;
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-      bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
-
-    // copy structural shape functions needed for the thermo field
-    shapetemp.Update(1.0,shapefcts[gp],0.0); // (8x1)
-
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated
-    */
-    // get the thermal material tangent
-    LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
-    Ctemp(&ctemp);
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-    double detJ_w = detJ*gpweights[gp];
-    if (stiffmatrixnlncoupl != NULL)
-    {
-      // C_temp . N_temp
-      LINALG::Matrix<NUMSTR_SOH8,NUMNOD_SOH8> cn(true);
-      cn.MultiplyNT(ctemp,shapetemp); // (6x8)=(6x1)(1x8)
-      // integrate stiffness term
-      // k_st = k_st + (B^T . C_temp . N_temp) * detJ * w(gp)
-      stiffmatrixnlncoupl->MultiplyTN(detJ_w, bop, cn, 1.0);
-    }
-   /* =========================================================================*/
-  }/* ==================================================== end of Loop over GP */
-   /* =========================================================================*/
-
-  return;
-} // DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp
 
 /*----------------------------------------------------------------------*
  |  evaluate only the poroelasticity fraction for the element (private)

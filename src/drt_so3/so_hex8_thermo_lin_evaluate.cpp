@@ -88,14 +88,16 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+    // build a matrix dummy
     if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+    
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,NULL,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state, call the temperature discretization
     // disassemble temperature
-    if (discretization.HasState(1,"temperature"))
+    if(discretization.HasState(1,"temperature"))
     {
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp
@@ -143,7 +145,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
-    soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,NULL,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state, call the temperature discretization
@@ -202,8 +205,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,NULL,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
       params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state,
@@ -229,13 +232,14 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+
       // build the current temperature vector
       LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
-    
+
     if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
   }
   break;
@@ -288,8 +292,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       INPAR::STR::StrainType ioplstrain
         = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain",
             INPAR::STR::strain_none);
-      // call the well-known soh8_nlnstiffmass for the normal structure solution
-      soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,
+      // call the purely structural method
+      soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,
         params,iostress,iostrain,ioplstrain);
 
       // need current temperature state,
@@ -463,6 +467,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
   vector<int>& lm,  // location matrix
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displ
+  const vector<double>* tempnp,  // current temperature
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
