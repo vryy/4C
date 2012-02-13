@@ -78,7 +78,7 @@ THR::TimInt::TimInt(
   dt_(Teuchos::null),
   timemax_(tdynparams.get<double>("MAXTIME")),
   stepmax_(tdynparams.get<int>("NUMSTEP")),
-  step_(Teuchos::null),
+  step_(0),
   stepn_(0),
   lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCAPA")==1),
   zeros_(Teuchos::null),
