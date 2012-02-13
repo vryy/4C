@@ -16,6 +16,7 @@
 
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -31,7 +32,10 @@ FSI::ConstrMonolithic::ConstrMonolithic(const Epetra_Comm& comm,
   : BlockMonolithic(comm,timeparams),
     conman_(StructureField().GetConstraintManager())
 {
-
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsaout_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfsout_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfaout_ = Teuchos::rcp(new ADAPTER::Coupling());
 
   return;
 }
@@ -78,7 +82,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // fluid to ale at the interface
 
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),

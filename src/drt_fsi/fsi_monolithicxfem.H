@@ -7,12 +7,10 @@
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_xfem.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../drt_io/io_ostream0.H"
 
-#include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_statustest.H"
 #include "fsi_debugwriter.H"
@@ -21,13 +19,19 @@
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Direction_UserDefinedFactory.H>
 
-#include "fsi_monolithicinterface.H"
+//#include "fsi_monolithicinterface.H"
 
 namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
 }
+
+namespace ADAPTER
+{
+  class Coupling;
+}
+
 
 namespace FSI
 {
@@ -44,8 +48,8 @@ namespace FSI
   };
 
   /// base class for monolithic FSI with XFEM
-  class MonolithicBaseXFEM : public ADAPTER::AlgorithmBase,
-                             public ADAPTER::StructureBaseAlgorithm
+  class MonolithicBaseXFEM : public ::ADAPTER::AlgorithmBase,
+                             public ::ADAPTER::StructureBaseAlgorithm
   {
   public:
 
@@ -59,11 +63,11 @@ namespace FSI
     void ReadRestart(int step);
 
     /// fluid field solver
-    ADAPTER::FluidXFEM& FluidField() { return fluidfield_; }
+    ::ADAPTER::FluidXFEM& FluidField() { return fluidfield_; }
     /// return instance of fluid time integration class
-    const ADAPTER::FluidXFEM& FluidField() const { return fluidfield_; }
+    const ::ADAPTER::FluidXFEM& FluidField() const { return fluidfield_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
+    const ::ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
 
 
 
@@ -83,6 +87,7 @@ namespace FSI
       StructureField().PrepareOutput();
     }
 
+
     /// write output
     virtual void Output();
 
@@ -91,7 +96,7 @@ namespace FSI
 
 
     /// coupling of structure and fluid at the interface
-    ADAPTER::Coupling               coupsf_;
+    Teuchos::RCP< ::ADAPTER::Coupling>               coupsf_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
@@ -101,7 +106,7 @@ namespace FSI
     ///@}
 
     /// the very xfem fluid
-    ADAPTER::FluidXFEM              fluidfield_;
+    ::ADAPTER::FluidXFEM              fluidfield_;
 
     //!< a singular stream to stdout in parallel environment
     IO::Ostream0 cout0_;

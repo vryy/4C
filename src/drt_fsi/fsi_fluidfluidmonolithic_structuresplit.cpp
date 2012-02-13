@@ -1,6 +1,8 @@
 #ifdef CCADISCRET
 
 #include "fsi_fluidfluidmonolithic_structuresplit.H"
+#include "../drt_adapter/adapter_coupling.H"
+
 //#include "fsi_overlapprec_fsiamg.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
@@ -30,8 +32,13 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
   const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
   monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
                           (xdyn,"MONOLITHIC_XFFSI_APPROACH");
+
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
   currentstep_ = 0;
   relaxing_ale_ = xdyn.get<int>("RELAXING_ALE");
+
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -64,12 +71,12 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystem()
                                  genprob.ndim);
 
   // fluid to ale at the interface
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
-                                  "FSICoupling",
-                                   genprob.ndim);
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                    FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                    AleField().Interface().FSICondMap(),
+                                   "FSICoupling",
+                                    genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -271,18 +278,18 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
                 s->FullColMap(),
                 s->Matrix(0,1),
                 1./timescale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 systemmatrix_->Matrix(0,1));
   sggtransform_(s->Matrix(1,1),
                 1./(scale*timescale),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 *f,
                 true,
                 true);
   sgitransform_(s->Matrix(1,0),
                 1./scale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 systemmatrix_->Matrix(1,0));
 
   systemmatrix_->Assign(1,1,View,*f);
@@ -291,7 +298,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
                 a->FullColMap(),
                 aig,
                 1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
+                ADAPTER::CouplingSlaveConverter(*icoupfa_),
                 systemmatrix_->Matrix(2,1));
   systemmatrix_->Assign(2,2,View,aii);
 
@@ -315,7 +322,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
                    mmm->FullColMap(),
                    fmgi,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    systemmatrix_->Matrix(1,2),
                    false,
                    false);
@@ -324,7 +331,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
                    mmm->FullColMap(),
                    fmii,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    systemmatrix_->Matrix(1,2),
                    false,
                    true);

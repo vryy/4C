@@ -45,6 +45,7 @@
 
 #include "biofilm_fsi.H"
 #include "../drt_adapter/adapter_structure_bio.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -107,6 +108,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  const string condname = "FSICoupling";
 
 	  // set up ale-fluid couplings
+          icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 	  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
                                            (fsi_->FluidField().Interface().FSICondMap()),
                                            *(fsi_->AleField().Discretization()),
@@ -118,6 +120,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  const Epetra_Map* fluidnodemap = fsi_->FluidField().Discretization()->NodeRowMap();
 	  const Epetra_Map* alenodemap   = fsi_->AleField().Discretization()->NodeRowMap();
 
+          coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 	  coupfa_->SetupCoupling(*(fsi_->FluidField().Discretization()),
                                  *(fsi_->AleField().Discretization()),
                                  *fluidnodemap,

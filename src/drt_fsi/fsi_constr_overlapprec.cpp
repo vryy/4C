@@ -5,6 +5,8 @@
 #include "fsi_constr_overlapprec.H"
 #include "fsi_debugwriter.H"
 #include "../drt_io/io_control.H"
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_fluid.H"
 
 extern struct _GENPROB     genprob;
 

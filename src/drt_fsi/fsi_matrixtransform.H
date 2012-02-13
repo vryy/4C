@@ -5,7 +5,6 @@
 #define FSI_MATRIXTRANSFORM_H
 
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_adapter/adapter_coupling.H"
 
 #include <map>
 
@@ -13,6 +12,14 @@
 #include <Epetra_Import.h>
 #include <Epetra_Export.h>
 #include <Epetra_CrsMatrix.h>
+
+// forward declarations
+
+namespace ADAPTER
+{
+  class Coupling;
+  class CouplingConverter;
+}
 
 
 namespace FSI
@@ -28,7 +35,7 @@ namespace FSI
     requires moving one of them to a new row map. The relations between these
     maps are managed by ADAPTER::Coupling objects. In a parallel setting there
     is a master and a slave side (in case of matrix transformations we use
-    source and destination abstraction via ADAPTER::Coupling::Converter). The
+    source and destination abstraction via ADAPTER::CouplingConverter). The
     parallel distribution of both is arbitrary. And in addition there are
     permuted master and slave maps, that match the respective other side. So
     the row map transformation requires a parallel redistribution followed by
@@ -74,7 +81,7 @@ namespace FSI
      */
     bool operator()(const LINALG::SparseMatrix& src,
                     double scale,
-                    const ADAPTER::Coupling::Converter& converter,
+                    const ::ADAPTER::CouplingConverter& converter,
                     LINALG::SparseMatrix& dst,
                     bool addmatrix=false);
 
@@ -167,7 +174,7 @@ namespace FSI
                     const Epetra_Map& colmap,
                     const LINALG::SparseMatrix& src,
                     double scale,
-                    const ADAPTER::Coupling::Converter& converter,
+                    const ::ADAPTER::CouplingConverter& converter,
                     LINALG::SparseMatrix& dst,
                     bool exactmatch=true,
                     bool addmatrix=false);
@@ -176,7 +183,7 @@ namespace FSI
     bool operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
                     const LINALG::SparseMatrix& src,
                     double scale,
-                    const ADAPTER::Coupling::Converter& converter,
+                    const ::ADAPTER::CouplingConverter& converter,
                     LINALG::SparseMatrix& dst,
                     bool exactmatch=true,
                     bool addmatrix=false);
@@ -188,7 +195,7 @@ namespace FSI
      */
     void SetupGidMap(const Epetra_Map& rowmap,
                      const Epetra_Map& colmap,
-                     const ADAPTER::Coupling::Converter& converter,
+                     const ::ADAPTER::CouplingConverter& converter,
                      const Epetra_Comm& comm);
 
     /// copy values from source to destination matrix
@@ -252,8 +259,8 @@ namespace FSI
      */
     bool operator()(const LINALG::SparseMatrix& src,
                     double scale,
-                    const ADAPTER::Coupling::Converter& rowconverter,
-                    const ADAPTER::Coupling::Converter& colconverter,
+                    const ::ADAPTER::CouplingConverter& rowconverter,
+                    const ::ADAPTER::CouplingConverter& colconverter,
                     LINALG::SparseMatrix& dst,
                     bool exactmatch=true,
                     bool addmatrix=false);

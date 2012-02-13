@@ -9,7 +9,7 @@ namespace FSI
 {
 
   /// Fluid on XFEM test algorithm
-  class FluidXFEMAlgorithm : public ADAPTER::FluidMovingBoundaryBaseAlgorithm
+  class FluidXFEMAlgorithm : public ::ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
     explicit FluidXFEMAlgorithm(const Epetra_Comm& comm);

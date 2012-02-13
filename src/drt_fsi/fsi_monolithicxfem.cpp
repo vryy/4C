@@ -16,6 +16,8 @@
 #include "../drt_io/io_control.H"
 #include "../drt_fem_general/debug_nan.H"
 
+#include "../drt_adapter/adapter_coupling.H"
+
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -33,7 +35,8 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(const Epetra_Comm& comm)
     cout0_(fluidfield_.Discretization()->Comm(), std::cout)
 {
   // structure to fluid
-  coupsf_.SetupConditionCoupling(*StructureField().Discretization(),
+  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsf_->SetupConditionCoupling(*StructureField().Discretization(),
                                   StructureField().Interface().FSICondMap(),
                                  *FluidField().Discretization(),
                                   FluidField().Interface().FSICondMap(),
@@ -472,22 +475,22 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
                 Cud->ColMap(),
                 *Cud,
                 1.0,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 systemmatrix_->Matrix(2,1),
                 false,
                 false);
 
   sgitransform_(*Cdu,
                 1.0,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 systemmatrix_->Matrix(1,2),
                 true);
 
   //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
   sggtransform_(*Cdd,
                 1.0,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 systemmatrix_->Matrix(1,1),
                 false,
                 true);

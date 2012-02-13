@@ -639,16 +639,16 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
                      blockscatra2->FullColMap(),
                      blockscatra2->Matrix(0,1),
                      1.0,
-                     ADAPTER::Coupling::SlaveConverter(*scatracoup_),
+                     ADAPTER::CouplingSlaveConverter(*scatracoup_),
                      scatrasystemmatrix_->Matrix(1,0));
     (*sbitransform_)(blockscatra2->Matrix(1,0),
                      1.0,
-                     ADAPTER::Coupling::SlaveConverter(*scatracoup_),
+                     ADAPTER::CouplingSlaveConverter(*scatracoup_),
                      scatrasystemmatrix_->Matrix(0,1));
     (*sbbtransform_)(blockscatra2->Matrix(1,1),
                      1.0,
-                     ADAPTER::Coupling::SlaveConverter(*scatracoup_),
-                     ADAPTER::Coupling::SlaveConverter(*scatracoup_),
+                     ADAPTER::CouplingSlaveConverter(*scatracoup_),
+                     ADAPTER::CouplingSlaveConverter(*scatracoup_),
                      *scatra1,
                      true,
                      true);
@@ -677,7 +677,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
     coupblock1->Complete();
     (*fbitransform_)(coupblock1->Matrix(1,1),
                      -1.0,
-                     ADAPTER::Coupling::MasterConverter(*scatracoup_),
+                     ADAPTER::CouplingMasterConverter(*scatracoup_),
                      scatrasystemmatrix_->Matrix(1,0));
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock2
@@ -685,7 +685,7 @@ void FS3I::PartFS3I::SetupCoupledScatraMatrix()
     coupblock2->Complete();
     (*sbitransform_)(coupblock2->Matrix(1,1),
                      -1.0,
-                     ADAPTER::Coupling::SlaveConverter(*scatracoup_),
+                     ADAPTER::CouplingSlaveConverter(*scatracoup_),
                      scatrasystemmatrix_->Matrix(0,1));
   }
 

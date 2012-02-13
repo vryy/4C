@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "fsi_debugwriter.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "fsi_monolithic_nox.H"
 
 #include "../drt_lib/drt_condition_utils.H"
@@ -32,7 +33,8 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
   dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3",conditions_to_copy);
   dis_->FillComplete();
 
-  coup_.SetupCoupling(*dis,
+  coup_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coup_->SetupCoupling(*dis,
                       *dis_,
                       *DRT::UTILS::ConditionNodeRowMap(*dis,"FSICoupling"),
                       *dis_->NodeRowMap(),
@@ -81,7 +83,7 @@ void FSI::UTILS::DebugWriter::NewIteration()
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_Vector& v)
 {
-  writer_->WriteVector(name,coup_.MasterToSlave(Teuchos::rcp(&v,false)));
+  writer_->WriteVector(name,coup_->MasterToSlave(Teuchos::rcp(&v,false)));
 }
 
 

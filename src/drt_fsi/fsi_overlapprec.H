@@ -7,14 +7,18 @@
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid.H"
 #include "../drt_ale/ale.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
+
+namespace ADAPTER
+{
+  class Structure;
+  class Fluid;
+}
 
 namespace FSI
 {
@@ -23,7 +27,6 @@ namespace UTILS
   class MonolithicDebugWriter;
 }
 }
-
 
 namespace FSI
 {
@@ -35,8 +38,8 @@ namespace FSI
 
     BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
                                const LINALG::MultiMapExtractor& maps,
-                               ADAPTER::Structure& structure,
-                               ADAPTER::Fluid& fluid,
+                               ::ADAPTER::Structure& structure,
+                               ::ADAPTER::Fluid& fluid,
                                ALE::Ale& ale,
                                int symmetric,
                                double omega=1.0,
@@ -132,8 +135,8 @@ namespace FSI
     /// construction
     OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
                            const LINALG::MultiMapExtractor& maps,
-                           ADAPTER::Structure& structure,
-                           ADAPTER::Fluid& fluid,
+                           ::ADAPTER::Structure& structure,
+                           ::ADAPTER::Fluid& fluid,
                            ALE::Ale& ale,
                            bool structuresplit,
                            int symmetric,
@@ -166,8 +169,8 @@ namespace FSI
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ADAPTER::Structure& structure_;
-    ADAPTER::Fluid&     fluid_;
+    ::ADAPTER::Structure& structure_;
+    ::ADAPTER::Fluid&     fluid_;
     ALE::Ale&       ale_;
 
   };

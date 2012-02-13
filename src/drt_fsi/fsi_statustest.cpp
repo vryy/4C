@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 #include <NOX_Epetra_Vector.H>
 
 #include "../linalg/linalg_utils.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 
 
@@ -274,7 +275,7 @@ NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
                                            double scale1,
                                            const LINALG::MapExtractor& extractor2,
                                            double scale2,
-                                           Teuchos::RCP<ADAPTER::Coupling::Converter> converter,
+                                           Teuchos::RCP<ADAPTER::CouplingConverter> converter,
                                            double tolerance,
                                            ScaleType stype)
   : AdaptiveNewtonNormF(name,tolerance,NOX::Abstract::Vector::TwoNorm,stype),

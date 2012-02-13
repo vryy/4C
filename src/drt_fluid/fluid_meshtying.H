@@ -15,8 +15,10 @@ Maintainer: Andreas Ehrl
 #ifndef FLUID_MESHTYING_H_
 #define FLUID_MESHTYING_H_
 
-#include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_inpar/inpar_fluid.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 using namespace std;
 using namespace Teuchos;
@@ -32,7 +34,7 @@ namespace DRT
   }
 }
 
-namespace Adapter
+namespace ADAPTER
 {
   class CouplingMortar;
 }
@@ -249,7 +251,7 @@ class Meshtying
     double theta_;
 
     //! adapter to mortar framework
-    ADAPTER::CouplingMortar adaptermeshtying_;
+   Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;

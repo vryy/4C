@@ -4,7 +4,7 @@
 #include <vector>
 #include <iterator>
 #include "fsi_matrixtransform.H"
-
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
 
@@ -226,7 +226,7 @@ FSI::UTILS::MatrixRowTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
 bool
 FSI::UTILS::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src,
                                            double scale,
-                                           const ADAPTER::Coupling::Converter& converter,
+                                           const ADAPTER::CouplingConverter& converter,
                                            LINALG::SparseMatrix& dst,
                                            bool addmatrix)
 {
@@ -251,7 +251,7 @@ FSI::UTILS::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src,
 void
 FSI::UTILS::MatrixColTransform::SetupGidMap(const Epetra_Map& rowmap,
                                             const Epetra_Map& colmap,
-                                            const ADAPTER::Coupling::Converter& converter,
+                                            const ADAPTER::CouplingConverter& converter,
                                             const Epetra_Comm& comm)
 {
   if (not havegidmap_)
@@ -330,7 +330,7 @@ bool
 FSI::UTILS::MatrixColTransform::operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
                                            const LINALG::SparseMatrix& src,
                                            double scale,
-                                           const ADAPTER::Coupling::Converter& converter,
+                                           const ADAPTER::CouplingConverter& converter,
                                            LINALG::SparseMatrix& dst,
                                            bool exactmatch,
                                            bool addmatrix)
@@ -357,7 +357,7 @@ FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map& rowmap,
                                            const Epetra_Map& colmap,
                                            const LINALG::SparseMatrix& src,
                                            double scale,
-                                           const ADAPTER::Coupling::Converter& converter,
+                                           const ADAPTER::CouplingConverter& converter,
                                            LINALG::SparseMatrix& dst,
                                            bool exactmatch,
                                            bool addmatrix)
@@ -381,8 +381,8 @@ FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map& rowmap,
 bool
 FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src,
                                               double scale,
-                                              const ADAPTER::Coupling::Converter& rowconverter,
-                                              const ADAPTER::Coupling::Converter& colconverter,
+                                              const ADAPTER::CouplingConverter& rowconverter,
+                                              const ADAPTER::CouplingConverter& colconverter,
                                               LINALG::SparseMatrix& dst,
                                               bool exactmatch,
                                               bool addmatrix)

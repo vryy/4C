@@ -28,6 +28,8 @@
 #include "poroelast_monolithic.H"
 #include "poroelast_defines.H"
 
+#include "../drt_adapter/adapter_coupling.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton
 #include <sstream>
@@ -90,13 +92,14 @@ POROELAST::MonolithicBase::MonolithicBase(const Epetra_Comm& comm) :
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
   const Epetra_Map* structurenodemap = StructureField().Discretization()->NodeRowMap();
 
-  coupfa_.SetupCoupling(*FluidField().Discretization(),
+  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_->SetupCoupling(*FluidField().Discretization(),
       *StructureField().Discretization(),
       *fluidnodemap,
       *structurenodemap,
       genprob.ndim);
 
-  FluidField().SetMeshMap(coupfa_.MasterDofMap());
+  FluidField().SetMeshMap(coupfa_->MasterDofMap());
 
   //extractor for constraints on structure phase
   //
@@ -149,7 +152,7 @@ void POROELAST::MonolithicBase::ReadRestart(int step)
       StructureField().ExtractVelnp());
   FluidField().ApplyMeshVelocity(structvel);
 
-  // second ReadRestart needed due to the coupling variables 
+  // second ReadRestart needed due to the coupling variables
   FluidField().ReadRestart(step);
   StructureField().ReadRestart(step);
 
@@ -186,7 +189,7 @@ void POROELAST::MonolithicBase::Update()
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicBase::StructureToFluidField(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -194,7 +197,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicBase::StructureToFluidField(
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicBase::FluidToStructureField(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupfa_.MasterToSlave(iv);
+  return coupfa_->MasterToSlave(iv);
 }
 
 /*----------------------------------------------------------------------*/

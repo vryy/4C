@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "adapter_fluid_xfem.H"
+#include "adapter_coupling.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -28,6 +29,7 @@ ADAPTER::FluidXFEM::FluidXFEM(
         std::string condname)
   : fluid_(prbdyn,false)
 {
+  icoupsf_ = Teuchos::rcp(new Coupling());
   return;
 }
 

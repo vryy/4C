@@ -3,11 +3,11 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Direction_UserDefinedFactory.H>
 
-#include "../drt_lib/standardtypes_cpp.H"
-
-#include "fsi_debugwriter.H"
 #include "fsi_monolithic_nox.H"
+#include "fsi_debugwriter.H"
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_group.H"
 #include "fsi_nox_newton.H"
@@ -16,6 +16,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
+
+#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
@@ -41,6 +43,9 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
     FluidBaseAlgorithm(timeparams,true),
     AleBaseAlgorithm(timeparams)
 {
+  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
 
 
@@ -114,7 +119,7 @@ void FSI::MonolithicBase::Output()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsa_.MasterToSlave(iv);
+  return coupsa_->MasterToSlave(iv);
 }
 
 
@@ -122,7 +127,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsa_.SlaveToMaster(iv);
+  return coupsa_->SlaveToMaster(iv);
 }
 
 
@@ -130,7 +135,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsf_.MasterToSlave(iv);
+  return coupsf_->MasterToSlave(iv);
 }
 
 
@@ -138,7 +143,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epet
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsf_.SlaveToMaster(iv);
+  return coupsf_->SlaveToMaster(iv);
 }
 
 
@@ -146,7 +151,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epet
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 
@@ -154,7 +159,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsa_.MasterToSlave(iv);
+  return coupsa_->MasterToSlave(iv);
 }
 
 
@@ -162,7 +167,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsa_.SlaveToMaster(iv);
+  return coupsa_->SlaveToMaster(iv);
 }
 
 
@@ -170,7 +175,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsf_.MasterToSlave(iv);
+  return coupsf_->MasterToSlave(iv);
 }
 
 
@@ -178,7 +183,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<cons
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsf_.SlaveToMaster(iv);
+  return coupsf_->SlaveToMaster(iv);
 }
 
 
@@ -186,7 +191,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<cons
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 

@@ -14,6 +14,7 @@ Maintainer: Mirella Coroneo
 #ifdef CCADISCRET
 
 #include "adapter_structure_bio.H"
+#include "adapter_coupling.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_stru_ale/stru_ale_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -64,7 +65,8 @@ ADAPTER::StructureBio::StructureBio(
 
 
 	 // set up ale-structure couplings
-	 icoupsa_.SetupConditionCoupling(*structure->StructureField().Discretization(),
+        icoupsa_ = Teuchos::rcp(new Coupling());
+	 icoupsa_->SetupConditionCoupling(*structure->StructureField().Discretization(),
 									 structure->StructureField().Interface().FSICondMap(),
 									 *ale->AleField().Discretization(),
 									 ale->AleField().Interface().FSICondMap(),
@@ -75,7 +77,8 @@ ADAPTER::StructureBio::StructureBio(
 	  const Epetra_Map* structurenodemap = structure->StructureField().Discretization()->NodeRowMap();
 	  const Epetra_Map* alenodemap   = ale->AleField().Discretization()->NodeRowMap();
 
-	  coupsa_.SetupCoupling(*structure->StructureField().Discretization(),
+          coupsa_ = Teuchos::rcp(new Coupling());
+	  coupsa_->SetupCoupling(*structure->StructureField().Discretization(),
 							*ale->AleField().Discretization(),
 							*structurenodemap,
 							*alenodemap,
@@ -174,7 +177,7 @@ return;
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::AleToStructField(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsa_.SlaveToMaster(iv);
+  return coupsa_->SlaveToMaster(iv);
 }
 
 
@@ -182,7 +185,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::AleToStructField(Teuchos::RCP
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::AleToStructField(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupsa_.SlaveToMaster(iv);
+  return coupsa_->SlaveToMaster(iv);
 }
 
 
@@ -190,7 +193,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::AleToStructField(Teuchos::RCP
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return icoupsa_.MasterToSlave(iv);
+  return icoupsa_->MasterToSlave(iv);
 }
 
 
@@ -198,7 +201,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::StructToAle(Teuchos::RCP<Epet
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return icoupsa_.MasterToSlave(iv);
+  return icoupsa_->MasterToSlave(iv);
 }
 
 #endif // CCADISCRET

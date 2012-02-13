@@ -27,8 +27,12 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Import.h>
 #include <Epetra_Vector.h>
 
-#include "../drt_adapter/adapter_coupling.H"
 #include "../linalg/linalg_mapextractor.H"
+
+namespace ADAPTER
+{
+  class CouplingConverter;
+}
 
 namespace NOX
 {
@@ -219,7 +223,7 @@ namespace FSI
                     double scale1,
                     const LINALG::MapExtractor& extractor2,
                     double scale2,
-                    Teuchos::RCP<ADAPTER::Coupling::Converter> converter,
+                    Teuchos::RCP<ADAPTER::CouplingConverter> converter,
                     double tolerance,
                     ScaleType stype = Scaled);
 
@@ -232,7 +236,7 @@ namespace FSI
     const LINALG::MapExtractor extractor2_;
     double scale1_;
     double scale2_;
-    Teuchos::RCP<ADAPTER::Coupling::Converter> converter_;
+    Teuchos::RCP<ADAPTER::CouplingConverter> converter_;
   };
 
 

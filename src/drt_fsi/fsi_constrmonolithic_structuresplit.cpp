@@ -1,6 +1,9 @@
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "fsi_constrmonolithic_structuresplit.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -294,18 +297,18 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
                 s->FullColMap(),
                 s->Matrix(0,1),
                 1./timescale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 mat.Matrix(0,1));
   sggtransform_(s->Matrix(1,1),
                 1./(scale*timescale),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 *f,
                 true,
                 true);
   sgitransform_(s->Matrix(1,0),
                 1./scale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::CouplingMasterConverter(coupsf),
                 mat.Matrix(1,0));
 
   mat.Assign(1,1,View,*f);
@@ -314,7 +317,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
                 a->FullColMap(),
                 aig,
                 1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
+                ADAPTER::CouplingSlaveConverter(*icoupfa_),
                 mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
@@ -338,7 +341,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
                    mmm->FullColMap(),
                    fmgi,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(1,2),
                    false,
                    false);
@@ -347,7 +350,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
                    mmm->FullColMap(),
                    fmii,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(1,2),
                    false,
                    true);
@@ -376,7 +379,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   scgitransform_(scon.Matrix(1,0),
                   1./scale,
-                  ADAPTER::Coupling::MasterConverter(coupsf),
+                  ADAPTER::CouplingMasterConverter(coupsf),
                   mat.Matrix(1,3));
 
   mat.Assign(3,0,View,sconT_->Matrix(0,0));
@@ -385,7 +388,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
       sconT_->Matrix(0,1).ColMap(),
       sconT_->Matrix(0,1),
       1./timescale,
-      ADAPTER::Coupling::MasterConverter(coupsf),
+      ADAPTER::CouplingMasterConverter(coupsf),
       mat.Matrix(3,1),true);
 
   /*----------------------------------------------------------------------*/

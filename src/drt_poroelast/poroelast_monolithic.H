@@ -23,7 +23,6 @@
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_io/io_control.H"
 
 #include "../drt_inpar/inpar_poroelast.H"
@@ -40,6 +39,11 @@ namespace LINALG
 
   class BlockSparseMatrixBase;
   class Solver;
+}
+
+namespace ADAPTER
+{
+  class Coupling;
 }
 
 namespace POROELAST
@@ -103,7 +107,7 @@ namespace POROELAST
 
     private:
       /// coupling of fluid and structure (whole field)
-      ADAPTER::Coupling coupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
 
       //@}
 

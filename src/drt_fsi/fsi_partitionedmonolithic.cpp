@@ -1,6 +1,9 @@
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "fsi_partitionedmonolithic.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "fsi_statustest.H"
 
 #include "fsi_nox_linearsystem_partitioned.H"
@@ -20,6 +23,7 @@ FSI::PartitionedMonolithic::PartitionedMonolithic(const Epetra_Comm& comm,
                                                   const Teuchos::ParameterList& timeparams)
   : MonolithicNOX(comm,timeparams)
 {
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
 
 /*----------------------------------------------------------------------*/
@@ -57,12 +61,12 @@ void FSI::PartitionedMonolithic::SetupSystem()
 
   // fluid to ale at the interface
 
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
-                                  "FSICoupling",
-                                   genprob.ndim);
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                    FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                    AleField().Interface().FSICondMap(),
+                                   "FSICoupling",
+                                    genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one

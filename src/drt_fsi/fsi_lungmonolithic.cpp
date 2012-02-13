@@ -17,6 +17,7 @@ Maintainer: Lena Yoshihara
 #include "fsi_lung_overlapprec.H"
 #include "../drt_adapter/adapter_structure_lung.H"
 #include "../drt_adapter/adapter_fluid_lung.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "fsi_statustest.H"
 #include "../drt_io/io_control.H"
@@ -37,6 +38,11 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
                                     const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsaout_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfsout_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfaout_ = Teuchos::rcp(new ADAPTER::Coupling());
+
   //-----------------------------------------------------------------------------
   // additional fluid-structure volume constraints
   //-----------------------------------------------------------------------------
@@ -216,12 +222,12 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // fluid to ale at the interface
 
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
-                                  "FSICoupling",
-                                  genprob.ndim);
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                    FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                    AleField().Interface().FSICondMap(),
+                                   "FSICoupling",
+                                   genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -252,36 +258,36 @@ void FSI::LungMonolithic::GeneralSetup()
   //-----------------------------------------------------------------------------
 
   // coupling of structure and ale dofs at airway outflow
-  coupsaout_.SetupConstrainedConditionCoupling(*StructureField().Discretization(),
-                                               StructureField().Interface().LungASICondMap(),
-                                               *AleField().Discretization(),
-                                               AleField().Interface().LungASICondMap(),
-                                               "StructAleCoupling",
-                                               "FSICoupling",
-                                               genprob.ndim);
-  if (coupsaout_.MasterDofMap()->NumGlobalElements()==0)
+  coupsaout_->SetupConstrainedConditionCoupling(*StructureField().Discretization(),
+                                                StructureField().Interface().LungASICondMap(),
+                                                *AleField().Discretization(),
+                                                AleField().Interface().LungASICondMap(),
+                                                "StructAleCoupling",
+                                                "FSICoupling",
+                                                genprob.ndim);
+  if (coupsaout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
-  coupfsout_.SetupConstrainedConditionCoupling(*FluidField().Discretization(),
-                                               FluidField().Interface().LungASICondMap(),
-                                               *StructureField().Discretization(),
-                                               StructureField().Interface().LungASICondMap(),
-                                               "StructAleCoupling",
-                                               "FSICoupling",
-                                               genprob.ndim);
-  if (coupfsout_.MasterDofMap()->NumGlobalElements()==0)
+  coupfsout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
+                                                FluidField().Interface().LungASICondMap(),
+                                                *StructureField().Discretization(),
+                                                StructureField().Interface().LungASICondMap(),
+                                                "StructAleCoupling",
+                                                "FSICoupling",
+                                                genprob.ndim);
+  if (coupfsout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
-  coupfaout_.SetupConstrainedConditionCoupling(*FluidField().Discretization(),
-                                               FluidField().Interface().LungASICondMap(),
-                                               *AleField().Discretization(),
-                                               AleField().Interface().LungASICondMap(),
-                                               "StructAleCoupling",
-                                               "FSICoupling",
-                                               genprob.ndim);
-  if (coupfaout_.MasterDofMap()->NumGlobalElements()==0)
+  coupfaout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
+                                                FluidField().Interface().LungASICondMap(),
+                                                *AleField().Discretization(),
+                                                AleField().Interface().LungASICondMap(),
+                                                "StructAleCoupling",
+                                                "FSICoupling",
+                                                genprob.ndim);
+  if (coupfaout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
   //-----------------------------------------------------------------------------
@@ -338,7 +344,7 @@ void FSI::LungMonolithic::GeneralSetup()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::StructToAleOutflow(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupsaout_.MasterToSlave(iv);
+  return coupsaout_->MasterToSlave(iv);
 }
 
 

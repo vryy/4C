@@ -15,8 +15,11 @@ Maintainer: Thomas Kloeppel
 
 #ifdef CCADISCRET
 
-#include "../drt_lib/standardtypes_cpp.H"
 #include "fsi_structureale.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
+
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -44,6 +47,7 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
@@ -70,10 +74,10 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   else
   {
     matchingnodes_ = false;
-    coupsfm_.Setup( *StructureField().Discretization(),
-                    *MBFluidField().Discretization(),
-                    *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
-                    comm,false);
+    coupsfm_->Setup( *StructureField().Discretization(),
+                     *MBFluidField().Discretization(),
+                     *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+                     comm,false);
   }
 
 }
@@ -113,7 +117,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra
   }
   else
   {
-    return coupsfm_.MasterToSlave(iv);
+    return coupsfm_->MasterToSlave(iv);
   }
 }
 

@@ -21,10 +21,15 @@ Maintainer: Georg Bauer
 
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-#include "adapter_coupling.H"
+
 
 namespace ADAPTER
 {
+  // forward declarations
+
+  class Coupling;
+
+
   /// basis coupling algorithm for scalar transport with Navier-Stokes on moving meshes
   /*!
 
@@ -85,13 +90,13 @@ namespace ADAPTER
   private:
 
     /// coupling of fluid and ale (whole field)
-    Coupling               coupfa_;
+    Teuchos::RCP<Coupling>               coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Coupling               icoupfa_;
+    Teuchos::RCP<Coupling>               icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Coupling               fscoupfa_;
+    Teuchos::RCP<Coupling>               fscoupfa_;
 
   };
 

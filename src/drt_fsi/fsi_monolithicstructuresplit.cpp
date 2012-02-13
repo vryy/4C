@@ -1,17 +1,19 @@
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "fsi_monolithicstructuresplit.H"
-#include "fsi_debugwriter.H"
+#include "fsi_matrixtransform.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
-#include "fsi_monolithic_linearsystem.H"
-
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
 #include "../drt_io/io_control.H"
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/adapter_coupling.H"
+
+#include "fsi_debugwriter.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -26,6 +28,20 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
                                                         const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  sggtransform_  = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
   return;
 }
 
@@ -64,22 +80,22 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
   // fluid to ale at the interface
 
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
+                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                  "FSICoupling",
+                                   "FSICoupling",
                                    genprob.ndim);
 
   // we might have a free surface
   if (FluidField().Interface().FSCondRelevant())
   {
-    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                      FluidField().Interface().FSCondMap(),
-                                     *AleField().Discretization(),
-                                      AleField().Interface().FSCondMap(),
-                                     "FREESURFCoupling",
-                                      genprob.ndim);
+    fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                       FluidField().Interface().FSCondMap(),
+                                      *AleField().Discretization(),
+                                       AleField().Interface().FSCondMap(),
+                                      "FREESURFCoupling",
+                                       genprob.ndim);
   }
 
   // In the following we assume that both couplings find the same dof
@@ -335,7 +351,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       // extract fluid free surface velocities.
       Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
-      Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
+      Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
       Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
       aig.Apply(*aveln,*rhs);
@@ -412,32 +428,32 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   mat.Assign(0,0,View,s->Matrix(0,0));
 
-  sigtransform_(s->FullRowMap(),
-                s->FullColMap(),
-                s->Matrix(0,1),
-                1./timescale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(0,1));
-  sggtransform_(s->Matrix(1,1),
-                1./(scale*timescale),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                *f,
-                true,
-                true);
-  sgitransform_(s->Matrix(1,0),
-                1./scale,
-                ADAPTER::Coupling::MasterConverter(coupsf),
-                mat.Matrix(1,0));
+  (*sigtransform_)(s->FullRowMap(),
+                   s->FullColMap(),
+                   s->Matrix(0,1),
+                   1./timescale,
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   mat.Matrix(0,1));
+  (*sggtransform_)(s->Matrix(1,1),
+                   1./(scale*timescale),
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   *f,
+                   true,
+                   true);
+  (*sgitransform_)(s->Matrix(1,0),
+                   1./scale,
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   mat.Matrix(1,0));
 
   mat.Assign(1,1,View,*f);
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
-                mat.Matrix(2,1));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1./timescale,
+                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -456,23 +472,23 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   false);
+    (*fmgitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      false);
 
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   true);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      true);
   }
 
   // if there is a free surface
@@ -481,12 +497,12 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     // here we extract the free surface submatrices from position 2
     LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
-    fsaigtransform_(a->FullRowMap(),
-                    a->FullColMap(),
-                    aig,
-                    1./timescale,
-                    ADAPTER::Coupling::SlaveConverter(fscoupfa_),
-                    mat.Matrix(2,1));
+    (*fsaigtransform_)(a->FullRowMap(),
+                       a->FullColMap(),
+                       aig,
+                       1./timescale,
+                       ADAPTER::CouplingSlaveConverter(*fscoupfa_),
+                       mat.Matrix(2,1));
 
     if (mmm!=Teuchos::null)
     {
@@ -504,14 +520,14 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
       const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-      fsmgitransform_(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmgi,
-                      1.,
-                      ADAPTER::Coupling::MasterConverter(coupfa),
-                      mat.Matrix(1,2),
-                      false,
-                      false);
+      (*fsmgitransform_)(mmm->FullRowMap(),
+                         mmm->FullColMap(),
+                         fmgi,
+                         1.,
+                         ADAPTER::CouplingMasterConverter(coupfa),
+                         mat.Matrix(1,2),
+                         false,
+                         false);
     }
   }
 
@@ -952,7 +968,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSCondVector(fx);
     FluidField().FreeSurfVelocityToDisplacement(fcx);
 
-    Teuchos::RCP<Epetra_Vector> acx = fscoupfa_.MasterToSlave(fcx);
+    Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
     AleField().Interface().InsertFSCondVector(acx, a);
   }
   ax = a;

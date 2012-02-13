@@ -14,6 +14,11 @@ namespace NOX
   }
 }
 
+namespace ADAPTER
+{
+  class Coupling;
+}
+
 namespace FSI
 {
 
@@ -73,7 +78,7 @@ namespace FSI
                      double fluidscale);
 
     /// coupling of fluid and ale (interface only)
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP< ::ADAPTER::Coupling> icoupfa_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;

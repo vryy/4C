@@ -20,10 +20,12 @@ Maintainer: Axel Gerstenberger
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
 #include "adapter_xfluid_impl.H"
-#include "adapter_coupling.H"
 
 namespace ADAPTER
 {
+  // forward declarations
+
+  class Coupling;
 
   /// fluid with moving interfaces implemented by the XFEM
   class FluidXFEM : public FluidMovingBoundary
@@ -86,17 +88,12 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-  protected:
-
-    //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
-    //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
-
   private:
 
     FluidBaseAlgorithm fluid_;
 
     /// coupling of interface in to parallel distributions
-    Coupling               icoupsf_;
+    Teuchos::RCP<Coupling>               icoupsf_;
 
 
   };

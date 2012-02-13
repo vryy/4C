@@ -12,7 +12,6 @@
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../linalg/linalg_precond.H"
@@ -34,6 +33,11 @@ namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
+}
+
+namespace ADAPTER
+{
+  class Coupling;
 }
 
 namespace NOX
@@ -58,7 +62,7 @@ namespace UTILS
   public:
 
     BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
-                                 ADAPTER::Fluid& fluid,
+                                 ::ADAPTER::Fluid& fluid,
                                  ALE::Ale& ale,
                                  int symmetric,
                                  double omega=1.0,
@@ -141,7 +145,7 @@ namespace UTILS
 
     /// construction
     OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
-                             ADAPTER::Fluid& fluid,
+                             ::ADAPTER::Fluid& fluid,
                              ALE::Ale& ale,
                              bool structuresplit,
                              int symmetric,
@@ -170,7 +174,7 @@ namespace UTILS
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ADAPTER::Fluid&     fluid_;
+    ::ADAPTER::Fluid&     fluid_;
     ALE::Ale&       ale_;
 
   };
@@ -186,8 +190,8 @@ namespace UTILS
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ADAPTER::AlgorithmBase,
-                           public ADAPTER::FluidBaseAlgorithm,
+  class MonolithicBaseFS : public ::ADAPTER::AlgorithmBase,
+                           public ::ADAPTER::FluidBaseAlgorithm,
                            public ALE::AleBaseAlgorithm
   {
   public:
@@ -225,14 +229,14 @@ namespace UTILS
 
     //@}
 
-    ADAPTER::Coupling& FluidAleCoupling()       { return coupfa_; }
+    ADAPTER::Coupling& FluidAleCoupling();
 
-    const ADAPTER::Coupling& FluidAleCoupling()       const { return coupfa_; }
+    const ADAPTER::Coupling& FluidAleCoupling() const;
 
   private:
 
     /// coupling of fluid and ale
-    ADAPTER::Coupling               coupfa_;
+    Teuchos::RCP<ADAPTER::Coupling>               coupfa_;
   };
 
 
@@ -520,7 +524,7 @@ namespace UTILS
     Teuchos::RCP<OverlappingBlockMatrixFS> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

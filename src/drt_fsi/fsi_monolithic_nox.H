@@ -3,18 +3,12 @@
 #ifndef FSI_MONOLITHIC_NOX_H
 #define FSI_MONOLITHIC_NOX_H
 
+#include <NOX_Epetra_Interface_Jacobian.H>
+
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_ale/ale.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Direction_UserDefinedFactory.H>
-
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 #include "fsi_monolithicinterface.H"
 
@@ -22,6 +16,11 @@ namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
+}
+
+namespace ADAPTER
+{
+  class Coupling;
 }
 
 namespace NOX
@@ -123,24 +122,24 @@ namespace UTILS
 
     //@}
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
-    ADAPTER::Coupling& StructureAleCoupling()   { return coupsa_; }
-    ADAPTER::Coupling& FluidAleCoupling()       { return coupfa_; }
+    ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
+    ADAPTER::Coupling& StructureAleCoupling()   { return *coupsa_; }
+    ADAPTER::Coupling& FluidAleCoupling()       { return *coupfa_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
-    const ADAPTER::Coupling& StructureAleCoupling()   const { return coupsa_; }
-    const ADAPTER::Coupling& FluidAleCoupling()       const { return coupfa_; }
+    const ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
+    const ADAPTER::Coupling& StructureAleCoupling()   const { return *coupsa_; }
+    const ADAPTER::Coupling& FluidAleCoupling()       const { return *coupfa_; }
 
   private:
 
     /// coupling of structure and fluid at the interface
-    ADAPTER::Coupling               coupsf_;
+    Teuchos::RCP<ADAPTER::Coupling>               coupsf_;
 
     /// coupling of structure and ale at the interface
-    ADAPTER::Coupling               coupsa_;
+    Teuchos::RCP<ADAPTER::Coupling>               coupsa_;
 
     /// coupling of fluid and ale
-    ADAPTER::Coupling               coupfa_;
+    Teuchos::RCP<ADAPTER::Coupling>               coupfa_;
   };
 
 

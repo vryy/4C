@@ -9,6 +9,14 @@
 
 #include "fsi_overlapprec.H"
 
+// forward declarations
+
+namespace ADAPTER
+{
+  class Structure;
+  class Fluid;
+}
+
 namespace FSI
 {
 
@@ -19,8 +27,8 @@ namespace FSI
 
     /// construction
     LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                          ADAPTER::Structure& structure,
-                          ADAPTER::Fluid& fluid,
+                          ::ADAPTER::Structure& structure,
+                          ::ADAPTER::Fluid& fluid,
                           ALE::Ale& ale,
                           int symmetric,
                           double omega=1.0,
@@ -49,7 +57,7 @@ namespace FSI
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     const LINALG::MultiMapExtractor& maps_;
-    ADAPTER::Structure& structure_;
+    ::ADAPTER::Structure& structure_;
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks_;
   };
 

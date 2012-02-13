@@ -9,6 +9,14 @@
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 
+// forward declarations
+
+namespace ADAPTER
+{
+  class Coupling;
+}
+
+
 namespace FSI
 {
 
@@ -103,10 +111,10 @@ namespace FSI
     //Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    ADAPTER::Coupling fscoupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> fscoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

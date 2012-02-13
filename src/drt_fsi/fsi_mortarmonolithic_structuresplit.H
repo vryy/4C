@@ -4,11 +4,18 @@
 #define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
 #include "fsi_monolithic_nox.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
+
+// forward declarations
+
+namespace ADAPTER
+{
+  class Coupling;
+  class CouplingMortar;
+}
 
 namespace FSI
 {
@@ -114,13 +121,13 @@ namespace FSI
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP< ::ADAPTER::Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    ADAPTER::Coupling fscoupfa_;
+    Teuchos::RCP< ::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    ADAPTER::CouplingMortar               coupsfm_;
+    Teuchos::RCP< ::ADAPTER::CouplingMortar>               coupsfm_;
 
     ///communicator
     const Epetra_Comm& comm_;

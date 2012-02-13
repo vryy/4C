@@ -19,11 +19,15 @@ Maintainer: Mirella Coroneo
 #include "adapter_structure.H"
 #include "../drt_ale/ale.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "adapter_coupling.H"
 #include "adapter_algorithmbase.H"
 
 namespace ADAPTER
 {
+  // forward declarations
+
+  class Coupling;
+
+
   class StructureBio
 	  : public AlgorithmBase//,
         //public ADAPTER::StructureBaseAlgorithm,
@@ -84,10 +88,10 @@ namespace ADAPTER
     const Teuchos::ParameterList& params_;
 
     /// coupling of structure and ale (interface only)
-    ADAPTER::Coupling icoupsa_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupsa_;
 
     /// coupling of structure and ale (whole field)
-    ADAPTER::Coupling coupsa_;
+    Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 
     RCP<DRT::Discretization> structuredis;
 

@@ -34,8 +34,13 @@ Maintainer: Thomas Kloeppel
 
 #include "fsi_algorithm.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
+// forward declarations
+
+namespace ADAPTER
+{
+  class CouplingMortar;
+}
+
 
 
 /// FSI: Fluid Structure Interaction
@@ -72,7 +77,7 @@ private:
   /// interface structural operator
 
   /// coupling of structure and fluid at the interface, with mortar. Experimental!
-  ADAPTER::CouplingMortar         coupsfm_;
+  Teuchos::RCP< ::ADAPTER::CouplingMortar>         coupsfm_;
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;

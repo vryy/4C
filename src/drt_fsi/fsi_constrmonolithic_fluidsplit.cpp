@@ -1,6 +1,9 @@
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "fsi_constrmonolithic_fluidsplit.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io_control.H"
@@ -253,8 +256,8 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   fggtransform_(fgg,
                 scale*timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 *s,
                 true,
                 true);
@@ -263,14 +266,14 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   fgitransform_(fgi,
                 scale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 mat.Matrix(0,1));
 
   figtransform_(blockf->FullRowMap(),
                 blockf->FullColMap(),
                 fig,
                 timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::CouplingSlaveConverter(coupsf),
                 mat.Matrix(1,0));
 
 #ifdef FLUIDSPLITAMG
@@ -285,7 +288,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                 a->FullColMap(),
                 aig,
                 1.,
-                ADAPTER::Coupling::SlaveConverter(coupsa),
+                ADAPTER::CouplingSlaveConverter(coupsa),
                 mat.Matrix(2,0));
   mat.Assign(2,2,View,aii);
 
@@ -308,15 +311,15 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                   blockf->FullColMap(),
                   fmig,
                   1.,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
+                  ADAPTER::CouplingSlaveConverter(coupsf),
                   mat.Matrix(1,0),
                   false,
                   true);
 
     fggtransform_(fmgg,
                   scale,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
+                  ADAPTER::CouplingSlaveConverter(coupsf),
+                  ADAPTER::CouplingSlaveConverter(coupsf),
                   mat.Matrix(0,0),
                   false,
                   true);
@@ -328,14 +331,14 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    mmm->FullColMap(),
                    fmii,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(1,2),
                    false);
 
     fmgitransform_(fmgi,
                    scale,
-                   ADAPTER::Coupling::SlaveConverter(coupsf),
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(0,2),
                    false,
                    false);

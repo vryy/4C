@@ -1,19 +1,17 @@
 #ifdef CCADISCRET
 
-#include "../drt_lib/standardtypes_cpp.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_monolithicfluidsplit.H"
+#include "fsi_matrixtransform.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
-
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
 #include "../drt_io/io_control.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 #define FLUIDSPLITAMG
 
@@ -30,6 +28,12 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
                                                 const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 }
 
 /*----------------------------------------------------------------------*/
@@ -350,19 +354,19 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   // this just once...
   s->UnComplete();
 
-  fggtransform_(fgg,
-                scale*timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                *s,
-                true,
-                true);
+  (*fggtransform_)(fgg,
+                   scale*timescale,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   *s,
+                   true,
+                   true);
 
   RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
-  fgitransform_(fgi,
-                scale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                *lfgi);
+  (*fgitransform_)(fgi,
+                   scale,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   *lfgi);
 
   lfgi->Complete(fgi.DomainMap(),s->RangeMap());
   lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
@@ -370,42 +374,42 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   if (stcalgo == INPAR::STR::stc_currsym)
     lfgi = LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
 
-  #ifdef FLUIDSPLITAMG
-    mat.Matrix(0,1).UnComplete();
-    mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
-  #else
-    mat.Assign(0,1,View,*lfgi);
-  #endif
+#ifdef FLUIDSPLITAMG
+  mat.Matrix(0,1).UnComplete();
+  mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
+#else
+  mat.Assign(0,1,View,*lfgi);
+#endif
 
   if (stcalgo == INPAR::STR::stc_none)
   {
-    figtransform_(blockf->FullRowMap(),
-                  blockf->FullColMap(),
-                  fig,
-                  timescale,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  mat.Matrix(1,0));
+    (*figtransform_)(blockf->FullRowMap(),
+                     blockf->FullColMap(),
+                     fig,
+                     timescale,
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     mat.Matrix(1,0));
   }
   else
   {
     RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
-    figtransform_(blockf->FullRowMap(),
-                  blockf->FullColMap(),
-                  fig,
-                  timescale,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  *lfig);
+    (*figtransform_)(blockf->FullRowMap(),
+                     blockf->FullColMap(),
+                     fig,
+                     timescale,
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     *lfig);
 
     lfig->Complete(s->DomainMap(),fig.RangeMap());
 
     lfig = LINALG::MLMultiply(*lfig,false,*stcmat, false, false, false,true);
 
-    #ifdef FLUIDSPLITAMG
-      mat.Matrix(1,0).UnComplete();
-      mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
-    #else
-      mat.Assign(1,0,View,*lfig);
-    #endif
+#ifdef FLUIDSPLITAMG
+    mat.Matrix(1,0).UnComplete();
+    mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
+#else
+    mat.Assign(1,0,View,*lfig);
+#endif
   }
 
 #ifdef FLUIDSPLITAMG
@@ -418,22 +422,22 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   if (stcalgo == INPAR::STR::stc_none)
   {
-    aigtransform_(a->FullRowMap(),
-                  a->FullColMap(),
-                  aig,
-                  1.,
-                  ADAPTER::Coupling::SlaveConverter(coupsa),
-                  mat.Matrix(2,0));
+    (*aigtransform_)(a->FullRowMap(),
+                     a->FullColMap(),
+                     aig,
+                     1.,
+                     ADAPTER::CouplingSlaveConverter(coupsa),
+                     mat.Matrix(2,0));
   }
   else
   {
     RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
-    aigtransform_(a->FullRowMap(),
-                  a->FullColMap(),
-                  aig,
-                  1.,
-                  ADAPTER::Coupling::SlaveConverter(coupsa),
-                  *laig);
+    (*aigtransform_)(a->FullRowMap(),
+                     a->FullColMap(),
+                     aig,
+                     1.,
+                     ADAPTER::CouplingSlaveConverter(coupsa),
+                     *laig);
 
     laig->Complete(s->DomainMap(),laig->RangeMap());
     laig->ApplyDirichlet( *(AleField().GetDBCMapExtractor()->CondMap()),false);
@@ -465,26 +469,26 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
     if (stcalgo == INPAR::STR::stc_none)
     {
-      figtransform_(blockf->FullRowMap(),
-                  blockf->FullColMap(),
-                  fmig,
-                  1.,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  mat.Matrix(1,0),
-                  false,
-                  true);
+      (*figtransform_)(blockf->FullRowMap(),
+                       blockf->FullColMap(),
+                       fmig,
+                       1.,
+                       ADAPTER::CouplingSlaveConverter(coupsf),
+                       mat.Matrix(1,0),
+                       false,
+                       true);
     }
     else
     {
       RCP<LINALG::SparseMatrix> lfmig = rcp(new LINALG::SparseMatrix(fmig.RowMap(),81,false));
-      figtransform_(blockf->FullRowMap(),
-                  blockf->FullColMap(),
-                  fmig,
-                  1.,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  *lfmig,
-                  false,
-                  true);
+      (*figtransform_)(blockf->FullRowMap(),
+                       blockf->FullColMap(),
+                       fmig,
+                       1.,
+                       ADAPTER::CouplingSlaveConverter(coupsf),
+                       *lfmig,
+                       false,
+                       true);
 
 
       lfmig->Complete(s->DomainMap(),fmig.RangeMap());
@@ -499,34 +503,34 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
       mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
     }
 
-    fggtransform_(fmgg,
-                  scale,
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  ADAPTER::Coupling::SlaveConverter(coupsf),
-                  *s,
-                  false,
-                  true);
+    (*fggtransform_)(fmgg,
+                     scale,
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     *s,
+                     false,
+                     true);
 #endif
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false);
 
     {
       RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
-      fmgitransform_(fmgi,
-                     scale,
-                     ADAPTER::Coupling::SlaveConverter(coupsf),
-                     ADAPTER::Coupling::MasterConverter(coupfa),
-                     *lfmgi,//mat.Matrix(0,2),
-                     false,
-                     false);
+      (*fmgitransform_)(fmgi,
+                        scale,
+                        ADAPTER::CouplingSlaveConverter(coupsf),
+                        ADAPTER::CouplingMasterConverter(coupfa),
+                        *lfmgi,//mat.Matrix(0,2),
+                        false,
+                        false);
 
       lfmgi->Complete(aii.DomainMap(),s->RangeMap());
       lfmgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
@@ -534,8 +538,8 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
       if (stcalgo == INPAR::STR::stc_currsym)
         lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, true);
 
-      #ifdef FLUIDSPLITAMG
-        mat.Matrix(0,2).UnComplete();
+#ifdef FLUIDSPLITAMG
+      mat.Matrix(0,2).UnComplete();
         mat.Matrix(0,2).Add(*lfmgi,false,1.,0.0);
       #else
         mat.Assign(0,2,View,*lfmgi);

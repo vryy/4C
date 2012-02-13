@@ -25,10 +25,13 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
 #include "../drt_ale/ale.H"
-#include "adapter_coupling.H"
 
 namespace ADAPTER
 {
+  // forward declarations
+
+  class Coupling;
+
 
   /// fluid on ale
   class FluidAle : public FluidMovingBoundary
@@ -55,9 +58,9 @@ namespace ADAPTER
     virtual double ReadRestart(int step);
 
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
-    
+
     virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
-    
+
     virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
 
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
@@ -93,22 +96,19 @@ namespace ADAPTER
 
     //@}
 
-    //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
-    //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
-
   private:
 
     FluidBaseAlgorithm fluid_;
     ALE::AleBaseAlgorithm ale_;
 
     /// coupling of fluid and ale (whole field)
-    Coupling               coupfa_;
+    Teuchos::RCP<Coupling>               coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Coupling               icoupfa_;
+    Teuchos::RCP<Coupling>               icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Coupling               fscoupfa_;
+    Teuchos::RCP<Coupling>               fscoupfa_;
 
   };
 

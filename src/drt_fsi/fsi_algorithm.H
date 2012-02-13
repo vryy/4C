@@ -25,7 +25,6 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 namespace FSI
@@ -102,16 +101,13 @@ namespace FSI
 
     //@}
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
-    //Coupling& StructureAleCoupling()   { return coupsa_; }
-
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
-    //const Coupling& StructureAleCoupling()   const { return coupsa_; }
+    ADAPTER::Coupling& StructureFluidCoupling();
+    const ADAPTER::Coupling& StructureFluidCoupling() const;
 
   private:
 
     /// coupling of structure and fluid at the interface
-    ADAPTER::Coupling               coupsf_;
+    Teuchos::RCP<ADAPTER::Coupling>               coupsf_;
   };
 }
 

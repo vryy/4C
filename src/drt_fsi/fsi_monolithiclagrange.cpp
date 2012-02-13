@@ -1,14 +1,15 @@
 #ifdef CCADISCRET
 
-#include "../drt_lib/standardtypes_cpp.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_monolithiclagrange.H"
+#include "fsi_lagrangeprec.H"
+#include "fsi_matrixtransform.H"
 #include "fsi_statustest.H"
 #include "fsi_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -24,7 +25,20 @@ FSI::MonolithicLagrange::MonolithicLagrange(const Epetra_Comm& comm,
                                             const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  icoupfa_ = Teuchos::rcp(new ::ADAPTER::Coupling());
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::MonolithicLagrange::SystemMatrix() const
+{
+  return systemmatrix_;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicLagrange::SetupSystem()
@@ -37,9 +51,9 @@ void FSI::MonolithicLagrange::SetupSystem()
   // right now we use matching meshes at the interface
 
   // set up the coupling objects
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  ::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  ::ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  ::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // structure (master) to fluid (slave)
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
@@ -83,12 +97,12 @@ void FSI::MonolithicLagrange::SetupSystem()
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
   // fluid (master) to ale (slave) only at the interface
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
-                                  "FSICoupling",
-                                  genprob.ndim);
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                    FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                    AleField().Interface().FSICondMap(),
+                                   "FSICoupling",
+                                   genprob.ndim);
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
@@ -255,9 +269,9 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   // get all the prerequisites...
 
   // coupling objects
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  const ::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   // (unused) const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  const ::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // system matrices
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
@@ -290,12 +304,12 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   // ale
   mat.Assign(2,2,View,aii);
 
-  aigtransform_(a->FullRowMap(),   // full src rowmap
-                a->FullColMap(),   // full src colmap
-                aig,               // src
-                1./timescale,      // scale
-                ADAPTER::Coupling::SlaveConverter(icoupfa_), // converter
-                mat.Matrix(2,1));  // dst
+  (*aigtransform_)(a->FullRowMap(),   // full src rowmap
+                   a->FullColMap(),   // full src colmap
+                   aig,               // src
+                   1./timescale,      // scale
+                   ::ADAPTER::CouplingSlaveConverter(*icoupfa_), // converter
+                   mat.Matrix(2,1));  // dst
 
 #if 1
 
@@ -331,22 +345,22 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
     mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
 
     // insert fmgi, fmii into (1,2)-block using columnmap transformations between fluid and ale
-    fmgitransform_(mmm->FullRowMap(),  // full src rowmap
-                   mmm->FullColMap(),  // full src colmap
-                   fmgi,               // src
-                   1.,                 // scale
-                   ADAPTER::Coupling::MasterConverter(coupfa), // converter
-                   mat.Matrix(1,2),    // dst
-                   false,              // exactmatch
-                   false);             // addmatrix
-    fmiitransform_(mmm->FullRowMap(),  // full src rowmap
-                   mmm->FullColMap(),  // full src colmap
-                   fmii,               // src
-                   1.,                 // scale
-                   ADAPTER::Coupling::MasterConverter(coupfa), // converter
-                   mat.Matrix(1,2),    // dst
-                   false,              // exactmatch
-                   true);              // addmatrix
+    (*fmgitransform_)(mmm->FullRowMap(),  // full src rowmap
+                      mmm->FullColMap(),  // full src colmap
+                      fmgi,               // src
+                      1.,                 // scale
+                      ::ADAPTER::CouplingMasterConverter(coupfa), // converter
+                      mat.Matrix(1,2),    // dst
+                      false,              // exactmatch
+                      false);             // addmatrix
+    (*fmiitransform_)(mmm->FullRowMap(),  // full src rowmap
+                      mmm->FullColMap(),  // full src colmap
+                      fmii,               // src
+                      1.,                 // scale
+                      ::ADAPTER::CouplingMasterConverter(coupfa), // converter
+                      mat.Matrix(1,2),    // dst
+                      false,              // exactmatch
+                      true);              // addmatrix
   }
 
   // Done. make sure all blocks are filled.
@@ -602,9 +616,9 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   // test for interface forces
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  Teuchos::RCP<ADAPTER::Coupling::Converter> converter =
-    Teuchos::rcp(new ADAPTER::Coupling::SlaveConverter(coupsf));
+  const ::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  Teuchos::RCP< ::ADAPTER::CouplingConverter> converter =
+    Teuchos::rcp(new ::ADAPTER::CouplingSlaveConverter(coupsf));
 
   Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));

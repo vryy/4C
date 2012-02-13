@@ -39,8 +39,11 @@ Maintainer: Ulrich Kuettler
 
 #include "fsi_algorithm.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_coupling_mortar.H"
+// forward declarations
+namespace ADAPTER
+{
+  class CouplingMortar;
+}
 
 
 /// FSI: Fluid Structure Interaction
@@ -138,10 +141,10 @@ protected:
   Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
   /// return coupsfm_
-  ADAPTER::CouplingMortar& StructureFluidCouplingMortar() { return coupsfm_; }
+  ADAPTER::CouplingMortar& StructureFluidCouplingMortar();
 
   /// return coupsfm_
-  const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const { return coupsfm_; }
+  const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const;
 
 private:
 
@@ -160,7 +163,7 @@ private:
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
   /// coupling of structure and fluid at the interface, with mortar.
-  ADAPTER::CouplingMortar         coupsfm_;
+  Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;

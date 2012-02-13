@@ -39,9 +39,9 @@
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
-#include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_ale/ale.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_io/io_control.H"
 
@@ -686,6 +686,8 @@ aletype_(aleproj)
 {
   structcoupmaster_ =  structcoupmaster;
 
+  coupff_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+
   // declare struct objects in interface
   map<int, map<int, RCP<DRT::Element> > > structelements;
   map<int, RCP<DRT::Element> > structmelements;
@@ -796,7 +798,7 @@ aletype_(aleproj)
 
   maxmindist_ = 1.0e-1;
 
-  coupff_.Setup(*fluiddis);
+  coupff_->Setup(*fluiddis);
 }
 
 /*----------------------------------------------------------------------*/
@@ -894,7 +896,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateFluidMortar
 )
 {
   //new D,M,Dinv out of fluid disp before and after sliding
-  coupff_.Evaluate(ima,isl);
+  coupff_->Evaluate(ima,isl);
 }
 
 /*----------------------------------------------------------------------*/
@@ -904,7 +906,7 @@ Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
     Teuchos::RCP<const Epetra_Vector> uold
 )
 {
-  Teuchos::RCP<Epetra_Vector> unew = coupff_.MasterToSlave(uold);
+  Teuchos::RCP<Epetra_Vector> unew = coupff_->MasterToSlave(uold);
   unew->ReplaceMap(uold->Map());
 
   return unew;

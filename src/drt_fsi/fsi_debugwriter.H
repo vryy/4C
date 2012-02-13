@@ -4,13 +4,22 @@
 #define FSI_DEBUGWRITER_H
 
 #include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
-#include "../drt_adapter/adapter_coupling.H"
+namespace ADAPTER
+{
+  class Coupling;
+}
 
 namespace IO
 {
   class OutputControl;
   class DiscretizationWriter;
+}
+
+namespace DRT
+{
+  class Discretization;
 }
 
 namespace FSI
@@ -50,7 +59,7 @@ namespace UTILS
     Teuchos::RCP<DRT::Discretization> dis_;
 
     /// coupling of field discretization and interface discretization
-    ADAPTER::Coupling coup_;
+    Teuchos::RCP<ADAPTER::Coupling> coup_;
 
     /// current control file
     Teuchos::RCP<IO::OutputControl> control_;

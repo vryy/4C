@@ -9,6 +9,12 @@
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
+namespace ADAPTER
+{
+  class Structure;
+  class Fluid;
+}
+
 namespace FSI
 {
   /// special version of block matrix that includes the FSI block
@@ -20,20 +26,20 @@ namespace FSI
 
     /// construction
     ConstrOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                               ADAPTER::Structure& structure,
-                               ADAPTER::Fluid& fluid,
-                               ALE::Ale& ale,
-                               bool structuresplit,
-                               int symmetric,
-                               double omega=1.0,
-                               int iterations=1,
-                               double somega=1.0,
-                               int siterations=0,
-                               double fomega=1.0,
-                               int fiterations=0,
-                               double aomega=1.0,
-                               int aiterations=0,
-                               FILE* err=NULL);
+                                 ::ADAPTER::Structure& structure,
+                                 ::ADAPTER::Fluid& fluid,
+                                 ALE::Ale& ale,
+                                 bool structuresplit,
+                                 int symmetric,
+                                 double omega=1.0,
+                                 int iterations=1,
+                                 double somega=1.0,
+                                 int siterations=0,
+                                 double fomega=1.0,
+                                 int fiterations=0,
+                                 double aomega=1.0,
+                                 int aiterations=0,
+                                 FILE* err=NULL);
 
     /** \name Attribute access functions */
     //@{

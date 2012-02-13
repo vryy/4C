@@ -2,6 +2,8 @@
 #ifdef CCADISCRET
 
 #include "fs_monolithic.H"
+#include "../drt_adapter/adapter_coupling.H"
+
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
@@ -48,6 +50,7 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
     FluidBaseAlgorithm(timeparams,true),
     AleBaseAlgorithm(timeparams)
 {
+  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
 
 
@@ -57,6 +60,19 @@ FSI::MonolithicBaseFS::~MonolithicBaseFS()
 {
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling()
+{
+  return *coupfa_;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const
+{
+  return *coupfa_;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -110,7 +126,7 @@ void FSI::MonolithicBaseFS::Output()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 
@@ -119,7 +135,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<Epetr
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  return coupfa_.SlaveToMaster(iv);
+  return coupfa_->SlaveToMaster(iv);
 }
 
 
@@ -561,12 +577,13 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
 
   // fluid to ale at the free surface
 
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface().FSCondMap(),
-                                  *AleField().Discretization(),
+                                   *AleField().Discretization(),
                                    AleField().Interface().FSCondMap(),
-                                  "FREESURFCoupling",
-                                  genprob.ndim);
+                                   "FREESURFCoupling",
+                                   genprob.ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -698,7 +715,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     // extract fluid free surface velocities.
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
 
-    Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
+    Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
     aig.Apply(*aveln,*rhs);
@@ -777,7 +794,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
                 a->FullColMap(),
                 aig,
                 1./timescale,
-                ADAPTER::Coupling::SlaveConverter(icoupfa_),
+                ADAPTER::CouplingSlaveConverter(*icoupfa_),
                 mat.Matrix(1,0));
   mat.Assign(1,1,View,aii);
 
@@ -802,7 +819,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
                    mmm->FullColMap(),
                    fmgi,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(0,1),
                    false,
                    false);
@@ -811,7 +828,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
                    mmm->FullColMap(),
                    fmii,
                    1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   ADAPTER::CouplingMasterConverter(coupfa),
                    mat.Matrix(0,1),
                    false,
                    true);
@@ -1089,7 +1106,7 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
   // process ale unknowns
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,1);
-  Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(fcx);
+  Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertFSCondVector(acx, a);

@@ -4,12 +4,21 @@
 #define FSI_MONOLITHICFLUIDSPLIT_H
 
 #include "fsi_monolithic_nox.H"
-#include "fsi_overlapprec.H"
-#include "fsi_matrixtransform.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 namespace FSI
 {
+  // forward declarations
+
+  class OverlappingBlockMatrix;
+
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
+
 
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
@@ -132,12 +141,12 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    UTILS::MatrixRowColTransform fggtransform_;
-    UTILS::MatrixRowTransform fgitransform_;
-    UTILS::MatrixColTransform figtransform_;
-    UTILS::MatrixColTransform aigtransform_;
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixRowColTransform fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
 
     ///@}
 

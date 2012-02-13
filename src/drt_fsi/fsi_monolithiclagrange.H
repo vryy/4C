@@ -5,11 +5,25 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic_nox.H"
-#include "fsi_lagrangeprec.H"
-#include "fsi_matrixtransform.H"
 
 namespace FSI
 {
+  // forward declarations
+
+  class LagrangianBlockMatrix;
+
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
+
+  namespace ADAPTER
+  {
+    class Coupling;
+  }
+
 
   /// monolithic FSI algorithm with Lagrangian interface coupling
   class MonolithicLagrange : public BlockMonolithic
@@ -45,7 +59,7 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
@@ -93,15 +107,15 @@ namespace FSI
     /// coupling of fluid and ale (interface only)
     /// note: the other coupling objects are accessible via the public functions
     /// StructureFluidCoupling(), StructureAleCoupling() and FluidAleCoupling() as defined in Monolithic
-    ADAPTER::Coupling icoupfa_;
+    Teuchos::RCP< ::ADAPTER::Coupling> icoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    UTILS::MatrixColTransform aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
 
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
 
     ///@}
 

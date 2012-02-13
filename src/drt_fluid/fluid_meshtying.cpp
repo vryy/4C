@@ -22,6 +22,7 @@ Maintainer: Andreas Ehrl
 #include "fluid_meshtying.H"
 #include "fluid_utils.H"
 #include "fluid_utils_mapextractor.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_f3_impl/fluid3_impl_parameter.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -54,6 +55,8 @@ FLD::Meshtying::Meshtying(RCP<DRT::Discretization>      dis,
 {
   // get the processor ID from the communicator
   myrank_  = discret_->Comm().MyPID();
+
+  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 }
 
 /*-------------------------------------------------------*/
@@ -65,7 +68,7 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
 
   // Setup of meshtying adapter
-  pcoupled_ = adaptermeshtying_.Setup(*discret_,
+  pcoupled_ = adaptermeshtying_->Setup(*discret_,
                           discret_->Comm(),
                           msht_,
                           false);
@@ -83,8 +86,8 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 
   if(myrank_==0)
   {
-    int numdofmaster = (adaptermeshtying_.MasterDofRowMap())->NumGlobalElements();
-    int numdofslave = (adaptermeshtying_.SlaveDofRowMap())->NumGlobalElements();
+    int numdofmaster = (adaptermeshtying_->MasterDofRowMap())->NumGlobalElements();
+    int numdofslave = (adaptermeshtying_->SlaveDofRowMap())->NumGlobalElements();
 
     cout << endl << "number of master dof's:   " << numdofmaster << endl;
     cout << "number of slave dof's:   " << numdofslave << endl << endl;
@@ -107,10 +110,10 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
           "The null space does not have the right length. Fix it or use option Smat");
 
     // slave dof rowmap
-    gsdofrowmap_ = adaptermeshtying_.SlaveDofRowMap();
+    gsdofrowmap_ = adaptermeshtying_->SlaveDofRowMap();
 
     // master dof rowmap
-    gmdofrowmap_ = adaptermeshtying_.MasterDofRowMap();
+    gmdofrowmap_ = adaptermeshtying_->MasterDofRowMap();
 
     // merge dofrowmap for slave and master discretization
     gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
@@ -220,10 +223,10 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   case INPAR::FLUID::condensed_smat:
   {
     // slave dof rowmap
-    gsdofrowmap_ = adaptermeshtying_.SlaveDofRowMap();
+    gsdofrowmap_ = adaptermeshtying_->SlaveDofRowMap();
 
     // master dof rowmap
-    gmdofrowmap_ = adaptermeshtying_.MasterDofRowMap();
+    gmdofrowmap_ = adaptermeshtying_->MasterDofRowMap();
 
     // merge dofrowmap for slave and master discretization
     gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
@@ -248,17 +251,17 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   case INPAR::FLUID::sps_coupled:
   case INPAR::FLUID::sps_pc:
   {
-    lag_ = LINALG::CreateVector(*(adaptermeshtying_.LmDofRowMap()),true);
-    lagold_ = LINALG::CreateVector(*(adaptermeshtying_.LmDofRowMap()),true);
-    mergedmap_ = LINALG::MergeMap(*dofrowmap_,*(adaptermeshtying_.LmDofRowMap()),false);
+    lag_ = LINALG::CreateVector(*(adaptermeshtying_->LmDofRowMap()),true);
+    lagold_ = LINALG::CreateVector(*(adaptermeshtying_->LmDofRowMap()),true);
+    mergedmap_ = LINALG::MergeMap(*dofrowmap_,*(adaptermeshtying_->LmDofRowMap()),false);
     problemrowmap_ = rcp(new Epetra_Map(*(discret_->DofRowMap())));
 
     // slave dof rowmap
-    gsdofrowmap_ = adaptermeshtying_.SlaveDofRowMap();
+    gsdofrowmap_ = adaptermeshtying_->SlaveDofRowMap();
 
     // master dof rowmap
-    gmdofrowmap_ = adaptermeshtying_.MasterDofRowMap();
-    glmdofrowmap_ = adaptermeshtying_.LmDofRowMap();
+    gmdofrowmap_ = adaptermeshtying_->MasterDofRowMap();
+    glmdofrowmap_ = adaptermeshtying_->LmDofRowMap();
 
     // merge dofrowmap for slave and master discretization
     gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
@@ -312,26 +315,26 @@ void FLD::Meshtying::ResidualSaddlePointSystem(
 
   // add meshtying force terms
   RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  adaptermeshtying_.GetDMatrix()->Multiply(true,*lag_,*fs);
+  adaptermeshtying_->GetDMatrix()->Multiply(true,*lag_,*fs);
   RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fs,*fsexp);
   residual->Update(-theta_,*fsexp,1.0);
 
   RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-  adaptermeshtying_.GetMMatrix()->Multiply(true,*lag_,*fm);
+  adaptermeshtying_->GetMMatrix()->Multiply(true,*lag_,*fm);
   RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fm,*fmexp);
   residual->Update(theta_,*fmexp,1.0);
 
   // add old contact forces (t_n)
   RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
-  adaptermeshtying_.GetDMatrix()->Multiply(true,*lagold_,*fsold);
+  adaptermeshtying_->GetDMatrix()->Multiply(true,*lagold_,*fsold);
   RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fsold,*fsoldexp);
   residual->Update(-(1.0-theta_),*fsoldexp,1.0);
 
   RCP<Epetra_Vector> fmold = rcp(new Epetra_Vector(*gmdofrowmap_));
-  adaptermeshtying_.GetMMatrix()->Multiply(true,*lagold_,*fmold);
+  adaptermeshtying_->GetMMatrix()->Multiply(true,*lagold_,*fmold);
   RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fmold,*fmoldexp);
   residual->Update((1.0-theta_),*fmoldexp,1.0);
@@ -582,25 +585,25 @@ void FLD::Meshtying::PrepareSaddlePointSystem(
 
   // build merged matrix
   mergedsysmat ->Add(*conmat,false,1.0,1.0);
-  mergedsysmat ->Add(*(adaptermeshtying_.GetConMatrix()),false,theta_,1.0);
-  mergedsysmat ->Add(*(adaptermeshtying_.GetConMatrix()),true,1.0,1.0);
+  mergedsysmat ->Add(*(adaptermeshtying_->GetConMatrix()),false,theta_,1.0);
+  mergedsysmat ->Add(*(adaptermeshtying_->GetConMatrix()),true,1.0,1.0);
   mergedsysmat ->Complete();
 
   // add meshtying force terms
   RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  adaptermeshtying_.GetDMatrix()->Multiply(true,*lag_,*fs);
+  adaptermeshtying_->GetDMatrix()->Multiply(true,*lag_,*fs);
   RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fs,*fsexp);
   residual->Update(theta_,*fsexp,1.0);
 
   RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-  adaptermeshtying_.GetMMatrix()->Multiply(true,*lag_,*fm);
+  adaptermeshtying_->GetMMatrix()->Multiply(true,*lag_,*fm);
   RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fm,*fmexp);
   residual->Update(-theta_,*fmexp,1.0);
 
   // build constraint rhs (=empty)
-  RCP<Epetra_Vector> constrrhs = LINALG::CreateVector(*adaptermeshtying_.LmDofRowMap());
+  RCP<Epetra_Vector> constrrhs = LINALG::CreateVector(*adaptermeshtying_->LmDofRowMap());
 
   // build merged rhs
   RCP<Epetra_Vector> residualexp = rcp(new Epetra_Vector(*mergedmap_));
@@ -630,12 +633,12 @@ void FLD::Meshtying::PrepareSaddlePointSystemPC(
   RCP<LINALG::SparseMatrix> conmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat);
 
   RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*problemrowmap_,100,false,true));
-  constrmt->Add(*(adaptermeshtying_.GetConMatrix()),false,theta_,0.0);
+  constrmt->Add(*(adaptermeshtying_->GetConMatrix()),false,theta_,0.0);
   constrmt->Complete(*glmdofrowmap_, *problemrowmap_);
 
   // build transposed constraint matrix
   RCP<LINALG::SparseMatrix> trconstrmt = rcp(new LINALG::SparseMatrix(*glmdofrowmap_,100,false,true));
-  trconstrmt->Add(*(adaptermeshtying_.GetConMatrix()),true,1.0,0.0);
+  trconstrmt->Add(*(adaptermeshtying_->GetConMatrix()),true,1.0,0.0);
   trconstrmt->Complete(*problemrowmap_,*glmdofrowmap_);
 
   blocksysmat->Assign(0,0,View,*conmat);
@@ -648,13 +651,13 @@ void FLD::Meshtying::PrepareSaddlePointSystemPC(
 
   // add meshtying force terms
   RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  adaptermeshtying_.GetDMatrix()->Multiply(true,*lag_,*fs);
+  adaptermeshtying_->GetDMatrix()->Multiply(true,*lag_,*fs);
   RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fs,*fsexp);
   residual->Update(theta_,*fsexp,1.0);
 
   RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-  adaptermeshtying_.GetMMatrix()->Multiply(true,*lag_,*fm);
+  adaptermeshtying_->GetMMatrix()->Multiply(true,*lag_,*fm);
   RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fm,*fmexp);
   residual->Update(-theta_,*fmexp,1.0);
@@ -679,11 +682,11 @@ void FLD::Meshtying::UpdateSaddlePointSystem(
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  4)   Newton iteration update LM");
 
-  RCP<Epetra_Vector> laginc = rcp(new Epetra_Vector(*(adaptermeshtying_.LmDofRowMap())));
-  LINALG::MapExtractor mapext(*mergedmap_,problemrowmap_,adaptermeshtying_.LmDofRowMap());
+  RCP<Epetra_Vector> laginc = rcp(new Epetra_Vector(*(adaptermeshtying_->LmDofRowMap())));
+  LINALG::MapExtractor mapext(*mergedmap_,problemrowmap_,adaptermeshtying_->LmDofRowMap());
   mapext.ExtractCondVector(mergedinc,inc);
   mapext.ExtractOtherVector(mergedinc,laginc);
-  laginc->ReplaceMap(*(adaptermeshtying_.SlaveDofRowMap()));
+  laginc->ReplaceMap(*(adaptermeshtying_->SlaveDofRowMap()));
 
   lag_->Update(1.0,*laginc,0.0);
 
@@ -899,7 +902,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   // | ksn [6] | ksm [7] | kss [8] |
   // -------------------------------
 
-  RCP<LINALG::SparseMatrix> P = adaptermeshtying_.GetMortarTrafo();
+  RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
 
   /**********************************************************************/
   /* Condensation operation for the sysmat                              */
@@ -1107,7 +1110,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   // ---------------
 
   // get transformation matrix
-  RCP<LINALG::SparseMatrix> P = adaptermeshtying_.GetMortarTrafo();
+  RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
 
   // block nm
   {
@@ -1216,7 +1219,7 @@ void FLD::Meshtying::UpdateSlaveDOF(RCP<Epetra_Vector>&   inc)
   /* Global setup of kteffnew, feffnew (including meshtying)            */
   /**********************************************************************/
 
-  RCP<LINALG::SparseMatrix> P = adaptermeshtying_.GetMortarTrafo();
+  RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
 
   RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap,true);
 
@@ -1260,13 +1263,13 @@ void FLD::Meshtying::OutputSetUp()
     cout << endl << "DofRowMap:" << endl;
     cout << *(discret_->DofRowMap())<< endl << endl;
     cout << endl << "masterDofRowMap:" << endl;
-    cout << *(adaptermeshtying_.MasterDofRowMap())<< endl << endl;
+    cout << *(adaptermeshtying_->MasterDofRowMap())<< endl << endl;
     cout << "slaveDofRowMap:" << endl;
-    cout << *(adaptermeshtying_.SlaveDofRowMap())<< endl << endl;
+    cout << *(adaptermeshtying_->SlaveDofRowMap())<< endl << endl;
     cout << "lmDofRowMap:" << endl;
-    cout << *(adaptermeshtying_.LmDofRowMap())<< endl << endl;
+    cout << *(adaptermeshtying_->LmDofRowMap())<< endl << endl;
     cout << "Projection matrix:" << endl;
-    cout << *(adaptermeshtying_.GetMortarTrafo())<< endl << endl;
+    cout << *(adaptermeshtying_->GetMortarTrafo())<< endl << endl;
   }
 
   /* {

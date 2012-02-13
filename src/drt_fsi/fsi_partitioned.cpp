@@ -17,6 +17,9 @@ Maintainer: Ulrich Kuettler
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
 
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -57,6 +60,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   SetDefaultParameters(fsidyn,noxparameterlist_);
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
@@ -74,10 +78,10 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   else
   {
     matchingnodes_ = false;
-    coupsfm_.Setup( *StructureField().Discretization(),
-                    *MBFluidField().Discretization(),
-                    *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
-                    comm,false);
+    coupsfm_->Setup( *StructureField().Discretization(),
+                     *MBFluidField().Discretization(),
+                     *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+                     comm,false);
   }
 
   // enable debugging
@@ -841,7 +845,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_
   }
   else
   {
-    return coupsfm_.MasterToSlave(iv);
+    return coupsfm_->MasterToSlave(iv);
   }
 }
 
@@ -864,9 +868,23 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");
 
-    return coupsfm_.SlaveToMaster(iforce);
+    return coupsfm_->SlaveToMaster(iforce);
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar()
+{
+  return *coupsfm_;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() const
+{
+  return *coupsfm_;
+}
 
 #endif
