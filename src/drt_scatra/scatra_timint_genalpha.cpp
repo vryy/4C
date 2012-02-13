@@ -582,6 +582,50 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
 }
 
 
+/*--------------------------------------------------------------------------------------------*
+ | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 02/12 |
+ *--------------------------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  // let the base class do the basic redistribution and transfer of the base class members
+  ScaTraTimIntImpl::Redistribute(nodegraph);
+
+  // now do all the ost specfic steps
+  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (phiaf_ != Teuchos::null)
+  {
+    old = phiaf_;
+    phiaf_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *phiaf_);
+  }
+
+  if (phiam_ != Teuchos::null)
+  {
+    old = phiam_;
+    phiam_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *phiam_);
+  }
+
+  if (phidtam_ != Teuchos::null)
+  {
+    old = phidtam_;
+    phidtam_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *phidtam_);
+  }
+
+  if (fsphiaf_ != Teuchos::null)
+  {
+    old = fsphiaf_;
+    fsphiaf_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *fsphiaf_);
+  }
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step         vg 11/08 |
  -----------------------------------------------------------------------*/

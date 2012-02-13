@@ -123,9 +123,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
+  project_(false),
   samstart_(-1),
-  samstop_(-1),
-  project_(false)
+  samstop_(-1)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -5517,6 +5517,13 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(const Te
     LINALG::Export(*old, *state_.velnm_);
   }
 
+  if (state_.velaf_ != Teuchos::null)
+  {
+    old = state_.velaf_;
+    state_.velaf_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.velaf_);
+  }
+
   // acceleration at time n+1 and n
   if (state_.accnp_ != Teuchos::null)
   {
@@ -5530,6 +5537,13 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(const Te
     old = state_.accn_;
     state_.accn_ = LINALG::CreateVector(*dofrowmap,true);
     LINALG::Export(*old, *state_.accn_);
+  }
+
+  if (state_.accam_ != Teuchos::null)
+  {
+    old = state_.accam_;
+    state_.accam_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.accam_);
   }
 
   // -------------------------------------------------------------------

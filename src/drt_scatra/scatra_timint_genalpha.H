@@ -103,6 +103,9 @@ public:
   /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
   double ThermPressDtAm() { return thermpressdtam_; }
 
+  /// redistribute the scatra discretization and vectors according to nodegraph
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+
 
 protected:
 
