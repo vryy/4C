@@ -472,7 +472,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       {
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
-        LoomOutput(filename);
+        LoomOutput(dis,filename);
       }
     }
     break;
@@ -3936,46 +3936,79 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
  | in a loom type network                                                       |
  |                                                       (private) mueller 2/12 |
  *------------------------------------------------------------------------------*/
-void StatMechManager::LoomOutput(const std::ostringstream& filename)
+void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
+  Epetra_Vector discol(*discret_.DofColMap(),true);
+  LINALG::Export(disrow,discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositions(discol, currentpositions, currentrotations, true);
+
   if(discret_.Comm().MyPID()==0)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream distances;
 
-    std::vector<double> previouspos(3,0.0);
-    bool addvalues = false;
+//    std::vector<double> previouspos(3,0.0);
+//    bool addvalues = false;
+//    for(int i=0; i<filamentnumber_->MyLength(); i++)
+//    {
+//      if((*filamentnumber_)[i]==0)
+//      {
+//        // crosslinker element
+//        if((*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
+//        {
+//          std::vector<double> currcrosspos(3,0.0);
+//          for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
+//            currcrosspos.at(j) = (*crosslinkerpositions_)[j][(int)(*bspotstatus_)[i]];
+//          if(addvalues)
+//          {
+//            LINALG::Matrix<3,1> diff;
+//            for(int j=0; j<(int)diff.M(); j++)
+//            {
+//              diff(j) = currcrosspos.at(j) - previouspos.at(j);
+//              previouspos.at(j) = currcrosspos.at(j);
+//            }
+//            distances<<diff.Norm2()<<endl;
+//          }
+//          else
+//          {
+//            previouspos = currcrosspos;
+//            addvalues = true;
+//          }
+//        }
+//      }
+//      else
+//        break;
+//    }
+
+    // retrieve center node ids of the vertical filaments
+    std::vector<int> centernodes;
+    centernodes.clear();
     for(int i=0; i<filamentnumber_->MyLength(); i++)
+      if((*filamentnumber_)[i]==(int)centernodes.size()+1)
+        centernodes.push_back(i);
+    int numvfilnodes = centernodes.at(1)-centernodes.at(0);
+    for(int i=0; i<(int)centernodes.size(); i++)
+      centernodes.at(i) += (int)(floor((double)numvfilnodes/2.0));
+
+    // calculate distances between neighbouring vertical filaments
+    for(int i=0; i<(int)centernodes.size()-1; i++)
     {
-      if((*filamentnumber_)[i]==0)
+      map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(centernodes.at(i));
+      double mindist = 1e9;
+      for(int j=i+1; j<(int)centernodes.size(); j++)
       {
-        // crosslinker element
-        if((*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
-        {
-          std::vector<double> currcrosspos(3,0.0);
-          for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
-            currcrosspos.at(j) = (*crosslinkerpositions_)[j][(int)(*bspotstatus_)[i]];
-          if(addvalues)
-          {
-            LINALG::Matrix<3,1> diff;
-            for(int j=0; j<(int)diff.M(); j++)
-            {
-              diff(j) = currcrosspos.at(j) - previouspos.at(j);
-              previouspos.at(j) = currcrosspos.at(j);
-            }
-            distances<<diff.Norm2()<<endl;
-          }
-          else
-          {
-            previouspos = currcrosspos;
-            addvalues = true;
-          }
-        }
+        map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(centernodes.at(j));
+        LINALG::Matrix<3,1> diff = (posi->second);
+        diff -= (posj->second);
+        if(diff.Norm2()<mindist)
+          mindist = diff.Norm2();
       }
-      else
-        break;
+      distances<<mindist<<endl;
     }
+
 
     fprintf(fp, distances.str().c_str());
     fclose(fp);

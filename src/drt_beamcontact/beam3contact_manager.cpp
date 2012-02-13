@@ -1344,11 +1344,11 @@ bool CONTACT::Beam3cmanager::IncreaseCurrentpp(const double& globnorm)
 /*----------------------------------------------------------------------*
  |  Reduce penalty parameter                               mueller 02/12|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::DecreaseCurrentpp(int& unconverged)
+bool CONTACT::Beam3cmanager::DecreaseCurrentpp(int& converged)
 {
   bool update = false;
 
-  if(unconverged==0)
+  if(converged==0)
   {
     currentpp_ = currentpp_ / 1.4;
     update = true;

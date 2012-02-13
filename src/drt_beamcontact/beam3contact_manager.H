@@ -442,7 +442,7 @@ private:
   bool IncreaseCurrentpp(const double& GlobalConstrNorm);
 
   //\brief Reduce penalty paramater, when it is apparent that the latest increase due to UpdateCurrentpp() was to steep
-  bool DecreaseCurrentpp(int& unconverged);
+  bool DecreaseCurrentpp(int& converged);
 
   /*!
   \brief Set displacment state

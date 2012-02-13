@@ -15,7 +15,6 @@ Maintainer: Christian Cyron
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_structure/strugenalpha.H"
-#include "../drt_lib/drt_globalproblem.H"
 /*!
 \brief time integration for structural problems with statistical mechanics
 
@@ -36,7 +35,7 @@ class StatMechTime : public virtual StruGenAlpha
 public:
 
   //! \brief Standard Constructor
-  explicit StatMechTime(ParameterList& params,
+  explicit StatMechTime(Teuchos::ParameterList& params,
                    DRT::Discretization& dis,
                    LINALG::Solver& solver,
                    IO::DiscretizationWriter& output);
@@ -48,16 +47,16 @@ public:
   void Integrate();
 
   //! \brief do consistent predictor step
-  virtual void ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers);
+  virtual void ConsistentPredictor(Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief do full Newton iteration
-  virtual void FullNewton(RCP<Epetra_MultiVector> randomnumbers);
+  virtual void FullNewton(Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* redoptc=NULL);
+  virtual void PTC(Teuchos::RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* redoptc=NULL);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
-  void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
+  void InitializeNewtonUzawa(Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief writing output including restart information
   virtual void Output();
@@ -74,6 +73,9 @@ protected:
   //! \brief Initialize StatMechManager and BeamContactManager
   void InitializeManagers(int& currstep, int& startstep, int& ndim, double& dt, bool& buildoctree);
 
+  //! \brief check convergence status of Newton scheme for Augmented Lagrange method
+  bool ExitUzawaUpon(int& maxuzawaiter);
+
   //! \brief switch time step size at given point in time
   void StatMechManagerTimeUpdate(double& time, double& dt);
 
@@ -84,16 +86,20 @@ protected:
   void BeamContactNonlinearSolve(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //! \brief beam contact penalty approach
-  void BeamContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+  void SolveContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //! \brief beam contact augmented lagrange approach
-  void BeamContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+  void SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
+
+  //! \brief In case an Uzawa step has to be repeated, this method restores the preivous state
+  void RestorePrevious(Teuchos::RCP<LINALG::SparseOperator> stiffprev, Epetra_Vector& fresmprev, Epetra_Vector& disiprev,
+                       Epetra_Vector& dismprev, Epetra_Vector& disnprev, Epetra_Vector& velmprev, Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //! \brief call Output() method of statmechmanager_ according to options chosen
   void StatMechManagerOutput(int& istep, int& ndim, double& time, double& dt);
 
   //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
-  void RestoreOldConvergedState(bool buildoctree);
+  void RestoreOldConvergedState(bool& buildoctree);
 
   //! \brief Compute Statistical Forces and Damping Matrix for Brownian Dynamics Applications
   void PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc);
@@ -105,7 +111,7 @@ protected:
   void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
 
   //! \brief manager for administration of statistical mechanics stuff
-  RCP<StatMechManager> statmechmanager_;
+  Teuchos::RCP<StatMechManager> statmechmanager_;
 
   //! \brief maximal number of random numbers to be generated in each time step per element
   int maxrandomnumbersperglobalelement_;
@@ -114,7 +120,7 @@ protected:
   int   isconverged_;
 
   //! \brief object for managing beam contact
-  RCP<CONTACT::Beam3cmanager> beamcmanager_;
+  Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager_;
 
   //! \brief enum beam contact solution strategy
   enum beamcstrategy

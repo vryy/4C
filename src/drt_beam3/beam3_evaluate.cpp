@@ -17,6 +17,7 @@ Maintainer: Christian Cyron
 
 #include "beam3.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
