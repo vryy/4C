@@ -423,6 +423,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("XFEM").set<int>("MONOLITHIC_XFFSI_APPROACH", DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(xdyn,"MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFEM").set<int>("XFLUIDFLUID_TIMEINT", DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(xdyn, "XFLUIDFLUID_TIMEINT"));
+    fluidtimeparams->sublist("XFEM").set<int>("RELAXING_ALE", xdyn.get<int>("RELAXING_ALE"));
   }
 
   if( genprob.probtyp == prb_fluid_xfem2 or
@@ -579,8 +580,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (genprob.probtyp == prb_fsi or
         genprob.probtyp == prb_fsi_lung or
         genprob.probtyp == prb_gas_fsi or
-        genprob.probtyp == prb_biofilm_fsi or 
-        genprob.probtyp == prb_thermo_fsi or 
+        genprob.probtyp == prb_biofilm_fsi or
+        genprob.probtyp == prb_thermo_fsi or
         genprob.probtyp == prb_fluid_fluid_fsi)
     {
       // FSI input parameters
@@ -643,7 +644,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     else if (genprob.probtyp == prb_fluid_fluid_fsi)
     {
       RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,0);
-      bool monolithicfluidfluidfsi = true;
+      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+      bool monolithicfluidfluidfsi;
+      if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+        monolithicfluidfluidfsi = true;
+      else
+        monolithicfluidfluidfsi = false;
+
       fluid_ = rcp(new ADAPTER::FluidFluidImpl(actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     else
