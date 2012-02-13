@@ -7,7 +7,6 @@
 #include "fsi_monolithic_nox.H"
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
-#include "fsi_matrixtransform.H"
 
 // forward declarations
 
@@ -16,6 +15,15 @@ namespace ADAPTER
   class Coupling;
 }
 
+namespace FSI
+{
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
+}
 
 namespace FSI
 {
@@ -119,16 +127,16 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    UTILS::MatrixRowColTransform sggtransform_;
-    UTILS::MatrixRowTransform sgitransform_;
-    UTILS::MatrixColTransform sigtransform_;
-    UTILS::MatrixColTransform aigtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
 
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
 
-    UTILS::MatrixColTransform fsaigtransform_;
-    UTILS::MatrixColTransform fsmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fsmgitransform_;
 
     ///@}
 

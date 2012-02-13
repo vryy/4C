@@ -6,7 +6,6 @@
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "fsi_overlapprec.H"
-#include "fsi_matrixtransform.H"
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
@@ -50,11 +49,13 @@ namespace NOX
 
 namespace FSI
 {
-namespace UTILS
-{
-  class DebugWriter;
-}
+  // forward declarations
 
+  namespace UTILS
+  {
+    class DebugWriter;
+    class MatrixColTransform;
+  }
 
   /// Base class for Freesurface block preconditioning matrices
   class BlockPreconditioningMatrixFS : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
@@ -529,10 +530,10 @@ namespace UTILS
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    UTILS::MatrixColTransform aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
 
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixColTransform fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmgitransform_;
 
     ///@}
 

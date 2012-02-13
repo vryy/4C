@@ -4,6 +4,7 @@
 
 #include "fsi_constrmonolithic_fluidsplit.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "fsi_matrixtransform.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io_control.H"
@@ -24,6 +25,16 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& c
   : ConstrMonolithic(comm,timeparams)
 {
   sconT_ = rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(),81,false,true));
+
+  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fmigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
   return;
 }
 
@@ -254,27 +265,27 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   s->UnComplete();
 
 
-  fggtransform_(fgg,
-                scale*timescale,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                *s,
-                true,
-                true);
+  (*fggtransform_)(fgg,
+                   scale*timescale,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   *s,
+                   true,
+                   true);
 
   mat.Assign(0,0,View,*s);
 
-  fgitransform_(fgi,
-                scale,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                mat.Matrix(0,1));
+  (*fgitransform_)(fgi,
+                   scale,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   mat.Matrix(0,1));
 
-  figtransform_(blockf->FullRowMap(),
-                blockf->FullColMap(),
-                fig,
-                timescale,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                mat.Matrix(1,0));
+  (*figtransform_)(blockf->FullRowMap(),
+                   blockf->FullColMap(),
+                   fig,
+                   timescale,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   mat.Matrix(1,0));
 
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
@@ -284,12 +295,12 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   mat.Assign(1,1,View,fii);
 #endif
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1.,
-                ADAPTER::CouplingSlaveConverter(coupsa),
-                mat.Matrix(2,0));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1.,
+                   ADAPTER::CouplingSlaveConverter(coupsa),
+                   mat.Matrix(2,0));
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -307,41 +318,41 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     // reuse transform objects to add shape derivative matrices to structural blocks
 
-    figtransform_(blockf->FullRowMap(),
-                  blockf->FullColMap(),
-                  fmig,
-                  1.,
-                  ADAPTER::CouplingSlaveConverter(coupsf),
-                  mat.Matrix(1,0),
-                  false,
-                  true);
+    (*figtransform_)(blockf->FullRowMap(),
+                     blockf->FullColMap(),
+                     fmig,
+                     1.,
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     mat.Matrix(1,0),
+                     false,
+                     true);
 
-    fggtransform_(fmgg,
-                  scale,
-                  ADAPTER::CouplingSlaveConverter(coupsf),
-                  ADAPTER::CouplingSlaveConverter(coupsf),
-                  mat.Matrix(0,0),
-                  false,
-                  true);
+    (*fggtransform_)(fmgg,
+                     scale,
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     ADAPTER::CouplingSlaveConverter(coupsf),
+                     mat.Matrix(0,0),
+                     false,
+                     true);
 #endif
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false);
 
-    fmgitransform_(fmgi,
-                   scale,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(0,2),
-                   false,
-                   false);
+    (*fmgitransform_)(fmgi,
+                      scale,
+                      ADAPTER::CouplingSlaveConverter(coupsf),
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(0,2),
+                      false,
+                      false);
   }
   /*----------------------------------------------------------------------*/
   // constraint part -> structure

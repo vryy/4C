@@ -3,6 +3,7 @@
 
 #include "fs_monolithic.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "fsi_matrixtransform.H"
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
@@ -568,6 +569,10 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
                                 const Teuchos::ParameterList& timeparams)
   : BlockMonolithicFS(comm,timeparams)
 {
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
@@ -790,12 +795,12 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
   mat.Assign(0,0,View,*f);
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::CouplingSlaveConverter(*icoupfa_),
-                mat.Matrix(1,0));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1./timescale,
+                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   mat.Matrix(1,0));
   mat.Assign(1,1,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -815,23 +820,23 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(0,1),
-                   false,
-                   false);
+    (*fmgitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(0,1),
+                      false,
+                      false);
 
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(0,1),
-                   false,
-                   true);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(0,1),
+                      false,
+                      true);
   }
 
   // done. make sure all blocks are filled.

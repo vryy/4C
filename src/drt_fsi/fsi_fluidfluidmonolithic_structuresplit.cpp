@@ -2,6 +2,7 @@
 
 #include "fsi_fluidfluidmonolithic_structuresplit.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "fsi_matrixtransform.H"
 
 //#include "fsi_overlapprec_fsiamg.H"
 #include "fsi_debugwriter.H"
@@ -29,12 +30,21 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
                                                                             const Teuchos::ParameterList& timeparams)
   : Monolithic(comm,timeparams)
 {
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
+  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
   const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
   monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
                           (xdyn,"MONOLITHIC_XFFSI_APPROACH");
-
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-  fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
   currentstep_ = 0;
   relaxing_ale_ = xdyn.get<int>("RELAXING_ALE");
@@ -274,32 +284,32 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
 
   systemmatrix_->Assign(0,0,View,s->Matrix(0,0));
 
-  sigtransform_(s->FullRowMap(),
-                s->FullColMap(),
-                s->Matrix(0,1),
-                1./timescale,
-                ADAPTER::CouplingMasterConverter(coupsf),
-                systemmatrix_->Matrix(0,1));
-  sggtransform_(s->Matrix(1,1),
-                1./(scale*timescale),
-                ADAPTER::CouplingMasterConverter(coupsf),
-                ADAPTER::CouplingMasterConverter(coupsf),
-                *f,
-                true,
-                true);
-  sgitransform_(s->Matrix(1,0),
-                1./scale,
-                ADAPTER::CouplingMasterConverter(coupsf),
-                systemmatrix_->Matrix(1,0));
+  (*sigtransform_)(s->FullRowMap(),
+                   s->FullColMap(),
+                   s->Matrix(0,1),
+                   1./timescale,
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   systemmatrix_->Matrix(0,1));
+  (*sggtransform_)(s->Matrix(1,1),
+                   1./(scale*timescale),
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   *f,
+                   true,
+                   true);
+  (*sgitransform_)(s->Matrix(1,0),
+                   1./scale,
+                   ADAPTER::CouplingMasterConverter(coupsf),
+                   systemmatrix_->Matrix(1,0));
 
   systemmatrix_->Assign(1,1,View,*f);
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::CouplingSlaveConverter(*icoupfa_),
-                systemmatrix_->Matrix(2,1));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1./timescale,
+                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   systemmatrix_->Matrix(2,1));
   systemmatrix_->Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -318,23 +328,23 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix()
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   systemmatrix_->Matrix(1,2),
-                   false,
-                   false);
+    (*fmgitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      systemmatrix_->Matrix(1,2),
+                      false,
+                      false);
 
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   systemmatrix_->Matrix(1,2),
-                   false,
-                   true);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      systemmatrix_->Matrix(1,2),
+                      false,
+                      true);
   }
 
   // done. make sure all blocks are filled.

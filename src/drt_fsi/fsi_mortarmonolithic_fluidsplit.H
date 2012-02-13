@@ -5,7 +5,6 @@
 
 #include "fsi_monolithic_nox.H"
 #include "fsi_overlapprec.H"
-#include "fsi_matrixtransform.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_utils.H"
 
@@ -15,6 +14,14 @@ namespace ADAPTER
 {
   class Coupling;
   class CouplingMortar;
+}
+
+namespace FSI
+{
+  namespace UTILS
+  {
+    class MatrixColTransform;
+  }
 }
 
 
@@ -139,12 +146,8 @@ namespace FSI
     /// coupling of structure and fluid at the interface
     Teuchos::RCP< ::ADAPTER::CouplingMortar>               coupsfm_;
 
-    UTILS::MatrixRowColTransform fggtransform_;
-    UTILS::MatrixRowTransform fgitransform_;
-    UTILS::MatrixColTransform figtransform_;
-    UTILS::MatrixColTransform aigtransform_;
-    UTILS::MatrixColTransform fmiitransform_;
-    UTILS::MatrixRowColTransform fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
 
     ///@}
 

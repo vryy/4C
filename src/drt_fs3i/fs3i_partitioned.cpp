@@ -25,6 +25,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_fsi/fsi_monolithiclagrange.H"
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
 #include "../drt_fsi/fsi_utils.H"
+#include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"

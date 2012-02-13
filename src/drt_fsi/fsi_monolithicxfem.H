@@ -11,7 +11,6 @@
 
 #include "../drt_io/io_ostream0.H"
 
-#include "fsi_matrixtransform.H"
 #include "fsi_statustest.H"
 #include "fsi_debugwriter.H"
 
@@ -35,6 +34,12 @@ namespace ADAPTER
 
 namespace FSI
 {
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
 
   /// monolithic FSI with XFEM: map extractor
   class MonolithicXFEMExtractor : public LINALG::MultiMapExtractor
@@ -100,9 +105,9 @@ namespace FSI
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
-    UTILS::MatrixRowColTransform sggtransform_;
-    UTILS::MatrixRowTransform    sgitransform_;
-    UTILS::MatrixColTransform    sigtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform>    sgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>    sigtransform_;
     ///@}
 
     /// the very xfem fluid

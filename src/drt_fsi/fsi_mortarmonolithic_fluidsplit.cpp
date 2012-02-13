@@ -13,6 +13,7 @@
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "fsi_matrixtransform.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -37,6 +38,9 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
   return;
 }
@@ -481,12 +485,12 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #endif
 
   RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1.,
-                ADAPTER::CouplingSlaveConverter(*icoupfa_),
-                *laig);
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1.,
+                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   *laig);
 
   laig->Complete(f->Matrix(1,1).DomainMap(),aii.RangeMap());
   RCP<LINALG::SparseMatrix> llaig = MLMultiply(*laig,false,*mortar,false,false,false,true);
@@ -543,23 +547,23 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false);
 
 
     RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(fmgi.RowMap(),81,false));
-    fmiitransform_(mmm->FullRowMap(),
-                  mmm->FullColMap(),
-                  fmgi,
-                  1.0,
-                  ADAPTER::CouplingMasterConverter(coupfa),
-                  *lfmgi,
-                  false);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.0,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      *lfmgi,
+                      false);
 
     lfmgi->Complete(aii.DomainMap(),mortar->RangeMap());
     RCP<LINALG::SparseMatrix> llfmgi = MLMultiply(*mortar,true,*lfmgi,false,false,false,true);

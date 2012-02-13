@@ -1398,7 +1398,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
 
-				RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
 
         string micro_inputfile_name = micromat->MicroInputFileName();
 

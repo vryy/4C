@@ -11,6 +11,7 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "fsi_matrixtransform.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -41,6 +42,12 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
+  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
   return;
 }
@@ -475,12 +482,12 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   f->Add(*sgg,false,1./(scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1./timescale,
-                ADAPTER::CouplingSlaveConverter(*icoupfa_),
-                mat.Matrix(2,1));
+  (*aigtransform_)(a->FullRowMap(),
+                   a->FullColMap(),
+                   aig,
+                   1./timescale,
+                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -499,23 +506,23 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    fmgitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmgi,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   false);
+    (*fmgitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmgi,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      false);
 
-    fmiitransform_(mmm->FullRowMap(),
-                   mmm->FullColMap(),
-                   fmii,
-                   1.,
-                   ADAPTER::CouplingMasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false,
-                   true);
+    (*fmiitransform_)(mmm->FullRowMap(),
+                      mmm->FullColMap(),
+                      fmii,
+                      1.,
+                      ADAPTER::CouplingMasterConverter(coupfa),
+                      mat.Matrix(1,2),
+                      false,
+                      true);
   }
 
   // if there is a free surface
@@ -524,12 +531,12 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
     // here we extract the free surface submatrices from position 2
     LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
-    fsaigtransform_(a->FullRowMap(),
-                    a->FullColMap(),
-                    aig,
-                    1./timescale,
-                    ADAPTER::CouplingSlaveConverter(*fscoupfa_),
-                    mat.Matrix(2,1));
+    (*fsaigtransform_)(a->FullRowMap(),
+                       a->FullColMap(),
+                       aig,
+                       1./timescale,
+                       ADAPTER::CouplingSlaveConverter(*fscoupfa_),
+                       mat.Matrix(2,1));
 
     if (mmm!=Teuchos::null)
     {
@@ -547,14 +554,14 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
       const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-      fsmgitransform_(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmgi,
-                      1.,
-                      ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(1,2),
-                      false,
-                      false);
+      (*fsmgitransform_)(mmm->FullRowMap(),
+                         mmm->FullColMap(),
+                         fmgi,
+                         1.,
+                         ADAPTER::CouplingMasterConverter(coupfa),
+                         mat.Matrix(1,2),
+                         false,
+                         false);
     }
   }
 

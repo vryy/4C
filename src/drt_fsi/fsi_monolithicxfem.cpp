@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_monolithicxfem.H"
+#include "fsi_matrixtransform.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
@@ -34,6 +35,10 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(const Epetra_Comm& comm)
     fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     cout0_(fluidfield_.Discretization()->Comm(), std::cout)
 {
+  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
   // structure to fluid
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsf_->SetupConditionCoupling(*StructureField().Discretization(),
@@ -471,29 +476,29 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 //  LINALG::PrintMatrixInMatlabFormat("S01",*s->Matrix(0,1).EpetraMatrix(),true);
 //  LINALG::PrintMatrixInMatlabFormat("S11",*s->Matrix(1,1).EpetraMatrix(),true);
 
-  sigtransform_(Cud->RowMap(),
-                Cud->ColMap(),
-                *Cud,
-                1.0,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                systemmatrix_->Matrix(2,1),
-                false,
-                false);
+  (*sigtransform_)(Cud->RowMap(),
+                   Cud->ColMap(),
+                   *Cud,
+                   1.0,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   systemmatrix_->Matrix(2,1),
+                   false,
+                   false);
 
-  sgitransform_(*Cdu,
-                1.0,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                systemmatrix_->Matrix(1,2),
-                true);
+  (*sgitransform_)(*Cdu,
+                   1.0,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   systemmatrix_->Matrix(1,2),
+                   true);
 
   //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
-  sggtransform_(*Cdd,
-                1.0,
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                ADAPTER::CouplingSlaveConverter(coupsf),
-                systemmatrix_->Matrix(1,1),
-                false,
-                true);
+  (*sggtransform_)(*Cdd,
+                   1.0,
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   ADAPTER::CouplingSlaveConverter(coupsf),
+                   systemmatrix_->Matrix(1,1),
+                   false,
+                   true);
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
