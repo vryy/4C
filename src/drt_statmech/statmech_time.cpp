@@ -1081,7 +1081,7 @@ void StatMechTime::Output()
 /*----------------------------------------------------------------------*
  |  Pseudo Transient Continuation                 (public)   cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* redoptc)
+void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1322,9 +1322,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* 
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  // flag signaling the necessity to repeat the whole procedure
-  if(redoptc!=NULL)
-    *redoptc = PTCRepeat(numiter, maxiter, fresmnormdivergent);
+  PTCConvergenceStatus(numiter, maxiter, fresmnormdivergent);
 
   if(isconverged_==0 &&  !discret_.Comm().MyPID() && contactstrategy_!=StatMechTime::contact_auglag)
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
@@ -1368,13 +1366,10 @@ void StatMechTime::PTCBrownianForcesAndDamping(double& dt, double& crotptc, doub
 /*----------------------------------------------------------------------*
  |  evaluate outcome of PTC and chose action accordingly   mueller 02/12|
  *----------------------------------------------------------------------*/
-bool StatMechTime::PTCRepeat(int& numiter, int& maxiter, bool fresmnormdivergent)
+void StatMechTime::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent)
 {
-  bool redoptc = false;
-  //if no convergence arises within maxiter iterations or force residuum divergent
   if(numiter>=maxiter || fresmnormdivergent)
   {
-    // assume divergence
     ConvergenceStatusUpdate();
 
     // Only augmented lagrange:
@@ -1387,7 +1382,7 @@ bool StatMechTime::PTCRepeat(int& numiter, int& maxiter, bool fresmnormdivergent
     {
       double cnorm = 1e6;
       // get the constraint norm and decrease penalty parameter
-      beamcmanager_->UpdateConstrNorm(&cnorm, &isconverged_);
+      beamcmanager_->UpdateConstrNorm(&cnorm);
 
       if(numiter>=maxiter)
       {
@@ -1395,19 +1390,33 @@ bool StatMechTime::PTCRepeat(int& numiter, int& maxiter, bool fresmnormdivergent
         if(cnorm<0.5 && beamcmanager_->GetUzawaIter()>=2)
           ConvergenceStatusUpdate(true,false);
         else
-        {
-          redoptc = true;
           ConvergenceStatusUpdate(false,false);
-        }
       }
       else if(fresmnormdivergent)
-      {
-        redoptc = true;
         ConvergenceStatusUpdate(false,false);
-      }
     }
   }
-  return redoptc;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set relevant variables signaling divergence of PTC      mueller 02/12|
+ *----------------------------------------------------------------------*/
+void StatMechTime::ConvergenceStatusUpdate(bool converged, bool increasestepcount)
+{
+  if(!converged)
+  {
+    isconverged_ = 0;
+    if(increasestepcount)
+      statmechmanager_->unconvergedsteps_++;
+  }
+  else
+  {
+    isconverged_ = 1;
+    if(!increasestepcount)
+      statmechmanager_->unconvergedsteps_--;
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1481,58 +1490,16 @@ void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra
     if (discret_.Comm().MyPID() == 0)
       cout << endl << "Starting Uzawa step No. " << beamcmanager_->GetUzawaIter() << endl;
 
-    // store relevant vectors and stiffness matrix: If divergence is encountered, the a priori state has to be reproduced
-    Teuchos::RCP<LINALG::SparseOperator> stiffprev = rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81,true,true));
-    stiff_->Complete();
-    stiffprev->Add(*stiff_,false,1.0,0.0);
-    stiff_->UnComplete();
-    Epetra_Vector fresmprev = *fresm_;
-    Epetra_Vector disiprev = *disi_;
-    Epetra_Vector dismprev = *dism_;
-    Epetra_Vector disnprev = *disn_;
-    Epetra_Vector velmprev = *velm_;
-    // number of repeats of the Newton scheme in case of divergence (most probably) due to bad choice of Penalty Parameter
-    bool redoiteration = false;
-    int numruns = 5;
-    int run = 0;
-
-    // LOOP3: nonlinear iteration (Newton)
-    do
-    {
-      // We assume that the iterative scheme converges, which is why we have to reset isconverged_ when repeating the PTC
-      isconverged_ = 1;
-
-      if(ndim ==3)
-        PTC(randomnumbers,istep,&redoiteration);
-      else
-        FullNewton(randomnumbers);
-
-      // we need to restore the old state before retrying with a different Penalty Parameter
-      if(isconverged_==0)
-      {
-        run++;
-        if(redoiteration && run<numruns)
-        {
-          // reset vectors and stiffness matrix
-          RestorePrevious(stiffprev,fresmprev,disiprev,dismprev,disnprev,velmprev, randomnumbers);
-          if(!discret_.Comm().MyPID())
-            cout<<"\n\n Repeat No. "<<run<<" of Uzawa step "<<beamcmanager_->GetUzawaIter()<<" with reduced penalty parameter "<<beamcmanager_->GetCurrentpp()<<endl;
-        }
-        else
-        {
-          if(!discret_.Comm().MyPID())
-            std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
-          break;
-        }
-      }
-      else
-        break;
-    }
-    while(run<numruns);
+    if(ndim ==3)
+      PTC(randomnumbers,istep);
+    else
+      FullNewton(randomnumbers);
 
     // in case uzawa step did not converge
     if(isconverged_==0)
     {
+      if(!discret_.Comm().MyPID())
+        std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
       // reset pairs to size 0 since the octree is being constructed completely anew
       beamcmanager_->ResetPairs();
       break;
@@ -1550,30 +1517,6 @@ void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra
 }
 
 /*----------------------------------------------------------------------*
- |  Restore previous state in case that PTC has to be repeated          |
- |                                            (private)    mueller 02/12|
- *----------------------------------------------------------------------*/
-void StatMechTime::RestorePrevious(RCP<LINALG::SparseOperator> stiffprev, Epetra_Vector& fresmprev, Epetra_Vector& disiprev,
-                     Epetra_Vector& dismprev, Epetra_Vector& disnprev, Epetra_Vector& velmprev, RCP<Epetra_MultiVector> randomnumbers)
-{
-  // if the very first Uzawa step is to be repeated, simply recall the Predictor
-  if(beamcmanager_->GetUzawaIter()==1)
-    ConsistentPredictor(randomnumbers);
-  else
-  {
-    stiffprev->Complete();
-    stiff_->UnComplete();
-    stiff_->Add(*stiffprev,false,1.0,0.0);
-    *fresm_ = fresmprev;
-    *disi_ = disiprev;
-    *dism_ = dismprev;
-    *disn_ = disnprev;
-    *velm_ = velmprev;
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Reset relevant values, vectors, discretization before repeating     |
  |  the time step                             (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
@@ -1584,26 +1527,6 @@ void StatMechTime::RestoreOldConvergedState(bool& buildoctree)
   discret_.Evaluate(p,null,null,null,null,null);
   statmechmanager_->RestoreConv(stiff_, beamcmanager_);
   buildoctree = true;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | set relevant variables signaling divergence of PTC      mueller 02/12|
- *----------------------------------------------------------------------*/
-void StatMechTime::ConvergenceStatusUpdate(bool converged, bool increasestepcount)
-{
-  if(!converged)
-  {
-    isconverged_ = 0;
-    if(increasestepcount)
-      statmechmanager_->unconvergedsteps_++;
-  }
-  else
-  {
-    isconverged_ = 1;
-    if(!increasestepcount)
-      statmechmanager_->unconvergedsteps_--;
-  }
   return;
 }
 

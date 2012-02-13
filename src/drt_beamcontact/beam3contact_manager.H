@@ -203,7 +203,7 @@ public:
   \param convstatus (in) status of convergence, default value NULL for converged
 
   */
-  void UpdateConstrNorm(double* cnorm = NULL, int* convstatus = NULL);
+  void UpdateConstrNorm(double* cnorm = NULL);
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
@@ -440,9 +440,6 @@ private:
 
   */
   bool IncreaseCurrentpp(const double& GlobalConstrNorm);
-
-  //\brief Reduce penalty paramater, when it is apparent that the latest increase due to UpdateCurrentpp() was to steep
-  bool DecreaseCurrentpp(int& converged);
 
   /*!
   \brief Set displacment state

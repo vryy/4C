@@ -1164,7 +1164,7 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 /*----------------------------------------------------------------------*
  |  Update contact constraint norm                            popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm, int* convstatus)
+void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
 {
   // some local variables
   int j=0;
@@ -1232,12 +1232,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm, int* convstatus)
   bool updatepp = false;
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
   if (soltype==INPAR::CONTACT::solution_auglag)
-  {
-    if(convstatus!=NULL)
-      updatepp = DecreaseCurrentpp(*convstatus);
-    if(!updatepp)
       updatepp = IncreaseCurrentpp(globnorm);
-  }
   
    // print results to screen
   if (Comm().MyPID()==0 && cnorm==NULL)
@@ -1336,21 +1331,6 @@ bool CONTACT::Beam3cmanager::IncreaseCurrentpp(const double& globnorm)
   if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter_ >= 2) )
   {
     currentpp_ = currentpp_ * 1.6;
-    update = true;
-  }
-  return update;
-}
-
-/*----------------------------------------------------------------------*
- |  Reduce penalty parameter                               mueller 02/12|
- *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::DecreaseCurrentpp(int& converged)
-{
-  bool update = false;
-
-  if(converged==0)
-  {
-    currentpp_ = currentpp_ / 1.4;
     update = true;
   }
   return update;

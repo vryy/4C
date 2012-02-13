@@ -53,7 +53,7 @@ public:
   virtual void FullNewton(Teuchos::RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC(Teuchos::RCP<Epetra_MultiVector> randomnumbers, int& istep, bool* redoptc=NULL);
+  virtual void PTC(Teuchos::RCP<Epetra_MultiVector> randomnumbers, int& istep);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
   void InitializeNewtonUzawa(Teuchos::RCP<Epetra_MultiVector> randomnumbers);
@@ -105,7 +105,7 @@ protected:
   void PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc);
 
   //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
-  bool PTCRepeat(int& numiter, int& maxiter, bool fresmnormdivergent);
+  void PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent);
 
   //! \brief set PTC status to unconverged
   void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
