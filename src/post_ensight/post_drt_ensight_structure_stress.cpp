@@ -223,7 +223,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  const Epetra_Map* nodemap = dis->NodeRowMap();
+  const Epetra_Map* nodemap = dis->NodeColMap();
   RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
