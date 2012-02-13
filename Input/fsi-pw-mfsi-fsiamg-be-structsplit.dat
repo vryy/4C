@@ -19346,9 +19346,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 1.256768086e-02 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -5.892434461e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -3.231819696e-03 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 1.013307507e+01 TOLERANCE 1e-3
+FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 1.257043560e-02 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -5.893784370e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -3.232571341e-03 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 1.013568904e+01 TOLERANCE 1e-3
 -------------------------------------------------------------------------END
 // END

@@ -12072,8 +12072,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   // TODO
   // This function is only a 3D function, since it may influence the performance
   // get velocity norms
-  const double vel_normaf = velintaf_.Norm2();
-  const double vel_normnp = velintnp_.Norm2();
+  // For the time being, the ALE convective velocity, which appears to be the
+  // more appropriate velocity, is used here. Both at n+1 and n+alpha_F, the
+  // the ALE convective velocity at n+alpha_F is used, since the ALE convective
+  // at n+1 is not available.
+  const double vel_normaf = aleconvintaf_.Norm2();
+  const double vel_normnp = aleconvintaf_.Norm2();
 
   if(tds == INPAR::FLUID::subscales_time_dependent)
   {
@@ -12156,7 +12160,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       {
         for (int rr=0;rr<3;++rr)
         {
-          Gnormu+=velintaf_(nn)*G(nn,rr)*velintaf_(rr);
+          Gnormu+=aleconvintaf_(nn)*G(nn,rr)*aleconvintaf_(rr);
         }
       }
 
@@ -12392,7 +12396,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
     }
     else if(whichtau == INPAR::FLUID::fbvw_gradient_based_hk)
     {
-      // this copy of velintaf_ will be used to store the normed velocity
+      // this copy of aleconvintaf_ will be used to store the normed velocity
       LINALG::Matrix<3,1> normed_velgrad;
 
       for (int rr=0;rr<3;++rr)
@@ -12563,7 +12567,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       {
         for (int rr=0;rr<3;++rr)
         {
-          Gnormu+=velintaf_(nn)*G(nn,rr)*velintaf_(rr);
+          Gnormu+=aleconvintaf_(nn)*G(nn,rr)*aleconvintaf_(rr);
         }
       }
 
@@ -12628,7 +12632,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       // tau_C: Wall
 
 
-      // this copy of velintaf_ will be used to store the normed velocity
+      // this copy of aleconvintaf_ will be used to store the normed velocity
       LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
@@ -12636,7 +12640,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       {
         for (int rr=0;rr<3;++rr) /* loop element nodes */
         {
-          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
+          normed_velintaf(rr)=aleconvintaf_(rr)/vel_normaf;
         }
       }
       else
@@ -12730,7 +12734,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       // tau_C: Codina
 
 
-      // this copy of velintaf_ will be used to store the normed velocity
+      // this copy of aleconvintaf_ will be used to store the normed velocity
       LINALG::Matrix<3,1> normed_velintaf;
 
       // normed velocity at element center (we use the copy for safety reasons!)
@@ -12738,7 +12742,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       {
         for (int rr=0;rr<3;++rr) /* loop element nodes */
         {
-          normed_velintaf(rr)=velintaf_(rr)/vel_normaf;
+          normed_velintaf(rr)=aleconvintaf_(rr)/vel_normaf;
         }
       }
       else
@@ -12902,7 +12906,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
     }
     else if(whichtau == INPAR::FLUID::fbvw_gradient_based_hk)
     {
-      // this copy of velintaf_ will be used to store the normed velocity
+      // this copy of aleconvintaf_ will be used to store the normed velocity
       LINALG::Matrix<3,1> normed_velgrad;
 
       for (int rr=0;rr<3;++rr)

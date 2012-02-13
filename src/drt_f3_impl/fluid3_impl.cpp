@@ -191,7 +191,6 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     bodyforce_(true),
     prescribedpgrad_(true),
     histmom_(true),
-    velino_(true),
     velint_(true),
     fsvelint_(true),
     sgvelint_(true),
@@ -1270,8 +1269,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
     else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
       CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
-    // get velocity at element center
+
+    // get convective velocity at element center for evaluation of
+    // stabilization parameter
     velint_.Multiply(evelaf,funct_);
+    convvelint_.Update(velint_);
+    if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
 
     // calculate stabilization parameters at element center
     CalcStabParameter(vol);
@@ -4055,7 +4058,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     const double dens_sqr = densaf_*densaf_;
     for (int nn=0;nn<nsd_;++nn)
     {
-      const double dens_sqr_velint_nn = dens_sqr*velint_(nn);
+      const double dens_sqr_velint_nn = dens_sqr*convvelint_(nn);
       for (int mm=0; mm<nsd_; ++mm)
       {
         traceG += xji_(nn,mm)*xji_(nn,mm);
@@ -4068,7 +4071,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
           G += xji_(nn,mm)*xji_(rr,mm);
         }
         normG  += G*G;
-        Gnormu += dens_sqr_velint_nn*G*velint_(rr);
+        Gnormu += dens_sqr_velint_nn*G*convvelint_(rr);
       }
     }
 
@@ -4107,8 +4110,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
                               1
 
     */
-    // get velocity norm
-    vel_norm = velint_.Norm2();
+    // get norm of convective velocity
+    vel_norm = convvelint_.Norm2();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -4145,8 +4148,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
      stabilization parameter as above without inclusion of dt-part
 
     */
-    // get velocity norm
-    vel_norm = velint_.Norm2();
+    // get norm of convective velocity
+    vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
@@ -4204,8 +4207,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
        (condition for constants as defined here: c_2 <= sqrt(c_3)).
 
     */
-    // get velocity norm
-    vel_norm = velint_.Norm2();
+    // get norm of convective velocity
+    vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
@@ -4250,8 +4253,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
          Codina (1998) proposed present version without dt.
 
     */
-    // get velocity norm
-    vel_norm = velint_.Norm2();
+    // get norm of convective velocity
+    vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
@@ -4529,15 +4532,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcCharEleLength(
   //---------------------------------------------------------------------
   // a) streamlength due to Tezduyar et al. (1992) -> default
   // normed velocity vector
-  if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
+  LINALG::Matrix<nsd_,1> velino(true);
+  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convvelint_);
   else
   {
-    velino_.Clear();
-    velino_(0,0) = 1.0;
+    velino.Clear();
+    velino(0,0) = 1.0;
   }
-
   LINALG::Matrix<nen_,1> tmp;
-  tmp.MultiplyTN(derxy_,velino_);
+  tmp.MultiplyTN(derxy_,velino);
   const double val = tmp.Norm1();
   strle = 2.0/val;
 
@@ -17838,8 +17841,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
       visceff_ += sgvisc_;
     }
 
-    // get velocity at element center
+    // get convective velocity at element center for evaluation of
+    // stabilization parameter
     velint_.Multiply(evelaf,funct_);
+    convvelint_.Update(velint_);
+    if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
 
     // calculate stabilization parameters at element center
     CalcStabParameter(vol);

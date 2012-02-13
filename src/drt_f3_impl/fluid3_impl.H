@@ -1137,8 +1137,6 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> prescribedpgrad_;
     //! vector containing all values from previous timelevel n for momentum equation
     LINALG::Matrix<nsd_,1> histmom_;
-    //! direction of flow (normed velocity vector)
-    LINALG::Matrix<nsd_,1> velino_;
     //! velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> velint_;
     //! fine-scale velocity vector in gausspoint
