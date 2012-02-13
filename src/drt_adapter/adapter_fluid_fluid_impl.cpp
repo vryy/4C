@@ -16,6 +16,9 @@ Maintainer: Shadan Shahmiri
 
 #include "adapter_fluid_fluid_impl.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_fluid/xfluidfluidresulttest.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -376,7 +379,7 @@ void ADAPTER::FluidFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vecto
 void ADAPTER::FluidFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
 
-  // meshmap is the contains the whole ale map. It transfers the
+  // meshmap contains the whole ale map. It transfers the
   // displacement we get from Ale-dis to the displacement of the
   // embedded-fluid-dis
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());

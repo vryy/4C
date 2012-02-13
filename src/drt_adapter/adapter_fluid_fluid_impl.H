@@ -24,9 +24,6 @@ Maintainer: Shadan Shahmiri
 #include <Epetra_Operator.h>
 
 #include "../drt_fluid/xfluidfluid.H"
-#include "../drt_fluid/xfluidfluidresulttest.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "adapter_fluid.H"
 
