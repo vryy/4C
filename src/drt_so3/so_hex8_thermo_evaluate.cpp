@@ -1002,12 +1002,17 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && tempstiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector
       // f = f + (B^T . sigma_temp) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stresstemp, 1.0);
+    }
 
+    // update stiffness matrix
+    if (tempstiffmatrix != NULL)
+    {
       //-----------------------------------------------------------------------
       // integrate `initial-displacement-temperature' stiffness matrix  02/10
       // update the stiffness part depending on the temperature
@@ -1020,7 +1025,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
         cn.Multiply(ctemp,Ntemp); // (6x1) = (6x1)(1x1)
       }
       tempstiffmatrix->MultiplyTN(detJ_w,bop,cn,1.0); // [(3nx6)(6x1)=(3nx1)] (24x6)(6x1)=(24x1)
-
 
       //-----------------------------------------------------------------------
       // integrate `geometric' stiffness matrix and add to keu            04/10
@@ -1202,11 +1206,11 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
 
   } // switch (mat->MaterialType())
 
-}
+}  // Ctemp()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (private)
+ |  evaluate only the poroelasticity fraction for the element (private) |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
     vector<int>& lm, // location matrix
@@ -1214,7 +1218,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
     vector<double>& vel, // current velocities
     // vector<double>&           residual,       // current residual displ
     LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> & evelnp, LINALG::Matrix<
-        NUMNOD_SOH8, 1> & epreaf,
+    NUMNOD_SOH8, 1> & epreaf,
     LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* reamatrix, // element reactive matrix
     LINALG::Matrix<NUMDOF_SOH8, 1>* force, // element internal force vector
@@ -2151,6 +2155,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
     double fac3= detJ_w * press * J;
     tmp3.Multiply(fac3,cinvb,dphi_dus);
 
+    // update internal force vector
     if (force != NULL )
     {
       // additional fluid stress- stiffness term RHS -(B^T .  (1-phi) . C^-1  * J * p^f * detJ * w(gp))
@@ -2167,7 +2172,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
       //additional "reactive term" RHS  detJ * w(gp) * ( J * reacoeff * phi^2 * v_s)
       force->Update(1.0,erea_force,1.0);
 
-    }
+    }  // if (force != NULL )
 
     if ( reamatrix != NULL )
     {
@@ -2177,6 +2182,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
       reamatrix->Update(1.0,erea_v,1.0);
     }
 
+    // update stiffness matrix
     if (stiffmatrix != NULL)
     {
       // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * (1-\phi) * p^f * detJ * w(gp))
@@ -2223,7 +2229,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
         }
       } // end of integrate `geometric' stiffness******************************
 
-
       //if the reaction part is not supposed to be computed separately, we add it to the stiffness
       if ( reamatrix == NULL )
       {
@@ -2238,11 +2243,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
   structmat->SetPorosityAtGP(porosity_gp);
 
   return;
-}
+}  // soh8_nlnstiff_poroelast()
 
-    /*----------------------------------------------------------------------*
-     |  evaluate only the poroelasticity fraction for the element (private)
-     *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (private) |
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_coupling_poroelast(vector<int>& lm, // location matrix
     vector<double>& disp, // current displacements
     vector<double>& vel, // current velocities
@@ -2822,7 +2828,7 @@ void DRT::ELEMENTS::So_hex8::soh8_coupling_poroelast(vector<int>& lm, // locatio
       }
     }
 
-  // add structure displacement - fluid pressure part to matrix
+    // add structure displacement - fluid pressure part to matrix
     for (int ui=0; ui<NUMNOD_SOH8; ++ui)
     {
       const int dim_ui = NUMDIM_SOH8*ui;
@@ -2853,7 +2859,8 @@ void DRT::ELEMENTS::So_hex8::soh8_coupling_poroelast(vector<int>& lm, // locatio
   }
 
   return;
-}
+
+}  // soh8_coupling_poroelast()
 
 
 /*----------------------------------------------------------------------*/

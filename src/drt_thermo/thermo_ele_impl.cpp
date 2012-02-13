@@ -1357,19 +1357,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     for (int i=0; i<6; ++i)
       cbv += ctemp(i,0)*strainvel(i,0);
 
-    // integrate internal force vector (coupling fraction towards displacements)
-    // and coupling conductivity matrix (displacement dependent)
-    if (efint != NULL && etang != NULL)
-    {
-      // fintdisp = fintdisp - N^T . Ctemp : (B .  (d^e)') . N . T
-      LINALG::Matrix<nen_,6> nctemp(true); // (8x1)(1x6)
-      nctemp.MultiplyNT(funct_,ctemp);
-      LINALG::Matrix<nen_,1> ncBv;
-      ncBv.Multiply(nctemp,strainvel);
+    // N^T . Ctemp : ( B .  (d^e)' )
+    LINALG::Matrix<nen_,6> nctemp(true); // (8x1)(1x6)
+    nctemp.MultiplyNT(funct_,ctemp);
+    LINALG::Matrix<nen_,1> ncBv;
+    ncBv.Multiply(nctemp,strainvel);
 
+    // integrate internal force vector (coupling fraction towards displacements)
+    if (efint != NULL)
+    {
       // build the product of the shapefunctions and element temperatures
       LINALG::Matrix<1,1> nt(true);
-
 #ifdef COUPLEINITTEMPERATURE
       // for TSI validation/verification: change nt to Theta_0 here!!!! 14.01.11
       if (ele->Id()==0)
@@ -1378,25 +1376,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
         cout << "coupling term in thermo field with T_0" << endl;
       }
       nt.Scale(thetainit);
-#endif // #ifdef COUPLEINITTEMPERATURE
-#ifndef COUPLEINITTEMPERATURE // use current temperature solution for the coupling
+#else
+      // default: use current temperature
       nt.MultiplyTN(funct_,etemp_);
-#endif // #ifndef COUPLEINITTEMPERATURE
+#endif
 
-      // update of the internal "force" vector
+      // fintdisp = fintdisp - N^T . Ctemp : (B .  (d^e)') . N . T
       efint->Multiply(fac_,ncBv,nt,1.0);
-
-      // update conductivity matrix (with displacement dependent term)
-      // k^e = k^e - ( N^T . (-m * I) . (B_d . (d^e)') . N ) * detJ * w(gp)
-      // with C_mat = (-k)*I
-      // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
-      etang->MultiplyNT(fac_,ncBv,funct_,1.0);
 
 #ifdef TSIMONOLITHASOUTPUT
       if (ele->Id()==0)
       {
         cout << "efint nach CalculateCoupl"<< *efint << endl;
-        cout << "etang nach CalculateCoupl"<< *etang << endl;
         cout << "CouplFint\n" << endl;
         cout << "ele Id= " << ele->Id() << endl;
         cout << "bop\n" << bop << endl;
@@ -1405,7 +1396,23 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
         cout << "ncBv\n" << ncBv << endl;
       }
 #endif  // TSIMONOLITHASOUTPUT
-    }
+    }  // if (efint!=NULL)
+
+    // update conductivity matrix (with displacement dependent term)
+    if (etang != NULL)
+    {
+      // k^e = k^e - ( N^T . (-m * I) . (B_d . (d^e)') . N ) * detJ * w(gp)
+      // with C_mat = (-k)*I
+      // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
+      etang->MultiplyNT(fac_,ncBv,funct_,1.0);
+
+#ifdef TSIMONOLITHASOUTPUT
+      if (ele->Id()==0)
+      {
+        cout << "etang nach CalculateCoupl"<< *etang << endl;
+      }
+#endif  // TSIMONOLITHASOUTPUT
+    }  // if (etang!=NULL)
 
    /* =======================================================================*/
   }/* ================================================== end of Loop over GP */

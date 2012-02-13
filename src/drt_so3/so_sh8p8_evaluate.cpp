@@ -1193,7 +1193,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     else
       dserror("Cannot handle requested stabilisation type %d", stab_);
 
-    // internal force
+    // update of internal force vector
     if (force != NULL)
     {
       // integrate internal force vector
@@ -1212,7 +1212,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       incomp->Update(-(detdefgrad-1.0)*detJ_w,prshfct,1.0);
     }
 
-    // stiffness matrix
+    // update of stiffness matrix
     if (stiffmatrix != NULL)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix

@@ -650,11 +650,14 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
 
 
   //----------------------------------------------- internal force and tangent
+  // update internal force vector
   if (force)
   {
     // integrate internal force vector f = f + (B^T . sigma) * V_
     force->MultiplyTN(V_,bop,stress,1.0);
-  }
+  }  // if (force && stiffmatrix)
+
+  // update stiffness matrix
   if (stiffmatrix)
   {
     // integrate elastic stiffness matrix
@@ -681,7 +684,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       }
     }
 
-  } // if (force && stiffmatrix)
+  } // if (stiffmatrix)
 
   //------------------------------------------ do mass matrix if desired
   if (massmatrix)

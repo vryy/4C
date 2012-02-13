@@ -90,7 +90,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     // build a matrix dummy
     if (elemat1.IsInitialized()) matptr = &elemat1;
-    
+
     // call the purely structural method
     soh8_linstiffmass(lm,mydisp,myres,NULL,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
@@ -750,11 +750,17 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL)
+
+    // update/integrate internal force vector
+    if (force != NULL)
     {
-      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      // f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
-      // integrate `elastic' and `initial-displacement' stiffness matrix
+    }
+
+    // update/integrate `elastic' and `initial-displacement' stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,NUMDOF_SOH8> cb;
       cb.Multiply(cmat,bop);
@@ -962,10 +968,11 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
     }
 
     double detJ_w = detJ*gpweights[gp];
+
+    // integrate internal force vector
+    // f = f + (B^T . sigma_temp) * detJ * w(gp)
     if (force != NULL)
     {
-      // integrate internal force vector
-      // f = f + (B^T . sigma_temp) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stresstemp, 1.0);
     }
    /* =========================================================================*/
@@ -1079,6 +1086,7 @@ void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ*gpweights[gp];
+    // update coupling matrix K_dT
     if (stiffmatrixcoupl != NULL)
     {
       // C_temp . N_temp

@@ -876,9 +876,16 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     }
 
     const double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL) {
+    // update internal force vector
+    if (force != NULL)
+    {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }  // if (force!=NULL)
+
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<NUMSTR_SOH8, NUMDOF_SOH8> cb;
@@ -951,7 +958,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
         LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
       } // ------------------------------------------------------------------ EAS
-    }
+    }  // if (stiffmatrix != NULL)
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate consistent mass matrix
@@ -973,7 +980,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
 
-  if (force != NULL && stiffmatrix != NULL) {
+  if (force != NULL && stiffmatrix != NULL)
+  {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
     if (eastype_ == soh8_eassosh8) {

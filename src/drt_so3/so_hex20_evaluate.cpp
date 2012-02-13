@@ -910,10 +910,15 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,NUMDOF_SOH20> cb;
@@ -1177,10 +1182,15 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,NUMDOF_SOH20> cb;
@@ -1231,10 +1241,6 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
 
   }/* ==================================================== end of Loop over GP */
 
-  if (force != NULL && stiffmatrix != NULL)
-  {
-
-  }
   return;
 } // DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass
 

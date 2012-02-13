@@ -1173,7 +1173,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         AddtoPack(data, strain);
         std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
       }
-      
+
       {
         DRT::PackBuffer data;
         AddtoPack(data, plstrain);
@@ -1863,10 +1863,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }
+
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,NUMDOF_SOH8> cb;
@@ -2349,11 +2355,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bopm, stressm, 1.0);
+    }
 
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       const double faceu = (1.0-gemmalphaf+gemmxi) * detJ_w;

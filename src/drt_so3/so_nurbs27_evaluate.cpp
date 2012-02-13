@@ -225,7 +225,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
 
     case calc_stc_matrix_inverse:
       {
-        const INPAR::STR::STC_Scale stc_scaling 
+        const INPAR::STR::STC_Scale stc_scaling
           =
           DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");
         if (stc_scaling==INPAR::STR::stc_none)
@@ -235,7 +235,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
           CalcSTCMatrix(elemat1,
                         stc_scaling,
                         params.get<int>("stc_layer"),
-                        lm, 
+                        lm,
                         discretization,
                         true);
         }
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
 
     case calc_stc_matrix:
     {
-      const INPAR::STR::STC_Scale stc_scaling 
+      const INPAR::STR::STC_Scale stc_scaling
         =
         DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
         CalcSTCMatrix(elemat1,
                       stc_scaling,
                       params.get<int>("stc_layer"),
-                      lm, 
+                      lm,
                       discretization,
                       false);
       }
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
        myknots               ,
        weights               ,
        DRT::Element::nurbs27);
-    
+
     for (int isd=0; isd<3; ++isd)
       {
         double val = 0;
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
        myknots               ,
        weights               ,
        DRT::Element::nurbs27);
-    
+
     for (int isd=0; isd<3; ++isd)
       {
         double val = 0;
@@ -391,7 +391,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
        myknots               ,
        weights               ,
        DRT::Element::nurbs27);
-    
+
     for (int isd=0; isd<3; ++isd)
       {
         double val = 0;
@@ -414,7 +414,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
        myknots               ,
        weights               ,
        DRT::Element::nurbs27);
-    
+
     for (int isd=0; isd<3; ++isd)
       {
         double val = 0;
@@ -425,7 +425,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
         x18(isd)=val;
       }
   }
-  
+
   LINALG::Matrix<3,1> deltaX;
 
   deltaX.Update(1.0, x2, -1.0, x0);
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       ratio=(length_t+length_s)/(2.0*length_r);
     }
 
-  
+
   double C = 1.0;
   if (stc_scaling==INPAR::STR::stc_currsym)
   {
@@ -511,10 +511,10 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     C = ratio*ratio;
   }
 
-  
+
   double fac1=0.0;
   double fac2=0.0;
-  
+
   if(do_inverse)
   {
     fac1=(1.0-C);
@@ -525,7 +525,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     fac1=(C-1.0)/(C);
     fac2=1.0/C;
   }
-  
+
   LINALG::Matrix<27,1> adjele(true);
 
   for(int i=0; i<27; i++)
@@ -563,7 +563,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
   for(int i=0; i<9; i++)
     {
       int dvi=3*topnodeids[i];
-      
+
       for(int j=0; j<3; j++)
         {
           elemat1(dvi+j,dvi+j)+=1.0/adjele(topnodeids[i],0);
@@ -586,7 +586,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     {
       int dvi=3*botnodeids[i];
       int dui=3*midnodeids[i];
-      
+
       for(int j=0; j<3; j++)
         {
           elemat1(dvi+j,dvi+j)+=fac2*1.0/adjele(botnodeids[i],0);
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     {
       int dvi=3*topnodeids[i];
       int dui=3*midnodeids[i];
-      
+
       for(int j=0; j<3; j++)
         {
           elemat1(dvi+j,dvi+j)+=fac2*1.0/adjele(topnodeids[i],0);
@@ -1012,10 +1012,16 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     // end of call material law
 
     double detJ_w = detJ*intpoints.qwgt[gp];
-    if (force != NULL && stiffmatrix != NULL)
+    // update internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }
+
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<6,81> cb;
@@ -1036,19 +1042,19 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
         SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
             + sfac(2) * N_XYZ(2, inod);
         for (int jnod=0; jnod<27; ++jnod)
-	{
+        {
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<3; ++idim)
-	  {
+          {
             bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-	  }
+          }
 
           (*stiffmatrix)(3*inod  ,3*jnod  ) += bopstrbop;
           (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
           (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
         }
       } // end of integrate `geometric' stiffness
-    }
+    }  // if (stiffmatrix)
 
     if (massmatrix != NULL) // evaluate mass matrix
     {

@@ -649,10 +649,16 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && stiffmatrix != NULL) {
+    // update internal force vector
+    if (force != NULL)
+    {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    }
 
+    // update stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       LINALG::Matrix<NUMSTR_WEG6, NUMDOF_WEG6> cb;

@@ -561,12 +561,16 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
     const double detJ_w_t = detJ_w * t_(0,0);
     const double detJ_w_J = detJ_w * J;
 
-    // force and stiffness
-    if ( (force != NULL) and (stiffmatrix != NULL) )
+    // update of internal force vector
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * Theta * detJ * w(gp)
       force->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
+    }
 
+    // update of stiffness matrix
+    if (stiffmatrix != NULL)
+    {
       R_p_(0,0) += (J - t_(0,0)) * detJ_w;
       R_t_(0,0) += (p_bar - p_(0,0)) * detJ_w;
 
@@ -646,7 +650,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
       // K_tt = N_t * D_22 * N_t * Theta * detJ * w(gp), wobei N_t=1
       K_tt_ += D_22(0,0) * detJ_w / t_(0,0);
 
-    }
+    } // end of stiffness matrix ++++++++++++++++++++++++++++++++++++++++++++++
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
