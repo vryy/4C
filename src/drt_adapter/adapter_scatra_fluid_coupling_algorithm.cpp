@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

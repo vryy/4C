@@ -28,6 +28,7 @@ Maintainer: Florian Henke
 #include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

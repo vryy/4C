@@ -23,6 +23,7 @@ Maintainer: Volker Gravemeier
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <iostream>
+#include <Epetra_Time.h>
 
 
 /*----------------------------------------------------------------------*
