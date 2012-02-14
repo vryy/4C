@@ -71,7 +71,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-
   const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
@@ -116,6 +115,22 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
   scatratimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+
+  // -------------------------------------------------------------------
+  // overrule flag for form of convective term as well as stabilization
+  // for solid-based scalar transport in FS3I-type problems, to allow
+  // for simultaneously using convective formulation and stabilization
+  // in fluid-based scalar transport, while conservative formulation
+  // and no stabilization is mandatorily used in solid-based scalar
+  // transport, for the time being
+  // (assumed disnum = 1 for solid-based scalar transport)
+  // -------------------------------------------------------------------
+  if (disnum == 1)
+  {
+    scatratimeparams->set<string>("CONVFORM","conservative");
+    scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","no_stabilization");
+    scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Zero");
+  }
 
   // -------------------------------------------------------------------
   // list for extra parameters

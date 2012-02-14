@@ -2708,20 +2708,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // (value divided by density here for its intended use on right-hand side)
     shc_ = actmat->Capacity()/densnp_[0];
 
-    // set flag for conservative formulation (overruling for solid-based
-    // scalar transport in FS3I-type problems, to allow for simultaneously
-    // using convective formulation in fluid-based scalar transport)
-    conservative_ = true;
-
-    // compute velocity divergence required for reaction coefficient
-    // and conservative formulation
-    GetDivergence(vdiv_,evelnp_,derxy_);
-
-    // set stabilization parameter to zero (overruling for solid-based
-    // scalar transport in FS3I-type problems, to allow for simultaneously
-    // using non-zero stabilization in fluid-based scalar transport)
-    whichtau_ = INPAR::SCATRA::tau_zero;
-
     // compute reaction coefficient
     // (divided by density due to later multiplication by density in CalMatAndRHS)
     const double stmodulus = actmat->STModulus();
