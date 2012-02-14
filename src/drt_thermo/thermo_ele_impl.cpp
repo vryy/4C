@@ -170,7 +170,9 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
   }
   return NULL;
-}
+
+}  // TemperImperInterface::Impl
+
 
 /*----------------------------------------------------------------------*
  |  Initialization of the data with respect to the declaration          |
@@ -1004,6 +1006,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 #endif // THRASOUTPUT
 
   return 0;
+
 } // Evaluate for multiple dofsets
 
 
@@ -1064,19 +1067,20 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (public)                g.bau 08/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
-  const double& time,  ///< current time
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  ///< conductivity matrix
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  ///< capacity matrix
-  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  ///< internal force
-  LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
-  LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
-  LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
+  DRT::Element* ele,  // the element whose matrix is calculated
+  const double& time,  // current time
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  // capacity matrix
+  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
+  LINALG::Matrix<nen_*numdofpernode_,1>* efext,  // external force
+  LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
+  LINALG::Matrix<nquad_,nsd_>* etempgrad  // temperature gradients at Gauss points
   )
 {
   // get node coordinates
@@ -1171,17 +1175,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
-  const double& time,  ///< current time
+  DRT::Element* ele,  // the element whose matrix is calculated
+  const double& time,  // current time
   vector<double>& disp,  // current displacements
   vector<double>& vel,  // current velocities
   const double& stepsize,
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  ///< conductivity matrix
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  ///< capacity matrix
-  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  ///< internal force
-  LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
-  LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
-  LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  // capacity matrix
+  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
+  LINALG::Matrix<nen_*numdofpernode_,1>* efext,  // external force
+  LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
+  LINALG::Matrix<nquad_,nsd_>* etempgrad  // temperature gradients at Gauss points
   )
 {
   // get node coordinates
@@ -1426,10 +1430,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
+  DRT::Element* ele,  // the element whose matrix is calculated
   vector<double>& disp,  // current displacements
   vector<double>& vel,  // current velocities
-  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  ///< conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  // conductivity matrix
   )
 {
   // get node coordinates
@@ -1606,11 +1610,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
+  DRT::Element* ele,  // the element whose matrix is calculated
   vector<double>& vel,  // current velocities
   const double& stepsize,
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  ///< conductivity matrix
-  LINALG::Matrix<nen_*numdofpernode_,1>* efint  ///< internal force
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,1>* efint  // internal force
   )
 {
   // get node coordinates
@@ -1771,14 +1775,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
     }
     // ---------------------------------------------------- END OF COUPLING
 
-    // integrate internal force vector (coupling fraction towards displacements)
-    // and coupling conductivity matrix (displacement dependent)
-    if (efint != NULL && etang != NULL)
+    // update/integrate internal force vector (coupling fraction towards displacements)
+    if (efint != NULL)
     {
       // update of the internal "force" vector
       efint->Update((fac_*(-plasticpower)),funct_,1.0);
-
-      // update conductivity matrix (with displacement dependent term)
+    }
+    
+    // update/integrate coupling conductivity matrix (displacement dependent)
+    if (etang != NULL)
+    {
       // k = k - ( N^T . C_mat^theta . epsilon_p' ) * detJ * w(gp)
       // with C_mat^theta = m * I
       etang->MultiplyNT((fac_*(-plastictemppower)),funct_,funct_,1.0); // (8x8) = (8x1)(8x1)^T
@@ -1821,9 +1827,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(LINALG::Matrix<nen_
       (*ecapa)(c,c) = d;  // apply sum of row entries on diagonal
     }
   }
-}
-
-
+}  // CalculateLumpMatrix()
 
 
 /*----------------------------------------------------------------------*
@@ -1900,9 +1904,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
     // we have no dead load
     radiation_.Clear();
   }
-
   return;
+
 } //TemperImpl::Radiation
+
 
 /*----------------------------------------------------------------------*
  |  get the material                                         dano 09/09 |
@@ -1936,9 +1941,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-  const int iquad,  ///< id of current Gauss point
-  const int eleid  ///< the element id
+  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  // integration points
+  const int iquad,  // id of current Gauss point
+  const int eleid  // the element id
   )
 {
   // coordinates of the current integration point (xsi_)
@@ -2032,7 +2037,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
-  DRT::Element* ele,  ///< the element whose matrix is calculated
+  DRT::Element* ele,  // the element whose matrix is calculated
   const LINALG::Matrix<nquad_,nsd_>& gpheatflux,
   LINALG::Matrix<nen_*numdofpernode_,1>& efluxx,
   LINALG::Matrix<nen_*numdofpernode_,1>& efluxy,
