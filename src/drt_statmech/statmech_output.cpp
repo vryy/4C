@@ -3944,71 +3944,88 @@ void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostring
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
   GetNodePositions(discol, currentpositions, currentrotations, true);
 
+  // We assume in the following that the horizontal filament more or less stays horizontal without tilting too much.
+  // Also, we assume that the vertical filaments are discretized in the same manner, i.e. same element lengths
+
   if(discret_.Comm().MyPID()==0)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream distances;
 
-//    std::vector<double> previouspos(3,0.0);
-//    bool addvalues = false;
-//    for(int i=0; i<filamentnumber_->MyLength(); i++)
-//    {
-//      if((*filamentnumber_)[i]==0)
-//      {
-//        // crosslinker element
-//        if((*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
-//        {
-//          std::vector<double> currcrosspos(3,0.0);
-//          for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
-//            currcrosspos.at(j) = (*crosslinkerpositions_)[j][(int)(*bspotstatus_)[i]];
-//          if(addvalues)
-//          {
-//            LINALG::Matrix<3,1> diff;
-//            for(int j=0; j<(int)diff.M(); j++)
-//            {
-//              diff(j) = currcrosspos.at(j) - previouspos.at(j);
-//              previouspos.at(j) = currcrosspos.at(j);
-//            }
-//            distances<<diff.Norm2()<<endl;
-//          }
-//          else
-//          {
-//            previouspos = currcrosspos;
-//            addvalues = true;
-//          }
-//        }
-//      }
-//      else
-//        break;
-//    }
-
-    // retrieve center node ids of the vertical filaments
-    std::vector<int> centernodes;
-    centernodes.clear();
+    // step 1: determine the first double bond between vertical and horizontal filaments
+    int firstvfil = -1;
+    std::vector<int> nodeIDs;
+    std::vector<int> evalnodes;
+    nodeIDs.clear();
     for(int i=0; i<filamentnumber_->MyLength(); i++)
-      if((*filamentnumber_)[i]==(int)centernodes.size()+1)
-        centernodes.push_back(i);
-    int numvfilnodes = centernodes.at(1)-centernodes.at(0);
-    for(int i=0; i<(int)centernodes.size(); i++)
-      centernodes.at(i) += (int)(floor((double)numvfilnodes/2.0));
-
-    // calculate distances between neighbouring vertical filaments
-    for(int i=0; i<(int)centernodes.size()-1; i++)
     {
-      map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(centernodes.at(i));
-      double mindist = 1e9;
-      for(int j=i+1; j<(int)centernodes.size(); j++)
+      if((int)(*filamentnumber_)[i]==0) // horizontal filament
       {
-        map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(centernodes.at(j));
-        LINALG::Matrix<3,1> diff = (posi->second);
-        diff -= (posj->second);
-        if(diff.Norm2()<mindist)
-          mindist = diff.Norm2();
+        if((int)nodeIDs.size()==0 && (*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
+        {
+          nodeIDs.push_back(discret_.NodeColMap()->GID(i));
+          int currlink = (int)(*bspotstatus_)[i];
+          for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+            if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs.at(0))
+            {
+              nodeIDs.push_back((int)(*crosslinkerbond_)[j][currlink]);
+              firstvfil = (int)(*filamentnumber_)[discret_.NodeColMap()->LID(nodeIDs.at(1))];
+              break;
+            }
+        }
       }
-      distances<<mindist<<endl;
+      else if((int)(*filamentnumber_)[i] == (int)evalnodes.size()+1)
+        evalnodes.push_back(discret_.NodeColMap()->GID(i));
     }
 
+    // do the following stuff only if we have actual crosslinker elements along the horizontal filament
+    if(nodeIDs.size()>0)
+    {
+      // get the nodes at which we want to measure neighbour distances
+      // note: we assume nodeIDs.at(1)>=evalnodes.at(firstvfil-1).
+      // "-1" because evalnodes only stores one node per VERTICAL filament.
+      int vnodeoffset = nodeIDs.at(1) - evalnodes.at(firstvfil-1);
+      for(int i=0; i<(int)evalnodes.size(); i++)
+        evalnodes.at(i) += vnodeoffset;
+
+      // sort nodes from smallest to largest x-coordinate
+      for(int i=0; i<(int)evalnodes.size()-1; i++)
+      {
+        map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodes.at(i));
+        for(int j=i+1; j<(int)evalnodes.size(); j++)
+        {
+          map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodes.at(j));
+          if((posj->second)(0)<(posi->second)(0))
+          {
+            int tmp = evalnodes.at(i);
+            evalnodes.at(i) = evalnodes.at(j);
+            evalnodes.at(j) = tmp;
+          }
+        }
+      }
+
+      for(int i=1; i<(int)evalnodes.size(); i++)
+      {
+        map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i-1));
+        map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(i));
+        LINALG::Matrix<3,1> diff = (pos1->second);
+        diff -= (pos0->second);
+        distances<<diff.Norm2()<<endl;
+      }
+      // in case of periodic BCs, we "close the loop" by calculating the distance over the boundary between first and last node
+      double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+      if(periodlength>0.0)
+      {
+        map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(0));
+        map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at((int)evalnodes.size()-1));
+        LINALG::Matrix<3,1> diff;
+        for(int i=0; i<(int)(pos0->second).M(); i++)
+          diff(i) = (pos0->second)(i) - (pos1->second)(i);
+        diff(0) += statmechparams_.get<double>("PeriodLength", 0.0);
+        distances<<diff.Norm2()<<endl;
+      }
+    }
 
     fprintf(fp, distances.str().c_str());
     fclose(fp);

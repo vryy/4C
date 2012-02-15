@@ -1189,16 +1189,22 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                 // free crosslink molecule creating a bond
                 case 0:
                 {
-                  // update of crosslink molecule positions
-                  LINALG::SerialDenseMatrix LID(1,1,true);
-                  LID(0,0) = nodeLID;
-                  (*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
-                  // update status of binding spot by putting in the crosslinker id
-                  ((*bspotstatus_)[nodeLID]) = irandom;
-                  // increment the number of bonds of this crosslinker
-                  ((*numbond_)[irandom]) = 1.0;
-                  CrosslinkerIntermediateUpdate(currentpositions, LID, irandom, bspottriadscol);
-                  bondestablished = true;
+                  // crosslinkers only allowed on the horizontal filament when looking at a loom setup
+                  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[nodeLID]!=0)
+                    break;
+                  else // standard case
+                  {
+                    // update of crosslink molecule positions
+                    LINALG::SerialDenseMatrix LID(1,1,true);
+                    LID(0,0) = nodeLID;
+                    (*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
+                    // update status of binding spot by putting in the crosslinker id
+                    ((*bspotstatus_)[nodeLID]) = irandom;
+                    // increment the number of bonds of this crosslinker
+                    ((*numbond_)[irandom]) = 1.0;
+                    CrosslinkerIntermediateUpdate(currentpositions, LID, irandom, bspottriadscol);
+                    bondestablished = true;
+                  }
                 }
                 break;
                 // one bond already exists -> establish a second bond/passive crosslink molecule
@@ -1547,11 +1553,7 @@ bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const st
         alpha.at(i) = acos(fabs(firstdir.Dot(crossdir)));
       }
       // angle: impose orthogonality
-      if(alpha.at(0) < 4.0/9.0*M_PI || alpha.at(1) < 4.0/9.0*M_PI)
-      {
-        setcrosslinker = false;
-      }
-      else
+      if(alpha.at(0) > 5.0/12.0*M_PI && alpha.at(1) > 5.0/12.0*M_PI)
       {
         // 3) determine which node LID entry is the non-zero entry
         int currfilnumber = -1;
@@ -1576,6 +1578,8 @@ bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const st
           }
         }
       }
+      else
+        setcrosslinker = false;
     }
 
     return setcrosslinker;
