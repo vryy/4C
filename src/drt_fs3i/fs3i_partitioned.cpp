@@ -71,7 +71,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // read input parameters for FS3I problem
   //---------------------------------------------------------------------
   const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
-  dt_ = fs3icontrol.get<double>("TIMESTEP");
+  dt_      = fs3icontrol.get<double>("TIMESTEP");
   numstep_ = fs3icontrol.get<int>("NUMSTEP");
   timemax_ = fs3icontrol.get<double>("MAXTIME");
 
@@ -223,37 +223,27 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
 
-  // check time integration algo -> currently only one-step-theta scheme supported
-  INPAR::SCATRA::TimeIntegrationScheme scatratimealgo =
-    DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+  // check time-integration scheme (including parameter theta itself)
+  // -> currently only one-step-theta scheme supported
+  INPAR::SCATRA::TimeIntegrationScheme scatratimealgo = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
   INPAR::FLUID::TimeIntegrationScheme fluidtimealgo = fsi_->FluidAdapter().TimIntScheme();
-  INPAR::STR::DynamicType structtimealgo =
-    DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn,"DYNAMICTYP");
-
+  INPAR::STR::DynamicType structtimealgo = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn,"DYNAMICTYP");
   if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
-      fluidtimealgo != INPAR::FLUID::timeint_one_step_theta or
+      fluidtimealgo  != INPAR::FLUID::timeint_one_step_theta or
       structtimealgo != INPAR::STR::dyna_onesteptheta)
-    dserror("lung gas exchange is limited in functionality (only one-step-theta scheme possible)");
-
-  // check solver type -> it must be incremental, otherwise residual and
-  // stiffness matrix determined by the scatra fields do not match the
-  // formulation implemented below
-  if (scatravec_[0]->ScaTraField().Incremental() == false)
-    dserror("Incremental formulation needed for coupled lung scatra simulations");
-
-  // make sure that initial time derivative of scalar is not calculated
-  // automatically (i.e. field-wise)
-  //if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
-  //  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
-
-  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM") != INPAR::SCATRA::convform_conservative)
-    dserror("Conservative formulation needs to be chosen for solids -> set CONVFORM to conservative!");
-
-  // check if relevant parameters are chosen the same for FSI and ScaTra
-  // dynamics
+    dserror("Partitioned FS3I computations are limited to using one-step-theta time-integration scheme only, for the time being.");
   if (scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
       scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
-    dserror("Fix your input file! Time integration parameters for FSI and ScaTra fields not matching!");
+    dserror("Parameter(s) theta for one-step-theta time-integration scheme defined in one or more of the individual fields do(es) not match for partitioned FS3I computation.");
+
+  // check that incremental formulation is used for scalar transport field,
+  // according to structure and fluid field
+  if (scatravec_[0]->ScaTraField().Incremental() == false)
+    dserror("Incremental formulation required for partitioned FS3I computations!");
+
+  // ensure that initial time derivative of scalar is not calculated
+  //if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
+  //  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
