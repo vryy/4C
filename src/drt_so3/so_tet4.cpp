@@ -433,6 +433,8 @@ void DRT::ELEMENTS::So_tet4::VisNames(map<string,int>& names)
     names[fiber] = 3; // 3-dim vector
     fiber = "referentialMassDensity";
     names[fiber] = 1;
+    fiber = "CollagenMassDensity";
+    names[fiber] = 3;
   }
 
   return;
@@ -449,60 +451,125 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
 
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+    }
+    else
+    {
       return false;
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Fiber3"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+    }
+    else if (name == "Fiber3")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-      data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
-    } else if (name == "Fiber4"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a3[0];
+      data[1] = a3[1];
+      data[2] = a3[2];
+    }
+    else if (name == "Fiber4")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
-      data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
-    } else {
+      data[0] = a4[0];
+      data[1] = a4[1];
+      data[2] = a4[2];
+    }
+    else
+    {
       return false;
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
     MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
-    if (name == "MassStress"){
+    if (name == "MassStress")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       LINALG::Matrix<3,1> temp(true);
-      for (int iter=0; iter<NUMGPT_SOTET4; iter++) temp.Update(1.0,cons->GetVis(iter),1.0);
-      data[0] = temp(0)/NUMGPT_SOTET4; data[1] = temp(1)/NUMGPT_SOTET4; data[2] = temp(2)/NUMGPT_SOTET4;
-    } else if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp.Update(1.0,cons->GetVis(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOTET4;
+      data[1] = temp(1)/NUMGPT_SOTET4;
+      data[2] = temp(2)/NUMGPT_SOTET4;
+    }
+    else if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0);  // get a1 of first gp
-      data[0] = a1(0); data[1] = a1(1); data[2] = a1(2);
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1(0);
+      data[1] = a1(1);
+      data[2] = a1(2);
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       LINALG::Matrix<3,1> a2 = cons->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2(0); data[1] = a2(1); data[2] = a2(2);
-    } else if (name == "referentialMassDensity"){
-      if ((int)data.size()!=1) dserror("size mismatch");
+      data[0] = a2(0);
+      data[1] = a2(1);
+      data[2] = a2(2);
+    }
+    else if (name == "referentialMassDensity")
+    {
+      if ((int)data.size()!=1)
+        dserror("size mismatch");
       double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOTET4; iter++) temp += cons->GetMassDensity(iter);
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp += cons->GetMassDensity(iter);
       data[0] = temp/NUMGPT_SOTET4;
-    } else {
+    }
+    else if (name == "CollagenMassDensity")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp.Update(1.0,cons->GetMassDensityCollagen(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOTET4;
+      data[1] = temp(1)/NUMGPT_SOTET4;
+      data[2] = temp(2)/NUMGPT_SOTET4;
+    }
+    else
+    {
       return false;
     }
   }

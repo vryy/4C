@@ -1594,9 +1594,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MUE","Shear Modulus");
     AddNamedReal(m,"PHIE","mass fraction of elastin");
     AddNamedReal(m,"PREELA","prestretch of elastin");
-    AddNamedReal(m,"K1","Parameter for linear fiber stiffness");
-    AddNamedReal(m,"K2","Parameter for exponential fiber stiffness");
+    AddNamedReal(m,"K1","Parameter for linear collagen fiber stiffness");
+    AddNamedReal(m,"K2","Parameter for exponential collagen fiber stiffness");
     AddNamedReal(m,"PRECOLL","prestretch of collagen fibers");
+    AddNamedReal(m,"K1M","Parameter for linear smooth muscle fiber stiffness");
+    AddNamedReal(m,"K2M","Parameter for exponential smooth muscle fiber stiffness");
+    AddNamedReal(m,"PHIM","mass fraction of smooth muscle");
+    AddNamedReal(m,"PREMUS","prestretch of smooth muscle fibers");
+    AddNamedReal(m,"SMAX","maximal active stress");
     AddNamedReal(m,"KAPPA","dilatation modulus");
 //    AddNamedReal(m,"BASALRATE","basal rate of mass production");
     AddNamedReal(m,"LIFETIME","lifetime of collagen fibers");

@@ -428,7 +428,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_reset_istep:
     {
-      ;// there is nothing to do here at the moment
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Reset();
+      }
     }
     break;
 

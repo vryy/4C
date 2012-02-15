@@ -633,6 +633,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Reset();
+      }
     }
     break;
 

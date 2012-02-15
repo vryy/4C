@@ -68,6 +68,16 @@ namespace MAT
       const double k2_;
       /// prestretch of collagen fibers
       const double prestretchcollagen_;
+      /// parameter for linear fiber stiffness of smooth muscle
+      const double k1muscle_;
+      /// parameter for exponential fiber stiffness of smooth muscle
+      const double k2muscle_;
+      /// mass fraction of smooth muscle
+      const double phimuscle_;
+      /// prestretch of smooth muscle fibers
+      const double prestretchmuscle_;
+      /// maximal active stress
+      const double Smax_;
       /// dilatation modulus
       const double kappa_;
       // basal rate of mass production
@@ -266,6 +276,9 @@ namespace MAT
     /// Update
     void Update();
 
+    /// Reset
+    void Reset();
+
     /// Evaluate material
     void Evaluate
     (
@@ -288,6 +301,8 @@ namespace MAT
     LINALG::Matrix<3,1> GetVis(int gp) const {return vismassstress_->at(gp);}
     /// Return actual mass density in reference configuration
     double GetMassDensity(int gp) const {return refmassdens_->at(gp);}
+    /// Return actual mass density in reference configuration
+    LINALG::Matrix<3,1> GetMassDensityCollagen(int gp) const {return visrefmassdens_->at(gp);}
     /// Return circumferential fiber direction
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
     /// Return axial fiber direction
@@ -306,6 +321,8 @@ namespace MAT
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > vismassstress_;
     /// actual mass density in reference configuration
     Teuchos::RCP<vector<double> > refmassdens_;
+    /// actual mass density in reference configuration for collagen fibers
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > visrefmassdens_;
     /// basal rate of mass production
     double massprodbasal_;
 
@@ -367,6 +384,16 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
     );
 
+    /// elastic response for smooth muscle cells
+    void EvaluateMuscle
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      const int gp, ///< current Gauss point
+      double* currmassdens  ///< current massdensity
+    );
+
     /// volumetric part
     void EvaluateVolumetric
     (
@@ -417,19 +444,6 @@ namespace MAT
 
     /// compute stress and cmat for implicit integration with fiber stress as driving force
     void EvaluateImplicitSingle
-    (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,  ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      double dt,  ///< delta time
-      double time,  ///< time
-      LINALG::Matrix<4,1> massprodcomp,  ///< mass production rate
-      LINALG::Matrix<4,1> massstress  ///< growth stress measure
-    );
-
-    /// compute stress and cmat for implicit integration with fiber stress as driving force
-    void EvaluateImplicitSingleNew
     (
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       const int gp,  ///< current Gauss point

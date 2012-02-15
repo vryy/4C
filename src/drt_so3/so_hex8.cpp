@@ -614,6 +614,8 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     names[fiber] = 3; // 3-dim vector
     fiber = "referentialMassDensity";
     names[fiber] = 1;
+    fiber = "CollagenMassDensity";
+    names[fiber] = 3;
   }
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
   {
@@ -912,7 +914,9 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       if ((int)data.size()!=3)
         dserror("size mismatch");
       vector<double> a1 = art->Geta1()->at(0); // get a1 of first gp
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
     }
     else if (name == "Fiber2")
     {
@@ -940,7 +944,8 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       data[0] = a4[0];
       data[1] = a4[1];
       data[2] = a4[2];
-    } else
+    }
+    else
     {
       return false;
     }
@@ -1045,6 +1050,8 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
     if (name == "MassStress")
     {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       LINALG::Matrix<3,1> temp(true);
       for (int iter=0; iter<NUMGPT_SOH8; iter++)
         temp.Update(1.0,cons->GetVis(iter),1.0);
@@ -1078,6 +1085,17 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       for (int iter=0; iter<NUMGPT_SOH8; iter++)
         temp += cons->GetMassDensity(iter);
       data[0] = temp/NUMGPT_SOH8;
+    }
+    else if (name == "CollagenMassDensity")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOH8; iter++)
+        temp.Update(1.0,cons->GetMassDensityCollagen(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOH8;
+      data[1] = temp(1)/NUMGPT_SOH8;
+      data[2] = temp(2)/NUMGPT_SOH8;
     }
     else
     {
