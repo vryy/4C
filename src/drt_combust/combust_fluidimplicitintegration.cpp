@@ -3,7 +3,6 @@
 \brief class holding implicit time integration schemes for combustion problems
 
 This class is a merger of the standard fluid time integration and the XFSI time integration classes.
-Thus, a mayor part of the code is a duplicate, but the class also contains some new and modified
 member functions. Maybe it will not be kept as a stand-alone class until the end of days, but
 unified with a generalized XFEM time integration class.
 
@@ -5576,6 +5575,10 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
   // smoothed normal vectors for boundary integration terms
   eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
+  eleparams.set<int>("smoothgradphi",smoothgradphi_);
+  // flag for type of combustion problem
+  eleparams.set<int>("combusttype",combusttype_);
+
   eleparams.set("flamespeed",flamespeed_);
   eleparams.set("time",time_);
 
@@ -5584,6 +5587,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   eleparams.set<double>("L2 integrated grad_velocity domain error", 0.0);
   eleparams.set<double>("H-1/2 integrated viscosity interface error", 0.0);
   eleparams.set<double>("H1/2 integrated velocity jump interface error", 0.0);
+  eleparams.set<double>("H-1/2 integrated flux jump interface error",0.0);
   eleparams.set<double>("L2 integrated pressure domain error", 0.0);
   eleparams.set<double>("L2 integrated grad_pressure domain error", 0.0);
   eleparams.set<double>("L2 integrated weighted pressure domain error", 0.0);
@@ -5600,64 +5604,64 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
   discret_->ClearState();
 
-  double locVelDomErr        = eleparams.get<double>("L2 integrated velocity domain error");
-  double locGradVelDomErr    = eleparams.get<double>("L2 integrated grad_velocity domain error");
-  double locViscInterfErr    = eleparams.get<double>("H-1/2 integrated viscosity interface error");
-  double locVelJumpInterfErr = eleparams.get<double>("H1/2 integrated velocity jump interface error");
-  double locPresDomErr       = eleparams.get<double>("L2 integrated pressure domain error");
-  double locGradPresDomErr   = eleparams.get<double>("L2 integrated grad_pressure domain error");
-  double locWeightPresDomErr = eleparams.get<double>("L2 integrated weighted pressure domain error");
-  double locNitscheErr       = eleparams.get<double>("Nitsche integrated error");
-  double locDivErr           = eleparams.get<double>("L2 Divergence integrated error");
-  double locDivErrPlus       = eleparams.get<double>("L2 Divergence error in omega+");
-  double locDivErrMinus      = eleparams.get<double>("L2 Divergence error in omega-");
-  double locVelJumpErr       = eleparams.get<double>("L2 integrated velocity jump interface error Combustion");
-  double locFluxJumpErr      = eleparams.get<double>("L2 integrated flux jump interface error Combustion");
+  double locVelDomErr         = eleparams.get<double>("L2 integrated velocity domain error");
+  double locGradVelDomErr     = eleparams.get<double>("L2 integrated grad_velocity domain error");
+  double locViscInterfErr     = eleparams.get<double>("H-1/2 integrated viscosity interface error");
+  double locVelJumpInterfErr  = eleparams.get<double>("H1/2 integrated velocity jump interface error");
+  double locFluxJumpInterfErr = eleparams.get<double>("H-1/2 integrated flux jump interface error");
+  double locPresDomErr        = eleparams.get<double>("L2 integrated pressure domain error");
+  double locGradPresDomErr    = eleparams.get<double>("L2 integrated grad_pressure domain error");
+  double locWeightPresDomErr  = eleparams.get<double>("L2 integrated weighted pressure domain error");
+  double locNitscheErr        = eleparams.get<double>("Nitsche integrated error");
+  //double locDivErr           = eleparams.get<double>("L2 Divergence integrated error");
+  //double locDivErrPlus       = eleparams.get<double>("L2 Divergence error in omega+");
+  //double locDivErrMinus      = eleparams.get<double>("L2 Divergence error in omega-");
+  //double locVelJumpErr       = eleparams.get<double>("L2 integrated velocity jump interface error Combustion");
 
   // initialize global errors
-  double VelDomErr        = 0.0;
-  double GradVelDomErr    = 0.0;
-  double ViscInterfErr    = 0.0;
-  double VelJumpInterfErr = 0.0;
-  double PresDomErr       = 0.0;
-  double GradPresDomErr   = 0.0;
-  double WeightPresDomErr = 0.0;
-  double NitscheErr       = 0.0;
-  double DivErr           = 0.0;
-  double DivErrPlus       = 0.0;
-  double DivErrMinus      = 0.0;
-  double VelJumpErr       = 0.0;
-  double FluxJumpErr      = 0.0;
+  double VelDomErr         = 0.0;
+  double GradVelDomErr     = 0.0;
+  double ViscInterfErr     = 0.0;
+  double VelJumpInterfErr  = 0.0;
+  double FluxJumpInterfErr = 0.0;
+  double PresDomErr        = 0.0;
+  double GradPresDomErr    = 0.0;
+  double WeightPresDomErr  = 0.0;
+  double NitscheErr        = 0.0;
+  //double DivErr           = 0.0;
+  //double DivErrPlus       = 0.0;
+  //double DivErrMinus      = 0.0;
+  //double VelJumpErr       = 0.0;
 
   // sum over processors, each list (list of a processor) has length 1
-  discret_->Comm().SumAll(&locVelDomErr,       &VelDomErr,       1);
-  discret_->Comm().SumAll(&locGradVelDomErr,   &GradVelDomErr,   1);
-  discret_->Comm().SumAll(&locViscInterfErr,   &ViscInterfErr,   1);
-  discret_->Comm().SumAll(&locVelJumpInterfErr,&VelJumpInterfErr,1);
-  discret_->Comm().SumAll(&locPresDomErr,      &PresDomErr,      1);
-  discret_->Comm().SumAll(&locGradPresDomErr,  &GradPresDomErr,  1);
-  discret_->Comm().SumAll(&locWeightPresDomErr,&WeightPresDomErr,1);
-  discret_->Comm().SumAll(&locNitscheErr,      &NitscheErr,      1);
-  discret_->Comm().SumAll(&locDivErr,          &DivErr,          1);
-  discret_->Comm().SumAll(&locDivErrPlus,      &DivErrPlus,      1);
-  discret_->Comm().SumAll(&locDivErrMinus,     &DivErrMinus,     1);
-  discret_->Comm().SumAll(&locVelJumpErr,      &VelJumpErr,      1);
-  discret_->Comm().SumAll(&locFluxJumpErr,     &FluxJumpErr,     1);
+  discret_->Comm().SumAll(&locVelDomErr,        &VelDomErr,        1);
+  discret_->Comm().SumAll(&locGradVelDomErr,    &GradVelDomErr,    1);
+  discret_->Comm().SumAll(&locViscInterfErr,    &ViscInterfErr,    1);
+  discret_->Comm().SumAll(&locVelJumpInterfErr, &VelJumpInterfErr, 1);
+  discret_->Comm().SumAll(&locFluxJumpInterfErr,&FluxJumpInterfErr,1);
+  discret_->Comm().SumAll(&locPresDomErr,       &PresDomErr,       1);
+  discret_->Comm().SumAll(&locGradPresDomErr,   &GradPresDomErr,   1);
+  discret_->Comm().SumAll(&locWeightPresDomErr, &WeightPresDomErr, 1);
+  discret_->Comm().SumAll(&locNitscheErr,       &NitscheErr,       1);
+  //discret_->Comm().SumAll(&locDivErr,          &DivErr,           1);
+  //discret_->Comm().SumAll(&locDivErrPlus,      &DivErrPlus,       1);
+  //discret_->Comm().SumAll(&locDivErrMinus,     &DivErrMinus,      1);
+  //discret_->Comm().SumAll(&locVelJumpErr,      &VelJumpErr,       1);
 
   // for the norms, we need the square roots
-  VelDomErr        = sqrt(VelDomErr);
-  GradVelDomErr    = sqrt(GradVelDomErr);
-  ViscInterfErr    = sqrt(ViscInterfErr);
-  VelJumpInterfErr = sqrt(VelJumpInterfErr);
-  PresDomErr       = sqrt(PresDomErr);
-  GradPresDomErr   = sqrt(GradPresDomErr);
-  WeightPresDomErr = sqrt(WeightPresDomErr);
-  NitscheErr       = sqrt(NitscheErr);
-  DivErr           = sqrt(DivErr);
-  DivErrPlus       = sqrt(DivErrPlus);
-  DivErrMinus      = sqrt(DivErrMinus);
-  VelJumpErr       = sqrt(VelJumpErr);
-  FluxJumpErr      = sqrt(FluxJumpErr);
+  VelDomErr         = sqrt(VelDomErr);
+  GradVelDomErr     = sqrt(GradVelDomErr);
+  ViscInterfErr     = sqrt(ViscInterfErr);
+  VelJumpInterfErr  = sqrt(VelJumpInterfErr);
+  FluxJumpInterfErr = sqrt(FluxJumpInterfErr);
+  PresDomErr        = sqrt(PresDomErr);
+  GradPresDomErr    = sqrt(GradPresDomErr);
+  WeightPresDomErr  = sqrt(WeightPresDomErr);
+  NitscheErr        = sqrt(NitscheErr);
+  //DivErr            = sqrt(DivErr);
+  //DivErrPlus        = sqrt(DivErrPlus);
+  //DivErrMinus       = sqrt(DivErrMinus);
+  //VelJumpErr        = sqrt(VelJumpErr);
 
   if (myrank_ == 0)
   {
@@ -5665,18 +5669,18 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
            "\n======================= absolute Nitsche errors ======================="
            "\n======= compare analytical solution with approximated solution=========");
     printf("\n  || u-u_h ||_L2(Omega)\t\t\t\t\t%15.8e",                  VelDomErr);
-    printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega1 U Omega2) \t%15.8e", GradVelDomErr);
-    printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Interface) \t\t%15.8e",    ViscInterfErr);
-    printf("\n  || |[u-u_h]| ||_H1/2(Interface)\t\t\t%15.8e",            VelJumpInterfErr);
+    printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega) \t\t\t%15.8e",       GradVelDomErr);
     printf("\n  || p-p_h ||_L2(Omega)\t\t\t\t\t%15.8e",                  PresDomErr);
-    printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",       GradPresDomErr);
-    printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",     WeightPresDomErr);
+    printf("\n  || grad(p-p_h) ||_L2(Omega)\t\t\t\t%15.8e",              GradPresDomErr);
+    printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Gamma)\t\t\t%15.8e",       ViscInterfErr);
+    printf("\n  || [[u]]-[[u_h]] ||_H1/2(Gamma)\t\t\t%15.8e",            VelJumpInterfErr);
+    //printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",     WeightPresDomErr);
+    //printf("\n  || div(u) ||_L2(Omega)\t\t\t\t%15.8e",                   DivErr);
+    //printf("\n  || div(u) ||_L2(Omega+)\t\t\t\t%15.8e",                  DivErrPlus);
+    //printf("\n  || div(u) ||_L2(Omega-)\t\t\t\t%15.8e",                  DivErrMinus);
+    //printf("\n  || [| u |] - ju*n ||_L2(Gamma)\t\t\t%15.8e",             VelJumpErr);
+    printf("\n  || [[sigma*n]]-[[jflux*n]] ||_H-1/2(Gamma)\t\t%15.8e",   FluxJumpInterfErr);
     printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",       NitscheErr);
-    printf("\n  || div(u) ||_L2(Omega)\t\t\t\t%15.8e",                   DivErr);
-    printf("\n  || div(u) ||_L2(Omega+)\t\t\t\t%15.8e",                  DivErrPlus);
-    printf("\n  || div(u) ||_L2(Omega-)\t\t\t\t%15.8e",                  DivErrMinus);
-    printf("\n  || [| u |] - ju*n ||_L2(Gamma)\t\t\t%15.8e",             VelJumpErr);
-    printf("\n  || [| sigma*n - jflux*n |] ||_L2(Gamma)\t\t%15.8e",      FluxJumpErr);
     printf("\n======================================================================="
            "\n=======================================================================\n");
   }

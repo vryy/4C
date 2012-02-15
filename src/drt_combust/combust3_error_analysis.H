@@ -81,7 +81,12 @@ void GetGPinXYZ(
  *
  * implements the analytical solution for test case: couette_20x20x1_stat.dat
  */
-void AnalyticalSol_Couette_20x20x1_plain(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_Couette_20x20x1_plain(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -136,11 +141,19 @@ void AnalyticalSol_Couette_20x20x1_plain(LINALG::Matrix<3,1>& posXYZgp, bool dom
  *
  * implements the analytical solution for test case: couette_20x20x1_stat.dat
  */
-void AnalyticalSol_Couette_20x20x1_plain_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_Couette_20x20x1_plain_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: x+0.025
@@ -173,6 +186,8 @@ void AnalyticalSol_Couette_20x20x1_plain_Interface(LINALG::Matrix<3,1>& posXYZgp
   analyt_vel_deriv_minus.Clear();
   analyt_vel_deriv_minus(0,1) = 20.0;
 
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -184,7 +199,12 @@ void AnalyticalSol_Couette_20x20x1_plain_Interface(LINALG::Matrix<3,1>& posXYZgp
  *
  * implements the analytical solution for test case: shear.dat
  */
-void AnalyticalSol_shear(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_shear(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -259,11 +279,19 @@ void AnalyticalSol_shear(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
  *
  * implements the analytical solution for test case: shear.dat
  */
-void AnalyticalSol_shear_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_shear_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: x+y+0.05
@@ -315,6 +343,8 @@ void AnalyticalSol_shear_Interface(LINALG::Matrix<3,1>& posXYZgp,
   analyt_vel_deriv_minus.Clear();
   analyt_vel_deriv_minus(0,1) = 20.0/0.6;
 
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -326,7 +356,12 @@ void AnalyticalSol_shear_Interface(LINALG::Matrix<3,1>& posXYZgp,
  *
  * implements the analytical solution for test case: straight_bodyforce.dat
  */
-void AnalyticalSol_straight_bodyforce_inclined(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_straight_bodyforce_inclined(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -395,11 +430,19 @@ void AnalyticalSol_straight_bodyforce_inclined(LINALG::Matrix<3,1>& posXYZgp, bo
  *
  * implements the analytical solution for test case: shear.dat
  */
-void AnalyticalSol_straight_bodyforce_inclined_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_straight_bodyforce_inclined_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: x+y+0.05
@@ -443,9 +486,10 @@ void AnalyticalSol_straight_bodyforce_inclined_Interface(LINALG::Matrix<3,1>& po
 
   // set analytical vel_derivatives
   analyt_vel_deriv_plus.Clear();
-
   analyt_vel_deriv_minus.Clear();
 
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -457,7 +501,12 @@ void AnalyticalSol_straight_bodyforce_inclined_Interface(LINALG::Matrix<3,1>& po
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_static_bubble(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -510,11 +559,19 @@ void AnalyticalSol_static_bubble(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_static_bubble_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
@@ -533,6 +590,8 @@ void AnalyticalSol_static_bubble_Interface(LINALG::Matrix<3,1>& posXYZgp,
    */
 
   // do nothing, all values are zero!!!
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -544,7 +603,12 @@ void AnalyticalSol_static_bubble_Interface(LINALG::Matrix<3,1>& posXYZgp,
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble_nxnx1(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_static_bubble_nxnx1(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -606,11 +670,19 @@ void AnalyticalSol_static_bubble_nxnx1(LINALG::Matrix<3,1>& posXYZgp, bool domai
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble_nxnx1_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_static_bubble_nxnx1_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
@@ -629,6 +701,8 @@ void AnalyticalSol_static_bubble_nxnx1_Interface(LINALG::Matrix<3,1>& posXYZgp,
    */
 
   // do nothing, all values are zero!!!!!!
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -640,7 +714,12 @@ void AnalyticalSol_static_bubble_nxnx1_Interface(LINALG::Matrix<3,1>& posXYZgp,
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble_nxnxn(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_static_bubble_nxnxn(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -703,11 +782,19 @@ void AnalyticalSol_static_bubble_nxnxn(LINALG::Matrix<3,1>& posXYZgp, bool domai
  *
  * implements the analytical solution for test case: static_bubble
  */
-void AnalyticalSol_static_bubble_nxnxn_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_static_bubble_nxnxn_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
@@ -726,6 +813,8 @@ void AnalyticalSol_static_bubble_nxnxn_Interface(LINALG::Matrix<3,1>& posXYZgp,
    */
 
   // do nothing, all values are zero!!!!!!!!!!!!!!!
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -737,7 +826,12 @@ void AnalyticalSol_static_bubble_nxnxn_Interface(LINALG::Matrix<3,1>& posXYZgp,
  *
  * implements the analytical solution for test case: ellipsoid_bubble
  */
-void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -802,11 +896,19 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(LINALG::Matrix<3,1>& posXYZgp, 
  *
  * implements the analytical solution for test case: ellipsoid_bubble
  */
-void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
@@ -825,6 +927,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(LINALG::Matrix<3,1>& 
    */
 
   // do nothing, all values are zero!!!!!!!!!!!!!!!
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
 
   return;
 }
@@ -837,7 +941,12 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(LINALG::Matrix<3,1>& 
  *
  * implements the analytical solution for test case: ellipsoid_bubble
  */
-void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(LINALG::Matrix<3,1>& posXYZgp, bool domainplus,
+void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
@@ -899,11 +1008,19 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(LINALG::Matrix<3,1>& posXYZgp, 
  *
  * implements the analytical solution for test case: ellipsoid_bubble
  */
-void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(LINALG::Matrix<3,1>& posXYZgp,
+void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
   /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
@@ -923,6 +1040,9 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(LINALG::Matrix<3,1>& 
 
   // do nothing, all values are zero!!!!!!!!!!!!!!!
 
+  analyt_pres_plus.Clear();
+  analyt_pres_minus.Clear();
+
   return;
 }
 
@@ -931,13 +1051,74 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(LINALG::Matrix<3,1>& 
  * implements the analytical solution for the Betrami flow
  */
 void AnalyticalSol_Beltrami(
-    LINALG::Matrix<3,1>& posXYZgp,
-    bool domainplus,
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const bool domainplus,
+    const double time,
+    const double dynvisc,
+    const double dens,
     LINALG::Matrix<3,1>& analyt_vel,
     LINALG::Matrix<3,3>& analyt_vel_deriv,
     LINALG::Matrix<1,1>& analyt_pres,
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
+  const double visc = dynvisc/dens;
+  // set constants for analytical solution
+  const double a = M_PI/4.0;
+  const double d = M_PI/2.0;
+
+  const double t = time;
+
+  // compute analytical pressure
+  analyt_pres(0,0) = -a*a/2.0 *
+      ( exp(2.0*a*posXYZgp(0))
+      + exp(2.0*a*posXYZgp(1))
+      + exp(2.0*a*posXYZgp(2))
+      + 2.0 * sin(a*posXYZgp(0) + d*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) * exp(a*(posXYZgp(1)+posXYZgp(2)))
+      + 2.0 * sin(a*posXYZgp(1) + d*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) * exp(a*(posXYZgp(2)+posXYZgp(0)))
+      + 2.0 * sin(a*posXYZgp(2) + d*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) * exp(a*(posXYZgp(0)+posXYZgp(1)))
+      )* exp(-2.0*visc*d*d*t);
+
+  // compute analytical velocities
+  analyt_vel(0) = -a * ( exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) +
+                         exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  analyt_vel(1) = -a * ( exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) +
+                         exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  analyt_vel(2) = -a * ( exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) +
+                         exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+
+  // du_x/dx
+  analyt_vel_deriv(0,0) = -a * ( a*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) -
+                                 a*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  // du_x/dy
+  analyt_vel_deriv(0,1) = -a * ( a*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) -
+                                 d*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  // du_x/dz
+  analyt_vel_deriv(0,2) = -a * ( d*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) +
+                                 a*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+
+  // du_y/dx
+  analyt_vel_deriv(1,0) = -a * ( d*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) +
+                                 a*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  // du_y/dy
+  analyt_vel_deriv(1,1) = -a * ( a*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) -
+                                 a*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  // du_y/dz
+  analyt_vel_deriv(1,2) = -a * ( a*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) -
+                                 d*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+
+  // du_z/dx
+  analyt_vel_deriv(2,0) = -a * ( a*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) -
+                                 d*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+  // du_z/dy
+  analyt_vel_deriv(2,1) = -a * ( d*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) +
+                                 a*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+  // du_z/dz
+  analyt_vel_deriv(2,2) = -a * ( a*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) -
+                                 a*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+
+  // not implemented, the pressure gradient is not 0!
+  analyt_pres_deriv.Clear();
+
   return;
 }
 
@@ -946,13 +1127,86 @@ void AnalyticalSol_Beltrami(
  * implements the analytical solution for the Betrami flow
  */
 void AnalyticalSol_Beltrami_Interface(
-    LINALG::Matrix<3,1>& posXYZgp,
+    const LINALG::Matrix<3,1>& posXYZgp,
+    const double time,
+    const double dynviscplus,
+    const double dynviscminus,
+    const double densplus,
+    const double densminus,
     LINALG::Matrix<3,1>& analyt_vel_plus,
     LINALG::Matrix<3,1>& analyt_vel_minus,
     LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-    LINALG::Matrix<3,3>& analyt_vel_deriv_minus)
+    LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+    LINALG::Matrix<1,1>& analyt_pres_plus,
+    LINALG::Matrix<1,1>& analyt_pres_minus)
 {
-  // evaluate the analytical solution of the flow problem at posXYZgp
+  // we assume that material parameters do not jump across the interface (zero jumps)
+  if (dynviscplus != dynviscminus)
+    dserror("identical dynamic viscosities expected");
+  if (densplus != densminus)
+    dserror("identical densities expected");
+  // chose the plus side to compute kinematic viscosity
+  const double visc = dynviscplus/densplus;
+
+  // set constants for analytical solution
+  const double a = M_PI/4.0;
+  const double d = M_PI/2.0;
+
+  const double t = time;
+
+  // compute analytical velocities
+  analyt_vel_plus(0) = -a * ( exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) +
+                              exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  analyt_vel_plus(1) = -a * ( exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) +
+                              exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  analyt_vel_plus(2) = -a * ( exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) +
+                              exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+
+  // du_x/dx
+  analyt_vel_deriv_plus(0,0) = -a * ( a*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) -
+                                      a*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  // du_x/dy
+  analyt_vel_deriv_plus(0,1) = -a * ( a*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) -
+                                      d*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+  // du_x/dz
+  analyt_vel_deriv_plus(0,2) = -a * ( d*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) +
+                                      a*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) ) * exp(-visc*d*d*t);
+
+  // du_y/dx
+  analyt_vel_deriv_plus(1,0) = -a * ( d*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) +
+                                      a*exp(a*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  // du_y/dy
+  analyt_vel_deriv_plus(1,1) = -a * ( a*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) -
+                                      a*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+  // du_y/dz
+  analyt_vel_deriv_plus(1,2) = -a * ( a*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) -
+                                      d*exp(a*posXYZgp(0)) * sin(a*posXYZgp(1) + d*posXYZgp(2)) ) * exp(-visc*d*d*t);
+
+  // du_z/dx
+  analyt_vel_deriv_plus(2,0) = -a * ( a*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) -
+                                      d*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+  // du_z/dy
+  analyt_vel_deriv_plus(2,1) = -a * ( d*exp(a*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) +
+                                      a*exp(a*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+  // du_z/dz
+  analyt_vel_deriv_plus(2,2) = -a * ( a*exp(a*posXYZgp(2)) * sin(a*posXYZgp(0) + d*posXYZgp(1)) -
+                                      a*exp(a*posXYZgp(1)) * sin(a*posXYZgp(2) + d*posXYZgp(0)) ) * exp(-visc*d*d*t);
+
+  // assume zero jumps at interface (identical material parameters)
+  analyt_vel_minus = analyt_vel_plus;
+  analyt_vel_deriv_minus = analyt_vel_deriv_plus;
+
+  analyt_pres_plus(0,0) = -a*a/2.0 *
+      ( exp(2.0*a*posXYZgp(0))
+      + exp(2.0*a*posXYZgp(1))
+      + exp(2.0*a*posXYZgp(2))
+      + 2.0 * sin(a*posXYZgp(0) + d*posXYZgp(1)) * cos(a*posXYZgp(2) + d*posXYZgp(0)) * exp(a*(posXYZgp(1)+posXYZgp(2)))
+      + 2.0 * sin(a*posXYZgp(1) + d*posXYZgp(2)) * cos(a*posXYZgp(0) + d*posXYZgp(1)) * exp(a*(posXYZgp(2)+posXYZgp(0)))
+      + 2.0 * sin(a*posXYZgp(2) + d*posXYZgp(0)) * cos(a*posXYZgp(1) + d*posXYZgp(2)) * exp(a*(posXYZgp(0)+posXYZgp(1)))
+      )* exp(-2.0*visc*d*d*t);
+
+  analyt_pres_minus = analyt_pres_plus;
+
   return;
 }
 
@@ -996,8 +1250,11 @@ void Nitsche_BuildDomainIntegratedErrors(
   // function to evaluate analytical solution at Gaussian point -> return velx,vely,velz,pres at Gaussian point
   // pointer to function
   void (*analytical)(
-      LINALG::Matrix<3,1>& posXYZgp,
-      bool domainplus,
+      const LINALG::Matrix<3,1>& posXYZgp,
+      const bool domainplus,
+      const double time,
+      const double dynvisc,
+      const double dens,
       LINALG::Matrix<3,1>& analyt_vel,
       LINALG::Matrix<3,3>& analyt_vel_deriv,
       LINALG::Matrix<1,1>& analyt_pres,
@@ -1303,7 +1560,7 @@ void Nitsche_BuildDomainIntegratedErrors(
         dserror("cell distype not implemented yet");
       }
 
-      analytical(posGPinXYZ, cell->getDomainPlus(), analyt_vel, analyt_vel_derxy, analyt_pres, analyt_pres_derxy);
+      analytical(posGPinXYZ, cell->getDomainPlus(), time, dynvisc, densaf, analyt_vel, analyt_vel_derxy, analyt_pres, analyt_pres_derxy);
 
       //============================== NITSCHE ERRORS =================================
       // calculate difference between analytical solution and converged solution in function and derivatives
@@ -1380,13 +1637,21 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t NUMDOF,
           class M1, class M2, class M3, class V1, class V2>
 void Nitsche_BuildBoundaryIntegratedErrors_Cell(
-    void (*analytical_Interface)( LINALG::Matrix<3,1>& posXYZgp,
+    void (*analytical_Interface)( const LINALG::Matrix<3,1>& posXYZgp,
+                                  const double time,
+                                  const double dynviscplus,
+                                  const double dynviscminus,
+                                  const double densplus,
+                                  const double densminus,
                                   LINALG::Matrix<3,1>& analyt_vel_plus,
                                   LINALG::Matrix<3,1>& analyt_vel_minus,
                                   LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-                                  LINALG::Matrix<3,3>& analyt_vel_deriv_minus),
+                                  LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+                                  LINALG::Matrix<1,1>& analyt_pres_plus,
+                                  LINALG::Matrix<1,1>& analyt_pres_minus),
     double&                              eleViscInterfErr,    /// "H-1/2 integrated viscosity interface error"
     double&                              eleVelJumpInterfErr, /// "H1/2 integrated velocity jump interface error"
+    double&                              eleFluxJumpInterfErr,/// "H-1/2 integrated flux jump interface error"
     double&                              eleNitscheErr,       /// "Nitsche integrated error"
     const double&                        hk_eleDiam,
     GEO::BoundaryIntCell                 cell,
@@ -1402,8 +1667,11 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     const XFEM::ElementEnrichmentValues& enrvals_minus,
     const double&                        kappa_plus,     /// weights of average in plus domain
     const double&                        kappa_minus,    /// weights of average in minus domain
-    const double&                        visc_plus,      /// viscosity in plus domain
-    const double&                        visc_minus,     /// viscosity in minus domain
+    const double&                        dynvisc_plus,   /// viscosity in plus domain
+    const double&                        dynvisc_minus,  /// viscosity in minus domain
+    const double&                        dens_plus,      /// density in plus domain
+    const double&                        dens_minus,     /// density in minus domain
+    const double                         time,
     const size_t&                        numparamvelx,
     const bool                           smoothed_boundary_integration
 )
@@ -1631,6 +1899,7 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
     static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
+    static XFEM::ApproxFunc<1,shpVecSize> shp_jump_visc;
     static XFEM::ApproxFunc<1,shpVecSize> shp_mean_visc;
 
     // fill approximation functions
@@ -1638,9 +1907,16 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     {
       shp_jump.d0(iparam) = enrfunct_minus(iparam) - enrfunct_plus(iparam);
 
-      shp_mean_visc.dx(iparam) = kappa_plus * visc_plus*enrderxy_plus(0,iparam) + kappa_minus * visc_minus*enrderxy_minus(0,iparam);
-      shp_mean_visc.dy(iparam) = kappa_plus * visc_plus*enrderxy_plus(1,iparam) + kappa_minus * visc_minus*enrderxy_minus(1,iparam);
-      shp_mean_visc.dz(iparam) = kappa_plus * visc_plus*enrderxy_plus(2,iparam) + kappa_minus * visc_minus*enrderxy_minus(2,iparam);
+      // not used, but filled for security
+      shp_jump_visc.d0(iparam) = dynvisc_minus*enrfunct_minus(iparam) - dynvisc_plus*enrfunct_plus(iparam);
+
+      shp_jump_visc.dx(iparam) = dynvisc_minus*enrderxy_minus(0,iparam) - dynvisc_plus*enrderxy_plus(0,iparam);
+      shp_jump_visc.dy(iparam) = dynvisc_minus*enrderxy_minus(1,iparam) - dynvisc_plus*enrderxy_plus(1,iparam);
+      shp_jump_visc.dz(iparam) = dynvisc_minus*enrderxy_minus(2,iparam) - dynvisc_plus*enrderxy_plus(2,iparam);
+
+      shp_mean_visc.dx(iparam) = kappa_plus * dynvisc_plus*enrderxy_plus(0,iparam) + kappa_minus * dynvisc_minus*enrderxy_minus(0,iparam);
+      shp_mean_visc.dy(iparam) = kappa_plus * dynvisc_plus*enrderxy_plus(1,iparam) + kappa_minus * dynvisc_minus*enrderxy_minus(1,iparam);
+      shp_mean_visc.dz(iparam) = kappa_plus * dynvisc_plus*enrderxy_plus(2,iparam) + kappa_minus * dynvisc_minus*enrderxy_minus(2,iparam);
     }
 
     //---------------------------------------
@@ -1651,6 +1927,24 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     static LINALG::Matrix<nsd,1> vjump(true);
     vjump.Clear();
     vjump = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
+
+    // pressure jump
+    static double presjump;
+    presjump = 0.0;
+    for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+       presjump += eprenp(iparam)*shp_jump.d0(iparam);
+
+    // get velocity (np,i) derivatives at integration point
+    // vderxy = enr_derxy(j,k)*evelnp(i,k);
+    static LINALG::Matrix<nsd,nsd> vderxy_jump_visc(true);
+    vderxy_jump_visc.Clear();
+    for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+      for (size_t isd = 0; isd < nsd; ++isd)
+      {
+        vderxy_jump_visc(isd,0) += evelnp(isd,iparam) * shp_jump_visc.dx(iparam);
+        vderxy_jump_visc(isd,1) += evelnp(isd,iparam) * shp_jump_visc.dy(iparam);
+        vderxy_jump_visc(isd,2) += evelnp(isd,iparam) * shp_jump_visc.dz(iparam);
+      }
 
     // get velocity (np,i) derivatives at integration point
     // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -1671,17 +1965,23 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     static LINALG::Matrix<nsd,1>   analyt_vel_minus;
     static LINALG::Matrix<nsd,nsd> analyt_deriv_plus;
     static LINALG::Matrix<nsd,nsd> analyt_deriv_minus;
+    static LINALG::Matrix<1,1>     analyt_pres_plus;
+    static LINALG::Matrix<1,1>     analyt_pres_minus;
 
     analyt_vel_plus.Clear();
     analyt_vel_minus.Clear();
     analyt_deriv_plus.Clear();
     analyt_deriv_minus.Clear();
+    analyt_pres_plus.Clear();
+    analyt_pres_minus.Clear();
 
     // evaluate the analytical solution
     static LINALG::Matrix<nsd,1> posEtaBoundaryinXYZ;
     posEtaBoundaryinXYZ.Multiply(xyze,funct);
 
-    analytical_Interface(posEtaBoundaryinXYZ, analyt_vel_plus, analyt_vel_minus, analyt_deriv_plus, analyt_deriv_minus);
+    analytical_Interface(posEtaBoundaryinXYZ, time, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
+                         analyt_vel_plus, analyt_vel_minus, analyt_deriv_plus, analyt_deriv_minus,
+                         analyt_pres_plus, analyt_pres_minus);
 
     //============================== NITSCHE ERRORS =================================
 
@@ -1690,31 +1990,51 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     analyt_vel_jump.Clear();
     for (size_t i = 0; i< nsd; i++)
     {
-      analyt_vel_jump(i) = analyt_vel_plus(i)-analyt_vel_minus(i);
+      analyt_vel_jump(i) = analyt_vel_minus(i)-analyt_vel_plus(i);
     }
 
-    // get deriv_visc_mean = {2*mu*E(v_h)}
-    // vderxy_mean_visc stores {mu*v_x,y} (3x3)
-    static LINALG::Matrix<nsd,nsd> deriv_visc_mean;
-    deriv_visc_mean.Clear();
-    deriv_visc_mean(0,0) = 2.0* (vderxy_mean_visc(0,0));
-    deriv_visc_mean(0,1) =      (vderxy_mean_visc(1,0) + vderxy_mean_visc(0,1));
-    deriv_visc_mean(0,2) =      (vderxy_mean_visc(2,0) + vderxy_mean_visc(0,2));
-    deriv_visc_mean(1,1) = 2.0* (vderxy_mean_visc(1,1));
-    deriv_visc_mean(1,2) =      (vderxy_mean_visc(1,2) + vderxy_mean_visc(2,1));
-    deriv_visc_mean(2,2) = 2.0* (vderxy_mean_visc(2,2));
-    deriv_visc_mean(1,0) = deriv_visc_mean(0,1);
-    deriv_visc_mean(2,0) = deriv_visc_mean(0,2);
-    deriv_visc_mean(2,1) = deriv_visc_mean(1,2);
+    // get flux jump [[sigma]]*normal
+    static LINALG::Matrix<nsd,1> analyt_flux_jump;
+    analyt_flux_jump.Clear();
+
+    analyt_flux_jump(0) = - (analyt_pres_minus(0,0) - analyt_pres_plus(0,0))*normal(0)
+                          + (analyt_deriv_minus(0,0)+analyt_deriv_minus(0,0) - (analyt_deriv_plus(0,0)+analyt_deriv_plus(0,0)))*normal(0)
+                          + (analyt_deriv_minus(0,1)+analyt_deriv_minus(1,0) - (analyt_deriv_plus(0,1)+analyt_deriv_plus(1,0)))*normal(1)
+                          + (analyt_deriv_minus(0,2)+analyt_deriv_minus(2,0) - (analyt_deriv_plus(0,2)+analyt_deriv_plus(2,0)))*normal(2);
+    analyt_flux_jump(1) = - (analyt_pres_minus(0,0) - analyt_pres_plus(0,0))*normal(1)
+                          + (analyt_deriv_minus(1,0)+analyt_deriv_minus(0,1) - (analyt_deriv_plus(1,0)+analyt_deriv_plus(0,1)))*normal(0)
+                          + (analyt_deriv_minus(1,1)+analyt_deriv_minus(1,1) - (analyt_deriv_plus(1,1)+analyt_deriv_plus(1,1)))*normal(1)
+                          + (analyt_deriv_minus(1,2)+analyt_deriv_minus(2,1) - (analyt_deriv_plus(1,2)+analyt_deriv_plus(2,1)))*normal(2);
+    analyt_flux_jump(2) = - (analyt_pres_minus(0,0) - analyt_pres_plus(0,0))*normal(2)
+                          + (analyt_deriv_minus(2,0)+analyt_deriv_minus(0,2) - (analyt_deriv_plus(2,0)+analyt_deriv_plus(0,2)))*normal(0)
+                          + (analyt_deriv_minus(2,1)+analyt_deriv_minus(1,2) - (analyt_deriv_plus(2,1)+analyt_deriv_plus(1,2)))*normal(1)
+                          + (analyt_deriv_minus(2,2)+analyt_deriv_minus(2,2) - (analyt_deriv_plus(2,2)+analyt_deriv_plus(2,2)))*normal(2);
+
+    // flux jump
+    static LINALG::Matrix<nsd,1> fluxjump(true);
+    fluxjump.Clear();
+
+    fluxjump(0) = - presjump*normal(0)
+                  + (vderxy_jump_visc(0,0)+vderxy_jump_visc(0,0))*normal(0)
+                  + (vderxy_jump_visc(0,1)+vderxy_jump_visc(1,0))*normal(1)
+                  + (vderxy_jump_visc(0,2)+vderxy_jump_visc(2,0))*normal(2);
+    fluxjump(1) = - presjump*normal(1)
+                  + (vderxy_jump_visc(1,0)+vderxy_jump_visc(0,1))*normal(0)
+                  + (vderxy_jump_visc(1,1)+vderxy_jump_visc(1,1))*normal(1)
+                  + (vderxy_jump_visc(1,2)+vderxy_jump_visc(2,1))*normal(2);
+    fluxjump(2) = - presjump*normal(2)
+                  + (vderxy_jump_visc(2,0)+vderxy_jump_visc(0,2))*normal(0)
+                  + (vderxy_jump_visc(2,1)+vderxy_jump_visc(1,2))*normal(1)
+                  + (vderxy_jump_visc(2,2)+vderxy_jump_visc(2,2))*normal(2);
 
     // get {mu * v_x,y} => 3x3
     static LINALG::Matrix<nsd,nsd> analyt_vderxy_mean_visc;
     analyt_vderxy_mean_visc.Clear();
     for(size_t isd = 0; isd < nsd; isd++)
     {
-      analyt_vderxy_mean_visc(isd,0) = 0.5* (visc_plus * analyt_deriv_plus(isd,0) + visc_minus * analyt_deriv_minus(isd,0));
-      analyt_vderxy_mean_visc(isd,1) = 0.5* (visc_plus * analyt_deriv_plus(isd,1) + visc_minus * analyt_deriv_minus(isd,1));
-      analyt_vderxy_mean_visc(isd,2) = 0.5* (visc_plus * analyt_deriv_plus(isd,2) + visc_minus * analyt_deriv_minus(isd,2));
+      analyt_vderxy_mean_visc(isd,0) = 0.5* (dynvisc_plus * analyt_deriv_plus(isd,0) + dynvisc_minus * analyt_deriv_minus(isd,0));
+      analyt_vderxy_mean_visc(isd,1) = 0.5* (dynvisc_plus * analyt_deriv_plus(isd,1) + dynvisc_minus * analyt_deriv_minus(isd,1));
+      analyt_vderxy_mean_visc(isd,2) = 0.5* (dynvisc_plus * analyt_deriv_plus(isd,2) + dynvisc_minus * analyt_deriv_minus(isd,2));
     }
 
     // get analyt_deriv_visc_mean = {2*mu*E(v)}
@@ -1733,27 +2053,45 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     // calculate difference between analytical solution and converged solution in function and derivatives
 
     static LINALG::Matrix<nsd,1> err_vel_jump;              // [v]-[v_h]
+    static LINALG::Matrix<nsd,1> err_flux_jump;             // [sigma]-[sigma_h]
     static LINALG::Matrix<nsd,nsd> err_deriv_vel_visc_mean; // {2*mu*E(v-v_h)} = {2*mu*E(v)}-{2*mu*E(v_h)}
     static LINALG::Matrix<nsd,1> err_visc2_vel_mean_normal; // {2*mu*E(v-v_h)}*n
 
     err_vel_jump.Clear();
+    err_flux_jump.Clear();
     err_deriv_vel_visc_mean.Clear();
     err_visc2_vel_mean_normal.Clear();
 
     // get difference between exact and approximative solution
+
+    // get deriv_visc_mean = {2*mu*E(v_h)}
+    // vderxy_mean_visc stores {mu*v_x,y} (3x3)
+    static LINALG::Matrix<nsd,nsd> deriv_visc_mean;
+    deriv_visc_mean.Clear();
+    deriv_visc_mean(0,0) = 2.0* (vderxy_mean_visc(0,0));
+    deriv_visc_mean(0,1) =      (vderxy_mean_visc(1,0) + vderxy_mean_visc(0,1));
+    deriv_visc_mean(0,2) =      (vderxy_mean_visc(2,0) + vderxy_mean_visc(0,2));
+    deriv_visc_mean(1,1) = 2.0* (vderxy_mean_visc(1,1));
+    deriv_visc_mean(1,2) =      (vderxy_mean_visc(1,2) + vderxy_mean_visc(2,1));
+    deriv_visc_mean(2,2) = 2.0* (vderxy_mean_visc(2,2));
+    deriv_visc_mean(1,0) = deriv_visc_mean(0,1);
+    deriv_visc_mean(2,0) = deriv_visc_mean(0,2);
+    deriv_visc_mean(2,1) = deriv_visc_mean(1,2);
 
     //loop over Velx, Vely, Velz (size_t i)
     for (size_t i = 0; i < nsd; i ++ )
     {
       // get [[v]]-[[v_h]]
       err_vel_jump(i) = analyt_vel_jump(i)-vjump(i);
-
+      err_flux_jump(i) = analyt_flux_jump(i)-fluxjump(i);
       // get {2*mu*E(v)-2*mu*E(v_h)}
       // 0=d/dx,1=d/dy,2=d/dz
       err_deriv_vel_visc_mean(i,0) = analyt_deriv_visc_mean(i,0) - deriv_visc_mean(i,0); // error of d/dx
       err_deriv_vel_visc_mean(i,1) = analyt_deriv_visc_mean(i,1) - deriv_visc_mean(i,1); // error of d/dy
       err_deriv_vel_visc_mean(i,2) = analyt_deriv_visc_mean(i,2) - deriv_visc_mean(i,2); // error of d/dz
     }
+
+//cout << "analyt " << analyt_flux_jump << endl;
 
     // get {2*mu*E(v)-2*mu*E(v_h)}*n
     for (size_t i = 0; i< nsd; i++)
@@ -1766,10 +2104,11 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     // update element errors
     for (size_t i = 0; i< nsd; ++i)
     {
-      eleViscInterfErr    += hk_eleDiam * err_visc2_vel_mean_normal(i,0) * err_visc2_vel_mean_normal(i,0) * fac;
-      eleNitscheErr       += hk_eleDiam * err_visc2_vel_mean_normal(i,0) * err_visc2_vel_mean_normal(i,0) * fac;
-      eleVelJumpInterfErr += 1.0/hk_eleDiam * err_vel_jump(i) * err_vel_jump(i) * fac;
-      eleNitscheErr       += 1.0/hk_eleDiam * err_vel_jump(i) * err_vel_jump(i) * fac;
+      eleViscInterfErr     += hk_eleDiam * err_visc2_vel_mean_normal(i,0) * err_visc2_vel_mean_normal(i,0) * fac;
+      eleNitscheErr        += hk_eleDiam * err_visc2_vel_mean_normal(i,0) * err_visc2_vel_mean_normal(i,0) * fac;
+      eleVelJumpInterfErr  += 1.0/hk_eleDiam * err_vel_jump(i) * err_vel_jump(i) * fac;
+      eleFluxJumpInterfErr += hk_eleDiam * err_flux_jump(i) * err_flux_jump(i) * fac;
+      eleNitscheErr        += 1.0/hk_eleDiam * err_vel_jump(i) * err_vel_jump(i) * fac;
     }
 
   } // end loop over Gauß points
@@ -1796,6 +2135,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
     const V2&                              ephi,              ///< nodal G-function values for this element
     const M2&                              grad_ephi,         ///<
     Teuchos::RCP<const MAT::Material>      material,          ///< fluid material
+    const double                           time,
     const double                           ele_meas_plus,
     const double                           ele_meas_minus,
     const bool                             smoothed_boundary_integration
@@ -1806,9 +2146,10 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   //==================================================================================================
   // get actual values of norms^2 of domain errors,stored in eleparams, then update the values with error part of this element
   // at the end of this function we set the eleparams new
-  double eleViscInterfErr    = eleparams.get<double>("H-1/2 integrated viscosity interface error");
-  double eleVelJumpInterfErr = eleparams.get<double>("H1/2 integrated velocity jump interface error");
-  double eleNitscheErr       = eleparams.get<double>("Nitsche integrated error");
+  double eleViscInterfErr     = eleparams.get<double>("H-1/2 integrated viscosity interface error");
+  double eleVelJumpInterfErr  = eleparams.get<double>("H1/2 integrated velocity jump interface error");
+  double eleFluxJumpInterfErr = eleparams.get<double>("H-1/2 integrated flux jump interface error");
+  double eleNitscheErr        = eleparams.get<double>("Nitsche integrated error");
 
   // here are stored the !!!squared norms!!!
   //==================================================================================================
@@ -1816,11 +2157,18 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   // function to evaluate analytical solution at Gaussian point -> return velx,vely,velz,pres at Gaussian point
   // pointer to function
   void (*analytical_Interface)(
-      LINALG::Matrix<3,1>& posXYZgp,
+      const LINALG::Matrix<3,1>& posXYZgp,
+      const double time,
+      const double dynviscplus,
+      const double dynviscminus,
+      const double densplus,
+      const double densminus,
       LINALG::Matrix<3,1>& analyt_vel_plus,
       LINALG::Matrix<3,1>& analyt_vel_minus,
       LINALG::Matrix<3,3>& analyt_vel_deriv_plus,
-      LINALG::Matrix<3,3>& analyt_vel_deriv_minus);
+      LINALG::Matrix<3,3>& analyt_vel_deriv_minus,
+      LINALG::Matrix<1,1>& analyt_pres_plus,
+      LINALG::Matrix<1,1>& analyt_pres_minus);
   analytical_Interface=NULL;
 
   // set pointer to function which evaluates the analytical solution
@@ -1840,6 +2188,8 @@ void Nitsche_BuildBoundaryIntegratedErrors(
     analytical_Interface = &AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface;
   else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_ellipsoid_bubble_2D)
     analytical_Interface = &AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface;
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_beltrami)
+    analytical_Interface = &AnalyticalSol_Beltrami_Interface;
   else dserror("there is no analytical solution for 'flowproblem' stored in eleparams");
 
   //==================================================================================================
@@ -1909,21 +2259,21 @@ void Nitsche_BuildBoundaryIntegratedErrors(
     case DRT::Element::tri3:
       COMBUST::Nitsche_BuildBoundaryIntegratedErrors_Cell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           analytical_Interface,
-          eleViscInterfErr, eleVelJumpInterfErr, eleNitscheErr, hk_eleDiam,
+          eleViscInterfErr, eleVelJumpInterfErr, eleFluxJumpInterfErr, eleNitscheErr, hk_eleDiam,
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          numparamvelx,smoothed_boundary_integration
+          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
+          time, numparamvelx, smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
       COMBUST::Nitsche_BuildBoundaryIntegratedErrors_Cell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           analytical_Interface,
-          eleViscInterfErr, eleVelJumpInterfErr, eleNitscheErr, hk_eleDiam,
+          eleViscInterfErr, eleVelJumpInterfErr, eleFluxJumpInterfErr, eleNitscheErr, hk_eleDiam,
           *cell, DRT::UTILS::intrule_quad_25point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          numparamvelx,smoothed_boundary_integration
+          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
+          time, numparamvelx, smoothed_boundary_integration
       );
       break;
     default:
@@ -1935,6 +2285,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   // set the boundary errors and Nitsche integrated error with the updated values
   eleparams.set<double>("H-1/2 integrated viscosity interface error", eleViscInterfErr);
   eleparams.set<double>("H1/2 integrated velocity jump interface error", eleVelJumpInterfErr);
+  eleparams.set<double>("H-1/2 integrated flux jump interface error", eleFluxJumpInterfErr);
   eleparams.set<double>("Nitsche integrated error", eleNitscheErr);
   //==================================================================================================
   return;

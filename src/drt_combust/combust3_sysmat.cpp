@@ -1449,7 +1449,7 @@ void NitscheErrors(
       COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
     COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
+        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
   }
 
   return;

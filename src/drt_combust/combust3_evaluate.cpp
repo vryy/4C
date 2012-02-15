@@ -416,6 +416,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     break;
     case calc_fluid_beltrami_error:
     {
+      dserror("Are you sure you want to use this?");
       // add error only for elements which are not ghosted
       if(this->Owner() == discretization.Comm().MyPID())
       {
