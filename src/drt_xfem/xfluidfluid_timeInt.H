@@ -40,7 +40,8 @@ public:
     const RCP<DRT::Discretization> bgdis,
     const RCP<DRT::Discretization> embdis,
     XFEM::FluidWizard              wizard,
-    int                            step
+    int                            step,
+    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach
     );
 
   //! destructor
@@ -65,6 +66,18 @@ public:
                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                             Teuchos::RCP<Epetra_Vector>           aledispn);
+
+  void SetNewBgStatevectorKeepGhostValues(const RCP<DRT::Discretization>        bgdis,
+                                          Teuchos::RCP<Epetra_Vector>           bgstatevn,
+                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp,
+                                          Teuchos::RCP<Epetra_Vector>           embstatevn,
+                                          Teuchos::RCP<Epetra_Vector>           aledispn);
+
+  void SetNewBgStatevectorFullProjection(const RCP<DRT::Discretization>        bgdis,
+                                         Teuchos::RCP<Epetra_Vector>           bgstatevn,
+                                         Teuchos::RCP<Epetra_Vector>           bgstatevnp,
+                                         Teuchos::RCP<Epetra_Vector>           embstatevn,
+                                         Teuchos::RCP<Epetra_Vector>           aledispn);
 
   void SetNewEmbStatevector(const RCP<DRT::Discretization>        bgdis,
                             Teuchos::RCP<Epetra_Vector>    statevbg_n,

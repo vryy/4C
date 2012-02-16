@@ -83,7 +83,8 @@ namespace INPAR
     enum XFluidFluidTimeInt
     {
       Xff_TimeInt_FullProj,
-      Xff_TimeInt_ProjIfMoved
+      Xff_TimeInt_ProjIfMoved,
+      Xff_TimeInt_KeepGhostValues
     };
 
 

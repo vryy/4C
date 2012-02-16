@@ -31,7 +31,8 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   const RCP<DRT::Discretization> bgdis,
   const RCP<DRT::Discretization> embdis,
   XFEM::FluidWizard              wizard,
-  int                            step
+  int                            step,
+  enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach
   ) :
   embdis_(embdis),
   step_(step)
@@ -39,6 +40,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 
     CreateBgNodeMaps(bgdis,wizard);
     currentbgdofmap_ =  bgdis->DofRowMap();
+    timeintapproach_ = xfem_timeintapproach;
     return;
 
   } // end constructor
@@ -67,6 +69,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       // the node. For the std nodes the size is 1.
       std::vector<std::set<GEO::CUT::plain_volumecell_set> > vcs= n->DofCellSets();
       std::vector<int> parentelements;
+
       for (size_t i=0; i<vcs.size(); i++ )
       {
         // we just need the first vc to find out the parent element.
@@ -82,6 +85,10 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
         // get the first volume cell (vc)
         GEO::CUT::plain_volumecell_set k = *s;
         GEO::CUT::plain_volumecell_set::iterator it = k.begin();
+//         //test
+//         for (GEO::CUT::plain_volumecell_set::iterator it = k.begin();it!=k.end();++it)
+//           cout << "it " << endl;
+
         GEO::CUT::VolumeCell * vc = *it;
 
         // get the element handle and the nds vector
@@ -223,6 +230,21 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
                                                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                                                             Teuchos::RCP<Epetra_Vector>           aledispn)
+{
+  if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj)
+    SetNewBgStatevectorFullProjection(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
+  else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues)
+    SetNewBgStatevectorKeepGhostValues(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
+}
+// -------------------------------------------------------------------
+// Always do the projection from embedded fluid. Also for the enriched
+// nodes.
+// -------------------------------------------------------------------
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const RCP<DRT::Discretization>        bgdis,
+                                                                         Teuchos::RCP<Epetra_Vector>           bgstatevn,
+                                                                         Teuchos::RCP<Epetra_Vector>           bgstatevnp,
+                                                                         Teuchos::RCP<Epetra_Vector>           embstatevn,
+                                                                         Teuchos::RCP<Epetra_Vector>           aledispn)
 {
   for (int lnid=0; lnid<bgdis->NumMyRowNodes(); lnid++)
   {
@@ -374,6 +396,207 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
             cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
         }
       }
+    }
+    //do nothing:
+    //n: void->n+1: void, n:std->n+1:void, n:enriched->n+1:void
+    else if ( (iterstn == stdnoden_.end() and iteren == enrichednoden_.end()
+               and iterstnp == stdnodenp_.end() and iterenp == enrichednodenp_.end() ) or
+              (iterstn != stdnoden_.end() and (iterstnp == stdnodenp_.end() and iterenp == enrichednodenp_.end())) or
+              (iteren != enrichednoden_.end() and (iterenp == enrichednodenp_.end() and iterstnp == stdnodenp_.end())) )
+    {
+
+      if( bgdis->NumDof(bgnode) > 0 )
+        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  END_COLOR<< endl;
+      //cout << "do nothing" << bgnode->Id() << endl; ;
+    }
+    else
+      cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
+  }
+
+}//SetNewBgStatevectorAndProjectEmbToBg
+
+// -------------------------------------------------------------------
+// If enriched values are available keep them (no projection from
+// embedded fluid)
+// -------------------------------------------------------------------
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const RCP<DRT::Discretization>        bgdis,
+                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevn,
+                                                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp,
+                                                                          Teuchos::RCP<Epetra_Vector>           embstatevn,
+                                                                          Teuchos::RCP<Epetra_Vector>           aledispn)
+{
+  for (int lnid=0; lnid<bgdis->NumMyRowNodes(); lnid++)
+  {
+    DRT::Node* bgnode = bgdis->lRowNode(lnid);
+    map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
+    map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
+    map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
+    map<int, vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
+
+    // Transfer the dofs:
+    // n:std -> n+1:std, n:std -> n+1:enriched
+    if ((iterstn != stdnoden_.end() and iterstnp != stdnodenp_.end()) or
+        (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
+    {
+      int numsets = bgdis->NumDof(bgnode)/4;
+      vector<int> gdofsn = iterstn->second;
+
+      //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
+      //dofsets vorhanden sind
+
+      // Information
+      if (iterstn->second.size()>4)
+        cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
+
+      if (numsets > 1)
+        cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+
+      int offset = 0;
+      for (int set=0; set<numsets; set++)
+      {
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+        offset += 4;
+      }
+
+    }
+    // Project dofs from embdis to bgdis:
+    // n:void -> n+1:std, n:void ->  n+1:enriched
+    else if (((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterstnp != stdnodenp_.end()) or
+             ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end()))
+    {
+      int numsets = bgdis->NumDof(bgnode)/4;
+
+      if( numsets > 1 )
+        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+
+      LINALG::Matrix<3,1> bgnodecords(true);
+      bgnodecords(0,0) = bgnode->X()[0];
+      bgnodecords(1,0) = bgnode->X()[1];
+      bgnodecords(2,0) = bgnode->X()[2];
+
+//       std::vector<int> elementsIdsofRelevantBoxes;
+//       // loop the patchboxes to find out in which patch element the xfem node is included
+//       for ( std::map<int,GEO::CUT::BoundingBox>::const_iterator iter=patchboxes.begin();
+//             iter!=patchboxes.end(); ++iter)
+//       {
+//         const GEO::CUT::BoundingBox & patchbox = iter->second;
+//         double norm = 1e-5;
+//         bool within = patchbox.Within(norm,bgnode->X());
+//         if (within) elementsIdsofRelevantBoxes.push_back(iter->first);
+//       }
+//       // compute the element coordinates of backgroundflnode due to the patch discretization
+//       // loop over all relevant patch boxes
+//       bool insideelement;
+//       size_t count = 0;
+//       for (size_t box=0; box<elementsIdsofRelevantBoxes.size(); ++box)
+//       {
+//         // get the patch-element for the box
+//         DRT::Element* pele = embdis_->gElement(elementsIdsofRelevantBoxes.at(box));
+//         cout << " box: " << box << " id: "  << pele->Id() << endl;
+//         LINALG::Matrix<4,1> interpolatedvec(true);
+//         insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,fluidstate_vector_n);
+//         if (insideelement)
+//         {
+//           // hier set state
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[0])] = interpolatedvec(0);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[1])] = interpolatedvec(1);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[2])] = interpolatedvec(2);
+//           (*statevnp)[statevnp->Map().LID(bgdis->Dof(bgnode)[3])] = interpolatedvec(3);
+//           break;
+//         }
+//         count ++;
+
+      bool insideelement = false;
+      int count = 0;
+      // check all embedded elements to find the right one, the patch
+      // boxes are not used
+      for (int e=0; e<embdis_->NumMyColElements(); e++)
+      {
+        DRT::Element* pele = embdis_->lColElement(e);
+        LINALG::Matrix<4,1> interpolatedvec(true);
+        insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,*embstatevn,aledispn,embdis_);
+        if (insideelement)
+        {
+          int offset = 0;
+          for (int set=0; set<numsets; set++)
+          {
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] = interpolatedvec(0);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] = interpolatedvec(1);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] = interpolatedvec(2);
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] = interpolatedvec(3);
+             offset += 4;
+          }
+          break;
+        }
+        count ++;
+      }
+      if (count == embdis_->NumMyColElements())     // if (count == elementsIdsofRelevantBoxes.size())
+      {
+        // if there are any enriched values..
+        if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
+            or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
+        {
+          cout << RED_LIGHT <<  "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << END_COLOR<< endl;
+          vector<int> gdofsn = iteren->second;
+          int offset = 0;
+          for (int set=0; set<numsets; set++)
+          {
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+            (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+              (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+            offset += 4;
+          }
+        }
+        else
+        {
+          cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
+          if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterstnp != stdnodenp_.end())
+            cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
+          else if (iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
+            cout << YELLOW_LIGHT << " n:enriched -> n+1:enriched " << END_COLOR<< endl;
+          else if (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())
+            cout << YELLOW_LIGHT << " n:enriched -> n+1: std " << END_COLOR<< endl;
+          else if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end())
+            cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
+        }
+      }
+    }
+    //keep the ghost dofs:
+    //n: enriched -> n+1:enriched, n: enriched -> n+1: std
+    else if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end()) or
+             (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end()))
+    {
+#ifdef DOFSETS_NEW
+      dserror("ghost-fluid-approach just available for one dofset!");
+#else
+      vector<int> gdofsn = iteren->second;
+      int offset = 0;
+      int numsets = 1;
+      for (int set=0; set<numsets; set++)
+      {
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+        offset += 4;
+      }
+#endif
     }
     //do nothing:
     //n: void->n+1: void, n:std->n+1:void, n:enriched->n+1:void

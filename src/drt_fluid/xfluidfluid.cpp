@@ -1816,7 +1816,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   SetElementTurbulenceParameter();
 
   if (alefluid_)
-    xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_));
+    xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
+                                                                              xfem_timeintapproach_));
 }
 // -------------------------------------------------------------------
 //
@@ -2816,9 +2817,9 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   if ((not monolithicfluidfluidfsi_ and step_>1 and alefluid_) or monolithicfluidfluidfsi_)
   {
     if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
+        xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues or
         (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) )
     {
-      cout << "do the full projection ..." << endl;
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnp_,disp);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,disp);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,disp);
