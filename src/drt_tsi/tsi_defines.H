@@ -16,25 +16,31 @@ Maintainer: Caroline Danowski
 #define TSI_DEFINES_H
 
 /************************************************************************/
-/* TSI algorithm options                                                */
+/* Debugging options for TSI algorithm                                  */
 /************************************************************************/
+//#define COUPLEINITTEMPERATURE  /* flag for THR: constant temperature T_0 in couple term  */
+//#define TSIBLOCKMATRIXMERGE    /* flag to activate merge of systemmatrix in monolithic TSI */
+//#define TSIPARALLEL            /* flag for parallel TSI */
+//#define MonTSIwithoutTHR       /* flag to comment out all coupling terms in STR field */
+//#define MonTSIwithoutSTR       /* flag to comment out all coupling terms in THR field */
+//#define TFSI                   /* flag to reduce the output to screen */
 
-//#define COUPLEINITTEMPERATURE       /* flag for THR: constant temperature T_0 in couple term  */
 
 /************************************************************************/
-/* Debugging options                                                    */
+/* Debugging options dependent on problem type                          */
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-//#define TSIASOUTPUT          /* flag for detailed active set output */
-//#define TSIMONOLITHASOUTPUT  /* flag for detailed output in monolithic TSI */
-//#define TSIBLOCKMATRIXMERGE  /* flag to activate merge of systemmatrix in monolithic TSI */
-//#define TSIPARALLEL          /* flag for parallel TSI */
-//#define THRASOUTPUT          /* flag for output in the thermal field */
-//#define DEBUGMATERIAL        /* flag for material debug output */
-//#define MonTSIwithoutTHR     /* flag to comment out all coupling terms in STR field */
-//#define MonTSIwithoutSTR     /* flag to comment out all coupling terms in THR field */
-//#define TFSI                 /* flag to reduce the output to screen */
+//#define TSIASOUTPUT            /* flag for detailed active set output */
+//#define TSIMONOLITHASOUTPUT    /* flag for detailed output in monolithic TSI */
+//#define TSIPARTITIONEDASOUTPUT /* flag for detailed output in partitioned TSI */
+//#define THRASOUTPUT            /* flag for output in the thermal field */
+
+
+/************************************************************************/
+/* Debugging options for plastic materials                              */
+/************************************************************************/
+//#define DEBUGMATERIAL          /* flag for material debug output */
 
 #endif  // #ifndef TSI_DEFINES_H
 #endif  // #ifdef CCADISCRET

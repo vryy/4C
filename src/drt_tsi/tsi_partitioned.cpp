@@ -101,7 +101,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
       dserror("unexpected dof sets in structure field");
   }
 
-#ifdef TSIASOUTPUT
+#ifdef TSIPARTITIONEDASOUTPUT
     // now check if the two dofmaps are available and then bye bye
     cout << "structure dofmap" << endl;
     cout << *StructureField().DofRowMap(0) << endl;
@@ -112,7 +112,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     cout << "structure dofmap" << endl;
     cout << *ThermoField().DofRowMap(1) << endl;
 //    exit(0);
-#endif // TSIASOUTPUT
+#endif // TSIPARTITIONEDASOUTPUT
 
     // contact
     if(StructureField().ContactManager() != null)
@@ -305,6 +305,20 @@ void TSI::Partitioned::TimeLoop()
   // ==================================================================
 
 }  // TSI::Partitioned::TimeLoop()
+
+
+/*----------------------------------------------------------------------*
+ | initialise internal variables needed as guess             dano 02/12 |
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::InitInternalVariables()
+{
+  // get an idea of the temperatures (like in partitioned FSI)
+  tempn_ = ThermoField().ExtractTempn();
+  // get an idea of the displacements and velocities
+  dispn_ = StructureField().ExtractDispn();
+  veln_ = StructureField().ExtractVeln();
+
+}  // InitInternalVariables()
 
 
 /*----------------------------------------------------------------------*

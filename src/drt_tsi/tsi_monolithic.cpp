@@ -480,29 +480,29 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
     // unknown incremental vector x
     ExtractFieldVectors(x,sx,tx);
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
     cout << "Recent thermal increment DT_n+1^i\n" << *(tx) << endl;
     cout << "Recent structural increment Dd_n+1^i\n" << *(sx) << endl;
 
     cout << "Until here only old solution of Newton step. No update applied\n" << *(ThermoField().Tempnp()) << endl;
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
   }
   // else(x=Teuchos::null): initialize the system
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
   cout << "Tempnp vor UpdateNewton\n" << *(ThermoField().Tempnp()) << endl;
   printf("Tempnp vor UpdateNewton ThermoField().ExtractTempnp[0] %12.8f\n",(*ThermoField().ExtractTempnp())[0]);
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
 
   // Newton update of the thermo field
   // update temperature before passed to the structural field
   //   UpdateIterIncrementally(tx),
   ThermoField().UpdateNewton(tx);
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
   cout << "Tempnp nach UpdateNewton\n" << *(ThermoField().Tempnp()) << endl;
   printf("Tempnp nach UpdateNewton ThermoField().ExtractTempnp[0] %12.8f\n",(*ThermoField().ExtractTempnp())[0]);
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
 
   // call all elements and assemble rhs and matrices
   /// structural field
@@ -519,13 +519,13 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   cout << Comm().MyPID() << " nach ApplyTemp!!" << endl;
 #endif // TSIPARALLEL
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
 //    Teuchos::RCP<Epetra_Vector> tempera = rcp(new Epetra_Vector(ThermoField().Tempn()->Map(),true));
 //    if (ThermoField().Tempnp() != Teuchos::null)
 //      tempera->Update(1.0, *ThermoField().Tempnp(), 0.0);
 //    StructureField().ApplyTemperatures(tempera);
 //    StructureField().ApplyTemperatures(ThermoField().Tempn());
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
 
   // Monolithic TSI accesses the linearised structure problem:
   //   UpdaterIterIncrementally(sx),
@@ -539,9 +539,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
 #endif
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
   cout << "STR fres_" << *StructureField().RHS() << endl;
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
 
   /// thermal field
 
@@ -564,10 +564,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   ThermoField().ApplyStructVariables(StructureField().Dispnp(),veln_);
 #endif
 
-#ifdef TSIASOUTPUT
+#ifdef TSIMONOLITHASOUTPUT
   cout << "d_n+1 inserted in THR field\n" << *(StructureField().Dispnp()) << endl;
   cout << "v_n+1\n" << *veln_ << endl;
-#endif // TSIASOUTPUT
+#endif // TSIMONOLITHASOUTPUT
 
   // monolithic TSI accesses the linearised thermo problem
   //   EvaluateRhsTangResidual() and

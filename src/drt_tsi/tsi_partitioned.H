@@ -63,6 +63,9 @@ namespace TSI
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop();
 
+    /// initialise internal variables needed as guess for the partitioned TSI algorithm
+    void InitInternalVariables();
+
     /// time loop for TSI algorithm with one-way coupling
     void TimeLoopSequStagg();
 
