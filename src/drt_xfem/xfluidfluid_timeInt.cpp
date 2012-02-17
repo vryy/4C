@@ -22,6 +22,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_cut/cut_position.H"
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_element.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_cut/cut_volumecell.H"
 
@@ -231,10 +232,12 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
                                                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                                                             Teuchos::RCP<Epetra_Vector>           aledispn)
 {
-  if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj)
+  if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved)
     SetNewBgStatevectorFullProjection(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
   else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues)
     SetNewBgStatevectorKeepGhostValues(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
+  else
+    dserror("xfem time integration approach unknown!");
 }
 // -------------------------------------------------------------------
 // Always do the projection from embedded fluid. Also for the enriched
