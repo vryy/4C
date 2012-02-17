@@ -36,10 +36,6 @@ Maintainer: Caroline Danowski
 
 #include <Teuchos_TimeMonitor.hpp>
 
-//#if 0
-//#include "../drt_io/io_gmsh.H"
-//#endif
-
 /*----------------------------------------------------------------------*
  | general problem data                                     m.gee 06/01 |
  | global variable GENPROB genprob is defined in global_control.c       |
@@ -74,66 +70,50 @@ void tsi_dyn_drt()
   const INPAR::TSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
+  // create an empty TSI::Algorithm instance
+  Teuchos::RCP<TSI::Algorithm> tsi = Teuchos::null;
+
   // choose algorithm depending on solution type
   switch (coupling)
   {
-  case INPAR::TSI::Monolithic:
+  case INPAR::TSI::Monolithic :
   {
     // create an TSI::Monolithic instance
-    Teuchos::RCP<TSI::Monolithic> tsi = Teuchos::rcp(new TSI::Monolithic(comm,sdynparams));
-
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      tsi->ReadRestart(genprob.restart);
-    }
-
-    // now do the coupling setup and create the combined dofmap
-    tsi->SetupSystem();
-
-    // solve the whole tsi problem
-    tsi->TimeLoop();
-
-    // summarize the performance measurements
-    Teuchos::TimeMonitor::summarize();
-
-    // perform the result test
-    DRT::Problem::Instance()->AddFieldTest(tsi->StructureField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField().CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
+    tsi = Teuchos::rcp(new TSI::Monolithic(comm,sdynparams));
     break;
-
-  }  // monolithic case
-  case INPAR::TSI::OneWay:
-  case INPAR::TSI::SequStagg:
-  case INPAR::TSI::IterStagg:
+  }
+  case INPAR::TSI::OneWay :
+  case INPAR::TSI::SequStagg :
+  case INPAR::TSI::IterStagg :
   {
     // Any partitioned algorithm. Stable of working horses.
     // create an TSI::Algorithm instance
-    Teuchos::RCP<TSI::Partitioned> tsi = Teuchos::rcp(new TSI::Partitioned(comm));
-
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      tsi->ReadRestart(genprob.restart);
-    }
-
-    // solve the whole tsi problem
-    tsi->TimeLoop();
-
-    // summarize the performance measurements
-    Teuchos::TimeMonitor::summarize();
-
-    // perform the result test
-    DRT::Problem::Instance()->AddFieldTest(tsi->StructureField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField().CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
+    tsi = Teuchos::rcp(new TSI::Partitioned(comm));
     break;
-
-  }  // partitioned case
+  }
   default:
      dserror("Unknown solutiontype for thermo-structure interaction: %d",coupling);
   }  // end switch
+
+  if (genprob.restart)
+  {
+    // read the restart information, set vectors and variables
+    tsi->ReadRestart(genprob.restart);
+  }
+
+  // now do the coupling setup and create the combined dofmap
+  tsi->SetupSystem();
+
+  // solve the whole tsi problem
+  tsi->TimeLoop();
+
+  // summarize the performance measurements
+  Teuchos::TimeMonitor::summarize();
+
+  // perform the result test
+  DRT::Problem::Instance()->AddFieldTest(tsi->StructureField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField().CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(comm);
 
   return;
 } // tsi_dyn_drt()

@@ -68,6 +68,9 @@ namespace TSI
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
+    /// initialise TSI system
+    virtual void SetupSystem() = 0;
+
     //! read restart data
     virtual void ReadRestart(
       int step  //!< step number where the calculation is continued

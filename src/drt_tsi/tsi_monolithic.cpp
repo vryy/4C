@@ -760,9 +760,9 @@ void TSI::Monolithic::SetupSystemMatrix()
            );
 
   // call the element and calculate the matrix block
-#ifndef MonTSIwithoutSTR
+#if !defined(MonTSIwithoutSTR) && !defined(COUPLEINITTEMPERATURE)
   ApplyThrCouplMatrix(k_ts);
-#endif //  MonTSIwithoutSTR
+#endif
 
   // modify towards contact
   ApplyThermContact(k_ts);

@@ -30,10 +30,10 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
  *----------------------------------------------------------------------*/
-/// TSI: Thermo-Structure Interaction
+//! TSI: Thermo-Structure Interaction
 namespace TSI
 {
-  /// TSI algorithm base
+  //! TSI algorithm base
   //!
   //!
   //!  Base class of TSI algorithms. Derives from StructureBaseAlgorithm and
@@ -54,30 +54,30 @@ namespace TSI
   {
   public:
 
-    /// create using a Epetra_Comm
+    //! create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm);
 
-    /// virtual destructor to support polymorph destruction
+    //! virtual destructor to support polymorph destruction
     virtual ~Partitioned();
 
-    /// outer level time loop (to be implemented by deriving classes)
+    //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop();
 
-    /// initialise internal variables needed as guess for the partitioned TSI algorithm
-    void InitInternalVariables();
+    //! initialise internal variables needed as guess for the partitioned TSI algorithm
+    virtual void SetupSystem();
 
-    /// time loop for TSI algorithm with one-way coupling
+    //! time loop for TSI algorithm with one-way coupling
     void TimeLoopSequStagg();
 
-    /// time loop for TSI algorithm with one-way coupling
+    //! time loop for TSI algorithm with one-way coupling
     void TimeLoopOneWay();
 
-    /// time loop for TSI algorithm with iteration between fields (full coupling)
+    //! time loop for TSI algorithm with iteration between fields (full coupling)
     void TimeLoopFull();
 
-    /// read restart data
+    //! read restart data
     virtual void ReadRestart(
-      int step  ///< step number where the calculation is continued
+      int step  //!< step number where the calculation is continued
       );
 
 
@@ -92,51 +92,56 @@ namespace TSI
 
     //! @name Solve
 
-    /// solve temperature equations for current time step
+    //! solve temperature equations for current time step
     void DoThermoStep();
 
-    /// solve displacement equations for current time step
+    //! solve displacement equations for current time step
     void DoStructureStep();
 
     // two-way coupling (iterative staggered)
 
-    /// outer iteration loop
+    //! outer iteration loop
     void OuterIterationLoop();
 
     //@}
 
-    /// convergence check for iterative staggered TSI solver
-    bool ConvergenceCheck(int itnum, int itmax, double ittol);
+    //! convergence check for iterative staggered TSI solver
+    bool ConvergenceCheck(
+      int itnum,  //!< index of current iteration
+      int itmax,  //!< maximal number of iterations
+      double ittol  //!< iteration tolerance
+      );
 
-    /// maximum iteration steps
+    //! maximum iteration steps
     int itmax_;
-    /// convergence tolerance
+    //! convergence tolerance
     double ittol_;
 
-    /// temperature increment of the outer loop
+    //! temperature increment of the outer loop
     Teuchos::RCP<Epetra_Vector> tempincnp_;
-    /// displacement increment of the outer loop
+    //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
   private:
 
-    /// displacements from time step begin (t_n)
-    Teuchos::RCP<Epetra_Vector> dispn_;
-    /// velocities from time step begin (t_n)
+    //! displacements from time step (t_n) or (t_n+1)
+    Teuchos::RCP<Epetra_Vector> disp_;
+    //! velocities from time step begin (t_n)
     Teuchos::RCP<Epetra_Vector> veln_;
-    /// velocities from time step begin (t_n+1)
+    //! velocities from time step begin (t_n+1)
     Teuchos::RCP<Epetra_Vector> velnp_;
 
-    /// temperature from time step begin (t_n)
-    Teuchos::RCP<Epetra_Vector> tempn_;
+    //! temperature at time step (t_n) or (t_n+1)
+    Teuchos::RCP<Epetra_Vector> temp_;
 
-    /// we couple based on displacements
+    //! we couple based on displacements
     bool displacementcoupling_;
-    /// quasi-static solution of the mechancial equation
+    //! quasi-static solution of the mechancial equation
     bool quasistatic_;
 
   };  // Partitioned
 }  // namespace TSI
+
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_ALGORITHM_H
