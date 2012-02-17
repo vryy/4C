@@ -126,7 +126,7 @@ namespace ADAPTER {
     /// Set time step size \f$\Delta t_n\f$
     void SetTimeStepSize(double timestepsize){structure_->SetTimeStepSize(timestepsize);}
 
-    /// Set time step size \f$\Delta t_n\f$ and timen_//added gh
+    /// Set time step size \f$\Delta t_n\f$ and timen_
     void SetInitialTimeStepAndTime(double timestepsize){structure_->SetInitialTimeStepAndTime(timestepsize);}
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])

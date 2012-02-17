@@ -19,18 +19,7 @@ Maintainer: Thomas Kloeppel
 #define FSI_PSEUDOFSISTRUCTURE_H
 
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <AztecOO.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Import.h>
-#include <Epetra_LinearProblem.h>
-#include <Epetra_Map.h>
-#include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>
-
-#include <vector>
 
 #include "fsi_algorithm.H"
 

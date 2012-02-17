@@ -21,10 +21,20 @@ Maintainer: Caroline Danowski
 #ifndef TSI_PARTITIONED_H
 #define TSI_PARTITIONED_H
 
+
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
+
+
+/*----------------------------------------------------------------------*
+ | forward declarations                                      dano 02/12 |
+ *----------------------------------------------------------------------*/
+namespace FS3I
+{
+  class AeroTFSI;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -52,6 +62,7 @@ namespace TSI
   //!  \date 02/08
   class Partitioned : public Algorithm
   {
+    friend class FS3I::AeroTFSI;
   public:
 
     //! create using a Epetra_Comm

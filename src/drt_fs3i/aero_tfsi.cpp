@@ -24,6 +24,7 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #include "aero_tfsi.H"
 #include "../drt_tsi/tsi_monolithic.H"
+#include "../drt_tsi/tsi_partitioned.H"
 #include "../drt_tsi/tsi_utils.H"
 #include "aero_tfsi_serv.H"
 
@@ -36,9 +37,13 @@ FS3I::AeroTFSI::AeroTFSI(
   const Epetra_Comm& lcomm
   ) :
   FS3I_Base(),
-  lcomm_(lcomm)
+  lcomm_(lcomm),
+  tsi_(Teuchos::null)
 {
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  // decide if monolithic or partitioned coupling
+  coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // check if INCA is called first when starting the coupled simulation
   int worldrank = -1;
@@ -67,8 +72,27 @@ FS3I::AeroTFSI::AeroTFSI(
   // setup of the discretizations, including clone strategy
   TSI::UTILS::SetupTSI(lcomm);
 
-  // create an TSI::Monolithic instance
-  tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
+  switch(coupling_)
+  {
+  case INPAR::TSI::Monolithic:
+  {
+    // create an TSI::Monolithic instance
+    const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+    tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
+    break;
+  }
+  case INPAR::TSI::IterStagg:
+  {
+    // create an TSI::Partitioned instance
+    tsi_ = Teuchos::rcp(new TSI::Partitioned(lcomm));
+    break;
+  }
+  default:
+  {
+    dserror("For TFSI coupling only Monolithic or IterStagg is available.");
+    break;
+  }
+  }
 
   // setup of the helper class
   aerocoupling_ = rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField().Discretization(),
@@ -134,8 +158,8 @@ void FS3I::AeroTFSI::Timeloop()
     // counter and print header; predict solution of both fields
     tsi_->PrepareTimeStep();
 
-    // TSI system is solved with a Newton-Raphson iteration
-    tsi_->NewtonFull();
+    // TSI time step is solved
+    SolveTSIstep();
 
     // calculate stresses, strains, energies
     tsi_->PrepareOutput();
@@ -182,7 +206,7 @@ void FS3I::AeroTFSI::Timeloop()
 
 
 /*----------------------------------------------------------------------*
- | setup of the monolithic TSI system                       ghamm 12/11 |
+ | setup of the TSI system                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::SetupSystem()
 {
@@ -202,6 +226,34 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
 {
   tsi_->StructureField().ApplyInterfaceForces(iforce);
   tsi_->ThermoField().ApplyInterfaceForces(ithermoload);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Solve the current TSI time step                         ghamm 02/12  |
+ *----------------------------------------------------------------------*/
+void FS3I::AeroTFSI::SolveTSIstep()
+{
+  switch(coupling_)
+  {
+  case INPAR::TSI::Monolithic:
+  {
+    rcp_dynamic_cast<TSI::Monolithic>(tsi_,true)->NewtonFull();
+    break;
+  }
+  case INPAR::TSI::IterStagg:
+  {
+    rcp_dynamic_cast<TSI::Partitioned>(tsi_,true)->TimeLoopFull();
+    break;
+  }
+  default:
+  {
+    dserror("For TFSI coupling only Monolithic or IterStagg is available.");
+    break;
+  }
+  }
 
   return;
 }

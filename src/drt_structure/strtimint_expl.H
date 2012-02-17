@@ -25,6 +25,11 @@ Maintainer: Alexander Popp
 namespace STR
 {
 
+  namespace AUX
+  {
+    class MapExtractor;
+  }
+
   /*====================================================================*/
   /*!
    * \brief Front-end for structural dynamics
@@ -141,6 +146,27 @@ namespace STR
 
     //@}
 
+    //! @name Fluid-structure-interaction specific methods
+    //@{
+
+    //! introduce (robin) fsi surface extractor object
+    //!
+    //! Introduce the FSI surface to the fluid algorithm. This way special case
+    //! algorithms (robin coupling) can work on the surface.
+    void SetSurfaceFSI
+    (
+      const AUX::MapExtractor* fsisurface  //!< the FSI surface
+    );
+
+    //! Set forces due to interface with fluid
+    void SetForceInterface
+    (
+      const AUX::MapExtractor& extractor,
+      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+    );
+
+    //@}
+
     //! @name System vectors
     //@{
 
@@ -167,7 +193,17 @@ namespace STR
 
   protected:
 
-    // currently nothing
+    //! @name FSI stuff
+    //@{
+    const AUX::MapExtractor* fsisurface_;  //!< surface of structural
+                                             //!< which is in contact
+                                             //!< with fluid
+    //@}
+
+    //! @name Interface stuff
+    //@{
+    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
+    //@}
 
   };
 

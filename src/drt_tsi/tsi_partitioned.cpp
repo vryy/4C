@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "tsi_partitioned.H"
+#include "tsi_defines.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_contact/contact_abstract_strategy.H"
@@ -573,6 +574,7 @@ void TSI::Partitioned::OuterIterationLoop()
   bool stopnonliniter = false;
 
   // outer iteration loop starts
+#ifndef TFSI
   if (Comm().MyPID()==0)
   {
     cout<<"\n";
@@ -582,6 +584,7 @@ void TSI::Partitioned::OuterIterationLoop()
       ThermoField().GetTimeNumStep());
     cout<<"**************************************************************\n";
   }
+#endif
 
   // structural predictor
   if (displacementcoupling_) // (temperature change due to deformation)
@@ -753,6 +756,7 @@ void TSI::Partitioned::OuterIterationLoop()
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::DoStructureStep()
 {
+#ifndef TFSI
   if (Comm().MyPID()==0)
   {
     cout<<"\n";
@@ -760,6 +764,7 @@ void TSI::Partitioned::DoStructureStep()
     cout<<"    STRUCTURE SOLVER    \n";
     cout<<"************************\n";
   }
+#endif
 
   /// solve structural system
   // do the nonlinear solve for the time step. All boundary conditions have
@@ -777,6 +782,7 @@ void TSI::Partitioned::DoStructureStep()
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::DoThermoStep()
 {
+#ifndef TFSI
   if (Comm().MyPID()==0)
   {
     cout<<"\n";
@@ -784,6 +790,7 @@ void TSI::Partitioned::DoThermoStep()
     cout<<"    THERMO SOLVER    \n";
     cout<<"*********************\n";
   }
+#endif
 
   /// solve thermal system
   // do the solve for the time step. All boundary conditions have
@@ -836,6 +843,7 @@ bool TSI::Partitioned::ConvergenceCheck(
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
+#ifndef TFSI
   if (Comm().MyPID()==0)
   {
     cout<<"\n";
@@ -849,18 +857,21 @@ bool TSI::Partitioned::ConvergenceCheck(
     printf("\n");
     printf("+--------------+------------------------+--------------------+--------------------+\n");
   }
+#endif
 
   // converged
   if ((tempincnorm_L2/tempnorm_L2 <= ittol) &&
       (dispincnorm_L2/dispnorm_L2 <= ittol))
   {
     stopnonliniter = true;
+#ifndef TFSI
     if (Comm().MyPID()==0)
     {
       printf("\n");
       printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
       printf("+--------------+------------------------+--------------------+--------------------+\n");
     }
+#endif
   }
 
   // warn if itemax is reached without convergence, but proceed to next
@@ -870,6 +881,7 @@ bool TSI::Partitioned::ConvergenceCheck(
      )
   {
     stopnonliniter = true;
+#ifndef TFSI
     if ((Comm().MyPID()==0))
     {
       printf("|     >>>>>> not converged in itemax steps!                                       |\n");
@@ -877,6 +889,7 @@ bool TSI::Partitioned::ConvergenceCheck(
       printf("\n");
       printf("\n");
     }
+#endif
   }
 
   return stopnonliniter;

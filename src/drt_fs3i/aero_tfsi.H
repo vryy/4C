@@ -6,9 +6,9 @@
        based on communication with MPI. A loosely coupled approach is used.
        The time step starts with applying the time step from INCA to BACI.
        Then, INCA is solved and the interface loads (forces and heat fluxes)
-       are transferred to BACI. After applying these data, the monolithic
+       are transferred to BACI. After applying these data, the
        TSI system is solved. The time step is concluded by sending the resulting
-       interface displacements and temperatures are send to INCA.
+       interface displacements and temperatures to INCA.
 
 <pre>
 Maintainer: Georg Hammerl
@@ -37,12 +37,13 @@ Maintainer: Georg Hammerl
 #include <vector>
 #include <mpi.h>
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_tsi.H"
 
 
-// forward declarations
+// forward declaration
 namespace TSI
 {
-  class Monolithic;
+  class Algorithm;
 }
 
 
@@ -61,11 +62,18 @@ namespace FS3I
   class AeroTFSI : public FS3I_Base
   {
   public:
+
     AeroTFSI(
     const Epetra_Comm& lcomm  ///< local epetra communicator
     );
 
     virtual ~AeroTFSI(){};
+
+    /// read restart
+    virtual void ReadRestart();
+
+    /// setup of the tsi system, mainly the two underlying discretizations
+    virtual void SetupSystem();
 
     /// outer level TFSI time loop
     virtual void Timeloop();
@@ -75,11 +83,8 @@ namespace FS3I
     const Epetra_Comm& comm  ///< local epetra communicator
     );
 
-    /// read restart
-    virtual void ReadRestart();
 
-    /// setup of the tsi system, mainly the two underlying discretizations
-    virtual void SetupSystem();
+  protected:
 
     /// get time step from INCA
     void GetTimeStep(
@@ -119,27 +124,26 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> ithermoload  ///< interface thermal loads due to the fluid
     );
 
+    /// call the solver for the current TSI time step
+    void SolveTSIstep();
 
-  protected:
 
-  /// leading processor in BACI that communicates with INCA in local communicator
-  int localBACIleader_;
+    int localBACIleader_;  ///< leading processor in BACI that communicates with INCA in local communicator
 
-  /// leading processor in INCA that communicates with BACI
-  int INCAleader_;
+    int INCAleader_;  ///< leading processor in INCA that communicates with BACI
 
-  /// intercommunicator between INCA and BACI for point to point communication
-  MPI_Comm intercomm_;
+    MPI_Comm intercomm_;  ///< intercommunicator between INCA and BACI for point to point communication
 
-  /// local communicator in BACI
-  const Epetra_Comm& lcomm_;
+    const Epetra_Comm& lcomm_;  ///< local communicator in BACI
 
 
   private:
 
-  Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
+    Teuchos::RCP<TSI::Algorithm> tsi_;  ///< Monolithic TSI system that is calculated
 
-  Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
+    INPAR::TSI::SolutionSchemeOverFields coupling_;  ///< Coupling type of the TSI system
+
+    Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
 
   }; // AeroTFSI
 

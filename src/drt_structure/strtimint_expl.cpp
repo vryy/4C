@@ -20,6 +20,7 @@ Maintainer: Alexander Popp
 
 #include "strtimint.H"
 #include "strtimint_expl.H"
+#include "stru_aux.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
@@ -47,7 +48,9 @@ STR::TimIntExpl::TimIntExpl
     solver,
     contactsolver,
     output
-  )
+  ),
+  fsisurface_(NULL),
+  fifc_(Teuchos::null)
 {
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
@@ -62,6 +65,9 @@ STR::TimIntExpl::TimIntExpl
       dserror("Explicit TIS can only handle penalty contact / meshtying");
   }
 
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
+
   // cannot handle rotated DOFs
   if (locsysman_ != Teuchos::null)
     dserror("Explicit TIS cannot handle local co-ordinate systems");
@@ -69,6 +75,31 @@ STR::TimIntExpl::TimIntExpl
   // get away
   return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/* introduce (robin) fsi surface extractor object */
+void STR::TimIntExpl::SetSurfaceFSI
+(
+  const STR::AUX::MapExtractor* fsisurface  //!< the FSI surface
+)
+{
+  fsisurface_ = fsisurface;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Set forces due to interface with fluid */
+void STR::TimIntExpl::SetForceInterface
+(
+  const STR::AUX::MapExtractor& extractor,
+  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+)
+{
+  fifc_->PutScalar(0.0);
+  extractor.AddFSICondVector(iforce, fifc_);
+}
+
 
 /*----------------------------------------------------------------------*/
 /* print step summary */

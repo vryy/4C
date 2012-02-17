@@ -81,6 +81,12 @@ void THR::TimIntExplEuler::IntegrateStep()
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, tempn_, fextn_);
 
+  // interface forces to external forces
+  if (!is_null(tfsisurface_))
+  {
+    fextn_->Update(1.0, *fifc_, 1.0);
+  }
+
   // TIMING
   //double dtcpu = timer_->WallTime();
 

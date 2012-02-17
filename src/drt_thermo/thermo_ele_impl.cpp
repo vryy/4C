@@ -1197,7 +1197,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   LINALG::Matrix<6,1> ctemp(true);
 
 #ifdef COUPLEINITTEMPERATURE
-  double thetainit;
+  double thetainit = 0.0;
 #endif // COUPLEINITTEMPERATURE
 
   // access the structure discretization, needed later for calling the solid

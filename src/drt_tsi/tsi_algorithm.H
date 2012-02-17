@@ -31,6 +31,15 @@ Maintainer: Caroline Danowski
 
 
 /*----------------------------------------------------------------------*
+ | forward declarations                                      dano 02/12 |
+ *----------------------------------------------------------------------*/
+namespace FS3I
+{
+  class AeroTFSI;
+}
+
+
+/*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
  *----------------------------------------------------------------------*/
 //! TSI: Thermo-Structure Interaction
@@ -57,6 +66,8 @@ namespace TSI
                     public ADAPTER::StructureBaseAlgorithm,
                     public ADAPTER::ThermoBaseAlgorithm
   {
+    friend class FS3I::AeroTFSI;
+
   public:
 
     //! create using a Epetra_Comm

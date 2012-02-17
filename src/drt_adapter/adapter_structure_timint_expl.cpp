@@ -56,8 +56,8 @@ ADAPTER::StructureTimIntExpl::StructureTimIntExpl(
     dserror("Failed to create structural integrator");
 
   // set-up FSI interface
-  //interface_.Setup(*discret_, *discret_->DofRowMap());
-  //structure_->SetSurfaceFSI(&interface_);
+  interface_.Setup(*discret_, *discret_->DofRowMap());
+  structure_->SetSurfaceFSI(&interface_);
 }
 
 
@@ -298,16 +298,18 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::RelaxationSolve(
 /* extract interface displacements D_{n} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractInterfaceDispn()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> idis
+    = interface_.ExtractFSICondVector(structure_->Dis());
+  return idis;
 }
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractInterfaceDispnp()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> idis
+    = interface_.ExtractFSICondVector(structure_->DisNew());
+  return idis;
 }
 
 /*----------------------------------------------------------------------*/
@@ -333,7 +335,10 @@ void ADAPTER::StructureTimIntExpl::ApplyInterfaceForces(
   Teuchos::RCP<Epetra_Vector> iforce
 )
 {
-  dserror("not implemented");
+  // This will add the provided interface force onto the residual forces
+  // The sign convention of the interface force is external-force-like.
+  // there is no need for a predictor for explicit schemes
+  structure_->SetForceInterface(interface_, iforce);
 }
 
 
