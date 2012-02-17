@@ -240,6 +240,7 @@ public:
       // in case of TSI/TFSI_Aero: nds=1 (second discretization) temperature: 1Dof/Node
       case prb_tsi:
       case prb_tfsi_aero:
+      case prb_thermo_fsi:
         return 1;
         break;
       // in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
