@@ -46,7 +46,8 @@ using boost::math::normal_distribution;
 /* standard constructor */
 GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret)
 {
-
+  init_psd_=false;
+   myrank_ = discret->Comm().MyPID();
   // Init the necessesary stuff
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   // Dimension
@@ -95,7 +96,8 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       marginal_pdf_=lognormal;
       // Calculate mean of lognormal distribution based mu and sigma
       distribution_params_.push_back(exp(distribution_params_[0]+0.5*pow(distribution_params_[1],2)));
-      cout << "Distribution parameter of lognormal distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << endl;
+      if (myrank_ == 0)
+        cout << "Distribution parameter of lognormal distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << endl;
       break;
     default:
       dserror("Unknown Marginal pdf");
@@ -114,37 +116,37 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
 
 
   dkappa_ = 2*pi_/(mlmcp.get<double>("PERIODICITY"));
-  cout << "dkappa " << dkappa_ << endl;
+  if (myrank_ == 0)
+    cout << "dkappa " << dkappa_ << endl;
   //dserror("stop herer");
   //dkappa_ = 2*pi_/N_;
 
-   switch(dim_){
-   case 3:
-     Phi_0_.reserve( N_ * N_ * N_ );
-     Phi_1_.reserve( N_ * N_ * N_ );
-     Phi_2_.reserve( N_ * N_ * N_ );
-     Phi_3_.reserve( N_ * N_ * N_ );
-     break;
-   case 2:
-        Phi_0_.reserve( N_ * N_ );
-        Phi_1_.reserve( N_ * N_ );
-        break;
-   default:
-     dserror("Dimension of random field must be 2 or 3, fix your input file");
-     break;
-   }
-   ComputeBoundingBox(discret);
-   CreateNewPhaseAngles(seed_);
-   CalcDiscretePSD();
-   SimGaussRandomFieldFFT();
-   TranslateToNonGaussian();
+  switch(dim_){
+  case 3:
+    Phi_0_.reserve( N_ * N_ * N_ );
+    Phi_1_.reserve( N_ * N_ * N_ );
+    Phi_2_.reserve( N_ * N_ * N_ );
+    Phi_3_.reserve( N_ * N_ * N_ );
+    break;
+  case 2:
+    Phi_0_.reserve( N_ * N_ );
+    Phi_1_.reserve( N_ * N_ );
+    break;
+  default:
+    dserror("Dimension of random field must be 2 or 3, fix your input file");
+    break;
+  }
+  ComputeBoundingBox(discret);
+  CreateNewPhaseAngles(seed_);
+  CalcDiscretePSD();
+  SimGaussRandomFieldFFT();
+  TranslateToNonGaussian();
 }
 void GenRandomField::CreateNewSample(unsigned int seed)
 {
   CreateNewPhaseAngles(seed);
   SimGaussRandomFieldFFT();
   TranslateToNonGaussian();
-
 }
 
 
@@ -204,32 +206,31 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
 // compute power spectral density
 void GenRandomField::CalcDiscretePSD()
 {
-    // just compute PSD
-    for (int j=0;j<N_;j++)
-      {
-        for (int k=0;k<N_;k++)
-        {
-          discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2)))));
-        }
-      }
+  // just compute PSD
+  for (int j=0;j<N_;j++)
+  {
+    for (int k=0;k<N_;k++)
+    {
+      discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2)))));
+    }
+  }
 
-  //}
   if(marginal_pdf_!=normal)
   {
     // compute underlying gaussian distribution based on shields2011
     SpectralMatching();
-
   }
   else
   {
-    cout << " Nothing to do marginal pdf gaussian " << endl;
+    if (myrank_ == 0)
+      cout << " Nothing to do marginal pdf gaussian " << endl;
   }
 }
 
 // HERE comes the experimental FFT Stuff
 void GenRandomField::SimGaussRandomFieldFFT()
 {
-// Lets see if we can speed up things with FFTW
+  // Lets see if we can speed up things with FFTW
   //int M =N_*8; // Define number of points
   // double for loops to compute coefficients
   double A; // store some stuff
@@ -265,7 +266,7 @@ void GenRandomField::SimGaussRandomFieldFFT()
         imag(b2[k+M_*j])= A*sqrt(2)*sin(Phi_1_[k+N_*j]);
         // last 4 lines was M_ before
       }
-     }
+    }
   }
 
 
@@ -321,28 +322,28 @@ void GenRandomField::SimGaussRandomFieldFFT()
   fftw_execute(ifft_of_rows2);
   complex<double> scaling (M_,M_);
   // transpose d1
-   for (int k=0;k<M_*M_;k++)
-   {
-     d2[k]=conj(d2[k]);
-     d1[k]=d1[k]+d2[k];
-   }
+  for (int k=0;k<M_*M_;k++)
+  {
+    d2[k]=conj(d2[k]);
+    d1[k]=d1[k]+d2[k];
+  }
 
 
-   fftw_execute(ifft_of_collums);
+  fftw_execute(ifft_of_collums);
 
-   // move values into class variable
-   for(int i=0;i<M_*M_;i++)
-   {
-     values_[i]=real(d2[i]);
-   }
+  // move values into class variable
+  for(int i=0;i<M_*M_;i++)
+  {
+    values_[i]=real(d2[i]);
+  }
 
-   // free memory
-   delete b1;
-   delete b2;
-   delete d1;
-   delete d2;
-   fftw_destroy_plan(ifft_of_rows);
-   fftw_destroy_plan(ifft_of_collums);
+  // free memory
+  delete b1;
+  delete b2;
+  delete d1;
+  delete d2;
+  fftw_destroy_plan(ifft_of_rows);
+  fftw_destroy_plan(ifft_of_collums);
 }
 void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
@@ -366,34 +367,33 @@ void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discre
   bb_min_.push_back(10.0e19);
   bb_min_.push_back(10.0e19);
   {
-      for (int lid = 0; lid <discret->NumMyColNodes(); ++lid)
-      {
-        const DRT::Node* node = discret->lColNode(lid);
-        // check if greater than maxrbb
-        if (maxrbb[0]<node->X()[0])
-          maxrbb[0]=node->X()[0];
-        if (maxrbb[1]<node->X()[1])
-          maxrbb[1]=node->X()[1];
-        if (maxrbb[2]<node->X()[2])
-           maxrbb[2]=node->X()[2];
-        // check if smaller than minrbb
-        if (minrbb[0]>node->X()[0])
-          minrbb[0]=node->X()[0];
-        if (minrbb[1]>node->X()[1])
-          minrbb[1]=node->X()[1];
-        if (minrbb[2]>node->X()[2])
-          minrbb[2]=node->X()[2];
-      }
-
-
+    for (int lid = 0; lid <discret->NumMyColNodes(); ++lid)
+    {
+      const DRT::Node* node = discret->lColNode(lid);
+      // check if greater than maxrbb
+      if (maxrbb[0]<node->X()[0])
+        maxrbb[0]=node->X()[0];
+      if (maxrbb[1]<node->X()[1])
+        maxrbb[1]=node->X()[1];
+      if (maxrbb[2]<node->X()[2])
+        maxrbb[2]=node->X()[2];
+      // check if smaller than minrbb
+      if (minrbb[0]>node->X()[0])
+        minrbb[0]=node->X()[0];
+      if (minrbb[1]>node->X()[1])
+        minrbb[1]=node->X()[1];
+      if (minrbb[2]>node->X()[2])
+        minrbb[2]=node->X()[2];
+    }
   }
 
   discret->Comm().MaxAll(&maxrbb[0],&bb_max_[0],3);
   discret->Comm().MinAll(&minrbb[0],&bb_min_[0],3);
 
+
   discret->Comm().Barrier();
-  const int myrank = discret->Comm().MyPID();
-  if (myrank == 0)
+
+  if (myrank_ == 0)
   {
     cout << "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << endl;
     cout << "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << endl;
@@ -409,10 +409,11 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
   // Compute indices
   index_x=int(floor((location[0]-bb_min_[0])/dx_));
   // HACH SET z to y
-  cout << "hack in use" << endl;
+  if (myrank_ == 0)
+    cout << "hack in use" << endl;
   index_y=int(floor((location[1]-bb_min_[2])/dx_));
   index_z=int(floor((location[2]-bb_min_[2])/dx_));
-  if (writetofile)
+  if (writetofile && myrank_==0 )
   {
     ofstream File;
     File.open("RFatPoint.txt",ios::app);
@@ -717,7 +718,8 @@ void GenRandomField::SpectralMatching()
       error_denominator+=pow((PSD_ng_target[g]),2);
     }
     psd_error=100*sqrt(error_numerator/error_denominator);
-    cout<< "Error to target PSD: " << psd_error << endl;
+    if (myrank_ == 0)
+      cout<< "Error to target PSD: " << psd_error << endl;
     // increase counter
     i++;
   }
@@ -832,13 +834,16 @@ double GenRandomField::Testfunction(double argument_x ,double argument_y, double
 // Write Random Field to file
 void GenRandomField::WriteRandomFieldToFile()
 {
-  ofstream File;
-  File.open("RandomField.txt",ios::out);
-  for(int i=0;i<M_*M_;i++)
+  if (myrank_ == 0)
   {
-    File << values_[i]<< endl;
+    ofstream File;
+    File.open("RandomField.txt",ios::out);
+    for(int i=0;i<M_*M_;i++)
+    {
+      File << values_[i]<< endl;
+    }
+    File.close();
   }
-  File.close();
 }
 
 #endif

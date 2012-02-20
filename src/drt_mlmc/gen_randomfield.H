@@ -48,6 +48,10 @@ Maintainer: Jonas Biehler
 class GenRandomField {
 
 private:
+  // do we need to perform spectral matching
+  bool init_psd_;
+  // which proc am i on
+   int myrank_;
   // variables of random field
   int dim_; // dimension of stochastic field
   enum PROBABILITY_DISTRIBUTIONS
