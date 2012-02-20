@@ -188,7 +188,9 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
     else
     {
       // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
-      cout << "curr_avg_sca_ or scavec is Teuchos::null" << endl;
+      const Epetra_Comm& comm = (discret_ != Teuchos::null)?(discret_->Comm()):(standarddofset_->DofRowMap()->Comm());
+      if (comm.MyPID() == 0)
+        cout << "curr_avg_sca_ or scavec is Teuchos::null" << endl;
     }
 
     if ((curr_avg_scatra_ != Teuchos::null) and (scatravec != Teuchos::null))

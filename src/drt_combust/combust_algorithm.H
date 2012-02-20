@@ -177,6 +177,8 @@ namespace COMBUST
     bool reinitialization_accepted_;
     /// volume correction after reinitialization
     bool volcorrection_;
+    /// the evaluation time ratio that triggers a redistribution
+    double evaltimeratio_;
 
     /// switch for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
     const bool extract_interface_vel_;

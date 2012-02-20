@@ -215,7 +215,9 @@ void XFEM::syncNodalDofs(
     comm.Barrier();
   }   // loop over procs
 
+#ifdef DEBUG
   cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
+#endif
 
   XFEM::updateNodalDofMap(ih, nodalDofSet, new_dofkeyset);
 

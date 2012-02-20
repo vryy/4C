@@ -205,6 +205,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
     }
   }
 
+#ifdef DEBUG
   // screen output
   std::cout << " Enrichments available:";// << endl;
   for (std::set<XFEM::Enrichment>::const_iterator enr =
@@ -213,6 +214,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
     std::cout << " " << enr->toString();// << endl;
   }
   std::cout << endl;
+#endif
 }
 
 

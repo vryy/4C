@@ -67,6 +67,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
   reinit_output_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINIT_OUTPUT")),
   volcorrection_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITVOLCORRECTION")),
+  evaltimeratio_(1.0),
   extract_interface_vel_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"EXTRACT_INTERFACE_VEL")),
   convel_layers_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("NUM_CONVEL_LAYERS")),
   gmshoutput_(DRT::INPUT::IntegralValue<int>(combustdyn,"GMSH_OUTPUT")),
@@ -2551,41 +2552,48 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
 void COMBUST::Algorithm::Redistribute()
 {
 #ifdef PARALLEL
-  const double ratiolimit = combustdyn_.get<double>("PARALLEL_REDIST_RATIO");
+  const double ratiolimitfac = combustdyn_.get<double>("PARALLEL_REDIST_RATIO_FAC");
 
-  if (Comm().NumProc() > 1 and ratiolimit > 1.0)
+  if (Comm().NumProc() > 1 and ratiolimitfac > 1.0)
   {
     // for ease of changing some constants are set here
     double normalnodeweight   = 10.0;
-    double enrichednodeweight = 1000.0;
+    double enrichednodeweight = 2000.0;
     double slavenodeweight    = 1.0;
 
     // determine whether a redistribution is necessary
     // by comparing min and max evaltime of all procs
-    double myprocevaltime = FluidField().EvalTime();
-    double minprocevaltime;
-    double maxprocevaltime;
+    double myprocevaltime  = FluidField().EvalTime();
+    double minprocevaltime = 0.0;
+    double maxprocevaltime = 0.0;
 
     Comm().MinAll(&myprocevaltime, &minprocevaltime, 1);
     Comm().MaxAll(&myprocevaltime, &maxprocevaltime, 1);
+
+    // Calculate the evaluation time ratio by which a further redistribution is determined.
+    // For this the minimum ratio since the last redistribution is used
+    if (maxprocevaltime / minprocevaltime < evaltimeratio_)
+      evaltimeratio_ = maxprocevaltime / minprocevaltime;
 
     if (minprocevaltime <= 0.0)
     {
       if (Comm().MyPID() == 0)
         cout << "The max / min ratio could not be determined --> Not redistributing" << endl;
     }
-    else if (maxprocevaltime / minprocevaltime < ratiolimit)
+    else if (maxprocevaltime / minprocevaltime < ratiolimitfac * evaltimeratio_)
     {
       if (Comm().MyPID() == 0)
-        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " < " << ratiolimit << " --> Not redistributing" << endl;
+        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " < " << ratiolimitfac * evaltimeratio_ << " --> Not redistributing" << endl;
     }
     else
     {
       if (Comm().MyPID() == 0)
       {
         cout << "-------------------------------Redistributing-------------------------------" << endl;
-        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimit << " --> Redistributing" << endl;
+        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimitfac * evaltimeratio_ << " --> Redistributing" << endl;
       }
+      // make sure the ratio will be reset
+      evaltimeratio_ = 1e12;
 
       //--------------------------------------------------------------------------------------
       // Building graph for later use by parmetis

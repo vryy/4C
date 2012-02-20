@@ -1384,9 +1384,6 @@ void SysmatBoundarySurfaceTension(
     const bool                                 smoothed_boundary_integration
 )
 {
-  if (timealgo == INPAR::FLUID::timeint_afgenalpha)
-    dserror("SysmatBoundarySurfaceTension: Genalpha does not work with surface tension.");
-
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG
@@ -1401,7 +1398,10 @@ void SysmatBoundarySurfaceTension(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+  double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+
+  if (timealgo == INPAR::FLUID::timeint_afgenalpha) // here the rhs timefac is needed
+    timefac /= ga_alphaF;
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
