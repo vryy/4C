@@ -1781,6 +1781,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
         if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_eassosh8){
           // here comes plan B: morph So_sh8 to So_hex8
           actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
+          actele->anstype_ = So_sh8::ansnone;
           actele->InitJacobianMapping();
           num_morphed_so_hex8_easmild++;
         } else if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_easnone){
@@ -1789,6 +1790,15 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
           actele->anstype_ = So_sh8::ansnone;
           actele->InitJacobianMapping();
           num_morphed_so_hex8_easnone++;
+        } else if (actele->eastype_ == DRT::ELEMENTS::So_hex8::soh8_easmild){
+          // this might happen in post filter (for morped sosh8->soh8)
+          actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
+          actele->anstype_ = So_sh8::ansnone;
+          actele->InitJacobianMapping();
+        } else if (actele->eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone){
+          // this might happen in post filter (for morped sosh8->soh8)
+          actele->anstype_ = So_sh8::ansnone;
+          actele->InitJacobianMapping();
         } else dserror("Undefined EAS type");
         break;
       }
