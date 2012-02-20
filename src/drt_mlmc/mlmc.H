@@ -23,6 +23,7 @@ Maintainer: Jonas Biehler
 #include "Epetra_FECrsMatrix.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
 using namespace std;
 
 namespace DRT
@@ -45,7 +46,7 @@ namespace IO
   class OutputControl;
   class ErrorFileControl;
 }
-
+class GenRandomField;
 namespace STR
 {
 
@@ -166,6 +167,8 @@ private:
   Teuchos::RCP<DRT::Discretization> actdis_coarse_;
   // output
   // Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
+  // need to store randomfield in class variable so that we can reuse it in every run
+  Teuchos::RCP<GenRandomField> random_field_;
 
   ;
 
@@ -216,7 +219,8 @@ public:
   // Funtion that writes the disp and sigma values of specific DOF to a seperate outputfile
   void HelperFunctionOutput(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
   void HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
-
+  // Function to Evaluate the Discretization at ceratin nodes which are for now hard coded in this function
+  void EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> displacement_of_discretization );
 };  // class MLMC
 
 }  // namespace STR
