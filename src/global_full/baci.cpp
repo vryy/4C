@@ -4,8 +4,10 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <Epetra_MpiComm.h>
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
@@ -51,8 +53,7 @@ struct _PAR     par;
 
 void ntam(
     int                 argc,
-    char               *argv[],
-    MPI_Comm            mpi_local_comm
+    char               *argv[]
   );
 
 /*!
@@ -72,16 +73,16 @@ int main(int argc, char *argv[])
   char *buff,*dbuff;
   int   buffsize=MPIBUFFSIZE;
 
-  int proc;
   MPI_Init(&argc,&argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &proc);
 
-  // color = 1 for BACI and color = 0 for other programs
-  int color = 1;
-  MPI_Comm  mpi_local_comm;
-  MPI_Comm_split(MPI_COMM_WORLD,color,proc,&mpi_local_comm);
-  MPI_Comm_rank(mpi_local_comm, &par.myrank);
-  MPI_Comm_size(mpi_local_comm, &par.nprocs);
+  COMM_UTILS::CreateComm(argc,argv);
+
+  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = DRT::Problem::Instance()->LocalComm();
+  int i=0;
+  while(lcomm[i] == Teuchos::null) i++;
+
+  par.myrank = lcomm[i]->MyPID();
+  par.nprocs = lcomm[i]->NumProc();
 
   /*------------------------------------------------ attach buffer to mpi */
   buff = (char*)malloc(buffsize);
@@ -211,11 +212,11 @@ int main(int argc, char *argv[])
 
 /*----------------------------------------------- everything is in here */
 #ifdef DSERROR_DUMP
-      ntam(argc,argv,mpi_local_comm);
+      ntam(argc,argv);
 #else
     try
     {
-      ntam(argc,argv,mpi_local_comm);
+      ntam(argc,argv);
     }
     catch ( std::runtime_error & err )
     {
@@ -229,8 +230,15 @@ int main(int argc, char *argv[])
 
       DRT::Problem::Done();
 
+      if(lcomm.size() > 1)
+      {
+        const Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GlobalComm();
+        printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",gcomm->MyPID());
+        MPI_Barrier(MPI_COMM_WORLD);
+      }
+
 #ifdef PARALLEL
-      MPI_Abort(mpi_local_comm,EXIT_FAILURE);
+      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
       exit(1);
 #endif
@@ -239,18 +247,25 @@ int main(int argc, char *argv[])
 /*----------------------------------------------------------------------*/
   }
 
+  MPI_Barrier(rcp_dynamic_cast<Epetra_MpiComm>(lcomm[i],true)->GetMpiComm());
+  if(lcomm.size() > 1)
+  {
+    const Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GlobalComm();
+    printf("Global processor %d with local rank %d finished normally\n",gcomm->MyPID(),par.myrank);
+    MPI_Barrier(MPI_COMM_WORLD);
+  }
+  else
+  {
+    printf("processor %d finished normally\n",par.myrank);
+  }
+
   DRT::Problem::Done();
 
-#ifdef PARALLEL
-  MPI_Barrier(mpi_local_comm);
-  printf("processor %d finished normally\n",par.myrank);
   MPI_Buffer_detach(&dbuff,&buffsize);
   if (dbuff!=buff || buffsize != MPIBUFFSIZE)
     dserror("Illegal modification of mpi buffer adress or size appeared");
   free(dbuff);
   MPI_Finalize();
-#else
-  printf("processor %d finished normally\n",par.myrank);
-#endif
+
   return(0);
 }

@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_init_control.H"
 #include "standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*!----------------------------------------------------------------------
@@ -44,13 +45,12 @@ extern struct _GENPROB  genprob;
   here.
  */
 /*----------------------------------------------------------------------*/
-void ntaini_ccadiscret(int argc, char** argv, MPI_Comm mpi_local_comm)
+void ntaini_ccadiscret(int argc, char** argv)
 {
-  int myrank = 0;
-
-#ifdef PARALLEL
-  MPI_Comm_rank(mpi_local_comm, &myrank);
-#endif
+  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = DRT::Problem::Instance()->LocalComm();
+  int i=0;
+  while(lcomm[i] == Teuchos::null) i++;
+  int myrank = lcomm[i]->MyPID();
 
   if (argc <= 1)
   {
@@ -78,6 +78,10 @@ void ntaini_ccadiscret(int argc, char** argv, MPI_Comm mpi_local_comm)
   }
 
   allfiles.outputfile_kenner = argv[2];
+  if(lcomm.size() > 1)
+    sprintf(allfiles.outputfile_kenner, "%s_group%d_",
+          allfiles.outputfile_kenner, i);
+
   if (strlen(argv[2])>=100)
   {
     if (myrank==0)

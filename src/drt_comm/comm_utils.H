@@ -35,6 +35,8 @@ Maintainer: Georg Hammerl
 /// COMM_UTILS
 namespace COMM_UTILS
 {
+  //! create a local and a global communicator for the problem
+  void CreateComm(int argc, char** argv);
 
   //! transform Epetra_Comm to Teuchos::Comm, RCP version
   Teuchos::RCP<const Teuchos::Comm<int> > toTeuchosComm(const Epetra_Comm& comm);

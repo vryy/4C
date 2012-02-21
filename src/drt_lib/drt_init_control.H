@@ -24,7 +24,7 @@ extern "C"
 {
 #endif
 
-void ntaini_ccadiscret(int argc, char** argv, MPI_Comm mpi_local_comm);
+void ntaini_ccadiscret(int argc, char** argv);
 
 #ifdef __cplusplus
 }

@@ -17,12 +17,6 @@ Maintainer: Michael Gee
 #include <fstream>
 #include <iostream>
 
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif
-
 #include "global_inp_control2.H"
 
 #include "drt_inputreader.H"
@@ -55,17 +49,15 @@ extern struct _FILES  allfiles;
   | This version of the routine uses the new discretization subsystem   |
   | ccadiscret                                                          |
  *----------------------------------------------------------------------*/
-void ntainp_ccadiscret(MPI_Comm mpi_local_comm)
+void ntainp_ccadiscret()
 {
-#ifdef PARALLEL
-  Epetra_MpiComm* com = new Epetra_MpiComm(mpi_local_comm);
-  Teuchos::RCP<Epetra_Comm> comm = rcp(com);
-#else
-  Epetra_SerialComm* com = new Epetra_SerialComm();
-  Teuchos::RCP<Epetra_Comm> comm = rcp(com);
-#endif
 
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = problem->LocalComm();
+  int i=0;
+  while(lcomm[i] == Teuchos::null) i++;
+  Teuchos::RCP<Epetra_Comm> comm = lcomm[i];
 
   // create error files
   // call this one rather early, since ReadConditions etc

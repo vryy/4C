@@ -57,17 +57,6 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-extern struct _PAR   par;
-
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -119,6 +108,8 @@ void DRT::Problem::Done()
 DRT::Problem::Problem()
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
+  gcomm_ = Teuchos::null;
+  lcomm_ = std::vector <Teuchos::RCP<Epetra_Comm> >(0);
 }
 
 
@@ -242,6 +233,21 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONDITION NAMES", *list);
 
   setParameterList(list);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::SetCommunicators(int group, int ngroup, Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm)
+{
+  lcomm_.resize(ngroup, Teuchos::null);
+  // TODO: BACI - INCA coupling has to switch colors: BACI = 0 and INCA = 1
+  if(ngroup==1) group=0;
+  lcomm_[group] = lcomm;
+
+  gcomm_ = gcomm;
+
+  return;
 }
 
 

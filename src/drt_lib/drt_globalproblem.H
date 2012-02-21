@@ -167,6 +167,15 @@ public:
 
   /// @name Input
 
+  /// set communicators
+  void SetCommunicators(int group, int ngroup, Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm);
+
+  /// get local communicator
+  const std::vector<Teuchos::RCP<Epetra_Comm> >& LocalComm(){ return lcomm_; }
+
+  /// get global communicator
+  const Teuchos::RCP<Epetra_Comm> GlobalComm(){ return gcomm_; }
+
   /// read global parameters
   void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
@@ -388,6 +397,12 @@ private:
   /// map of coupled fields and corresponding material IDs (needed for cloning
   /// of discretizations)
   std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap_;
+
+  /// local communicator
+  std::vector<Teuchos::RCP<Epetra_Comm> > lcomm_;
+
+  /// global communicator
+  Teuchos::RCP<Epetra_Comm> gcomm_;
 
 
   /// @name File IO

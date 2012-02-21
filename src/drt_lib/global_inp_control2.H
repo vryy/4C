@@ -52,7 +52,7 @@ extern "C"
 {
 #endif
 
-void ntainp_ccadiscret(MPI_Comm mpi_local_comm);
+void ntainp_ccadiscret();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 void calsta();
