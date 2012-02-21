@@ -400,7 +400,7 @@ void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discre
   }
 
 }
-double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writetofile)
+double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writetofile, bool output)
 {
   int index_x;
   int index_y;
@@ -409,7 +409,7 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
   // Compute indices
   index_x=int(floor((location[0]-bb_min_[0])/dx_));
   // HACH SET z to y
-  if (myrank_ == 0)
+  if (myrank_ == 0&& output)
     cout << "hack in use" << endl;
   index_y=int(floor((location[1]-bb_min_[2])/dx_));
   index_z=int(floor((location[2]-bb_min_[2])/dx_));

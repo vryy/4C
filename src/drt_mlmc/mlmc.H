@@ -148,6 +148,9 @@ private:
    // number of run in MLMC
   int numb_run_;
   int start_run_;
+  // runs per nested par group
+  int local_numruns_;
+  int numruns_pergroup_;
   // starting random seed
   int start_random_seed_;
   // output filename of lower level

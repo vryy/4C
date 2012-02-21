@@ -107,7 +107,7 @@ public:
   void CreateNewSample(unsigned int seed);
 
   // Get Value of Random Field at a specific location
-  double EvalFieldAtLocation(vector<double> location, bool writetofile);
+  double EvalFieldAtLocation(vector<double> location, bool writetofile, bool output);
 
 
   // Write Random Field To file

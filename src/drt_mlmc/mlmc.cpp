@@ -91,8 +91,22 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   //ReadInParameters();
 
   // controlling parameter
+  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = DRT::Problem::Instance()->LocalComm();
+   int NNestedGroups =lcomm.size();
   start_run_ = mlmcp.get<int>("START_RUN");
-  numb_run_ =  start_run_;     // counter of how many runs were made monte carlo
+  int numruns = mlmcp.get<int>("NUMRUNS");
+  int i=0;
+  while(lcomm[i] == Teuchos::null) i++;
+  numruns_pergroup_= int(ceil(numruns/NNestedGroups));
+  start_run_  += (i)*numruns_pergroup_;
+
+  numb_run_ =  start_run_;//+numruns_pergroup_;     // counter of how many runs were made monte carlo
+
+  //int mygroup =i;
+
+  //local_numruns_=numruns_pergroup;
+
+
 
   // meshfiel name to be written to controlfile in prolongated results
   std::stringstream meshfilename_helper1;
@@ -184,12 +198,16 @@ void STR::MLMC::Integrate()
   Epetra_Time timer(discret_->Comm());
   //double t1 = timer.ElapsedTime();
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
-  int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
+  //int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
+  // nested par hack
+  int numruns =numruns_pergroup_+start_run_;
+
 
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
   do
   {
+    //cout << "numbrun_ " << numb_run_ << endl;
     if (myrank == 0)
     {
       cout << GREEN_LIGHT "================================================================================" << endl;
@@ -888,14 +906,15 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
           }
   // get elements on proc use col map to init ghost elements as well
   Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
+  cout << "numb_run_" << numb_run_ << "start_run_ " << start_run_ << endl;
   if (numb_run_-start_run_== 0 )
   {
     random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
   }
   else
-  {
-    random_field_->CreateNewSample(random_seed);
-  }
+ {
+   random_field_->CreateNewSample(random_seed);
+ }
    // field.WriteRandomFieldToFile();
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
@@ -912,8 +931,10 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       //compute x coord
       ele_center[0]=phi*25;
       ele_center[1]=ele_center[2];
-
-      youngs = random_field_->EvalFieldAtLocation(ele_center,false);
+      if (i==0)
+        youngs = random_field_->EvalFieldAtLocation(ele_center,false,true);
+      else
+        youngs = random_field_->EvalFieldAtLocation(ele_center,false,false);
       aaa_stopro->Init(youngs,"beta");
       }
     } // EOF loop elements
@@ -1251,8 +1272,9 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   string name2 = outputfile2.str();;
   // file to write output
   // paraview ids of nodes
-  //int node[5] = {566, 1764, 3402,5194,6510};
-  //int node[5] = {56, 34, 88, 99, 12};
+  // nodes for fine discretization
+  //int node[5] = {1528, 3905, 7864, 10832, 13720};
+  // nodes for coarse sicretization
   int node[5] = {112, 257, 526, 728, 910};
   // Store row major in one dim array for communicatio porpuses
   double disp_output[5*3];
