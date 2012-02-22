@@ -1,0 +1,80 @@
+/*
+ * muelu_ContactInfoFactory_decl.hpp
+ *
+ *  Created on: Feb 16, 2012
+ *      Author: wiesner
+ */
+
+#ifndef MUELU_CONTACTINFOFACTORY_DECL_HPP_
+#define MUELU_CONTACTINFOFACTORY_DECL_HPP_
+
+#ifdef HAVE_MueLu
+
+
+#include "MueLu_ConfigDefs.hpp"
+#include "MueLu_TwoLevelFactoryBase.hpp"
+
+#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
+
+namespace MueLu {
+
+  /*!
+    @class ContactAFilterFactory class.
+    @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
+
+  */
+
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  class ContactInfoFactory : public TwoLevelFactoryBase {
+#undef MUELU_CONTACTINFOFACTORY_SHORT
+    #include "MueLu_UseShortNames.hpp"
+
+    typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+
+  public:
+    //! @name Constructors/Destructors.
+    //@{
+
+    //! Constructor.
+    ContactInfoFactory(std::string filename_prototype, Teuchos::RCP<FactoryBase> AFact = Teuchos::null, Teuchos::RCP<FactoryBase> nspFact = Teuchos::null);
+
+    //! Destructor.
+    virtual ~ContactInfoFactory();
+    //@}
+
+    //! Input
+    //@{
+
+    void DeclareInput(Level &fineLevel, Level &coarseLevel) const;
+
+    //@}
+
+    //@{
+    //! @name Build methods.
+
+    //! Build an object with this factory.
+    void Build(Level &fineLevel, Level &coarseLevel) const;
+
+    //@}
+
+  private:
+
+    std::string replaceAll(std::string result, const std::string& replaceWhat, const std::string& replaceWithWhat) const;
+
+    std::string filename_prototype_; ///< prototype string for output filename
+
+    RCP<FactoryBase>   AFact_;       ///< A factory (needed for maps)
+    RCP<FactoryBase>   nspFact_;     ///< Nullspace factory
+
+    RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+
+
+  }; // class ContactInfoFactory
+
+} // namespace MueLu
+
+#define MUELU_CONTACTINFOFACTORY_SHORT
+#endif // HAVE_MueLu
+
+
+#endif /* MUELU_CONTACTINFOFACTORY_DECL_HPP_ */
