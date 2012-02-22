@@ -1602,10 +1602,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
   DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
-  //Edge length of cube for periodic boundary conditions problem
-  DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
   // upper bound of the interval within which uniformly distributed random numbers are generated
   DoubleParameter("MaxRandValue",0.0,"Upper bound of the interval within which uniformly distributed random numbers are generated (usually equal to PeriodLength)",&statmech);
+  // Three values representing the size of the periodic box in each spatial direction
+  setNumericStringParameter("PERIODLENGTH","0.0 0.0 0.0",
+                            "Values representing the size of the periodic box in each spatial direction",&statmech);
   //angle between filament axes at crosslinked points with zero potential energy
   DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
   //only angles in the range PHI0 +/- PHIODEV are admitted at all for the angle PHI between filament axes at crosslinked points; the default value for this parameter is 2*pi so that by default any value is admitted

@@ -1099,10 +1099,11 @@ inline void DRT::ELEMENTS::TrussLm::NodeShift(ParameterList& params,  //!<parame
   double time = params.get<double>("total time",0.0);
   double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
-
+  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
+  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
-  if(params.get<double>("PeriodLength",0.0) > 0.0)
+  if(periodlength->at(0) > 0.0)
     //loop through all nodes except for the first node which remains fixed as reference node
     for(int i=1;i<nnode;i++)
     {
@@ -1112,9 +1113,9 @@ inline void DRT::ELEMENTS::TrussLm::NodeShift(ParameterList& params,  //!<parame
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
          * is smaller than half the periodic length*/
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
-          disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
+          disp[numdof*i+dof] += periodlength->at(dof);
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
@@ -1123,9 +1124,9 @@ inline void DRT::ELEMENTS::TrussLm::NodeShift(ParameterList& params,  //!<parame
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
-          disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
+          disp[numdof*i+dof] -= periodlength->at(dof);
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper

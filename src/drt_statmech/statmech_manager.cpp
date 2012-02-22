@@ -75,6 +75,9 @@ initialset_(false)
   //initialize random generators
   SeedRandomGenerators(0);
 
+  // retrieve the dimensions of the periodic boundary box and
+  // set spatial resolution for search algorithm binding spots x crosslinkers
+  InitializePLengthAndSearchRes();
 
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
    * here we provide a fully overlapping column map which is required by the search tree to look for each
@@ -298,9 +301,57 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
     uniformclosedopengen_.seed( (unsigned int)seedvariable );
   }
 
-
+  return;
 }
 
+void StatMechManager::InitializePLengthAndSearchRes()
+{
+  periodlength_ = Teuchos::rcp(new std::vector<double>);
+  periodlength_->clear();
+  {
+    std::istringstream PL(Teuchos::getNumericStringParameter(statmechparams_,"PERIODLENGTH"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      periodlength_->push_back(std::strtod(word.c_str(), &input));
+  }
+
+  if((int)periodlength_->size()<3)
+    dserror("You only gave %d values for PERIODLENGTH! Check your input file.", (int)periodlength_->size());
+  for(int i=0; i<(int)periodlength_->size(); i++)
+    if(periodlength_->at(i)<0.0)
+      dserror("PERIODLENGTH( %d ) = %4.2f < 0.0 does not make any sense! Check your input file.", i, periodlength_->at(i));
+
+//  if(!discret_.Comm().MyPID())
+//  {
+//    for(int i=0; i<(int)periodlength_->size(); i++)
+//      cout<<periodlength_->at(i)<<" ";
+//    cout<<endl;
+//  }
+
+  // set spatial resolution for search algorithm binding spots x crosslinkers
+  if(statmechparams_.get<int>("SEARCHRES",1)<1)
+    dserror("Please give a plausible value for SEARCHRES!");
+
+  // determine search resolution in each spatial direction according to the periodlength_ vector
+  searchres_ = Teuchos::rcp(new std::vector<int>(3,statmechparams_.get<int>("SEARCHRES",1)));
+  // in case of a non-cubic periodic volume
+  if(fabs(pow(periodlength_->at(0)*periodlength_->at(1)*periodlength_->at(2), 1.0/3.0)-periodlength_->at(0))>1e-4)
+  {
+    double Hmax = max(periodlength_->at(0), periodlength_->at(1));
+    Hmax = max(Hmax, periodlength_->at(2));
+    for(int i=0; i<(int)searchres_->size(); i++)
+      searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
+  }
+
+//  if(!discret_.Comm().MyPID())
+//  {
+//    for(int i=0; i<(int)searchres_->size(); i++)
+//      cout<<searchres_->at(i)<<" ";
+//    cout<<endl;
+//  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
@@ -311,7 +362,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
   const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
   /* first we modify the displacement vector so that current nodal position at the end of current time step complies with
-   * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
+   * periodic boundary conditions, i.e. no node lies outside a cube of edge length periodlength_*/
 
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if (DRT::INPUT::IntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
@@ -525,11 +576,10 @@ void StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,std::map<in
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
 {
   double starttime = statmechparams_.get<double>("STARTTIMEACT",0.0);
-  //period length of simulated box
-  double H = statmechparams_.get<double> ("PeriodLength", 0.0);
 
   //only if period length >0 has been defined periodic boundary conditions are swithced on
-  if (H > 0.0)
+  if (periodlength_->at(0) > 0.0)
+  {
     for (int i=0; i<discret_.NumMyRowNodes(); i++)
     {
       //get a pointer at i-th row node
@@ -543,11 +593,11 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
         //current coordinate value
         double xcurr = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
 
-        /*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
-         *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) sufficiently often to lie again in the domain*/
-        if (xcurr > H)
+        /*if node currently has coordinate value greater than periodlength,
+         *it is shifted by -periodlength sufficiently often to lie again in the domain*/
+        if (xcurr > periodlength_->at(j))
         {
-          disrow[discret_.DofRowMap()->LID(dofnode[j])] -= H*floor(xcurr/H);
+          disrow[discret_.DofRowMap()->LID(dofnode[j])] -= periodlength_->at(j)*floor(xcurr/periodlength_->at(j));
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may fixed by DBC. To avoid problems when nodes exit the domain through the upper z-surface and reenter through the lower
@@ -555,11 +605,11 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
           if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
             disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] -= statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
         }
-        /*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0) sufficiently often
+        /*if node currently has coordinate value smaller than zero, it is shifted by periodlength sufficiently often
          *to lie again in the domain*/
         if (xcurr < 0.0)
         {
-          disrow[discret_.DofRowMap()->LID(dofnode[j])] -= H*floor(xcurr/H);
+          disrow[discret_.DofRowMap()->LID(dofnode[j])] -= periodlength_->at(j)*floor(xcurr/periodlength_->at(j));
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problems when nodes exit the domain through the lower z-surface and reenter through the upper
@@ -569,7 +619,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
         }
       }
     }
-
+  }
   return;
 }
 
@@ -613,11 +663,11 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
        * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
        * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
        * is smaller than half the periodic length*/
-      if (fabs((beam->Nodes()[i]->X()[dof]) + statmechparams_.get<double> ("PeriodLength", 0.0) - (beam->Nodes()[0]->X()[dof])) < fabs((beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] += statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof])) < fabs((beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] += periodlength_->at(dof);
 
-      if (fabs((beam->Nodes()[i]->X()[dof]) - statmechparams_.get<double> ("PeriodLength", 0.0) - (beam->Nodes()[0]->X()[dof])) < fabs((beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof])) < fabs((beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] -= periodlength_->at(dof);
     }
   }
 
@@ -692,11 +742,11 @@ void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
        * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
        * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
        * is smaller than half the periodic length*/
-      if( fabs( (beam->Nodes()[i]->X()[dof]) + statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-        xrefe[3*i+dof] += statmechparams_.get<double>("PeriodLength",0.0);
+      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += periodlength_->at(dof);
 
-      if( fabs( (beam->Nodes()[i]->X()[dof]) - statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-        xrefe[3*i+dof] -= statmechparams_.get<double>("PeriodLength",0.0);
+      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= periodlength_->at(dof);
     }
   }
 
@@ -764,11 +814,11 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
        * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
        * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
        * is smaller than half the periodic length*/
-      if (fabs((truss->Nodes()[i]->X()[dof]) + statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] += statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((truss->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] += periodlength_->at(dof);
 
-      if (fabs((truss->Nodes()[i]->X()[dof]) - statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((truss->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] -= periodlength_->at(dof);
     }
   }
 
@@ -811,11 +861,11 @@ void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
       // the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
       // back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
       // is smaller than half the periodic length
-      if (fabs((truss->Nodes()[i]->X()[dof]) + statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] += statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((truss->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] += periodlength_->at(dof);
 
-      if (fabs((truss->Nodes()[i]->X()[dof]) - statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (fabs((truss->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+        xrefe[3* i + dof] -= periodlength_->at(dof);
     }
   }
 
@@ -832,25 +882,22 @@ void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
 void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid)
 {
   //filament binding spots and crosslink molecules are indexed according to their positions within the boundary box volume
-  std::vector<std::vector<std::vector<int> > > bspotinpartition(3, std::vector<std::vector<int> >(statmechparams_.get<int>("SEARCHRES",1), std::vector<int>()));
-
-  // initialize vectors related to volume indexing
-  if(statmechparams_.get<int>("SEARCHRES",1)<1)
-    dserror("Please give a plausible value for SEARCHRES!");
-
-  double pl = statmechparams_.get<double>("PeriodLength",0.0);
-  int N = statmechparams_.get<int>("SEARCHRES", 1);
+  std::vector<std::vector<std::vector<int> > > bspotinpartition;
+  for(int i=0; i<(int)searchres_->size(); i++)
+    bspotinpartition.push_back(std::vector<std::vector<int> >(searchres_->at(i), std::vector<int>()));
 
   /*nodes*/
   // loop over node positions to map their column map LIDs to partitions
   for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
+  {
     for(int j=0; j<(int)bspotinpartition.size(); j++) // bspotinpartition.size==3
     {
-      int partition = (int)std::floor((posi->second)(j)/pl*(double)N);
-      if(partition==N)
+      int partition = (int)std::floor((posi->second)(j)/periodlength_->at(j)*(double)(searchres_->at(j)));
+      if(partition==(int)searchres_->at(j))
         partition--;
       bspotinpartition[j][partition].push_back((int)(posi->first)); //column lid
     }
+  }
 
   /*crosslink molecules*/
   // Export crosslinkerpositions_ to transfermap_ format (kind of a row map format for crosslink molecules)
@@ -874,8 +921,8 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
     {
       for(int j=0; j<crosslinkpartitiontrans.NumVectors(); j++)
       {
-        int partition = (int)std::floor(crosslinkerpositionstrans[j][i]/pl*(double)N);
-        if(partition==N)
+        int partition = (int)std::floor(crosslinkerpositionstrans[j][i]/periodlength_->at(j)*(double)(searchres_->at(j)));
+        if(partition==searchres_->at(j))
           partition--;
         crosslinkpartitiontrans[j][i] = partition;
       }
@@ -941,21 +988,22 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
       rmin *= 2.0;
       rmax *= 2.0;
     }
+
     // first component
     for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
-      if(ilayer>-1 && ilayer<statmechparams_.get<int>("SEARCHRES",1))
+      if(ilayer>-1 && ilayer<searchres_->at(0))
         for(int i=0; i<(int)(*bspotinpartition)[0][ilayer].size(); i++)
         {
           int tmplid = (int)(*bspotinpartition)[0][ilayer][i];
           // second component
           for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
-            if(jlayer>-1 && jlayer<statmechparams_.get<int>("SEARCHRES",1))
+            if(jlayer>-1 && jlayer<searchres_->at(1))
               for(int j=0; j<(int)(*bspotinpartition)[1][jlayer].size(); j++)
                 if((*bspotinpartition)[1][jlayer][j]==tmplid)
                 {
                   //third component
                   for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
-                    if(klayer>-1 && klayer<statmechparams_.get<int>("SEARCHRES",1))
+                    if(klayer>-1 && klayer<searchres_->at(2))
                       for(int k=0; k<(int)(*bspotinpartition)[2][klayer].size(); k++)
                         if((*bspotinpartition)[2][klayer][k]==tmplid)
                         {
@@ -1112,6 +1160,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
   if(statmechparams_.get<int>("SEARCHRES",1)>0)
     PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
 
+  //cout<<"neighbourslid: "<<neighbourslid->MyLength()<<"x"<<neighbourslid->NumVectors()<<endl;
   //cout<<"\n\nneighbourslid\n"<<*neighbourslid<<endl;
   /*the following part of the code is executed on processor 0 only and leads to the decision, at which nodes crosslinks shall be set
    *processor 0 goes through all the crosslink molecules and checks whether a crosslink is to be set; this works precisely as follows:
@@ -2444,13 +2493,13 @@ void StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LI
     for (int n = 0; n < cut.N(); n++)
     {
       // broken element with node_n close to "0.0"-boundary
-      if (fabs(coord(dof, n + 1) - statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
+      if (fabs(coord(dof, n + 1) - periodlength_->at(dof) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
       {
         *broken = true;
         // set value for the spatial component in question at n-th cut
         cut(dof, n) = 1.0;
       }
-      else if (fabs(coord(dof, n + 1) + statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
+      else if (fabs(coord(dof, n + 1) + periodlength_->at(dof) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
       {
         *broken = true;
         cut(dof, n) = 2.0;
@@ -2559,8 +2608,7 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
   p.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
   p.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   p.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
-  p.set("PeriodLength",statmechparams_.get<double>("PeriodLength",0.0));
-
+  p.set("PERIODLENGTH", periodlength_);
 
   discret_.ClearState();
   discret_.SetState("displacement", dis);
@@ -2734,7 +2782,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
       }
     }// end of i-loop
     // check for compliance with periodic boundary conditions if existent
-    if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+    if (periodlength_->at(0) > 0.0)
       CrosslinkerPeriodicBoundaryShift(*crosslinkerpositions_);
   } // if(discret_.Comm().MyPID()==0)
 
@@ -2853,7 +2901,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 {
   int ncrosslink = statmechparams_.get<int> ("N_crosslink", 0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-  double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
 
   // create crosslinker maps
   std::vector<int> gids;
@@ -3051,7 +3098,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
     trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
     for(int i=0; i<trafo_->M(); i++)
       (*trafo_)(i,i) = 1.0;
-    cog_.PutScalar(periodlength/2.0);
+    for(int i=0; i<(int)cog_.M(); i++)
+      cog_(i) = periodlength_->at(i)/2.0;
 
     // start indices for parallel handling of orientation correlation etc in NumLinkerSpotsAndOrientation()
     // calculation of start indices for each processor
@@ -3126,18 +3174,17 @@ void StatMechManager::CrosslinkerMoleculeInit()
     disprev_ = rcp(new Epetra_Vector(*(discret_.DofColMap()),true));
   }
 
-  double upperbound = 0.0;
+  std::vector<double> upperbound = *periodlength_;
   // handling both cases: with and without periodic boundary conditions
-  if (periodlength > 0.0)
-    upperbound = periodlength;
-  else
-    upperbound = statmechparams_.get<double> ("MaxRandValue", 0.0);
+  if (periodlength_->at(0) == 0.0)
+    for(int i=0; i<(int)upperbound.size(); i++)
+      upperbound.at(i) = statmechparams_.get<double> ("MaxRandValue", 0.0);
 
   crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
 
   for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
     for (int j=0; j<crosslinkerpositions_->NumVectors(); j++)
-      (*crosslinkerpositions_)[j][i] = upperbound * uniformclosedgen_.random();
+      (*crosslinkerpositions_)[j][i] = upperbound.at(j) * uniformclosedgen_.random();
 
   // initial bonding status is set (no bonds)
   crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
@@ -3483,10 +3530,10 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
   for (int i=0; i<crosslinkerpositions.MyLength(); i++)
     for (int j=0; j<crosslinkerpositions.NumVectors(); j++)
     {
-      if (crosslinkerpositions[j][i] > statmechparams_.get<double> ("PeriodLength", 0.0))
-        crosslinkerpositions[j][i] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+      if (crosslinkerpositions[j][i] > periodlength_->at(j))
+        crosslinkerpositions[j][i] -= periodlength_->at(j);
       if (crosslinkerpositions[j][i] < 0.0)
-        crosslinkerpositions[j][i] += statmechparams_.get<double> ("PeriodLength", 0.0);
+        crosslinkerpositions[j][i] += periodlength_->at(j);
     }
   return;
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
@@ -3502,9 +3549,9 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
  * Give Dirichlet values to nodes of an element that is broken in
  * z-direction due to the application of periodic boundary conditions.
  * The motion of the node close to z=0.0 in the cubic volume of edge
- * length l (==PeriodLength in this case) is inhibited in direction of the
+ * length l (==periodlength in this case) is inhibited in direction of the
  * oscillatory motion. The oscillation is imposed on the node close to z=l.
- * This method is triggered in case of PeriodLength>0.0 (i.e. Periodic BCs
+ * This method is triggered in case of periodlength>0.0 (i.e. Periodic BCs
  * exist). Since the DBC setup happens dynamically by checking element
  * positions with each new time step, the static definition of DBCs in the input
  * file is only used to get the direction of the oscillatory motion as well as

@@ -76,7 +76,7 @@ isconverged_(0)
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
         //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
           statmechmanager_->PeriodicBoundaryBeam3Init(dis.lColElement(i));
       }
     else
@@ -88,7 +88,7 @@ isconverged_(0)
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
         //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
           statmechmanager_->PeriodicBoundaryBeam3iiInit(dis.lColElement(i));
       }
     else
@@ -116,7 +116,7 @@ isconverged_(0)
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
         //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
           statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
       }
       else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
@@ -124,7 +124,7 @@ isconverged_(0)
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
         //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
           statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
       }
       else
@@ -346,11 +346,11 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // disn then also holds prescribed new dirichlet displacements
 
     // determine evaluation mode
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
-    	dserror("Set PeriodLength > 0.0 if periodic DBCs are to be applied");
+    if((statmechmanager_->GetPeriodLength())->at(0) <= 0.0 && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    	dserror("Set PERIODLENGTH  > 0.0 for all three components if periodic DBCs are to be applied");
     if(!discret_.Comm().MyPID() &&
     		firststep_ &&
-    		statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
+    		(statmechmanager_->GetPeriodLength())->at(0) > 0.0 &&
     		!(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC")))
     {
     	cout<<"========================STATMECH WARNING!=========================="<<endl;
@@ -435,7 +435,8 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
     p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
     p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
-    p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+    p.set("TEST", 99.9);
+    p.set("PERIODLENGTH",statmechmanager_->GetPeriodLength());
 
 
     // set vector values needed by elements
@@ -622,7 +623,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
       p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+      p.set("PERIODLENGTH",statmechmanager_->GetPeriodLength());
 
 
       // set vector values needed by elements
@@ -811,7 +812,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
       p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
       p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+      p.set("PERIODLENGTH",statmechmanager_->GetPeriodLength());
 
 
       // set vector values needed by elements
@@ -1222,7 +1223,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
       p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
       p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+      p.set("PERIODLENGTH",statmechmanager_->GetPeriodLength());
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -1356,7 +1357,7 @@ void StatMechTime::PTCBrownianForcesAndDamping(double& dt, double& crotptc, doub
   p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
   p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
   p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-  p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+  p.set("PERIODLENGTH",statmechmanager_->GetPeriodLength());
 
   //evaluate ptc stiffness contribution in all the elements
   discret_.Evaluate(p,stiff_,null,null,null,null);

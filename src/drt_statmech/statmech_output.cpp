@@ -444,10 +444,14 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
       {
-
-        std::ostringstream filename;
-        filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        DDCorrOutput(dis, filename, istep, dt);
+        if(periodlength_->at(0) == periodlength_->at(1) && periodlength_->at(0) == periodlength_->at(2))
+        {
+          std::ostringstream filename;
+          filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
+          DDCorrOutput(dis, filename, istep, dt);
+        }
+        else
+          dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
       }
     }
     break;
@@ -517,7 +521,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
    * are of the same machine*/
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
 	GmshPrepareVisualization(disrow);
 
@@ -638,7 +641,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         }*/
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
-        if (periodlength == 0.0)
+        if (periodlength_->at(0) == 0.0)
         {
           // check whether the kinked visualization is to be applied
           bool kinked = CheckForKinkedVisual(element->Id());
@@ -769,8 +772,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
   }
   // plot the periodic boundary box
   LINALG::Matrix<3,1> center;
-  center.PutScalar(periodlength/2);
-  GmshOutputBox(0.0, &center, periodlength, &filename);
+  for(int i=0; i<(int)center.M(); i++)
+    center(i) = periodlength_->at(i)/2.0;
+  GmshOutputBox(0.0, &center, *periodlength_, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
@@ -794,7 +798,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         GmshWedge(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
       }
       // plot the cog
-      GmshOutputBox(0.75, &cog_, 0.05, &filename);
+      std::vector<double> dimension(3,0.05);
+      GmshOutputBox(0.75, &cog_, dimension, &filename);
       gmshfileend << "SP(" << scientific;
       gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
 
@@ -821,7 +826,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
 {
-	double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
   //number of solid elements by which a round line is depicted
   const int nline = 16;
 
@@ -877,8 +881,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
      * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
      * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
-     * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
-     * 0 close to boundary at PeriodLength);*/
+     * at periodlength_);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
+     * 0 close to boundary at periodlength_);*/
     LINALG::SerialDenseMatrix cut= LINALG::SerialDenseMatrix(3, coord.N()-1, true);
 
     /* "coord" currently holds the shifted set of coordinates.
@@ -895,18 +899,18 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       	// initialize unshift with coord values
       	unshift(dof,0) = coord(dof,i);
       	unshift(dof,1) = coord(dof,i+1);
-        if (fabs(coord(dof,i+1)-periodlength-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
+        if (fabs(coord(dof,i+1)-periodlength_->at(dof)-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
         {
           cut(dof, i) = 1.0;
           shiftdof = dof;
-          unshift(dof,1) -= periodlength;
+          unshift(dof,1) -= periodlength_->at(dof);
           numshifts++;
         }
-        if (fabs(coord(dof,1)+periodlength - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
+        if (fabs(coord(dof,1)+periodlength_->at(dof) - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
         {
           cut(dof,i) = 2.0;
           shiftdof = dof;
-          unshift(dof,1) += periodlength;
+          unshift(dof,1) += periodlength_->at(dof);
           numshifts++;
         }
       }
@@ -938,7 +942,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
             break;
             case 2:
             {
-              lambdaorder(dof,0) = (periodlength - coord(dof,i)) / dir(dof);
+              lambdaorder(dof,0) = (periodlength_->at(dof) - coord(dof,i)) / dir(dof);
               lambdaorder(dof,1) = dof;
             }
             break;
@@ -992,9 +996,9 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           int currshift = (int)lambdaorder(shift,1);
           // shift the coordinates of the second point
           if(cut(currshift,i)==1.0)
-            unshift(currshift,1) += periodlength;
+            unshift(currshift,1) += periodlength_->at(currshift);
           else if(cut(currshift,i)==2.0)
-            unshift(currshift,1) -= periodlength;
+            unshift(currshift,1) -= periodlength_->at(currshift);
           // make second point the first and calculate new second point in the next iteration!
           for(int j=0; j<unshift.M(); j++)
             unshift(j,0) = unshift(j,1);
@@ -1028,22 +1032,21 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 /*----------------------------------------------------------------------*
  | plot the periodic boundary box                  (public) mueller 7/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, double length, const std::ostringstream *filename)
+void StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename)
 {
-  double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
   // plot the periodic box in case of periodic boundary conditions (first processor)
-  if (periodlength > 0.0 && discret_.Comm().MyPID() == 0)
+  if (periodlength_->at(0) > 0.0 && discret_.Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilefooter;
     // get current period length
 
-    double xmin = (*boxcenter)(0)-length/2.0;
-    double xmax = (*boxcenter)(0)+length/2.0;
-    double ymin = (*boxcenter)(1)-length/2.0;
-    double ymax = (*boxcenter)(1)+length/2.0;
-    double zmin = (*boxcenter)(2)-length/2.0;
-    double zmax = (*boxcenter)(2)+length/2.0;
+    double xmin = (*boxcenter)(0)-dimension[0]/2.0;
+    double xmax = (*boxcenter)(0)+dimension[0]/2.0;
+    double ymin = (*boxcenter)(1)-dimension[1]/2.0;
+    double ymax = (*boxcenter)(1)+dimension[1]/2.0;
+    double zmin = (*boxcenter)(2)-dimension[2]/2.0;
+    double zmax = (*boxcenter)(2)+dimension[2]/2.0;
 
     // define boundary lines
     gmshfilefooter << "SL(" << scientific;
@@ -1164,7 +1167,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 
           double beadcolor = 2*color; //blue
           // in case of periodic boundary conditions
-          if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+          if (periodlength_->at(0) > 0.0)
           {
             // get arbitrary element (we just need it to properly visualize)
             DRT::Element* tmpelement=discret_.lRowElement(0);
@@ -1223,7 +1226,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 
             double beadcolor = 3*color;
             // in case of periodic boundary conditions
-            if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+            if (periodlength_->at(0) > 0.0)
             {
               // get arbitrary element (we just need it to properly visualize)
               DRT::Element* tmpelement=discret_.lRowElement(0);
@@ -1482,16 +1485,16 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
               }
               /* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
                * It does not matter which value is shifted as long the shift occurs in a consistent way.*/
-              if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+              if (periodlength_->at(j) > 0.0)
               {
                 (*visualizepositions_)[j][i] = dofnodepositions.at(0);
                 for (int k=0; k<1; k++)
                 {
                   // shift position if it is found to be outside the boundary box
-                  if (fabs(dofnodepositions.at(k+1) - statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
-                    dofnodepositions.at(k+1) -= statmechparams_.get<double> ("PeriodLength", 0.0);
-                  if (fabs(dofnodepositions.at(k+1) + statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
-                    dofnodepositions.at(k+1) += statmechparams_.get<double> ("PeriodLength", 0.0);
+                  if (fabs(dofnodepositions.at(k+1) - periodlength_->at(j) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
+                    dofnodepositions.at(k+1) -= periodlength_->at(j);
+                  if (fabs(dofnodepositions.at(k+1) + periodlength_->at(j) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
+                    dofnodepositions.at(k+1) += periodlength_->at(j);
 
                   (*visualizepositions_)[j][i] += dofnodepositions.at(k+1);
                 }
@@ -1595,7 +1598,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
         break;
       }
     }
-    if (statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+    if (periodlength_->at(0) > 0.0)
       CrosslinkerPeriodicBoundaryShift(*visualizepositions_);
   }
   else
@@ -1802,8 +1805,6 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 {
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
   {
-    double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-
     cout<<"Visualizing test volume: ";
     switch(structuretype_)
     {
@@ -1876,10 +1877,10 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                   for(int l=0; l<(int)edge.M(); l++)
                     for(int m=0; m<(int)edge.N(); m++)
                     {
-                      if(edge(l,m)>periodlength)
-                        edgeshift(l,m) -= periodlength;
+                      if(edge(l,m)>periodlength_->at(l))
+                        edgeshift(l,m) -= periodlength_->at(l);
                       else if(edge(l,m)<0.0)
-                        edgeshift(l,m) += periodlength;
+                        edgeshift(l,m) += periodlength_->at(l);
                     }
                   // write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
                   GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
@@ -1908,10 +1909,10 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                     for(int l=0; l<(int)edge.M(); l++)
                       for(int m=0; m<(int)edge.N(); m++)
                       {
-                        if(edge(l,m)>periodlength)
-                          edgeshift(l,m) -= periodlength;
+                        if(edge(l,m)>periodlength_->at(l))
+                          edgeshift(l,m) -= periodlength_->at(l);
                         else if(edge(l,m)<0.0)
-                          edgeshift(l,m) += periodlength;
+                          edgeshift(l,m) += periodlength_->at(l);
                       }
 
                     GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
@@ -2135,7 +2136,6 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color)
 {
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
   // direction of edge
 
   LINALG::Matrix<3, 1> dir;
@@ -2159,12 +2159,12 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
     for(int l=0; l<linepart.M(); l++)
       for(int m=0; m<linepart.N(); m++)
       {
-        if(linepart(l,m)>periodlength)
-          while(linepart(l,m)>periodlength)
-            linepart(l,m) -= periodlength;
+        if(linepart(l,m)>periodlength_->at(l))
+          while(linepart(l,m)>periodlength_->at(l))
+            linepart(l,m) -= periodlength_->at(l);
         if(linepart(l,m)<0.0)
           while(linepart(l,m)<0.0)
-            linepart(l,m) += periodlength;
+            linepart(l,m) += periodlength_->at(l);
       }
 
     LINALG::Matrix<3,1> cut;
@@ -2172,10 +2172,10 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
     for (int dof=0; dof<linepart.M(); dof++)
     {
       // point 0 close to zero boundary
-      if (fabs(linepart(dof,1)-periodlength-linepart(dof,0)) < fabs(linepart(dof,1) - linepart(dof,0)))
+      if (fabs(linepart(dof,1)-periodlength_->at(dof)-linepart(dof,0)) < fabs(linepart(dof,1) - linepart(dof,0)))
         cut(dof) = 1.0;
       // point 1 close to zero boundary
-      if (fabs(linepart(dof,1)+periodlength - linepart(dof,0)) < fabs(linepart(dof,1)-linepart(dof,0)))
+      if (fabs(linepart(dof,1)+periodlength_->at(dof) - linepart(dof,0)) < fabs(linepart(dof,1)-linepart(dof,0)))
         cut(dof) = 2.0;
     }
 
@@ -2193,8 +2193,8 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
         }
         else if (cut(dof) == 2.0)
         {
-          if (fabs((periodlength - linepart(dof, 0)) / dir(dof)) < fabs(lambda0))
-            lambda0 = (periodlength - linepart(dof, 0)) / dir(dof);
+          if (fabs((periodlength_->at(dof) - linepart(dof, 0)) / dir(dof)) < fabs(lambda0))
+            lambda0 = (periodlength_->at(dof) - linepart(dof, 0)) / dir(dof);
         }
       }
       //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
@@ -2208,8 +2208,8 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
         }
         else if (cut(dof) == 1.0)
         {
-          if (fabs((periodlength - linepart(dof, 1)) / dir(dof)) < fabs(lambda1))
-            lambda1 = (periodlength - linepart(dof, 1)) / dir(dof);
+          if (fabs((periodlength_->at(dof) - linepart(dof, 1)) / dir(dof)) < fabs(lambda1))
+            lambda1 = (periodlength_->at(dof) - linepart(dof, 1)) / dir(dof);
         }
       }
       //define output coordinates for broken elements, first segment
@@ -2626,7 +2626,9 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   if(!discret_.Comm().MyPID())
     cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
 
-  double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
   // storage vector for shifted crosslinker LIDs(crosslinkermap)
   LINALG::Matrix<3,1> boxcenter;
@@ -2653,7 +2655,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // testwise, base centershift upon calculated cog_ (rise in adequacy?)
   LINALG::Matrix<3,1> newcentershift;
   for(int i=0; i<(int)cog.M(); i++)
-  	newcentershift(i) = cog(i) - periodlength/2.0;
+  	newcentershift(i) = cog(i) - periodlength_->at(i)/2.0;
 
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
   CrosslinkCount(filename);
@@ -2746,11 +2748,14 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
 {
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
+  double periodlength = periodlength_->at(0);
   int numrasterpoints = statmechparams_.get<int>("NUMRASTERPOINTS", 3);
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
   // smallest average distance among all the average distances between the rasterpoints and all crosslinker elements
   // (init with 2*pl,so that it is definitely overwritten by the first "real" value)
-  double smallestdistance = 2*periodlength;
+  double  smallestdistance = 2.0*periodlength_->at(0);
 
   //store crosslinker element position within crosslinkerbond to crosslinkerentries
   for(int i=0; i<crosslinkerbond_->MyLength(); i++)
@@ -2828,10 +2833,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
                                              const std::ostringstream& filename,
                                              bool filorientoutput)
 {
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
+  double periodlength = periodlength_->at(0);
   // number of crosslinker elements
   int numcrossele = (int)crosslinkerentries->size();
   std::vector<int> crosslinksinvolume(3,0);
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
   // get column map displacements
   Epetra_Vector discol(*(discret_.DofColMap()), true);
@@ -3693,12 +3701,15 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
 {
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
   // get filament number conditions
   vector<DRT::Condition*> filaments(0);
   discret_.GetCondition("FilamentNumber", filaments);
   bool vectorconverged = false;
   int iteration = 0;
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double periodlength = periodlength_->at(0);
   double tolangle = M_PI/180.0; // 1°
 
   while(!vectorconverged)
@@ -3768,8 +3779,11 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift)
 {
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	double periodlength = periodlength_->at(0);
 
 
 /// preliminary operations to set workframe
@@ -4014,7 +4028,7 @@ void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostring
         distances<<diff.Norm2()<<endl;
       }
       // in case of periodic BCs, we "close the loop" by calculating the distance over the boundary between first and last node
-      double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+      double periodlength = periodlength_->at(0);
       if(periodlength>0.0)
       {
         map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(0));
@@ -4022,7 +4036,7 @@ void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostring
         LINALG::Matrix<3,1> diff;
         for(int i=0; i<(int)(pos0->second).M(); i++)
           diff(i) = (pos0->second)(i) - (pos1->second)(i);
-        diff(0) += statmechparams_.get<double>("PeriodLength", 0.0);
+        diff(0) += periodlength;
         distances<<diff.Norm2()<<endl;
       }
     }
@@ -4097,6 +4111,8 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
    */
   if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
   {
+    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+      dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
     // current node positions (column map)
     std::map<int, LINALG::Matrix<3, 1> > currentpositions;
@@ -4179,7 +4195,7 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
     // distance and orientation checks
     int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
     // max. distance between two binding spots
-    double maxdist = statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0);
+    double maxdist = periodlength_->at(0)*sqrt(3.0);
     // max. angle
     double maxangle = M_PI/2.0;
     // minimal and maximal linker search radii
@@ -4329,7 +4345,10 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
  *------------------------------------------------------------------------------*/
 void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
 {
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
+  double periodlength = periodlength_->at(0);
   double maxdist = periodlength/2.0*sqrt(3.0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS",1);
   // center of gravity
@@ -4519,8 +4538,11 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
                                                   Epetra_Vector& thetabinsrow,
                                                   Epetra_Vector& costhetabinsrow)
 {
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  double periodlength = periodlength_->at(0);
 
   for(int i=0; i<discret_.NumMyRowElements(); i++)
   {
@@ -4588,8 +4610,11 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
  *------------------------------------------------------------------------------*/
 void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift)
 {
-    // simpler version taking into account only the original boundary volume
-  double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+  if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+    dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
+  // simpler version taking into account only the original boundary volume
+  double periodlength = periodlength_->at(0);
   double maxdistance = periodlength/2.0*sqrt(3.0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 
@@ -4652,7 +4677,10 @@ void StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vec
 
   if(discret_.Comm().MyPID()==0)
   {
-    double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+    if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
+      dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
+
+    double periodlength = periodlength_->at(0);
 
     FILE* fp = NULL;
     if(fileoutput)

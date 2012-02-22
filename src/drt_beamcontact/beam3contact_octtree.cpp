@@ -61,7 +61,20 @@ dofoffset_(dofoffset)
 
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  if(statmechparams.get<double>("PeriodLength",0.0)>0.0)
+  // retrieve the dimensions of the periodic boundary box
+  periodlength_ = Teuchos::rcp(new std::vector<double>);
+  periodlength_->clear();
+  {
+    std::istringstream PL(Teuchos::getNumericStringParameter(statmechparams,"PERIODLENGTH"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      periodlength_->push_back(std::strtod(word.c_str(), &input));
+  }
+  if((int)periodlength_->size()<3)
+    dserror("You only gave %d values for PERIODLENGTH! Check your input file.", (int)periodlength_->size());
+
+  if(periodlength_->at(0)>0.0)
     periodicBC_ = true;
   else
     periodicBC_ = false;
@@ -490,16 +503,12 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
   LINALG::SerialDenseMatrix unshift(coord.M(), coord.N());
 
   // Compute "cut"-matrix (only in case of periodic BCs)
-  RCP<double> PeriodLength = Teuchos::null;
   // number of overall shifts
   int numshifts = 0;
   // dof at which the bounding box segment is shifted (used in case of a single shift)
   int shiftdof = -1;
   if(periodicBC_)
   {
-    Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    PeriodLength = rcp(new double(statmechparams.get<double>("PeriodLength",0.0)));
-
     // We have to first make sure that the given coordinates lie within the boundary volume. Otherwise,
     // the bounding box creation does not work properly. Why do we have to do this? During a Nweton step,
     // the element standing behind this bounding box might be displaced out of the simulated volume.
@@ -510,10 +519,10 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
     {
       for(int node=0; node<coord.N(); node++)
       {
-        if(coord(dof,node)>(*PeriodLength))
-          coord(dof,node) -= (*PeriodLength);
+        if(coord(dof,node)>periodlength_->at(dof))
+          coord(dof,node) -= periodlength_->at(dof);
         else if(coord(dof,node)<0.0)
-          coord(dof,node) += (*PeriodLength);
+          coord(dof,node) += periodlength_->at(dof);
       }
     }
     // shift second node outside of volume if bounding box was cut before
@@ -522,18 +531,18 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
       // initialize unshift with coord values
       unshift(dof,0) = coord(dof,0);
       unshift(dof,1) = coord(dof,1);
-      if (fabs(coord(dof,1)-(*PeriodLength)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+      if (fabs(coord(dof,1)-periodlength_->at(dof)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
       {
         cut(dof) = 1.0;
         shiftdof = dof;
-        unshift(dof,1) -= (*PeriodLength);
+        unshift(dof,1) -= periodlength_->at(dof);
         numshifts++;
       }
-      if (fabs(coord(dof,1)+(*PeriodLength) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+      if (fabs(coord(dof,1)+periodlength_->at(dof) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
       {
         cut(dof) = 2.0;
         shiftdof = dof;
-        unshift(dof,1) += (*PeriodLength);
+        unshift(dof,1) += periodlength_->at(dof);
         numshifts++;
       }
     }
@@ -625,7 +634,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
           break;
           case 2:
           {
-            lambdaorder(dof,0) = ((*PeriodLength) - coord(dof,0)) / dir(dof);
+            lambdaorder(dof,0) = (periodlength_->at(dof) - coord(dof,0)) / dir(dof);
             lambdaorder(dof,1) = dof;
           }
           break;
@@ -706,9 +715,9 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
         int currshift = (int)lambdaorder(shift,1);
         // shift the coordinates of the second point
         if(cut(currshift)==1.0)
-          unshift(currshift,1) += (*PeriodLength);
+          unshift(currshift,1) += periodlength_->at(currshift);
         else if(cut(currshift)==2.0)
-          unshift(currshift,1) -= (*PeriodLength);
+          unshift(currshift,1) -= periodlength_->at(currshift);
         // make second point the first and calculate new second point in the next iteration!
         for(int i=0; i<unshift.M(); i++)
           unshift(i,0) = unshift(i,1);
@@ -810,7 +819,6 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
   // Since the hypothetical bounding box stands for a crosslinker to be set, we just need the exact dimensions of the element
   if(bboxlimits!=Teuchos::null)
     extrusionfactor = 1.0;
-  RCP<double> PeriodLength = Teuchos::null;
   const int ndim = 3;
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
   int numshifts = 0;
@@ -821,18 +829,15 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
 
   if(periodicBC_)
   {
-    Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-    PeriodLength = rcp(new double(statmechparams.get<double>("PeriodLength",0.0)));
-
     // shift into volume
     for(int dof=0; dof<coord.M(); dof++)
     {
       for(int node=0; node<coord.N(); node++)
       {
-        if(coord(dof,node)>(*PeriodLength))
-          coord(dof,node) -= (*PeriodLength);
+        if(coord(dof,node)>periodlength_->at(dof))
+          coord(dof,node) -= periodlength_->at(dof);
         else if(coord(dof,node)<0.0)
-          coord(dof,node) += (*PeriodLength);
+          coord(dof,node) += periodlength_->at(dof);
       }
     }
 
@@ -842,18 +847,18 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
       // initialize unshift with coord values
       unshift(dof,0) = coord(dof,0);
       unshift(dof,1) = coord(dof,1);
-      if (fabs(coord(dof,1)-(*PeriodLength)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+      if (fabs(coord(dof,1)-periodlength_->at(dof)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
       {
         cut(dof) = 1.0;
         shiftdof = dof;
-        unshift(dof,1) -= (*PeriodLength);
+        unshift(dof,1) -= periodlength_->at(dof);
         numshifts++;
       }
-      if (fabs(coord(dof,1)+(*PeriodLength) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+      if (fabs(coord(dof,1)+periodlength_->at(dof) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
       {
         cut(dof) = 2.0;
         shiftdof = dof;
-        unshift(dof,1) += (*PeriodLength);
+        unshift(dof,1) += periodlength_->at(dof);
         numshifts++;
       }
     }
@@ -919,7 +924,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
           break;
           case 2:
           {
-            lambdaorder(dof,0) = ((*PeriodLength) - unshift(dof,0)) / dir(dof);
+            lambdaorder(dof,0) = (periodlength_->at(dof) - unshift(dof,0)) / dir(dof);
             lambdaorder(dof,1) = dof;
           }
           break;
@@ -981,9 +986,9 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
         }
         int currshift = (int)lambdaorder(shift,1);
         if(cut(currshift)==1.0)
-          unshift(currshift,1) += (*PeriodLength);
+          unshift(currshift,1) += periodlength_->at(currshift);
         else if(cut(currshift)==2.0)
-          unshift(currshift,1) -= (*PeriodLength);
+          unshift(currshift,1) -= periodlength_->at(currshift);
         for(int dof=0; dof<unshift.M(); dof++)
           unshift(dof,0) = unshift(dof,1);
       }
@@ -1396,7 +1401,7 @@ LINALG::Matrix<1,6> Beam3ContactOctTree::GetRootOctant()
       if(i%2==0)
         lim(i)= 0.0;
       else
-        lim(i) =  statmechparams.get<double>("PeriodLength", 0.0);
+        lim(i) =  periodlength_->at((i-1)/2);
     }
   }
   else // standard procedure to find root box limits

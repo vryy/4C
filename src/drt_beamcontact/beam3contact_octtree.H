@@ -107,6 +107,8 @@ class Beam3ContactOctTree
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
+    Teuchos::RCP<std::vector<double> > periodlength_;
+
     //!\brief problem discretization
     DRT::Discretization& discret_;
     
