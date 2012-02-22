@@ -2285,7 +2285,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // print additional information
           if (myrank_==0)
           {
-            cout<< "  area                          = " << electrodesurface << endl;
+            cout<< "  area (condid " << icond <<")               = " << electrodesurface << endl;
             cout<< "  actualcurrent - targetcurrent = " << (actualcurrent-targetcurrent) << endl;
             cout<< "  conductivity                  = " << sigma_(numscal_) << endl;
           }
