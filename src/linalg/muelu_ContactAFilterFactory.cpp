@@ -22,5 +22,4 @@ template class MueLu::ContactAFilterFactory<std::complex<double>, int, int, Kokk
 # warning To compile MueLu with 'complex' support, please turn on Teuchos_ENABLE_COMPLEX
 # endif
 #endif
-
 #endif // HAVE_MueLu

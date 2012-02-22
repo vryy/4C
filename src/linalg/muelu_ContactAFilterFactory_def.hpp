@@ -121,7 +121,7 @@ namespace MueLu {
 
             Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMap->getData(0);
 
-            LocalOrdinal colBlockId = colBlockData[indices[i]]; // LID -> colBlockID
+            LocalOrdinal colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
 
             // colBlockId can be
             // -1:  indices[i] is not in one of the submaps of mapextractor

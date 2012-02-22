@@ -24,3 +24,4 @@ template class MueLu::ContactTransferFactory<std::complex<double>, int, int, Kok
 #endif
 
 #endif // HAVE_MueLu
+

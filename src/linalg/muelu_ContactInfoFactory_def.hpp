@@ -104,7 +104,7 @@ namespace MueLu {
       // loop over null space vectors
       for(int nsv = 0; nsv<Teuchos::as<int>(nsdim); nsv++) {
 	// split information in vectors a 3 dofs (for visualization in vtk files)
-	for (int k = 0; k<nsdim/3; k++) {
+	for (int k = 0; k<(int)(Teuchos::as<int>(nsdim)/3); k++) {
 	    os << "VECTORS nsp" << nsv << "_" << k << " float" << std::endl;
 	    Teuchos::ArrayRCP<Scalar> nullspacevec = nsp->getDataNonConst(nsv);
 	    // loop over all nodes
