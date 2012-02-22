@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file solver_muelupreconditioner.cpp
+
+\brief Interface class for MueLu preconditioner
+
+<pre>
+Maintainer: Tobias Wiesner
+            wiesner@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+*/
+
 /*
  * solver_muelupreconditioner.cpp
  *
@@ -8,16 +22,6 @@
 #ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
-
-/*#include "ml_common.h"
-#include "ml_include.h"
-#include "ml_epetra_utils.h"
-#include "ml_epetra.h"
-#include "ml_epetra_operator.h"
-#include "ml_MultiLevelPreconditioner.h"*/
-
-//#include "linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
-//#include "amgpreconditioner.H"      // Tobias' smoothed aggregation AMG implementation in BACI (only for fluids)
 
 #include <MueLu_ConfigDefs.hpp>
 
@@ -30,8 +34,7 @@
 #include <Teuchos_DefaultComm.hpp>
 
 // Xpetra
-//#include <Xpetra_MultiVector.hpp>
-//#include <Xpetra_MultiVectorFactory.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
 
 // MueLu
 #include <MueLu.hpp>
@@ -45,7 +48,11 @@
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 
-#include <MueLu_MLInterpreter_decl.hpp>
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
+
+#include <MueLu_AggregationExportFactory.hpp>
+//#include "muelu_ContactInfoFactory_decl.hpp"
+
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
@@ -87,37 +94,60 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     // so we can reuse the preconditioner
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
-
     // see whether we use standard ml or our own mlapi operator
-    const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
+    //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
     Teuchos::RCP<Xpetra::Operator<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsOperator<SC,LO,GO,NO,LMO>(mueluA));
 
-
-    // prepare nullspace vector for MueLu
-    int numdf = mllist_.get<int>("PDE equations",-1);
-    int dimns = mllist_.get<int>("null space: dimension",-1);
-    if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
-    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-
-    Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-    Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-
-    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-    	Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-    	const size_t myLength = nspVector->getLocalLength();
-    	for(size_t j=0; j<myLength; j++) {
-    		nspVectori[j] = (*nsdata)[i*myLength+j];
-    	}
-    }
-
     // remove unsupported flags
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
+#if 0
+
+    std::cout << "*** EXPORT nullspace: BEGIN ***" << std::endl;
+    // DO NOT COMMIT THIS STUFF
+    // write out nullspace
+    std::ofstream os;
+    os.open("nspvector.out",std::fstream::trunc);
+
+    Teuchos::RCP<std::vector<double> > nsp = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace");
+    int nsdim = mllist_.get<int>("null space: dimension");
+    int nEq   = mllist_.get<int>("PDE equations");
+
+    // loop over all nullspace vectors
+    for(int nsv = 0; nsv<nsdim; nsv++) {
+        os << "VECTORS nsp" << nsv << " float" << std::endl;
+        // loop over all nodes
+        for (int row = 0; row < nsp->size()/(nsdim); row+=nEq) {
+            for (int col = 0; col < nEq; col++) {
+                os << std::setprecision(16);
+                os << (*nsp)[nsv*nsp->size()/nsdim+row+col];
+                os << " ";
+            }
+            os << std::endl;
+        }
+    }
+
+    os << flush;
+    os.close();
+
+    std::cout << "*** EXPORT nullspace: END ***" << std::endl;
+#endif
+
+
+    // append user-given factories (for export of aggregates, debug info etc...)
+    Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/ NULL, /*dropFact.get()*/ NULL));
+    //Teuchos::RCP<MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > contactInfoFact = Teuchos::rcp(new MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("info_level%LEVELID_proc%PROCID.vtk",Teuchos::null,Teuchos::null/*nspFact*/));
+    std::vector<Teuchos::RCP<FactoryBase> > vec;
+    vec.push_back(aggExpFact);
+
     // Setup MueLu Hierarchy
-    Teuchos::RCP<Hierarchy> H = MLInterpreter::Setup(mllist_, mueluOp, nspVector);
+    MLParameterListInterpreter mueLuFactory(mllist_, vec);
+    Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+    H->GetLevel(0)->Set("A", mueluOp);
+    mueLuFactory.SetupHierarchy(*H);
 
     // set preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
