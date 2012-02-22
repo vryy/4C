@@ -139,6 +139,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return gsmdofrowmap_; }
 
     /*!
+    \brief provides maps needed for contact/meshtying specific multigrid preconditioners
+
+    */
+    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap);
+
+    /*!
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */

@@ -40,6 +40,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
+#include "../drt_contact/contact_abstract_strategy.H" // for feeding contactsolver with maps
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_fluid/drt_periodicbc.H"
@@ -478,6 +479,32 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       // only plausability check, that a contact solver is available
       if (contactsolver_ == Teuchos::null)
         dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
+    }
+
+    //**********************************************************************
+    // feed solver/preconditioner with additional information about the contact/meshtying problem
+    //**********************************************************************
+    {
+      if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
+      {
+        std::cout << "This is a contact solver" << std::endl;
+        Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
+
+        RCP<Epetra_Map> masterDofMap;
+        RCP<Epetra_Map> slaveDofMap;
+        RCP<Epetra_Map> innerDofMap;
+        // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
+        Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+        Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+        if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
+        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap);
+        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+
+        //std::cout << contactsolver_->Params() << std::endl;
+      }
+
     }
 
     // output of strategy type to screen
