@@ -455,6 +455,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         whichtau_ = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
       else if (whichtau_ == INPAR::SCATRA::tau_codina)
         whichtau_ = INPAR::SCATRA::tau_codina_wo_dt;
+      else if (whichtau_ == INPAR::SCATRA::tau_franca_madureira_valentin)
+        whichtau_ = INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt;
     }
     else
     {
@@ -931,6 +933,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
           whichtau_ = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
         else if (whichtau_ == INPAR::SCATRA::tau_codina)
           whichtau_ = INPAR::SCATRA::tau_codina_wo_dt;
+        else if (whichtau_ == INPAR::SCATRA::tau_franca_madureira_valentin)
+          whichtau_ = INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt;
       }
       else
       {
@@ -3454,7 +3458,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // calculate characteristic element length
     const double h = CalcCharEleLength(vol,vel_norm);
 
-    // various parameter computations for case without dt:
+    // various parameter computations:
     // relating convective to viscous part
     if (diffus < EPS14) dserror("Invalid diffusion coefficent");
     const double epe = mk * densnp_[k] * vel_norm * h / diffus;
@@ -3642,6 +3646,56 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     tau_[k] = 1.0/(c1*densnp_[k]*sigma_tot
                    + c2*densnp_[k]*vel_norm/h
                    + c3*diffus/(h*h));
+  }
+  break;
+  case INPAR::SCATRA::tau_franca_madureira_valentin:
+  case INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt:
+  {
+    /*
+
+    This stabilization parameter is only intended to be used for
+    reactive-diffusive problems such as structure-based scalar
+    transport problems in case of potentially dominating reaction.
+
+    literature:
+    L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
+    functions: enriching finite element spaces with local but not
+    bubble-like functions, Comput. Methods Appl. Mech. Engrg. 194
+    (2005) 3006-3021.
+
+    */
+    // get Euclidean norm of velocity at element center
+    double vel_norm;
+    vel_norm = convelint_.Norm2();
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to be zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = reacoeff_[k];
+    if (whichtau_ == INPAR::SCATRA::tau_franca_madureira_valentin)
+      sigma_tot += 1.0/timefac;
+
+    // calculate characteristic element length
+    // -> currently: cubic/square root of element volume/area or
+    //    element length (3-/2-/1-D)
+    // cast dimension to a double variable -> pow()
+    const double dim = (double) nsd_;
+    const double h = pow(vol,1/dim);
+
+
+    // parameter relating reactive to diffusive part
+    const double epe = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
+
+    // respective "switching" parameter
+    const double xi = DMAX(epe,1.0);
+
+    // constant c_u as suggested in Badia and Codina (2010), method A
+    // is set to be 1.0 here as in Franca et al. (2005)
+    // alternative: 4.0 as suggested in Badia and Codina (2010) for
+    // Darcy flow
+    const double c_u = 1.0;
+
+    tau_[k] = DSQR(h)/(c_u*DSQR(h)*densnp_[k]*sigma_tot*xi + (2.0*diffus/mk));
   }
   break;
   case INPAR::SCATRA::tau_exact_1d:

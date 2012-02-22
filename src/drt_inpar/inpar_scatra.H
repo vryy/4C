@@ -106,6 +106,8 @@ namespace INPAR
       tau_shakib_hughes_codina_wo_dt,
       tau_codina,
       tau_codina_wo_dt,
+      tau_franca_madureira_valentin,
+      tau_franca_madureira_valentin_wo_dt,
       tau_exact_1d,
       tau_zero
     };
