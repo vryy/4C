@@ -1383,7 +1383,8 @@ void NitscheErrors(
     const DRT::ELEMENTS::Combust3::MyState& mystate,                      ///< element state variables
     Teuchos::RCP<const MAT::Material>       material,                     ///< fluid material
     const double                            time,                         ///< current time
-    const bool                              smoothed_boundary_integration
+    const bool                              smoothed_boundary_integration,
+    const INPAR::COMBUST::CombustionType    combusttype
 )
 {
   const int NUMDOF = 4;
@@ -1418,14 +1419,14 @@ void NitscheErrors(
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
 
-    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-      evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamvely; ++iparam)
-      evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
-    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-      evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
-    for (size_t iparam=0; iparam<numparampres; ++iparam)
-      eprenp(iparam) = mystate.velnp_[presdof[iparam]];
+  for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+    evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
+  for (size_t iparam=0; iparam<numparamvely; ++iparam)
+    evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
+  for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+    evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
+  for (size_t iparam=0; iparam<numparampres; ++iparam)
+    eprenp(iparam) = mystate.velnp_[presdof[iparam]];
 
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
@@ -1436,20 +1437,55 @@ void NitscheErrors(
   double ele_meas_plus = 0.0;	// we need measure of element in plus domain and minus domain
   double ele_meas_minus = 0.0;	// for different averages <> and {}
 
-  COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, time, ele_meas_plus, ele_meas_minus);
-
-  if (ele->Bisected() or ele->Touched() )
+  switch(combusttype)
   {
-    LINALG::Matrix<3,numnode> egradphi;
-    egradphi.Clear();
-    LINALG::Matrix<numnode,1> ecurv;
-      ecurv.Clear();
-    if (smoothed_boundary_integration)
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+  case INPAR::COMBUST::combusttype_premixedcombustion:
+  case INPAR::COMBUST::combusttype_twophaseflowjump:
+  {
+    COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, time, ele_meas_plus, ele_meas_minus, false);
 
-    COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
+    if (ele->Bisected() or ele->Touched() )
+    {
+      LINALG::Matrix<3,numnode> egradphi;
+      egradphi.Clear();
+      LINALG::Matrix<numnode,1> ecurv;
+        ecurv.Clear();
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+
+      COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+          eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration, false);
+    }
+
+    break;
+  }
+  case INPAR::COMBUST::combusttype_twophaseflow:
+  case INPAR::COMBUST::combusttype_twophaseflow_surf:
+  {
+    COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, time, ele_meas_plus, ele_meas_minus, true);
+
+    if (combusttype == INPAR::COMBUST::combusttype_twophaseflow_surf)
+    {
+      if (ele->Bisected() or ele->Touched() )
+      {
+        LINALG::Matrix<3,numnode> egradphi;
+        egradphi.Clear();
+        LINALG::Matrix<numnode,1> ecurv;
+        ecurv.Clear();
+        if (smoothed_boundary_integration)
+          COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+
+        COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+           eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration, true);
+      }
+    }
+
+    break;
+  }
+  default:
+    dserror("unknown type of combustion problem");
   }
 
   return;
@@ -1469,7 +1505,8 @@ void COMBUST::callNitscheErrors(
     const DRT::ELEMENTS::Combust3::MyState&     mystate,          ///< element state variables
     Teuchos::RCP<const MAT::Material>           material,         ///<
     const double                                time,             ///< current time
-    const bool                                  smoothed_boundary_integration
+    const bool                                  smoothed_boundary_integration,
+    const INPAR::COMBUST::CombustionType        combusttype
 )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -1478,7 +1515,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::standard_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material, time, smoothed_boundary_integration);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material, time, smoothed_boundary_integration, combusttype);
     break;
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -1514,7 +1551,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::xfem_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,time, smoothed_boundary_integration);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,time, smoothed_boundary_integration, combusttype);
     break;
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(

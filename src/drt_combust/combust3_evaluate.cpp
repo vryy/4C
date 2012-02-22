@@ -482,7 +482,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // calculate Nitsche norms
         COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_,
-            mystate, material, time, smoothed_boundary_integration);
+            mystate, material, time, smoothed_boundary_integration, combusttype);
       }
     }
     break;

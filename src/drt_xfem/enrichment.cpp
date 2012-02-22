@@ -289,7 +289,10 @@ double XFEM::Enrichment::EnrValueAtInterface(
     }
     case XFEM::Enrichment::typeKink:
     {
-        dserror("do enrichment values really vary over the embedded interface for a kink enrichment?");
+        //dserror("do enrichment values really vary over the embedded interface for a kink enrichment?");
+        // otherwise we cannot evaluate jump enrichments in case of two-phase flow with surface tension
+        enrval = 1.0;
+        break;
     }
     default:
         dserror("unsupported type of enrichment!");
