@@ -20,7 +20,9 @@ namespace MueLu {
 
   /*!
     @class ContactAFilterFactory class.
-    @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
+    @brief special factory for exporting nullspace inforation in vtk format. Can be used together with the MueLuAggregationExportFactory.
+           Extend aggregation information by using e.g. "cat output0.vtk agg_info_0.vtk >> aggregation0.vtk"
+    
 
   */
 
