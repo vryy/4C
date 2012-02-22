@@ -188,22 +188,23 @@ public:
   /// set the velocity field (zero or field by function)
   void SetVelocityField();
 
-  /// set the convective velocity + subgrid velocity/viscosity field (Navier-Stokes solution)
+  /// set convective velocity field (+ pressure and acceleration field as
+  /// well as fine-scale velocity field, if required)
   void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector> confluidvel, ///< convective fluid velocity/press. vector
-      Teuchos::RCP<const Epetra_Vector> fluidacc, ///< fluid acceleration vector
-      Teuchos::RCP<const Epetra_Vector> fluidvel,  ///< fluid velocity vector
-      Teuchos::RCP<const Epetra_Vector> fluidfsvel, ///< fluid fine-scale velocity vector
-      Teuchos::RCP<const DRT::DofSet> dofset,
-      Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
+      Teuchos::RCP<const Epetra_Vector> convvel, ///< convective velocity/press. vector
+      Teuchos::RCP<const Epetra_Vector> acc,     ///< acceleration vector
+      Teuchos::RCP<const Epetra_Vector> vel,     ///< velocity vector
+      Teuchos::RCP<const Epetra_Vector> fsvel,   ///< fine-scale velocity vector
+      Teuchos::RCP<const DRT::DofSet>   dofset,
+      Teuchos::RCP<DRT::Discretization> dis);    ///< fluid/structure discretization
 
   /// call different reinitialization techniques based on solving the sussman equation
   bool CallReinitialization();
 
  /// apply moving mesh data
  void ApplyMeshMovement(
-     Teuchos::RCP<const Epetra_Vector> dispnp,     ///< displacement vector
-     Teuchos::RCP<DRT::Discretization> fluiddis ); ///< fluid discretization
+     Teuchos::RCP<const Epetra_Vector> dispnp, ///< displacement vector
+     Teuchos::RCP<DRT::Discretization> dis );  ///< fluid/structure discretization
 
   /// set the initial scalar field phi
   void SetInitialField(

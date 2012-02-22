@@ -1931,16 +1931,19 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 
 /*----------------------------------------------------------------------*
  | set convective velocity field (+ pressure and acceleration field as  |
- | well as fine-scale velocity field if required)             gjb 05/09 |
+ | well as fine-scale velocity field, if required)            gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
-Teuchos::RCP<const Epetra_Vector> confluidvel,
-Teuchos::RCP<const Epetra_Vector> fluidacc,
-Teuchos::RCP<const Epetra_Vector> fluidvel,
-Teuchos::RCP<const Epetra_Vector> fluidfsvel,
-Teuchos::RCP<const DRT::DofSet> dofset,
-Teuchos::RCP<DRT::Discretization> fluiddis)
+Teuchos::RCP<const Epetra_Vector> convvel,
+Teuchos::RCP<const Epetra_Vector> acc,
+Teuchos::RCP<const Epetra_Vector> vel,
+Teuchos::RCP<const Epetra_Vector> fsvel,
+Teuchos::RCP<const DRT::DofSet>   dofset,
+Teuchos::RCP<DRT::Discretization> dis)
 {
+  //---------------------------------------------------------------------------
+  // preliminaries
+  //---------------------------------------------------------------------------
   if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Wrong SetVelocityField() called for velocity field type %d!",cdvel_);
 
@@ -1948,23 +1951,26 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
 //#ifdef DEBUG   // is this costly, when we do this test always?
   // We rely on the fact, that the nodal distribution of both fields is the same.
-  // Although Scatra discretization was constructed as a clone of the fluid mesh
-  // at the beginning, the fluid nodal distribution can have changed meanwhile
-  // (e.g., caused by periodic boundary conditions applied only on the fluid side)!
-  // We have to be sure, that everything is still matching.
-  if (not fluiddis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
-    dserror("Fluid and Scatra noderowmaps are NOT identical. Emergency!");
+  // Although Scatra discretization was constructed as a clone of the fluid or
+  // structure mesh, respectively, at the beginning, the nodal distribution may 
+  // have changed meanwhile (e.g., due to periodic boundary conditions applied only 
+  // to the fluid field)!
+  // We have to be sure that everything is still matching.
+  if (not dis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
+    dserror("Fluid/Structure and Scatra noderowmaps are NOT identical. Emergency!");
 //#endif
 
+  // define error variable
   int err(0);
 
   // boolean indicating whether acceleration vector exists
   // -> if yes, subgrid-scale velocity may need to be computed on element level
-  bool sgvelswitch = (fluidacc != Teuchos::null);
+  bool sgvelswitch = (acc != Teuchos::null);
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
-  bool fsvelswitch = (fluidfsvel != Teuchos::null);
+  bool fsvelswitch = (fsvel != Teuchos::null);
+
   // some thing went wrong if we want to use multifractal subgrid-scale modeling
   // and have not got the fine-scale velocity
   if (step_>=1 and (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales
@@ -1976,132 +1982,148 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_all and fsvelswitch)
     fsvelswitch = false;
 
+  //---------------------------------------------------------------------------
+  // transfer of dofs
+  // (We rely on the fact that the scatra discretization is a clone of the
+  // fluid or structure mesh, respectively, meaning that a scatra node has the
+  // same local (and global) ID as its corresponding fluid/structure node.)
+  //---------------------------------------------------------------------------
   // loop over all local nodes of scatra discretization
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
-    // Here we rely on the fact that the scatra discretization
-    // is a clone of the fluid mesh. => a scatra node has the same
-    // local (and global) ID as its corresponding fluid node!
-
-    // get the processor's local fluid node with the same lnodeid
-    DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+    // get local fluid/structure node with the same lnodeid
+    DRT::Node* lnode = dis->lRowNode(lnodeid);
 
     // care for the slave nodes of rotationally symm. periodic boundary conditions
     double rotangle(0.0);
-    bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(fluidlnode,rotangle);
+    bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(lnode,rotangle);
 
-    // get the degrees of freedom associated with this fluid node
-    vector<int> fluidnodedofs;
-    if (dofset == Teuchos::null)
-      fluidnodedofs = fluiddis->Dof(fluidlnode);
-    else // ask a different dofset e.g. for a XFEM fluid
-      fluidnodedofs = (*dofset).Dof(fluidlnode);
+    // get degrees of freedom associated with this fluid/structure node
+    // two particular cases have to be considered:
+    // - in non-XFEM case, the first dofset is always considered, allowing for
+    //   using multiple dof sets, e.g., for structure-based scalar transport
+    // - for XFEM, a different nodeset is required
+    vector<int> nodedofs;
+    if (dofset == Teuchos::null) nodedofs = dis->Dof(0,lnode);
+    else                         nodedofs = (*dofset).Dof(lnode);
 
     // determine number of space dimensions
     const int numdim = genprob.ndim;
 
-    // now we transfer velocity dofs only
-    for(int index=0;index < numdim; ++index)
+    //-------------------------------------------------------------------------
+    // transfer of velocity dofs
+    //-------------------------------------------------------------------------
+    for (int index=0;index < numdim; ++index)
     {
-      // global and processor's local fluid dof ID
-      const int fgid = fluidnodedofs[index];
-//      const int flid = fluiddofrowmap->LID(fgid);
-      const int flid = confluidvel->Map().LID(fgid);
-      if (flid < 0) dserror("lid not found in map for given gid");
+      // get global and local ID
+      const int gid = nodedofs[index];
+      // const int lid = dofrowmap->LID(gid);
+      const int lid = convvel->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
 
-      // get value of corresponding convective velocity component
-      double convelocity = (*confluidvel)[flid];
-      if (havetorotate)
-      {
-        // this is the desired component of the rotated vector field
-        convelocity = FLD::GetComponentOfRotatedVectorField(index,confluidvel,flid,rotangle);
-      }
+      //-----------------------------------------------------------------------
+      // get convective velocity
+      //-----------------------------------------------------------------------
+      double convelocity = (*convvel)[lid];
+
+      // component of rotated vector field
+      if (havetorotate)  convelocity = FLD::GetComponentOfRotatedVectorField(index,convvel,lid,rotangle);
+
       // insert velocity value into node-based vector
-      err = convel_->ReplaceMyValue(lnodeid, index, convelocity);
-      if (err!=0) dserror("error while inserting a value into convel_");
+      err = convel_->ReplaceMyValue(lnodeid,index,convelocity);
+      if (err != 0) dserror("Error while inserting value into vector convel_!");
 
-      if (fluidvel != Teuchos::null)
+      //-----------------------------------------------------------------------
+      // get velocity
+      //-----------------------------------------------------------------------
+      if (vel != Teuchos::null)
       {
         // get value of corresponding velocity component
-        double velocity = (*fluidvel)[flid];
-        if (havetorotate)
-        {
-          // this is the desired component of the rotated vector field
-          velocity = FLD::GetComponentOfRotatedVectorField(index,fluidvel,flid,rotangle);
-        }
+        double velocity = (*vel)[lid];
+
+        // component of rotated vector field
+        if (havetorotate) velocity = FLD::GetComponentOfRotatedVectorField(index,vel,lid,rotangle);
+
         // insert velocity value into node-based vector
-        err = vel_->ReplaceMyValue(lnodeid, index, velocity);
-        if (err!=0) dserror("error while inserting a value into vel_");
+        err = vel_->ReplaceMyValue(lnodeid,index,velocity);
+        if (err != 0) dserror("Error while inserting value into vector vel_!");
       }
-      // if no fluid velocity is provided by the respective algorithm, we
-      // assume that it equals the given convective velocity
       else
       {
+        // if velocity vector is not provided by the respective algorithm, we
+        // assume that it equals the given convective velocity:
         // insert velocity value into node-based vector
-        err = vel_->ReplaceMyValue(lnodeid, index, convelocity);
-        if (err!=0) dserror("error while inserting a value into vel_");
+        err = vel_->ReplaceMyValue(lnodeid,index,convelocity);
+        if (err != 0) dserror("Error while inserting value into vector vel_!");
       }
 
+      //-----------------------------------------------------------------------
+      // get acceleration, if required
+      //-----------------------------------------------------------------------
       if (sgvelswitch)
       {
         // get value of corresponding acceleration component
-        double acceleration = (*fluidacc)[flid];
+        double acceleration = (*acc)[lid];
 
-        if (havetorotate)
-        {
-          // this is the desired component of the rotated vector field
-          acceleration = FLD::GetComponentOfRotatedVectorField(index,fluidacc,flid,rotangle);
-        }
+        // component of rotated vector field
+        if (havetorotate) acceleration = FLD::GetComponentOfRotatedVectorField(index,acc,lid,rotangle);
 
         // insert acceleration value into node-based vector
-        accpre_->ReplaceMyValue(lnodeid, index, acceleration);
-        if (err!=0) dserror("error while inserting a value into accpre_");
+        accpre_->ReplaceMyValue(lnodeid,index,acceleration);
+        if (err != 0) dserror("Error while inserting value into vector accpre_!");
       }
 
-      // finally, we transfer the fine-scale velocity if required
+      //-----------------------------------------------------------------------
+      // get fine-scale velocity, if required
+      //-----------------------------------------------------------------------
       if (fsvelswitch)
       {
         // get value of corresponding fine-scale velocity component
-        double fsvelocity = (*fluidfsvel)[flid];
-        if (havetorotate)
-        {
-          // this is the desired component of the rotated vector field
-          fsvelocity = FLD::GetComponentOfRotatedVectorField(index,fluidfsvel,flid,rotangle);
-        }
+        double fsvelocity = (*fsvel)[lid];
+
+        // component of rotated vector field
+        if (havetorotate) fsvelocity = FLD::GetComponentOfRotatedVectorField(index,fsvel,lid,rotangle);
+
         // insert fine-scale velocity value into node-based vector
-        err = fsvel_->ReplaceMyValue(lnodeid, index, fsvelocity);
-        if (err!=0) dserror("error while inserting a value into fsvel_");
+        err = fsvel_->ReplaceMyValue(lnodeid,index,fsvelocity);
+        if (err != 0) dserror("Error while inserting value into vector fsvel_!");
       }
     }
 
-    // now we transfer pressure dofs only
+    //-------------------------------------------------------------------------
+    // transfer of pressure dofs, if required
+    //-------------------------------------------------------------------------
     if (sgvelswitch)
     {
-      // global and processor's local fluid dof ID
-      const int fgid = fluidnodedofs[numdim];
-      // const int flid = fluiddofrowmap->LID(fgid);
-      const int flid = confluidvel->Map().LID(fgid);
-      if (flid < 0) dserror("lid not found in map for given gid");
+      // get global and local ID
+      const int gid = nodedofs[numdim];
+      // const int lid = dofrowmap->LID(gid);
+      const int lid = convvel->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
 
       // get value of corresponding pressure component
-      double pressure = (*confluidvel)[flid];
+      double pressure = (*convvel)[lid];
+
       // insert pressure value into node-based vector
-      err = accpre_->ReplaceMyValue(lnodeid, numdim, pressure);
-      if (err!=0) dserror("error while inserting a value into accpre_");
+      err = accpre_->ReplaceMyValue(lnodeid,numdim,pressure);
+      if (err != 0) dserror("Error while inserting value into vector accpre_!");
     }
 
-    // for security reasons in 1D or 2D problems:
-    // set zeros for all unused velocity components
+    //-------------------------------------------------------------------------
+    // to be sure for 1- and 2-D problems:
+    // set all unused velocity components to zero
+    //-------------------------------------------------------------------------
     for (int index=numdim; index < 3; ++index)
     {
-      err = convel_->ReplaceMyValue(lnodeid, index, 0.0);
-      if (err!=0) dserror("error while inserting a value into convel_");
-      err = vel_->ReplaceMyValue(lnodeid, index, 0.0);
-      if (err!=0) dserror("error while inserting a value into vel_");
+      err = convel_->ReplaceMyValue(lnodeid,index,0.0);
+      if (err != 0) dserror("Error while inserting value into vector convel_!");
+
+      err = vel_->ReplaceMyValue(lnodeid,index,0.0);
+      if (err != 0) dserror("Error while inserting value into vector vel_!");
     }
   }
 
-  // initial velocity field has now been set
+  // confirm that initial velocity field has now been set
   if (step_ == 0) initialvelset_ = true;
 
   return;
@@ -2114,56 +2136,71 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp,
-    Teuchos::RCP<DRT::Discretization> fluiddis
+    Teuchos::RCP<DRT::Discretization> dis
 )
 {
+  //---------------------------------------------------------------------------
+  // only required in ALE case
+  //---------------------------------------------------------------------------
   if (isale_)
   {
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA: apply mesh movement");
 
-    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements");
+    // check existence of displacement vector
+    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
 
+    // define error variable
     int err(0);
-    // get dofrowmap of fluid discretization
-    const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
+    // get dofrowmap of discretization
+    const Epetra_Map* dofrowmap = dis->DofRowMap();
+
+    //-------------------------------------------------------------------------
+    // transfer of dofs
+    // (We rely on the fact that the scatra discretization is a clone of the
+    // fluid or structure mesh, respectively, meaning that a scatra node has the
+    // same local (and global) ID as its corresponding fluid/structure node.)
+    //-------------------------------------------------------------------------
     // loop over all local nodes of scatra discretization
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
-      // Here we rely on the fact that the scatra discretization
-      // is a clone of the fluid mesh. => a scatra node has the same
-      // local (and global) ID as its corresponding fluid node!
+      // get local fluid/structure node with the same lnodeid
+      DRT::Node* lnode = dis->lRowNode(lnodeid);
 
-      // get the processor's local fluid node with the same lnodeid
-      DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
-      // get the degrees of freedom associated with this fluid node
-      vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+      // get degrees of freedom associated with this fluid/structure node
+      // (first dofset always considered, allowing for using multiple
+      //  dof sets, e.g., for structure-based scalar transport)
+      vector<int> nodedofs = dis->Dof(0,lnode);
+
       // determine number of space dimensions
       const int numdim = genprob.ndim;
 
-      // now we transfer velocity dofs only
-      for(int index=0;index < numdim; ++index)
+      for (int index=0;index < numdim; ++index)
       {
-        // global and processor's local fluid dof ID
-        const int fgid = fluidnodedofs[index];
-        const int flid = fluiddofrowmap->LID(fgid);
+        // get global and local ID
+        const int gid = nodedofs[index];
+        const int lid = dofrowmap->LID(gid);
 
-        // get value of corresponding velocity component
-        double disp = (*dispnp)[flid];
-        // insert velocity value into node-based vector
-        err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
-        if (err!= 0) dserror("error while inserting a value into dispnp_");
+        //---------------------------------------------------------------------
+        // get displacement
+        //---------------------------------------------------------------------
+        double disp = (*dispnp)[lid];
+
+        // insert displacement value into node-based vector
+        err = dispnp_->ReplaceMyValue(lnodeid,index,disp);
+        if (err != 0) dserror("Error while inserting value into vector dispnp_!");
       }
 
-      // for security reasons in 1D or 2D problems:
-      // set zeros for all unused velocity components
+      //-----------------------------------------------------------------------
+      // to be sure for 1- and 2-D problems:
+      // set all unused displacement components to zero
+      //-----------------------------------------------------------------------
       for (int index=numdim; index < 3; ++index)
       {
-        err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
-        if (err!= 0) dserror("error while inserting a value into dispnp_");
+        err = dispnp_->ReplaceMyValue(lnodeid,index,0.0);
+        if (err != 0) dserror("Error while inserting value into vector dispnp_!");
       }
-
-    } // for lnodid
+    } // for lnodeid
   } // if (isale_)
 
   return;
