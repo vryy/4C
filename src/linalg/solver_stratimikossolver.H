@@ -48,8 +48,6 @@ namespace LINALG
       Teuchos::ParameterList& Params() const { return params_; }
 
       protected:
-          //! helper function: transform Epetra_Comm to Teuchos::Comm
-          Teuchos::RCP<const Teuchos::Comm<int> > toTeuchosComm(const Epetra_Comm & comm);
 
           //! a communicator
           const Epetra_Comm&                    comm_;

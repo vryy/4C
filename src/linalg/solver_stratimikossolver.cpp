@@ -26,6 +26,7 @@
 #include "Teuchos_DefaultSerialComm.hpp"
 #include "Teuchos_DefaultMpiComm.hpp"
 
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "solver_stratimikossolver.H"
 
@@ -93,7 +94,7 @@ void LINALG::SOLVER::StratimikosSolver::Solve()
   Teuchos::RCP<Epetra_CrsMatrix> epetra_A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
 
   // create a dummy one-column Thyra::VectorSpaceBase
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = toTeuchosComm(A_->Comm());
+  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm(A_->Comm());
   Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double> > dummyDomainSpaceFac = Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
 
   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > dummyDomainSpace = dummyDomainSpaceFac->createVecSpc(x_->NumVectors());
@@ -149,30 +150,5 @@ int LINALG::SOLVER::StratimikosSolver::ApplyInverse(const Epetra_MultiVector& X,
   dserror("ApplyInverse not implemented for StratimikosSolver");
   return -1;
 }
-
-Teuchos::RCP<const Teuchos::Comm<int> > LINALG::SOLVER::StratimikosSolver::toTeuchosComm(const Epetra_Comm & comm)
-{
-#ifdef HAVE_MPI
-  try {
-    const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-    Teuchos::RCP<Teuchos::MpiComm<int> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<int>(Teuchos::opaqueWrapper(mpiComm.Comm())));
-    return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<int> >(mpicomm);
-  }
-  catch (std::bad_cast & b) {}
-#endif
-  try
-  {
-    const Epetra_SerialComm& serialComm = dynamic_cast<const Epetra_SerialComm&>(comm);
-    serialComm.NumProc(); // avoid compilation warning
-    return Teuchos::rcp(new Teuchos::SerialComm<int>());
-  }
-  catch (std::bad_cast & b)
-  {
-    dserror("Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm object is unknown");
-  }
-  dserror("Congratulations! You should not be here!");
-  return Teuchos::null;
-}
-
 
 #endif /* TRILINOS_DEV */

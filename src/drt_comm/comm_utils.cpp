@@ -183,21 +183,20 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
 /*----------------------------------------------------------------------*
  | converts Epetra_Comm into Teuchos::Comm                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::Comm<int> > COMM_UTILS::toTeuchosComm(
-  const Epetra_Comm& comm
-  )
+Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > COMM_UTILS::toTeuchosComm(const Epetra_Comm & comm)
 {
   try {
     const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-    Teuchos::RCP<Teuchos::MpiComm<int> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<int>(Teuchos::opaqueWrapper(mpiComm.Comm())));
-    return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<int> >(mpicomm);
+    Teuchos::RCP<Teuchos::MpiComm<Teuchos::Ordinal> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<Teuchos::Ordinal>(Teuchos::opaqueWrapper(mpiComm.Comm())));
+    return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<Teuchos::Ordinal> >(mpicomm);
   }
-  catch (std::bad_cast & b) {}
-  dserror("Something went wrong with converting the communicator! You should not be here!");
-
+  catch (std::bad_cast & b)
+  {
+    dserror("Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm object is unknown");
+  }
+  dserror("Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should not be here!");
   return Teuchos::null;
 }
-
 
 
 /*----------------------------------------------------------------------*/

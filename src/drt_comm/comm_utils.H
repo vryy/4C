@@ -28,7 +28,6 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #include <Teuchos_DefaultMpiComm.hpp>
 
-
 /*----------------------------------------------------------------------*
  |                                                          ghamm 01/12 |
  *----------------------------------------------------------------------*/
@@ -39,10 +38,10 @@ namespace COMM_UTILS
   void CreateComm(int argc, char** argv);
 
   //! transform Epetra_Comm to Teuchos::Comm, RCP version
-  Teuchos::RCP<const Teuchos::Comm<int> > toTeuchosComm(const Epetra_Comm& comm);
-
+  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > toTeuchosComm(const Epetra_Comm & comm);
 
 } // namespace COMM_UTILS
+
 
 
 /*----------------------------------------------------------------------*/

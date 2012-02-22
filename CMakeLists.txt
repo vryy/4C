@@ -728,8 +728,11 @@ set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/vele3_surface.cpp
   src/drt_bele3/vele3_surface_evaluate.cpp
 )
-set(OBJS_DRT_UTILS
+set(OBJS_DRT_COMM
   src/drt_comm/comm_utils.cpp
+)
+set(OBJS_DRT_UTILS
+
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
@@ -1534,7 +1537,6 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 # Define the libraries. The link order is important!
 
 # Compile element libraries first. There are files that take time to compile.
-
 add_library(ele_f3 ${OBJS_DRT_F3_LIB})
 add_library(ele_f3_impl ${OBJS_DRT_F3_IMPL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
@@ -1652,6 +1654,7 @@ add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
 add_library(drt_lib_register ${OBJS_DRT_REGISTER})
 
 # libraries that are used by baci and by filters
+add_library(drt_comm ${OBJS_DRT_COMM})
 add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
@@ -1730,6 +1733,7 @@ target_link_libraries (${baciname}
   drt_micromat drt_mat
   drt_lib_utils
   linalg
+  drt_comm
   ${LIBRARIES})
 
 set(FILTER_LIBRARIES 
@@ -1741,6 +1745,7 @@ set(FILTER_LIBRARIES
   drt_lib_utils
   linalg
   filter_common
+  drt_comm
   ${LIBRARIES})
 
 target_link_libraries (post_drt_gid ${FILTER_LIBRARIES})
@@ -1767,7 +1772,7 @@ include(CTest)
 if(NOT TRILINOS_DEV)
 if (NOT ACML_FOUND )
   add_executable(cut_test ${OBJS_CUT_TEST})
-  target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
+  target_link_libraries(cut_test drt_lib_cut ${ACML_LIBRARIES} ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 endif(NOT ACML_FOUND)
 endif(NOT TRILINOS_DEV)
