@@ -95,6 +95,7 @@ void LINALG::SOLVER::StratimikosSolver::Solve()
 
   // create a dummy one-column Thyra::VectorSpaceBase
   Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm(A_->Comm());
+
   Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double> > dummyDomainSpaceFac = Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
 
   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > dummyDomainSpace = dummyDomainSpaceFac->createVecSpc(x_->NumVectors());

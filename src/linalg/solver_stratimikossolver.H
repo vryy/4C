@@ -48,7 +48,6 @@ namespace LINALG
       Teuchos::ParameterList& Params() const { return params_; }
 
       protected:
-
           //! a communicator
           const Epetra_Comm&                    comm_;
 
