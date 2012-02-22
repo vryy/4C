@@ -179,7 +179,7 @@ public:
     bool                     reset   = false                     ,
     Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
     Teuchos::RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
-    bool                     project = false                     );
+    bool                     project = false                          );
 
   /// solve linear system after setup has been done
   void Solve();

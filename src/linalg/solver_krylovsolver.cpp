@@ -19,6 +19,7 @@
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
 #include "solver_muelupreconditioner.H"
+#include "solver_muelucontactpreconditioner.H"
 #ifdef TRILINOS_DEV
 #include "solver_tekopreconditioner.H"
 #endif
@@ -86,6 +87,14 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
 #else
       dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
+#endif
+    }
+    else if ( Params().isSublist("MueLu (Contact) Parameters") )
+    {
+#ifdef HAVE_MueLu
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
+#else
+      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
 #endif
     }
     else if ( Params().isSublist("AMGBS Parameters") ) // TODO remove me.

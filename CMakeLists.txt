@@ -1146,11 +1146,15 @@ set(OBJS_LINALG
   src/linalg/solver_ifpackpreconditioner.cpp
   src/linalg/solver_mlpreconditioner.cpp
   src/linalg/solver_muelupreconditioner.cpp
+  src/linalg/solver_muelucontactpreconditioner.cpp
   src/linalg/solver_tekopreconditioner.cpp
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
   src/linalg/solver_stratimikossolver.cpp
   src/linalg/teko_baciepetraoperatorwrapper.cpp
+  src/linalg/muelu_ContactAFilterFactory.cpp
+  src/linalg/muelu_ContactTransferFactory.cpp
+  src/linalg/muelu_ContactInfoFactory.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

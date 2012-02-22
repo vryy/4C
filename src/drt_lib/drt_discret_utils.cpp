@@ -170,6 +170,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have a sublist indicating usage of Trilinos::ML
   if (!solveparams.isSublist("ML Parameters") &&
       !solveparams.isSublist("MueLu Parameters") &&
+      !solveparams.isSublist("MueLu (Contact) Parameters") &&
 	  !solveparams.isSublist("Stratimikos Parameters")) return;
   ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("Stratimikos Parameters"))
@@ -184,6 +185,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     mllist_ptr = &(solveparams.sublist("ML Parameters"));
   else if (solveparams.isSublist("MueLu Parameters"))
 	mllist_ptr = &(solveparams.sublist("MueLu Parameters"));
+  else if (solveparams.isSublist("MueLu (Contact) Parameters"))
+        mllist_ptr = &(solveparams.sublist("MueLu (Contact) Parameters"));
   else return;
 
   // see whether we have previously computed the nullspace

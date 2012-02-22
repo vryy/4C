@@ -720,14 +720,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     mllist.set<bool>("LINALG::AMG_Operator",true);
   break;
   case INPAR::SOLVER::azprec_MueLuAMG_sym: // MueLu operator (smoothed aggregation)
-	mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
-	break;
+  case INPAR::SOLVER::azprec_MueLuAMG_contact: // MueLu operator (contact)
+    mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
+  break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
-	mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
+    mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
     mllist.set("energy minimization: enable",true);
     mllist.set("energy minimization: type",3); // TODO: different energy minimization modes not available for MueLu, yet
     mllist.set("aggregation: block scaling",false);
-	break;
+  break;
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
     mllist.set("aggregation: use tentative restriction",true);
   break;
@@ -853,7 +854,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: type"                        ,"IFPACK");
       smolevelsublist.set("smoother: ifpack type"                 ,"ILU");
       smolevelsublist.set("smoother: ifpack overlap"              ,inparams.get<int>("IFPACKOVERLAP"));
-      smolevelsublist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]);
+      smolevelsublist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]); // 12.01.2012: TW fixed double->int
       Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd" or "true"
       ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
@@ -925,9 +926,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       mllist.set("coarse: type"          ,"IFPACK");
       mllist.set("coarse: ifpack type"   ,"ILU");
       mllist.set("coarse: ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
-      mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]);
+      mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]); // 12.01.2012: TW fixed double -> int
       Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-      ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
+      ifpacklist.set<int>("fact: level-of-fill", (int)mlsmotimessteps[coarse]);
       ifpacklist.set("schwarz: reordering type","rcm");
       ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
       ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
@@ -1100,6 +1101,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+    case INPAR::SOLVER::azprec_MueLuAMG_contact:
       beloslist.set("Preconditioner Type","ML");
       break;
     case INPAR::SOLVER::azprec_AMGBS:
@@ -1165,7 +1167,17 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
        Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
        mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
      } // if ml preconditioner
-
+     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
+         azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
+     {
+         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
+         muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
+     }
+     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
+     {
+         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+         muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
+     }
      if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
      {
        Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");
@@ -1295,6 +1307,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_TekoSIMPLE:
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+    case INPAR::SOLVER::azprec_MueLuAMG_contact:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     case INPAR::SOLVER::azprec_CheapSIMPLE:
@@ -1364,10 +1377,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       mllist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);
     } // if ml preconditioner
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
-    	azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym	)
+    	azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
     {
     	Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
         muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
+    }
+    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
+    {
+        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+        muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
     }
     //------------------------------------- set parameters for AMGBS if used
     if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
