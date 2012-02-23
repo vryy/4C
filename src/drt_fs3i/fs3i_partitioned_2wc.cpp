@@ -271,13 +271,13 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
   bool fluidstopnonliniter  = false;
   bool scatrastopnonliniter = false;
 
-  // fluid convergence check
-  if (comm.MyPID()==0)
-    cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
+  // dump on screen
+  if (comm.MyPID()==0) cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
+
+  // fsi convergence check
   if (fsi_->NoxStatus() == NOX::StatusTest::Converged) fluidstopnonliniter = true;
 
   // scatra convergence check
-  if (comm.MyPID()==0) cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
   scatrastopnonliniter = ScatraConvergenceCheck(itnum);
 
   if (fluidstopnonliniter == true and scatrastopnonliniter == true) return true;
@@ -302,7 +302,7 @@ bool FS3I::PartFS3I_2WC::ScatraConvergenceCheck(int itnum)
   // convergence check of scatra fields
   if (comm.MyPID() == 0)
   {
-    cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
+    cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
     cout<<"\n****************************************\n   FLUID-BASED SCALAR TRANSPORT CHECK\n****************************************\n";
   }
   scatra1stopnonliniter = scatravec_[0]->ScaTraField().ConvergenceCheck(itnum,itmax_,ittol_);

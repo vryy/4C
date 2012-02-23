@@ -130,6 +130,16 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     scatratimeparams->set<string>("CONVFORM","conservative");
     scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","no_stabilization");
     scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Zero");
+
+    // some provisions not yet activated
+    /*if (DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(scatratimeparams->sublist("STABILIZATION"),"STABTYPE") == INPAR::SCATRA::stabtype_SUPG)
+      scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","USFEM");
+
+    if (DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_franca_valentin)
+      scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Franca_Madureira_Valentin");
+    else if (DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_franca_valentin_wo_dt or
+     DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_exact_1d)
+      scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Franca_Madureira_Valentin_wo_dt");*/
   }
 
   // -------------------------------------------------------------------
