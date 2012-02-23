@@ -20,7 +20,7 @@
 #include "solver_mlpreconditioner.H"
 #include "solver_muelupreconditioner.H"
 #include "solver_muelucontactpreconditioner.H"
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif
 
@@ -101,7 +101,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGBSPreconditioner( outfile_, Params() ) );
     }
-    else if (azlist.get<int>("AZ_precond") == AZ_none)
+    else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::NonePreconditioner( outfile_, Params() ) );
     }
@@ -159,10 +159,10 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     }
     else if ( Params().isSublist("Teko Parameters") )
     {
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
       preconditioner_ = Teuchos::rcp( new TekoPreconditioner( outfile_, Params() ));
 #else
-      dserror("Teko only supported in DEV version of BACI");
+      dserror("You need the HAVE_TEKO define flag set. Works only for TRILINOS_DEV Q4/2011 or newer.");
 #endif
     }
     else

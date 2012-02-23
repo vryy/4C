@@ -8,7 +8,7 @@
 #ifndef SOLVER_TEKOPRECONDITIONER_H_
 #define SOLVER_TEKOPRECONDITIONER_H_
 
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
 
 #include "linalg_blocksparsematrix.H"
 
@@ -67,6 +67,6 @@ namespace LINALG
   }
 }
 
-#endif /* TRILINOS_DEV */
+#endif /* HAVE_TEKO */
 #endif /* SOLVER_TEKOPRECONDITIONER_H_ */
 

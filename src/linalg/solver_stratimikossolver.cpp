@@ -5,8 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef TRILINOS_DEV
-
 #include <Epetra_Comm.h>
 //#ifdef HAVE_MPI
 #include <Epetra_MpiComm.h>
@@ -151,5 +149,3 @@ int LINALG::SOLVER::StratimikosSolver::ApplyInverse(const Epetra_MultiVector& X,
   dserror("ApplyInverse not implemented for StratimikosSolver");
   return -1;
 }
-
-#endif /* TRILINOS_DEV */

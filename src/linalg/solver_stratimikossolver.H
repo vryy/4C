@@ -8,12 +8,9 @@
 #ifndef SOLVER_STRATIMIKOSSOLVER_H_
 #define SOLVER_STRATIMIKOSSOLVER_H_
 
-#ifdef TRILINOS_DEV
-
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_Comm.hpp"
-
 
 #include "solver_solvertype.H"
 
@@ -72,7 +69,5 @@ namespace LINALG
     };
   }
 }
-
-#endif /* TRILINOS_DEV */
 
 #endif /* SOLVER_STRATIMIKOSSOLVER_H_ */

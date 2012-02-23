@@ -8,7 +8,7 @@
 #ifndef TEKO_BACIEPETRAOPERATORWRAPPER_H_
 #define TEKO_BACIEPETRAOPERATORWRAPPER_H_
 
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
 
 #include <Thyra_EpetraLinearOp.hpp>
 
@@ -88,6 +88,6 @@ namespace LINALG
 
 
 
-#endif /* TRILINOS_DEV */
+#endif /* HAVE_TEKO */
 
 #endif /* TEKO_BACIEPETRAOPERATORWRAPPER_H_ */

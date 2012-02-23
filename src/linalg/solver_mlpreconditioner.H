@@ -39,7 +39,6 @@ namespace LINALG
       virtual void Print( std::ostream & stream ) { stream << "ML"; }
 
     private:
-
       Teuchos::ParameterList & mllist_;
 
       //! system of equations used for preconditioning used by P_ only

@@ -35,6 +35,7 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9/
     -D BLAS_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a" \
     -D LAPACK_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a /opt/acml4.4.0/gfortran64/lib/libacml_mv.a" \
     -D ACMLDIR:STRING="/opt/acml4.4.0/gfortran64" \
+    -D HAVE_TEKO:BOOL=ON \
     -D HAVE_MueLu:BOOL=OFF \
     -D TRILINOS_DEV:BOOL=ON \
     -D DEBUG:BOOL=OFF \

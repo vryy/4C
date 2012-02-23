@@ -100,6 +100,11 @@ if (TRILINOS_DEV)
   add_definitions("-DTRILINOS_DEV")
 endif (TRILINOS_DEV)
 
+option (HAVE_TEKO "Turn on Teko support (needs Teko to be compiled within Trilinos" OFF)
+if (HAVE_TEKO)
+  add_definitions("-DHAVE_TEKO")
+endif (HAVE_TEKO)
+
 option (HAVE_MueLu "Turn on MueLu support (needs MueLu to be compiled within Trilinos" OFF)
 if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
@@ -2488,7 +2493,6 @@ baci_test(one_d_3_artery_network 1 9999)
 baci_test(trachea 2 100)
 baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 1 599)
 
-
 if (D_BEAM3II)
   baci_test(beam3iitest1linear 1 "")
   baci_test(beam3iitest1linear 2 "")
@@ -2499,9 +2503,6 @@ endif (D_BEAM3II)
 baci_test(inversedesign_wedge6 1 "")
 baci_test(inversedesign_wedge6 2 "")
 
-#  baci_test(fluidfluidCoupling_hex20_constinflow 1 "")
-#  baci_test(fluidfluidCoupling_hex20_parainflow_ydir 1 "")
-#  baci_test(fluidfluidCoupling_hex20_parainflow_ydir_cond 1 "")
 passive_baci_test(fluidfluidCoupling_simple 1 "")
 baci_test(xff_channel_simple_stat 1 "")
 baci_test(xff_shear_flow_stat 1 "")
@@ -2599,11 +2600,7 @@ endif (FS3I_INCACouplingTest)
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
 
-##else()
-# Tests for TRILINOS_DEV version
-#baci_test(tsi_heatconvection_amg 1 "")
-#baci_test(tsi_heatconvection_amg 2 "")
-##endif(NOT TRILINOS_DEV)
+
 
 
 

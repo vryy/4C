@@ -5,14 +5,13 @@
  *      Author: wiesner
  */
 
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
 
 #include "../drt_lib/drt_dserror.H"
 #include "solver_tekopreconditioner.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#ifdef TRILINOS_DEV
 // Teko specific includes
 #include <Teko_Utilities.hpp>
 #include <Teko_InverseFactory.hpp>
@@ -21,7 +20,6 @@
 #include <Teko_SIMPLEPreconditionerFactory.hpp>
 
 #include "teko_baciepetraoperatorwrapper.H"
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -125,5 +123,4 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
   }
 }
 
-
-#endif /* TRILINOS_DEV */
+#endif /* HAVE_TEKO */

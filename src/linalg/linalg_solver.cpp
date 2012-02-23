@@ -74,9 +74,7 @@ Maintainer: Michael Gee
 
 #include "solver_directsolver.H"
 #include "solver_aztecsolver.H"
-#ifdef TRILINOS_DEV
 #include "solver_stratimikossolver.H"
-#endif
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -266,11 +264,7 @@ void LINALG::Solver::Setup(
     }
     else if ("stratimikos" == solvertype)
     {
-#ifdef TRILINOS_DEV
       solver_ = Teuchos::rcp( new LINALG::SOLVER::StratimikosSolver(comm_, Params(), outfile_) );
-#else
-      dserror("Stratimikos not available as solver. Switch TRILINOS_DEV to ON!");
-#endif
     }
     else if ("klu"    ==solvertype or
              "umfpack"==solvertype or

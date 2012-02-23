@@ -5,7 +5,7 @@
  *      Author: wiesner
  */
 
-#ifdef TRILINOS_DEV
+#ifdef HAVE_TEKO
 
 // Thyra includes
 #include "Thyra_LinearOpBase.hpp"
@@ -125,6 +125,7 @@ Teuchos::RCP<const Thyra::EpetraLinearOp > LINALG::SOLVER::TEKO::Teko_BACIEpetra
          = Teuchos::rcp_dynamic_cast<const Thyra::BlockedLinearOpBase<double> >(getThyraOp());
   return Teuchos::rcp_dynamic_cast<const Thyra::EpetraLinearOp>(blkOp->getBlock(r,c));
 }
-#endif
+
+#endif /* HAVE_TEKO */
 
 
