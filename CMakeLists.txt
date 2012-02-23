@@ -1774,9 +1774,9 @@ include(CTest)
 ###------------------------------------------------------------------ Unit Tests
 
 if(NOT TRILINOS_DEV)
-if (NOT ACML_FOUND )
+if (NOT ACML_FOUND )  ## cut_test not available on kaiser
   add_executable(cut_test ${OBJS_CUT_TEST})
-  target_link_libraries(cut_test drt_lib_cut ${ACML_LIBRARIES} ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
+  target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 endif(NOT ACML_FOUND)
 endif(NOT TRILINOS_DEV)
