@@ -1354,7 +1354,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
       }
 
       (*log) << "\n\n\n";
-      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1statlocations_(i) << "\n";
+      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1 << "\n";
       (*log) << "#        x2";
       (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean           uTmean            rhovmean           vTmean";
       (*log) << "               urms                vrms                wrms                prms               rhorms                Trms";
