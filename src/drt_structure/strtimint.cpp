@@ -31,6 +31,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_mat/micromaterial.H"
 
 #include "../drt_lib/drt_locsys.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -1376,7 +1377,8 @@ void STR::TimInt::OutputContact()
       {
         // path and filename
         std::ostringstream filename;
-        filename << "o/scilab_output/OutputEnergyMomentum.txt";
+        const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        filename << filebase << ".energymomentum";
 
         // open file
         FILE* MyFile = NULL;
@@ -1386,7 +1388,9 @@ void STR::TimInt::OutputContact()
 
           // initialize file pointer for writing contact interface forces/moments
           FILE* MyConForce = NULL;
-          MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
+          std::ostringstream filenameif;
+          filenameif << filebase << ".energymomentum";
+          MyConForce = fopen(filenameif.str().c_str(), "wt");
           if (MyConForce!=NULL) fclose(MyConForce);
           else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
         }
@@ -1397,10 +1401,10 @@ void STR::TimInt::OutputContact()
         if (MyFile!=NULL)
         {
          std::stringstream filec;
-         fprintf(MyFile, "%g\t", timen);
-         for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
-         for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
-         fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten);
+         fprintf(MyFile, "% e\t", timen);
+         for (int i=0; i<3; i++) fprintf(MyFile, "% e\t", linmom[i]);
+         for (int i=0; i<3; i++) fprintf(MyFile, "% e\t", angmom[i]);
+         fprintf(MyFile, "% e\t% e\t% e\t% e\n",kinen,inten,exten,kinen+inten-exten);
          fclose(MyFile);
         }
         else

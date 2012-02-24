@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -2060,7 +2061,10 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     if (output && Comm().MyPID()==0)
     {
       FILE* MyFile = NULL;
-      MyFile = fopen("o/scilab_output/OutputInterface.txt", "at+");
+      std::ostringstream filename;
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      filename << filebase << ".interface";
+      MyFile = fopen(filename.str().c_str(), "at+");
       
       if (MyFile)
       {
