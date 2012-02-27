@@ -245,4 +245,23 @@ void MAT::StVenantKirchhoff::Evaluate(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Calculate strain energy                                    gee 10/09|
+ *----------------------------------------------------------------------*/
+void MAT::StVenantKirchhoff::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                 double& psi)
+{
+  LINALG::Matrix<6,6> cmat(true);
+  SetupCmat(cmat);
+
+  LINALG::Matrix<6,1> stress(true);
+  stress.MultiplyNN(cmat,glstrain);
+
+  for (int k=0;k<6;++k)
+    psi += glstrain(k)*stress(k);
+  psi /= 2.0;
+
+  return;
+}
+
 #endif

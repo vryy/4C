@@ -131,19 +131,13 @@ private:
 
     //@}
 
+    //! @name Access methods
+
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_neohooke; }
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new NeoHooke( *this ) ); }
-
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                  Epetra_SerialDenseMatrix* cmat_e,
-                  Epetra_SerialDenseVector* stress_e);
-
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress);
 
     /// Young's modulus
     double Youngs() const { return params_->youngs_; }
@@ -159,6 +153,26 @@ private:
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    //@}
+
+    //! @name Evaluation methods
+
+    /// evaluate material law
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                  Epetra_SerialDenseMatrix* cmat_e,
+                  Epetra_SerialDenseVector* stress_e);
+
+    /// evaluate material law
+    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
+                  LINALG::Matrix<6,6>& cmat,
+                  LINALG::Matrix<6,1>& stress);
+
+    /// evaluate strain energy function
+    void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                      double& psi);
+
+    //@}
 
   private:
 

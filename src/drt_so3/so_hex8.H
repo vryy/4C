@@ -685,6 +685,20 @@ protected:
                     const int gp,
                     ParameterList&  params);
 
+  //! Interface to material laws working with soh8 and GEMM
+  void soh8_mat_sel_gemm(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                         LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                         double* density,
+                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_new,
+                         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_old);
+
+  //! Interface to material laws working with soh8 and having a hyperelatic SEF
+  void soh8_mat_sel_strainenergy(LINALG::Matrix<6,1>* glstrain,
+                                 double* psi);
+
   //! Calculate linear stiffness and mass matrix
   virtual void soh8_linstiffmass(
       vector<int>& lm,  ///< location matrix

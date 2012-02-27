@@ -135,15 +135,14 @@ void MAT::NeoHooke::Evaluate(
   rcg(1) += 1.0;
   rcg(2) += 1.0;
 
-  // invariants
-  //double I1 = rcg(0) + rcg(1) + rcg(2);  // 1st invariant, trace
+  // 3rd invariant, determinant
   const double I3 = rcg(0)*rcg(1)*rcg(2)
            + 0.25 * rcg(3)*rcg(4)*rcg(5)
            - 0.25 * rcg(1)*rcg(5)*rcg(5)
            - 0.25 * rcg(2)*rcg(3)*rcg(3)
-           - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinante
+           - 0.25 * rcg(0)*rcg(4)*rcg(4);
 
-  //--------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------
   // invert C
   LINALG::Matrix<6,1> invc(false);
 
@@ -164,16 +163,18 @@ void MAT::NeoHooke::Evaluate(
 
   // energy function
   // Psi = c1/beta (I3^{-beta} - 1) + c1 ( I1-3 )
+
+  // Second Piola-Kirchhoff stress tensor
   // S = -2 c1 I3^{-beta} C^{-1} + 2 c1 Identity
   const double fac = pow(I3,-beta);
   stress = invc;
   stress.Scale(-2.0*c1*fac); // volumetric part
-  const double iso = 2.0*c1;  // isochoric part
+  const double iso = 2.0*c1; // isochoric part
   stress(0) += iso;
   stress(1) += iso;
   stress(2) += iso;
 
-  // material tensor:
+  // material tensor
   // C = 4 c1 beta I3^{-beta} C^{-1} dyad C^{-1} + 4 c1 I3^{-beta} C^{-1} boeppel C^{-1}
   // where `boeppel' is called `Holzapfelproduct' below
   const double delta6 = 4.0 * c1 * beta * fac;
@@ -324,6 +325,44 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   return;
 } // end of neohooke evaluate
+
+
+/*----------------------------------------------------------------------*
+ |  Calculate strain energy                                    gee 10/09|
+ *----------------------------------------------------------------------*/
+void MAT::NeoHooke::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                 double& psi)
+{
+  // get material parameters
+  const double ym = params_->youngs_;    // Young's modulus
+  const double nu = params_->poissonratio_; // Poisson's ratio
+
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::Matrix<6,1> rcg(glstrain);
+  rcg.Scale(2.0);
+  rcg(0) += 1.0;
+  rcg(1) += 1.0;
+  rcg(2) += 1.0;
+
+  // 1st invariant, trace
+  double I1 = rcg(0) + rcg(1) + rcg(2);
+
+  // 3rd invariant, determinant
+  const double I3 = rcg(0)*rcg(1)*rcg(2)
+           + 0.25 * rcg(3)*rcg(4)*rcg(5)
+           - 0.25 * rcg(1)*rcg(5)*rcg(5)
+           - 0.25 * rcg(2)*rcg(3)*rcg(3)
+           - 0.25 * rcg(0)*rcg(4)*rcg(4);
+
+  // Material Constants c1 and beta
+  const double c1 = 0.5 * ym/(2*(1+nu));
+  const double beta = nu/(1-2*nu);
+
+  // strain energy psi = c1/beta (I3^{-beta} - 1) + c1 ( I1-3 )
+  psi = (c1/beta)*(pow(I3, -beta) - 1) + c1*(I1 - 3);
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

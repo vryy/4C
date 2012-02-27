@@ -107,7 +107,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     // added this material only for hex8
@@ -116,7 +115,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
       thrstvk->Evaluate(*glstrain,*cmat,*stress);
       *density = thrstvk->Density();
-      return;
       break;
     }
     // added this material only for hex8
@@ -125,7 +123,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
       thrpllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = thrpllinelast->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_plneohooke: /*-- Plastic NeoHookean Material */
@@ -133,7 +130,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
       plastic->Evaluate(defgrd,gp,params,cmat,stress);
       *density = plastic->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_pllinelast: /*-- plastic linear elastic Material */
@@ -141,7 +137,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
       pllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = pllinelast->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
@@ -149,7 +144,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
       robinson->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = robinson->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -157,7 +151,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -165,7 +158,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
@@ -173,7 +165,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
       aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa_stopro->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
@@ -183,7 +174,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -193,7 +183,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
@@ -204,7 +193,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       //  aaadamage->Setup(NUMGPT_SOH8);
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -212,7 +200,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
@@ -220,7 +207,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
       *density = lungog->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
@@ -230,7 +216,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       lungpen->Evaluate(glstrain,cmat,stress);
 
       *density = lungpen->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
@@ -241,7 +226,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       //  visco->Setup(NUMGPT_SOH8);
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
@@ -250,7 +234,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       //visco->UpdateFiberDirs(gp,defgrd);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -258,7 +241,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -266,7 +248,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_anisotropic_balzani:
@@ -277,7 +258,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       anba->Evaluate(glstrain,gp,Id(),time,cmat,stress);
 
       *density = anba->Density();
-      return;
       break;
     }
       case INPAR::MAT::m_itskov: //----------------- Itskov Material
@@ -286,7 +266,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const double time = params.get("total time",-1.0);
       its->Evaluate(*glstrain,gp,Id(),data_,time,*cmat,*stress);
       *density = its->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_contchainnetw: /*------------ Continuum Chain Network Material */
@@ -296,7 +275,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
@@ -340,7 +318,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
@@ -384,7 +361,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       }
 
       micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
-      return;
       break;
     }
     case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
@@ -392,7 +368,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
       biocell->Evaluate(glstrain,cmat,stress);
       *density = biocell->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_charmm: /*------------------------------------ CHARMm */
@@ -411,7 +386,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const double time = params.get("total time",-1.0);
       charmm->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
       *density = charmm->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_protein: /*--------------------------- CHARMm Protein */
@@ -430,7 +404,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const double time = params.get("total time",-1.0);
       protein->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
       *density = protein->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -439,7 +412,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -448,7 +420,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       //holzcard->UpdateFiberDirs(gp,defgrd);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -457,7 +428,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       humcard->Evaluate(glstrain,gp,cmat,stress);
       //humcard->UpdateFiberDirs(gp,defgrd);
       *density = humcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_growth: /*------- integration point based growth */
@@ -470,7 +440,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (action == "calc_struct_stress") output = true;
       grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = grow->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
@@ -483,7 +452,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (action == "calc_struct_stress") output = true;
       comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = comix->Density();
-      return;
       break;
     }
     default:
@@ -492,7 +460,153 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
   } // switch (mat->MaterialType())
 
   return;
-} // of soh8_mat_sel
+} // soh8_mat_sel
+
+
+/*----------------------------------------------------------------------*
+ | material laws for So_hex8 with GEMM                        popp 02/12|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_mat_sel_gemm(
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                    double* density,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_new,
+                    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_old)
+{
+#ifdef DEBUG
+  // I'm not sure whether all of these are always supplied, we'll see....
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain_m) dserror("No GL strains supplied");
+  if (!glstrain_new) dserror("No GL strains supplied");
+  if (!glstrain_old) dserror("No GL strains supplied");
+#endif
+
+  // strain energy function
+  double psi = 0.0;
+  double psio = 0.0;
+
+  // All materials that have a pure LINALG::Matrix
+  // interface go to the material law here.
+  // the old interface does not exist anymore...
+  RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+    mat = actmat->GetMaterial();
+  }
+
+  switch (mat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant: /*------------ St.Venant-Kirchhoff material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->Evaluate(*glstrain_m,*cmat,*stress);
+      stvk->StrainEnergy(*glstrain_new,psi);
+      stvk->StrainEnergy(*glstrain_old,psio);
+      *density = stvk->Density();
+      break;
+    }
+    case INPAR::MAT::m_neohooke: /*--------------------- NeoHookean material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(*glstrain_m,*cmat,*stress);
+      neo->StrainEnergy(*glstrain_new,psi);
+      neo->StrainEnergy(*glstrain_old,psio);
+      *density = neo->Density();
+      break;
+    }
+    default:
+      dserror("Unknown type of material for GEMM");
+    break;
+  } // switch (mat->MaterialType())
+
+  //**********************************************************************
+  // ALGORITHMIC STRESSES AND CMAT FOR GEMM
+  //**********************************************************************
+  // tensor M = increment of Cauchy-Green tensor
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> M;
+  M.Update(1.0,*rcg_new,-1.0,*rcg_old);
+  double Mb = M.Dot(M);
+
+  // second term in algorithmic stress only if Mb > 0
+  // see: O. Gonzalez, Exact energy and momentum conserving algorithms for
+  // general models in nonlinear elasticity, CMAME, 190(2000), pp. 1763-1783
+  if (Mb < 1.0e-12) return;
+
+  // derivative of strain energy function dpsi = 0.5*stressm
+  // double contraction dpsi : M
+  double dpsiM = 0.5*(*stress)(0)*M(0,0) + 0.5*(*stress)(1)*M(1,1) + 0.5*(*stress)(2)*M(2,2)
+               +     (*stress)(3)*M(0,1) +     (*stress)(4)*M(1,2) +     (*stress)(5)*M(0,2);
+
+  // extend stressm to algorithmic stress
+  (*stress)(0) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,0);
+  (*stress)(1) += 2 * ((psi - psio - dpsiM) / Mb) * M(1,1);
+  (*stress)(2) += 2 * ((psi - psio - dpsiM) / Mb) * M(2,2);
+  (*stress)(3) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,1);
+  (*stress)(4) += 2 * ((psi - psio - dpsiM) / Mb) * M(1,2);
+  (*stress)(5) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,2);
+
+  // TODO: extend cmat to algorithmic material tensor
+  // -> not yet completely implemented!!!
+  // -> using only cmat so far, which is ok but not optimal!!!
+
+  //**********************************************************************
+  //**********************************************************************
+  //**********************************************************************
+
+  return;
+} // soh8_mat_sel_gemm
+
+
+/*----------------------------------------------------------------------*
+ | material laws with hyperelastic SEF for So_hex8            popp 02/12|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_mat_sel_strainenergy(
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    double* psi)
+{
+#ifdef DEBUG
+  // I'm not sure whether all of these are always supplied, we'll see....
+  if (!glstrain) dserror("No GL strains supplied");
+#endif
+
+  // All materials that have a pure LINALG::Matrix
+  // interface go to the material law here.
+  // the old interface does not exist anymore...
+  RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+    mat = actmat->GetMaterial();
+  }
+
+  switch (mat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant: /*------------ St.Venant-Kirchhoff material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+      stvk->StrainEnergy(*glstrain,*psi);
+      break;
+    }
+    case INPAR::MAT::m_neohooke: /*--------------------- NeoHookean material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->StrainEnergy(*glstrain,*psi);
+      break;
+    }
+    default:
+      dserror("Hyperelastic strain energy not (yet) implemented for this material");
+    break;
+  } // switch (mat->MaterialType())
+
+  return;
+} // of soh8_mat_sel_strainenergy
 
 
 /*----------------------------------------------------------------------*
@@ -526,7 +640,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -534,7 +647,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -542,7 +654,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
@@ -550,7 +661,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
           MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
           aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
           *density = aaa_stopro->Density();
-          return;
           break;
     }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
@@ -560,7 +670,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -570,7 +679,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
@@ -578,7 +686,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -586,7 +693,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
@@ -594,7 +700,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
       *density = lungog->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
@@ -604,7 +709,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       lungpen->Evaluate(glstrain,cmat,stress);
 
       *density = lungpen->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -612,7 +716,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -620,7 +723,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
@@ -628,7 +730,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -637,7 +738,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -645,7 +745,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -653,7 +752,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
       humcard->Evaluate(glstrain,gp,cmat,stress);
       *density = humcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_growth: /*------- integration point based growth */
@@ -666,7 +764,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       if (action == "calc_struct_stress") output = true;
       grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = grow->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
@@ -679,7 +776,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       if (action == "calc_struct_stress") output = true;
       comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = comix->Density();
-      return;
       break;
     }
     default:
@@ -712,7 +808,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -720,7 +815,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     default:
@@ -753,7 +847,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -761,7 +854,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -769,7 +861,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
@@ -777,7 +868,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
@@ -787,7 +877,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -797,7 +886,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -805,7 +893,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
@@ -813,7 +900,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
       *density = lungog->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
@@ -823,7 +909,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       lungpen->Evaluate(glstrain,cmat,stress);
 
       *density = lungpen->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
@@ -831,7 +916,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
@@ -839,7 +923,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -847,7 +930,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -855,7 +937,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_anisotropic_balzani:
@@ -866,7 +947,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       anba->Evaluate(glstrain,gp,Id(),time,cmat,stress);
 
       *density = anba->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_contchainnetw: /*------------ Continuum Chain Network Material */
@@ -876,7 +956,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
         chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
@@ -885,14 +964,12 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
 
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
       micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
-      return;
       break;
     }
     case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
@@ -900,7 +977,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
       biocell->Evaluate(glstrain,cmat,stress);
       *density = biocell->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_charmm: /*------------------------------------ CHARmm */
@@ -919,7 +995,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       const double time = params.get("total time",-1.0);
       charmm->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
       *density = charmm->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -928,7 +1003,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -936,7 +1010,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -944,7 +1017,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
       humcard->Evaluate(glstrain,gp,cmat,stress);
       *density = humcard->Density();
-      return;
       break;
     }
     default:
@@ -976,7 +1048,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -984,7 +1055,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
@@ -992,7 +1062,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -1000,7 +1069,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
@@ -1010,7 +1078,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -1020,7 +1087,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -1028,7 +1094,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
@@ -1036,7 +1101,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
       *density = lungog->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
@@ -1046,7 +1110,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       lungpen->Evaluate(glstrain,cmat,stress);
 
       *density = lungpen->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
@@ -1054,7 +1117,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_viscoanisotropic: /*------- Viscous Anisotropic Fiber Material */
@@ -1062,7 +1124,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1070,7 +1131,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -1078,7 +1138,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_anisotropic_balzani:
@@ -1089,7 +1148,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       anba->Evaluate(glstrain,gp,Id(),time,cmat,stress);
 
       *density = anba->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_contchainnetw: /*------------ Continuum Chain Network Material */
@@ -1099,7 +1157,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
         chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
@@ -1108,14 +1165,12 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
 
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
       micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
-      return;
       break;
     }
     case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
@@ -1123,7 +1178,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::BioCell* biocell = static_cast <MAT::BioCell*>(mat.get());
       biocell->Evaluate(glstrain,cmat,stress);
       *density = biocell->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_charmm: /*------------------------------------ CHARmm */
@@ -1142,7 +1196,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       const double time = params.get("total time",-1.0);
       charmm->Evaluate(glstrain,cmat,stress,Id(),gp,data_,time,XREFE,XCURR);
       *density = charmm->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -1151,7 +1204,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -1159,7 +1211,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -1167,7 +1218,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
       humcard->Evaluate(glstrain,gp,cmat,stress);
       *density = humcard->Density();
-      return;
       break;
     }
     default:
@@ -1206,7 +1256,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -1214,7 +1263,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -1222,7 +1270,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -1232,7 +1279,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -1240,7 +1286,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
@@ -1248,7 +1293,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
       lungog->Evaluate(glstrain,cmat,stress);
       *density = lungog->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
@@ -1258,7 +1302,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       lungpen->Evaluate(glstrain,cmat,stress);
 
       *density = lungpen->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1266,7 +1309,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -1274,7 +1316,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -1283,7 +1324,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     default:
@@ -1327,7 +1367,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -1335,7 +1374,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -1343,7 +1381,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
@@ -1351,7 +1388,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
           MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
           aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
           *density = aaa_stopro->Density();
-          return;
           break;
      }
     case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage
@@ -1359,7 +1395,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
@@ -1369,7 +1404,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
@@ -1379,7 +1413,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       if (localrad==-999.0) dserror("Aneurysm local radii not found");
       aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
       *density = aaamixedeffects->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -1387,7 +1420,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1395,7 +1427,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -1403,7 +1434,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -1412,7 +1442,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -1420,7 +1449,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -1428,7 +1456,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
       humcard->Evaluate(glstrain,gp,cmat,stress);
       *density = humcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
@@ -1441,7 +1468,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       if (action == "calc_struct_stress") output = true;
       comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = comix->Density();
-      return;
       break;
     }
     default:
@@ -1483,7 +1509,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
@@ -1491,7 +1516,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
       neo->Evaluate(*glstrain,*cmat,*stress);
       *density = neo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
@@ -1499,7 +1523,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
@@ -1507,7 +1530,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1515,7 +1537,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_yeoh: /*----------------- Mooney-Rivlin Material */
@@ -1523,7 +1544,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::Yeoh* yeoh = static_cast <MAT::Yeoh*>(mat.get());
       yeoh->Evaluate(glstrain,cmat,stress);
       *density = yeoh->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
@@ -1532,7 +1552,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       //hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
@@ -1540,7 +1559,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
       holzcard->Evaluate(glstrain,gp,cmat,stress);
       *density = holzcard->Density();
-      return;
       break;
     }
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
@@ -1548,7 +1566,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
       humcard->Evaluate(glstrain,gp,cmat,stress);
       *density = humcard->Density();
-      return;
       break;
     }
     default:

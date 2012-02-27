@@ -677,97 +677,81 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // not yet implemented for EAS case
       if (eastype_ != soh8_easnone) dserror("Internal energy not yet implemented for EAS.");
 
-      // check material law and strains
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+      // initialization of internal energy
+      double intenergy = 0.0;
+
+      // shape functions and Gauss weights
+      const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+      const static std::vector<double> weights = soh8_weights();
+
+      // get displacements of this processor
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state displacement vector");
+
+      // get displacements of this element
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // update element geometry
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+
+      DRT::Node** nodes = Nodes();
+      for (int i=0; i<NUMNOD_SOH8; ++i)
       {
-        // declaration of variables
-        double intenergy = 0.0;
+        xrefe(i,0) = nodes[i]->X()[0];
+        xrefe(i,1) = nodes[i]->X()[1];
+        xrefe(i,2) = nodes[i]->X()[2];
 
-        // shape functions and Gauss weights
-        const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-        const static std::vector<double> weights = soh8_weights();
-
-        // get displacements of this processor
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state displacement vector");
-
-        // get displacements of this element
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-        // update element geometry
-        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
-        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-
-        DRT::Node** nodes = Nodes();
-        for (int i=0; i<NUMNOD_SOH8; ++i)
-        {
-          xrefe(i,0) = nodes[i]->X()[0];
-          xrefe(i,1) = nodes[i]->X()[1];
-          xrefe(i,2) = nodes[i]->X()[2];
-
-          xcurr(i,0) = xrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-          xcurr(i,1) = xrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-          xcurr(i,2) = xrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-        }
-
-        // loop over all Gauss points
-        for (int gp=0; gp<NUMGPT_SOH8; gp++)
-        {
-          // Gauss weights and Jacobian determinant
-          double fac = detJ_[gp] * weights[gp];
-
-          /* get the inverse of the Jacobian matrix which looks like:
-          **            [ x_,r  y_,r  z_,r ]^-1
-          **     J^-1 = [ x_,s  y_,s  z_,s ]
-          **            [ x_,t  y_,t  z_,t ]
-          */
-          // compute derivatives N_XYZ at gp w.r.t. material coordinates
-          // by N_XYZ = J^-1 * N_rst
-          LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ(true);
-          N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-
-          // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-          defgrd.MultiplyTT(xcurr,N_XYZ);
-
-          // right Cauchy-Green tensor = F^T * F
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
-          cauchygreen.MultiplyTN(defgrd,defgrd);
-
-          // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-          // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-          LINALG::Matrix<NUMSTR_SOH8,1> glstrain;
-          glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-          glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-          glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-          glstrain(3) = cauchygreen(0,1);
-          glstrain(4) = cauchygreen(1,2);
-          glstrain(5) = cauchygreen(2,0);
-
-          // Plastic Green-Lagrange strains matrix E_p = 0.5 * (Cauchygreen_p - Identity)
-          // Plastic GL strain vector glstrain={E_p11,E_p22,E_p33,2*E_p12,2*E_p23,2*E_p31}
-          LINALG::Matrix<NUMSTR_SOH8,1> plglstrain;
-
-          // compute Second Piola Kirchhoff Stress Vector and Constitutive Matrix
-          double density = 0.0;
-          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-          LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-          soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
-
-          // compute GP contribution to internal energy
-          intenergy += 0.5 * fac * stress.Dot(glstrain);
-        }
-
-        // return result
-        elevec1_epetra(0) = intenergy;
-
-        // print internal energy of this element
-        //cout << endl << "Internal energy of element # " << this->Id() << ":" << IntEn << endl;
+        xcurr(i,0) = xrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+        xcurr(i,1) = xrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+        xcurr(i,2) = xrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
       }
-      else
-        dserror("ERROR: Internal energy for this material type has not been implemented yet.");
+
+      // loop over all Gauss points
+      for (int gp=0; gp<NUMGPT_SOH8; gp++)
+      {
+        // Gauss weights and Jacobian determinant
+        double fac = detJ_[gp] * weights[gp];
+
+        /* get the inverse of the Jacobian matrix which looks like:
+        **            [ x_,r  y_,r  z_,r ]^-1
+        **     J^-1 = [ x_,s  y_,s  z_,s ]
+        **            [ x_,t  y_,t  z_,t ]
+        */
+        // compute derivatives N_XYZ at gp w.r.t. material coordinates
+        // by N_XYZ = J^-1 * N_rst
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ(true);
+        N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+
+        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
+        defgrd.MultiplyTT(xcurr,N_XYZ);
+
+        // right Cauchy-Green tensor = F^T * F
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+        cauchygreen.MultiplyTN(defgrd,defgrd);
+
+        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+        LINALG::Matrix<NUMSTR_SOH8,1> glstrain;
+        glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+        glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+        glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+        glstrain(3) = cauchygreen(0,1);
+        glstrain(4) = cauchygreen(1,2);
+        glstrain(5) = cauchygreen(2,0);
+
+        // call material for evaluation of strain energy function
+        double psi = 0.0;
+        soh8_mat_sel_strainenergy(&glstrain,&psi);
+
+        // sum up GP contribution to internal energy
+        intenergy += fac*psi;
+      }
+
+      // return result
+      elevec1_epetra(0) = intenergy;
     }
     break;
 
@@ -779,8 +763,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // - extension to finite deformations would be possible without difficulties,
       //   however analytical solutions are extremely rare in the nonlinear realm
       // - only implemented for purely displacement-based version, not yet for EAS
-      // - only implemented for SVK material (relevant for energy norm only, L2 and
-      //   H1 norms are of course valid for arbitrary materials)
+      // - only works for materials, which implement a hyperelastic strain energy
+      //   function (currently this is the case for St.-Venant-Kirchhoff and NeoHooke)
       // - analytical solutions are currently stored in a repository in the MORTAR
       //   namespace, however they could (should?) be moved to a more general location
 
@@ -790,180 +774,166 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // not yet implemented for EAS case
       if (eastype_ != soh8_easnone) dserror("Error norms not yet implemented for EAS.");
 
-      // check material law
-      RCP<MAT::Material> mat = Material();
+      // declaration of variables
+      double l2norm = 0.0;
+      double h1norm = 0.0;
+      double energynorm = 0.0;
 
-      //******************************************************************
-      // only for St.Venant Kirchhoff material
-      //******************************************************************
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+      // shape functions, derivatives and integration weights
+      const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > vals = soh8_shapefcts();
+      const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+      const static std::vector<double> weights = soh8_weights();
+
+      // get displacements and extract values of this element
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state displacement vector");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // nodal displacement vector
+      LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
+      for (int i=0; i<NUMDOF_SOH8; ++i) nodaldisp(i,0) = mydisp[i];
+
+      // reference geometry (nodal positions)
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
+      DRT::Node** nodes = Nodes();
+      for (int i=0; i<NUMNOD_SOH8; ++i)
       {
-        // declaration of variables
-        double l2norm = 0.0;
-        double h1norm = 0.0;
-        double energynorm = 0.0;
+        xrefe(i,0) = nodes[i]->X()[0];
+        xrefe(i,1) = nodes[i]->X()[1];
+        xrefe(i,2) = nodes[i]->X()[2];
+      }
 
-        // shape functions, derivatives and integration weights
-        const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > vals = soh8_shapefcts();
-        const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-        const static std::vector<double> weights = soh8_weights();
+      // deformation gradient = identity tensor (geometrically linear case!)
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
+      for (int i=0;i<NUMDIM_SOH8;++i) defgrd(i,i) = 1;
 
-        // get displacements and extract values of this element
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state displacement vector");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      //----------------------------------------------------------------
+      // loop over all Gauss points
+      //----------------------------------------------------------------
+      for (int gp=0; gp<NUMGPT_SOH8; gp++)
+      {
+        // Gauss weights and Jacobian determinant
+        double fac = detJ_[gp] * weights[gp];
 
-        // nodal displacement vector
-        LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
-        for (int i=0; i<NUMDOF_SOH8; ++i) nodaldisp(i,0) = mydisp[i];
+        // Gauss point in reference configuration
+        LINALG::Matrix<NUMDIM_SOH8,1> xgp(true);
+        for (int k=0;k<NUMDIM_SOH8;++k)
+          for (int n=0;n<NUMNOD_SOH8;++n)
+            xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
 
-        // reference geometry (nodal positions)
-        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
-        DRT::Node** nodes = Nodes();
+        //**************************************************************
+        // get analytical solution
+        LINALG::Matrix<NUMDIM_SOH8,1> uanalyt(true);
+        LINALG::Matrix<NUMSTR_SOH8,1> strainanalyt(true);
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivanalyt(true);
+
+        MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+        //**************************************************************
+
+        //--------------------------------------------------------------
+        // (1) L2 norm
+        //--------------------------------------------------------------
+
+        // compute displacements at GP
+        LINALG::Matrix<NUMDIM_SOH8,1> ugp(true);
+        for (int k=0;k<NUMDIM_SOH8;++k)
+          for (int n=0;n<NUMNOD_SOH8;++n)
+            ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH8*n+k,0);
+
+        // displacement error
+        LINALG::Matrix<NUMDIM_SOH8,1> uerror(true);
+        for (int k=0;k<NUMDIM_SOH8;++k)
+          uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+        // compute GP contribution to L2 error norm
+        l2norm += fac * uerror.Dot(uerror);
+
+        //--------------------------------------------------------------
+        // (2) H1 norm
+        //--------------------------------------------------------------
+
+        // compute derivatives N_XYZ at GP w.r.t. material coordinates
+        // by N_XYZ = J^-1 * N_rst
+        LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ(true);
+        N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+
+        // compute partial derivatives at GP
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivgp(true);
+        for (int l=0;l<NUMDIM_SOH8;++l)
+          for (int m=0;m<NUMDIM_SOH8;++m)
+            for (int k=0;k<NUMNOD_SOH8;++k)
+              derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH8*k+l,0);
+
+        // derivative error
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> deriverror(true);
+        for (int k=0;k<NUMDIM_SOH8;++k)
+          for (int m=0;m<NUMDIM_SOH8;++m)
+            deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+        // compute GP contribution to H1 error norm
+        h1norm += fac * deriverror.Dot(deriverror);
+        h1norm += fac * uerror.Dot(uerror);
+
+        //--------------------------------------------------------------
+        // (3) Energy norm
+        //--------------------------------------------------------------
+
+        // compute linear B-operator
+        LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> bop;
         for (int i=0; i<NUMNOD_SOH8; ++i)
         {
-          xrefe(i,0) = nodes[i]->X()[0];
-          xrefe(i,1) = nodes[i]->X()[1];
-          xrefe(i,2) = nodes[i]->X()[2];
+          bop(0,NODDOF_SOH8*i+0) = N_XYZ(0,i);
+          bop(0,NODDOF_SOH8*i+1) = 0.0;
+          bop(0,NODDOF_SOH8*i+2) = 0.0;
+          bop(1,NODDOF_SOH8*i+0) = 0.0;
+          bop(1,NODDOF_SOH8*i+1) = N_XYZ(1,i);
+          bop(1,NODDOF_SOH8*i+2) = 0.0;
+          bop(2,NODDOF_SOH8*i+0) = 0.0;
+          bop(2,NODDOF_SOH8*i+1) = 0.0;
+          bop(2,NODDOF_SOH8*i+2) = N_XYZ(2,i);
+
+          bop(3,NODDOF_SOH8*i+0) = N_XYZ(1,i);
+          bop(3,NODDOF_SOH8*i+1) = N_XYZ(0,i);
+          bop(3,NODDOF_SOH8*i+2) = 0.0;
+          bop(4,NODDOF_SOH8*i+0) = 0.0;
+          bop(4,NODDOF_SOH8*i+1) = N_XYZ(2,i);
+          bop(4,NODDOF_SOH8*i+2) = N_XYZ(1,i);
+          bop(5,NODDOF_SOH8*i+0) = N_XYZ(2,i);
+          bop(5,NODDOF_SOH8*i+1) = 0.0;
+          bop(5,NODDOF_SOH8*i+2) = N_XYZ(0,i);
         }
 
-        // deformation gradient = identity tensor (geometrically linear case!)
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-        for (int i=0;i<NUMDIM_SOH8;++i) defgrd(i,i) = 1;
+        // compute linear strain at GP
+        LINALG::Matrix<NUMSTR_SOH8,1> straingp(true);
+        straingp.Multiply(bop,nodaldisp);
 
-        //----------------------------------------------------------------
-        // loop over all Gauss points
-        //----------------------------------------------------------------
-        for (int gp=0; gp<NUMGPT_SOH8; gp++)
-        {
-          // Gauss weights and Jacobian determinant
-          double fac = detJ_[gp] * weights[gp];
+        // strain error
+        LINALG::Matrix<NUMSTR_SOH8,1> strainerror(true);
+        for (int k=0;k<NUMSTR_SOH8;++k)
+          strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
 
-          // Gauss point in reference configuration
-          LINALG::Matrix<NUMDIM_SOH8,1> xgp(true);
-          for (int k=0;k<NUMDIM_SOH8;++k)
-            for (int n=0;n<NUMNOD_SOH8;++n)
-              xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
+        // compute energy error
+        double psierror = 0.0;
+        soh8_mat_sel_strainenergy(&strainerror,&psierror);
 
-          //**************************************************************
-          // get analytical solution
-          LINALG::Matrix<NUMDIM_SOH8,1> uanalyt(true);
-          LINALG::Matrix<NUMSTR_SOH8,1> strainanalyt(true);
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivanalyt(true);
+        // compute GP contribution to energy error norm
+        energynorm += fac * psierror;
 
-          MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
-          //**************************************************************
-
-          //--------------------------------------------------------------
-          // (1) L2 norm
-          //--------------------------------------------------------------
-
-          // compute displacements at GP
-          LINALG::Matrix<NUMDIM_SOH8,1> ugp(true);
-          for (int k=0;k<NUMDIM_SOH8;++k)
-            for (int n=0;n<NUMNOD_SOH8;++n)
-              ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH8*n+k,0);
-
-          // displacement error
-          LINALG::Matrix<NUMDIM_SOH8,1> uerror(true);
-          for (int k=0;k<NUMDIM_SOH8;++k)
-            uerror(k,0) = uanalyt(k,0) - ugp(k,0);
-
-          // compute GP contribution to L2 error norm
-          l2norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (2) H1 norm
-          //--------------------------------------------------------------
-
-          // compute derivatives N_XYZ at GP w.r.t. material coordinates
-          // by N_XYZ = J^-1 * N_rst
-          LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ(true);
-          N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-
-          // compute partial derivatives at GP
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivgp(true);
-          for (int l=0;l<NUMDIM_SOH8;++l)
-            for (int m=0;m<NUMDIM_SOH8;++m)
-              for (int k=0;k<NUMNOD_SOH8;++k)
-                derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH8*k+l,0);
-
-          // derivative error
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> deriverror(true);
-          for (int k=0;k<NUMDIM_SOH8;++k)
-            for (int m=0;m<NUMDIM_SOH8;++m)
-              deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
-
-          // compute GP contribution to H1 error norm
-          h1norm += fac * deriverror.Dot(deriverror);
-          h1norm += fac * uerror.Dot(uerror);
-
-          //--------------------------------------------------------------
-          // (3) Energy norm
-          //--------------------------------------------------------------
-
-          // compute linear B-operator
-          LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> bop;
-          for (int i=0; i<NUMNOD_SOH8; ++i)
-          {
-            bop(0,NODDOF_SOH8*i+0) = N_XYZ(0,i);
-            bop(0,NODDOF_SOH8*i+1) = 0.0;
-            bop(0,NODDOF_SOH8*i+2) = 0.0;
-            bop(1,NODDOF_SOH8*i+0) = 0.0;
-            bop(1,NODDOF_SOH8*i+1) = N_XYZ(1,i);
-            bop(1,NODDOF_SOH8*i+2) = 0.0;
-            bop(2,NODDOF_SOH8*i+0) = 0.0;
-            bop(2,NODDOF_SOH8*i+1) = 0.0;
-            bop(2,NODDOF_SOH8*i+2) = N_XYZ(2,i);
-
-            bop(3,NODDOF_SOH8*i+0) = N_XYZ(1,i);
-            bop(3,NODDOF_SOH8*i+1) = N_XYZ(0,i);
-            bop(3,NODDOF_SOH8*i+2) = 0.0;
-            bop(4,NODDOF_SOH8*i+0) = 0.0;
-            bop(4,NODDOF_SOH8*i+1) = N_XYZ(2,i);
-            bop(4,NODDOF_SOH8*i+2) = N_XYZ(1,i);
-            bop(5,NODDOF_SOH8*i+0) = N_XYZ(2,i);
-            bop(5,NODDOF_SOH8*i+1) = 0.0;
-            bop(5,NODDOF_SOH8*i+2) = N_XYZ(0,i);
-          }
-
-          // compute linear strain at GP
-          LINALG::Matrix<NUMSTR_SOH8,1> straingp(true);
-          straingp.Multiply(bop,nodaldisp);
-
-          // strain error
-          LINALG::Matrix<NUMSTR_SOH8,1> strainerror(true);
-          for (int k=0;k<NUMSTR_SOH8;++k)
-            strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
-
-          // compute stress vector and constitutive matrix
-          double density = 0.0;
-          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-          LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-          LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-          soh8_mat_sel(&stress,&cmat,&density,&strainerror,&plglstrain,&defgrd,gp,params);
-
-          // compute GP contribution to energy error norm
-          energynorm += fac * stress.Dot(strainerror);
-
-          //cout << "UAnalytical:      " << uanalyt << endl;
-          //cout << "UDiscrete:        " << ugp << endl;
-          //cout << "StrainAnalytical: " << strainanalyt << endl;
-          //cout << "StrainDiscrete:   " << straingp << endl;
-          //cout << "DerivAnalytical:  " << derivanalyt << endl;
-          //cout << "DerivDiscrete:    " << derivgp << endl;
-          //cout << endl;
-        }
-        //----------------------------------------------------------------
-
-        // return results
-        elevec1_epetra(0) = l2norm;
-        elevec1_epetra(1) = h1norm;
-        elevec1_epetra(2) = energynorm;
+        //cout << "UAnalytical:      " << uanalyt << endl;
+        //cout << "UDiscrete:        " << ugp << endl;
+        //cout << "StrainAnalytical: " << strainanalyt << endl;
+        //cout << "StrainDiscrete:   " << straingp << endl;
+        //cout << "DerivAnalytical:  " << derivanalyt << endl;
+        //cout << "DerivDiscrete:    " << derivgp << endl;
+        //cout << endl;
       }
-      else
-        dserror("ERROR: Error norms only implemented for SVK material");
+      //----------------------------------------------------------------
+
+      // return results
+      elevec1_epetra(0) = l2norm;
+      elevec1_epetra(1) = h1norm;
+      elevec1_epetra(2) = energynorm;
     }
     break;
 
@@ -2093,10 +2063,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     defgrdo.MultiplyTT(xcurro,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreeno;
-    cauchygreen.MultiplyTN(defgrd,defgrd);
-    cauchygreeno.MultiplyTN(defgrdo,defgrdo);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> rcg;
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> rcgo;
+    rcg.MultiplyTN(defgrd,defgrd);
+    rcgo.MultiplyTN(defgrdo,defgrdo);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -2104,18 +2074,18 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     LINALG::Matrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
     Epetra_SerialDenseVector glstrain_epetrao(NUMSTR_SOH8);
     LINALG::Matrix<NUMSTR_SOH8,1> glstraino(glstrain_epetrao.A(),true);
-    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    glstrain(3) = cauchygreen(0,1);
-    glstrain(4) = cauchygreen(1,2);
-    glstrain(5) = cauchygreen(2,0);
-    glstraino(0) = 0.5 * (cauchygreeno(0,0) - 1.0);
-    glstraino(1) = 0.5 * (cauchygreeno(1,1) - 1.0);
-    glstraino(2) = 0.5 * (cauchygreeno(2,2) - 1.0);
-    glstraino(3) = cauchygreeno(0,1);
-    glstraino(4) = cauchygreeno(1,2);
-    glstraino(5) = cauchygreeno(2,0);
+    glstrain(0) = 0.5 * (rcg(0,0) - 1.0);
+    glstrain(1) = 0.5 * (rcg(1,1) - 1.0);
+    glstrain(2) = 0.5 * (rcg(2,2) - 1.0);
+    glstrain(3) = rcg(0,1);
+    glstrain(4) = rcg(1,2);
+    glstrain(5) = rcg(2,0);
+    glstraino(0) = 0.5 * (rcgo(0,0) - 1.0);
+    glstraino(1) = 0.5 * (rcgo(1,1) - 1.0);
+    glstraino(2) = 0.5 * (rcgo(2,2) - 1.0);
+    glstraino(3) = rcgo(0,1);
+    glstraino(4) = rcgo(1,2);
+    glstraino(5) = rcgo(2,0);
 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
@@ -2254,65 +2224,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     */
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-    LINALG::Matrix<NUMSTR_SOH8,1> stressm(true);
-    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-    // call material law
-    RCP<MAT::Material> mat = Material();
-    if (mat->MaterialType() == INPAR::MAT::m_stvenant)
-      soh8_mat_sel(&stressm,&cmat,&density,&glstrainm,&plglstrain,&defgrd,gp,params);
-    else
-      dserror("It must be St.Venant-Kirchhoff material for GEMM.");
+    LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
+    soh8_mat_sel_gemm(&stress,&cmat,&density,&glstrainm,&glstrain,&glstraino,&rcg,&rcgo);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-    // return gp plastic strains (only in case of plastic strain output)
-     switch (ioplstrain)
-     {
-     case INPAR::STR::strain_gl:
-     {
-       if (eleplstrain == NULL) dserror("plastic strain data not available");
-       for (int i = 0; i < 3; ++i)
-         (*eleplstrain)(gp,i) = plglstrain(i);
-       for (int i = 3; i < 6; ++i)
-         (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
-     }
-     break;
-     case INPAR::STR::strain_ea:
-     {
-       if (eleplstrain == NULL) dserror("plastic strain data not available");
-       // rewriting Green-Lagrange strains in matrix format
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
-       gl(0,0) = plglstrain(0);
-       gl(0,1) = 0.5*plglstrain(3);
-       gl(0,2) = 0.5*plglstrain(5);
-       gl(1,0) = gl(0,1);
-       gl(1,1) = plglstrain(1);
-       gl(1,2) = 0.5*plglstrain(4);
-       gl(2,0) = gl(0,2);
-       gl(2,1) = gl(1,2);
-       gl(2,2) = plglstrain(2);
-
-       // inverse of deformation gradient
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
-       invdefgrd.Invert(defgrd);
-
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-       temp.Multiply(gl,invdefgrd);
-       euler_almansi.MultiplyTN(invdefgrd,temp);
-
-       (*eleplstrain)(gp,0) = euler_almansi(0,0);
-       (*eleplstrain)(gp,1) = euler_almansi(1,1);
-       (*eleplstrain)(gp,2) = euler_almansi(2,2);
-       (*eleplstrain)(gp,3) = euler_almansi(0,1);
-       (*eleplstrain)(gp,4) = euler_almansi(1,2);
-       (*eleplstrain)(gp,5) = euler_almansi(0,2);
-     }
-     break;
-     case INPAR::STR::strain_none:
-       break;
-     default:
-       dserror("requested plastic strain type not available");
-     }
 
     // return gp stresses
     switch (iostress)
@@ -2321,7 +2235,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     {
       if (elestress == NULL) dserror("stress data not available");
       for (int i = 0; i < NUMSTR_SOH8; ++i)
-        (*elestress)(gp,i) = stressm(i);
+        (*elestress)(gp,i) = stress(i);
     }
     break;
     case INPAR::STR::stress_cauchy:
@@ -2330,15 +2244,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
       const double detF = defgrd.Determinant();
 
       LINALG::Matrix<3,3> pkstress;
-      pkstress(0,0) = stressm(0);
-      pkstress(0,1) = stressm(3);
-      pkstress(0,2) = stressm(5);
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
       pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = stressm(1);
-      pkstress(1,2) = stressm(4);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
       pkstress(2,0) = pkstress(0,2);
       pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = stressm(2);
+      pkstress(2,2) = stress(2);
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystress;
@@ -2364,7 +2278,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bopm, stressm, 1.0);
+      force->MultiplyTN(detJ_w, bopm, stress, 1.0);
     }
 
     // update stiffness matrix
@@ -2379,7 +2293,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
 
       // integrate `geometric' stiffness matrix
       const double facg = (1.0-gemmalphaf) * detJ_w;
-      LINALG::Matrix<6,1> sfac(stressm); // auxiliary integrated stress
+      LINALG::Matrix<6,1> sfac(stress); // auxiliary integrated stress
       sfac.Scale(facg); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
