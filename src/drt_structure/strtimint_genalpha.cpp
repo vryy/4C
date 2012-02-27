@@ -164,13 +164,13 @@ void STR::TimIntGenAlpha::PredictConstDisConsistVelAcc()
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
 
-  // consistent velocities
+  // consistent velocities following Newmark formulas
   veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
   veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
                 (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
                 gamma_/(beta_*(*dt_)[0]));
 
-  // consistent accelerations
+  // consistent accelerations following Newmark formulas
   accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
   accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
                 (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
@@ -189,13 +189,13 @@ void STR::TimIntGenAlpha::PredictConstVelConsistAcc()
   // d_{n+1} = d_{n} + dt * v_{n}
   disn_->Update(1.0, (*dis_)[0], (*dt_)[0], (*vel_)[0], 0.0);
 
-  // consistent velocities
+  // consistent velocities following Newmark formulas
   veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
   veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
                 (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
                 gamma_/(beta_*(*dt_)[0]));
 
-  // consistent accelerations
+  // consistent accelerations following Newmark formulas
   accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
   accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
                 (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
