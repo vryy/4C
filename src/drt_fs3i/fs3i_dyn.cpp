@@ -77,8 +77,8 @@ void fs3i_dyn()
   fs3i->TestResults(comm);
 
 #ifdef TRILINOS_DEV
-  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm(comm);
-  Teuchos::TimeMonitor::summarize(Teuchos::ptr_dynamic_cast<const Teuchos::Comm<int> >(TeuchosComm.ptr()), std::cout, false, true, false);
+  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
+  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 #else
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 #endif

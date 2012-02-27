@@ -28,7 +28,6 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
 #include "comm_utils.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -38,9 +37,9 @@ Maintainer: Georg Hammerl
 void COMM_UTILS::CreateComm(int argc, char** argv)
 {
   // for coupled simulations: color = 1 for BACI and color = 0 for other programs
-  // so far: either nested parallelity within BACI or coupling with further
+  // so far: either nested parallelism within BACI or coupling with further
   // executables is possible
-  // default values without nested parallelity
+  // default values without nested parallelism
   int myrank = -1;
   int size = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
@@ -109,7 +108,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
       }
 
       //----------------------------------------------------------------
-      // nested parallelity type
+      // nested parallelism type
       //----------------------------------------------------------------
       std::string nptype(argv[i]);
       if (nptype.substr( 0, 7 ) == "nptype=")
@@ -135,7 +134,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
     }
     while(gsum <= myrank);
 
-    cout<<"Nested parallelity layout:" << endl <<"Global rank: "<<myrank<<" is in group: "<<color<<endl;
+    cout<<"Nested parallelism layout:" << endl <<"Global rank: "<<myrank<<" is in group: "<<color<<endl;
   }
 
   // do the splitting of the communicator
@@ -153,7 +152,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   }
   else
   {
-    // TODO: consider a second executable that is coupled to BACI in case of nested parallelity
+    // TODO: consider a second executable that is coupled to BACI in case of nested parallelism
     // TODO: the procs owned by another executable have to be removed from world_group, e.g. MPI_Group_excl
     MPI_Group world_group;
     MPI_Comm_group(MPI_COMM_WORLD, &world_group);
@@ -167,35 +166,6 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   DRT::Problem::Instance()->SetCommunicators(color, ngroup, lcomm, gcomm);
 
   return;
-}
-
-
-///*----------------------------------------------------------------------*/
-///* The known nptypes for nested parallelity                             */
-///*----------------------------------------------------------------------*/
-//typedef enum _NP_TYPE
-//{
-//  copyDatFile=0,
-//  microMacro=1,
-//} NP_TYPE;
-
-
-/*----------------------------------------------------------------------*
- | converts Epetra_Comm into Teuchos::Comm                  ghamm 01/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > COMM_UTILS::toTeuchosComm(const Epetra_Comm & comm)
-{
-  try {
-    const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-    Teuchos::RCP<Teuchos::MpiComm<Teuchos::Ordinal> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<Teuchos::Ordinal>(Teuchos::opaqueWrapper(mpiComm.Comm())));
-    return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<Teuchos::Ordinal> >(mpicomm);
-  }
-  catch (std::bad_cast & b)
-  {
-    dserror("Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm object is unknown");
-  }
-  dserror("Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should not be here!");
-  return Teuchos::null;
 }
 
 

@@ -92,7 +92,7 @@ void LINALG::SOLVER::StratimikosSolver::Solve()
   Teuchos::RCP<Epetra_CrsMatrix> epetra_A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
 
   // create a dummy one-column Thyra::VectorSpaceBase
-  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm(A_->Comm());
+  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm<Teuchos::Ordinal>(A_->Comm());
 
   Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double> > dummyDomainSpaceFac = Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
 
