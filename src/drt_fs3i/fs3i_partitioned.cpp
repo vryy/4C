@@ -208,11 +208,10 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // create instances for fluid- and structure-based scalar transport
   // solver and arrange them in combined vector
   //---------------------------------------------------------------------
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,problem->ScalarTransportFluidSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,0,problem->ScalarTransportFluidSolverParams()));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,problem->ScalarTransportStructureSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,1,problem->ScalarTransportStructureSolverParams()));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -222,6 +221,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
   // check time-integration scheme (including parameter theta itself)
   // -> currently only one-step-theta scheme supported
