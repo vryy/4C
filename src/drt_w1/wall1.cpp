@@ -372,108 +372,100 @@ void DRT::ELEMENTS::Wall1::w1_expol
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
   const int numgp = intpoints.nquad;
   const int numnode = NumNode();
+  Epetra_SerialDenseMatrix expol(numnode,numgp);
 
-  static Epetra_SerialDenseMatrix expol(numnode,numgp);
-  static bool isfilled;
+  const DiscretizationType dt = Shape();
+  Epetra_SerialDenseVector funct(numgp);
 
-  if (isfilled==false)
+  // quad4, quad8 and quad9
+  if (dt==quad4 or dt==quad8 or dt==quad9)
   {
-    const DiscretizationType dt = Shape();
-    Epetra_SerialDenseVector funct(numgp);
-
-  	// quad4, quad8 and quad9
-    if (dt==quad4 or dt==quad8 or dt==quad9)
+    // loop over all nodes
+    for (int ip=0; ip<numnode; ++ip)
     {
-      // loop over all nodes
-      for (int ip=0; ip<numnode; ++ip)
+      // gaussian coordinates
+      const double e1 = intpoints.qxg[ip][0];
+      const double e2 = intpoints.qxg[ip][1];
+
+      // coordinates of node in the fictitious GP element
+      double e1expol;
+      double e2expol;
+
+      if (e1!=0) e1expol = 1/e1;
+      else       e1expol = 0;
+      if (e2!=0) e2expol = 1/e2;
+      else       e2expol = 0;
+
+      // shape functions for the extrapolated coordinates
+      switch(numgp)
       {
-        // gaussian coordinates
-        const double e1 = intpoints.qxg[ip][0];
-        const double e2 = intpoints.qxg[ip][1];
-
-        // coordinates of node in the fictitious GP element
-        double e1expol;
-        double e2expol;
-
-        if (e1!=0) e1expol = 1/e1;
-        else       e1expol = 0;
-        if (e2!=0) e2expol = 1/e2;
-        else       e2expol = 0;
-
-        // shape functions for the extrapolated coordinates
-        switch(numgp)
+        case 4:
         {
-          case 4:
-          {
-            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad4);
-            break;
-          }
-          case 9:
-          {
-            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad9);
-            break;
-          }
-          default:
-          {
-            dserror("ERROR: Quad4/8/9 nodal stress output only for 4 or 9 Gauss points!");
-            break;
-          }
+          DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad4);
+          break;
         }
-
-        // extrapolation matrix
-        for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
+        case 9:
+        {
+          DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,quad9);
+          break;
+        }
+        default:
+        {
+          dserror("ERROR: Quad4/8/9 nodal stress output only for 4 or 9 Gauss points!");
+          break;
+        }
       }
-    }
 
-    // tri3
-    else if (dt==tri3)
-    {
       // extrapolation matrix
-      for (int ip=0;ip<numnode;++ip)
-        for(int i=0;i<numgp;++i)
-          expol(ip,i) = 1.0/numgp;
+      for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
     }
-
-    // tri6
-    else if (dt==tri6)
-    {
-      // loop over all nodes
-      for (int ip=0; ip<numnode; ++ip)
-      {
-        // gaussian coordinates
-        const double e1 = intpoints.qxg[ip][0];
-        const double e2 = intpoints.qxg[ip][1];
-
-        // coordinates of node in the fictitious GP element
-        double e1expol = 2*e1 - 1.0/3.0;
-        double e2expol = 2*e2 - 1.0/3.0;
-
-        // shape functions for the extrapolated coordinates
-        switch(numgp)
-        {
-          case 3:
-          {
-            DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,tri3);
-            break;
-          }
-          default:
-          {
-            dserror("ERROR: Tri6 nodal stresses only implemented for 3 Gauss points!");
-            break;
-          }
-        }
-
-        // extrapolation matrix
-        for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
-      }
-    }
-
-    // else
-    else dserror("extrapolation not implemented for this element type");
-
-    // set isfilled
-    isfilled = true;
   }
+
+  // tri3
+  else if (dt==tri3)
+  {
+    // extrapolation matrix
+    for (int ip=0;ip<numnode;++ip)
+      for(int i=0;i<numgp;++i)
+        expol(ip,i) = 1.0/numgp;
+  }
+
+  // tri6
+  else if (dt==tri6)
+  {
+    // loop over all nodes
+    for (int ip=0; ip<numnode; ++ip)
+    {
+      // gaussian coordinates
+      const double e1 = intpoints.qxg[ip][0];
+      const double e2 = intpoints.qxg[ip][1];
+
+      // coordinates of node in the fictitious GP element
+      double e1expol = 2*e1 - 1.0/3.0;
+      double e2expol = 2*e2 - 1.0/3.0;
+
+      // shape functions for the extrapolated coordinates
+      switch(numgp)
+      {
+        case 3:
+        {
+          DRT::UTILS::shape_function_2D(funct,e1expol,e2expol,tri3);
+          break;
+        }
+        default:
+        {
+          dserror("ERROR: Tri6 nodal stresses only implemented for 3 Gauss points!");
+          break;
+        }
+      }
+
+      // extrapolation matrix
+      for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
+    }
+  }
+
+  // else
+  else dserror("extrapolation not implemented for this element type");
 
   Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
   nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
