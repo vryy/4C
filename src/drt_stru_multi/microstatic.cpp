@@ -125,7 +125,8 @@ V0_(V0)
 
   tolres_ = sdyn_micro.get<double>("TOLRES");
   toldis_ = sdyn_micro.get<double>("TOLDISP");
-  printscreen_ = false;
+  printscreen_=(ioflags.get<int>("STDOUTEVRY"));
+
 
   restart_ = probtype.get<int>("RESTART");
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");

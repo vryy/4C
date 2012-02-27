@@ -91,7 +91,7 @@ STR::TimInt::TimInt
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   output_(output),
   printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
-  printscreen_(true),  // ADD INPUT PARAMETER
+  printscreen_(ioparams.get<int>("STDOUTEVRY")),
   errfile_(xparams.get<FILE*>("err file")),
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
@@ -1013,7 +1013,7 @@ void STR::TimInt::OutputRestart
   }
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_)
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
     printf("====== Restart written in step %d\n", step_);
     fflush(stdout);

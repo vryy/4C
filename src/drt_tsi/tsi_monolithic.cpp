@@ -62,7 +62,7 @@ TSI::Monolithic::Monolithic(
 : Algorithm(comm),
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
-  printscreen_(true),  // ADD INPUT PARAMETER
+  printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY")),
   printiter_(true),  // ADD INPUT PARAMETER
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   errfile_(NULL),
@@ -90,6 +90,9 @@ TSI::Monolithic::Monolithic(
   = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& tdyn
   = DRT::Problem::Instance()->ThermalDynamicParams();
+
+
+
 
   // check time integration algo -> currently only one-step-theta scheme supported
   INPAR::STR::DynamicType structtimealgo
@@ -981,7 +984,7 @@ void TSI::Monolithic::PrintNewtonIter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ( (Comm().MyPID()==0) and printscreen_ and printiter_ )
+  if ( (Comm().MyPID()==0) and printscreen_ and (Step()%printscreen_==0) and printiter_ )
   {
     if (iter_== 1)
       PrintNewtonIterHeader(stdout);

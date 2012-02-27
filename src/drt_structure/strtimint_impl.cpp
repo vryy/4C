@@ -1645,7 +1645,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
 void STR::TimIntImpl::PrintPredictor()
 {
   // only master processor
-  if ( (myrank_ == 0) and printscreen_ )
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
     // relative check of force residual
     if ( normtypefres_ == INPAR::STR::convnorm_rel )
@@ -1687,7 +1687,8 @@ void STR::TimIntImpl::PrintPredictor()
 void STR::TimIntImpl::PrintNewtonIter()
 {
   // print to standard out
-  if ( (myrank_ == 0) and printscreen_ and printiter_ )
+
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
   {
     if (iter_== 1)
       PrintNewtonIterHeader(stdout);
@@ -1944,7 +1945,7 @@ void STR::TimIntImpl::PrintNewtonConv()
 void STR::TimIntImpl::PrintStep()
 {
   // print out (only on master CPU)
-  if ( (myrank_ == 0) and printscreen_ )
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
     PrintStepText(stdout);
   }

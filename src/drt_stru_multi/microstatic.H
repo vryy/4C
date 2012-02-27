@@ -305,7 +305,7 @@ protected:
   bool                          iosurfactant_;
   int                           restart_;
   int                           restartevry_;
-  bool                          printscreen_;
+  int                           printscreen_;
 
   INPAR::STR::ConvCheck         convcheck_;
   INPAR::STR::VectorNorm        iternorm_;

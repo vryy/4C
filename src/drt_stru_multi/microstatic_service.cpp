@@ -289,7 +289,7 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
 
   if (print_unconv)
   {
-    if (printscreen_)
+    if (printscreen_ and (stepn_%printscreen_==0))
     {
       if (relres)
       {

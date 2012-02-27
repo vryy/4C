@@ -717,6 +717,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &io);
 
   IntParameter("FILESTEPS",1000,"",&io);
+  IntParameter("STDOUTEVRY",1,"Print to screen every n step",&io);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& design = list->sublist("DESIGN DESCRIPTION",false,"number of nodal clouds");

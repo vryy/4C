@@ -52,7 +52,7 @@ THR::TimIntExpl:: TimIntExpl
 void THR::TimIntExpl::PrintStep()
 {
   // print out
-  if ( (myrank_ == 0) and printscreen_ )
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
     PrintStepText(stdout);
   }
