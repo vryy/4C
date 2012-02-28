@@ -69,7 +69,7 @@ LOMA::Algorithm::Algorithm(
       std::cout << "# Caution!                                                   #" << std::endl;
       std::cout << "# Assumptions: - constant thermodynamic pressure in main     #" << std::endl;
       std::cout << "#                problem domain                              #" << std::endl;
-      std::cout << "#              - inflow domain as closed system without in-/ #" << std::endl;
+      std::cout << "#              - inflow domain is closed system without in-/ #" << std::endl;
       std::cout << "#                outflow and heating                         #" << std::endl;
       std::cout << "#                -> constant thermodynamic pressure          #" << std::endl;
       std::cout << "##############################################################" << std::endl;
@@ -693,6 +693,15 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
 {
   // in case a inflow generation in the inflow section has been performed,
   // there are not any scatra results available and the initial field is used
+  // caution: if AVM3Preparation is called ,e.g., for multifractal subgrid-scale
+  //          modeling the physical parameters (dens, visc, diff) are required
+  //          to obtain non-zero values which otherwise cause troubles when dividing by them
+  //          we have to set the temperature field here
+  // set initial scalar field
+  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
+                                 0.0,
+                                 null,
+                                 ScaTraField().Discretization());
   FluidField().ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
