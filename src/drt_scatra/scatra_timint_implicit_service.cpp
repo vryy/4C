@@ -2231,6 +2231,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       double meanoverpot(0.0);
 
       double potdiffbulk(0.0);
+      double potdiffcell(0.0);
 
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
@@ -2261,10 +2262,17 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
             );
 
         // bulk voltage loss = V_A - eta_A - V_C + eta_C
-        if (icond==condid_cathode)
-          potdiffbulk -= (electrodepot - (meanoverpot));
+        // cell voltage loss = V_A - V_C
         if (icond==condid_anode)
+        {
+          potdiffcell += electrodepot;
           potdiffbulk += (electrodepot - (meanoverpot));
+        }
+        if (icond==condid_cathode)
+        {
+          potdiffcell -= electrodepot;
+          potdiffbulk -= (electrodepot - (meanoverpot));
+        }
 
         // store the tangent for later usage
         if (icond==condid_cathode)
@@ -2328,22 +2336,32 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       }
       // end loop over electrode kinetics
-
-      if (myrank_==0)
+#if 0
+      if (cond.size()>=2)
       {
-        cout<<"potdiffbulk = "<<potdiffbulk<<endl;
-      }
-      if (abs(actualcurrent) > EPS10)
-      {
-        potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
-        if (myrank_==0)
+        if(myrank_==0)
         {
-          cout<<"REPLACE potinc_ohm. Set to "<<potinc_ohm<<endl;
-          cout<<"Suggested GSTATLENGTH: "<<(-1.0)*(potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
-          cout<<"dV/dI = "<< (-1.0)*potdiffbulk/actualcurrent << endl;
-          cout<<"Guess ohmic: "<<(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
+          cout<<"  cell potential difference = "<<potdiff<<endl;
+          cout<<"  bulk potential difference = "<<potdiffbulk<<endl;
+        }
+        if (abs(actualcurrent) > EPS10)
+        {
+          if(myrank_==0)
+          {
+            cout<<"  REPLACED potinc_ohm. Old value was: "<<potinc_ohm<<endl;
+            cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<<(-1.0)*(potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
+            cout<<"  dV/dI = "<< (-1.0)*potdiffbulk/actualcurrent << endl;
+            cout<<"  New guess for potinc_ohm: "<<(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
+          }
+          potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
+        }
+        else
+        {
+          potinc_ohm = 0.0;
         }
       }
+      // for only one BV boundary condition, keep the original approach using GSTAT_LENGTH_CURRENTPATH
+#endif
 
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = newtonrhs/currtangent_cathode;
