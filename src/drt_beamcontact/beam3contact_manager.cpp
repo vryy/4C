@@ -257,21 +257,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     double t_end = Teuchos::Time::wallTime() - t_start;
     if(!pdiscret_.Comm().MyPID())
       cout << "           Octree Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs" << endl;;
-
-    /*//Print ContactPairs to .dat-file and plot with Matlab....................
-    std::ostringstream filename2;
-    filename2 << "ContactPairs_beam3contactmanager.dat";
-    FILE* fp2 = NULL;
-    fp2 = fopen(filename2.str().c_str(), "w");
-    fclose(fp2);
-    //open file to write output data into
-    // write output to temporary stringstream;
-    std::stringstream myfile2;
-    fp2 = fopen(filename2.str().c_str(), "a");
-    for (int i=0;i<(int)pairs_.size();i++)
-      myfile2 << (pairs_[i]->Element1())->Id() <<"  "<< (pairs_[i]->Element2())->Id() <<endl;
-    fprintf(fp2, myfile2.str().c_str());
-    fclose(fp2);*/
   }
   else
   {

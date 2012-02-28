@@ -75,7 +75,7 @@ class Beam3ContactOctTree
     //!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
     void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
     //!\brief get the dimensions of the root octant
-    LINALG::Matrix<1,6> GetRootOctant();
+    LINALG::Matrix<6,1> GetRootBox();
     //!\brief create axis aligned bounding boxes
     void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     //!\brief create coylindrical oriented bounding boxes
@@ -89,8 +89,8 @@ class Beam3ContactOctTree
 
     //!\brief primitive for locateAll
     void locateBox(std::vector<std::vector<double> > allbboxesstdvec,
-                   LINALG::Matrix<1,6> lim,
-                   std::vector<std::vector<double> >& OctreeLimits,
+                   LINALG::Matrix<6,1>& lim,
+                   std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
                    std::vector<std::vector<int> >& bboxesinoctants,
                    int& treedepth);
 
@@ -104,10 +104,22 @@ class Beam3ContactOctTree
     // intersection method applying spherical bounding boxes for crosslinker when both boxes belong to existing elements
     bool IntersectionSPBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     
+    //! \brief comunicate Vector to all participating processors
+    void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
+    //! \brief comunicate MultiVector to all participating processors
+    void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
+
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
 
+    //!\brief vector holding the edge lengths of the cuboid periodic volume
     Teuchos::RCP<std::vector<double> > periodlength_;
+
+    //!\brief Matrix holding the spatial limits of the root box
+    LINALG::Matrix<6,1> rootbox_;
+
+    //!\brief Matrix holding the spatial limits of the root box in reference configuration
+    LINALG::Matrix<6,1> initbox_;
 
     //!\brief problem discretization
     DRT::Discretization& discret_;
@@ -120,7 +132,7 @@ class Beam3ContactOctTree
     
     //!\brief dof offset between discret_ and searchdis_
     int dofoffset_;
-    
+
     //!\brief maximum tree depth
     int maxtreedepth_;
 
@@ -129,6 +141,9 @@ class Beam3ContactOctTree
 
     //!\brief scalar factor for diameters
     double extrusionfactor_;
+
+    //!\brief scalar factor for radial scaling of the bounding box
+    double radialextrusion_;
 
     //!\brief diameters of all beam elements
     RCP<Epetra_Vector> diameter_;
@@ -143,7 +158,7 @@ class Beam3ContactOctTree
     RCP<Epetra_MultiVector> bbox2octant_;
 
     //!\brief storage vector for octree octant limits
-    std::vector< std::vector <double> > octreelimits_;
+    std::vector<LINALG::Matrix<6,1> > octreelimits_;
 
     //!\brief vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
     RCP<Epetra_Vector> numshifts_;

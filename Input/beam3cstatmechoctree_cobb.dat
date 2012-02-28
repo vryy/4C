@@ -48,7 +48,7 @@ RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.01
-NUMSTEP      100
+NUMSTEP      80
 MAXTIME      1
 BETA         0.5
 GAMMA        1
@@ -71,12 +71,17 @@ STRATEGY       Augmented
 PENALTYPARAM   1e+06
 UZAWACONSTRTOL 1e-08
 UZAWAMAXSTEPS  25
-BEAMS_NEWGAP   Yes
+BEAMS_NEWGAP   No
 BEAMS_SMOOTHING None
 BEAMS_OCTREE	octree_cylorient
+BEAMS_RADFAC      1.5
+BEAMS_EXTFAC        1.5
+BEAMS_TREEDEPTH     3
+BEAMS_BOXESINOCT    8
 ----------------------------------------------STATISTICAL MECHANICS
 THERMALBATH         uniform
 GMSHOUTPUT          No
+SPECIAL_OUTPUT      none // octree
 BEAMCONTACT	    Yes
 FRICTION_MODEL	    anisotropicconsistent  
 ETA		    1e-3
@@ -85,7 +90,7 @@ CTRANSPTC0          0.0
 CROTPTC0            0.145
 ALPHAPTC            6.0
 DYN_CROSSLINKERS    No
-OUTPUTINTERVALS     1000
+OUTPUTINTERVALS     1
 GMSHOUTINTERVALS    1
 PlotFactorThick     1
 -----------------------------------------------------STRUCT SOLVER
@@ -242,8 +247,8 @@ MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 100000 NUE 0 DENS 0.001 THEXPANS
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.344352776e-01 TOLERANCE 1e-3
-STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE  8.078205550e-02 TOLERANCE 1e-2
-STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.646981599e+00 TOLERANCE 1e-4
+STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -1.88686002492365779e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE  2.97796025749204885e-02 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.17082416859649840e+00 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
