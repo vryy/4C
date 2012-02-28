@@ -1204,6 +1204,8 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
     double currtangent(0.0); // this value remains unused here!
     double currresidual(0.0); // this value remains unused here!
     double electrodesurface(0.0); // this value remains unused here!
+    double electrodepot(0.0); // this value remains unused here!
+    double meanoverpot(0.0); // this value remains unused here!
 
     OutputSingleElectrodeInfo(
         cond[condid],
@@ -1213,7 +1215,9 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
         sum,
         currtangent,
         currresidual,
-        electrodesurface);
+        electrodesurface,
+        electrodepot,
+        meanoverpot);
   } // loop over condid
 
   if ((myrank_==0) and printtoscreen)
@@ -1241,7 +1245,9 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
     double& currentsum,
     double& currtangent,
     double& currresidual,
-    double& electrodesurface)
+    double& electrodesurface,
+    double& electrodepot,
+    double& meanoverpot)
 {
   // safety check: is there already a ConditionID?
   const vector<int>* CondIDVec  = condition->Get<vector<int> >("ConditionID");
@@ -1325,6 +1331,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
   currresidual = parcurrentresidual;
   electrodesurface = parboundaryint;
+  electrodepot = pot;
+  meanoverpot = paroverpotentialint/parboundaryint;
 
   // clean up
   discret_->ClearState();
@@ -2219,6 +2227,10 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       double currtangent_anode(0.0);
       double currtangent_cathode(0.0);
       double potinc_ohm(0.0);
+      double electrodepot(0.0);
+      double meanoverpot(0.0);
+
+      double potdiffbulk(0.0);
 
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
@@ -2231,9 +2243,28 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         actualcurrent = 0.0;
         currtangent = 0.0;
         currresidual = 0.0;
+        electrodepot = 0.0;
+        meanoverpot = 0.0;
 
         // note: only the potential at the boundary with id condid_cathode will be adjusted!
-        OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
+        OutputSingleElectrodeInfo(
+            cond[icond],
+            icond,
+            false,
+            false,
+            actualcurrent,
+            currtangent,
+            currresidual,
+            electrodesurface,
+            electrodepot,
+            meanoverpot
+            );
+
+        // bulk voltage loss = V_A - eta_A - V_C + eta_C
+        if (icond==condid_cathode)
+          potdiffbulk -= (electrodepot - (meanoverpot));
+        if (icond==condid_anode)
+          potdiffbulk += (electrodepot - (meanoverpot));
 
         // store the tangent for later usage
         if (icond==condid_cathode)
@@ -2297,6 +2328,22 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       }
       // end loop over electrode kinetics
+
+      if (myrank_==0)
+      {
+        cout<<"potdiffbulk = "<<potdiffbulk<<endl;
+      }
+      if (abs(actualcurrent) > EPS10)
+      {
+        potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
+        if (myrank_==0)
+        {
+          cout<<"REPLACE potinc_ohm. Set to "<<potinc_ohm<<endl;
+          cout<<"Suggested GSTATLENGTH: "<<(-1.0)*(potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
+          cout<<"dV/dI = "<< (-1.0)*potdiffbulk/actualcurrent << endl;
+          cout<<"Guess ohmic: "<<(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
+        }
+      }
 
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = newtonrhs/currtangent_cathode;
