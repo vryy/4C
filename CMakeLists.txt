@@ -785,6 +785,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_ost.cpp
   src/drt_scatra/scatra_timint_stat.cpp
   src/drt_scatra/scatra_utils.cpp
+  src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/scatra_timint_tg.cpp
   src/drt_scatra/scatra_timint_reinitialization.cpp
 )

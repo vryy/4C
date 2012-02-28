@@ -35,7 +35,8 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
-#include "scatra_utils.H" // for splitstrategy
+#include "scatra_utils.H"
+#include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"

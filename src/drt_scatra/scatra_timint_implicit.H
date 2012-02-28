@@ -309,7 +309,9 @@ public:
       double& currentsum,       ///< net current over all boundaries (out)
       double& pottangent,       ///< tangent of current w.r.t. electrode potential (out)
       double& currresidual,      ///< neg. residual of current equation (out)
-      double& electrodesurface   ///< surface of the electrode
+      double& electrodesurface,  ///< surface of the electrode
+      double& electrodepot,      ///< electrode potential (metal side)
+      double& meanoverpot        ///< mean surface overpotential
       );
 
   /// routine to return density field at time n+1 for ELCH natural convection

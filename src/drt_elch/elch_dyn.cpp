@@ -17,7 +17,7 @@ Maintainer: Georg Bauer
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
 #include "elch_moving_boundary_algorithm.H"
-#include "../drt_scatra/scatra_utils.H"
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Teuchos_TimeMonitor.hpp>

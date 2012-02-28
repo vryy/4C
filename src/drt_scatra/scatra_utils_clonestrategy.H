@@ -1,0 +1,70 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_utils_clonestrategy.H
+
+\brief mesh clone strategy for scalar transport problems
+
+<pre>
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+
+#ifndef SCATRA_UTILS_CLONESTRATEGY_H
+#define SCATRA_UTILS_CLONESTRATEGY_H
+
+#include <Teuchos_RCP.hpp>
+
+
+namespace DRT
+{
+class Element;
+}
+
+namespace SCATRA
+{
+/*!
+\brief implementation of special clone strategy for automatic generation
+       of scatra from a given fluid discretization
+
+ */
+class ScatraFluidCloneStrategy
+{
+public:
+
+  /// constructor
+  explicit ScatraFluidCloneStrategy(){}
+  /// destructor
+  virtual ~ScatraFluidCloneStrategy() {}
+
+protected:
+
+  /// determine element type string and whether element is copied or not
+  bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+
+  /// set element-specific data (material etc.)
+  void SetElementData(
+      Teuchos::RCP<DRT::Element> newele,
+      DRT::Element* oldele,
+      const int matid,
+      const bool isnurbs);
+
+  /// returns conditions names to be copied (source and target name)
+  std::map<std::string,std::string> ConditionsToCopy();
+
+  /// check for correct material
+  void CheckMaterialType(const int matid);
+
+private:
+
+}; // class ScatraFluidCloneStrategy
+
+} // namespace SCATRA
+
+#endif
+#endif

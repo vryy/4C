@@ -15,7 +15,7 @@ Maintainer: Volker Gravemeier
 
 #include "scatra_dyn.H"
 #include "passive_scatra_algorithm.H"
-#include "scatra_utils.H"
+#include "scatra_utils_clonestrategy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"

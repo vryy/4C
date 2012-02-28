@@ -25,7 +25,7 @@ Maintainer: Florian Henke
 #include "combust_dyn.H"
 #include "combust_utils.H"
 #include "combust_algorithm.H"
-#include "../drt_scatra/scatra_utils.H"
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
