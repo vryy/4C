@@ -88,7 +88,7 @@ class Beam3ContactOctTree
     bool locateAll();
 
     //!\brief primitive for locateAll
-    void locateBox(std::vector<std::vector<double> > allbboxesstdvec,
+    void locateBox(std::vector<std::vector<double> >& allbboxesstdvec,
                    LINALG::Matrix<6,1>& lim,
                    std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
                    std::vector<std::vector<int> >& bboxesinoctants,

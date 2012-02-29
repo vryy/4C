@@ -966,8 +966,8 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
         for(int dof=numshifts-1; dof>0; dof--)
           lambdaorder(dof,0) -= lambdaorder(dof-1,0);
       }
-      else
-      {// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+      else // for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+      {
         for(int n=0; n<(int)lambdaorder.N(); n++)
         {
           double tmp = lambdaorder(shiftdof,n);
@@ -1082,12 +1082,11 @@ bool Beam3ContactOctTree::locateAll()
   // get the root box
   rootbox_ = GetRootBox();
 
-  // Convert Epetra_MultiVector allbboxes_ to vector(vector(vector))
+  // Convert Epetra_MultiVector allbboxes_ to vector(vector<double>)
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
   for(int i=0; i < allbboxes_->MyLength(); i++)
     for(int j=0; j<allbboxes_->NumVectors(); j++)
       allbboxesstdvec[i][j] = (*allbboxes_)[j][i];
-
 
   //initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
@@ -1189,7 +1188,7 @@ bool Beam3ContactOctTree::locateAll()
  |  [ind, bx, by, bz] = locateBox(&allbboxes, lim, n0)                                     |
  |  Primitive for locateAll                                                                |
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxesstdvec,
+void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxesstdvec,
                                     LINALG::Matrix<6,1>& lim,
                                     std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
                                     std::vector<std::vector<int> >& bboxesinoctants,
@@ -1222,19 +1221,6 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
 
         limits.push_back(sublim);
       }
-
-//  cout<<"Octant "<<bboxesinoctants.size()<<": ";
-//  for(int i=0; i<(int)lim.M(); i++)
-//    cout<<lim(i)<<" ";
-//  cout<<endl;
-//
-//  cout<<"Suboctants:"<<endl;
-//  for(int i=0; i<(int)limits.size(); i++)
-//  {
-//    for(int j=0; j<(int)limits[i].M(); j++)
-//      cout<<limits[i](j)<<" ";
-//    cout<<endl;
-//  }
 
   /* Decision to which child box belongs....................
   *
@@ -1278,21 +1264,20 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
         (*octcenter)(i) = (limits[oct](2*i)+limits[oct](2*i+1))/2.0;
     }
 
-    // Goes through all the lines of input allbboxesstdvec
-    for( int i=0; i<(int)allbboxesstdvec.size(); i++)
+    if(periodicBC_)
     {
-      if(periodicBC_)
+      for( int i=0; i<(int)allbboxesstdvec.size(); i++)
       {
+        // flag for a bounding box located in the octant or so close to it that its cylindrical hull intersects with the octant
+        bool inoctant = false;
         // a bounding box is at maximum divided into 4 subsegments due to periodic boundary conditions
         for(int isub=0; isub<4; isub++)
         {
           // 1) remember: the gid of the bounding box (=element gid) is at the last position
-          // 2)loop over the limits of the current octant and check if the current bounding box lies within this octant.
-          // 3)Then, check componentwise and leave after first "hit"
+          // 2) loop over the limits of the current octant and check if the current bounding box lies within this octant.
+          // 3) Then, check componentwise and leave after first "hit"
           if(allbboxesstdvec[i][6*isub]!=-1e9)
           {
-            // check for intersection. if yes, there's no need to check further segments ->break
-            bool inoctant = false;
             switch(boundingbox_)
             {
               case Beam3ContactOctTree::axisaligned:
@@ -1306,73 +1291,70 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
               break;
               case Beam3ContactOctTree::cyloriented:
               {
-                // we calculate the shortest distance from octant center to bounding box coordinates
-                // Anything within the octant or outside the octant but within the given tolerance is considered for contact
-                for(int j=0; j<2; j++) // loop over end points
+                // loop over end points of the bounding box
+                for(int j=0; j<2; j++)
                 {
-                  // directional vector between bounding box end point and octant center
+                  // Idea: The largest absolute component value of the directional vector v from octant center to
+                  // bounding box end point position indicates the octant face which is intersected first by the line with
+                  // direction v. Octant faces are each parallel to one of the global spatial directions.
+
+                  // component value of the directional vector from octant center to bounding box end point position
+                  double vmax = allbboxesstdvec[i][6*isub+3*j]-(*octcenter)(0);
+                  // distance between bounding j-th bounding box end point and oct-th octant center
+                  double d = vmax * vmax;
+                  // index for the maximum absolute value of the directional vector
                   int kmax = 0;
-                  double vmax = allbboxesstdvec[i][6*isub+3*j] - (*octcenter)(0);
-                  double d = vmax*vmax;
-                  for(int k=1; k<3; k++)
+                  for(int k=1; k<(int)octcenter->M(); k++)
                   {
-                    d += (allbboxesstdvec[i][6*isub+3*j+k] - (*octcenter)(k))*(allbboxesstdvec[i][6*isub+3*j+k] - (*octcenter)(k));
-                    if(fabs(allbboxesstdvec[i][6*isub+3*j+k] - (*octcenter)(k))>vmax)
+                    d += (allbboxesstdvec[i][6*isub+3*j+k]-(*octcenter)(k))*(allbboxesstdvec[i][6*isub+3*j+k]-(*octcenter)(k));
+                    if(fabs(allbboxesstdvec[i][6*isub+3*j+k]-(*octcenter)(k))>fabs(vmax))
                     {
-                      vmax = allbboxesstdvec[i][6*isub+3*j+k] - (*octcenter)(k);
+                      vmax = allbboxesstdvec[i][6*isub+3*j+k]-(*octcenter)(k);
                       kmax = k;
                     }
                   }
                   d = sqrt(d);
-                  // we are not interested in any bounding box endpoint farther away
-                  // note: the bounding box gid is stored in the last entry of allbboxesstdvec
+
                   double boxradius = 0.5*extrusionfactor*(*diameter_)[searchdis_.ElementColMap()->LID((int)allbboxesstdvec[i][(int)allbboxesstdvec[i].size()-1])];
-                  if(d<=newedgelength(kmax)/2.0*sqrt(3.0)+boxradius)
+
+                  if(d<=(0.5*newedgelength(kmax)*sqrt(3.0))+boxradius)
                   {
-                    // determine normal vector of the octant face which will be intersected
-                    double normal = -1.0;
-                    // plane normal facing outwards. Relax, v(kmax) != 0
-                    if(vmax<0)
-                      normal = +1.0;
-
-                    // calculate lambda = the distance between octant center and intersection point (intermediate calc. steps left out)
+                    // unit vector component
                     vmax /= d;
-                    double lambda = - newedgelength(kmax)/ (2.0*vmax*normal);
+                    // normal component
+                    double normal = -1.0;
+                    // note: it's always n!=0
+                    if(vmax<0)
+                      normal = 1.0;
+                    // segment length from octant center to intersection the line with directional vector v and the closest octant face
+                    double lambda = -0.5*newedgelength(kmax)/(vmax*normal);
 
-                    // bounding box end point definitely lies within octant. No further investigation
-                    if(lambda-d<=0.0)
+                    // 2 cases: end point is in the octant or it is outside but its cylindrical hull intersects with the octant
+                    if(lambda>=d || (d>lambda && d-lambda<=boxradius))
                     {
                       inoctant = true;
                       bboxsubset.push_back(allbboxesstdvec[i]);
-                      break; // i-loop
-                    }
-                    else
-                    {
-                      if(fabs(lambda-d)<=boxradius)
-                      {
-                        inoctant = true;
-                        bboxsubset.push_back(allbboxesstdvec[i]);
-                        break; // i-loop
-                      }
-                      else
-                        inoctant = false;
+                      // Since we found a bounding box end point to lie in the octant, we do not need to investigate further
+                      break; //j-loop
                     }
                   }
-                  else
-                    inoctant = false;
                 }
               }
               break;
               default: dserror("No or an invalid Octree type was chosen. Check your input file!");
             }
-            if(inoctant) // isub loop
+
+            if(inoctant) // isub-loop
               break;
           }
           else
-            break;
-        }
-      }
-      else // standard procedure without periodic boundary conditions
+            break; // isub-loop
+        } // end of isub-loop
+      } // end of for-loop which goes through all elements of input
+    }
+    else // standard procedure without periodic boundary conditions
+    {
+      for( int i=0; i<(int)allbboxesstdvec.size(); i++)
       {
         // Processes colums indices 1 to 6
         // 2)loop over the limits of the current octant and check if the current bounding box lies within this octant.
@@ -1395,7 +1377,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
               for(int k=1; k<3; k++)
               {
                 d += (allbboxesstdvec[i][3*j+k] - (*octcenter)(k))*(allbboxesstdvec[i][3*j+k] - (*octcenter)(k));
-                if(fabs(allbboxesstdvec[i][3*j+k] - (*octcenter)(k))>vmax)
+                if(fabs(allbboxesstdvec[i][3*j+k] - (*octcenter)(k))>fabs(vmax))
                 {
                   vmax = allbboxesstdvec[i][3*j+k] - (*octcenter)(k);
                   kmax = k;
@@ -1408,23 +1390,15 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
               {
                 double normal = -1.0;
                 if(vmax<0)
-                  normal = +1.0;
+                  normal = 1.0;
 
                 vmax /= d;
                 double lambda = - newedgelength(kmax)/ (2.0*vmax*normal);
 
-                if(lambda-d<=0.0)
+                if(lambda>=d || (d>lambda && d-lambda<=boxradius))
                 {
                   bboxsubset.push_back(allbboxesstdvec[i]);
                   break;
-                }
-                else
-                {
-                  if(fabs(lambda-d)<=boxradius)
-                  {
-                    bboxsubset.push_back(allbboxesstdvec[i]);
-                    break;
-                  }
                 }
               }
             }
@@ -1432,14 +1406,13 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
           break;
           default: dserror("No or an invalid Octree type was chosen. Check your input file!");
         }
-      }
-    }// end of for-loop which goes through all elements of input
+      }// end of for-loop which goes through all elements of input
+    }
 
     // current tree depth
     int currtreedepth = treedepth+1;
     // Check for further recursion by checking number of boxes in octant (first criterion)....................
     int N = (int)bboxsubset.size();
-    //cout << "Number of Bounding Boxes in suboctant "<<oct<<":  "<< bboxsubset.size() <<"\t";
 
     //If to divide further, let LocateBox call itself with updated inputs
     if (N > minbboxesinoctant_ && currtreedepth < maxtreedepth_-1)
@@ -1449,10 +1422,10 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
       // no further discretization of the volume because either the maximal tree depth or the minimal number of bounding
       // boxes per octant has been reached
       // this vector holds the IDs of the bounding boxes in this octant
-      std::vector<int> boxids;
-      boxids.clear();
-      if(bboxsubset.size()!=0)
+      if(N>0)
       {
+        std::vector<int> boxids;
+        boxids.clear();
         //Push back Limits of suboctants to OctreeLimits
         OctreeLimits.push_back(limits[oct]);
 
@@ -1473,6 +1446,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allbboxess
       }
     }
   }// end of loop which goes through all suboctants
+  return;
 } // end of method locateBox
 
 /*----------------------------------------------------------------------------------*

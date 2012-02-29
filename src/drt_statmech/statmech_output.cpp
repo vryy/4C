@@ -621,24 +621,11 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         else
           color = 0.5;
 
-        /*/ highlight contacting elements (works for old gap function(??))
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
-        {
+        // highlight contacting elements
+        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT") && beamcmanager!=Teuchos::null)
           for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
-          {
-            // GIDs of contact discretization
-            int celeid1 = (*(beamcmanager->Pairs()))[j]->Element1()->Id();
-            int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
-
-            // element row maps should be the same in both discretizations (?)
-            int celerowid1 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid1);
-            int celerowid2 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid2);
-            int elerowid = discret_.ElementRowMap()->LID(element->Id());
-
-            if(elerowid==celerowid1 || elerowid==celerowid2)
-              color = 0.375;
-        	}
-        }*/
+            if(element->Id()==(*(beamcmanager->Pairs()))[j]->Element1()->Id() || element->Id()==(*(beamcmanager->Pairs()))[j]->Element2()->Id())
+              color = 1.0;//0.375;
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength_->at(0) == 0.0)
@@ -2056,72 +2043,72 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
       // layer
       case 2:
       {
-              cout<<"Layer ("<<testvolumepos_.size()<<"-noded)"<<endl;
-              double halfthick = characlength_/2.0;
-              // compute normal
-              // cross product v_1 x v_2, plane normal
-              LINALG::Matrix<3,1> normal;
-              LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
-              LINALG::Matrix<3,1> secdir = testvolumepos_[1];
-              firstdir -= testvolumepos_[0];
-              secdir -= testvolumepos_[2];
-              normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
-              normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
-              normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
-              normal.Scale(1.0/normal.Norm2());
-              // upper and lower bound
-              // componentwise comparison between two points to determine whether or not their connection is an edge
-              // of the volume to visualize
-              for(int i=0; i<(int)testvolumepos_.size(); i++)
-                for(int j=0; j<(int)testvolumepos_.size(); j++)
-                  if(j>i) // consider entries above diagonal only
-                    for(int k=0; k<3; k++)
-                      if(fabs((testvolumepos_[i])(k)-(testvolumepos_[j])(k))<1e-7)
-                      {
-                        int numsections = 10;
+        cout<<"Layer ("<<testvolumepos_.size()<<"-noded)"<<endl;
+        double halfthick = characlength_/2.0;
+        // compute normal
+        // cross product v_1 x v_2, plane normal
+        LINALG::Matrix<3,1> normal;
+        LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
+        LINALG::Matrix<3,1> secdir = testvolumepos_[1];
+        firstdir -= testvolumepos_[0];
+        secdir -= testvolumepos_[2];
+        normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
+        normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
+        normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
+        normal.Scale(1.0/normal.Norm2());
+        // upper and lower bound
+        // componentwise comparison between two points to determine whether or not their connection is an edge
+        // of the volume to visualize
+        for(int i=0; i<(int)testvolumepos_.size(); i++)
+          for(int j=0; j<(int)testvolumepos_.size(); j++)
+            if(j>i) // consider entries above diagonal only
+              for(int k=0; k<3; k++)
+                if(fabs((testvolumepos_[i])(k)-(testvolumepos_[j])(k))<1e-7)
+                {
+                  int numsections = 10;
 
-                        LINALG::SerialDenseMatrix loweredge(3,2);
-                        LINALG::SerialDenseMatrix upperedge(3,2);
-                        LINALG::SerialDenseMatrix connection0(3,2);
-                        LINALG::SerialDenseMatrix connection1(3,2);
-                        for(int l=0; l<loweredge.M(); l++)
-                        {
-                          loweredge(l,0) = testvolumepos_[i](l)-halfthick*normal(l);
-                          loweredge(l,1) = testvolumepos_[j](l)-halfthick*normal(l);
-                          upperedge(l,0) = testvolumepos_[i](l)+halfthick*normal(l);
-                          upperedge(l,1) = testvolumepos_[j](l)+halfthick*normal(l);
-                          connection0(l,0) = loweredge(l,0);
-                          connection0(l,1) = upperedge(l,0);
-                          connection1(l,0) = loweredge(l,1);
-                          connection1(l,1) = upperedge(l,1);
-                        }
-                        // (long) edges
-                        GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
-                        GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
-                        // connecting edges
-                        GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
-                        GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
-                        // draw continous box also (for now)
-                        // upper edge
-                        gmshfilecontent << "SL(" << scientific;
-                        gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
-                        gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2);
-                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-                        // lower edge
-                        gmshfilecontent << "SL(" << scientific;
-                        gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2) << ",";
-                        gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
-                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-                        // connections
-                        gmshfilecontent << "SL(" << scientific;
-                        gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
-                        gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2);
-                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-                        gmshfilecontent << "SL(" << scientific;
-                        gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2) << ",";
-                        gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
-                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-                      }
+                  LINALG::SerialDenseMatrix loweredge(3,2);
+                  LINALG::SerialDenseMatrix upperedge(3,2);
+                  LINALG::SerialDenseMatrix connection0(3,2);
+                  LINALG::SerialDenseMatrix connection1(3,2);
+                  for(int l=0; l<loweredge.M(); l++)
+                  {
+                    loweredge(l,0) = testvolumepos_[i](l)-halfthick*normal(l);
+                    loweredge(l,1) = testvolumepos_[j](l)-halfthick*normal(l);
+                    upperedge(l,0) = testvolumepos_[i](l)+halfthick*normal(l);
+                    upperedge(l,1) = testvolumepos_[j](l)+halfthick*normal(l);
+                    connection0(l,0) = loweredge(l,0);
+                    connection0(l,1) = upperedge(l,0);
+                    connection1(l,0) = loweredge(l,1);
+                    connection1(l,1) = upperedge(l,1);
+                  }
+                  // (long) edges
+                  GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
+                  GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
+                  // connecting edges
+                  GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
+                  GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
+                  // draw continous box also (for now)
+                  // upper edge
+                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
+                  gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2);
+                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  // lower edge
+                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2) << ",";
+                  gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
+                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  // connections
+                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
+                  gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2);
+                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2) << ",";
+                  gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
+                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                }
       }
       break;
       case 3:
