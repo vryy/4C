@@ -35,11 +35,12 @@ Maintainer: Caroline Danowski
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
-    ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams())
+    ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
+    ScaTraBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),false)
 {
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)
-  dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField().Discretization()->NodeRowMap()),3,true));
+  //dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField().Discretization()->NodeRowMap()),3,true));
 
   return;
 }
@@ -59,7 +60,8 @@ TSI::Algorithm::~Algorithm()
 void TSI::Algorithm::Update()
 {
   StructureField().Update();
-  ThermoField().Update();
+  //ThermoField().Update();
+  ScaTraField().Update();
   return;
 }
 
@@ -76,10 +78,11 @@ void TSI::Algorithm::Output()
   // defines the dof number ordering of the Discretizations.
   StructureField().Output();
 
-  ThermoField().Output();
+  //ThermoField().Output();
+  ScaTraField().Output();
 
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  /*const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // Get the parameters for the Newton iteration
   int upres = tsidyn.get<int>("UPRES");
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
@@ -93,8 +96,8 @@ void TSI::Algorithm::Output()
           StructureField().Discretization()
           );
 
-      ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
-    }
+      //ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+     }*/
 
 }
 
@@ -117,7 +120,8 @@ void  TSI::Algorithm::OutputDeformationInThr(
   const Epetra_Map* structdofrowmap = structdis->DofRowMap(0);
 
   // loop over all local nodes of thermal discretisation
-  for (int lnodeid=0; lnodeid<(ThermoField().Discretization()->NumMyRowNodes()); lnodeid++)
+  //for (int lnodeid=0; lnodeid<(ThermoField().Discretization()->NumMyRowNodes()); lnodeid++)
+  for (int lnodeid=0; lnodeid<(ScaTraField().Discretization()->NumMyRowNodes()); lnodeid++)
   {
     // Here we rely on the fact that the thermal discretisation is a clone of
     // the structural mesh.

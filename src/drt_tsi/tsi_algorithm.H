@@ -27,6 +27,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_thermo.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 
@@ -64,7 +65,8 @@ namespace TSI
   //!  \date 02/08
   class Algorithm : public ADAPTER::AlgorithmBase,
                     public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::ThermoBaseAlgorithm
+                    public ADAPTER::ThermoBaseAlgorithm,
+                    public ADAPTER::ScaTraBaseAlgorithm
   {
     friend class FS3I::AeroTFSI;
 
