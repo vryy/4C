@@ -137,7 +137,10 @@ namespace COMBUST
     void CallSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
 
     /// compute curvature based on G-function
-    void ComputeCurvature(const Teuchos::ParameterList& combustdyn);
+    void ComputeCurvatureForCombustion(const Teuchos::ParameterList& combustdyn);
+
+    /// compute curvature based on G-function
+    void ComputeCurvatureForSurfaceTension(const Teuchos::ParameterList& combustdyn);
 
     /// compute smoothed gradient field of G-function
     template<const size_t nsd_real>

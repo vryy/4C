@@ -2551,7 +2551,6 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::Redistribute()
 {
-#ifdef PARALLEL
   const double ratiolimitfac = combustdyn_.get<double>("PARALLEL_REDIST_RATIO_FAC");
 
   if (Comm().NumProc() > 1 and ratiolimitfac > 1.0)
@@ -2592,9 +2591,6 @@ void COMBUST::Algorithm::Redistribute()
         cout << "-------------------------------Redistributing-------------------------------" << endl;
         cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimitfac * evaltimeratio_ << " --> Redistributing" << endl;
       }
-      // make sure the ratio will be reset
-      evaltimeratio_ = 1e12;
-
       //--------------------------------------------------------------------------------------
       // Building graph for later use by parmetis
       //--------------------------------------------------------------------------------------
@@ -3087,6 +3083,37 @@ void COMBUST::Algorithm::Redistribute()
       newnodegraph->FillComplete();
       newnodegraph->OptimizeStorage();
 
+
+      //--------------------------------------------------------------------------------------
+      // Ensure the new distribution is valid
+      //--------------------------------------------------------------------------------------
+      {
+        // the rowmap will become the new distribution of nodes
+        const Epetra_BlockMap rntmp = nodegraph->RowMap();
+        Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,Comm());
+
+        // the column map will become the new ghosted distribution of nodes
+        const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
+        Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,Comm());
+
+        Teuchos::RCP<Epetra_Map> elerowmap;
+        Teuchos::RCP<Epetra_Map> elecolmap;
+
+        ScaTraField().Discretization()->BuildElementRowColumn(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
+
+        int myrowele = elerowmap->NumMyElements();
+        int minrowele = 1;
+        Comm().MinAll(&myrowele, &minrowele, 1);
+        if (minrowele <= 0)
+        {
+          if (Comm().MyPID() == 0)
+            std::cout << "A processor would be left without row elements --> Redistribution aborted\n"
+                      << "----------------------------------------------------------------------------" << std::endl;
+          return;
+        }
+      }
+
+
       //--------------------------------------------------------------------------------------
       // call ScaTra and Fluid field and pass the new graph, so they can manage all
       // redistribution themselves
@@ -3095,13 +3122,6 @@ void COMBUST::Algorithm::Redistribute()
         cout << "Redistributing ScaTra Discretization                                ... " << flush;
 
       ScaTraField().Redistribute(newnodegraph);
-      // remark: if there are no elements on a processor, in DEBUG mode the error message occurs,
-      // that the map of the redistributed phi vector (FluidNodeColMap) in the FlameFront does not
-      // match the fluid node col map belonging to the redistrubuted discretization any more. The
-      // reason is not clear, but this is prevented by checking if there are elements on each
-      // processor.
-      if (ScaTraField().Discretization()->NumMyRowElements() < 1)
-        dserror("there are no scatra elements on this proc");
 
       if (reinitaction_ == INPAR::COMBUST::reinitaction_sussman)
       {
@@ -3112,16 +3132,9 @@ void COMBUST::Algorithm::Redistribute()
       }
 
       if(Comm().MyPID()==0)
-        cout << "done\nRedistributing Fluid Discretization                                 ... " << flush;
+        cout << "Redistributing Fluid Discretization                                 ... " << flush;
 
       FluidField().Redistribute(newnodegraph);
-      // remark: if there are no elements on a processor, in DEBUG mode the error message occurs,
-      // that the map of the redistributed phi vector (FluidNodeColMap) in the FlameFront does not
-      // match the fluid node col map belonging to the redistrubuted discretization any more. The
-      // reason is not clear, but this is prevented by checking if there are elements on each
-      // processor.
-      if (FluidField().Discretization()->NumMyRowElements() < 1)
-        dserror("there are no fluid elements on this proc");
 
       if(Comm().MyPID()==0)
         cout << "done\nUpdating interface                                                  ... " << flush;
@@ -3140,7 +3153,7 @@ void COMBUST::Algorithm::Redistribute()
       interfacehandle_->UpdateInterfaceHandle();
 
       if(Comm().MyPID()==0)
-        cout << "done\nTransfering state vectors to new distribution                       ... " << flush;
+        cout << "Transfering state vectors to new distribution                       ... " << flush;
 
       FluidField().TransferVectorsToNewDistribution(interfacehandle_);
 
@@ -3180,7 +3193,7 @@ void COMBUST::Algorithm::Redistribute()
 //            ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
 
         if(Comm().MyPID()==0)
-          cout << "Redistributing General Mean Statistics Manager                          ... " << flush;
+          cout << "Redistributing General Mean Statistics Manager                      ... " << flush;
 
         // redistribute with redistributed standard fluid dofset
         FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()
@@ -3192,9 +3205,11 @@ void COMBUST::Algorithm::Redistribute()
 
       if (Comm().MyPID() == 0)
         cout << "----------------------------------------------------------------------------" << endl;
+
+      // make sure the redistribution ratio will be reset
+      evaltimeratio_ = 1e12;
     }
   }
-#endif // #ifdef PARALLEL
   return;
 }
 #endif // #ifdef CCADISCRET

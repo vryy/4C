@@ -117,7 +117,20 @@ void COMBUST::FlameFront::UpdateFlameFront(
   if( smoothed_boundary_integration and smoothgradphi!=INPAR::COMBUST::smooth_grad_phi_none )
   {
     CallSmoothGradPhi(combustdyn);
-    ComputeCurvature(combustdyn);
+
+    // there are different requirements, depending on what the curvature is needed for
+    switch (DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(combustdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"))
+    {
+    case INPAR::COMBUST::combusttype_premixedcombustion:
+      ComputeCurvatureForCombustion(combustdyn);
+      break;
+    case INPAR::COMBUST::combusttype_twophaseflow_surf:
+    case INPAR::COMBUST::combusttype_twophaseflowjump:
+      ComputeCurvatureForSurfaceTension(combustdyn);
+      break;
+    default:
+      break;
+    }
   }
 
   return;
@@ -1850,9 +1863,9 @@ void CalcCurvature(
     double grad_phi_norm = grad_phi.Norm2();
 
     // check norm of normal gradient
-    if (fabs(grad_phi_norm < 1.0E-12))// 'ngradnorm' == 0.0
+    if (fabs(grad_phi_norm) < 1.0E-5)// 'ngradnorm' == 0.0
     {
-      std::cout << "/!\\ phi gradient too small -> local max or min in level-set field assumed" << std::endl;
+      // phi gradient too small -> it must be a local max or min in the level-set field
       // set curvature to a large value (it will be cut off based on the element size)
       curvature = 1.0E12;
     }
@@ -1876,7 +1889,7 @@ void CalcCurvature(
 /*------------------------------------------------------------------------------------------------*
  | compute curvature based on G-function                                              henke 05/11 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combustdyn)
+void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::ParameterList& combustdyn)
 {
   // gradphi_ lives on fluid NodeColMap
   curvature_ = rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
@@ -1965,6 +1978,109 @@ void COMBUST::FlameFront::ComputeCurvature(const Teuchos::ParameterList& combust
   LINALG::Export(*rowcurv,*curvature_);
 
 }
+
+
+/*------------------------------------------------------------------------------------------------*
+ | compute curvature based on G-function                                           wichmann 02/12 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::ParameterList& combustdyn)
+{
+  // gradphi_ lives on fluid NodeColMap
+  curvature_ = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
+
+  // before we can export to NodeColMap we need reconstruction with a NodeRowMap
+  const Teuchos::RCP<Epetra_Vector> rowcurv = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap(),true));
+
+  // this is only needed in case we use the node based curvature
+  if (DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(combustdyn.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX") == INPAR::COMBUST::surface_tension_approx_nodal_curvature)
+  {
+    // loop over nodes on this processor
+    for(int lnodeid=0; lnodeid<fluiddis_->NumMyRowNodes(); ++lnodeid)
+    {
+      // get the processor local node
+      DRT::Node*  lnode = fluiddis_->lRowNode(lnodeid);
+      const size_t numele = lnode->NumElement();
+      // get list of adjacent elements of this node
+      DRT::Element** adjeles = lnode->Elements();
+
+      // the curvature is only needed in cut elements
+      bool iscut = false;
+      for (size_t i=0; i < numele; ++i)
+      {
+        if (myelementcutstatus_[adjeles[i]->Id()] != COMBUST::FlameFront::uncut)
+        {
+          iscut = true;
+          break;
+        }
+      }
+      if (not iscut)
+        continue;
+
+      // do the actual curvature evaluation
+      double avcurv = 0.0;
+
+      for (size_t iele=0; iele<numele;iele++)
+      {
+        DRT::Element* adjele = adjeles[iele];
+
+        // number of nodes of this element
+        const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+        LINALG::Matrix<3,1> posXiDomain(true);
+        {
+        bool nodefound = false;
+        // find out which node in the element is my local node lnode
+        for (size_t inode=0; inode<numnode; ++inode)
+        {
+          if (adjele->NodeIds()[inode] == lnode->Id())
+          {
+            // get local (element) coordinates of this node
+            posXiDomain = DRT::UTILS::getNodeCoordinates(inode,DRT::Element::hex8);
+            nodefound = true;
+          }
+        }
+        if (nodefound==false)
+          dserror("node was not found in list of elements");
+        }
+
+        // smoothed normal vector at this node
+        LINALG::Matrix<3,numnode> mygradphi(true);
+
+        // extract local (element level) G-function values from global vector
+        DRT::UTILS::ExtractMyNodeBasedValues(adjele, mygradphi, gradphi_,3);
+
+        // get node coordinates of the current element
+        LINALG::Matrix<3,numnode> xyze;
+        GEO::fillInitialPositionArray<DRT::Element::hex8>(adjele, xyze);
+
+        double curvature=0.0;
+        COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
+
+        // cut off too small curvatures
+        if (fabs(curvature) < 0.0 )
+        {
+          curvature = 0.0;
+        }
+
+        avcurv += curvature;
+      }
+      avcurv /= -numele;
+
+      const int gid = lnode->Id();
+      int nodelid = fluiddis_->NodeRowMap()->LID(gid);
+      // insert velocity value into node-based vector
+      const int err = rowcurv->ReplaceMyValues(1, &avcurv, &nodelid);
+      if (err)
+        dserror("could not insert values for curvature");
+
+    } // loop adjacent elements
+  } // if surftensapprox is surface_tension_approx_nodal_curvature
+
+  // export NodeRowMap to NodeColMap gradphi_
+  LINALG::Export(*rowcurv,*curvature_);
+
+}
+
 
 /*------------------------------------------------------------------------------------------------*
  | refine the region around the flame front                                           henke 10/08 |
