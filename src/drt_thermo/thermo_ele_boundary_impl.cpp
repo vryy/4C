@@ -217,14 +217,19 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
 
+    // we can increase or decrease the surrounding (fluid) temperature T_oo
+    // enabling for instance a load cycle due to combustion of a fluid
     double surtempcurvefac = 1.0;
+    // find out whether we shall use a time curve for T_oo and get the factor
     if (surtempcurvenum>=0)
     {
       surtempcurvefac = DRT::Problem::Instance()->Curve(surtempcurvenum).f(time);
     }
-    // multiply surrounding temperatures with the timecurve factor
+    // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
 
+    // use current temperature T_{n+1} of current time step for heat convection
+    // boundary condition
     if (*tempstate == "Tempnp")
     {
       // disassemble temperature
@@ -244,6 +249,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       else
         dserror("No old temperature T_n+1 available");
     }
+    // use temperature T_n of last known time step t_n
     else if (*tempstate == "Tempn")
     {
       if (discretization.HasState("old temperature"))
@@ -555,7 +561,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
     // Ntemp = T - T_surf
     Ntemp.Update(-1.0,Tsurf,1.0);
 
-    // ------------right-hand-side
+    // ---------------------------------------------- right-hand-side
     if (efext != NULL)
     {
       // efext = efext - N^T . coeff . ( N . T - T_surf) . detJ * w(gp)
@@ -565,7 +571,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
       efext->Multiply(coefffac_,funct_,Ntemp,1.0);
     }
 
-    // concentration-dependent Butler-Volmer law(s)
+    // ------------------------------------------------------ tangent
+    // if current temperature is used in boundary condition, additional term in
+    // thermal tangent occurs
     if (tempstate == "Tempnp")
     {
       // if the boundary condition shall be dependent on the current temperature

@@ -72,6 +72,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha
     solver,
     output
   ),
+
   midavg_(DRT::INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(tdynparams.sublist("GENALPHA"),"GENAVG")),
   /* iterupditer_(false), */
   beta_(tdynparams.sublist("GENALPHA").get<double>("BETA")),
@@ -87,6 +88,9 @@ THR::TimIntGenAlpha::TimIntGenAlpha
   fextm_(Teuchos::null),
   fextn_(Teuchos::null)
 {
+  // so far framework available but can not be used
+  dserror("Not yet ready to use! In the meanwhile use STATICS or OneStepTheta!");
+
   // info to user
   if (myrank_ == 0)
   {

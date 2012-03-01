@@ -88,6 +88,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   }
   // else: geometrically non-linear with Total Lagrangean approach
 
+  dserror("TSI with total Lagrangean approach not yet available!");
+
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 

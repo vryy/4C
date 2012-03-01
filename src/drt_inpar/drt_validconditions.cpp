@@ -2740,17 +2740,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "temperature state","Tempnp",
         Teuchos::tuple<std::string>("Tempnp","Tempn"),
         Teuchos::tuple<std::string>("Tempnp","Tempn"))));
-
-  // heat transfer coefficient
+  // heat transfer coefficient h
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("coeff")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));
-  // surrounding temperature
+  // surrounding (fluid) temperature T_oo
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
-  // time curve
+  // time curve to increase the surrounding (fluid) temperature T_oo in time
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempcurve")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("surtempcurve",true,true)));
-  // time curve
+  // time curve to increase the complete boundary condition, i.e., the heat flux
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
 
