@@ -27,7 +27,6 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_thermo.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 
@@ -65,8 +64,7 @@ namespace TSI
   //!  \date 02/08
   class Algorithm : public ADAPTER::AlgorithmBase,
                     public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::ThermoBaseAlgorithm,
-                    public ADAPTER::ScaTraBaseAlgorithm
+                    public ADAPTER::ThermoBaseAlgorithm
   {
     friend class FS3I::AeroTFSI;
 
@@ -124,6 +122,8 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> CalcVelocity(
       Teuchos::RCP<const Epetra_Vector> dispnp
       );
+
+    int printscreen_;//!< print infos to standard out every printscreen_ steps
 
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;

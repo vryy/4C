@@ -62,7 +62,6 @@ TSI::Monolithic::Monolithic(
 : Algorithm(comm),
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
-  printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY")),
   printiter_(true),  // ADD INPUT PARAMETER
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   errfile_(NULL),
@@ -74,35 +73,32 @@ TSI::Monolithic::Monolithic(
   // monolithic TSI must know the other discretization
   // build a proxy of the structure discretization for the temperature field
   Teuchos::RCP<DRT::DofSet> structdofset
-  = StructureField().Discretization()->GetDofSetProxy();
+    = StructureField().Discretization()->GetDofSetProxy();
   // build a proxy of the temperature discretization for the structure field
   Teuchos::RCP<DRT::DofSet> thermodofset
-  = ThermoField().Discretization()->GetDofSetProxy();
+    = ThermoField().Discretization()->GetDofSetProxy();
 
   // check if ThermoField has 2 discretizations, so that coupling is possible
   if (ThermoField().Discretization()->AddDofSet(structdofset)!=1)
-  dserror("unexpected dof sets in thermo field");
+    dserror("unexpected dof sets in thermo field");
   if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
-  dserror("unexpected dof sets in structure field");
+    dserror("unexpected dof sets in structure field");
 
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& sdyn
-  = DRT::Problem::Instance()->StructuralDynamicParams();
+    = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& tdyn
-  = DRT::Problem::Instance()->ThermalDynamicParams();
-
-
-
+    = DRT::Problem::Instance()->ThermalDynamicParams();
 
   // check time integration algo -> currently only one-step-theta scheme supported
   INPAR::STR::DynamicType structtimealgo
-  = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
   INPAR::THR::DynamicType thermotimealgo
-  = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
+    = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
 
   if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
-     thermotimealgo != INPAR::THR::dyna_onesteptheta )
-  dserror("monolithic TSI is limited in functionality (only one-step-theta scheme possible)");
+       thermotimealgo != INPAR::THR::dyna_onesteptheta )
+    dserror("monolithic TSI is limited in functionality (only one-step-theta scheme possible)");
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -848,6 +844,7 @@ void TSI::Monolithic::LinearSolve()
              true,
              iter_==1
              );
+
 #ifndef TFSI
   if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
 #endif
@@ -880,6 +877,7 @@ void TSI::Monolithic::LinearSolve()
              true,
              iter_==1
              );
+
 #ifndef TFSI
   if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
 #endif

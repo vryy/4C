@@ -286,8 +286,6 @@ namespace TSI
     //! @name Printing and output
     //@{
 
-
-    int printscreen_;//!< print infos to standard out every printscreen_ steps
     bool printiter_;  //!< print intermediate iterations during solution
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
