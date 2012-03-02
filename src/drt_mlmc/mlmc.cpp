@@ -29,7 +29,7 @@ Maintainer: Jonas Biehler
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-
+#include "../drt_comm/comm_utils.H"
 //for file output
 #include <fstream>
 
@@ -224,6 +224,7 @@ void STR::MLMC::Integrate()
 
     //double t2 = timer.ElapsedTime();
     output_->NewResultFile(filename_,(numb_run_));
+    //cout << "ATTENTION NO NEW RESULTFILE CREATED" << endl;
 
     // get input lists
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -263,7 +264,14 @@ void STR::MLMC::Integrate()
         DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
         // print monitoring of time consumption
-        Teuchos::TimeMonitor::summarize();
+        //Teuchos::TimeMonitor::summarize();
+
+      #ifdef TRILINOS_DEV
+           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+      #else
+           Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
+      #endif
 
         // time to go home...
       }
@@ -1194,7 +1202,34 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
 
 void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
 {
+
   const int myrank = actdis_coarse_->Comm().MyPID();
+  // build map that lives only on proc 0
+  // nodes for fine discretization
+   int node[5] = {1528, 3905, 7864, 10832, 13720};
+   int dofs[15]={4584, 4585, 4586,11715, 11716, 11717,23592,23593, 23594,32496, 32497, 32498,41160, 41161, 41162};
+   // nodes for coarse sicretization
+   //int node[5] = {112, 257, 526, 728, 910};
+  //const int* targetgids;
+  //targetgids =
+  int numglobalelements =5;
+   int numglobalelements_dof =15;
+  int nummyelements;
+  int nummyelements_dof;
+
+  if (actdis_coarse_->Comm().MyPID()==0)
+  {
+   nummyelements = 5;
+   nummyelements_dof = 15;
+  }
+  else
+  {
+   nummyelements = 0;
+   nummyelements_dof = 0;
+  }
+
+  Epetra_Map output_node_map(numglobalelements,nummyelements,&node[0],0,actdis_coarse_->Comm());
+  Epetra_Map output_dof_map(numglobalelements_dof,nummyelements_dof,&dofs[0],0,actdis_coarse_->Comm());
 
   INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
   INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
@@ -1231,12 +1266,6 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->Evaluate(p,null,null,null,null,null);
   actdis_coarse_->ClearState();
 
-  //const Epetra_Map& elecolmap = *actdis_coarse_->ElementColMap();
-  //const Epetra_Map& elerowmap = *actdis_coarse_->ElementRowMap();
- //DRT::Exporter ex(elerowmap, elecolmap, actdis_coarse_->Comm());
-  //ex.Export(*gpstressmap);
-
-
 
   // st action to calc poststresse
   p.set("action","postprocess_stress");
@@ -1271,65 +1300,13 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   outputfile2 << filename_ << "_statistics_output_" << start_run_ << ".txt";
   string name2 = outputfile2.str();;
   // file to write output
-  // paraview ids of nodes
-  // nodes for fine discretization
-  //int node[5] = {1528, 3905, 7864, 10832, 13720};
-  // nodes for coarse sicretization
-  int node[5] = {112, 257, 526, 728, 910};
-  // Store row major in one dim array for communicatio porpuses
-  double disp_output[5*3];
-  double gdisp_output[5*3];
-  //double disp_mag[5];
-  double stress_values[5*6];
-  double strain_values[5*6];
-  double gstress_values[5*6];
-  double gstrain_values[5*6];
 
-//   init very smnall so that we can comunicate betweeen procs by minall
-//   loop all node of interest
-  for(int i=0;i<5;i++)
-  {
-    if (actdis_coarse_->HaveGlobalNode(node[i]))
-    {
-      disp_output[i*3+0]=(*disp)[node[i]*3+0];
-      disp_output[i*3+1]=(*disp)[node[i]*3+1];
-      disp_output[i*3+2]=(*disp)[node[i]*3+2];
-      // get the stresses
-      stress_values[i*6]=(*poststress)[0][node[i]];
-      stress_values[i*6+1]=(*poststress)[1][node[i]];
-      stress_values[i*6+2]=(*poststress)[2][node[i]];
-      stress_values[i*6+3]=(*poststress)[3][node[i]];
-      stress_values[i*6+4]=(*poststress)[4][node[i]];
-      stress_values[i*6+5]=(*poststress)[5][node[i]];
-
-      strain_values[i*6]=(*poststress)[0][node[i]];
-      strain_values[i*6+1]=(*poststress)[1][node[i]];
-      strain_values[i*6+2]=(*poststress)[2][node[i]];
-      strain_values[i*6+3]=(*poststress)[3][node[i]];
-      strain_values[i*6+4]=(*poststress)[4][node[i]];
-      strain_values[i*6+5]=(*poststress)[5][node[i]];
-    }
-    else
-    {
-      disp_output[i*3+0]=-10E10;
-      disp_output[i*3+1]=-10E10;
-      disp_output[i*3+2]=-10E10;
-    }
-  }
-  for(int i=0;i<15;i++)
-  {
-    gdisp_output[i]=-10E10;
-  }
-  for(int i=0;i<30;i++)
-   {
-    gstrain_values[i]=-10E10;
-    gstress_values[i]=-10E10;
-   }
-
-  actdis_coarse_->Comm().MaxAll(&disp_output[0],&gdisp_output[0],15);
-  actdis_coarse_->Comm().MaxAll(&strain_values[0],&gstrain_values[0],30);
-  actdis_coarse_->Comm().MaxAll(&stress_values[0],&gstress_values[0],30);
-  actdis_coarse_->Comm().Barrier();
+  RCP<Epetra_Vector> output_disp = LINALG::CreateVector(output_dof_map,false);
+  RCP<Epetra_MultiVector> output_stress =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
+  RCP<Epetra_MultiVector> output_strain =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
+  LINALG::Export(*poststress,*output_stress);
+  LINALG::Export(*poststrain,*output_strain);
+  LINALG::Export(*disp,*output_disp);
 
 
   if(myrank==0)
@@ -1370,26 +1347,28 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
       dserror("Unable to open statistics output file");
       }
     }
-
     // reopen in append mode
     File.open(name2.c_str(),ios::app);
-    File << numb_run_ << "  " << gdisp_output[0] << " " << gdisp_output[1] << " " << gdisp_output[2]
-                      << "  " << gdisp_output[1*3] << " " << gdisp_output[1*3+1] << " " << gdisp_output[1*3+2]
-                      << "  " << gdisp_output[2*3] << " " << gdisp_output[2*3+1] << " " << gdisp_output[2*3+2]
-                      << "  " << gdisp_output[3*3] << " " << gdisp_output[3*3+1] << " " << gdisp_output[3*3+2]
-                      << "  " << gdisp_output[4*3] << " " << gdisp_output[4*3+1] << " " << gdisp_output[4*3+2]
-                    << "  " << stress_values[0] << "  " << gstress_values[1] << "  " << gstress_values[2] << "  " << gstress_values[3] << "  " << gstress_values[4] << "  " << gstress_values[5]
-                    << "  " << gstress_values[1*6] << "  " << gstress_values[1*6+1] << "  " << gstress_values[1*6+2] << "  " << gstress_values[1*6+3] << "  " << gstress_values[1*6+4] << "  " << gstress_values[1*6+5]
-                    << "  " << gstress_values[2*6] << "  " << gstress_values[2*6+1] << "  " << gstress_values[2*6+2] << "  " << gstress_values[2*6+3] << "  " << gstress_values[2*6+4] << "  " << gstress_values[2*6+5]
-                    << "  " << gstress_values[2*6] << "  " << gstress_values[3*6+1] << "  " << gstress_values[3*6+2] << "  " << gstress_values[3*6+3] << "  " << gstress_values[3*6+4] << "  " << gstress_values[3*6+5]
-                    << "  " << gstress_values[4*6] << "  " << gstress_values[4*6+1] << "  " << gstress_values[4*6+2] << "  " << gstress_values[4*6+3] << "  " << gstress_values[4*6+4] << "  " << gstress_values[4*6+5]
-                // strains
-                  << "  " << gstrain_values[0] << "  " << gstrain_values[1] << "  " << gstrain_values[2] << "  " << gstrain_values[3] << "  " << gstrain_values[4] << "  " << gstrain_values[5]
-                  << "  " << gstrain_values[1*6] << "  " << gstrain_values[1*6+1] << "  " << gstrain_values[1*6+2] << "  " << gstrain_values[1*6+3] << "  " << gstrain_values[1*6+4] << "  " << gstrain_values[1*6+5]
-                  << "  " << gstrain_values[2*6] << "  " << gstrain_values[2*6+1] << "  " << gstrain_values[2*6+2] << "  " << gstrain_values[2*6+3] << "  " << gstrain_values[2*6+4] << "  " << gstrain_values[2*6+5]
-                  << "  " << gstrain_values[2*6] << "  " << gstrain_values[3*6+1] << "  " << gstrain_values[3*6+2] << "  " << gstrain_values[3*6+3] << "  " << gstrain_values[3*6+4] << "  " << gstrain_values[3*6+5]
-                  << "  " << gstrain_values[4*6] << "  " << gstrain_values[4*6+1] << "  " << gstrain_values[4*6+2] << "  " << gstrain_values[4*6+3] << "  " << gstrain_values[4*6+4] << "  " << gstrain_values[4*6+5]
-                  << endl;
+    File << numb_run_ ;
+    for(int i=0;i<15;i++)
+    {
+      File <<  "  " << (*output_disp)[i];
+    }
+    for (int i=0;i<5;i++)
+    {
+      for(int j=0;j<6;j++)
+      {
+        File << " " << (*output_stress)[j][i];
+      }
+    }
+    for (int i=0;i<5;i++)
+    {
+      for(int j=0;j<6;j++)
+      {
+        File << " " << (*output_strain)[j][i];
+      }
+    }
+    File << endl;
     File.close();
   }
   actdis_coarse_->Comm().Barrier();
