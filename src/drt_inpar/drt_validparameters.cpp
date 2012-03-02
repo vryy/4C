@@ -1574,7 +1574,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 	DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
 	//Rotation per monomer in the actin double helix according to Howard, p. 125
 	DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
-	//Rotation per monomer in the actin double helix according to Howard, p. 125
+	//angular offset of the binding spot orientation (constant for each filament)
+	DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
+	//angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume
 	DoubleParameter("PHIBSPOT",0.524,"angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume",&statmech);
   //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);

@@ -170,7 +170,7 @@ initialset_(false)
   for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
   {
     //get filament number described by the current condition
-    int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
+    int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number");
 
     //get a pointer to nodal cloud covered by the current condition
     const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
@@ -2927,10 +2927,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
     // apply new beam element with intermediate binding spot positions
     if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
     {
-      // retrieve node column map triads
-      Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
-      GetBindingSpotTriads(&bspottriadscol);
-
       // temporary vectors
       // binding spot orientations relative to second triad vector
       std::vector<double> bspotorientations;
@@ -3046,25 +3042,65 @@ void StatMechManager::CrosslinkerMoleculeInit()
       bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_));
 
       // orientations and vectors
+      Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
+      GetBindingSpotTriads(&bspottriadscol);
+
+      DRT::Node* node0 = NULL;
+      DRT::Node* node1 = NULL;
+      LINALG::Matrix<3,1> vectonfil;
+      // note default value of pi/2 leads to zero offset from the second direction of the material frame
+      double bspotoffset = statmechparams_.get<double>("BSPOTOFFSET",-M_PI/2.0);
+      // difference angle to fit position of first nodes of two filaments
+      double deltatheta = 0.0;
       int bspotgid = 0;
       for(int i=0; i<(int)filaments.size(); i++)
       {
-        //get a pointer to nodal cloud covered by the current condition
-        const vector<int>* nodeids = filaments[i]->Nodes();
-        // retrieve filament length using first and last node of the current filament
-        DRT::Node* node0 = discret_.lColNode(discret_.NodeColMap()->LID((*nodeids)[0]));
-        DRT::Node* node1 = discret_.lColNode(discret_.NodeColMap()->LID((*nodeids)[1]));
+        // vector between first nodes of consecutive filament PAIRS (0-1; 2-3; ...)
+        double angularoffset = 0.0;
+        if(i%2==0)
+        {
+          // vector from first node of filament i to the first one of i+1
+          node0 = discret_.lColNode(discret_.NodeColMap()->LID((*filaments[i]->Nodes())[0]));
+          if(i<(int)filaments.size()-1)
+            node1 = discret_.lColNode(discret_.NodeColMap()->LID((*filaments[i+1]->Nodes())[0]));
+          else
+            node1 = discret_.lColNode(discret_.NodeColMap()->LID((*filaments[i-1]->Nodes())[0]));
+          for(int j=0; j<(int)vectonfil.M(); j++)
+            vectonfil(j) = node1->X()[j]-node0->X()[j];
+          vectonfil.Scale(1.0/vectonfil.Norm2());
 
-        // length of the current filament
-        double elelength = 0.0;
-        for(int j=0; j<3; j++)
-          elelength += (node1->X()[j]-node0->X()[j])*(node1->X()[j]-node0->X()[j]);
-        elelength = sqrt(elelength);
+          // get the second direction of the material triad (since filament is initially straight, all triads of a filament are the same)
+          LINALG::Matrix<3,3> bspottriad;
+          // auxiliary variable for storing a triad in quaternion form
+          LINALG::Matrix<4, 1> qnode;
+          LINALG::Matrix<3,1> firstdir;
+          LINALG::Matrix<3,1> secdir;
+          int nodelid = discret_.NodeColMap()->LID((*filaments[i]->Nodes())[0]);
+          for (int l=0; l<4; l++)
+            qnode(l) = bspottriadscol[l][nodelid];
+          LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+          for (int l=0; l<(int)bspottriad.M(); l++)
+          {
+            firstdir(l) = bspottriad(l,0);
+            secdir(l) = bspottriad(l,1);
+          }
+          // relative rotation so that a pair of filaments has facing first binding spots
+          deltatheta = acos(secdir.Dot(vectonfil));
+          // test rotation to see in which direction to rotate secdir
+          RotationAroundFixedAxis(firstdir, secdir, deltatheta);
+          // "0.1" just some value >0 and <pi as we want to segregate parallel from antiparallel
+          if(acos(secdir.Dot(vectonfil))>0.1)
+            deltatheta = -deltatheta;
+
+          angularoffset = deltatheta + fabs(bspotoffset);
+        }
+        else
+          angularoffset  = -(M_PI-deltatheta-bspotoffset);
 
         for(int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
         {
           // determine orientation (relative to second triad vector). No use of riseperbspot, since somewhat handled by element length
-          (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = j*rotperbspot;
+          (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = j*rotperbspot + angularoffset;
           // assumption:
           if(bspotrowmap_->LID(bspotgid)>-1)
             (*bspot2element_)[bspotrowmap_->LID(bspotgid)] = discret_.lRowNode(discret_.NodeRowMap()->LID(bspotgid))->Elements()[0]->Id();
