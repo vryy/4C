@@ -123,8 +123,6 @@ namespace TSI
       Teuchos::RCP<const Epetra_Vector> dispnp
       );
 
-    int printscreen_;//!< print infos to standard out every printscreen_ steps
-
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;
 

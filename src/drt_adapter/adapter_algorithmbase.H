@@ -84,6 +84,9 @@ namespace ADAPTER
     /// print time step header
     void PrintHeader();
 
+    /// return printscreen_
+    int PrintScreenEvry(){ return printscreen_; }
+
   private:
 
     /// communication (mainly for screen output)
@@ -91,6 +94,9 @@ namespace ADAPTER
 
     /// method name prepared for output
     std::string method_;
+
+		/// print infos to standard out every printscreen_ steps
+    int printscreen_;
 
     //! @name Time stepping variables
     int step_;

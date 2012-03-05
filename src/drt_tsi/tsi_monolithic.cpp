@@ -982,7 +982,7 @@ void TSI::Monolithic::PrintNewtonIter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ( (Comm().MyPID()==0) and printscreen_ and (Step()%printscreen_==0) and printiter_ )
+  if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0) and printiter_ )
   {
     if (iter_== 1)
       PrintNewtonIterHeader(stdout);

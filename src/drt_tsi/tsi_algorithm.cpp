@@ -35,8 +35,7 @@ Maintainer: Caroline Danowski
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
-    ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
-    printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
+    ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams())
 {
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)

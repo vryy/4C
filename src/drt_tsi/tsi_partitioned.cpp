@@ -574,7 +574,7 @@ void TSI::Partitioned::OuterIterationLoop()
   bool stopnonliniter = false;
 
   // outer iteration loop starts
-  if (Comm().MyPID()==0 and printscreen_ and (Step()%printscreen_==0))
+  if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
   {
     cout<<"\n";
     cout<<"**************************************************************\n";
@@ -841,7 +841,7 @@ bool TSI::Partitioned::ConvergenceCheck(
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 and printscreen_ and (Step()%printscreen_==0))
+  if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
   {
     cout<<"\n";
     cout<<"***********************************************************************************\n";
@@ -860,7 +860,7 @@ bool TSI::Partitioned::ConvergenceCheck(
       (dispincnorm_L2/dispnorm_L2 <= ittol))
   {
     stopnonliniter = true;
-    if (Comm().MyPID()==0 and printscreen_ and (Step()%printscreen_==0))
+    if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
     {
       printf("\n");
       printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
@@ -875,7 +875,7 @@ bool TSI::Partitioned::ConvergenceCheck(
      )
   {
     stopnonliniter = true;
-    if ((Comm().MyPID()==0) and printscreen_ and (Step()%printscreen_==0))
+    if ((Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
     {
       printf("|     >>>>>> not converged in itemax steps!                                       |\n");
       printf("+--------------+------------------------+--------------------+--------------------+\n");
