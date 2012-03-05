@@ -20,21 +20,12 @@ Maintainer: Ulrich Kuettler
 #include "drt_linedefinition.H"
 #include "../linalg/linalg_utils.H"
 #include "standardtypes_cpp.H"
+#include "drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
 
 #include <Epetra_Time.h>
 #include <iterator>
-
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -998,24 +989,26 @@ void DatFileReader::ReadDat()
 /*----------------------------------------------------------------------*/
 void DatFileReader::DumpInput()
 {
-#if defined(DEBUG) || defined(OUTPUT_INPUT)
-  if (comm_->MyPID()==0 and allfiles.out_err!=NULL)
+#ifdef DEBUG
+  FILE* out_err = DRT::Problem::Instance()->ErrorFile()->Handle();
+
+  if (comm_->MyPID()==0 and out_err!=NULL)
   {
-    fprintf(allfiles.out_err,
+    fprintf(out_err,
             "============================================================================\n"
             "broadcasted copy of input file:\n"
             "============================================================================\n"
       );
     for (unsigned i=0; i<lines_.size()-1; ++i)
     {
-      fprintf(allfiles.out_err,"%s\n", lines_[i]);
+      fprintf(out_err,"%s\n", lines_[i]);
     }
-    fprintf(allfiles.out_err,
+    fprintf(out_err,
             "============================================================================\n"
             "end of broadcasted copy of input file\n"
             "============================================================================\n"
       );
-    fflush(allfiles.out_err);
+    fflush(out_err);
   }
 #endif
 }

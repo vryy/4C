@@ -43,25 +43,6 @@ Maintainer: Michael Gee
 \addtogroup FRSYSTEM
 *//*! @{ (documentation module open)*/
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-
-*----------------------------------------------------------------------*/
-typedef struct _FILES
-{
-/*------------------------------------------------------------- file I/O */
-FILE             *out_err;                /* file-pointer .err  file     */
-} FILES;
-/*! @} (documentation module close)*/
-
-
-
 
 /*----------------------------------------------------------------------*
  | general problem-variables                              m.gee 4/01    |
@@ -77,7 +58,7 @@ typedef struct _GENPROB
   INT               restart;       /* is restart or not */
 
   INT               adaptive;      /* adaptive mesh algorithms */
-  
+
   INT               numsf;         /* actual number of struct-field */
   INT               numff;         /* actual number of fluid field */
   INT               numaf;         /* actual number of ale field */

@@ -87,7 +87,7 @@ namespace IO
 
   private:
     std::string problemtype_;
-    std::string inputfile_;  ///< input file name (identical to allfiles.inputfile_name)
+    std::string inputfile_;  ///< input file name
     int ndim_;
     std::string filename_;  ///< prefix of outputfiles (might contain path)
     std::string restartname_;
@@ -121,8 +121,7 @@ namespace IO
   /// Controller for error files
   ///
   /// This object determines the names of error files #errname_, e.g. 'xxx2.err',
-  /// and attaches file handles #errfile_ to them. It also attaches this file
-  /// handle to the global variable allfiles.out_err
+  /// and attaches file handles #errfile_ to them.
   ///
   /// \author bborn
   /// \date 11/08

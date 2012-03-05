@@ -45,9 +45,6 @@ void ntainp_ccadiscret(
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
 
   // create error files
-  // call this one rather early, since ReadConditions etc
-  // underlying methods may try to write to allfiles.out_err
-  // this old-style global variable is set as well
   problem->OpenErrorFile(*lcomm,outputfile_kenner);
 
   // and now the actual reading

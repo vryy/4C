@@ -38,16 +38,6 @@ extern "C" {
 
 }
 
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -484,12 +474,6 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
   errfile_ = fopen(errname_.c_str(), "w");
   if (errfile_ == NULL)
     dserror("Opening of output file %s failed\n", errname_.c_str());
-
-  // EVENTUALLY THIS SHOULD BE REMOVED
-  // these have to be set, because at a certain point in ReadConditions()
-  // the underlying methods try to access the error files via the
-  // global variable allfiles
-  allfiles.out_err = errfile_;
 
   // inform user
   if (comm.MyPID() == 0)

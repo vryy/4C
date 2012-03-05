@@ -163,9 +163,6 @@ int main(
   }
 
   // create error files
-  // call this one rather early, since ReadConditions etc
-  // underlying methods may try to write to allfiles.out_err
-  // this (old-style) global variable is (indirectly) set as well
   problem->OpenErrorFile(*comm, datfile);
 
   // centerline related: transfer separate doubles into vector

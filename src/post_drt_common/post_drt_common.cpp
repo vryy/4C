@@ -43,7 +43,6 @@ Maintainer: Ulrich Kuettler
 /* There are some global variables in ccarat that are needed by the
  * service functions. We need to specify them here and set them up
  * properly. */
-extern struct _FILES   allfiles;
 extern struct _GENPROB genprob;
 
 
@@ -256,9 +255,6 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
    * important. */
   basename_ = control_file_name.substr(0,control_file_name.length()-8);
   outname_ = output_name;
-  string logfile_name(outname_);
-  logfile_name += ".post.log";
-  allfiles.out_err = fopen(logfile_name.c_str(), "w");
 
   parse_control_file(&control_table_, control_file_name.c_str(), MPI_COMM_WORLD);
 
