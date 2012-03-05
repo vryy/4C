@@ -16,7 +16,7 @@ Maintainer: Michael Gee
 #include "patspec.H"
 #include "../drt_mat/material.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/global_inp_control2.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
 #include "../drt_io/io.H"
 

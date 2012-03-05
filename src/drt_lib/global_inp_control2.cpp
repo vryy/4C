@@ -12,16 +12,13 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
-#include <iostream>
+#include <string>
 
 #include "global_inp_control2.H"
-
+#include "drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "drt_inputreader.H"
 #include "standardtypes_cpp.H"
-#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*
@@ -32,42 +29,30 @@ Maintainer: Michael Gee
 extern struct _GENPROB     genprob;
 
 
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
-
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
   | This version of the routine uses the new discretization subsystem   |
   | ccadiscret                                                          |
  *----------------------------------------------------------------------*/
-void ntainp_ccadiscret()
+void ntainp_ccadiscret(
+  std::string& inputfile_name,
+  std::string& outputfile_kenner,
+  std::string& restartfile_kenner
+  )
 {
 
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-
-  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = problem->LocalComm();
-  int i=0;
-  while(lcomm[i] == Teuchos::null) i++;
-  Teuchos::RCP<Epetra_Comm> comm = lcomm[i];
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
 
   // create error files
   // call this one rather early, since ReadConditions etc
   // underlying methods may try to write to allfiles.out_err
   // this old-style global variable is set as well
-  problem->OpenErrorFile(*comm,
-                         allfiles.outputfile_kenner);
+  problem->OpenErrorFile(*lcomm,outputfile_kenner);
 
   // and now the actual reading
-  DRT::INPUT::DatFileReader reader(allfiles.inputfile_name, comm);
+  DRT::INPUT::DatFileReader reader(inputfile_name,
+                                   lcomm);
 
   problem->ReadParameter(reader);
 
@@ -94,11 +79,12 @@ void ntainp_ccadiscret()
   // all reading is done at this point!
 
   // create control file for output and read restart data if required
-  problem->OpenControlFile(*comm,
-                           allfiles.inputfile_name,
-                           allfiles.outputfile_kenner);
+  problem->OpenControlFile(*lcomm,
+                           inputfile_name,
+                           outputfile_kenner,
+                           restartfile_kenner);
 
-  if (comm->MyPID()==0)
+  if (lcomm->MyPID()==0)
     problem->WriteInputParameters();
 
   // before we destroy the reader we want to know about unused sections

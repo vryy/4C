@@ -16,55 +16,19 @@ Maintainer: Michael Gee
 #define GLOBAL_INP_CONTROL2_H
 
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "drt_inputreader.H"
-
-#include "drt_globalproblem.H"
-#include "drt_discret.H"
-#include "drt_exporter.H"
-#include "drt_condition.H"
-#include "drt_utils.H"
-#include "../linalg/linalg_utils.H"
-
-using namespace std;
-using namespace Teuchos;
-
-// headers and prototypes of functions accessible from c++
-
-string inp_micro_filename(int mypid);
-
-#endif /* end of #ifdef __cplusplus */
-
-
-
 /* headers and prototypes of functions also accessible from c */
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void ntainp_ccadiscret();
-void distribute_drt_grids();
+void ntainp_ccadiscret(std::string& inputfile_name,std::string& outputfile_kenner,std::string& restartfile_kenner);
 void dyn_nlnstructural_drt();
-void calsta();
 void caldyn_drt();
-void drt_problem_done();
 
 #ifdef __cplusplus
 }
 #endif
-
-
-
 
 
 

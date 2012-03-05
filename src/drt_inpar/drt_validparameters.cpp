@@ -63,6 +63,74 @@ void PrintValidParameters()
 
 
 /*----------------------------------------------------------------------*/
+//! Print help message to be called from C
+/*----------------------------------------------------------------------*/
+extern "C"
+void PrintHelpMessage()
+{
+#ifdef DEBUG
+  char baci_build[] = "baci-debug";
+#else
+  char baci_build[] = "baci-release";
+#endif
+
+  std::cout << "NAME" << std::endl
+            << "\t" << baci_build << " - simulate just about anything" << std::endl
+            << std::endl
+            << "SYNOPSIS" << std::endl
+            << "\t" << baci_build << " [-h] [--help] [-p] [--parameters] [-d] [--datfile] [-ngroup=x] [-glayout=a,b,c,...] [-nptype=parallelism_type]" << std::endl
+            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 output_name0 [restart=y] [restartfrom=restart_file_name] ... ]" << std::endl
+            << std::endl
+            << "DESCRIPTION" << std::endl
+            << "\tThe am besten simulation tool in the world." << std::endl
+            << std::endl
+            << "OPTIONS" << std::endl
+            << "\t--help or -h" << std::endl
+            << "\t\tPrint this message." << std::endl
+            << std::endl
+            << "\t--parameters or -p" << std::endl
+            << "\t\tPrint a list of all available parameters for use in a dat_file." << std::endl
+            << std::endl
+            << "\t--datfile or -d" << std::endl
+            << "\t\tPrint example dat_file with all available parameters." << std::endl
+            << std::endl
+            << "\t-ngroup=x" << std::endl
+            << "\t\tSpecify the number of groups for nested parallelism. (default: 1)" << std::endl
+            << std::endl
+            << "\t-glayout=a,b,c,..." << std::endl
+            << "\t\tSpecify the number of processors per group. Argument \"-ngroup\" is mandatory and must be preceding. (default: equal distribution)" << std::endl
+            << std::endl
+            << "\t-nptype=parallelism_type" << std::endl
+            << "\t\tAvailable options: \"separateDatFile\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1." << std::endl
+            << std::endl
+            << "\tdat_name" << std::endl
+            << "\t\tName of the input file (Usually *.dat)" << std::endl
+            << std::endl
+            << "\toutput_name" << std::endl
+            << "\t\tPrefix of your output files." << std::endl
+            << std::endl
+            << "\trestart=y" << std::endl
+            << "\t\tRestart the simulation from step y. It always refers to the previously defined dat_name and output_name. (default: 0 or from dat_name)" << std::endl
+            << std::endl
+            << "\trestartfrom=restart_file_name" << std::endl
+            << "\t\tRestart the simulation from the files prefixed with restart_file_name. (default: output_name)" << std::endl
+            << std::endl
+            << "SEE ALSO" << std::endl
+            << "\tguides/reports/global_report.pdf" << std::endl
+            << std::endl
+            << "BUGS" << std::endl
+            << "\t100% bug free since 1964." << std::endl
+            << std::endl
+            << "TIPS" << std::endl
+            << "\tCan be obtain from a friendly colleague." << std::endl
+            << std::endl
+            << "\tAlso, espresso may be donated to room MW1236." << std::endl;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintDatHeader(std::ostream& stream,
                                 const Teuchos::ParameterList& list,

@@ -244,3 +244,15 @@ typedef enum _RED_AIRWAYS_DYNTYPE
   linear,
   nonlinear
 } _RED_AIRWAYS_DYNTYPE;
+
+
+/*----------------------------------------------------------------------*/
+/* The known nptypes for nested parallelism                 ghamm 02/12 */
+/*----------------------------------------------------------------------*/
+typedef enum _NP_TYPE
+{
+  copy_dat_file,
+  every_group_read_dat_file,
+  separate_dat_files,
+  no_nested_parallelism
+} NP_TYPE;

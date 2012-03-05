@@ -119,6 +119,9 @@ extern "C"
   /*! print list of valid parameters with documentation */
   void PrintValidParameters();
 
+  /*! print help message */
+  void PrintHelpMessage();
+
   /*! print flag sections of dat file with default flags */
   void PrintDefaultDatHeader();
 

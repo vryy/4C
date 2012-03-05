@@ -40,16 +40,6 @@
 
 #endif /* TRAP_FE */
 
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-struct _PAR     par;
 
 void ntam(
     int                 argc,
@@ -69,7 +59,6 @@ main is only printing the ccarat head and the finish
 */
 int main(int argc, char *argv[])
 {
-#ifdef PARALLEL
   char *buff,*dbuff;
   int   buffsize=MPIBUFFSIZE;
 
@@ -77,12 +66,10 @@ int main(int argc, char *argv[])
 
   COMM_UTILS::CreateComm(argc,argv);
 
-  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = DRT::Problem::Instance()->LocalComm();
-  int i=0;
-  while(lcomm[i] == Teuchos::null) i++;
-
-  par.myrank = lcomm[i]->MyPID();
-  par.nprocs = lcomm[i]->NumProc();
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  int ngroups = problem->GetNPGroup()->NumGroups();
 
   /*------------------------------------------------ attach buffer to mpi */
   buff = (char*)malloc(buffsize);
@@ -93,12 +80,8 @@ int main(int argc, char *argv[])
     exit(1);
   }
   MPI_Buffer_attach(buff,buffsize);
-#else
-  par.myrank=0;
-  par.nprocs=1;
-#endif
 
-  if (par.myrank==0)
+  if (gcomm->MyPID()==0)
   {
     printf("\n"
            "****************************************\n"
@@ -126,14 +109,23 @@ int main(int argc, char *argv[])
            "*                                      *\n"
            "****************************************\n\n",
            CHANGEDREVISION+0);
-#ifdef PARALLEL
-    printf("number of processors: %d\n",par.nprocs);
-#endif
+    printf("Total number of processors: %d\n",gcomm->NumProc());
   }
 
   if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
-    if (par.myrank==0) {
+    if (lcomm->MyPID()==0) {
       PrintParObjectList();
+      printf("\n\n");
+    }
+  }
+  else if ((argc == 2) &&
+           ((strcmp(argv[1], "-h") == 0) ||
+            (strcmp(argv[1], "--help") == 0)))
+  {
+    if (lcomm->MyPID()==0)
+    {
+      printf("\n\n");
+      PrintHelpMessage();
       printf("\n\n");
     }
   }
@@ -141,7 +133,7 @@ int main(int argc, char *argv[])
            ((strcmp(argv[1], "-p") == 0) ||
             (strcmp(argv[1], "--parameters") == 0)))
   {
-    if (par.myrank==0)
+    if (lcomm->MyPID()==0)
     {
       printf("\n\n");
       PrintValidParameters();
@@ -152,7 +144,7 @@ int main(int argc, char *argv[])
            ((strcmp(argv[1], "-d") == 0) ||
             (strcmp(argv[1], "--datfile") == 0)))
   {
-    if (par.myrank==0)
+    if (lcomm->MyPID()==0)
     {
       printf("\n\n");
       PrintDefaultDatHeader();
@@ -230,33 +222,27 @@ int main(int argc, char *argv[])
 
       DRT::Problem::Done();
 
-      if(lcomm.size() > 1)
+      if(ngroups > 1)
       {
-        const Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GlobalComm();
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",gcomm->MyPID());
         MPI_Barrier(MPI_COMM_WORLD);
       }
 
-#ifdef PARALLEL
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
-#else
-      exit(1);
-#endif
     }
 #endif
 /*----------------------------------------------------------------------*/
   }
 
-  MPI_Barrier(rcp_dynamic_cast<Epetra_MpiComm>(lcomm[i],true)->GetMpiComm());
-  if(lcomm.size() > 1)
+  MPI_Barrier(rcp_dynamic_cast<Epetra_MpiComm>(lcomm,true)->GetMpiComm());
+  if(ngroups > 1)
   {
-    const Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GlobalComm();
-    printf("Global processor %d with local rank %d finished normally\n",gcomm->MyPID(),par.myrank);
+    printf("Global processor %d with local rank %d finished normally\n",gcomm->MyPID(),lcomm->MyPID());
     MPI_Barrier(MPI_COMM_WORLD);
   }
   else
   {
-    printf("processor %d finished normally\n",par.myrank);
+    printf("processor %d finished normally\n",lcomm->MyPID());
   }
 
   DRT::Problem::Done();

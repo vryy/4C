@@ -180,6 +180,52 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 {
   if (restart)
   {
+    if (comm.MyPID()==0)
+    {
+      // check whether filename_ includes a dash and in case separate the number at the end
+      int number = 0;
+      size_t pos = filename_.rfind('-');
+      if (pos!=string::npos)
+      {
+        number = atoi(filename_.substr(pos+1).c_str());
+        filename_ = filename_.substr(0,pos);
+      }
+
+      // either add or increase the number in the end or just set the new name for the control file
+      for (;;)
+      {
+        // if no number is found and the control file name does not yet exist -> create it
+        if (number == 0)
+        {
+          std::stringstream name;
+          name << filename_ << ".control";
+          std::ifstream file(name.str().c_str());
+          if (not file)
+          {
+            std::cout << "restart with new output file: "
+                      << filename_
+                      << std::endl;
+            break;
+          }
+        }
+        // a number was found or the file does already exist -> set number correctly and add it
+        number += 1;
+        std::stringstream name;
+        name << filename_ << "-" << number << ".control";
+        std::ifstream file(name.str().c_str());
+        if (not file)
+        {
+          filename_ = name.str();
+          filename_ = filename_.substr(0,filename_.length()-8);
+          std::cout << "restart with new output file: "
+                    << filename_
+                    << std::endl;
+          break;
+        }
+      }
+
+    }
+
     if (comm.NumProc()>1)
     {
       int length = filename_.length();
@@ -234,7 +280,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     if (restart)
     {
       controlfile_ << "restarted_run = \""
-                   << restartname
+                   << restartname_
                    << "\"\n\n";
     }
 
@@ -443,12 +489,11 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
   // these have to be set, because at a certain point in ReadConditions()
   // the underlying methods try to access the error files via the
   // global variable allfiles
-  strcpy(allfiles.outputfile_name,errname_.c_str());
   allfiles.out_err = errfile_;
 
   // inform user
-  //if (comm.MyPID() == 0)
-  //  printf("errors are reported to     %s\n", errname_.c_str());
+  if (comm.MyPID() == 0)
+    printf("errors are reported to     %s\n", errname_.c_str());
 }
 
 /*----------------------------------------------------------------------*/

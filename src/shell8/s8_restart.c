@@ -24,16 +24,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*!----------------------------------------------------------------------
-\brief one proc's info about his partition
-
-<pre>                                                         m.gee 8/00
--the partition of one proc (all discretizations)
--the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-extern struct _PARTITION  *partition;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |

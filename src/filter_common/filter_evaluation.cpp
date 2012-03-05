@@ -26,7 +26,6 @@ filter. But to link the filter stubs of these functions are needed.
 
 #include "../drt_mat/micromaterial.H"
 
-struct _PAR     par;
 struct _GENPROB genprob;
 
 /*----------------------------------------------------------------------*/

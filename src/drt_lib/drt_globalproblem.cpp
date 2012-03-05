@@ -38,16 +38,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_comm/comm_utils.H"
 
 #include "../drt_io/io_control.H"
-
-
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#endif
-
-#include <Epetra_SerialComm.h>
-
 
 
 /*----------------------------------------------------------------------*
@@ -108,8 +101,6 @@ void DRT::Problem::Done()
 DRT::Problem::Problem()
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
-  gcomm_ = Teuchos::null;
-  lcomm_ = std::vector <Teuchos::RCP<Epetra_Comm> >(0);
 }
 
 
@@ -238,14 +229,21 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetCommunicators(int group, int ngroup, Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm)
+void DRT::Problem::NPGroup(
+  int groupId,
+  int ngroup,
+  std::map<int, int> lpidgpid,
+  Teuchos::RCP<Epetra_Comm> lcomm,
+  Teuchos::RCP<Epetra_Comm> gcomm,
+  NP_TYPE npType
+  )
 {
-  lcomm_.resize(ngroup, Teuchos::null);
-  // TODO: BACI - INCA coupling has to switch colors: BACI = 0 and INCA = 1
-  if(ngroup==1) group=0;
-  lcomm_[group] = lcomm;
-
-  gcomm_ = gcomm;
+  npgroup_ = Teuchos::rcp(new COMM_UTILS::NestedParGroup(groupId,
+                                                         ngroup,
+                                                         lpidgpid,
+                                                         lcomm,
+                                                         gcomm,
+                                                         npType));
 
   return;
 }
@@ -798,15 +796,16 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix)
+void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner)
 {
   if (genprob.restart)
-    inputcontrol_ = Teuchos::rcp(new IO::InputControl(prefix, comm));
+    inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
 
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm,
                                                       ProblemType(),
                                                       SpatialApproximation(),
                                                       inputfile,
+                                                      restartkenner,
                                                       prefix,
                                                       genprob.ndim,
                                                       genprob.restart,

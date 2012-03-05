@@ -28,6 +28,7 @@ Maintainer: Jonas Biehler
 #include "gen_randomfield.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_comm/comm_utils.H"
 //for file output
@@ -90,13 +91,15 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   InEleRange_ = 1.0 + 10e-3;
   //ReadInParameters();
 
+
   // controlling parameter
-  const std::vector<Teuchos::RCP<Epetra_Comm> >& lcomm = DRT::Problem::Instance()->LocalComm();
-   int NNestedGroups =lcomm.size();
   start_run_ = mlmcp.get<int>("START_RUN");
   int numruns = mlmcp.get<int>("NUMRUNS");
-  int i=0;
-  while(lcomm[i] == Teuchos::null) i++;
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  int NNestedGroups = problem->GetNPGroup()->NumGroups();
+  int i = problem->GetNPGroup()->GroupId();
+
   numruns_pergroup_= int(ceil(numruns/NNestedGroups));
   start_run_  += (i)*numruns_pergroup_;
 

@@ -38,11 +38,6 @@ Maintainer: Michael Gee
  | various types of enums                                 m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "enums.h"
-/*----------------------------------------------------------------------*
- | structures concerning domain decomposition             m.gee 8/00    |
- | and intra-communicators                                              |
- *----------------------------------------------------------------------*/
-#include "partition.h"
 
 /*!
 \addtogroup FRSYSTEM
@@ -61,11 +56,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 typedef struct _FILES
 {
 /*------------------------------------------------------------- file I/O */
-char             *inputfile_name;         /* input file name             */
-
-char             *outputfile_kenner;      /* output file kenner          */
-char              outputfile_name[100];   /* output file name            */
-
 FILE             *out_err;                /* file-pointer .err  file     */
 } FILES;
 /*! @} (documentation module close)*/

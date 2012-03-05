@@ -101,11 +101,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
     static std::ofstream* out;
     if (out==NULL)
     {
-#ifdef CCADISCRET
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-#else
-      std::string s = allfiles.outputfile_kenner;
-#endif
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }

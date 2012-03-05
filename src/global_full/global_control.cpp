@@ -5,24 +5,14 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_init_control.H"
 #include "../drt_lib/global_inp_control2.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  *----------------------------------------------------------------------*/
 struct _GENPROB       genprob;
-
-
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-extern struct _PAR     par;
 
 
 static double cputime()
@@ -47,18 +37,25 @@ void ntam(
     char               *argv[]
     )
 {
+  Teuchos::RCP<Epetra_Comm> lcomm = DRT::Problem::Instance()->GetNPGroup()->LocalComm();
+
   double   t0,ti,tc;
 
-  ntaini_ccadiscret(argc,argv);
+  /// IO file names and kenners
+  std::string inputfile_name;
+  std::string outputfile_kenner;
+  std::string restartfile_kenner;
+
+  ntaini_ccadiscret(argc,argv,inputfile_name,outputfile_kenner,restartfile_kenner);
 
   /* input phase, input of all information */
 
   t0=cputime();
 
-  ntainp_ccadiscret();
+  ntainp_ccadiscret(inputfile_name,outputfile_kenner,restartfile_kenner);
 
   ti=cputime()-t0;
-  if (par.myrank==0)
+  if (lcomm->MyPID()==0)
   {
     printf("\nTotal CPU Time for INPUT:       %10.3E sec \n\n",ti);
   }
@@ -69,7 +66,7 @@ void ntam(
   ntacal();
 
   tc=cputime()-t0;
-  if (par.myrank==0)
+  if (lcomm->MyPID()==0)
   {
     printf("\nTotal CPU Time for CALCULATION: %10.3E sec \n\n",tc);
   }

@@ -48,17 +48,6 @@ table. This table can be queried for those values quite easily.
 #include "pss_table.h"
 #include "pss_prototypes.h"
 
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-extern struct _PAR   par;
-
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1277,6 +1266,11 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
   data->indent_level = 0;
   data->indent_step = -1;
 
+  int myrank = 0;
+  int nprocs = 1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
+
   /* No copy here. Valid only as long as the calling functions
    * filename is valid. */
   /*data->filename = filename;*/
@@ -1285,9 +1279,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
    * read the file on process 0 and broadcast it. The other way would
    * be to use MPI IO, but then we'd have to implement a separat
    * sequential version. */
-#ifdef PARALLEL
-  if (par.myrank == 0)
-#endif
+  if (myrank == 0)
   {
     INT bytes_read;
     FILE* file;
@@ -1315,14 +1307,13 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
     fclose(file);
   }
 
-#ifdef PARALLEL
-  if (par.nprocs > 1) {
+  if (nprocs > 1) {
     INT err;
     err = MPI_Bcast(&data->file_size,1,MPI_INT,0,comm);
     if (err != 0) {
       dserror("MPI_Bcast failed: %d", err);
     }
-    if (par.myrank > 0) {
+    if (myrank > 0) {
       data->file_buffer = CCAMALLOC((data->file_size+1)*sizeof(CHAR));
     }
     err = MPI_Bcast(data->file_buffer, data->file_size+1, MPI_CHAR, 0, comm);
@@ -1330,7 +1321,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename, MP
       dserror("MPI_Bcast failed: %d", err);
     }
   }
-#endif
+
 }
 
 
@@ -1618,12 +1609,6 @@ static void lexan(PARSER_DATA* data)
 
 end:
 
-#if 0
-  if (par.myrank == 0) {
-    print_token(data);
-    printf("\n");
-  }
-#endif
 
   return;
 }

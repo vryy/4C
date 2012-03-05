@@ -31,6 +31,7 @@ Maintainer: Georg Hammerl
 #include <mpi.h>
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*
@@ -58,6 +59,67 @@ namespace COMM_UTILS
     dserror("Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should not be here!");
     return Teuchos::null;
   }
+
+
+  class NestedParGroup
+  {
+  public:
+    NestedParGroup(
+      int groupId,
+      int ngroup,
+      std::map<int, int> lpidgpid,
+      Teuchos::RCP<Epetra_Comm> lcomm,
+      Teuchos::RCP<Epetra_Comm> gcomm,
+      NP_TYPE npType
+      );
+
+    virtual ~NestedParGroup(){};
+
+    /// return group id
+    int GroupId(){ return groupId_; }
+
+    /// return number of groups
+    int NumGroups(){ return ngroup_; }
+
+    /// return group size
+    int GroupSize(){ return lcomm_->NumProc(); }
+
+    /// return global processor id of local processor id
+    int GPID(int LPID){ return lpidgpid_[LPID]; }
+
+    /// return local processor id of global processor id if GPID is in this group
+    int LPID(int GPID);
+
+    /// return local communicator
+    Teuchos::RCP<Epetra_Comm> LocalComm(){ return lcomm_; }
+
+    /// return local communicator
+    Teuchos::RCP<Epetra_Comm> GlobalComm(){ return gcomm_; }
+
+    /// return nested parallelism type
+    NP_TYPE NpType(){ return npType_; }
+
+  private:
+    /// group id
+    int groupId_;
+
+    /// number of groups
+    int ngroup_;
+
+    /// map from local processor ids to global processor ids
+    std::map<int, int> lpidgpid_;
+
+    /// local communicator
+    Teuchos::RCP<Epetra_Comm> lcomm_;
+
+    /// global communicator
+    Teuchos::RCP<Epetra_Comm> gcomm_;
+
+    /// nested parallelism type
+    NP_TYPE npType_;
+
+  };
+
 
 } // namespace COMM_UTILS
 

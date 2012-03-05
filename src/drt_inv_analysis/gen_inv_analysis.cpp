@@ -42,6 +42,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 using namespace std;
 using namespace DRT;

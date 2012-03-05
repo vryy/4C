@@ -44,7 +44,6 @@ Maintainer: Ulrich Kuettler
  * service functions. We need to specify them here and set them up
  * properly. */
 extern struct _FILES   allfiles;
-extern struct _PAR     par;
 extern struct _GENPROB genprob;
 
 
@@ -249,15 +248,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 {
   MAP temp_table;
 
-#ifdef PARALLEL
-  MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
   comm_ = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-#else
-  par.myrank=0;
-  par.nprocs=1;
-  comm_ = rcp(new Epetra_SerialComm());
-#endif
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
@@ -265,10 +256,9 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
    * important. */
   basename_ = control_file_name.substr(0,control_file_name.length()-8);
   outname_ = output_name;
-  const int length = output_name.length();
-  strcpy(allfiles.outputfile_name, outname_.c_str());
-  strcpy(allfiles.outputfile_name+length-8, ".post.log");
-  allfiles.out_err = fopen(allfiles.outputfile_name, "w");
+  string logfile_name(outname_);
+  logfile_name += ".post.log";
+  allfiles.out_err = fopen(logfile_name.c_str(), "w");
 
   parse_control_file(&control_table_, control_file_name.c_str(), MPI_COMM_WORLD);
 

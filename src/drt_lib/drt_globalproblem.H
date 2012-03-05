@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
+#include "standardtypes_cpp.H"
 
 using namespace std;
 using Teuchos::RCP;
@@ -36,6 +37,11 @@ namespace IO
   class OutputControl;
   class InputControl;
   class ErrorFileControl;
+}
+
+namespace COMM_UTILS
+{
+  class NestedParGroup;
 }
 
 namespace MAT
@@ -167,15 +173,6 @@ public:
 
   /// @name Input
 
-  /// set communicators
-  void SetCommunicators(int group, int ngroup, Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm);
-
-  /// get local communicator
-  const std::vector<Teuchos::RCP<Epetra_Comm> >& LocalComm(){ return lcomm_; }
-
-  /// get global communicator
-  const Teuchos::RCP<Epetra_Comm> GlobalComm(){ return gcomm_; }
-
   /// read global parameters
   void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
@@ -219,7 +216,7 @@ public:
   /// @name Control file
 
   /// create control file for output and read restart data if required
-  void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix);
+  void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner);
 
   /// error files
   void OpenErrorFile(const Epetra_Comm& comm, std::string prefix);
@@ -245,6 +242,23 @@ public:
 
   /// Return a const parameter list of all of the valid parameters that this->setParameterList(...) will accept.
   Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
+
+  /// @name Nested parallelism group
+
+  /// nested parallelism group is initialised
+  void NPGroup(
+    int groupId,  //!< group id
+    int ngroup, //!< number of groups in nested parallelism
+    std::map<int, int> lpidgpid,  //!< map of local and global proc ids
+    Teuchos::RCP<Epetra_Comm> lcomm,  //!< local communicator
+    Teuchos::RCP<Epetra_Comm> gcomm,  //!< global communicator
+    NP_TYPE npType  //!< nested parallelism type
+    );
+
+  /// return nested parallelism group
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> GetNPGroup(){ return npgroup_; }
+
+  //@}
 
   //@}
 
@@ -398,12 +412,8 @@ private:
   /// of discretizations)
   std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap_;
 
-  /// local communicator
-  std::vector<Teuchos::RCP<Epetra_Comm> > lcomm_;
-
-  /// global communicator
-  Teuchos::RCP<Epetra_Comm> gcomm_;
-
+  /// nested parallelism group
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> npgroup_;
 
   /// @name File IO
 

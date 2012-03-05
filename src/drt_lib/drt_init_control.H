@@ -15,16 +15,13 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void ntaini_ccadiscret(int argc, char** argv);
+void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name, std::string& outputfile_kenner, std::string& restartfile_kenner);
+
 
 #ifdef __cplusplus
 }
