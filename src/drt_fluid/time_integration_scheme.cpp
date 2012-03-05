@@ -124,12 +124,34 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     {
       message="midpoint-like";
 
-      const double fact1 = dta*(1.0+dta/dtp);
-      const double fact2 = DSQR(dta/dtp);
+      // the conventional explicit second order predictor (assuming constant dt)
+      /*
+      //                        /          n    n-1 \
+      //       n+1    n        |      n   u  - u     |
+      //      u    = u  + dt * | 2*acc  - ---------  |
+      //       (0)             |             dt      |
+      //                        \                   /
+      // respectively
+      //
+      //       n+1    n-1               n
+      //      u    = u    + 2 * dt * acc
+      //       (0)
+      //
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+      */
+      velnp->Update(1.0,*veln,0.0);
 
-      velnp->Update( fact1,*accn ,1.0);
-      velnp->Update(-fact2,*veln ,1.0);
-      velnp->Update( fact2,*velnm,1.0);
+      // split between acceleration and pressure
+      Teuchos::RCP<Epetra_Vector> unm = velpressplitter.ExtractOtherVector(velnm);
+      Teuchos::RCP<Epetra_Vector> an  = velpressplitter.ExtractOtherVector(accn );
+
+      unm->Update(2.0*dta,*an,1.0);
+
+      velpressplitter.InsertOtherVector(unm,velnp);
       break;
     }
     default:
