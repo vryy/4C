@@ -184,9 +184,6 @@ private:
   //! output file base name (possibly including directory)
   string outname_;
 
-  //! file-pointer .err file
-  FILE *out_err;
-
   //! memory version of control file
   /*! If a restarted run is post processed this is a merged control
     file constructed from all control files available. */

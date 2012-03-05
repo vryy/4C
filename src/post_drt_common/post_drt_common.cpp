@@ -251,8 +251,6 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
-  /* We need to open the error output file. The other ones are not
-   * important. */
   basename_ = control_file_name.substr(0,control_file_name.length()-8);
   outname_ = output_name;
 
