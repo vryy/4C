@@ -39,7 +39,7 @@ public:
   explicit XFluidFluidTimeIntegration(
     const RCP<DRT::Discretization> bgdis,
     const RCP<DRT::Discretization> embdis,
-    XFEM::FluidWizard              wizard,
+    RCP<XFEM::FluidWizard>         wizard,
     int                            step,
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach
     );
@@ -53,13 +53,13 @@ public:
 
   // Create maps of bgfluid's nodes needed for time integration
   void CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
-                        XFEM::FluidWizard              wizard);
+                        RCP<XFEM::FluidWizard>         wizard);
 
   // Save the old state
   void SaveBgNodeMaps();
 
   int SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
-                                   XFEM::FluidWizard              wizard);
+                                 RCP<XFEM::FluidWizard>   wizard);
 
   void SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
                                             Teuchos::RCP<Epetra_Vector>           bgstatevn,

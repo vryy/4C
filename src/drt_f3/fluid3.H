@@ -1045,7 +1045,9 @@ public:
     integ_pressure_calc,
     center_of_mass_calc,
     traction_velocity_component,
-    traction_Uv_integral_component
+    traction_Uv_integral_component,
+    edge_based_stabilization,
+    ghost_penalty
   };
 
 private:

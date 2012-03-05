@@ -416,6 +416,14 @@ void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> & node
 
         }
 
+
+        // set the nds vector for each volumecell of the current set
+        for(plain_volumecell_set::iterator c=cells.begin(); c!=cells.end(); c++)
+        {
+          VolumeCell* cell = *c;
+          cell->SetNodalDofSet(nds);
+        }
+
         nodaldofset_vc_sets.push_back(nds);
 
     }

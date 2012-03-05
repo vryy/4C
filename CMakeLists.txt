@@ -580,6 +580,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_fsi.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+  src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_fluiddofset.cpp
   src/drt_xfem/xfem_fluidwizard.cpp
   src/drt_xfem/xfem_neumann.cpp
@@ -1217,6 +1218,7 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_evaluate.cpp
   src/drt_f3/fluid3_genalpha_resVMM.cpp
   src/drt_f3/fluid3_input.cpp
+  src/drt_f3/fluid3_internalfaces_stabilization.cpp
   src/drt_f3/fluid3_stabilization.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
   src/drt_f3/xfluid3.cpp

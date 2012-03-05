@@ -2387,11 +2387,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no_stabilization",
                                  "inconsistent",
-                                 "residual_based"),
+                                 "residual_based",
+                                 "edge_based"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> inf-sup stable elements required!",
                                  "Similar to residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
-                                 "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input")  ,
+                                 "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input",
+                                 "Use an edge-based stabilization, especially for XFEM")  ,
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 

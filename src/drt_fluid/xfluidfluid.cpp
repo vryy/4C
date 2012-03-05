@@ -36,21 +36,27 @@
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_ostream0.H"
 
+#include "../drt_xfem/xfem_edgestab.H"
+#include "../drt_xfem/xfem_fluiddofset.H"
+#include "../drt_xfem/xfluidfluid_timeInt.H"
+
 #include "time_integration_scheme.H"
+
 #include "fluid_utils.H"
-#include "fluid_utils_mapextractor.H"
+
+#include "xfluid_defines.H"
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
   : xfluid_( xfluid ),
-    wizard_( *xfluid.bgdis_, *xfluid.boundarydis_ )
+    wizard_(  Teuchos::rcp( new XFEM::FluidWizard(*xfluid.bgdis_, *xfluid.boundarydis_ )))
 {
 
   // do the cut for the 0 timestep and find the fluid dofset
-  wizard_.Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
+  wizard_->Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
-  dofset_ = wizard_.DofSet(maxNumMyReservedDofs);
+  dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
   if (xfluid.step_ < 1)
     xfluid.minnumdofsets_ = xfluid.bgdis_->DofRowMap()->MinAllGID();
 
@@ -147,6 +153,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   fluidfluidzeros_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
 
   stepinc_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
+
+  edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_));
 }
 
 // -------------------------------------------------------------------
@@ -261,7 +269,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actele->Shape() );
 
-    GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
+    GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     // Evaluate xfem
     if ( e!=NULL )
     {
@@ -337,10 +345,10 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           // Attention: switch also the flag in fluid3_impl.cpp
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
           // original Axel's transformation
-          e->BoundaryCellGaussPoints( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+          e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #else
           // new Benedikt's transformation
-          e->BoundaryCellGaussPointsLin( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+          e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
 
           //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
@@ -551,10 +559,10 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             // Attention: switch also the flag in fluid3_impl.cpp
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
             // original Axel's transformation
-            e->BoundaryCellGaussPoints( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+            e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #else
             // new Benedikt's transformation
-            e->BoundaryCellGaussPointsLin( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+            e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
 
             //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
@@ -682,6 +690,15 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 //       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
 //       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
     }
+
+    // call edge stabilization
+    // REMARK: the current implementation of internal edges integration belongs to the elements
+    // at the moment each side is integrated twice
+    if(xfluid_.fluid_stab_type_ == "edge_based")
+    {
+      edgestab_->EvaluateEdgeStabandGhostPenalty(discret, strategy, ele);
+    }
+
   } // end of loop over bgdis
 
   discret.ClearState();
@@ -721,7 +738,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actaleele->Shape() );
 
-    GEO::CUT::ElementHandle * e = wizard_.GetElement( actaleele );
+    GEO::CUT::ElementHandle * e = wizard_->GetElement( actaleele );
     if ( e!=NULL )
     {
       dserror("ALE element geschnitten?!!!!");
@@ -754,6 +771,15 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 //       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
 //       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
     }
+
+    // call edge stabilization
+    // REMARK: the current implementation of internal edges integration belongs to the elements
+    // at the moment each side is integrated twice
+    if(xfluid_.fluid_stab_type_ == "edge_based")
+    {
+      edgestab_->EvaluateEdgeStabandGhostPenalty(alediscret, alestrategy, aleele);
+    }
+
   } // end of loop over embedded discretization
   cutdiscret.ClearState();
   alediscret.ClearState();
@@ -838,7 +864,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   {
     DRT::Element* actele = discret.lColElement(i);
 
-    GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
+    GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
 #ifdef DOFSETS_NEW
@@ -951,7 +977,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   {
     DRT::Element* actele = discret.lColElement(i);
 
-    GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
+    GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
       GEO::CUT::plain_volumecell_set cells;
@@ -1245,7 +1271,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
   LINALG::Matrix<2,2> metrictensor;
   double drs;
 
-  GEO::CUT::MeshIntersection & mesh = wizard_.CutWizard().Mesh();
+  GEO::CUT::MeshIntersection & mesh = wizard_->CutWizard().Mesh();
 
   std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
   vc->GetBoundaryCells( bcells );
@@ -1406,6 +1432,9 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   coupling_strategy_  = DRT::INPUT::get<INPAR::XFEM::CouplingStrategy>(params_.sublist("XFEM"),"COUPLING_STRATEGY");
   nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
+
+  fluid_stab_type_ = params_.sublist("STABILIZATION").get<string>("STABTYPE");
+
   monolithic_approach_= DRT::INPUT::get<INPAR::XFEM::Monolithic_xffsi_Approach>(params_.sublist("XFEM"),"MONOLITHIC_XFFSI_APPROACH");
   xfem_timeintapproach_ = DRT::INPUT::get<INPAR::XFEM::XFluidFluidTimeInt>(params.sublist("XFEM"),"XFLUIDFLUID_TIMEINT");
   relaxing_ale_ = params_.sublist("XFEM").get<int>("RELAXING_ALE");
@@ -1701,14 +1730,14 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
 
   // store a dofset with the complete fluid unknowns
-  dofset_out_ = DRT::IndependentDofSet();
-  dofset_out_.Reset();
-  dofset_out_.AssignDegreesOfFreedom(*bgdis_,0,0);
+  dofset_out_ = rcp(new DRT::IndependentDofSet());
+  dofset_out_->Reset();
+  dofset_out_->AssignDegreesOfFreedom(*bgdis_,0,0);
   // split based on complete fluid field (standard splitter that handles one dofset)
-  FLD::UTILS::SetupFluidSplit(*bgdis_,dofset_out_,numdim_,velpressplitterForOutput_);
+  FLD::UTILS::SetupFluidSplit(*bgdis_,*dofset_out_,numdim_,velpressplitterForOutput_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
-  outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
+  outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
   // create fluid output object
   output_ = (rcp(new IO::DiscretizationWriter(bgdis_)));
@@ -3091,7 +3120,7 @@ void FLD::XFluidFluid::Output()
 //     }
 
 #ifndef output
-    const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
+    const Epetra_Map* dofrowmap = dofset_out_->DofRowMap(); // original fluid unknowns
     const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();    // fluid unknown for current cut
 
     for (int i=0; i<bgdis_->NumMyRowNodes(); ++i)
@@ -3103,7 +3132,7 @@ void FLD::XFluidFluid::Output()
       //const int gid = xfemnode->Id();
 
       // the dofset_out_ contains the original dofs for each row node
-      const std::vector<int> gdofs_original(dofset_out_.Dof(xfemnode));
+      const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
 
       //cout << "node->Id() " << gid << "gdofs " << gdofs_original[0] << " " << gdofs_original[1] << "etc" << endl;
 
@@ -3655,7 +3684,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
 
-      GEO::CUT::ElementHandle * e = state_->wizard_.GetElement( actele );
+      GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
       DRT::Element::LocationArray la( 1 );
 
       // xfem element

@@ -1,6 +1,4 @@
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "xfluid.H"
 #include "fluid_utils.H"
 
@@ -20,8 +18,8 @@
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_xfem/xfem_fluiddofset.H"
-
 #include "../drt_xfem/xfem_neumann.H"
+#include "../drt_xfem/xfem_edgestab.H"
 
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
@@ -30,14 +28,17 @@
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_meshintersection.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_f3/fluid3.H"
-
 #include "../drt_f3_impl/fluid3_interface.H"
 
+
+
 #include "time_integration_scheme.H"
+
+#include "xfluid_defines.H"
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -136,6 +137,10 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
     zeros_->PutScalar(0.0); // just in case of change
   }
+
+
+  edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_));
+
 }
 
 // -------------------------------------------------------------------
@@ -376,6 +381,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
           {
             const std::vector<int> & nds = vc->NodalDofSet();
 
+            // one set of dofs
+//            std::vector<int>  ndstest;
+//            for (int t=0;t<8; ++t)
+//            ndstest.push_back(0);
+
             // get element location vector, dirichlet flags and ownerships
             actele->LocationVector(discret,nds,la,false);
 
@@ -504,6 +514,16 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 //       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
 //       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
       }
+
+
+      // call edge stabilization
+      // REMARK: the current implementation of internal edges integration belongs to the elements
+      // at the moment each side is integrated twice
+      if(xfluid_.fluid_stab_type_ == "edge_based")
+      {
+        edgestab_->EvaluateEdgeStabandGhostPenalty(discret, strategy, ele);
+      }
+
     }
 
     discret.ClearState();
@@ -541,7 +561,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                                            Teuchos::RCP<Epetra_Vector> acc)
 {
 
-  const int step_diff = 10;
+  const int step_diff = 100;
   bool screen_out = xfluid_.gmsh_debug_out_screen_;
 
    // output for Element and Node IDs
@@ -581,18 +601,53 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    gmshfilecontent_bound.setf(ios::scientific,ios::floatfield);
    gmshfilecontent_bound.precision(16);
 
+
+   // output for Element and Node IDs
+   std::ostringstream filename_base_vel_ghost;
+   if(count > -1) filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
+   else           filename_base_vel_ghost << filename_base << "_vel_ghost";
+   const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
+   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
+   gmshfilecontent_vel_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_vel_ghost.precision(16);
+
+   std::ostringstream filename_base_press_ghost;
+   if(count > -1) filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
+   else           filename_base_press_ghost << filename_base << "_press_ghost";
+   const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
+   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
+   gmshfilecontent_press_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_press_ghost.precision(16);
+
+   std::ostringstream filename_base_acc_ghost;
+   if(count > -1) filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
+   else           filename_base_acc_ghost << filename_base << "_acc_ghost";
+   const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
+   if (xfluid_.gmsh_debug_out_screen_) cout << endl;
+   std::ofstream gmshfilecontent_acc_ghost(filename_acc.c_str());
+   gmshfilecontent_acc_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_acc_ghost.precision(16);
+
+
    if(count > -1) // for residual output
    {
-       gmshfilecontent_vel   << "View \"" << "SOL " << "vel "   << count << "\" {\n";
-       gmshfilecontent_press << "View \"" << "SOL " << "press " << count << "\" {\n";
-       gmshfilecontent_bound << "View \"" << "SOL " << "bound " << count << "\" {\n";
+       gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << count << "\" {\n";
+       gmshfilecontent_press       << "View \"" << "SOL " << "press " << count << "\" {\n";
+       gmshfilecontent_bound       << "View \"" << "SOL " << "bound " << count << "\" {\n";
+       gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << count << "\" {\n";
+       gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << count << "\" {\n";
    }
    else
    {
-       gmshfilecontent_vel   << "View \"" << "SOL " << "vel "   << "\" {\n";
-       gmshfilecontent_press << "View \"" << "SOL " << "press " << "\" {\n";
-       gmshfilecontent_acc   << "View \"" << "SOL " << "acc   " << "\" {\n";
-       gmshfilecontent_bound << "View \"" << "SOL " << "bound " << "\" {\n";
+       gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << "\" {\n";
+       gmshfilecontent_press       << "View \"" << "SOL " << "press " << "\" {\n";
+       gmshfilecontent_acc         << "View \"" << "SOL " << "acc   " << "\" {\n";
+       gmshfilecontent_bound       << "View \"" << "SOL " << "bound " << "\" {\n";
+       gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << "\" {\n";
+       gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << "\" {\n";
+       gmshfilecontent_acc_ghost   << "View \"" << "SOL " << "acc_ghost   " << "\" {\n";
    }
 
   const int numcolele = discret.NumMyColElements();
@@ -619,7 +674,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
         {
             GEO::CUT::plain_volumecell_set & cells = *s;
 
-            const std::vector<int> & nds = nds_sets[set_counter];
+            std::vector<int> & nds = nds_sets[set_counter];
 
             for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
             {
@@ -633,8 +688,10 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                     }
                     else
                     {
-                        GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
+                      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
                     }
+                    GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+
                 }
             }
             set_counter += 1;
@@ -653,15 +710,23 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
         if ( vc->Position()==GEO::CUT::Point::outside )
         {
           const std::vector<int> & nds = vc->NodalDofSet();
+
+          std::vector<int>  ndstest;
+          for (int t=0;t<8; ++t)
+          ndstest.push_back(0);
+
           if ( e->IsCut() )
           {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
+            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, ndstest, vel, acc );
             GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
           }
           else
           {
-            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
+            std::vector<int> nsd; // empty vector
+            GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nsd, vel, acc );
           }
+          GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, ndstest, vel, acc );
+
         }
       }
       count += 1;
@@ -671,13 +736,19 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     }
     else
     {
-      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
+      std::vector<int> nds; // empty vector
+      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+      GmshOutputElement( discret, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+
     }
   }
 
   gmshfilecontent_vel   << "};\n";
   gmshfilecontent_press << "};\n";
   if(count == -1) gmshfilecontent_acc   << "};\n";
+  gmshfilecontent_vel_ghost   << "};\n";
+  gmshfilecontent_press_ghost << "};\n";
+  if(count == -1) gmshfilecontent_acc_ghost   << "};\n";
   gmshfilecontent_bound << "};\n";
 
 }
@@ -689,8 +760,10 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
                                                   std::ofstream & press_f,
                                                   std::ofstream & acc_f,
                                                   DRT::Element * actele,
+                                                  std::vector<int> & nds,
                                                   Teuchos::RCP<Epetra_Vector> vel,
-                                                  Teuchos::RCP<Epetra_Vector> acc)
+                                                  Teuchos::RCP<Epetra_Vector> acc
+                                                  )
 {
 
   //output for accvec ?
@@ -700,8 +773,17 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
 
   DRT::Element::LocationArray la( 1 );
 
-  // get element location vector, dirichlet flags and ownerships
-  actele->LocationVector(discret,la,false);
+
+  if(nds.size()!=0) // for element output of ghost values
+  {
+    // get element location vector, dirichlet flags and ownerships
+    actele->LocationVector(discret,nds,la,false);
+  }
+  else
+  {
+    // get element location vector, dirichlet flags and ownerships
+    actele->LocationVector(discret,la,false);
+  }
 
   std::vector<double> m(la[0].lm_.size());
   DRT::UTILS::ExtractMyValues(*vel,m,la[0].lm_);
@@ -1138,6 +1220,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
 
+  fluid_stab_type_ = params_.sublist("STABILIZATION").get<string>("STABTYPE");
 
   VolumeCellGaussPointBy_ = params_.sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
   BoundCellGaussPointBy_  = params_.sublist("XFEM").get<std::string>("BOUNDARY_GAUSS_POINTS_BY");
@@ -1229,14 +1312,14 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
 
   // store a dofset with the complete fluid unknowns
-  dofset_out_ = DRT::IndependentDofSet();
-  dofset_out_.Reset();
-  dofset_out_.AssignDegreesOfFreedom(*discret_,0,0);
+  dofset_out_ = rcp(new DRT::IndependentDofSet());
+  dofset_out_->Reset();
+  dofset_out_->AssignDegreesOfFreedom(*discret_,0,0);
   // split based on complete fluid field (standard splitter that handles one dofset)
-  FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,numdim_,velpressplitterForOutput_);
+  FLD::UTILS::SetupFluidSplit(*discret_,*dofset_out_,numdim_,velpressplitterForOutput_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
-  outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
+  outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
 //  // create fluid output object
 //  fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
@@ -1585,6 +1668,11 @@ void FLD::XFluid::PrintStabilizationParams()
     if(stabparams->get<string>("CROSS-STRESS") != "no_cross")       dserror("check CROSS-STRESS for XFEM");
     if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
 
+    if(stabparams->get<string>("STABTYPE") == "edge_based" && (    stabparams->get<string>("PSPG") == "yes_pspg"
+                                                                or stabparams->get<string>("SUPG") == "yes_supg"
+                                                                or stabparams->get<string>("CSTAB") == "cstab_qs" )  )
+      dserror("do not combine edge-based stabilization with residual-based stabilization like SUPG/PSPG/CSTAB");
+
 
   }
 
@@ -1916,10 +2004,17 @@ void FLD::XFluid::NonlinearSolve()
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
+
+    if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, state_->residual_ );
+
+
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
 
-    // debug output (after Dirichlet conditions)
     if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, state_->residual_ );
+
+
+    // debug output (after Dirichlet conditions)
+//    if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, state_->residual_ );
 
     double incvelnorm_L2;
     double incprenorm_L2;
@@ -2633,7 +2728,7 @@ void FLD::XFluid::Output()
    {
        fluid_output_->NewStep(step_,time_);
 
-       const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
+       const Epetra_Map* dofrowmap = dofset_out_->DofRowMap(); // original fluid unknowns
        const Epetra_Map* xdofrowmap = discret_->DofRowMap();  // fluid unknown for current cut
 
 
@@ -2643,7 +2738,7 @@ void FLD::XFluid::Output()
            const DRT::Node* xfemnode = discret_->lRowNode(i);
 
            // the dofset_out_ contains the original dofs for each row node
-           const std::vector<int> gdofs_original(dofset_out_.Dof(xfemnode));
+           const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
 
 
            // if the dofs for this node do not exist in the xdofrowmap, then a hole is given

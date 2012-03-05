@@ -1752,6 +1752,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                fac3);
     }
 
+    // if ConvDivStab for XFEM
+//    {
+//      ConvDivStab(estif_u,
+//                  velforce,
+//                  timefacfac,
+//                  rhsfac);
+//    }
+
 
     // 13) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
@@ -6729,6 +6737,58 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
 }
 
 
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::ConvDivStab(
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    const double &                            timefacfac,
+    const double &                            rhsfac)
+{
+
+  /* additional convective stabilization, when continuity is not satisfied*/
+  /*
+              /                           \
+          1  |                             |
+      +  --- |  (nabla o u)  Du  , v       |
+          2  |                             |
+              \                           /
+  */
+
+
+  // compute divergence of u
+  double divergence_timefacfac = 0.5*( vderxy_(0,0)+vderxy_(1,1)+vderxy_(2,2) )*timefacfac;
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      for(int ijdim=0; ijdim<nsd_; ijdim++)
+      {
+        const int fui_ijdim   = nsd_*ui + ijdim;
+        const int fvi_ijdim   = nsd_*vi + ijdim;
+
+        estif_u(fvi_ijdim,fui_ijdim) += divergence_timefacfac*funct_(vi)*funct_(ui);
+      }
+    }
+  }
+
+
+  for (int idim =0;idim<nsd_;++idim)
+  {
+    const double rhs_divergencefac = divergence_timefacfac*velint_(idim);
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+        velforce(idim,vi) -= rhs_divergencefac*funct_(vi);
+    }
+  } // end for(idim)
+
+
+  return;
+}
+
+
+
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
@@ -9368,7 +9428,7 @@ namespace DRT
 
 
                      /*                  \       /          i      \
-                  + |  [ v ], - {Dp}*n    | = - | [ v ], { p }* n   |
+                  + |  [ v ],   {Dp}*n    | = - | [ v ], { p }* n   |
                      \                   /       \                */
 
           //-----------------------------------------------
@@ -9443,6 +9503,11 @@ namespace DRT
            - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
               \                    /     \                 */
 
+          // -1.0 antisymmetric
+          // +1.0 symmetric
+//          double alpha_p = -1.0;
+          double alpha_p = -1.0;
+
          //-----------------------------------------------
          //    - (q1*n, k1 *(Du1))
          //-----------------------------------------------
@@ -9457,20 +9522,20 @@ namespace DRT
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
 
-            C_uu_(idPres, iVelx) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
-            C_uu_(idPres, iVely) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
-            C_uu_(idPres, iVelz) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
+            C_uu_(idPres, iVelx) += alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+            C_uu_(idPres, iVely) += alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+            C_uu_(idPres, iVelz) += alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
           }
 
           // (q*n,u)
           double velint_normal = velint.Dot(normal);
-          rhs_Cu_(idPres,0) += funct_timefacfac(ir)*kappa1*velint_normal;
+          rhs_Cu_(idPres,0) -= alpha_p*funct_timefacfac(ir)*kappa1*velint_normal;
 
           if(!coupling) // weak Dirichlet case
           {
             // -(q*n,u_DBC)
             double ivelint_WDBC_JUMP_normal = ivelint_WDBC_JUMP.Dot(normal);
-            rhs_Cu_(idPres,0) -= funct_timefacfac(ir)*ivelint_WDBC_JUMP_normal;
+            rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*ivelint_WDBC_JUMP_normal;
           }
          }
 
@@ -9491,14 +9556,14 @@ namespace DRT
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
 
-            C_uui_(idPres, iVelx) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
-            C_uui_(idPres, iVely) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
-            C_uui_(idPres, iVelz) += side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
+            C_uui_(idPres, iVelx) -= alpha_p*side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
+            C_uui_(idPres, iVely) -= alpha_p*side_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
+            C_uui_(idPres, iVelz) -= alpha_p*side_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
           }
 
           // -(q*n,u)
           double ivelint_normal = ivelint.Dot(normal);
-          rhs_Cu_(idPres,0) -= funct_timefacfac(ir)*kappa1*ivelint_normal;
+          rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*ivelint_normal;
 
          }
          }// end coupling
@@ -9657,7 +9722,11 @@ namespace DRT
          - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
             \                                 /       \                                */
          // antisymmetric formulation (see Burman, Fernandez 2009)
-         double alpha = -1.0;
+
+          // +1.0 symmetric
+          // -1.0 antisymmetric
+//          double alpha = +1.0;
+          double alpha = +1.0;
 
 
          //-----------------------------------------------
@@ -9934,17 +10003,11 @@ namespace DRT
          } // end coupling
 
 
-#if 0
+#if 1
         // convective stabilization
          /*                           \        /                       i   _     \
           |  gamma/h_K *  v*n , Du*n     | =  - |   gamma/h_K *  v*n , (u  - u)*n   |
          \                            /        \                                */
-
-        const double gamma_conv = 2.0;
-
-//        double stab_fac_conv = gamma_conv/h_K;
-
-        double stab_fac_conv = gamma_conv*visceff_*surface/partial_volume;
 
         for(int ir=0; ir<nen_; ir++)
         {
@@ -9959,32 +10022,32 @@ namespace DRT
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
 
-            elemat1_epetra(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velx);
-            elemat1_epetra(idVelx, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Vely);
-            elemat1_epetra(idVelx, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velz);
+            C_uu_(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velx)*normal(Velx);
+            C_uu_(idVelx, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velx)*normal(Vely);
+            C_uu_(idVelx, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velx)*normal(Velz);
 
-            elemat1_epetra(idVely, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velx);
-            elemat1_epetra(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Vely);
-            elemat1_epetra(idVely, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velz);
+            C_uu_(idVely, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Vely)*normal(Velx);
+            C_uu_(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Vely)*normal(Vely);
+            C_uu_(idVely, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Vely)*normal(Velz);
 
-            elemat1_epetra(idVelz, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velx);
-            elemat1_epetra(idVelz, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Vely);
-            elemat1_epetra(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velz);
+            C_uu_(idVelz, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velz)*normal(Velx);
+            C_uu_(idVelz, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velz)*normal(Vely);
+            C_uu_(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac_conv*normal(Velz)*normal(Velz);
           }
 
-          double velint_normal = velint_.Dot(normal);
+          double velint_normal = velint.Dot(normal);
 
           // -(stab * v*n, u*n)
-          elevec1_epetra(idVelx) -= funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_normal;
-          elevec1_epetra(idVely) -= funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_normal;
-          elevec1_epetra(idVelz) -= funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_normal;
+          rhs_Cu_(idVelx) -= funct_timefacfac(ir)*normal(Velx)*stabfac_conv*velint_normal;
+          rhs_Cu_(idVely) -= funct_timefacfac(ir)*normal(Vely)*stabfac_conv*velint_normal;
+          rhs_Cu_(idVelz) -= funct_timefacfac(ir)*normal(Velz)*stabfac_conv*velint_normal;
 
 
-          double velint_WDBC_normal = velint_WDBC.Dot(normal);
+          double velint_WDBC_normal = ivelint_WDBC_JUMP.Dot(normal);
           // +(stab * v*n, u_DBC*n)
-          elevec1_epetra(idVelx) += funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_WDBC_normal;
-          elevec1_epetra(idVely) += funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_WDBC_normal;
-          elevec1_epetra(idVelz) += funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_WDBC_normal;
+          rhs_Cu_(idVelx) += funct_timefacfac(ir)*normal(Velx)*stabfac_conv*velint_WDBC_normal;
+          rhs_Cu_(idVely) += funct_timefacfac(ir)*normal(Vely)*stabfac_conv*velint_WDBC_normal;
+          rhs_Cu_(idVelz) += funct_timefacfac(ir)*normal(Velz)*stabfac_conv*velint_WDBC_normal;
         }
 #endif
 
@@ -10577,7 +10640,7 @@ namespace DRT
 
 
                    /*                  \       /          i      \
-                + |  [ v ], - {Dp}*n    | = - | [ v ], { p }* n   |
+                + |  [ v ], + {Dp}*n    | = - | [ v ], { p }* n   |
                    \                   /       \                */
 
         //-----------------------------------------------
@@ -10714,6 +10777,7 @@ namespace DRT
             /*                   \     /              i   \
          - |  { q }*n ,[ Du ]     | = |  { q }*n  ,[ u ]   |
             \                    /     \                 */
+        double alpha_p = +1.0; // (+1) antisymmetric, (-1) symmetric
 
        //-----------------------------------------------
        //    - (q1*n, k1 *(Du1))
@@ -10729,14 +10793,14 @@ namespace DRT
           int iVely = ic*(nsd_+1)+1;
           int iVelz = ic*(nsd_+1)+2;
 
-          C_uu_(idPres, iVelx) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
-          C_uu_(idPres, iVely) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
-          C_uu_(idPres, iVelz) -= funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
+          C_uu_(idPres, iVelx) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+          C_uu_(idPres, iVely) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+          C_uu_(idPres, iVelz) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
         }
 
         // (q*n,u)
         double velint_normal = velint.Dot(normal);
-        rhs_Cu_(idPres,0) += funct_timefacfac(ir)*kappa1*velint_normal;
+        rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*velint_normal;
 
 //        if(!coupling) // weak Dirichlet case
 //        {
@@ -10763,14 +10827,14 @@ namespace DRT
           int iVely = ic*(nsd_+1)+1;
           int iVelz = ic*(nsd_+1)+2;
 
-          C_uui_(idPres, iVelx) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
-          C_uui_(idPres, iVely) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
-          C_uui_(idPres, iVelz) += emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
+          C_uui_(idPres, iVelx) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velx);
+          C_uui_(idPres, iVely) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Vely);
+          C_uui_(idPres, iVelz) += alpha_p*emb_funct_dyad_k1_timefacfac(ic,ir)*normal(Velz);
         }
 
         // -(q*n,u)
         double emb_velint_normal = emb_velint.Dot(normal);
-        rhs_Cu_(idPres,0) -= funct_timefacfac(ir)*kappa1*emb_velint_normal;
+        rhs_Cu_(idPres,0) -= alpha_p*funct_timefacfac(ir)*kappa1*emb_velint_normal;
 
        }
        }// end coupling
@@ -10791,14 +10855,14 @@ namespace DRT
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
 
-            C_uiu_(idPres, iVelx) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velx);
-            C_uiu_(idPres, iVely) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Vely);
-            C_uiu_(idPres, iVelz) -= emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velz);
+            C_uiu_(idPres, iVelx) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velx);
+            C_uiu_(idPres, iVely) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Vely);
+            C_uiu_(idPres, iVelz) -= alpha_p*emb_funct_dyad_k2_timefacfac(ir,ic)*normal(Velz);
           }
 
           // (q*n,u)
           double velint_normal = velint.Dot(normal);
-          rhC_ui_(idPres,0) += emb_funct_timefacfac(ir)*kappa2*velint_normal;
+          rhC_ui_(idPres,0) += alpha_p*emb_funct_timefacfac(ir)*kappa2*velint_normal;
 
 
          }
@@ -10818,14 +10882,14 @@ namespace DRT
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
 
-            C_uiui_(idPres, iVelx) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velx);
-            C_uiui_(idPres, iVely) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Vely);
-            C_uiui_(idPres, iVelz) += emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velz);
+            C_uiui_(idPres, iVelx) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velx);
+            C_uiui_(idPres, iVely) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Vely);
+            C_uiui_(idPres, iVelz) += alpha_p*emb_emb_dyad_k2_timefacfac(ic,ir)*normal(Velz);
           }
 
           // -(q*n,u)
           double emb_velint_normal = emb_velint.Dot(normal);
-          rhC_ui_(idPres,0) -= emb_funct_timefacfac(ir)*kappa2*emb_velint_normal;
+          rhC_ui_(idPres,0) -= alpha_p*emb_funct_timefacfac(ir)*kappa2*emb_velint_normal;
 
          }
 
@@ -11121,7 +11185,7 @@ namespace DRT
        - |  alpha* { 2mu*eps(v) }*n , [ Du ] |  =  |  alpha* { 2mu eps(v) }*n ,[ u ]   |
           \                                 /       \                                */
        // antisymmetric formulation (see Burman, Fernandez 2009)
-       double alpha = -1.0;
+       double alpha = +1.0; // (+1)symmetric, (-1) unsymmetric
 
 
        //-----------------------------------------------
@@ -13172,8 +13236,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
       if(meas_partial_volume < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
 
-      stabfac      = nitsche_stab * visceff_ * meas_surface / meas_partial_volume;
-      stabfac_conv = nitsche_stab_conv * meas_surface / meas_partial_volume;
+
 
 
       if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
@@ -13289,6 +13352,28 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
         const double timefacfac = f3Parameter_->timefac_ * fac;
 
+        double h_k= 0.4/28.0;
+
+        //      stabfac      = nitsche_stab * visceff_ * meas_surface / meas_partial_volume;
+        //      stabfac_conv      = nitsche_stab_conv * meas_surface / meas_partial_volume;
+        stabfac = nitsche_stab * visceff_ / h_k;
+        stabfac_conv = nitsche_stab_conv / h_k;
+
+        //=================================================================================
+        // definition in Burman 2007
+        // Interior penalty variational multiscale method for the incompressible Navier-Stokes equation:
+        // Monitoring artificial dissipation
+        /*
+        //      viscous_Nitsche-part, convective inflow part
+        //                |                 |
+        //                    mu                                  /              \
+        //  max( gamma_Nit * ----  , | u_h * n | )       *       |  u_h - u, v_h  |
+        //                    h_k                                 \              /
+        */
+
+        stabfac = max(nitsche_stab*visceff_/h_k, fabs(velint_.Dot(normal)));
+        stabfac_conv = nitsche_stab_conv * max(1.0, max(fabs(velint_.Dot(normal)) , visceff_ / h_k) );
+        //=================================================================================
 
 
       if(fluidfluidcoupling)
@@ -13830,54 +13915,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 
 
 
-      //-----------------------------------------------------------------------------------
-
-      double stabfac = 0.0;         // Nitsche stabilization factor
-      double stabfac_conv = 0.0;    // Nitsche convective stabilization factor
-
-
-      // define stabilization parameters and mortaring weights
-
-//      double visceff_max = max(visceff_1, visceff_2);
-      double visceff_max = visceff_;
-
-      double kappa1 = 1.0;      // Xfluid-sided mortaring
-
-      if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring)
-      {
-        if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
-
-        stabfac = nitsche_stab * visceff_max * meas_surface / meas_partial_volume;
-        stabfac_conv = nitsche_stab_conv * meas_surface / meas_partial_volume;
-
-        kappa1 = 1.0;
-      }
-      else if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
-      {
-        // get element diameter
-        double hk_emb = 0.0;
-        emb->element_length(hk_emb);
-
-        if(hk_emb < 1e-006) dserror("element length is smaller than 1e-006");
-        stabfac = nitsche_stab * visceff_max /hk_emb;
-        stabfac_conv = nitsche_stab_conv * hk_emb;
-
-        kappa1 = 0.0;
-      }
-      else if(coupling_strategy == INPAR::XFEM::Two_Sided_Mortaring)
-      {
-        if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
-        stabfac = nitsche_stab * visceff_max * meas_surface / meas_partial_volume;
-        stabfac_conv = nitsche_stab_conv * meas_surface / meas_partial_volume;
-
-        kappa1 = 0.5;
-      }
-      else dserror("coupling strategy not known");
-
-      if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
-
-      double kappa2 = 1.0-kappa1;
-
 
 
       //-----------------------------------------------------------------------------------
@@ -13994,6 +14031,57 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
           double press = funct_.Dot(epreaf);
 
           const double timefacfac = f3Parameter_->timefac_ * fac;
+
+
+          //-----------------------------------------------------------------------------------
+
+          double stabfac = 0.0;         // Nitsche stabilization factor
+          double stabfac_conv = 0.0;    // Nitsche convective stabilization factor
+
+
+          // define stabilization parameters and mortaring weights
+          double visceff_max = visceff_;
+
+          double kappa1 = 1.0;      // Xfluid-sided mortaring
+
+          if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring)
+          {
+            if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
+
+            stabfac = nitsche_stab * visceff_max * meas_surface / meas_partial_volume;
+            stabfac_conv = nitsche_stab_conv * meas_surface / meas_partial_volume;
+
+            kappa1 = 1.0;
+          }
+          else if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
+          {
+            // get element diameter
+            double hk_emb = 0.0;
+            emb->element_length(hk_emb);
+
+            if(hk_emb < 1e-006) dserror("element length is smaller than 1e-006");
+            stabfac = nitsche_stab * visceff_max /hk_emb;
+            stabfac_conv = nitsche_stab_conv * max(1.0, max(fabs(velint_.Dot(normal)) , visceff_max /hk_emb) );
+
+            kappa1 = 0.0;
+          }
+          else if(coupling_strategy == INPAR::XFEM::Two_Sided_Mortaring)
+          {
+            if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
+            stabfac = nitsche_stab * visceff_max * meas_surface / meas_partial_volume;
+            stabfac_conv = nitsche_stab_conv * meas_surface / meas_partial_volume;
+
+            kappa1 = 0.5;
+          }
+          else dserror("coupling strategy not known");
+
+          if( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
+
+          double kappa2 = 1.0-kappa1;
+
+
+
+
 
 
 

@@ -18,6 +18,7 @@ Maintainer: Andreas Ehrl
 
 #include "fluid3_boundary_impl.H"
 #include "fluid3_weak_dbc.H"
+#include "fluid3_internalfaces_stabilization.H"
 #include "fluid3_ele_impl_utils.H"
 
 #include "../drt_inpar/inpar_fluid.H"
@@ -116,7 +117,6 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<d
     instance = new Fluid3BoundaryImpl<distype>();
   return instance;
 }
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -135,6 +135,170 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
   f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateInternalFacesUsingNeighborData(
+    DRT::ELEMENTS::Fluid3Boundary*       bele,
+    DRT::ELEMENTS::Fluid3*               ele1,
+    DRT::ELEMENTS::Fluid3*               ele2,
+    std::vector<int>&                    nds1,
+    std::vector<int>&                    nds2,
+    ParameterList&                       params,
+    DRT::Discretization&                 discretization,
+    RCP<LINALG::SparseOperator>          systemmatrix1,
+    RCP<LINALG::SparseOperator>          systemmatrix2,
+    RCP<Epetra_Vector>                   systemvector1,
+    RCP<Epetra_Vector>                   systemvector2,
+    RCP<Epetra_Vector>                   systemvector3)
+{
+  //TODO: This function could be implemented in DRT::Discretization ...
+
+  if (!discretization.Filled()) dserror("FillComplete() was not called");
+  if (!discretization.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseVector elevector1;
+
+  // get boundary element location vector and ownerships
+  vector<int> lm;
+  vector<int> lmowner;
+  vector<int> lmstride;
+  bele->LocationVector(discretization,lm,lmowner,lmstride);
+
+
+  DRT::Element::LocationArray la1( 1 );
+  DRT::Element::LocationArray la2( 1 );
+
+
+  // get element location vector, dirichlet flags and ownerships
+  ele1->LocationVector(discretization,nds1,la1,false);
+  ele2->LocationVector(discretization,nds2,la2,false);
+
+
+  // call the element specific evaluate method
+  int err = EvaluateInternalFaces(bele,ele1, ele2, nds1, nds2, params,discretization, lm, la1[0].lm_,la2[0].lm_,elematrix1, elevector1);
+  if (err) dserror("error while evaluating elements");
+
+  // assembly to all parent dofs even if we just integrated
+  // over a boundary element
+  int eid = bele->Id();
+
+  // combine the lm vectors from both parent elements (parent and neighbor)
+  vector<int> comb_lm;
+  vector<int> comb_lmstride;
+  vector<int> comb_lmowner;
+
+  comb_lm.clear();
+  comb_lmstride.clear();
+  comb_lmowner.clear();
+
+
+  // first: insert the dofs for parent element
+  if((la1[0].lm_).size() != (la1[0].lmowner_).size() ) dserror("plm and plmowner do not have the same size!");
+  for(unsigned i=0; i< (la1[0].lm_).size(); i++)
+  {
+    comb_lm.push_back((la1[0].lm_)[i]);
+    comb_lmowner.push_back((la1[0].lmowner_)[i]);
+  }
+  for(unsigned i=0; i< (la1[0].stride_).size(); i++)
+  {
+    comb_lmstride.push_back((la1[0].stride_)[i]);
+  }
+
+  // second: insert the dofs for neighbor element
+  if((la2[0].lm_).size() != (la2[0].lmowner_).size() ) dserror("nlm and nlmowner do not have the same size!");
+  for(unsigned i=0; i< (la2[0].lm_).size(); i++)
+  {
+    comb_lm.push_back((la2[0].lm_)[i]);
+    comb_lmowner.push_back((la2[0].lmowner_)[i]);
+  }
+  for(unsigned i=0; i< (la2[0].stride_).size(); i++)
+  {
+    comb_lmstride.push_back((la2[0].stride_)[i]);
+  }
+
+
+  if (assemblemat1) systemmatrix1->Assemble(eid,comb_lmstride,elematrix1,comb_lm,comb_lmowner);
+  if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,comb_lm,comb_lmowner);
+
+
+//  for(int r=0; r<2*8*4; r++)
+//  {
+//    for(int c=0; c<2*8*4; c++)
+//      systemmatrix1->Assemble(elematrix1(r,c), comb_lm[r], comb_lm[c]);
+//  }
+
+
+  return;
+
+
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                           schott 01/12|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateInternalFaces( DRT::ELEMENTS::Fluid3Boundary* bele,
+                                                                       DRT::ELEMENTS::Fluid3*         ele1,
+                                                                       DRT::ELEMENTS::Fluid3*         ele2,
+                                                                       std::vector<int>&              nds1,
+                                                                       std::vector<int>&              nds2,
+                                                                       Teuchos::ParameterList&        params,
+                                                                       DRT::Discretization&           discretization,
+                                                                       vector<int>&              lm,
+                                                                       vector<int>&              lm1,
+                                                                       vector<int>&              lm2,
+                                                                       Epetra_SerialDenseMatrix& elemat1,
+                                                                       Epetra_SerialDenseVector& elevec1
+                                                                       )
+{
+  DRT::ELEMENTS::Fluid3Boundary::ActionType act = Fluid3Boundary::none;
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action == "edge_based_stabilization")
+      act = Fluid3Boundary::edge_based_stabilization;
+  else if (action == "ghost penalty")
+      act = Fluid3Boundary::ghost_penalty;
+  else dserror("Unknown type of action for Fluid3_Boundary for internal faces: %s",action.c_str());
+
+
+  switch(act)
+  {
+  case Fluid3Boundary::edge_based_stabilization:
+  {
+
+    return DRT::ELEMENTS::Fluid3InternalFacesStabilization::Impl(bele, ele2)->EvaluateEdgeBasedStabilization(
+      bele,
+      ele1,
+      ele2,
+      params,
+      discretization,
+      lm,
+      lm1,
+      lm2,
+      elemat1,
+      elevec1);
+    break;
+  }
+  case Fluid3Boundary::ghost_penalty:
+  {
+//    Ghost_Penalty();
+    break;
+  }
+  default:
+      dserror("Unknown type of action for Fluid3_Surface");
+  } // end of switch(act)
+
+  return 0;
 }
 
 

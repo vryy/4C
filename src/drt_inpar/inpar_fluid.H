@@ -126,6 +126,16 @@ namespace INPAR
     tautype_not_defined
   };
 
+    /// tau type for edge-oriented / continuous interior penalty stabilization
+    enum TauType_EOS_CIP
+    {
+      tau_EOS_burman_fernandez_hansbo_2006,
+      tau_EOS_braack_burman_2007,
+      tau_EOS_franca_barrenechea_valentin_wall,
+      tau_EOS_burman_fernandez,
+      tau_EOS__not_defined
+    };
+
     /// time integration scheme
     enum TimeIntegrationScheme
     {

@@ -10,25 +10,15 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "xfluid_defines.H"
-
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
-
-#include "../drt_io/io.H"
-#include "../drt_io/io_ostream0.H"
-#include "../drt_io/io_control.H"
-
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_dofset_independent.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
 
 namespace DRT
 {
   class Discretization;
+  class IndependentDofSet;
 }
 namespace LINALG
 {
@@ -45,6 +35,18 @@ namespace GEO
   {
     class VolumeCell;
   }
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace XFEM
+{
+  class XFEM_EdgeStab;
+  class FluidWizard;
+  class FluidDofSet;
 }
 
 namespace FLD
@@ -173,6 +175,10 @@ namespace FLD
       /// return the wizard
       Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
 
+      /// edge stabilization and ghost penalty object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+
+
 
       XFluid & xfluid_;
 
@@ -185,8 +191,10 @@ namespace FLD
                               std::ofstream & press_f,
                               std::ofstream & acc_f,
                               DRT::Element * actele,
+                              std::vector<int> & nds,
                               Teuchos::RCP<Epetra_Vector> vel,
-                              Teuchos::RCP<Epetra_Vector> acc = Teuchos::null);
+                              Teuchos::RCP<Epetra_Vector> acc = Teuchos::null
+);
 
       void GmshOutputVolumeCell( DRT::Discretization & discret,
                                  std::ofstream & vel_f,
@@ -395,7 +403,7 @@ namespace FLD
 
 
     // dofset for fluid output
-    DRT::IndependentDofSet       dofset_out_;
+    RCP<DRT::IndependentDofSet>    dofset_out_;
 
     // velocity pressure splitter for fluid output
     LINALG::MapExtractor      velpressplitterForOutput_;
@@ -507,6 +515,8 @@ namespace FLD
 
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
+
+    std::string fluid_stab_type_;
 
     std::string VolumeCellGaussPointBy_;
     std::string BoundCellGaussPointBy_;

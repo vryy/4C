@@ -31,7 +31,7 @@ Maintainer: Shadan Shahmiri
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   const RCP<DRT::Discretization> bgdis,
   const RCP<DRT::Discretization> embdis,
-  XFEM::FluidWizard              wizard,
+  RCP<XFEM::FluidWizard>         wizard,
   int                            step,
   enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach
   ) :
@@ -50,7 +50,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 // map of standard node ids and their dof-gids in for this time step
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
-                                                        XFEM::FluidWizard              wizard)
+                                                        RCP<XFEM::FluidWizard>         wizard)
 {
   const Epetra_Map* noderowmap = bgdis->NodeRowMap();
   // map of standard nodes and their dof-ids
@@ -62,7 +62,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
     gid = noderowmap->GID(lid);
     // get the node
     DRT::Node * node = bgdis->gNode(gid);
-    GEO::CUT::Node * n = wizard.GetNode(node->Id());
+    GEO::CUT::Node * n = wizard->GetNode(node->Id());
     if (n!=NULL) // xfem nodes
     {
       // set of volumecells which belong to the node. The size of the
@@ -97,7 +97,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
         std::vector< std::vector< int > >   nds_sets;
         DRT::Element * actele = bgdis->gElement(vc->ParentElement()->Id());
         parentelements.push_back(actele->Id());
-        GEO::CUT::ElementHandle * e = wizard.GetElement( actele );
+        GEO::CUT::ElementHandle * e = wizard->GetElement( actele );
         e->GetVolumeCellsDofSets( cell_sets, nds_sets );
 
         parenteletondsset_[actele->Id()] = nds_sets;
@@ -202,7 +202,7 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - Gmsh-output
 // -------------------------------------------------------------------
 int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
-                                                                  XFEM::FluidWizard        wizard)
+                                                                 RCP<XFEM::FluidWizard>   wizard)
 {
   // save the old maps and clear the maps for the new cut
   // (all maps are related to the background fluid)
@@ -583,6 +583,21 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
     {
 #ifdef DOFSETS_NEW
       dserror("ghost-fluid-approach just available for one dofset!");
+//      vector<int> gdofsn = iteren->second;
+//      int offset = 0;
+//      int numsets = 1;
+//      for (int set=0; set<numsets; set++)
+//      {
+//        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+//          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[0])];
+//        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+//          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[1])];
+//        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+//          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[2])];
+//        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+//          (*bgstatevn)[bgstatevn->Map().LID(gdofsn[3])];
+//        offset += 4;
+//      }
 #else
       vector<int> gdofsn = iteren->second;
       int offset = 0;

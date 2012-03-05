@@ -225,6 +225,35 @@ public:
       Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
       );
 
+// XFEM edgebased stuff
+//  void EdgeBasedStabilization(Teuchos::ParameterList & eleparams,
+//      DRT::Discretization& discret,
+//      int& itnum );
+//
+//
+//
+//  void findNeighborElement(DRT::ELEMENTS::Fluid3 * actele,
+//                           RCP<DRT::Element> surface,
+//                           bool & neighbor_found,
+//                           int & neighbor_id);
+//
+//
+//  void stabilizeStandardElement     ( DRT::AssembleStrategy& strategy,
+//                                      DRT::ELEMENTS::Fluid3 *actele,
+//                                      DRT::Discretization & discret);
+//
+//
+//  void callEdgeStabandGhostPenalty(                           bool & edge_based_stab,
+//                                                              bool & ghost_penalty,
+//                                                              RCP<DRT::Element>       surface,
+//                                                              DRT::Element * fele_1,
+//                                                              DRT::Element * fele_2,
+//                                                              std::vector<int> & nds_1,
+//                                                              std::vector<int> & nds_2,
+//                                                              DRT::Discretization &   discret,
+//                                                              DRT::AssembleStrategy&  strategy);
+
+
   /*!
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next

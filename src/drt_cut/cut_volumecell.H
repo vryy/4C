@@ -89,6 +89,9 @@ public:
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
+  void SetNodalDofSet(std::vector<int>& nds){ nodaldofset_.clear();
+                                              std::copy( nds.begin(), nds.end(), std::inserter(nodaldofset_,nodaldofset_.end()) ); }
+
   /// create integration cell of specified shape
   void NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x );
 

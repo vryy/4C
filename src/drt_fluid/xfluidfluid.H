@@ -13,16 +13,12 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../drt_lib/drt_dofset_independent.H"
-#include "fluid_utils_mapextractor.H"
-
-#include "../drt_xfem/xfem_fluidwizard.H"
-#include "../drt_xfem/xfluidfluid_timeInt.H"
-#include "../drt_xfem/xfem_fluiddofset.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace DRT
 {
   class Discretization;
+  class IndependentDofSet;
 }
 namespace LINALG
 {
@@ -39,6 +35,19 @@ namespace GEO
   {
     class VolumeCell;
   }
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace XFEM
+{
+  class XFluidFluidTimeIntegration;
+  class XFEM_EdgeStab;
+  class FluidWizard;
+  class FluidDofSet;
 }
 
 namespace FLD
@@ -169,9 +178,12 @@ namespace FLD
 
       LINALG::MapExtractor      fluidfluidvelpressplitter_;
 
+      /// edge stabilization and ghost penalty object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+
       XFluidFluid & xfluid_;
 
-      XFEM::FluidWizard wizard_;
+      Teuchos::RCP<XFEM::FluidWizard> wizard_;
 
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
@@ -459,7 +471,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    idispnp_;
 
     // dofset for bg-fluid output
-    DRT::IndependentDofSet       dofset_out_;
+    Teuchos::RCP<DRT::IndependentDofSet>       dofset_out_;
 
     // velocity pressure splitter for fluid output
     LINALG::MapExtractor      velpressplitterForBoundary_;
@@ -538,6 +550,7 @@ namespace FLD
     //! @name XFEM coupling specific parameters
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
+    std::string fluid_stab_type_;                             // which type of fluid stabilization
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;            // xfluidfluid time integration approach
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method

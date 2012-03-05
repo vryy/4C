@@ -85,6 +85,8 @@ public:
   int NumDofSets() const { return DofCellSets().size(); }
 #else  
   int NumDofSets() const { return DofSets().size(); }
+//  int NumDofSets() const { if (DofSets().size() > 1) return 1;
+//                           else return DofSets().size(); }
 #endif
 
 private:

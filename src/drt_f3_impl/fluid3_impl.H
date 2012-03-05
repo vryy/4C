@@ -914,6 +914,14 @@ namespace ELEMENTS
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
+    //! Compute element matrix entries: convective divergence stabilization for XFEM
+    void ConvDivStab(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,         ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nen_> &               velforce,        ///< rhs forces velocity
+        const double &                            timefacfac,      ///< = timefac x fac
+        const double &                            rhsfac           ///< right-hand-side factor for residuals
+        );
+
     //! Compute element matrix entries: cross stress stabilization
     void CrossStressStab(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
