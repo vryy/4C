@@ -1698,20 +1698,15 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   const double voldelta = targetvol - currentvol;
 
   if (Comm().MyPID() == 0)
-    cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << flush;
+    std::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << std::flush;
 
   // compute negative volume of discretization on this processor
   double myarea = interfacehandle_->ComputeSurface();
   double sumarea = 0.0;
 
-  cout << "Proc " << Comm().MyPID() << " myarea " << myarea << endl;
-
   // sum volumes on all processors
   // remark: ifndef PARALLEL sumvolume = myvolume
   Comm().SumAll(&myarea,&sumarea,1);
-
-  if (Comm().MyPID() == 0)
-    cout << "sumarea " << sumarea << endl;
 
   // This is a guess on how thick a layer needs to be added to the surface of the minus domain.
   // Due to $ \grad \phi \approx 1 $ this also happens to be the value that needs to be subtracted
@@ -1719,22 +1714,19 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   // called after a reinitialization.
   const double thickness = -voldelta / sumarea;
 
-  if (Comm().MyPID() == 0)
-    cout << "thickness " << thickness << endl;
+  Teuchos::RCP<Epetra_Vector> phin = ScaTraField().Phin();
 
-  RCP<Epetra_Vector> phin = ScaTraField().Phin();
-
-  RCP<Epetra_Vector> one = rcp(new Epetra_Vector(phin->Map()));
+  Teuchos::RCP<Epetra_Vector> one = Teuchos::rcp(new Epetra_Vector(phin->Map()));
   one->PutScalar(1.0);
 
   if (phin != Teuchos::null)
     phin->Update(thickness, *one, 1.0);
 
-  RCP<Epetra_Vector> phinp = ScaTraField().Phinp();
+  Teuchos::RCP<Epetra_Vector> phinp = ScaTraField().Phinp();
   if (phinp != Teuchos::null)
     phinp->Update(thickness, *one, 1.0);
 
-  RCP<Epetra_Vector> phinm = ScaTraField().Phinm();
+  Teuchos::RCP<Epetra_Vector> phinm = ScaTraField().Phinm();
   if (phinm != Teuchos::null)
     phinm->Update(thickness, *one, 1.0);
 
@@ -1749,7 +1741,7 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   interfacehandle_->UpdateInterfaceHandle();
 
   if (Comm().MyPID() == 0)
-    cout << "done" << endl;
+    std::cout << "done" << std::endl;
 
   return;
 }
@@ -3089,11 +3081,11 @@ void COMBUST::Algorithm::Redistribute()
       //--------------------------------------------------------------------------------------
       {
         // the rowmap will become the new distribution of nodes
-        const Epetra_BlockMap rntmp = nodegraph->RowMap();
+        const Epetra_BlockMap rntmp = newnodegraph->RowMap();
         Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,Comm());
 
         // the column map will become the new ghosted distribution of nodes
-        const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
+        const Epetra_BlockMap Mcntmp = newnodegraph->ColMap();
         Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,Comm());
 
         Teuchos::RCP<Epetra_Map> elerowmap;

@@ -1733,16 +1733,28 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
       SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz ) nsd_real = 2;
 
   // cout reconstruction type
-  if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx)
-    std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dx... " << std::flush;
-  if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy)
-    std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dy... " << std::flush;
-  if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz)
-    std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dz... " << std::flush;
-  if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D)
-    std::cout << "\n---  \t reconstruction with:\t LeastSquares_3D... " << std::flush;
-  //if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
-  //  std::cout << "\n---  \t reconstruction with:\t MeanValue... " << std::flush;
+  if (fluiddis_->Comm().MyPID() == 0)
+  {
+    switch (SmoothGradPhi)
+    {
+    case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx:
+      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dx... " << std::flush;
+      break;
+    case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy:
+      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dy... " << std::flush;
+      break;
+    case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz:
+      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dz... " << std::flush;
+      break;
+    case INPAR::COMBUST::smooth_grad_phi_leastsquares_3D:
+      std::cout << "\n---  \t reconstruction with:\t LeastSquares_3D... " << std::flush;
+      break;
+    default:
+      break;
+    }
+    //if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
+    //  std::cout << "\n---  \t reconstruction with:\t MeanValue... " << std::flush;
+  }
 
   // switch: real dimension of reconstruction, is real dimension 2D or 3D?
   switch (nsd_real)
@@ -1755,7 +1767,8 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
     break;
   default:
     dserror("wrong nsd_real");
-  };
+    break;
+  }
 
   if (gfuncdis_->Comm().MyPID()==0)
     std::cout << "done" << std::endl;
