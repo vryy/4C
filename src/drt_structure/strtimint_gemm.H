@@ -153,10 +153,12 @@ namespace STR
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
+    //! \author mayr
     void PredictConstVelConsistAcc();
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
+    //! \author mayr.mt
     void PredictConstAcc();
 
     //! Create force residual #fres_ and ist stiffness #stiff_

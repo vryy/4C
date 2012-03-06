@@ -125,6 +125,7 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
       message="midpoint-like";
 
       // the conventional explicit second order predictor (assuming constant dt)
+      // also known as leapfrog integration
       /*
       //                        /          n    n-1 \
       //       n+1    n        |      n   u  - u     |
@@ -252,6 +253,7 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     else if(predictor=="explicit_second_order_midpoint")
     {
       // the conventional explicit second order predictor (assuming constant dt)
+      // also known as leapfrog integration
       /*
       //                        /          n    n-1 \
       //       n+1    n        |      n   u  - u     |

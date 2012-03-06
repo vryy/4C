@@ -161,13 +161,15 @@ namespace STR
 
     //! Consistent predictor with constant velocities,
     //! extrapolated displacements and consistent accelerations
+    //! \author mayr.mt
     void PredictConstVelConsistAcc();
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
+    //! \author mayr
     void PredictConstAcc();
 
-    //! Create force residual #fres_ and ist stiffness #stiff_
+    //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(bool predict = false);
 
     void PoroEvaluateForceStiffResidual(bool predict = false){dserror("not implemented"); return;};
