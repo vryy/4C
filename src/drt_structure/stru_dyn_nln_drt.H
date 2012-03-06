@@ -47,6 +47,7 @@ extern "C"
 #endif
 
 void dyn_nlnstructural_drt();
+void caldyn_drt();
 
 #ifdef __cplusplus
 }
