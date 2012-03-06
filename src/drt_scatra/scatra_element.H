@@ -1,7 +1,7 @@
 /*!
 \file scatra_element.H
 
-\brief A C++ wrapper for the scalar transport element
+\brief The scalar transport element
 
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
@@ -65,16 +65,13 @@ private:
 };
 
 /*!
-\brief A C++ wrapper for the Transport element
+\brief The Transport element
 
 \author g.bau (bauer@lnm.mw.tum.de)
 */
 class Transport : public DRT::Element
 {
 public:
-
-  //! @name Friends
-  friend class TransportBoundary;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -209,7 +206,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    dsassert(numdofpernode_!=-1,"NumDofPerNode is -1");
+    if(numdofpernode_<1) dserror("NumDofPerNode is < 1");
     return numdofpernode_;
   }
 
@@ -355,10 +352,10 @@ public:
 
   Following implementations of the element are allowed:
   <pre>
-    o Evaluation of condif system matrix and residual for the One-Step-Theta or BDF2
+    o Evaluation of system matrix and residual for the One-Step-Theta or BDF2
       method
 
-    o Evaluation of condif system matrix and residual for the stationary fluid solver
+    o Evaluation of system matrix and residual for the stationary fluid solver
   </pre>
 
   \param params (in/out): ParameterList for communication between control routine
@@ -464,11 +461,11 @@ private:
 /*!
 \brief An element representing a boundary element of a Transport element
 
-\note This is a pure boundary condition element. It's only
+\note This is a pure boundary condition element. Its only
       purpose is to evaluate certain boundary conditions that might be
       adjacent to a parent Transport element.
 
-\author bauer (bauer@lnm.mw.tum.de)
+\author g.bauer (bauer@lnm.mw.tum.de)
 */
 class TransportBoundary : public DRT::Element
 {
@@ -565,7 +562,7 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
 
   /*!
