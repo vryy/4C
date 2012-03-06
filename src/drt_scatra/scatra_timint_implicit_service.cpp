@@ -1994,18 +1994,21 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     break;
   case INPAR::SCATRA::calcerror_Kwok_Wu:
   {
-    //------------------------------------------------ Kwok and Wu,1995
-    //   Reference:
+    //   References:
+
     //   Kwok, Yue-Kuen and Wu, Charles C. K.
     //   "Fractional step algorithm for solving a multi-dimensional
     //   diffusion-migration equation"
     //   Numerical Methods for Partial Differential Equations
     //   1995, Vol 11, 389-397
 
-    // create the parameters for the discretization
-    ParameterList p;
+    //   G. Bauer, V. Gravemeier, W.A. Wall, A 3D finite element approach for the coupled
+    //   numerical simulation of electrochemical systems and fluid flow,
+    //   International Journal for Numerical Methods in Engineering, 86
+    //   (2011) 1339–1359. DOI: 10.1002/nme.3107
 
-    // parameters for the elements
+    // create the parameters for the error calculation
+    ParameterList p;
     p.set("action","calc_error");
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -2033,7 +2036,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     if (myrank_ == 0)
     {
-      printf("\nL2_err for Kwok and Wu:\n");
+      printf("\nL2_err for Kwok and Wu (time = %f):\n", time_);
       printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }
@@ -2046,10 +2049,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     //   numerical simulation of electrochemical systems and fluid flow,
     //   International Journal for Numerical Methods in Engineering, 2011
 
-    // create the parameters for the discretization
+    // create the parameters for the error calculation
     ParameterList p;
-
-    // parameters for the elements
     p.set("action","calc_error");
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -2077,7 +2078,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     if (myrank_ == 0)
     {
-      printf("\nL2_err for concentric cylinders:\n");
+      printf("\nL2_err for concentric cylinders (time = %f):\n", time_);
       printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }
@@ -2087,10 +2088,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   {
     // compute L2 norm of electroneutrality condition
 
-    // create the parameters for the discretization
+    // create the parameters for the error calculation
     ParameterList p;
-
-    // parameters for the elements
     p.set("action","calc_error");
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -2116,7 +2115,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     if (myrank_ == 0)
     {
-      printf("\nL2_err for electroneutrality:\n");
+      printf("\nL2_err for electroneutrality (time = %f):\n", time_);
       printf(" Deviation from ENC: %15.8e\n\n",err);
     }
   }
@@ -2336,12 +2335,12 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       }
       // end loop over electrode kinetics
-#if 0
+#if 1
       if (cond.size()>=2)
       {
         if(myrank_==0)
         {
-          cout<<"  cell potential difference = "<<potdiff<<endl;
+          cout<<"  cell potential difference = "<<potdiffcell<<endl;
           cout<<"  bulk potential difference = "<<potdiffbulk<<endl;
         }
         if (abs(actualcurrent) > EPS10)
