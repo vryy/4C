@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 /* header for DRT style input */
-#include "../drt_lib/global_inp_control2.H"
+#include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ale/ale_dyn.H"

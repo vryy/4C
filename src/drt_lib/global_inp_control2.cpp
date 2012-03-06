@@ -12,21 +12,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <string>
 
-#include "global_inp_control2.H"
 #include "drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "drt_inputreader.H"
-#include "standardtypes_cpp.H"
-
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*

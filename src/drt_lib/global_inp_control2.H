@@ -15,20 +15,9 @@ Maintainer: Michael Gee
 #ifndef GLOBAL_INP_CONTROL2_H
 #define GLOBAL_INP_CONTROL2_H
 
-
-/* headers and prototypes of functions also accessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include <string>
 
 void ntainp_ccadiscret(std::string& inputfile_name,std::string& outputfile_kenner,std::string& restartfile_kenner);
-void dyn_nlnstructural_drt();
-void caldyn_drt();
-
-#ifdef __cplusplus
-}
-#endif
 
 
 
