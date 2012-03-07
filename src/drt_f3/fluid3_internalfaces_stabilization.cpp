@@ -3135,8 +3135,9 @@ void DRT::ELEMENTS::Fluid3EdgeBasedStabilization::ComputeStabilizationParams(
   //                                               ghost penalty
   //--------------------------------------------------------------------------------------------------------------
 
+  gamma_grad = 1.0;
 //  tau_grad = gamma_grad*kinvisc * density * p_hk_;
-  tau_grad = 0.00001;
+  tau_grad = gamma_grad*0.00001;
 
 
 
