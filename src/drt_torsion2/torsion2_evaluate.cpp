@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TORSION2
 #ifdef CCADISCRET
 
 #include "torsion2.H"
@@ -463,4 +462,3 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass( vector<double>& disp,
 } // DRT::ELEMENTS::Torsion2::t2_nlnstiffmass
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TORSION2

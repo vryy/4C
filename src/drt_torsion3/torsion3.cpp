@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_TORSION3
 #ifdef CCADISCRET
 
 #include "torsion3.H"
@@ -197,4 +196,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TORSION3

@@ -10,7 +10,6 @@ Maintainer: Kei Mueller
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TRUSS3
 #ifdef CCADISCRET
 
 #include "trusslm.H"
@@ -433,4 +432,3 @@ int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3

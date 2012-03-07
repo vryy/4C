@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_BEAM3
 #ifdef CCADISCRET
 
 #include "beam3.H"
@@ -532,4 +531,3 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM3

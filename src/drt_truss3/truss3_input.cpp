@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_TRUSS3
 #ifdef CCADISCRET
 
 #include "truss3.H"
@@ -112,4 +111,3 @@ bool DRT::ELEMENTS::Truss3::ReadElement()
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3

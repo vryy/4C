@@ -22,13 +22,8 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif
 
 
 /*----------------------------------------------------------------------*
@@ -1168,18 +1163,14 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
   const DRT::ElementType & eot1 = element1_->ElementType();
   const DRT::ElementType & eot2 = element2_->ElementType();
 
-#ifdef D_BEAM3
   if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
   if ( eot2 == DRT::ELEMENTS::Beam3Type::Instance() )
     MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
   if ( eot1 == DRT::ELEMENTS::Beam3iiType::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
   if ( eot2 == DRT::ELEMENTS::Beam3iiType::Instance() )
     MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element2_))->Iyy();
-#endif  // #ifdef D_BEAM3II
   
   // compute radii of both elements
   double radius_ele1=0;

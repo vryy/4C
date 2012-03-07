@@ -26,17 +26,10 @@ Maintainer: Christian Cyron
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_octtree.H"
 
-
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif
-#ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
 #include "../drt_trusslm/trusslm.H"
-#endif
 
 #include "../drt_torsion3/torsion3.H"
 
@@ -634,8 +627,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
           bool kinked = CheckForKinkedVisual(element->Id());
 
           const DRT::ElementType & eot = element->ElementType();
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
           if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
               eot==DRT::ELEMENTS::Beam3iiType::Instance())
           {
@@ -656,11 +647,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             else
               GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
-          else
-#endif
-#endif
-#ifdef D_TRUSS3
-          if (eot == DRT::ELEMENTS::Truss3Type::Instance())
+          else if (eot == DRT::ELEMENTS::Truss3Type::Instance())
           {
             if (!kinked)
             {
@@ -699,10 +686,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             color = 0.5;
             GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
           }
-          else
-#endif
-#ifdef D_TORSION3
-          if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
+          else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
           {
             double beadcolor = 0.75;
             for (int j=0; j<element->NumNode(); j++)
@@ -713,14 +697,12 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             }
           }
           else
-#endif
           {
           }
         }
         //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
         else
         {
-#ifdef D_TRUSS3
           const DRT::ElementType & eot = element->ElementType();
           if(eot==DRT::ELEMENTS::TrussLmType::Instance())
           {
@@ -747,7 +729,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
           }
           else
-#endif
         		GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
         }
       }
@@ -830,21 +811,14 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   {
     // draw colored lines between two nodes of a beam3 or truss3 element (meant for filaments/crosslinks/springs)
     const DRT::ElementType & eot = element->ElementType();
-#ifdef D_BEAM3
     if (element->ElementType().Name() == "Beam3Type")
       dotline = eot == DRT::ELEMENTS::Beam3Type::Instance();
-#endif
-#ifdef D_BEAM3II
     if(element->ElementType().Name()=="Beam3iiType")
     dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
-#endif
-#ifdef D_TRUSS3
     if (element->ElementType().Name() == "Truss3Type")
       dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
     if (element->ElementType().Name() == "TrussLmType")
       dotline = dotline or eot == DRT::ELEMENTS::TrussLmType::Instance();
-#endif
-#ifdef D_TORSION3
     // draw spheres at node positions ("beads" of the bead spring model)
     if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
     {
@@ -857,7 +831,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
       }
     }
-#endif
     /* determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
      * variable triggers different visualizations.*/
     kinked = CheckForKinkedVisual(element->Id());
@@ -1618,20 +1591,13 @@ void StatMechManager::GmshWedge(const int& n,
   if(!ignoreeleid)
   {
 		const DRT::ElementType & eot = thisele->ElementType();
-#ifdef D_BEAM3II
-#ifdef D_BEAM3
     if(eot == DRT::ELEMENTS::Beam3Type::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-    else
-  #endif
-  #endif
-  #ifdef D_TRUSS3
-    if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
+    else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
       radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
     else
-  #endif
       dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
     // case: crosslinker
     if(thisele->Id()>basisnodes_)
@@ -4146,8 +4112,6 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
       //check type of element (orientation triads are not for all elements available in the same way
       DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
       //if element is of type beam3ii get nodal triad
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
       if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
       {
         DRT::ELEMENTS::Beam3ii* filele = NULL;
@@ -4173,8 +4137,6 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
       }
       else
         dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
-#endif
-#endif
     }
     //export nodaltriadsrow to col map variable
     nodaltriadscol.Import(nodaltriadsrow,importer,Insert);

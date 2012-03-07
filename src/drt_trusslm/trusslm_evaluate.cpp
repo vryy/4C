@@ -11,7 +11,6 @@ Maintainer: Kei Mueller
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TRUSS3
 #ifdef CCADISCRET
 
 #include "trusslm.H"
@@ -1143,4 +1142,3 @@ return;
 }//DRT::ELEMENTS::TrussLm::NodeShift
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3

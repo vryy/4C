@@ -10,9 +10,6 @@ Maintainer: Christian Cyron
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
-// line in order to swith on and off by comment in defines.drt
-#ifdef D_TRUSS3
-
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
@@ -497,4 +494,3 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 #endif  // #ifndef TRUSS3_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3

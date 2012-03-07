@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TORSION3
 #ifdef CCADISCRET
 
 #include "torsion3.H"
@@ -551,4 +550,3 @@ return;
 }//DRT::ELEMENTS::Torsion3::NodeShift
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TORSION3

@@ -23,12 +23,8 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_sparsematrix.H"
 #include <Teuchos_Time.hpp>
 
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -760,21 +756,16 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
 
     const DRT::ElementType & eot = thisele->ElementType();
 
-#ifdef D_BEAM3
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-      {
-        DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
-        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
+    {
+      DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
+      eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+    }
     if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-      {
-        DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<DRT::ELEMENTS::Beam3ii*>(thisele);
-        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
-#endif  // #ifdef D_BEAM3II
-
+    {
+      DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<DRT::ELEMENTS::Beam3ii*>(thisele);
+      eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+    }
     
     // if current radius is larger than maximum radius -> update
     if (eleradius > maxeleradius) maxeleradius = eleradius;
@@ -1174,8 +1165,6 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
         cout << "Penetration to large, choose higher penalty parameter!" << endl;
       }
 #ifdef RELCONSTRTOL
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
       // Retrieve beam radii
       std::vector<double> radii(2,0.0);
       for(int k=0; k<(int)radii.size();k++)
@@ -1197,8 +1186,6 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
       double smallerradius = min(radii[0], radii[1]);
 
       gapvector[j] = pairs_[i]->GetGap()/smallerradius;
-#endif
-#endif
 #else
       gapvector[j] = pairs_[i]->GetGap();
 #endif
@@ -1442,20 +1429,16 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   // get radius of element
   const DRT::ElementType & eot = thisele->ElementType();
 
-#ifdef D_BEAM3
-    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
-    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
-        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-      }
-#endif  // #ifdef D_BEAM3II
+  if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
+  if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
+    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+  }
   
   // declaring variable for color of elements
   double color = 1.0;   
@@ -1617,20 +1600,16 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   // get radius of element
   const DRT::ElementType & eot = thisele->ElementType();
 
-#ifdef D_BEAM3
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
       {
         const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
         eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
       }
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
     if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
       {
         const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
         eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
       }
-#endif  // #ifdef D_BEAM3II
 
   // declaring variable for color of elements
   double color = 1.0;   

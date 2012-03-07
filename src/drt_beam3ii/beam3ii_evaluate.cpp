@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_BEAM3II
 #ifdef CCADISCRET
 
 
@@ -1647,4 +1646,3 @@ return;
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM3

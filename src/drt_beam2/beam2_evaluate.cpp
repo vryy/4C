@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_BEAM2
 #ifdef CCADISCRET
 
 #include "beam2.H"
@@ -895,5 +894,4 @@ return;
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM2
 

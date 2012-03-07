@@ -31,18 +31,10 @@ Maintainer: Christian Cyron
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 
-
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif
-#ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
 #include "../drt_trusslm/trusslm.H"
-#endif
-
 #include "../drt_torsion3/torsion3.H"
 
 #include <iostream>
@@ -631,9 +623,6 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 {
-
-#ifdef D_BEAM3
-
   DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*> (element);
 
   //3D beam elements are embeddet into R^3:
@@ -698,8 +687,6 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     }
-
-#endif
 }
 
 /*------------------------------------------------------------------------*
@@ -710,9 +697,6 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
 {
-
-#ifdef D_BEAM3II
-
   DRT::ELEMENTS::Beam3ii* beam = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element);
 
   //3D beam elements are embeddet into R^3:
@@ -777,8 +761,6 @@ void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
     default:
     dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
-
-#endif
 }
 
 /*------------------------------------------------------------------------*
@@ -789,9 +771,6 @@ void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 {
-
-#ifdef D_TRUSS3
-
   DRT::ELEMENTS::Truss3* truss = dynamic_cast<DRT::ELEMENTS::Truss3*> (element);
 
   //3D truss elements are embeddet into R^3:
@@ -824,8 +803,6 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
   /*note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file*/
   truss->SetUpReferenceGeometry(xrefe, true);
-
-#endif
 }
 
 /*------------------------------------------------------------------------*
@@ -836,9 +813,6 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
 {
-
-#ifdef D_TRUSS3
-
   DRT::ELEMENTS::TrussLm* truss = dynamic_cast<DRT::ELEMENTS::TrussLm*> (element);
 
   //3D truss elements are embeddet into R^3:
@@ -871,8 +845,6 @@ void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
 
   //note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file
   truss->SetUpReferenceGeometry(xrefe, true);
-
-#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -972,104 +944,107 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 
   for(int part=0; part<crosslinkpartitions.MyLength(); part++)
   {
-    // i.e. numbond==2.0
-    if(crosslinkpartitions[0][part]<-0.9)
-      continue;
-
-    double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
-    double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
-    // determine search radius in accordance to bonding status (only without helical binding structure)
-    // reason for this: we set the crosslinker position of molecules with numbond>0 on a node, i.e. on a binding spot of a filement/linker
-    // So, the maximal radius is now R_LINK-DeltaR_LINK assuming the linker can bond in any direction.
-    // When numbond==0 -> crosslinker position is thought to be in the center of a sphere with the adjusted search radii rmin and rmax.
-    // In case of a helical binding spot structure, we exactly know the position of the singly bound linker. Therefore, no multiplication with 2.
-    if ((int)numbond[part]>0.9 && !DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
+    // i.e. numbond!=2.0
+    if(crosslinkpartitions[0][part]>-0.9)
     {
-      rmin *= 2.0;
-      rmax *= 2.0;
-    }
+      double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      // determine search radius in accordance to bonding status (only without helical binding structure)
+      // reason for this: we set the crosslinker position of molecules with numbond>0 on a node, i.e. on a binding spot of a filement/linker
+      // So, the maximal radius is now R_LINK-DeltaR_LINK assuming the linker can bond in any direction.
+      // When numbond==0 -> crosslinker position is thought to be in the center of a sphere with the adjusted search radii rmin and rmax.
+      // In case of a helical binding spot structure, we exactly know the position of the singly bound linker. Therefore, no multiplication with 2.
+      if ((int)numbond[part]>0.9 && !DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
+      {
+        rmin *= 2.0;
+        rmax *= 2.0;
+      }
 
-    // first component
-    for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
-      if(ilayer>-1 && ilayer<searchres_->at(0))
-        for(int i=0; i<(int)(*bspotinpartition)[0][ilayer].size(); i++)
-        {
-          int tmplid = (int)(*bspotinpartition)[0][ilayer][i];
-          // second component
-          for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
-            if(jlayer>-1 && jlayer<searchres_->at(1))
-              for(int j=0; j<(int)(*bspotinpartition)[1][jlayer].size(); j++)
-                if((*bspotinpartition)[1][jlayer][j]==tmplid)
-                {
-                  //third component
-                  for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
-                    if(klayer>-1 && klayer<searchres_->at(2))
-                      for(int k=0; k<(int)(*bspotinpartition)[2][klayer].size(); k++)
-                        if((*bspotinpartition)[2][klayer][k]==tmplid)
-                        {
-                          // get the current node position for the node with LID==tmplid
-                          const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
-                          // calculate distance crosslinker-node
-                          LINALG::Matrix<3, 1> difference;
-                          for (int l=0; l<(int)difference.M(); l++)
-                            difference(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
-                          // 1. criterion: distance between linker and binding spot within given interval
-                          if(difference.Norm2()<rmax && difference.Norm2()>rmin)
+      // first component
+      for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
+        if(ilayer>-1 && ilayer<searchres_->at(0))
+          for(int i=0; i<(int)(*bspotinpartition)[0][ilayer].size(); i++)
+          {
+            int tmplid = (int)(*bspotinpartition)[0][ilayer][i];
+            // second component
+            for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
+              if(jlayer>-1 && jlayer<searchres_->at(1))
+                for(int j=0; j<(int)(*bspotinpartition)[1][jlayer].size(); j++)
+                  if((*bspotinpartition)[1][jlayer][j]==tmplid)
+                  {
+                    //third component
+                    for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
+                      if(klayer>-1 && klayer<searchres_->at(2))
+                        for(int k=0; k<(int)(*bspotinpartition)[2][klayer].size(); k++)
+                          if((*bspotinpartition)[2][klayer][k]==tmplid)
                           {
-                            // further calculations in case of helical binding spot geometry
-                            if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+                            // get the current node position for the node with LID==tmplid
+                            const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
+                            // calculate distance crosslinker-node
+                            LINALG::Matrix<3, 1> difference;
+                            for (int l=0; l<(int)difference.M(); l++)
+                              difference(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
+                            // 1. criterion: distance between linker and binding spot within given interval
+                            if(difference.Norm2()<rmax && difference.Norm2()>rmin)
                             {
-                              // 2. criterion: linker has to lie in the oriented cone with peak "binding spot location"
-                              // first and second triad vectors (tangent and normal)
-                              LINALG::Matrix<3,1> firstdir;
-                              LINALG::Matrix<3,1> bspotvec;
-                              // retrieve tangential and normal vector from binding spot quaternions
+                              // further calculations in case of helical binding spot geometry and singly bound crosslinkers
+                              // note: a singly-bound crosslinker is already oriented if helicality is assumed. Thus below.
+                              // Free linkers are much more flexible in their choice of a binding spot since they can translate and
+                              // rotate freely. Thus, even if helicality is assumed, the simple proximity criterion holds.
+                              if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT") && numbond[part]>0.9)
                               {
-                                LINALG::Matrix<3,3> bspottriad;
-                                // auxiliary variable for storing a triad in quaternion form
-                                LINALG::Matrix<4, 1> qnode;
-                                // triad of node on first filament which is affected by the new crosslinker
-                                for (int l=0; l<4; l++)
-                                  qnode(l) = bspottriadscol[l][tmplid];
-                                LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
-                                for (int l=0; l<(int)bspottriad.M(); l++)
+                                // 2. criterion: linker has to lie in the oriented cone with peak "binding spot location"
+                                // first and second triad vectors (tangent and normal)
+                                LINALG::Matrix<3,1> firstdir;
+                                LINALG::Matrix<3,1> bspotvec;
+                                // retrieve tangential and normal vector from binding spot quaternions
                                 {
-                                  firstdir(l) = bspottriad(l,0);
-                                  bspotvec(l) = bspottriad(l,1);
+                                  LINALG::Matrix<3,3> bspottriad;
+                                  // auxiliary variable for storing a triad in quaternion form
+                                  LINALG::Matrix<4, 1> qnode;
+                                  // triad of node on first filament which is affected by the new crosslinker
+                                  for (int l=0; l<4; l++)
+                                    qnode(l) = bspottriadscol[l][tmplid];
+                                  LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+                                  for (int l=0; l<(int)bspottriad.M(); l++)
+                                  {
+                                    firstdir(l) = bspottriad(l,0);
+                                    bspotvec(l) = bspottriad(l,1);
+                                  }
+                                }
+                                // rotation matrix around tangential vector by given angle
+                                RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[tmplid]);
+                                // linker position
+                                LINALG::Matrix<3,1> crossbspotdiff;
+                                for(int l=0; l<(int)crossbspotdiff.M(); l++)
+                                  crossbspotdiff(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
+                                // line parameter of the intersection point of the line through the binding spot with the orientation of the binding spot.
+                                // a)lambda must be larger than zero in order to lie within the cone
+                                double lambda = -(crossbspotdiff.Dot(bspotvec))/(bspotvec.Dot(bspotvec));
+                                if(lambda>0)
+                                {
+                                  difference.Scale(1.0/difference.Norm2());
+                                  // b) the angle between the binding spot orientation and the vector between bspot and crosslinker must be smaller than PHIBSPOT
+                                  //    Only then does the crosslinker lie within the cone
+                                  if(acos(fabs(bspotvec.Dot(difference)))<statmechparams_.get<double>("PHIBSPOT", 0.524))
+                                    neighbournodes[part].push_back(tmplid);
                                 }
                               }
-                              // rotation matrix around tangential vector by given angle
-                              RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[tmplid]);
-                              // linker position
-                              LINALG::Matrix<3,1> crossbspotdiff;
-                              for(int l=0; l<(int)crossbspotdiff.M(); l++)
-                                crossbspotdiff(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
-                              // line parameter of the intersection point of the line through the binding spot with the orientation of the binding spot.
-                              // a)lambda must be larger than zero in order to lie within the cone
-                              double lambda = -(crossbspotdiff.Dot(bspotvec))/(bspotvec.Dot(bspotvec));
-                              if(lambda>0)
-                              {
-                                difference.Scale(1.0/difference.Norm2());
-                                // b) the angle between the binding spot orientation and the vector between bspot and crosslinker must be smaller than PHIBSPOT
-                                //    Only then does the crosslinker lie within the cone
-                                if(acos(fabs(bspotvec.Dot(difference)))<statmechparams_.get<double>("PHIBSPOT", 0.524))
-                                  neighbournodes[part].push_back(tmplid);
-                              }
+                              else // only difference criterion applied
+                                neighbournodes[part].push_back(tmplid);
                             }
-                            else // only difference criterion applied
-                              neighbournodes[part].push_back(tmplid);
+                            // exit loop immediately
+                            break;
                           }
-                          // exit loop immediately
-                          break;
-                        }
-                  break;
-                }
-        }
-    // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
-    if((int)numbond[part]==1)
-      neighbournodes[part].push_back(-1);
-    // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
-    maxneighbourslocal = max(maxneighbourslocal, (int)neighbournodes[part].size());
+                    break;
+                  }
+          }
+      // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
+      if((int)numbond[part]==1)
+        neighbournodes[part].push_back(-1);
+      // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
+      maxneighbourslocal = max(maxneighbourslocal, (int)neighbournodes[part].size());
+    }
   }
 
   // get global maximal number of LIDs per molecule
@@ -1129,10 +1104,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
                                                const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
                                                RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
-#ifdef D_TRUSS3
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
-
   double t_search = Teuchos::Time::wallTime();
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
@@ -1484,9 +1455,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
   //couts
   if(!discret_.Comm().MyPID())
     cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
-#endif //#ifdef D_TRUSS3
-#endif //#ifdef D_BEAM3
-#endif //#ifdef D_BEAM3II
 }//void StatMechManager::SearchAndSetCrosslinkers
 
 /*----------------------------------------------------------------------*
@@ -1495,9 +1463,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
  *----------------------------------------------------------------------*/
 void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks)
 {
-#ifdef D_BEAM3II
-#ifdef D_BEAM3
-#ifdef D_TRUSS3
   // get the nodes from the discretization (redundant on both the problem as well as the contact discretization
   DRT::Node* nodes[2] = {	mydiscret.gNode( globalnodeids[0] ) , mydiscret.gNode( globalnodeids[1] )};
   // crosslinker is a beam element
@@ -1551,9 +1516,6 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
       addedelements_.push_back(crossgid);
     mydiscret.AddElement(newcrosslinker);
   }
-#endif
-#endif
-#endif
   return;
 } //void StatMechManager::AddNewCrosslinkerElement()
 
@@ -1836,7 +1798,6 @@ void StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& mydiscret, 
  *----------------------------------------------------------------------*/
 void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff0, Epetra_Vector* punlink, Epetra_Vector& discol)
 {
-#ifdef D_BEAM3
   // update element2crosslink_
   element2crosslink_->PutScalar(-1.0);
   for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
@@ -1901,8 +1862,6 @@ void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff
   // Export and and reimport -> redundancy on all Procs
   Epetra_Vector punlinktrans(*transfermap_,true);
   CommunicateVector(punlinktrans, *punlink);
-
-#endif
 	return;
 }// StatMechManager::ForceDependentOffRate
 
@@ -1911,9 +1870,6 @@ void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff
  *----------------------------------------------------------------------*/
 void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
 {
-// CURRENTLY, ONLY FOR BINDING SPOTS COINCIDING WITH NODES!!!!!!!!!
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
   //first get triads at all row nodes
   Epetra_MultiVector bspottriadsrow(*bspotrowmap_, 4, true);
   //update nodaltriads_
@@ -1962,8 +1918,6 @@ void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
   }
   //export nodaltriadsrow to col map variable
   CommunicateMultiVector(bspottriadsrow, *bspottriadscol, false, true);
-#endif
-#endif
 	return;
 }//StatMechManager::GetNodalTriads
 
@@ -2914,8 +2868,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
   // create maps for binding spots in case of helical binding spot geometry of the actin filament
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
   {
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
     // rise and rotation per binding spot (default values: 2.77nm and -166.15deg (left-handed, one-start helix))
     double riseperbspot = statmechparams_.get<double>("RISEPERBSPOT",0.00277);
     double rotperbspot = statmechparams_.get<double>("ROTPERBSPOT", -2.8999);
@@ -3109,8 +3061,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
         }
       }
     }
-#endif
-#endif
   }
   else // conventional binding spot geometry (bspots are identical to nodes)
   {
@@ -3252,8 +3202,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 *----------------------------------------------------------------------*/
 void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
   {
     Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
@@ -3552,8 +3500,6 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
       cout<<"===================================="<<endl;
     }
   }
-#endif
-#endif
   return;
 }
 

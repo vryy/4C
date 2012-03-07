@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_TORSION2
 #ifdef CCADISCRET
 
 #include "torsion2.H"
@@ -46,4 +45,3 @@ bool DRT::ELEMENTS::Torsion2::ReadElement(const std::string& eletype,
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TORSION2

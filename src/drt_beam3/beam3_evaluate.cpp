@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_BEAM3
 #ifdef CCADISCRET
 
 
@@ -1782,7 +1781,7 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
 
   //add stochastic moments and resulting stiffness
-  //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force);
+  MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force);
 
 
 return;
@@ -1853,4 +1852,3 @@ return;
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM3

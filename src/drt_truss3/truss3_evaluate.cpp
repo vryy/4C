@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TRUSS3
 #ifdef CCADISCRET
 
 #include "truss3.H"
@@ -1081,4 +1080,3 @@ return;
 }//DRT::ELEMENTS::Truss3::NodeShift
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3

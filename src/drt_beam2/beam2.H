@@ -8,9 +8,6 @@ Maintainer: Christian Cyron
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
-// line in order to swith on and off by comment in defines.drt
-#ifdef D_BEAM2
-
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
@@ -455,4 +452,3 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 #endif  // #ifndef BEAM_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM2

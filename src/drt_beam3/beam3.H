@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
-
 // administrative line in order to make a difference between BACI and Ccarat files
 #ifdef CCADISCRET
 
@@ -112,12 +111,8 @@ public:
   friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid);
   friend void StatMechTime::Integrate();
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
   friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil);
   friend void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
-#endif
-#endif
 
 
   //! @name Constructors and destructors and related methods

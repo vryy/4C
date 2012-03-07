@@ -33,12 +33,8 @@ Maintainer: Christoph Meier
 #include <map>
 #include <math.h>
 
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif
 
 using namespace std;
 
@@ -379,15 +375,10 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
     DRT::Element* beamelement = searchdis_.lColElement(i);
     const DRT::ElementType & eot = beamelement->ElementType();
 
-#ifdef D_BEAM3
     if (eot == DRT::ELEMENTS::Beam3Type::Instance())
       (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
-#endif // #ifdef BEAM3II
-
-#ifdef D_BEAM3II
     if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
       (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
-#endif
     // feasibility check
     if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
   }

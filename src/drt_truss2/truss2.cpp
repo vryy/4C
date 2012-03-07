@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_TRUSS2
 #ifdef CCADISCRET
 
 #include "truss2.H"
@@ -300,4 +299,3 @@ int DRT::ELEMENTS::Truss2Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS2

@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_BEAM3
 #ifdef CCADISCRET
 
 #include "beam3.H"
@@ -51,4 +50,3 @@ bool DRT::ELEMENTS::Beam3::ReadElement(const std::string& eletype,
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM3

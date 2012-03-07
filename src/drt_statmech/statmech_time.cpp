@@ -25,25 +25,13 @@ Maintainer: Christian Cyron
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 
-#ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
 #include "../drt_beam3ii/beam3ii.H"
-#endif  // #ifdef D_BEAM3II
-#ifdef D_BEAM2
 #include "../drt_beam2/beam2.H"
-#endif  // #ifdef D_BEAM2
-#ifdef D_BEAM2R
 #include "../drt_beam2r/beam2r.H"
-#endif  // #ifdef D_BEAM2R
-#ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
 #include "../drt_trusslm/trusslm.H"
-#endif  // #ifdef D_TRUSS3
-#ifdef D_TRUSS2
 #include "../drt_truss2/truss2.H"
-#endif  // #ifdef D_TRUSS2
 
 
 //#define GMSHPTCSTEPS
@@ -69,67 +57,53 @@ isconverged_(0)
   {
     const DRT::ElementType & eot = dis.lColElement(i)->ElementType();
     /*stochastic forces implemented so far only for the following elements:*/
-#ifdef D_BEAM3
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
-        //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
-          statmechmanager_->PeriodicBoundaryBeam3Init(dis.lColElement(i));
-      }
-    else
-#endif  // #ifdef D_BEAM3
-#ifdef D_BEAM3II
-      if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
+        statmechmanager_->PeriodicBoundaryBeam3Init(dis.lColElement(i));
+    }
+    else if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
-        //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
-          statmechmanager_->PeriodicBoundaryBeam3iiInit(dis.lColElement(i));
-      }
-    else
-#endif  // #ifdef D_BEAM3II
-#ifdef D_BEAM2
-      if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-      }
-    else
-#endif  // #ifdef D_BEAM2
-#ifdef D_BEAM2R
-      if ( eot == DRT::ELEMENTS::Beam2rType::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-      }
-    else
-#endif  // #ifdef D_BEAM2R
-#ifdef D_TRUSS3
-      if ( eot == DRT::ELEMENTS::Truss3Type::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
+        statmechmanager_->PeriodicBoundaryBeam3iiInit(dis.lColElement(i));
+    }
+    else if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+    }
+    else if ( eot == DRT::ELEMENTS::Beam2rType::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+    }
+    else if ( eot == DRT::ELEMENTS::Truss3Type::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
 
-        //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
-          statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
-      }
-      else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
-      {
-        //see whether current element needs more random numbers per time step than any other before
-        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-        //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-        if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
-          statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
-      }
-      else
-#endif  // #ifdef D_TRUSS3
-        continue;
+      //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
+        statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
+    }
+    else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+      //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
+        statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
+    }
+    else
+      continue;
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
@@ -276,9 +250,9 @@ void StatMechTime::Integrate()
     {
       beamcmanager_->Update(*dis_,params_.get<int>("step",0),99);
       // output reaction forces and moments
-      #ifdef REACTIONFORCES
+#ifdef REACTIONFORCES
       beamcmanager_->Reactions(*fint_,*dirichtoggle_,params_.get<int>("step",0));
-      #endif
+#endif
     }
 
     if (time>=maxtime) break;
@@ -1385,10 +1359,13 @@ void StatMechTime::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmno
       // get the constraint norm and decrease penalty parameter
       beamcmanager_->UpdateConstrNorm(&cnorm);
 
+      double fresmnorm = 1e6;
+      fresm_->Norm2(&fresmnorm);
+
       if(numiter>=maxiter)
       {
         // accept step starting from second uzawa step
-        if(cnorm<0.5 && beamcmanager_->GetUzawaIter()>=2)
+        if(cnorm<0.5 && beamcmanager_->GetUzawaIter()>=2 && fresmnorm<1e-2)
           ConvergenceStatusUpdate(true,false);
         else
           ConvergenceStatusUpdate(false,false);

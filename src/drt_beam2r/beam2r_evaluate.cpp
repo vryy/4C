@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_BEAM2R
 #ifdef CCADISCRET
 
 #include "beam2r.H"
@@ -1093,5 +1092,4 @@ return;
 }//DRT::ELEMENTS::Beam2::CalcBrownian(.)
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_BEAM2R
 

@@ -10,7 +10,6 @@ Maintainer: Kei Mueller
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef D_TRUSS3
 #ifdef CCADISCRET
 
 #include "trusslm.H"
@@ -112,4 +111,3 @@ bool DRT::ELEMENTS::TrussLm::ReadElement()
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_TRUSS3
