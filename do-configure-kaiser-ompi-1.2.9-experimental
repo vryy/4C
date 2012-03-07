@@ -38,7 +38,6 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9/
     -D HAVE_TEKO:BOOL=ON \
     -D HAVE_MueLu:BOOL=OFF \
     -D TRILINOS_DEV:BOOL=ON \
-    -D DEBUG:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
     -D COLOROUTPUT:BOOL=OFF \
     -D D_EXODUS:BOOL=ON \

@@ -103,4 +103,3 @@ $CMAKE_COMMAND \
 cd $BACI_HOME
 if [ -f .cproject ]; then ./adapt_cproject.py `basename $0`; fi
 
-#    -D DEBUG:BOOL=ON \

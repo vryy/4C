@@ -80,10 +80,9 @@ set(LIBRARIES "")
 #
 ### compile time options
 
-option (DEBUG "Turn on special debug code" OFF)
-if (DEBUG)
-  add_definitions("-DDEBUG")
-endif (DEBUG)
+if (${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+  add_definitions("-DDEBUG=ON")
+endif ()
 
 option (DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF)
 if (DEBUGCUTLIBRARY)

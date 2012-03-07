@@ -30,7 +30,6 @@ cmake \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D TPL_BLAS_LIBRARIES:STRING="-L$MKL_LIBDIR -lmkl_intel_lp64 -Wl,--start-group -lmkl_intel_thread -lmkl_core -Wl,--end-group -lguide -lpthread" \
     -D TPL_LAPACK_LIBRARIES:STRING="-L$MKL_LIBDIR -lmkl_intel_lp64 -Wl,--start-group -lmkl_intel_thread -lmkl_core -Wl,--end-group -lguide -lpthread" \
-    -D DEBUG:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
     -D COLOROUTPUT:BOOL=OFF \
     -D QHULL:BOOL=ON \

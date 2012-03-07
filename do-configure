@@ -54,7 +54,6 @@ $CMAKE_COMMAND \
     -D CMAKE_Fortran_FLAGS:STRING="-Wall -march=i686 -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-    -D DEBUG:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
     -D COLOROUTPUT:BOOL=ON \
     -D D_EXODUS:BOOL=ON \
