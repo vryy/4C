@@ -101,7 +101,7 @@ void PrintHelpMessage()
             << "\t\tSpecify the number of processors per group. Argument \"-ngroup\" is mandatory and must be preceding. (default: equal distribution)" << std::endl
             << std::endl
             << "\t-nptype=parallelism_type" << std::endl
-            << "\t\tAvailable options: \"separateDatFile\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1." << std::endl
+            << "\t\tAvailable options: \"separateDatFiles\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1." << std::endl
             << std::endl
             << "\tdat_name" << std::endl
             << "\t\tName of the input file (Usually *.dat)" << std::endl

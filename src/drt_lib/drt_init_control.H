@@ -15,6 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
+#include <string>
+
 #ifdef __cplusplus
 extern "C"
 {
