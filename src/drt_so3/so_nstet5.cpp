@@ -91,9 +91,24 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::NStet5::NStet5(int id, int owner) :
 DRT::Element(id,owner),
 material_(0),
-V_(-1.0),
-nxyz_()
+V_(-1.0)
 {
+  sublm_[0] = 0;
+  sublm_[1] = 1;
+  sublm_[2] = 2;
+  sublm_[3] = 4;
+  sublm_[4] = 1;
+  sublm_[5] = 3;
+  sublm_[6] = 2;
+  sublm_[7] = 4;
+  sublm_[8] = 0;
+  sublm_[9] = 3;
+  sublm_[10] = 1;
+  sublm_[11] = 4;
+  sublm_[12] = 0;
+  sublm_[13] = 2;
+  sublm_[14] = 3;
+  sublm_[15] = 4;
   return;
 }
 
@@ -275,15 +290,12 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
                            map<int,DRT::ELEMENTS::NStet5*>& elecids,
-                           map<int,DRT::Node*>&            noderids,
-                           const int                       myrank,
-                           const int                       numproc,
-                           DRT::Discretization&            dis)
+                           map<int,DRT::Node*>&             noderids,
+                           const int                        myrank,
+                           const int                        numproc,
+                           DRT::Discretization&             dis)
 {
   const int numele = dis.NumMyColElements();
-
-  vector<int> ctmp;
-  vector<int> rtmp;
 
   for (int i=0; i<numele; ++i)
   {
@@ -297,8 +309,6 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
 
     // register element in list of column nstet elements
     elecids[actele->Id()] = actele;
-    ctmp.push_back(actele->Id());
-    if (actele->Owner()==myrank) rtmp.push_back(actele->Id());
 
     // compute a map of all row nodes adjacent to a NStet5 element
     for (int j=0; j<actele->NumNode(); ++j)
@@ -308,9 +318,6 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
         noderids[node->Id()] = node;
     }
   } // i
-
-  elecmap_ = rcp(new Epetra_Map(-1,(int)ctmp.size(),&ctmp[0],0,dis.Comm()));
-  elermap_ = rcp(new Epetra_Map(-1,(int)rtmp.size(),&rtmp[0],0,dis.Comm()));
 
   return;
 }
@@ -346,7 +353,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     // patch of all nodes adjacent to adjacent elements
     map<int,DRT::Node*> nodepatch;
-    for (int j=0; j<(int)myadjele.size(); ++j)
+    for (unsigned j=0; j<myadjele.size(); ++j)
     {
       DRT::Node** nodes = myadjele[j]->Nodes();
       for (int k=0; k<myadjele[j]->NumNode(); ++k)
@@ -354,18 +361,27 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
     }
     adjnode_[nodeidL] = nodepatch;
 
-    // lm and lmowner arrays
-    const int numnodepatch = (int)nodepatch.size();
-    const int ndofperpatch = numnodepatch*3;
+    // lm array
+    const int ndofperpatch = ((int)nodepatch.size() + 
+                              (int)myadjele.size()) * 3;
 
     // location and ownership vector of nodal patch
     vector<int> lm(ndofperpatch);
     std::map<int,DRT::Node*>::iterator pnode;
     int count=0;
+    // add dofs of nodes
     for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
     {
       const vector<int>& dofs = dis.Dof(pnode->second);
-      for (int j=0; j<(int)dofs.size(); ++j)
+      for (unsigned j=0; j<dofs.size(); ++j)
+        lm[count++]        = dofs[j];
+    }
+    // add dofs of center nodes from elements. These appear as element dofs
+    for (unsigned j=0; j<myadjele.size(); ++j)
+    {
+      const vector<int>& dofs = dis.Dof(myadjele[j]);
+      printf("element %d ndof %d\n",myadjele[j]->Id(),(int)dofs.size());
+      for (unsigned j=0; j<dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
     adjlm[nodeidL] = lm;

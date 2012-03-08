@@ -95,28 +95,26 @@ public:
 
 private:
 
-  static NStet5Type                        instance_;
+  static NStet5Type                                   instance_;
 
   // map of row nodes adjacent to NStet5 elements
-  map<int,DRT::Node*>                      noderids_;
+  map<int,DRT::Node*>                                 noderids_;
 
   // map of column NStet5 elements
-  map<int,DRT::ELEMENTS::NStet5*>          elecids_;
-  Teuchos::RCP<Epetra_Map>                 elecmap_;
-  Teuchos::RCP<Epetra_Map>                 elermap_;
+  map<int,DRT::ELEMENTS::NStet5*>                     elecids_;
 
   // nodal stresses and strains for output
-  Teuchos::RCP<Epetra_MultiVector>        nstress_;
-  Teuchos::RCP<Epetra_MultiVector>        nstrain_;
+  Teuchos::RCP<Epetra_MultiVector>                    nstress_;
+  Teuchos::RCP<Epetra_MultiVector>                    nstrain_;
 
   // vector of elements adjacent to each row node
-  map<int,vector<DRT::ELEMENTS::NStet5*> > adjele_;
+  map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
 
   // map of nodes forming a patch around a node
-  map<int,map<int,DRT::Node*> >           adjnode_;
+  map<int,map<int,DRT::Node*> >                       adjnode_;
 
   // map of location vectors for patch around a node
-  map<int,vector<int> >                   adjlm_;
+  map<int,vector<int> >                               adjlm_;
 
   void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet5*>& elecids,
                            map<int,DRT::Node*>&             noderids,
@@ -304,7 +302,7 @@ public:
   /*!
   \brief The 3 degrees of freedom of the center node
   */
-  virtual inline int NumDofPerElement() const { return 0; }
+  virtual inline int NumDofPerElement() const { return 3; }
 
   /*!
   \brief Print this element
@@ -428,45 +426,47 @@ protected:
 
   //! volume of element
   double                                                   V_;
+  inline double Vol() { return V_; }
 
 
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
-
-  //! element's def-gradient
-  LINALG::Matrix<3,3>                                      F_;
-
-  //// internal calculation methods
-
-  // return volume of element
-  inline double Vol() { return V_; }
-
   public:
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
   protected:
 
+  //! element's def-gradient
+  LINALG::Matrix<3,3>                                      F_;
   inline LINALG::Matrix<3,3>& F() { return F_; }
 
 
+
   //---------------------------------------------- quantities related to subtets
+  //! nodal connectivity  of subelements
+  int                                                      sublm_[16];
+  inline const int* SubLM(int i) const { return &(sublm_[i*4]); }
+  
   //! coordinates of middle node
   double                                                   midX_[3];
-  inline const double* midX() const { return midX_; }
+  inline const double* MidX() const { return midX_; }
 
   //! derivatives of shape functions for subtets
   LINALG::Matrix<4,3>                                      subnxyz_[4];
-  inline const LINALG::Matrix<4,3>& subNxyz(int i) const { return subnxyz_[i]; }
+  inline const LINALG::Matrix<4,3>& SubNxyz(int i) const { return subnxyz_[i]; }
   
   //! reference volume of subelements
   double                                                   subV_[4];
-  inline const double& subV(int i) const { return subV_[i]; }
+  inline const double& SubV(int i) const { return subV_[i]; }
+  
+  LINALG::Matrix<3,3>                                      subF_[4];
+  inline LINALG::Matrix<3,3>& SubF(int i) { return subF_[i]; }
   //---------------------------------------------------------------------------
 
 
 
 
-  static LINALG::Matrix<3,3> BuildF(LINALG::Matrix<4,3>& xdisp,
-                                    LINALG::Matrix<4,3>& nxyz)
+  static LINALG::Matrix<3,3> BuildF(const LINALG::Matrix<4,3>& xdisp,
+                                    const LINALG::Matrix<4,3>& nxyz)
   {
     LINALG::Matrix<3,3> F(false);
     F.MultiplyTN(xdisp,nxyz);
@@ -476,10 +476,10 @@ protected:
     return F;
   }
 
+
   template<typename T>
-  static LINALG::TMatrix<T,3,3> BuildF(
-                                       LINALG::TMatrix<T,4,3>& xdisp,
-                                       LINALG::Matrix<4,3>& nxyz)
+  static LINALG::TMatrix<T,3,3> TBuildF(LINALG::TMatrix<T,4,3>& xdisp,
+                                        LINALG::Matrix<4,3>& nxyz)
   {
     LINALG::TMatrix<T,3,3> F(true);
     for (int i=0; i<3; ++i)

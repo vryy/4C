@@ -105,54 +105,20 @@ void DRT::ELEMENTS::NStet5::InitElement()
   //------------------------------------------------------------------subtets
   for (int i=0; i<4; ++i)
   {
-    LINALG::Matrix<4,3>& subnxyz = subnxyz_[i];
     // master tet has node numbering [0 1 2 3]    
 
     // subtets have node numberings  [0 1 2 4]
     //                               [1 3 2 4]
     //                               [0 3 1 4]
     //                               [0 2 3 4]
-    switch (i)
+    for (int k=0; k<3; ++k)
     {
-    case 0:
-      for (int k=0; k<3; ++k)
-      {
-        xrefe(0,k) = Nodes()[0]->X()[k];
-        xrefe(1,k) = Nodes()[1]->X()[k];
-        xrefe(2,k) = Nodes()[2]->X()[k];
-        xrefe(3,k) = midX()[k];
-      }
-    break;
-    case 1:
-      for (int k=0; k<3; ++k)
-      {
-        xrefe(0,k) = Nodes()[1]->X()[k];
-        xrefe(1,k) = Nodes()[3]->X()[k];
-        xrefe(2,k) = Nodes()[2]->X()[k];
-        xrefe(3,k) = midX()[k];
-      }
-    break;
-    case 2:
-      for (int k=0; k<3; ++k)
-      {
-        xrefe(0,k) = Nodes()[0]->X()[k];
-        xrefe(1,k) = Nodes()[3]->X()[k];
-        xrefe(2,k) = Nodes()[1]->X()[k];
-        xrefe(3,k) = midX()[k];
-      }
-    break;
-    case 3:
-      for (int k=0; k<3; ++k)
-      {
-        xrefe(0,k) = Nodes()[0]->X()[k];
-        xrefe(1,k) = Nodes()[2]->X()[k];
-        xrefe(2,k) = Nodes()[3]->X()[k];
-        xrefe(3,k) = midX()[k];
-      }
-    break;
-    default:
-      dserror("You should not be here");
+      xrefe(0,k) = Nodes()[SubLM(i)[0]]->X()[k];
+      xrefe(1,k) = Nodes()[SubLM(i)[1]]->X()[k];
+      xrefe(2,k) = Nodes()[SubLM(i)[2]]->X()[k];
+      xrefe(3,k) = MidX()[k];
     }
+
     // volume of subelements
     for (int j=0; j<4; ++j)
     {

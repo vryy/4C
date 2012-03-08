@@ -55,7 +55,7 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-    // create dfad version of nxyz and mydisp
+    // mydisp
     LINALG::Matrix<4,3> disp(false);
     for (int i=0; i<4; ++i)
       for (int j=0; j<3; ++j)
@@ -63,6 +63,24 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
 
     // create deformation gradient
     e->F() = e->BuildF(disp,e->Nxyz());
+
+    //------------------------------------subelement F
+    LINALG::Matrix<5,3> subdisp(false);
+    for (int j=0; j<3; ++j)
+    {
+      for (int i=0; i<4; ++i)
+        subdisp(i,j) = disp(i,j);
+      subdisp(4,j) = mydisp[4*3+j];
+    }
+
+    for (int k=0; k<4; ++k) 
+    {
+      for (int i=0; i<4; ++i)
+        for (int j=0; j<3; ++j)
+          disp(i,j) = subdisp(e->SubLM(k)[i],j);
+      
+      e->SubF(k) = e->BuildF(disp,e->SubNxyz(k));
+    } // for (int k=0; k<4; ++k) 
 
   } // ele
   return;
@@ -115,8 +133,6 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
   // nodal stiffness and force (we don't do mass here)
   LINALG::SerialDenseMatrix stiff;
   LINALG::SerialDenseVector force;
-  LINALG::SerialDenseMatrix mis_stiff;
-  LINALG::SerialDenseVector mis_force;
 
   //-------------------------------------- construct F for each NStet5
   //AutoDiffDemo();
@@ -164,12 +180,11 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
   {
     DRT::Node* nodeL   = node->second;     // row node
     const int  nodeLid = nodeL->Id();
-    //bool mis = (pstab_adjele_.find(nodeLid) != pstab_adjele_.end());
 
     // standard quantities for all nodes
-    vector<DRT::ELEMENTS::NStet5*>& adjele = adjele_[nodeLid];
-    map<int,DRT::Node*>& adjnode = adjnode_[nodeLid];
-    vector<int>& lm = adjlm_[nodeLid];
+    vector<DRT::ELEMENTS::NStet5*>& adjele  = adjele_[nodeLid];
+    map<int,DRT::Node*>&            adjnode = adjnode_[nodeLid];
+    vector<int>&                    lm      = adjlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
     if (action != "calc_struct_stress")
@@ -457,7 +472,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
 
     // build F of this element
     LINALG::TMatrix<FAD,3,3> Fele(true);
-    Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->Nxyz());
+    Fele = adjele[i]->TBuildF<FAD>(eledispmat,adjele[i]->Nxyz());
 
     // add up to nodal deformation gradient
     Fele.Scale(V);
@@ -564,7 +579,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     for (int k=0; k<6; ++k)
       bopbar(k,i) = Ebar[k].fastAccessDx(i);
 
-#if 0
+#if 0 // don't touch this
   Epetra_SerialDenseMatrix bopbar2(6,ndofinpatch);
   {
 
