@@ -660,6 +660,11 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_line.cpp
   src/drt_so3/so_line_evaluate.cpp
   src/drt_so3/so_material.cpp
+  src/drt_so3/so_nstet5.cpp
+  src/drt_so3/so_nstet5_evaluate.cpp
+  src/drt_so3/so_nstet5_input.cpp
+  src/drt_so3/so_nstet5_nodalstrain.cpp
+  src/drt_so3/so_nstet5_multiscale.cpp
   src/drt_so3/so_nstet.cpp
   src/drt_so3/so_nstet_evaluate.cpp
   src/drt_so3/so_nstet_input.cpp
@@ -668,11 +673,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_nurbs27.cpp
   src/drt_so3/so_nurbs27_evaluate.cpp
   src/drt_so3/so_nurbs27_input.cpp
-  src/drt_so3/so_ptet.cpp
-  src/drt_so3/so_ptet_evaluate.cpp
-  src/drt_so3/so_ptet_input.cpp
-  src/drt_so3/so_ptet_nodalstrain.cpp
-  src/drt_so3/so_ptet_multiscale.cpp
   src/drt_so3/so_sh8.cpp
   src/drt_so3/so_sh8_evaluate.cpp
   src/drt_so3/so_sh8_input.cpp
@@ -2403,8 +2403,6 @@ baci_test(stc-mltube-sosh8p8 2 "")
 baci_test(stru_ale_wear 1 "")
 baci_test(strufem_hex8_eas_cantilever 1 "")
 baci_test(strufem_hex8_eas_cantilever 2 "")
-baci_test(strufem_ptet4_disp_cantilever 1 "")
-baci_test(strufem_ptet4_disp_cantilever 2 "")
 baci_test(strufem_shell8_eas_cantilever 1 "")
 baci_test(strufem_shell8_eas_cantilever 2 "")
 baci_test(strufem_sosh8_eas_cantilever 1 "")
@@ -2427,8 +2425,6 @@ baci_test(thermoconvection_Tempnp 1 "")
 baci_test(thermoconvection_Tempnp 2 "")
 baci_test(thickcant_hex 1 "")
 baci_test(thickcant_hex 2 "")
-baci_test(thickcant_ptet 1 "")
-baci_test(thickcant_ptet 2 "")
 baci_test(thickcant_tet4 1 "")
 baci_test(thickcant_tet4 2 "")
 baci_test(topopt_reaction_channel 1 "")
