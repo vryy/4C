@@ -52,6 +52,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_elementtype.H"
 #include "../linalg/linalg_utils.H"
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 namespace DRT
 {
   namespace
@@ -102,6 +104,8 @@ namespace DRT
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObjectType::ParObjectType()
   : objectid_( 0 )
 {
@@ -109,6 +113,8 @@ DRT::ParObjectType::ParObjectType()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int DRT::ParObjectType::UniqueParObjectId()
 {
   if ( objectid_==0 )
@@ -120,14 +126,20 @@ int DRT::ParObjectType::UniqueParObjectId()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObjectFactory * DRT::ParObjectFactory::instance_;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObjectFactory::ParObjectFactory()
 {
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObjectFactory& DRT::ParObjectFactory::Instance()
 {
   if ( instance_ == NULL )
@@ -141,6 +153,8 @@ DRT::ParObjectFactory& DRT::ParObjectFactory::Instance()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
 {
   FinalizeRegistration();
@@ -167,13 +181,14 @@ DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const string eletype,
                                                           const string eledistype,
                                                           const int id,
                                                           const int owner )
 {
   FinalizeRegistration();
-
   std::map<std::string, ElementType*>::iterator c = element_cache_.find( eletype );
   if ( c!=element_cache_.end() )
   {
@@ -204,6 +219,8 @@ Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const string eletype,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::Register( ParObjectType* object_type )
 {
   std::string name = object_type->Name();
@@ -238,12 +255,16 @@ void DRT::ParObjectFactory::Register( ParObjectType* object_type )
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::FinalizeRegistration()
 {
   ParObjectPreRegister::Finalize();
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
 {
   FinalizeRegistration();
@@ -287,6 +308,8 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
                                         Teuchos::ParameterList& p,
                                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -307,6 +330,8 @@ void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   FinalizeRegistration();

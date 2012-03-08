@@ -45,8 +45,9 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"Smoothrod");
   //PrintElementLines(stream,"CONSTRELE2");
   //PrintElementLines(stream,"CONSTRELE3");
-  PrintElementLines(stream,"PTET4");
+  //PrintElementLines(stream,"PTET4");
   PrintElementLines(stream,"NSTET4");
+  PrintElementLines(stream,"NSTET5");
   PrintElementLines(stream,"SHELL8");
   PrintElementLines(stream,"SOLID3");
   PrintElementLines(stream,"SOLIDH20");
