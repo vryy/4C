@@ -27,6 +27,7 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
@@ -106,6 +107,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_reset_discretization") act = So_tet4::calc_struct_reset_discretization;
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
+  else if (action=="calc_struct_energy")	       act = So_tet4::calc_struct_energy;
+  else if (action=="calc_struct_output_E")	       act = So_tet4::calc_struct_output_E; 
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
@@ -327,6 +330,34 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
+    }
+    break;
+    //==================================================================================
+    // this is a dummy output for strain energy
+    case calc_struct_energy:
+    {
+    // check length of elevec1
+    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+    RCP<MAT::Material> mat = Material();
+    if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+    {
+    	double intenergy = -1.0;
+        elevec1_epetra(0) = intenergy;
+    }  else dserror("No dummy strain energy for material other than INPAR::MAT::m_stvenant");
+    }
+    break;
+    // this is needed by bone topology optimization
+    case calc_struct_output_E:
+    {
+     RCP<MAT::Material> mat = Material();
+      // check length of elevec1
+      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+      MAT::Material* rawmat = mat.get();
+      MAT::StVenantKirchhoff* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(rawmat);
+      if (!stvk) dserror("dynamic cast to stvenant failed");
+      double E = stvk->Youngs();
+      elevec1_epetra(0) = E;
+    
     }
     break;
 

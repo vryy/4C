@@ -382,6 +382,8 @@ protected:
                                        //!< to state in the beginning of the computation
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     prestress_update,
+    calc_struct_energy,
+    calc_struct_output_E,
     inversedesign_update,
     inversedesign_switch,
     multi_calc_dens,
