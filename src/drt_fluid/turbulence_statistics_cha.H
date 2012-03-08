@@ -73,6 +73,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -112,8 +113,20 @@ public:
   */
   virtual ~TurbulenceStatisticsCha();
 
-
   //! @name functions for (spatial) averaging
+
+
+  /*!
+  \brief Store scatra discretization for passive scalar transport
+  to caculate mean values of multifractal subgrid-scales modeling
+  parameters
+  */
+  void StoreScatraDiscret(RCP<DRT::Discretization> scatradis)
+  {
+    scatradiscret_ = scatradis;
+    GetSchmidtNumber();
+    return;
+  };
 
   /*!
   \brief Compute the in-plane mean values of first and second order
@@ -136,6 +149,16 @@ public:
 
 
   /*!
+  \brief The values of velocity, pressure, scalar and its squared
+  values are added to global vectors. This method allows to do the time
+  average of the nodal values after a certain amount of timesteps.
+  */
+  void DoScatraTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+                        Teuchos::RefCountPtr<Epetra_Vector> scanp,
+                        Epetra_Vector &                     force);
+
+
+  /*!
   \brief Compute in plane means of u,u^2 etc. (integral version)
 
   The averages here are calculated by integration.
@@ -151,6 +174,11 @@ public:
   \brief Compute in-plane means (integral version) for low-Mach-number flow
   */
   void EvaluateLomaIntegralMeanValuesInPlanes(const double eosfac);
+
+  /*!
+  \brief Compute in-plane means (integral version) for turbulent passive scalar transport
+  */
+  void EvaluateScatraIntegralMeanValuesInPlanes();
 
   /*!
   \brief Compute in plane means of u,u^2 etc. (nodal quantities)
@@ -206,7 +234,8 @@ public:
   */
 
   void AddModelParamsMultifractal(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                                  Teuchos::RefCountPtr<Epetra_Vector> fsvelnp);
+                                  Teuchos::RefCountPtr<Epetra_Vector> fsvelnp,
+                                  bool                                withscatra);
 
   /*!
     \brief do averaging of residuals, dissipation rates etc
@@ -253,6 +282,15 @@ public:
   void DumpLomaStatistics(int step);
 
   /*!
+  \brief Compute a time average of the mean values for turbulent
+  passive scalar transprt over all steps of the sampling period so far.
+  Dump the result to file.
+
+  */
+
+  void DumpScatraStatistics(int step);
+
+  /*!
   \brief Reset sums and number of samples to 0
 
   */
@@ -295,6 +333,18 @@ protected:
   };
 
 private:
+
+  //! get Schmidt number form scatra
+  void GetSchmidtNumber()
+  {
+    ParameterList paramselescatra;
+    paramselescatra.set("action","get_material_parameters");
+    paramselescatra.set<int>("scatratype",INPAR::SCATRA::scatratype_turbpassivesca);
+    scatradiscret_->Evaluate(paramselescatra,null,null,null,null,null);
+    scnum_ = paramselescatra.get<double>("scnum");
+    return;
+  };
+
   //! direction normal to homogenous plane
   int                              dim_;
 
@@ -310,10 +360,13 @@ private:
   /// flag for physical type of fluid flow (standard: incompressible)
   INPAR::FLUID::PhysicalType       physicaltype_;
 
-  //! The discretisation (required for nodes, dofs etc;)
+  //! The discretization (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
 
-  //! flag for ale discretisation
+  //! scatra discretization (required for additional multifractal subgrid-scale output in case on passive scalar transport)
+  RCP<DRT::Discretization> scatradiscret_;
+
+  //! flag for ale discretization
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
@@ -375,6 +428,8 @@ private:
   double visc_;
   //! specific heat capacity to calculate Temp_tau (loma)
   double shc_;
+  //! Schmidt number (passive scalar)
+  double scnum_;
 
   //!--------------------------------------------------
   //!         integration based averaging
@@ -535,6 +590,18 @@ private:
   RefCountPtr<vector<double> >     sumsgvisc_;
   //! increment of subgrid viscosity over in one time step
   RefCountPtr<vector<double> >     incrsumsgvisc_;
+  //! sum over parameter Nphi --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumNphi_;
+  //! increment of parameter Nphi over in one time step
+  RefCountPtr<vector<double> >     incrsumNphi_;
+  //! sum over parameter Dphi --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumDphi_;
+  //! increment of parameter Dphi over in one time step
+  RefCountPtr<vector<double> >     incrsumDphi_;
+  //! sum over parameter Csgs_phi --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumCsgs_phi_;
+  //! increment of Csgs_phi over in one time step
+  RefCountPtr<vector<double> >     incrsumCsgs_phi_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities

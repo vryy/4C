@@ -237,6 +237,7 @@ public:
     //! scalar (only for special materials)
     virtual void UpdateMaterialParams(
         const DRT::Element* ele, ///< the element we are dealing with
+        const double        sgphi, ///< approximation of subgrid scalar
         const int           k
         );
 
@@ -881,6 +882,8 @@ public:
     vector<double> rea_phi_;
     //! subgrid-scale part of scalar
     vector<double> sgphi_;
+    //! multifractal subgrid-scale part of scalar
+    vector<double> mfssgphi_;
     //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
     double thermpressnp_;
     //! thermodynamic pressure at t_(n+alpha_M) (LOMA specific)
@@ -901,6 +904,8 @@ public:
     bool migrationinresidual_;
     //! reaction coefficent derivative (needed for matrix contribution)
     vector<double> reacoeffderiv_;
+    //! update material with subgrid-scale temperature (loma specific)
+    bool update_mat_;
 
 
   };

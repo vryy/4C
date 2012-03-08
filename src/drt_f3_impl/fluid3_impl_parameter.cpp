@@ -86,15 +86,23 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   l_tau_(0.0),
   Cl_(0.0),
   Csgs_(0.0),
+  Csgs_phi_(0.0),
   alpha_(0.0),
   CalcN_(false),
   N_(0.0),
   refvel_(INPAR::FLUID::strainrate),
   reflength_(INPAR::FLUID::cube_edge),
   c_nu_(1.0),
+  c_diff_(1.0),
   near_wall_limit_(false),
   B_gp_(false),
-  beta_(0.0)
+  beta_(0.0),
+  update_mat_(false),
+  conti_supg_(INPAR::FLUID::convective_stab_none),
+  conti_cross_(INPAR::FLUID::cross_stress_stab_none),
+  conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
+  multifrac_loma_conti_(false)
+
 {
 }
 
@@ -486,6 +494,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTurbulenceParameter( Teuchos:
 
       // get parameters of model
       Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
+      Csgs_phi_ = turbmodelparamsmfs.get<double>("CSGS_PHI");
 
       if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
        alpha_ = 3.0;
@@ -522,6 +531,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTurbulenceParameter( Teuchos:
        dserror("Unknown length!");
 
       c_nu_ = turbmodelparamsmfs.get<double>("C_NU");
+      c_diff_ = turbmodelparamsmfs.get<double>("C_DIFF"); //loma only
 
       near_wall_limit_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT");
 
@@ -540,6 +550,42 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTurbulenceParameter( Teuchos:
     }
   } // end if(Classical LES)
 }
+
+
+//----------------------------------------------------------------------*
+//  set loma parameters                                  rasthofer 03/12|
+//---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3ImplParameter::SetElementLomaParameter( Teuchos::ParameterList& params )
+{
+  // get parameter lists
+  Teuchos::ParameterList& lomaparams = params.sublist("LOMA");
+  Teuchos::ParameterList& stabparams = params.sublist("STABILIZATION");
+  Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  //---------------------------------------------------------------------------------
+  // material update with subgrid-scale temperature
+  //---------------------------------------------------------------------------------
+
+  update_mat_ = lomaparams.get<bool>("update material",false);
+
+  //---------------------------------------------------------------------------------
+  // parameter for additional rbvmm terms in continuity equation
+  //---------------------------------------------------------------------------------
+
+  conti_supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stabparams,"LOMA_CONTI_SUPG");
+  conti_cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams,"LOMA_CONTI_CROSS_STRESS");
+  conti_reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stabparams,"LOMA_CONTI_REYNOLDS_STRESS");
+
+  //---------------------------------------------------------------------------------
+  // parameter for additional multifractal subgrid-scale terms
+  //---------------------------------------------------------------------------------
+
+  if (turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+   multifrac_loma_conti_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"LOMA_CONTI");
+
+  return;
+}
+
 
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen (AE 01-11)

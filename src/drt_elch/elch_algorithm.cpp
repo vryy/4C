@@ -198,6 +198,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchNp(), // we have to provide something here
         Teuchos::null,
+        Teuchos::null,
         1.0,
         1.0,
         0.0,
@@ -211,6 +212,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
+        Teuchos::null,
         Teuchos::null,
         1.0,
         1.0,
@@ -354,6 +356,7 @@ void ELCH::Algorithm::UpdateConvection()
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
+        Teuchos::null,
         Teuchos::null,
         1.0,
         1.0,

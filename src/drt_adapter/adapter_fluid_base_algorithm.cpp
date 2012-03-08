@@ -383,6 +383,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
 
+  // ----------------------------- add some loma specific parameters
+  // get also scatra stabilization sublist
+  const Teuchos::ParameterList& lomadyn =
+    DRT::Problem::Instance()->LOMAControlParams();
+  fluidtimeparams->sublist("LOMA").set<bool>("update material",DRT::INPUT::IntegralValue<int>(lomadyn,"SGS_MATERIAL_UPDATE"));
+
   // ----------------------------------------------- XFEM related stuff
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();

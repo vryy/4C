@@ -185,6 +185,7 @@ namespace ELEMENTS
                  const LINALG::Matrix<nsd_,nen_> &             edispnp,
                  const LINALG::Matrix<nsd_,nen_> &             egridv,
                  const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
+                 const LINALG::Matrix<nen_,1>    &             fsescaaf,
                  const LINALG::Matrix<nsd_,nen_> &             evel_hat,
                  const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
                  const LINALG::Matrix<nen_,1> &                eporo,
@@ -439,6 +440,7 @@ namespace ELEMENTS
       \param eveln            (i) nodal velocities at n
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
       \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
+      \param fsescaaf         (i) fine-scale nodal scalar at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1
@@ -467,6 +469,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_> &              evelnp,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
+                const LINALG::Matrix<nen_,1> &                 fsescaaf,
                 const LINALG::Matrix<nsd_,nen_>&               evel_hat,
                 const LINALG::Matrix<nsd_*nsd_,nen_>&          ereynoldsstress_hat,
                 const LINALG::Matrix<nen_,1>&                  epreaf,
@@ -686,11 +689,13 @@ namespace ELEMENTS
                            const LINALG::Matrix<nen_,1>&        escaaf,    ///< scalar at time n+alpha_f / n+1
                            const LINALG::Matrix<nen_,1>&        escaam,    ///< scalar at time n+alpha_m / n
                            const double                         thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
-                           const double                         thermpressam    ///< thermodynamic pressure at time n+alpha_m / n
+                           const double                         thermpressam,    ///< thermodynamic pressure at time n+alpha_m / n
+                           const double                         scsca            ///< subgrid scalar at integration point
                            );
 
     //! get parameters for multifractal subgrid scales
-    void PrepareMultifractalSubgrScales(LINALG::Matrix<nsd_,1>&           B,         ///< coefficient multifractal subgrid scales
+    void PrepareMultifractalSubgrScales(LINALG::Matrix<nsd_,1>&           B_mfs,     ///< coefficient multifractal subgrid scales velocity
+                                        double &                          D_mfs,     ///< coefficient multifractal subgrid scales scalar (loma only)
                                         const LINALG::Matrix<nsd_,nen_>&  evelaf,    ///< velocity at time n+alpha_f / n+1
                                         const LINALG::Matrix<nsd_,nen_>&  fsevelaf,  ///< fine scale velocity at time n+alpha_f / n+1
                                         const double                      vol        ///< volume
@@ -706,7 +711,7 @@ namespace ELEMENTS
     //! calculate (all-scale) subgrid viscosity
     void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,   ///< velocity at time n+alpha_f / n+1
                        const double                        vol,       ///< volume
-                       double&                             Cs,        ///< parameter CS in fixed Smagorinsky
+                       double&                             Cs,        ///< parameter CS in constant Smagorinsky
                        double&                             Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky
                        double&                             l_tau          ///< channel length to normalize the normal wall distance
                        );
@@ -715,14 +720,25 @@ namespace ELEMENTS
     void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,    ///< velocity at time n+alpha_f / n+1
                                 const LINALG::Matrix<nsd_,nen_>&     fsevelaf,  ///< fine scale velocity at time n+alpha_f / n+1
                                 const double                        vol,        ///< volume
-                                double&                             Cs          ///< parameter CS in fixed Smagorinsky
+                                double&                             Cs          ///< parameter CS in constant Smagorinsky
                                 );
 
+    //! get coefficient for multifractal subgrid scales (velocity)
     void CalcMultiFracSubgridVelCoef(
-      const double            Csgs,
-      const double            alpha,
-      const vector<double>    N,
-      LINALG::Matrix<nsd_,1>& B
+      const double            Csgs, ///< model coefficient
+      const double            alpha,///< filter width ratio
+      const vector<double>    Nvel, ///< number of casacade steps
+      LINALG::Matrix<nsd_,1>& B_mfs ///< final coefficient
+      );
+
+    //! get coefficient for multifractal subgrid scales (scalar) (loma only)
+    void CalcMultiFracSubgridScaCoef(
+      const double            Csgs, ///< model coefficient
+      const double            alpha,///< model coefficient
+      const double            Pr,   ///< Prandtl number
+      const vector<double>    Nvel, ///< number of casacade steps (velocity)
+      double                  Nphi, ///< number of casacade steps (scalar)
+      double&                 D_mfs ///< final coefficient
       );
 
     //! calculate stabilization parameter
@@ -885,6 +901,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nen_,1> &                  preforce,       ///< rhs forces pressure
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
@@ -1184,6 +1201,8 @@ namespace ELEMENTS
     LINALG::Matrix<nen_,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
     LINALG::Matrix<nen_,1> sgconv_c_;
+    //! multifractal subgrid-scale convection, convective part
+    LINALG::Matrix<nen_,1> mfssgconv_c_;
     //! velocity divergenceat at t_(n+alpha_F) or t_(n+1)
     double vdiv_;
     //! fine scale velocity divergence for multifractal subgrid-scale modeling
@@ -1202,24 +1221,7 @@ namespace ELEMENTS
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
     //! global velocity second derivatives in gausspoint w.r.t local coordinates
     LINALG::Matrix<nsd_,nsd_> vderiv_;
-/*
-    //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
-    LINALG::Matrix<nsd_,1> resM_Du_;
-    //! linearisation of residual of momentum equation wrt velocities (precomputed)
-    LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
-    //! block (weighting function v x u)
-    LINALG::Matrix<nen_*nsd_,nen_*nsd_>     estif_;
-    //! block (weighting function v x p)
-    LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v_;
-    //! block (weighting function q x u)
-    LINALG::Matrix<nen_, nen_*nsd_>         estif_q_u_;
-    //! block (weighting function q x p)
-    LINALG::Matrix<nen_,nen_>               ppmat;
-    //! rhs forces pressure
-    LINALG::Matrix<nen_,1>      preforce;
-    //! rhs forces velocity
-    LINALG::Matrix<nsd_,nen_>   velforce;
-*/
+
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! Jacobian determinant
@@ -1281,6 +1283,8 @@ namespace ELEMENTS
     double scarhs_;
     //! subgrid-scale part of scalar at integration point
     double sgscaint_;
+    //! multifractal subgrid-scale part of scalar at integration point
+    double mfssgscaint_;
     //! for the handling of rotationally symmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
     //! Flag to (de)activate higher order elements

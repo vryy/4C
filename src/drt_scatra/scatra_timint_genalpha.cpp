@@ -511,6 +511,30 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
     }
   }
 
+  // write additional restart data for loma
+  // required for restart of closed systems
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+  {
+    // thermodynamic pressure at time n+1
+    output_->WriteDouble("thermpressnp",thermpressnp_);
+    // thermodynamic pressure at time n
+    output_->WriteDouble("thermpressn",thermpressn_);
+    // thermodynamic pressure at time n+alpha_f
+    output_->WriteDouble("thermpressaf",thermpressaf_);
+    // thermodynamic pressure at time n+alpha_m
+    output_->WriteDouble("thermpressam",thermpressam_);
+    // time derivative of thermodynamic pressure at time n+1
+    output_->WriteDouble("thermpressdtnp",thermpressdtnp_);
+    // time derivative of thermodynamic pressure at time n
+    output_->WriteDouble("thermpressdtn",thermpressdtn_);
+    // time derivative of thermodynamic pressure at time n+alpha_f
+    output_->WriteDouble("thermpressdtaf",thermpressdtaf_);
+    // time derivative of thermodynamic pressure at time n+alpha_m
+    output_->WriteDouble("thermpressdtam",thermpressdtam_);
+    // as well as initial mass
+    output_->WriteDouble("initialmass",initialmass_);
+  }
+
   return;
 }
 
@@ -572,6 +596,30 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
       if (!read_pot)
         dserror("Reading of electrode potential for restart not successful.");
     }
+  }
+
+  // restart data of loma problems
+  // required for restart of closed systems
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+  {
+    // thermodynamic pressure at time n+1
+    thermpressnp_ = reader.ReadDouble("thermpressnp");
+    // thermodynamic pressure at time n
+    thermpressn_ = reader.ReadDouble("thermpressn");
+    // thermodynamic pressure at time n+alpha_f
+    thermpressaf_ = reader.ReadDouble("thermpressaf");
+    // thermodynamic pressure at time n+alpha_m
+    thermpressam_ = reader.ReadDouble("thermpressam");
+    // time derivative of thermodynamic pressure at time n+1
+    thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
+    // time derivative of thermodynamic pressure at time n
+    thermpressdtn_ = reader.ReadDouble("thermpressdtn");
+    // time derivative of thermodynamic pressure at time n+alpha_f
+    thermpressdtaf_ = reader.ReadDouble("thermpressdtaf");
+    // time derivative of thermodynamic pressure at time n+alpha_m
+    thermpressdtam_ = reader.ReadDouble("thermpressdtam");
+    // as well as initial mass
+    initialmass_ = reader.ReadDouble("initialmass");
   }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or

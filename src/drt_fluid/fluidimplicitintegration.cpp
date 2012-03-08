@@ -563,6 +563,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
       {
         dserror("Unknown filter type!");
       }
+
+      // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
+      // (only required for low-Mach-number case)
+      fsscaaf_ = LINALG::CreateVector(*dofrowmap,true);
     }
     else if (physmodel == "no_model")
       dserror("Turbulence model for LES expected!");
@@ -666,6 +670,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   SetElementGeneralFluidParameter();
   SetElementTimeParameter();
   SetElementTurbulenceParameter();
+  if (physicaltype_ == INPAR::FLUID::loma)
+    SetElementLomaParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1239,7 +1245,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // multifractal subgrid-scale modeling
       //----------------------------------------------------------------------
       if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+      {
         this->ApplyScaleSeparationForLES();
+        discret_->SetState("fsscaaf",fsscaaf_);
+      }
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -2518,7 +2527,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // multifractal subgrid-scale modeling
   //----------------------------------------------------------------------
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+  {
     this->ApplyScaleSeparationForLES();
+    discret_->SetState("fsscaaf",fsscaaf_);
+  }
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
@@ -4165,7 +4177,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // this vector contains only zeros unless SetIterLomaFields is called
   // as this function has not been called yet
   // we have to replace the zeros by ones
-  // otherwise nans are produced
+  // otherwise nans are occur
   scaam_->PutScalar(1.0);
   discret_->SetState("scaam",scaam_);
   // reset the vector
@@ -4175,11 +4187,15 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // dummy vector initialized with zeros
   // Remark:
   // This is necessary because the fssgv_ flag
-  // has already been set in SetParameters().
+  // has already been set in SetParameters()
   // Therefore, the function Evaluate() already
-  // expects the state vector "fsvelaf"
-  if (fssgv_ != "No" or INPAR::FLUID::multifractal_subgrid_scales)
+  // expects the state vector "fsvelaf" and "fsscaaf" for loma
+  if (fssgv_ != "No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  {
     discret_->SetState("fsvelaf",fsvelaf_);
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+      discret_->SetState("fsscaaf",fsscaaf_);
+  }
 
   if (alefluid_)
   {
@@ -4697,6 +4713,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
    RCP<const Epetra_Vector> scalaraf,
    RCP<const Epetra_Vector> scalaram,
    RCP<const Epetra_Vector> scalardtam,
+   RCP<const Epetra_Vector> fsscalaraf,
    const double             thermpressaf,
    const double             thermpressam,
    const double             thermpressdtaf,
@@ -4762,6 +4779,17 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     }
     err = accam_->ReplaceMyValue(localdofid,0,value);
     if (err != 0) dserror("error while inserting value into accam_");
+
+    if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      if (fsscalaraf != Teuchos::null)
+       value = (*fsscalaraf)[localscatradofid];
+      else
+       dserror("Expected fine-scale scalar!");
+
+      err = fsscaaf_->ReplaceMyValue(localdofid,0,value);
+      if (err != 0) dserror("error while inserting value into fsscaaf_");
+    }
   }
 
   //--------------------------------------------------------------------------
@@ -6033,6 +6061,50 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   return;
 }
 
+
+// -------------------------------------------------------------------
+// set turbulence parameters                         rasthofer 11/2011
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_turbulence_parameter");
+
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+
+// -------------------------------------------------------------------
+// set loma parameters                               rasthofer 03/2012
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_loma_parameter");
+
+  // set parameters to update material with subgrid-scale temperature
+  // potential inclusion of addtional subgrid-scale terms in continuity equation
+  eleparams.sublist("LOMA") = params_.sublist("LOMA");
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  set initial field for porosity                                      |
  *----------------------------------------------------------------------*/
@@ -6082,26 +6154,6 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
   return;
 } // FluidImplicitTimeInt::SetInitialField
 
-// -------------------------------------------------------------------
-// set turbulence parameters                         rasthofer 11/2011
-// -------------------------------------------------------------------
-void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
-{
-  ParameterList eleparams;
-
-  eleparams.set("action","set_turbulence_parameter");
-
-  // set general parameters for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-
-  // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
-  return;
-}
 
 // -------------------------------------------------------------------
 // provide access to turbulence statistics manager (gjb 06/2011)

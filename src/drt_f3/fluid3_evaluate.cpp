@@ -93,6 +93,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_turbulence_statistics;
   else if (action == "calc_loma_statistics")
     act = Fluid3::calc_loma_statistics;
+  else if (action == "calc_turbscatra_statistics")
+    act = Fluid3::calc_turbscatra_statistics;
   else if (action == "calc_fluid_box_filter")
     act = Fluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
@@ -111,6 +113,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::set_time_parameter;
   else if (action == "set_turbulence_parameter")
     act = Fluid3::set_turbulence_parameter;
+  else if (action == "set_loma_parameter")
+    act = Fluid3::set_loma_parameter;
   else if (action == "set_general_adjoint_parameter")
     act = Fluid3::set_general_adjoint_parameter;
   else if (action == "set_adjoint_time_parameter")
@@ -150,6 +154,11 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
     f3Parameter->SetElementTurbulenceParameter(p);
   }
+  else if (action == "set_loma_parameter")
+  {
+    DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+    f3Parameter->SetElementLomaParameter(p);
+  }
   else if (action == "set_general_adjoint_parameter")
   {
     DRT::ELEMENTS::FluidAdjoint3ImplParameter* f3Parameter = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
@@ -160,6 +169,7 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
     DRT::ELEMENTS::FluidAdjoint3ImplParameter* f3Parameter = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
     f3Parameter->SetElementAdjointTimeParameter(p);
   }
+
   return;
 }
 
@@ -372,6 +382,61 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
       } // end if (nsd == 3)
       else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
+    }
+    break;
+    case calc_turbscatra_statistics:
+    {
+      if(nsd == 3)
+      {
+        // do nothing if you do not own this element
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
+          // --------------------------------------------------
+          // extract velocities and pressure as well as densities
+          // from the global distributed vectors
+
+          // velocity/pressure and scalar values (n+1)
+          RCP<const Epetra_Vector> velnp
+            = discretization.GetState("u and p (n+1,converged)");
+          RCP<const Epetra_Vector> scanp
+            = discretization.GetState("scalar (n+1,converged)");
+          if (velnp==null || scanp==null)
+            dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
+
+          // extract local values from the global vectors
+          vector<double> myvelpre(lm.size());
+          vector<double> mysca(lm.size());
+          DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
+          DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
+
+          // integrate mean values
+          const DiscretizationType distype = this->Shape();
+
+          switch (distype)
+          {
+          case DRT::Element::hex8:
+          {
+            f3_calc_scatra_means<8>(discretization,myvelpre,mysca,params);
+            break;
+          }
+          case DRT::Element::hex20:
+          {
+            f3_calc_scatra_means<20>(discretization,myvelpre,mysca,params);
+            break;
+          }
+          case DRT::Element::hex27:
+          {
+            f3_calc_scatra_means<27>(discretization,myvelpre,mysca,params);
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for turbulent passive scalar mean value evaluation\n");
+          }
+          }
+        }
+      } // end if (nsd == 3)
+      else dserror("action 'calc_loma_statistics' is a 3D specific action");
     }
     break;
     case calc_loma_statistics:
@@ -745,6 +810,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
     case set_general_fluid_parameter:
     case set_time_parameter:
     case set_turbulence_parameter:
+    case set_loma_parameter:
     case set_general_adjoint_parameter:
     case set_adjoint_time_parameter:
       break;
@@ -1845,6 +1911,384 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_loma_means
 
+
+/*---------------------------------------------------------------------*
+ | Calculate spatial mean values for passive scalar transport
+ | in turbulent channel flow
+ |                                                     rasthofer 01/12
+ *---------------------------------------------------------------------*/
+template<int iel>
+void DRT::ELEMENTS::Fluid3::f3_calc_scatra_means(
+  DRT::Discretization&      discretization,
+  vector<double>&           velocitypressure,
+  vector<double>&           scalar,
+  ParameterList&            params
+  )
+{
+  // get view of solution vector
+  LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
+  LINALG::Matrix<4*iel,1> phi(&(scalar[0]),true);
+
+  // set element data
+  const DiscretizationType distype = this->Shape();
+
+  // the plane normal tells you in which plane the integration takes place
+  const int normdirect = params.get<int>("normal direction to homogeneous plane");
+
+  // the vector planes contains the coordinates of the homogeneous planes (in
+  // wall normal direction)
+  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
+
+  // get the pointers to the solution vectors
+  RCP<vector<double> > sumarea= params.get<RCP<vector<double> > >("element layer area");
+
+  RCP<vector<double> > sumu   = params.get<RCP<vector<double> > >("mean velocity u");
+  RCP<vector<double> > sumv   = params.get<RCP<vector<double> > >("mean velocity v");
+  RCP<vector<double> > sumw   = params.get<RCP<vector<double> > >("mean velocity w");
+  RCP<vector<double> > sump   = params.get<RCP<vector<double> > >("mean pressure p");
+  RCP<vector<double> > sumphi   = params.get<RCP<vector<double> > >("mean scalar phi");
+
+  RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
+  RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
+  RCP<vector<double> > sumsqw = params.get<RCP<vector<double> > >("mean value w^2");
+  RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
+  RCP<vector<double> > sumsqphi = params.get<RCP<vector<double> > >("mean value phi^2");
+
+  RCP<vector<double> > sumuv  = params.get<RCP<vector<double> > >("mean value uv");
+  RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
+  RCP<vector<double> > sumvw  = params.get<RCP<vector<double> > >("mean value vw");
+  RCP<vector<double> > sumuphi  = params.get<RCP<vector<double> > >("mean value uphi");
+  RCP<vector<double> > sumvphi  = params.get<RCP<vector<double> > >("mean value vphi");
+  RCP<vector<double> > sumwphi  = params.get<RCP<vector<double> > >("mean value wphi");
+
+  // get node coordinates of element
+  LINALG::Matrix<3,iel>  xyze;
+  DRT::Node** nodes = Nodes();
+  for(int inode=0;inode<iel;inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode)=x[0];
+    xyze(1,inode)=x[1];
+    xyze(2,inode)=x[2];
+  }
+
+  if(distype == DRT::Element::hex8
+     ||
+     distype == DRT::Element::hex27
+     ||
+     distype == DRT::Element::hex20)
+  {
+    double min = xyze(normdirect,0);
+    double max = xyze(normdirect,0);
+
+    // set maximum and minimum value in wall normal direction
+    for(int inode=0;inode<iel;inode++)
+    {
+      if(min > xyze(normdirect,inode)) min=xyze(normdirect,inode);
+      if(max < xyze(normdirect,inode)) max=xyze(normdirect,inode);
+    }
+
+    // determine the ids of the homogeneous planes intersecting this element
+    set<int> planesinele;
+    for(unsigned nplane=0;nplane<planes->size();++nplane)
+    {
+    // get all available wall normal coordinates
+      for(int nn=0;nn<iel;++nn)
+      {
+        if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+          planesinele.insert(nplane);
+      }
+    }
+
+    // remove lowest layer from planesinele to avoid double calculations. This is not done
+    // for the first level (index 0) --- if deleted, shift the first integration point in
+    // wall normal direction
+    // the shift depends on the number of sampling planes in the element
+    double shift=0;
+
+    // set the number of planes which cut the element
+    const int numplanesinele = planesinele.size();
+
+    if(*planesinele.begin() != 0)
+    {
+      // this is not an element of the lowest element layer
+      planesinele.erase(planesinele.begin());
+
+      shift=2.0/(static_cast<double>(numplanesinele-1));
+    }
+    else
+    {
+      // this is an element of the lowest element layer. Increase the counter
+      // in order to compute the total number of elements in one layer
+      int* count = params.get<int*>("count processed elements");
+
+      (*count)++;
+    }
+
+    // determine the orientation of the rst system compared to the xyz system
+    int elenormdirect=-1;
+    bool upsidedown =false;
+    // the only thing of interest is how normdirect is oriented in the
+    // element coordinate system
+    if(xyze(normdirect,4)-xyze(normdirect,0)>2e-9)
+    {
+      // t aligned
+      elenormdirect =2;
+      cout << "upsidedown false" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
+    {
+      // s aligned
+      elenormdirect =1;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
+    {
+      // r aligned
+      elenormdirect =0;
+    }
+    else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
+    {
+      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      // -t aligned
+      elenormdirect =2;
+      upsidedown =true;
+      cout << "upsidedown true" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
+    {
+      // -s aligned
+      elenormdirect =1;
+      upsidedown =true;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)<-2e-9)
+    {
+      // -r aligned
+      elenormdirect =0;
+      upsidedown =true;
+    }
+    else
+    {
+      dserror("cannot determine orientation of plane normal in local coordinate system of element");
+    }
+    vector<int> inplanedirect;
+    {
+      set <int> inplanedirectset;
+      for(int i=0;i<3;++i)
+      {
+        inplanedirectset.insert(i);
+      }
+      inplanedirectset.erase(elenormdirect);
+
+      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      {
+        inplanedirect.push_back(*id);
+      }
+    }
+
+    // allocate vector for shapefunctions
+    LINALG::Matrix<iel,1> funct;
+    // allocate vector for shapederivatives
+    LINALG::Matrix<3,iel> deriv;
+    // space for the jacobian
+    LINALG::Matrix<3,3>   xjm;
+
+    // get the quad9 gaussrule for the in-plane integration
+    const IntegrationPoints2D  intpoints(intrule_quad_9point);
+
+    // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
+    // (now we allow even more)
+    double layershift=0;
+
+    // loop all levels in element
+    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    {
+      // reset temporary values
+      double area=0;
+
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+      double phibar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double psqbar=0;
+      double phisqbar=0;
+
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double uphibar =0;
+      double vphibar =0;
+      double wphibar =0;
+
+      // get the integration point in wall normal direction
+      double e[3];
+
+      e[elenormdirect]=-1.0+shift+layershift;
+      if(upsidedown) e[elenormdirect]*=-1;
+
+      // start loop over integration points in layer
+      for (int iquad=0;iquad<intpoints.nquad;iquad++)
+      {
+        // get the other gauss point coordinates
+        for(int i=0;i<2;++i)
+        {
+          e[inplanedirect[i]]=intpoints.qxg[iquad][i];
+        }
+
+        // compute the shape function values
+        shape_function_3D(funct,e[0],e[1],e[2],distype);
+        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+
+        // get transposed Jacobian matrix and determinant
+        //
+        //        +-            -+ T      +-            -+
+        //        | dx   dx   dx |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dr   dr   dr |
+        //        |              |        |              |
+        //        | dy   dy   dy |        | dx   dy   dz |
+        //        | --   --   -- |   =    | --   --   -- |
+        //        | dr   ds   dt |        | ds   ds   ds |
+        //        |              |        |              |
+        //        | dz   dz   dz |        | dx   dy   dz |
+        //        | --   --   -- |        | --   --   -- |
+        //        | dr   ds   dt |        | dt   dt   dt |
+        //        +-            -+        +-            -+
+        //
+        // The Jacobian is computed using the formula
+        //
+        //            +-----
+        //   dx_j(r)   \      dN_k(r)
+        //   -------  = +     ------- * (x_j)_k
+        //    dr_i     /       dr_i       |
+        //            +-----    |         |
+        //            node k    |         |
+        //                  derivative    |
+        //                   of shape     |
+        //                   function     |
+        //                           component of
+        //                          node coordinate
+        //
+        xjm.MultiplyNT(deriv,xyze);
+
+        // we assume that every plane parallel to the wall is preserved
+        // hence we can compute the jacobian determinant of the 2d cutting
+        // element by replacing max-min by one on the diagonal of the
+        // jacobi matrix (the two non-diagonal elements are zero)
+        if (xjm(normdirect,normdirect)<0) xjm(normdirect,normdirect)=-1.0;
+        else                              xjm(normdirect,normdirect)= 1.0;
+
+        const double det =
+          xjm(0,0)*xjm(1,1)*xjm(2,2)
+          +
+          xjm(0,1)*xjm(1,2)*xjm(2,0)
+          +
+          xjm(0,2)*xjm(1,0)*xjm(2,1)
+          -
+          xjm(0,2)*xjm(1,1)*xjm(2,0)
+          -
+          xjm(0,0)*xjm(1,2)*xjm(2,1)
+          -
+          xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+        // check for degenerated elements
+        if (det <= 0.0) dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
+        double phigp=0;
+        double usave=0;
+
+        // the computation of this jacobian determinant from the 3d
+        // mapping is based on the assumption that we do not deform
+        // our elements in wall normal direction!
+        const double fac=det*intpoints.qwgt[iquad];
+
+        // increase area of cutting plane in element
+        area += fac;
+
+        for(int inode=0;inode<iel;inode++)
+        {
+          int finode=inode*4;
+
+          usave  = velpre(finode);
+          ugp   += funct(inode)*velpre(finode++);
+          vgp   += funct(inode)*velpre(finode++);
+          wgp   += funct(inode)*velpre(finode++);
+          pgp   += funct(inode)*velpre(finode  );
+          phigp   += funct(inode)*phi(finode  );
+        }
+
+        // add contribution to integral
+        double dubar   = ugp*fac;
+        double dvbar   = vgp*fac;
+        double dwbar   = wgp*fac;
+        double dpbar   = pgp*fac;
+        double dphibar   = phigp*fac;
+
+        ubar   += dubar;
+        vbar   += dvbar;
+        wbar   += dwbar;
+        pbar   += dpbar;
+        phibar += dphibar;
+
+        usqbar   += ugp*dubar;
+        vsqbar   += vgp*dvbar;
+        wsqbar   += wgp*dwbar;
+        psqbar   += pgp*dpbar;
+        phisqbar   += phigp*dphibar;
+
+        uvbar  += ugp*dvbar;
+        uwbar  += ugp*dwbar;
+        vwbar  += vgp*dwbar;
+        uphibar  += ugp*dphibar;
+        vphibar  += vgp*dphibar;
+        wphibar  += wgp*dphibar;
+      } // end loop integration points
+
+      // add increments from this layer to processor local vectors
+      (*sumarea)[*id] += area;
+
+      (*sumu   )[*id] += ubar;
+      (*sumv   )[*id] += vbar;
+      (*sumw   )[*id] += wbar;
+      (*sump   )[*id] += pbar;
+      (*sumphi   )[*id] += phibar;
+
+      (*sumsqu  )[*id] += usqbar;
+      (*sumsqv  )[*id] += vsqbar;
+      (*sumsqw  )[*id] += wsqbar;
+      (*sumsqp  )[*id] += psqbar;
+      (*sumsqphi  )[*id] += phisqbar;
+
+      (*sumuv  )[*id] += uvbar;
+      (*sumuw  )[*id] += uwbar;
+      (*sumvw  )[*id] += vwbar;
+      (*sumuphi  )[*id] += uphibar;
+      (*sumvphi  )[*id] += vphibar;
+      (*sumwphi  )[*id] += wphibar;
+
+      // jump to the next layer in the element.
+      // in case of an hex8 element, the two coordinates are -1 and 1(+2)
+      // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
+
+      layershift+=2.0/(static_cast<double>(numplanesinele-1));
+    }
+  }
+  else
+    dserror("Unknown element type for turbulent passive scalar mean value evaluation\n");
+
+  return;
+} // DRT::ELEMENTS::Fluid3::f3_calc_scatra_means
+
+
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
@@ -2494,6 +2938,7 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
 {
   // get mfs parameter
   ParameterList *  turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
+  bool withscatra = params.get<bool>("scalar");
 
   // allocate a fixed size array for nodal velocities
   LINALG::Matrix<NSD,NEN>   evel;
@@ -2599,8 +3044,9 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
    dserror("Unknown filter type!");
   // allocate vector for parameter N
   // N may depend on the direction
-  vector<double> N (3);
-
+  vector<double> Nvel (3);
+  // element Reynolds number
+  double Re_ele = -1.0;
   // characteristic element length
   double hk = 1.0e+10;
 
@@ -2637,16 +3083,15 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
   if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"CALC_N")) == false)
   {
     for (int rr=1;rr<3;rr++)
-      N[rr] = turbmodelparamsmfs->get<double>("N");
+      Nvel[rr] = turbmodelparamsmfs->get<double>("N");
 #ifdef DIR_N // direction dependent stuff, currently not used
-  N[0] = NUMX;
-  N[1] = NUMY;
-  N[2] = NUMZ;
+  Nvel[0] = NUMX;
+  Nvel[1] = NUMY;
+  Nvel[2] = NUMZ;
 #endif
   }
   else //no, so we calculate N from Re
   {
-  double Re_ele = -1.0;
   double scale_ratio = 0.0;
 
   // get velocity at element center
@@ -2949,7 +3394,7 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
     dserror("Something went wrong when calculating N!");
 
   for (int i=0; i<NSD; i++)
-    N[i] = N_re;
+    Nvel[i] = N_re;
   }
 #ifdef DIR_N
     vector<double> weights (3);
@@ -2957,7 +3402,7 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
     weights[1] = WEIGHT_NY;
     weights[2] = WEIGHT_NZ;
     for (int i=0; i<NSD; i++)
-      N[i] *= weights[i];
+      Nvel[i] *= weights[i];
 #endif
 
 
@@ -3000,21 +3445,148 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
 
     for (int dim=0; dim<NSD; dim++)
     {
-      B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
+      B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1));
     }
   }
 
-#ifdef DIR_N
-    B(0,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
-    B(1,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[1]/3.0) * sqrt((pow(2.0,4.0*N[1]/3.0)-1));
-    B(2,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[2]/3.0) * sqrt((pow(2.0,4.0*N[2]/3.0)-1));
-#endif
 #ifdef CONST_B
   for (int dim=0; dim<NSD; dim++)
   {
     B(dim,0) = B_CONST;
   }
 #endif
+
+  // calculate model parameters for passive scalar transport
+  // allocate vector for parameter N
+  // N may depend on the direction -> currently unused
+  double Nphi= 0.0;
+  // allocate array for coefficient D
+  // D may depend on the direction (if N depends on it)
+  double D = 0.0;
+  double Csgs_phi = turbmodelparamsmfs->get<double>("CSGS_PHI");
+  if (withscatra)
+  {
+    // get Schmidt number
+    double scnum = params.get<double>("scnum");
+    // ratio of dissipation scale to element length
+    double scale_ratio_phi = 0.0;
+
+    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"CALC_N")) == true)
+    {
+      //
+      //   Delta
+      //  ---------  ~ Re^(3/4)*Sc^(1/2)
+      //  lambda_diff
+      //
+      scale_ratio_phi = turbmodelparamsmfs->get<double>("C_DIFF") * pow(Re_ele,3.0/4.0) * pow(scnum,1.0/2.0);
+      // scale_ratio < 1.0 leads to N < 0
+      // therefore, we clip again
+      if (scale_ratio_phi < 1.0)
+        scale_ratio_phi = 1.0;
+
+      //         |   Delta     |
+      //  N =log | ----------- |
+      //        2|  lambda_nu  |
+      Nphi = log(scale_ratio_phi)/log(2.0);
+      if (Nphi < 0.0)
+        dserror("Something went wrong when calculating N!");
+    }
+    else
+     dserror("Multifractal subgrid-scales for scalar transport with calculation of N, only!");
+
+    // here, we have to distinguish three different cases:
+    // Sc ~ 1 : fluid and scalar field have the nearly the same cutoff (usual case)
+    //          k^(-5/3) scaling -> gamma = 4/3
+    // Sc >> 1: (i)  cutoff in the inertial-convective range (Nvel>0, tricky!)
+    //               k^(-5/3) scaling in the inertial-convective range
+    //               k^(-1) scaling in the viscous-convective range
+    //          (ii) cutoff in the viscous-convective range (fluid field fully resolved, easier)
+    //               k^(-1) scaling -> gamma = 2
+    // rare:
+    // Sc << 1: fluid field could be fully resolved, not necessary
+    //          k^(-5/3) scaling -> gamma = 4/3
+    // Remark: case 2.(i) not implemented, yet
+
+#ifndef TESTING
+    double gamma = 0.0;
+    if (scnum < 2.0) // Sc <= 1, i.e., case 1 and 3
+      gamma = 4.0/3.0;
+    else if (scnum > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
+      gamma = 2.0;
+    else if (scnum > 2.0 and Nvel[0]<Nphi)
+      dserror("Inertial-convective and viscous-convective range?");
+    else
+      dserror("Could not determine gamma!");
+
+    //
+    //   Phi    |       1                |
+    //  kappa = | ---------------------- |
+    //          |  1 - alpha ^ (-gamma)  |
+    //
+    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+
+    // calculate coefficient of subgrid-scalar
+    //                                                             1
+    //       Phi    Phi                       |                   |2
+    //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
+    //                                        |                   |
+    //
+    D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+#endif
+
+    // second implementation for testing on cluster
+#ifdef TESTING
+  double fac = 1.0;
+# if 1
+    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT")) == true)
+    {
+      // get Re from strain rate
+      double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
+      if (Re_ele_str < 0.0)
+        dserror("Something went wrong!");
+      // ensure positive values
+      if (Re_ele_str < 1.0)
+        Re_ele_str = 1.0;
+
+      // calculate corrected Csgs
+      //           -3/16
+      //  *(1 - (Re)   )
+      //
+      double Pr = params.get<double>("scnum");
+      fac = (1-pow(Re_ele_str,-3.0/16.0)); //*pow(Pr,-1.0/8.0));
+    }
+#endif
+
+
+  // Pr <= 1
+  # if 1
+    double gamma = 0.0;
+    gamma = 4.0/3.0;
+    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+    D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1))*fac;
+  #endif
+
+  // Pr >> 1: cutoff viscous-convective
+  # if 0
+    double gamma = 0.0;
+    gamma = 2.0;
+    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+    D(dim,0) = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1))*fac;
+  #endif
+
+  // Pr >> 1: cutoff inertial-convective
+  #if 0
+    double gamma1 = 0.0;
+    gamma1 = 4.0/3.0;
+    double gamma2 = 0.0;
+    gamma2 = 2.0;
+    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
+      D = Csgs_phi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[dim])-1)+4.0/3.0*(PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[dim])))*fac;
+  #endif
+#endif
+
+
+  }
 
   // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
   double sgvisc = 0.0;
@@ -3092,6 +3664,15 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
   RCP<vector<double> > sum_B_normal      = modelparams->get<RCP<vector<double> > >("local_B_normal_sum");
   RCP<vector<double> > sum_B_span        = modelparams->get<RCP<vector<double> > >("local_B_span_sum");
   RCP<vector<double> > sum_Csgs          = modelparams->get<RCP<vector<double> > >("local_Csgs_sum");
+  RCP<vector<double> > sum_Nphi;
+  RCP<vector<double> > sum_Dphi;
+  RCP<vector<double> > sum_Csgs_phi;
+  if (withscatra)
+  {
+    sum_Nphi          = modelparams->get<RCP<vector<double> > >("local_Nphi_sum");
+    sum_Dphi          = modelparams->get<RCP<vector<double> > >("local_Dphi_sum");
+    sum_Csgs_phi      = modelparams->get<RCP<vector<double> > >("local_Csgs_phi_sum");
+  }
   RCP<vector<double> > sum_sgvisc        = modelparams->get<RCP<vector<double> > >("local_sgvisc_sum");
 
   // the coordinates of the element layers in the channel
@@ -3116,16 +3697,20 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
     dserror("could not determine element layer");
   }
 
-  (*sum_N_stream)[nlayer] += N[0];
-  (*sum_N_normal)[nlayer] += N[1];
-  (*sum_N_span)[nlayer] += N[2];
+  (*sum_N_stream)[nlayer] += Nvel[0];
+  (*sum_N_normal)[nlayer] += Nvel[1];
+  (*sum_N_span)[nlayer] += Nvel[2];
   (*sum_B_stream)[nlayer] += B(0,0);
   (*sum_B_normal)[nlayer] += B(1,0);
   (*sum_B_span)[nlayer] += B(2,0);
   (*sum_Csgs)[nlayer] += Csgs;
+  if (withscatra)
+  {
+    (*sum_Csgs_phi)[nlayer] += Csgs_phi;
+    (*sum_Nphi)[nlayer] += Nphi;
+    (*sum_Dphi)[nlayer] += D;
+  }
   (*sum_sgvisc)[nlayer] += sgvisc;
-
-
 
   return;
 } // DRT::ELEMENTS::Fluid3::f3_get_mf_params

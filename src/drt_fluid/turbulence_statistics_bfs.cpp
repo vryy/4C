@@ -386,7 +386,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     }
 
     x1statlocations_(rr) = x1coordinates_->at(pos);
-    // std::cout << x1statlocations_(rr) << std::endl;
+    //std::cout << x1statlocations_(rr) << std::endl;
   }
 
   //find supplementary locations x/h=-2 and -1
@@ -413,7 +413,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     }
 
     x1supplocations_(rr) = x1coordinates_->at(pos);
-    // std::cout << x1supplocations_(rr) << std::endl;
+    //std::cout << x1supplocations_(rr) << std::endl;
   }
 
   //----------------------------------------------------------------------

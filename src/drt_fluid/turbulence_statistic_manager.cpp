@@ -105,6 +105,21 @@ namespace FLD
                                                           params_             ,
                                                           subgrid_dissipation_));
     }
+    else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
+    {
+      flow_=scatra_channel_flow_of_height_2;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
+                                                          mydispnp_           ,
+                                                          params_             ,
+                                                          subgrid_dissipation_));;
+    }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
       flow_=lid_driven_cavity;
@@ -325,6 +340,21 @@ namespace FLD
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
       flow_=loma_channel_flow_of_height_2;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+                                                          alefluid_           ,
+                                                          mydispnp_           ,
+                                                          params_             ,
+                                                          subgrid_dissipation_));
+    }
+    else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
+    {
+      flow_=scatra_channel_flow_of_height_2;
 
       // do the time integration independent setup
       Setup();
@@ -741,6 +771,7 @@ namespace FLD
 
       if (flow_ == channel_flow_of_height_2 or
           flow_ == loma_channel_flow_of_height_2 or
+          flow_ == scatra_channel_flow_of_height_2 or
           flow_ == bubbly_channel_flow)
       {
         string homdir
@@ -901,6 +932,14 @@ namespace FLD
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
         statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+        break;
+      }
+      case scatra_channel_flow_of_height_2:
+      {
+        if(statistics_channel_==null)
+          dserror("need statistics_channel_ to do a time sample for a turbulent passive scalar transport in channel");
+
+        statistics_channel_->DoScatraTimeSample(myvelnp_,myscanp_,*myforce_);
         break;
       }
       case lid_driven_cavity:
@@ -1136,7 +1175,13 @@ namespace FLD
           case channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_);
+            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,false);
+            break;
+          }
+          case scatra_channel_flow_of_height_2:
+          {
+            // add parameters of multifractal subgrid-scales model
+            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,true);
             break;
           }
           default:
@@ -1315,6 +1360,15 @@ namespace FLD
 
         if(outputformat == write_single_record)
           statistics_channel_->DumpLomaStatistics(step);
+        break;
+      }
+      case scatra_channel_flow_of_height_2:
+      {
+        if(statistics_channel_==null)
+          dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
+
+        if(outputformat == write_single_record)
+          statistics_channel_->DumpScatraStatistics(step);
         break;
       }
       case bubbly_channel_flow:
@@ -1524,6 +1578,13 @@ namespace FLD
 
     if (statistics_ccy_!=Teuchos::null)
       statistics_ccy_->AddScaTraResults(scatradis, phinp);
+
+    if(flow_==scatra_channel_flow_of_height_2)
+    {
+      // store scatra discretization (multifractal subgrid scales only)
+      if (multifractal_)
+        statistics_channel_->StoreScatraDiscret(scatradis_);
+    }
 
     return;
   }

@@ -481,6 +481,7 @@ private:
     calc_fluid_error,
     calc_turbulence_statistics,
     calc_loma_statistics,
+    calc_turbscatra_statistics,
     calc_dissipation,
     calc_model_params_mfsubgr_scales,
     calc_fluid_box_filter,
@@ -492,6 +493,7 @@ private:
     set_general_fluid_parameter,
     set_time_parameter,
     set_turbulence_parameter,
+    set_loma_parameter,
     calc_adjoint_systemmat_and_residual,
     set_general_adjoint_parameter,
     set_adjoint_time_parameter
@@ -619,6 +621,17 @@ private:
     vector<double>&           temperature  ,
     ParameterList&            params,
     const double              eosfac
+    );
+
+  /*!
+    \brief same as above for turbulent scalar transport
+   */
+  template<int iel>
+  void f3_calc_scatra_means(
+    DRT::Discretization&      discretization,
+    vector<double>&           velocitypressure,
+    vector<double>&           scalar,
+    ParameterList&            params
     );
 
   /*!

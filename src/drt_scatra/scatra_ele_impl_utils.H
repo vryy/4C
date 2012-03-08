@@ -215,6 +215,9 @@ namespace SCATRA
       const std::vector<int>& indices  ///< indices
   );
 
+  //! identify elements of inflow section
+  bool InflowElement(DRT::Element* ele);
+
 } // namespace SCATRA
 
 #endif

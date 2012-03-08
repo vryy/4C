@@ -490,6 +490,26 @@ void SCATRA::TimIntBDF2::OutputRestart()
     }
   }
 
+  // write additional restart data for loma
+  // required for restart of closed systems
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+  {
+    // thermodynamic pressure at time n+1
+    output_->WriteDouble("thermpressnp",thermpressnp_);
+    // thermodynamic pressure at time n
+    output_->WriteDouble("thermpressn",thermpressn_);
+    // thermodynamic pressure at time n-1
+    output_->WriteDouble("thermpressnm",thermpressnm_);
+    // time derivative of thermodynamic pressure at time n+1
+    output_->WriteDouble("thermpressdtnp",thermpressdtnp_);
+    // time derivative of thermodynamic pressure at time n
+    output_->WriteDouble("thermpressdtn",thermpressdtn_);
+    // as well as initial mass
+    output_->WriteDouble("initialmass",initialmass_);
+    // as well as initial mass
+    output_->WriteDouble("initialmass",initialmass_);
+  }
+
   return;
 }
 
@@ -552,6 +572,22 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
       if (!read_pot)
         dserror("Reading of electrode potential for restart not successful.");
     }
+  }
+
+  // restart data of loma problems
+  // required for restart of closed systems
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+  {
+    // thermodynamic pressure at time n+1
+    thermpressnp_ = reader.ReadDouble("thermpressnp");
+    // thermodynamic pressure at time n
+    thermpressn_ = reader.ReadDouble("thermpressn");
+    // thermodynamic pressure at time n-1
+    thermpressnm_ = reader.ReadDouble("thermpressnm");
+    // time derivative of thermodynamic pressure at time n+1
+    thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
+    // time derivative of thermodynamic pressure at time n
+    thermpressdtn_ = reader.ReadDouble("thermpressdtn");
   }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or

@@ -273,6 +273,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     diff_phi_(numscal_),
     rea_phi_(numscal_),
     sgphi_(numscal_),
+    mfssgphi_(numscal_),
     thermpressnp_(0.0),
     thermpressam_(0.0),
     thermpressdt_(0.0),
@@ -282,7 +283,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     migrationintau_(true),
     migrationstab_(true),
     migrationinresidual_(true),
-    reacoeffderiv_(numscal_)
+    reacoeffderiv_(numscal_),
+    update_mat_(false)
 {
   return;
 }
@@ -351,7 +353,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // get additional state vector for ALE case: grid displacement
-  isale_ = params.get<bool>("isale");
+  isale_ = params.get<bool>("isale",false);
   if (isale_)
   {
     const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
@@ -424,11 +426,25 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       if (is_genalpha_)
         thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
+      // update material with subgrid-scale scalar
+      update_mat_ = params.get<bool>("update material", false);
+    }
+
+    if (scatratype == INPAR::SCATRA::scatratype_loma or
+        scatratype == INPAR::SCATRA::scatratype_turbpassivesca)
+    {
       // set flag for turbulence model
       if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Smagorinsky")
         turbmodel_ = INPAR::FLUID::smagorinsky;
       if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
         turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+      // as the scalar field is constant in the turbulent inflow section
+      // we do not need any turbulence model
+      if (params.get<bool>("turbulent inflow",false))
+      {
+        if (SCATRA::InflowElement(ele))
+          turbmodel_ = INPAR::FLUID::no_model;
+      }
     }
 
     // set flag for conservative form
@@ -1325,10 +1341,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (material->MaterialType() == INPAR::MAT::m_sutherland)
     {
       const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
       params.set("thermodynamic pressure",actmat->ThermPress());
     }
     else params.set("thermodynamic pressure",0.0);
+
+    if (material->MaterialType() == INPAR::MAT::m_scatra)
+    {
+      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+      params.set("scnum",actmat->ScNum());
+    }
+    else params.set("scnum",-1.0);
   }
   else if (action =="calc_time_deriv_reinit")
   {
@@ -2043,13 +2065,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           for (int idim=0; idim<nsd_; idim++)
             mfsgvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
 
-
           // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
+          mfssgphi_[k] = D_mfs * funct_.Dot(ephinp_[k]);
           fsgradphi_.Multiply(derxy_,fsphinp_[k]);
           for (int idim=0; idim<nsd_; idim++)
             mfsggradphi_(idim,0) = fsgradphi_(idim,0) * D_mfs;
-//          if (eid_==10000)
-//           std::cout << mfsggradphi_ <<std::endl;
         }
         else
         {
@@ -2060,17 +2080,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // subgrid-scale part of scalar
         CalcResidualAndSubgrScalar(dt,timefac,k);
 
-#ifdef SGSCALSCALAR
         // update material parameters based on inclusion of subgrid-scale
         // part of scalar (active only for mixture fraction,
         // Sutherland law and progress variable, for the time being)
-        UpdateMaterialParams(ele,k);
+        if (update_mat_)
+        {
+          if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+            UpdateMaterialParams(ele,mfssgphi_[k],k);
+          else
+            UpdateMaterialParams(ele,sgphi_[k],k);
 
-        // recompute rhs based on updated material parameters
-        rhs_[k] = bodyforce_[k].Dot(funct_)/shc_;
-        rhs_[k] += thermpressdt_/shc_;
-        rhs_[k] += densnp_[k]*reatemprhs_[k];
-#endif
+          // recompute rhs based on updated material parameters
+          rhs_[k] = bodyforce_[k].Dot(funct_)/shc_;
+          rhs_[k] += thermpressdt_/shc_;
+          rhs_[k] += densnp_[k]*reatemprhs_[k];
+        }
+
 
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,residual,fac,fssgd,timefac,dt,alphaF,k);
@@ -2411,6 +2436,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     densnp_[0]      = 1.0;
     densam_[0]      = 1.0;
     densgradfac_[0] = 0.0;
+
+    // in case of multifrcatal subgrid-scales, read Schmidt number
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_)
+    {
+      double scnum = actmat->ScNum();
+      visc_ = scnum * diffus_[0];
+    }
   }
   else if (material->MaterialType() == INPAR::MAT::m_ion)
   {
@@ -2781,6 +2813,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   const DRT::Element*  ele,
+  const double         sgphi,
   const int            k
   )
 {
@@ -2795,7 +2828,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     double mixfracnp = funct_.Dot(ephinp_[k]);
 
     // add subgrid-scale part to obtain complete mixture fraction
-    mixfracnp += sgphi_[k];
+    mixfracnp += sgphi;
 
     // compute dynamic diffusivity at n+1 or n+alpha_F based on mixture fraction
     diffus_[k] = actmat->ComputeDiffusivity(mixfracnp);
@@ -2807,14 +2840,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     {
       // compute density at n+alpha_M
       double mixfracam = funct_.Dot(ephiam_[k]);
-      mixfracam += sgphi_[k];
+      mixfracam += sgphi;
       densam_[k] = actmat->ComputeDensity(mixfracam);
 
       if (not is_incremental_)
       {
         // compute density at n
         double mixfracn = funct_.Dot(ephin_[k]);
-        mixfracn += sgphi_[k];
+        mixfracn += sgphi;
         densn_[k] = actmat->ComputeDensity(mixfracn);
       }
       else densn_[k] = 1.0;
@@ -2832,7 +2865,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     double tempnp = funct_.Dot(ephinp_[k]);
 
     // add subgrid-scale part to obtain complete temperature
-    tempnp += sgphi_[k];
+    tempnp += sgphi;
 
     // compute diffusivity according to Sutherland law
     diffus_[k] = actmat->ComputeDiffusivity(tempnp);
@@ -2845,14 +2878,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     {
       // compute density at n+alpha_M
       double tempam = funct_.Dot(ephiam_[k]);
-      tempam += sgphi_[k];
+      tempam += sgphi;
       densam_[k] = actmat->ComputeDensity(tempam,thermpressam_);
 
       if (not is_incremental_)
       {
         // compute density at n (thermodynamic pressure approximated at n+alpha_M)
         double tempn = funct_.Dot(ephin_[k]);
-        tempn += sgphi_[k];
+        tempn += sgphi;
         densn_[k] = actmat->ComputeDensity(tempn,thermpressam_);
       }
       else densn_[k] = 1.0;
@@ -2870,7 +2903,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     double provarnp = funct_.Dot(ephinp_[k]);
 
     // add subgrid-scale part to obtain complete progress variable
-    provarnp += sgphi_[k];
+    provarnp += sgphi;
 
     // get specific heat capacity at constant pressure and
     // compute temperature based on progress variable
@@ -2884,14 +2917,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     {
       // compute density at n+alpha_M
       double provaram = funct_.Dot(ephiam_[k]);
-      provaram += sgphi_[k];
+      provaram += sgphi;
       densam_[k] = actmat->ComputeDensity(provaram);
 
       if (not is_incremental_)
       {
         // compute density at n
         double provarn = funct_.Dot(ephin_[k]);
-        provarn += sgphi_[k];
+        provarn += sgphi;
         densn_[k] = actmat->ComputeDensity(provarn);
       }
       else densn_[k] = 1.0;
@@ -2919,7 +2952,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     double provarnp = funct_.Dot(ephinp_[k]);
 
     // add subgrid-scale part to obtain complete progress variable
-    provarnp += sgphi_[k];
+    provarnp += sgphi;
 
     // get specific heat capacity at constant pressure and
     // compute temperature based on progress variable
@@ -2933,14 +2966,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
     {
       // compute density at n+alpha_M
       double provaram = funct_.Dot(ephiam_[k]);
-      provaram += sgphi_[k];
+      provaram += sgphi;
       densam_[k] = actmat->ComputeDensity(provaram);
 
       if (not is_incremental_)
       {
         // compute density at n
         double provarn = funct_.Dot(ephin_[k]);
-        provarn += sgphi_[k];
+        provarn += sgphi;
         densn_[k] = actmat->ComputeDensity(provarn);
       }
       else densn_[k] = 1.0;
@@ -3850,11 +3883,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   double scale_ratio = 0.0;
 
   // get velocity at element center
-//  convelint_.Multiply(econvelnp_,funct_);
+  // convelint_.Multiply(econvelnp_,funct_);
   // get norm of velocity
   const double vel_norm = convelint_.Norm2();
   // also for fine-scale velocity
-//  fsvelint_.Multiply(efsvel_,funct_);
+  // fsvelint_.Multiply(efsvel_,funct_);
   const double fsvel_norm = fsvelint_.Norm2();
 
   // do we have a fixed parameter N
@@ -4092,7 +4125,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-    B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1));
+    B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
 //    if (eid_ == 10000)
 //     std::cout << "B  " << setprecision (10) << B_mfs(dim,0) << std::endl;
   }
@@ -4104,10 +4137,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   // STEP 1: determine N
   //         currently constant C_sgs for D assumed
 
-  // calculate prandtl number
-  double Pr = visc_/diffus_[k];
-//  if (eid_ == 100)
-//   std::cout << Pr << std::endl;
+  // calculate prandtl number or schmidt number (passive scalar)
+  const double Pr = visc_/diffus_[k];
 
   // allocate vector for parameter N
   double Nphi = 0.0;
@@ -4139,7 +4170,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
 
   // STEP 2: calculate D
 
-  // here, we have to distinguish tree different cases:
+  // here, we have to distinguish three different cases:
   // Pr ~ 1 : fluid and scalar field have the nearly the same cutoff (usual case)
   //          k^(-5/3) scaling -> gamma = 4/3
   // Pr >> 1: (i)  cutoff in the inertial-convective range (Nvel>0, tricky!)
@@ -4152,15 +4183,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //          k^(-5/3) scaling -> gamma = 4/3
   // Remark: case 2.(i) not implemented, yet
 
+#ifndef TESTING
   double gamma = 0.0;
   if (Pr < 2.0) // Pr <= 1, i.e., case 1 and 3
     gamma = 4.0/3.0;
   else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
     gamma = 2.0;
   else if (Pr > 2.0 and Nvel[0]<Nphi)
-    dserror("Inertial-convective and viscous-convective range?");
+  {
+    gamma = 2.0;
+//    std::cout << "Pr:" << Pr << std::endl;
+//    std::cout << "Nvel:" << Nvel[0] << "  Nphi  " << Nphi << std::endl;
+//    dserror("Inertial-convective and viscous-convective range?");
+  }
   else
-    dserror("Could not determine D!");
+    dserror("Could not determine gamma!");
 
   //
   //   Phi    |       1                |
@@ -4177,6 +4214,65 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
 //    if (eid_ == 10000)
 //     std::cout << "D  " << setprecision(10) << D_mfs(dim,0) << std::endl;
+#endif
+
+  // second implementation for tests on cluster
+# ifdef TESTING
+  double fac = 1.0;
+# if 1
+  // calculate near-wall correction
+  if (nwl)
+  {
+    // not yet calculated, estimate norm of strain rate
+    if (calc_N or refvel != INPAR::FLUID::strainrate)
+    {
+      strainnorm = GetStrainRate(econvelnp_);
+      strainnorm /= sqrt(2.0);
+    }
+
+    // get Re from strain rate
+    double Re_ele_str = strainnorm * hk * hk * densnp_[0] / visc_;
+    if (Re_ele_str < 0.0)
+      dserror("Something went wrong!");
+    // ensure positive values
+    if (Re_ele_str < 1.0)
+       Re_ele_str = 1.0;
+
+    // calculate corrected Csgs
+    //           -3/16
+    //  *(1 - (Re)   )
+    //
+    fac = (1-pow(Re_ele_str,-3.0/16.0)); //*pow(Pr,-1.0/8.0));
+  }
+#endif
+
+// Pr <= 1
+# if 1
+  double gamma = 0.0;
+  gamma = 4.0/3.0;
+  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1)) * fac;
+#endif
+
+// Pr >> 1: cutoff viscous-convective
+# if 0
+  double gamma = 0.0;
+  gamma = 2.0;
+  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1)) * fac;
+#endif
+
+// Pr >> 1: cutoff inertial-convective
+#if 0
+  double gamma1 = 0.0;
+  gamma1 = 4.0/3.0;
+  double gamma2 = 0.0;
+  gamma2 = 2.0;
+  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
+  D_mfs = Csgs_sgphi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[dim])-1)+4.0/3.0*(PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[dim]))) * fac;
+#endif
+
+#endif
 
   return;
 }
@@ -4358,7 +4454,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     {
       sgvelint_(rr) = -tau_[k]*(densnp_[k]*convelint_(rr)+timefac*(densnp_[k]*conv(rr)
                                                                    +gradp(rr)-2*visc_*visc(rr)
-                                                                   -densnp_[k]*bodyforce(rr))-densn_[k]*acc(rr))/dt;
+                                                                   -densnp_[k]*bodyforce(rr))-densnp_[k]*acc(rr))/dt;
     }
   }
 
@@ -4752,10 +4848,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
   //--------------------------------------------------------------------
   // calculation of subgrid-scale part of scalar
   //--------------------------------------------------------------------
-  sgphi_[k] = 0.0;
-#ifdef SGSCALSCALAR
   sgphi_[k] = -tau_[k]*scatrares_[k];
-#endif
 
   return;
 } //ScaTraImpl::CalcResidualAndSubgrScalar
@@ -5428,7 +5521,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     if (nsd_<3) dserror("Turbulence is 3D!");
-    // fixed-point interation only (i.e. beta=0.0) assumed, cf
+    // fixed-point iteration only (i.e. beta=0.0 assumed), cf
     // turbulence part in Evaluate()
    {
      double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
@@ -5437,7 +5530,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
      for (int vi=0; vi<nen_; ++vi)
      {
        const int fvi = vi*numdofpernode_+dofindex;
-       erhs[fvi] -= rhsfac*densnp_[dofindex]*funct_(vi,0)*(cross+reynolds);
+       erhs[fvi] -= rhsfac*densnp_[dofindex]*funct_(vi)*(cross+reynolds);
      }
    }
   }

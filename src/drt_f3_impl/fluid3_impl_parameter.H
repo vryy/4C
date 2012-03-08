@@ -50,6 +50,10 @@ public:
   void SetElementTurbulenceParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
+  //! loma parameters are set
+  void SetElementLomaParameter(Teuchos::ParameterList& params    //> parameter list
+      );
+
   //! print parameter to screen
   void PrintFluidParameter();
 
@@ -148,15 +152,29 @@ public:
   double Cl_;
   /// multifractal subgrid-scales
   double Csgs_;
+  double Csgs_phi_;
   double alpha_;
   bool CalcN_;
   double N_;
   enum INPAR::FLUID::RefVelocity refvel_;
   enum INPAR::FLUID::RefLength reflength_;
   double c_nu_;
+  double c_diff_;
   bool near_wall_limit_;
   bool B_gp_;
   double beta_;
+
+  //! some loma specific parameters
+  //! flag for material update
+  bool update_mat_;
+  //! flag to (de)activate continuity SUPG term
+  INPAR::FLUID::SUPG conti_supg_;
+  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
+  INPAR::FLUID::CrossStress conti_cross_;
+  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
+  INPAR::FLUID::ReynoldsStress conti_reynolds_;
+  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
+  bool multifrac_loma_conti_;
 
 private:
 

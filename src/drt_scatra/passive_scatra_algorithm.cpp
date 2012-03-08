@@ -75,6 +75,8 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
   IncrementTimeAndStep();
   if (Comm().MyPID()==0)
   {
+    cout<<"\n******************\n   TIME STEP     \n******************\n";
+    cout<<"\nStep:   " << Step() << " / " << NStep() << "\n";
     cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
   }
 
@@ -126,7 +128,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
         FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
-        Teuchos::null,
+        Teuchos::null, // no fsvel in gammis gen alpha fluid code
         Teuchos::null,
         FluidField().Discretization());
   }
@@ -136,7 +138,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
       FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
-        Teuchos::null,
+        FluidField().FsVel(),
         Teuchos::null,
         FluidField().Discretization());;
   }
@@ -146,7 +148,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
       FluidField().Velnp(),
         FluidField().Hist(),
         FluidField().Velnp(),
-        Teuchos::null,
+        FluidField().FsVel(),
         Teuchos::null,
         FluidField().Discretization()
     );
@@ -184,7 +186,7 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
     FluidField().SetTimeLomaFields(
         ScaTraField().Phinp(),
         0.0,
-        Teuchos::null,
+        ScaTraField().TrueResidual(),
         ScaTraField().Discretization(),
         0 // do statistics for FIRST dof at every node!!
     );

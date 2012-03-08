@@ -281,6 +281,9 @@ public:
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
   virtual Teuchos::RCP<Epetra_Vector> Phidtam() = 0;
 
+  /// routine to return fine-scale scalar field fsphi at time step n+1 or alpha_M
+  virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
+
   /// routine to return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
@@ -870,10 +873,11 @@ protected:
   // options for meshtying
   int msht_;
 
-  // flag for turbulent inflow (turbulent loma specific)
+  /// flag for turbulent inflow (turbulent loma specific)
   bool turbinflow_;
-  // number of inflow generation time steps (turbulent loma specific)
+  /// number of inflow generation time steps (turbulent loma specific)
   int numinflowsteps_;
+
 
 }; // class ScaTraTimIntImpl
 

@@ -126,7 +126,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
   //  allow the usage of a given user input)
-  if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or (prbtype_ != "elch"))
+  // additional exception: turbulent passive scalar transport: only for this case and loma
+  // vectors and variables for turbulence models are provided
+  if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
+     ((prbtype_ != "elch") and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
   {
     if (prbtype_ == "elch")              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
     else if (prbtype_ == "combustion")   scatratype_ = INPAR::SCATRA::scatratype_levelset;
@@ -216,6 +219,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     splitter_ = rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
+
+  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca and numscal_ > 1)
+   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
 
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
@@ -422,7 +428,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       cout << &endl << &endl;
     }
 
-    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+    if (scatratype_ == INPAR::SCATRA::scatratype_loma or
+        scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
     {
       if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small
           and turbparams->get<string>("FSSUGRVISC") != "Smagorinsky_small")
@@ -437,7 +444,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // get turbulence model and parameters for low-Mach-number case
   // -------------------------------------------------------------------
   turbmodel_ = INPAR::FLUID::no_model;
-  if (scatratype_==INPAR::SCATRA::scatratype_loma)
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma or
+      scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
   {
     // set turbulence model
     if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky")
@@ -1362,6 +1370,9 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
+  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca and numscal_ > 1)
+   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
+
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
   {
@@ -1684,7 +1695,10 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // and set parameters for multifractal subgrid-scale modeling
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+  eleparams.set("turbulent inflow",turbinflow_);
   eleparams.set("frt",frt_);// ELCH specific factor F/RT
+  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+    eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)

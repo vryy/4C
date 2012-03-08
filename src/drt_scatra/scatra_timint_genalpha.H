@@ -91,6 +91,9 @@ public:
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
   Teuchos::RCP<Epetra_Vector> Phidtam() { return phidtam_; }
 
+  /// routine to return fine-scale scalar field fsphi at time step n+alpha_M
+  virtual Teuchos::RCP<Epetra_Vector> FsPhi() { return fsphiaf_; };
+
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf() { return thermpressaf_; }
 

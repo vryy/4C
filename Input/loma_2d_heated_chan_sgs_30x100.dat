@@ -1,8 +1,8 @@
 //
-// Maintainer: Volker Gravemeier
-//             vgravem@lnm.mw.tum.de
+// Maintainer: Ursula Rasthofer
+//             rasthofer@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
-//             089 - 289-15245
+//             089 - 289-15236
 //
 // necessary defines: D_FLUID2 CCADISCRET BINIO
 //
@@ -11,6 +11,9 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 low-Mach-number 2D heated channel 30x100 elements
+-> special inputfile for subgrid-scalar in fluid
+   * update material
+   * additional terms in conti-eq
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS        3000
 NODES           3131
@@ -26,14 +29,17 @@ NUMFLUIDDIS  1
 NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
-----------------------------------------------------------------IO
-------------------------------------------------STRUCTURAL DYNAMIC
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
--------------------------------------------STRUCTURAL DYNAMIC/GEMM
----------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
----------------------------------------------MESHTYING AND CONTACT
-----------------------------------------------STATISTICAL MECHANICS
+------------------------------------------------------LOMA CONTROL
+MONOLITHIC       no
+NUMSTEP          20
+TIMESTEP         1.0
+MAXTIME          350.0
+ITEMAX           1
+CONVTOL          1.0E-4
+UPRES            1
+RESTARTEVRY      10    // 2000
+CONSTHERMPRESS   Yes
+SGS_MATERIAL_UPDATE  Yes
 -----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE 	 Loma
 INITIALFIELD     field_by_function
@@ -73,6 +79,9 @@ CROSS-STRESS     cross_rhs
 REYNOLDS-STRESS  reynolds_rhs
 EVALUATION_TAU   integration_point
 EVALUATION_MAT   integration_point
+LOMA_CONTI_SUPG             yes_supg
+LOMA_CONTI_CROSS_STRESS     cross_rhs
+LOMA_CONTI_REYNOLDS_STRESS  reynolds_rhs
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
 PHYSICAL_MODEL        no_model
@@ -109,19 +118,6 @@ SUGRVEL          yes
 DEFINITION_TAU   Taylor_Hughes_Zarins
 EVALUATION_TAU   integration_point
 EVALUATION_MAT   integration_point
-------------------------------------------------------LOMA CONTROL
-MONOLITHIC       yes
-NUMSTEP          20
-TIMESTEP         1.0
-MAXTIME          350.0
-ITEMAX           1
-CONVTOL          1.0E-4
-UPRES            1
-RESTARTEVRY      10    // 2000
-CONSTHERMPRESS   Yes
--------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------ALE DYNAMIC
--------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
@@ -155,6 +151,7 @@ ML_DAMPFINE       0.67       // damping fine grid
 ML_DAMPMED        0.67      // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION      Cut_Elements
+---------------------------------------------FLUID PRESSURE SOLVER
 -------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
@@ -188,29 +185,31 @@ ML_DAMPFINE       0.67       // damping fine grid
 ML_DAMPMED        0.67       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION      Cut_Elements
--------------------------COUPLED FLUID AND SCALAR TRANSPORT SOLVER
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0                  // output every so often, 0 no output
-AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         BGS2x2             // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0                  // how often to recompute some preconditioners
-AZDROP         0.0                // drop tolerance for ILUT
-IFPACKFILL     2                  // fill-in for ILUT
-IFPACKGFILL    2                  // graph fill for ILU
-IFPACKOVERLAP  0                  // amount of ASM overlap for ILU, ILU, ICC, LU
-AZTOL          1.0E-15            // tolerance in (un)scaled residual
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         1000               // max iterations
-AZSUB          25                 // size of krylov space for gmres
-AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1                  // unused
-AZPOLY         1                  // polynomial order for Neumann
-AZSCAL         infnorm               // none sym infnorm scaling of the system
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-PARTITION      Cut_Elements
------------------------------------------------------STRUCT SOLVER
---------------------------------------------------------ALE SOLVER
-----------------------------------------------------THERMAL SOLVER
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_sutherland REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
+------------------------------------------------------------CURVE1
+// c1: start-up period, c2: ratio of initial and final value
+CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 15.0 c2 0.666666666667
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+------------------------------------------------------------FUNCT1
+//inflow velocity profile with U_max = 0.15
+FUNCT1 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
+------------------------------------------------------------FUNCT2
+//initial velocity field, profile with U_max = 0.15
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
+FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+------------------------------------------------------------FUNCT3
+//constant initial temperature field at 293 K
+FUNCT3 EXPR 0 0.0 0 FUNCTION 293.0    //initial temperature field
+------------------------------------------------------------FUNCT4
+// hydrostatic pressure distribution at outflow boundary
+FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
+------------------------------------------------------------FUNCT5
+------------------------------------------------------------FUNCT6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 6
 NDLINE  6
@@ -9787,35 +9786,10 @@ NODE         3131     COORD 0.000000000000000e+00     0.000000000000000e+00     
    3000 FLUID2 QUAD4     499    495    465    467 MAT       1 NA Euler GP 2 2 TURBULENCE No CA No
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------------MATERIALS
-MAT 1 MAT_sutherland REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
-------------------------------------------------------------CURVE1
-// c1: start-up period, c2: ratio of initial and final value
-CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 15.0 c2 0.666666666667
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------CURVE5
-------------------------------------------------------------FUNCT1
-//inflow velocity profile with U_max = 0.15
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
-------------------------------------------------------------FUNCT2
-//initial velocity field, profile with U_max = 0.15
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-------------------------------------------------------------FUNCT3
-//constant initial temperature field at 293 K
-FUNCT3 EXPR 0 0.0 0 FUNCTION 293.0    //initial temperature field
-------------------------------------------------------------FUNCT4
-// hydrostatic pressure distribution at outflow boundary
-FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
-------------------------------------------------------------FUNCT5
-------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3026 POSITION velx     NAME velx     VALUE 1.690086115e-01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 3026 POSITION vely     NAME vely     VALUE -1.265772959e-01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 3026 POSITION pressure NAME pressure VALUE 7.643815598e+00 TOLERANCE 1e-4
-SCATRA DIS 1 NODE 3026 POSITION phi     NAME phi      VALUE 2.934417383e+02 TOLERANCE 1e-3
+FLUID DIS 1 NODE 3026 POSITION velx     NAME velx     VALUE 1.667578776e-01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3026 POSITION vely     NAME vely     VALUE -1.224633152e-01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 3026 POSITION pressure NAME pressure VALUE 7.650403360e+00 TOLERANCE 1e-4
+SCATRA DIS 1 NODE 3026 POSITION phi     NAME phi      VALUE 2.932963620e+02 TOLERANCE 1e-3
 ---------------------------------------------------------------END
 // END

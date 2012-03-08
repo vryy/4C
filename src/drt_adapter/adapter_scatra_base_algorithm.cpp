@@ -208,6 +208,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
   extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
+  // ----------------------------- add some loma specific parameters
+  // get also scatra stabilization sublist
+  const Teuchos::ParameterList& lomadyn =
+    DRT::Problem::Instance()->LOMAControlParams();
+  extraparams->sublist("LOMA").set<bool>("update material",DRT::INPUT::IntegralValue<int>(lomadyn,"SGS_MATERIAL_UPDATE"));
+
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // respective time-integration (or stationary) scheme

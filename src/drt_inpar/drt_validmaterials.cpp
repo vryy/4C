@@ -177,6 +177,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"REACOEFF","reaction coefficient",true);
+    AddNamedReal(m,"SCNUM","schmidt number",true);
+    AddNamedReal(m,"FLDDENSITY","fluid density",true);
 
     AppendMaterialDefinition(matlist,m);
   }

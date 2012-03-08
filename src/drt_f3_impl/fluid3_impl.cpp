@@ -210,6 +210,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     viscs2_(true),
     conv_c_(true),
     sgconv_c_(true),  // initialize to zero
+    mfssgconv_c_(true),  // initialize to zero
     vdiv_(0.0),
     mffsvdiv_(0.0),
     rhsmom_(true),
@@ -247,6 +248,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     conv_scan_(0.0),
     scarhs_(0.0),
     sgscaint_(0.0),
+    mfssgscaint_(0.0),
     rotsymmpbc_(NULL),
     is_higher_order_ele_(false),
     weights_(true),
@@ -920,10 +922,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // time n+1 for all other schemes
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> fsevelaf(true);
+  LINALG::Matrix<nen_,1>    fsescaaf(true);
   if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv
    or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &fsevelaf, NULL,"fsvelaf");
+    if(f3Parameter_->physicaltype_ == INPAR::FLUID::loma and f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &fsescaaf,"fsscaaf");
   }
 
   // get node coordinates and number of elements per node
@@ -997,6 +1002,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     edispnp,
     egridv,
     fsevelaf,
+    fsescaaf,
     evel_hat,
     ereynoldsstress_hat,
     eporo,
@@ -1040,6 +1046,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const LINALG::Matrix<nsd_,nen_> &             edispnp,
   const LINALG::Matrix<nsd_,nen_> &             egridv,
   const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
+  const LINALG::Matrix<nen_,1>    &             fsescaaf,
   const LINALG::Matrix<nsd_,nen_> &             evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1> &                eporo,
@@ -1097,6 +1104,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          eveln,
          evelnp,
          fsevelaf,
+         fsescaaf,
          evel_hat,
          ereynoldsstress_hat,
          epreaf,
@@ -1168,6 +1176,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              evelnp,
   const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
+  const LINALG::Matrix<nen_,1>&                 fsescaaf,
   const LINALG::Matrix<nsd_,nen_>&              evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1>&                 epreaf,
@@ -1232,8 +1241,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
-  LINALG::Matrix<nsd_,1> B(true);
-  if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+  LINALG::Matrix<nsd_,1> B_mfs(true);
+  // coefficient D of fine-scale scalar (loma only)
+  double D_mfs = 0.0;
+  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     if (not f3Parameter_->B_gp_)
     {
@@ -1248,7 +1259,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       vderxy_.MultiplyNT(evelaf,derxy_);
       // calculate parameters of multifractal subgrid-scales and, finally,
       // calculate coefficient for multifractal modeling of subgrid velocity
-      PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+      // if loma, calculate coefficient for multifractal modeling of subgrid scalar
+      PrepareMultifractalSubgrScales(B_mfs, D_mfs, evelaf, fsevelaf, vol);
       // clear all velocities and gradients
       velint_.Clear();
       fsvelint_.Clear();
@@ -1320,7 +1332,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       fsvderxy_.Clear();
     }
-    if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
       fsvelint_.Multiply(fsevelaf,funct_);
       fsvderxy_.MultiplyNT(fsevelaf,derxy_);
@@ -1468,7 +1480,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integarion point
-    if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
       if (f3Parameter_->B_gp_)
       {
@@ -1477,20 +1489,32 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
         // calculate parameters of multifractal subgrid-scales
-        PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+        PrepareMultifractalSubgrScales(B_mfs, D_mfs, evelaf, fsevelaf, vol);
       }
 
       // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
       for (int idim=0; idim<nsd_; idim++)
-        mffsvelint_(idim,0) = fsvelint_(idim,0) * B(idim,0);
+        mffsvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
 
       for (int idim=0; idim<nsd_; idim++)
       {
         for (int jdim=0; jdim<nsd_; jdim++)
-          mffsvderxy_(idim,jdim) = fsvderxy_(idim,jdim) * B(idim,0);
+          mffsvderxy_(idim,jdim) = fsvderxy_(idim,jdim) * B_mfs(idim,0);
       }
 
       mffsvdiv_ = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
+
+      // only required for variable-density flow at low Mach number
+      if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+      {
+        mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
+        mfssgconv_c_.MultiplyTN(derxy_,mffsvelint_);
+      }
+      else
+      {
+        mfssgscaint_ = 0.0;
+        mfssgconv_c_.Clear();
+      }
 
     }
     else
@@ -1581,14 +1605,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
 
-#ifdef SGSCALSCALAR
       // compute subgrid-scale part of scalar
       // -> different for generalized-alpha and other time-integration schemes
       ComputeSubgridScaleScalar(escaaf,escaam);
-#endif
 
       // update material parameters including subgrid-scale part of scalar
-      UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
+      if (f3Parameter_->update_mat_)
+      {
+        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+          UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
+        else
+          UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+      }
 
       // right-hand side of continuity equation based on updated material parameters
       // and including all stabilization terms
@@ -1719,6 +1747,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       SUPG(estif_u,
            estif_p_v,
            velforce,
+           preforce,
            lin_resM_Du,
            fac3,
            timefacfac,
@@ -2939,7 +2968,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateMaterialParams(
   const LINALG::Matrix<nen_,1>&      escaaf,
   const LINALG::Matrix<nen_,1>&      escaam,
   const double                       thermpressaf,
-  const double                       thermpressam
+  const double                       thermpressam,
+  const double                       sgsca
 )
 {
 if (material->MaterialType() == INPAR::MAT::m_mixfrac)
@@ -2950,7 +2980,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   double mixfracaf = funct_.Dot(escaaf);
 
   // add subgrid-scale part to obtain complete mixture fraction
-  mixfracaf += sgscaint_;
+  mixfracaf += sgsca;
 
   // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
   visc_ = actmat->ComputeViscosity(mixfracaf);
@@ -2965,7 +2995,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
     // compute density at n+alpha_M based on mixture fraction
     double mixfracam = funct_.Dot(escaam);
-    mixfracam += sgscaint_;
+    mixfracam += sgsca;
     densam_ = actmat->ComputeDensity(mixfracam);
 
     // factor for scalar time derivative at n+alpha_M
@@ -2980,7 +3010,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
     {
       // compute density at n based on mixture fraction
       double mixfracn = funct_.Dot(escaam);
-      mixfracn += sgscaint_;
+      mixfracn += sgsca;
       densn_ = actmat->ComputeDensity(mixfracn);
 
       // factor for convective scalar term at n
@@ -2999,7 +3029,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   double tempaf = funct_.Dot(escaaf);
 
   // add subgrid-scale part to obtain complete temperature
-  tempaf += sgscaint_;
+  tempaf += sgsca;
 
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempaf);
@@ -3017,7 +3047,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
     double tempam = funct_.Dot(escaam);
 
     // add subgrid-scale part to obtain complete temperature
-    tempam += sgscaint_;
+    tempam += sgsca;
 
     // factor for scalar time derivative at n+alpha_M
     scadtfac_ = 1.0/tempam;
@@ -3036,7 +3066,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
       double tempn = funct_.Dot(escaam);
 
       // add subgrid-scale part to obtain complete temperature
-      tempn += sgscaint_;
+      tempn += sgsca;
 
       // compute density at n based on temperature at n and
       // (approximately) thermodynamic pressure at n+1
@@ -3058,7 +3088,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   double provaraf = funct_.Dot(escaaf);
 
   // add subgrid-scale part to obtain complete progress variable
-  provaraf += sgscaint_;
+  provaraf += sgsca;
 
   // compute temperature based on progress variable at n+alpha_F or n+1
   const double tempaf = actmat->ComputeTemperature(provaraf);
@@ -3076,7 +3106,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
     // compute density at n+alpha_M based on progress variable
     double provaram = funct_.Dot(escaam);
-    provaram += sgscaint_;
+    provaram += sgsca;
     densam_ = actmat->ComputeDensity(provaram);
 
     // factor for scalar time derivative at n+alpha_M
@@ -3091,7 +3121,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     {
       // compute density at n based on progress variable
       double provarn = funct_.Dot(escaam);
-      provarn += sgscaint_;
+      provarn += sgsca;
       densn_ = actmat->ComputeDensity(provarn);
 
       // factor for convective scalar term at n
@@ -3110,7 +3140,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   double provaraf = funct_.Dot(escaaf);
 
   // add subgrid-scale part to obtain complete progress variable
-  provaraf += sgscaint_;
+  provaraf += sgsca;
 
   // compute temperature based on progress variable at n+alpha_F or n+1
   const double tempaf = actmat->ComputeTemperature(provaraf);
@@ -3128,7 +3158,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   {
     // compute density at n+alpha_M based on progress variable
     double provaram = funct_.Dot(escaam);
-    provaram += sgscaint_;
+    provaram += sgsca;
     densam_ = actmat->ComputeDensity(provaram);
 
     // factor for scalar time derivative at n+alpha_M
@@ -3143,7 +3173,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     {
       // compute density at n based on progress variable
       double provarn = funct_.Dot(escaam);
-      provarn += sgscaint_;
+      provarn += sgsca;
       densn_ = actmat->ComputeDensity(provarn);
 
       // factor for convective scalar term at n
@@ -3187,7 +3217,8 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
-  LINALG::Matrix<nsd_,1>&           B,
+  LINALG::Matrix<nsd_,1>&           B_mfs,
+  double &                          D_mfs,
   const LINALG::Matrix<nsd_,nen_>&  evelaf,
   const LINALG::Matrix<nsd_,nen_>&  fsevelaf,
   const double                      vol
@@ -3199,7 +3230,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
 
     // allocate vector for parameter N
     // N may depend on the direction
-    vector<double> N (3);
+    vector<double> Nvel (3);
 
     // potential calculation of Re to determine N
     double Re_ele = -1.0;
@@ -3217,11 +3248,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     if (not f3Parameter_->CalcN_)
     {
       for (int rr=1;rr<3;rr++)
-        N[rr] = f3Parameter_->N_;
+        Nvel[rr] = f3Parameter_->N_;
 #ifdef DIR_N // direction dependent stuff, currently not used
-    N[0] = NUMX;
-    N[1] = NUMY;
-    N[2] = NUMZ;
+    Nvel[0] = NUMX;
+    Nvel[1] = NUMY;
+    Nvel[2] = NUMZ;
 #endif
     }
     else //no, so we calculate N from Re
@@ -3499,7 +3530,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
 
       // store calculated N
       for (int i=0; i<nsd_; i++)
-        N[i] = N_re;
+        Nvel[i] = N_re;
     }
 
 #ifdef DIR_N
@@ -3508,7 +3539,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     weights[1] = WEIGHT_NY;
     weights[2] = WEIGHT_NZ;
     for (int i=0; i<nsd_; i++)
-      N[i] *= weights[i];
+      Nvel[i] *= weights[i];
 #endif
 
     // calculate near-wall correction
@@ -3538,7 +3569,50 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     }
 
     // call function to compute coefficient B
-    CalcMultiFracSubgridVelCoef(Csgs,alpha,N,B);
+    CalcMultiFracSubgridVelCoef(Csgs,alpha,Nvel,B_mfs);
+
+    // prepare calculation of subgrid-scalar coefficient for loma
+    // required if further subgrid-scale terms of cross- and Reynolds-stress
+    // type arising in the continuity equation should be included
+    if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    {
+      // set input parameters
+      double Csgs_phi = f3Parameter_->Csgs_phi_;
+
+      // calculate prandtl number
+      double Pr = visc_/diffus_;
+
+      // allocate vector for parameter N
+      double Nphi = 0.0;
+      // ratio of dissipation scale to element length
+      double scale_ratio_phi = 0.0;
+
+      if (f3Parameter_->CalcN_)
+      {
+        //
+        //   Delta
+        //  ---------  ~ Re^(3/4)*Pr^(1/2)
+        //  lambda_diff
+        //
+        scale_ratio_phi = f3Parameter_->c_diff_ * pow(Re_ele,3.0/4.0) * pow(Pr,1.0/2.0);
+        // scale_ratio < 1.0 leads to N < 0
+        // therefore, we clip again
+        if (scale_ratio_phi < 1.0)
+          scale_ratio_phi = 1.0;
+
+        //         |   Delta     |
+        //  N =log | ----------- |
+        //        2|  lambda_nu  |
+       Nphi = log(scale_ratio_phi)/log(2.0);
+       if (Nphi < 0.0)
+          dserror("Something went wrong when calculating N!");
+      }
+      else
+       dserror("Multifractal subgrid-scales for loma with calculation of N, only!");
+
+      // call function to compute coefficient D
+      CalcMultiFracSubgridScaCoef(Csgs_phi,alpha,Pr,Nvel,Nphi,D_mfs);
+    }
 }
 
 
@@ -3910,8 +3984,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
   const double            Csgs,
   const double            alpha,
-  const vector<double>    N,
-  LINALG::Matrix<nsd_,1>& B
+  const vector<double>    Nvel,
+  LINALG::Matrix<nsd_,1>& B_mfs
   )
 {
   //
@@ -3928,20 +4002,74 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-    B(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*N[dim]/3.0) * sqrt((pow(2.0,4.0*N[dim]/3.0)-1));
-//    if (eid_ == 100)
-//     std::cout << "fluid  " << setprecision (10) << B(dim,0) << std::endl;
+    B_mfs(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
   }
 
 #ifdef CONST_B // overwrite all, just for testing
   for (int dim=0; dim<nsd_; dim++)
   {
-    B(dim,0) = B_CONST;
+    B_mfs(dim,0) = B_CONST;
   }
 #endif
 
   return;
 }
+
+
+/*-------------------------------------------------------------------------------*
+ |calculation parameter for multifractal subgrid scale modeling  rasthofer 02/12 |
+ |subgrid-scale scalar for loma                                                  |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridScaCoef(
+  const double            Csgs,
+  const double            alpha,
+  const double            Pr,
+  const vector<double>    Nvel,
+  double                  Nphi,
+  double &                D_mfs
+  )
+{
+  // here, we have to distinguish tree different cases:
+  // Pr ~ 1 : fluid and scalar field have the nearly the same cutoff (usual case)
+  //          k^(-5/3) scaling -> gamma = 4/3
+  // Pr >> 1: (i)  cutoff in the inertial-convective range (Nvel>0, tricky!)
+  //               k^(-5/3) scaling in the inertial-convective range
+  //               k^(-1) scaling in the viscous-convective range
+  //          (ii) cutoff in the viscous-convective range (fluid field fully resolved, easier)
+  //               k^(-1) scaling -> gamma = 2
+  // rare:
+  // Pr << 1: scatra field could be fully resolved, not necessary
+  //          k^(-5/3) scaling -> gamma = 4/3
+  // Remark: case 2.(i) not implemented, yet
+
+  double gamma = 0.0;
+  if (Pr < 2.0) // Pr <= 1, i.e., case 1 and 3
+    gamma = 4.0/3.0;
+  else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
+    gamma = 2.0;
+  else if (Pr > 2.0 and Nvel[0]<Nphi)
+    dserror("Inertial-convective and viscous-convective range?");
+  else
+    dserror("Could not determine D!");
+
+  //
+  //   Phi    |       1                |
+  //  kappa = | ---------------------- |
+  //          |  1 - alpha ^ (-gamma)  |
+  //
+  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
+
+  //                                                             1
+  //       Phi    Phi                       |                   |2
+  //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
+  //                                        |                   |
+  //
+  D_mfs = Csgs *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  calculation of stabilization parameter                     vg 09/09 |
@@ -5061,8 +5189,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::RecomputeGalAndComputeCrossRHSContEq()
 
   // add (first) subgrid-scale-velocity part to rhs of continuity equation
   // (identical for all time-integration schemes)
-  if (f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
+  if (f3Parameter_->conti_cross_ != INPAR::FLUID::cross_stress_stab_none)
+  {
     rhscon_ += scaconvfacaf_*sgvelint_.Dot(grad_scaaf_);
+  }
+
+  if (f3Parameter_->multifrac_loma_conti_)
+    rhscon_ += scaconvfacaf_*mffsvelint_.Dot(grad_scaaf_); // first cross-stress term
 
   // further terms different for general.-alpha and other time-int. schemes
   if (f3Parameter_->is_genalpha_)
@@ -6196,6 +6329,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nen_,1> &                  preforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            fac3,
     const double &                            timefacfac,
@@ -6449,25 +6583,42 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
        }
      }  // end for(idim)
 
-//  // SUPG and Reynolds-stress term on right-hand side of
-//  // continuity equation for low-Mach-number flow
-//  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
-//  {
-//    const double temp = rhsfac*scaconvfacaf_*sgscaint_;
-//
-//    for (int vi=0; vi<nen_; ++vi)
-//    {
-//      preforce(vi) -= temp*conv_c_(vi);
-//    }
-//
-//    if (f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
-//    {
-//      for (int vi=0; vi<nen_; ++vi)
-//      {
-//        preforce(vi) -= temp*sgconv_c_(vi);
-//      }
-//    }
-//  }
+  // SUPG and Reynolds-stress term on right-hand side of
+  // continuity equation for low-Mach-number flow
+  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+  {
+    const double temp_supg = rhsfac*scaconvfacaf_*sgscaint_;
+
+    if(f3Parameter_->conti_supg_ == INPAR::FLUID::convective_stab_supg)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        preforce(vi) -= temp_supg*conv_c_(vi);
+      }
+    }
+
+    if (f3Parameter_->multifrac_loma_conti_)
+    {
+      const double temp_mfs = rhsfac*scaconvfacaf_*mfssgscaint_;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+        {
+          preforce(vi) -= temp_mfs*conv_c_(vi); // second cross-stress term
+          preforce(vi) -= temp_mfs*mfssgconv_c_(vi); // Reynolds-stress term
+        }
+      }
+    }
+
+    if (f3Parameter_->conti_reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        preforce(vi) -= temp_supg*sgconv_c_(vi);
+      }
+    }
+  }
 
   return;
 }
@@ -17990,15 +18141,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
     // compute additional Galerkin terms on right-hand side of continuity equation
     // -> different for generalized-alpha and other time-integration schemes
     ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam,isale);
-    
-#ifdef SGSCALSCALAR
+
     // compute subgrid-scale part of scalar
     // -> different for generalized-alpha and other time-integration schemes
     ComputeSubgridScaleScalar(escaaf,escaam);
-#endif
 
     // update material parameters including subgrid-scale part of scalar
-    UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam);
+    if (f3Parameter_->update_mat_)
+      UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
 
     //----------------------------------------------------------------------
     //  evaluate temperature-based residual vector for continuity equation

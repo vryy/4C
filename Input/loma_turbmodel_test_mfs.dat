@@ -123,8 +123,6 @@ CONVTOL          1.0E-6
 UPRES            50000
 RESTARTEVRY      5
 CONSTHERMPRESS   No_mass
-CANONICAL_FLOW   loma_channel_flow_of_height_2
-SAMPLING_START   5001
 ------------------------------------------------------FLUID SOLVER
 SOLVER            Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT          0         // output every so often, 0 no output

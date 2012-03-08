@@ -221,6 +221,7 @@ namespace ADAPTER {
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
+                                   Teuchos::RCP<const Epetra_Vector> fsscalaraf,
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtaf,

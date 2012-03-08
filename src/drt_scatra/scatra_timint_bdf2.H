@@ -84,6 +84,9 @@ public:
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
   Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
 
+  /// routine to return fine-scale scalar field fsphi at time step n+1
+  virtual Teuchos::RCP<Epetra_Vector> FsPhi() { return fsphinp_; };
+
   /// routine to reset phi vector due to reinitialization
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
                                                          return; };

@@ -51,8 +51,6 @@ LOMA::Algorithm::Algorithm(
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
   special_flow_ = fluiddyn.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW");
   samstart_     = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
-//  special_flow_ = prbdyn.get<string>("CANONICAL_FLOW");
-//  samstart_     = prbdyn.get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being
   if (ScaTraField().Incremental() == false)
@@ -60,6 +58,8 @@ LOMA::Algorithm::Algorithm(
 
   // flag for turbulent inflow
   turbinflow_ = DRT::INPUT::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW");
+  // number of inflow steps
+  numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
   if(turbinflow_)
   {
     if (Comm().MyPID()==0)
@@ -176,7 +176,17 @@ LOMA::Algorithm::~Algorithm()
 void LOMA::Algorithm::TimeLoop()
 {
   // do initial calculations
-  InitialCalculations();
+  // if and only if it is the first time step
+  // do not do initial calculations after restarts
+  if(Step()==0 or (turbinflow_ and Step()==numinflowsteps_))
+    InitialCalculations();
+  else
+  // set scalar field and thermodynamic pressure for evaluation of
+  // Neumann boundary conditions in FLUID at beginning of first time step
+  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
+                                 ScaTraField().ThermPressNp(),
+                                 null,
+                                 ScaTraField().Discretization());
 
   // time loop
   while (NotFinished())
@@ -419,6 +429,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
     FluidField().SetIterLomaFields(ScaTraField().Phiaf(),
                                    ScaTraField().Phiam(),
                                    ScaTraField().Phidtam(),
+                                   ScaTraField().FsPhi(),
                                    ScaTraField().ThermPressAf(),
                                    ScaTraField().ThermPressAm(),
                                    ScaTraField().ThermPressDtAf(),
@@ -428,6 +439,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
     FluidField().SetIterLomaFields(ScaTraField().Phinp(),
                                    ScaTraField().Phin(),
                                    ScaTraField().Phidtnp(),
+                                   ScaTraField().FsPhi(),
                                    ScaTraField().ThermPressNp(),
                                    ScaTraField().ThermPressN(),
                                    ScaTraField().ThermPressDtNp(),

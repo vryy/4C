@@ -779,13 +779,14 @@ void ADAPTER::FluidImpl::SetIterLomaFields(
     RCP<const Epetra_Vector>          scalaraf,
     RCP<const Epetra_Vector>          scalaram,
     RCP<const Epetra_Vector>          scalardtam,
+    RCP<const Epetra_Vector>          fsscalaraf,
     const double                      thermpressaf,
     const double                      thermpressam,
     const double                      thermpressdtaf,
     const double                      thermpressdtam,
     Teuchos::RCP<DRT::Discretization> scatradis)
 {
-   fluid_.SetIterLomaFields(scalaraf,scalaram,scalardtam,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,scatradis);
+   fluid_.SetIterLomaFields(scalaraf,scalaram,scalardtam,fsscalaraf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,scatradis);
    return;
 }
 

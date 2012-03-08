@@ -275,6 +275,7 @@ private:
   { no_special_flow                 ,
     channel_flow_of_height_2        ,
     loma_channel_flow_of_height_2   ,
+    scatra_channel_flow_of_height_2   ,
     lid_driven_cavity               ,
     loma_lid_driven_cavity          ,
     backward_facing_step            ,

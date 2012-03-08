@@ -450,6 +450,7 @@ public:
   void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
                          RCP<const Epetra_Vector> scalaram,
                          RCP<const Epetra_Vector> scalardtam,
+                         RCP<const Epetra_Vector> fsscalaraf,
                          const double             thermpressaf,
                          const double             thermpressam,
                          const double             thermpressdtaf,
@@ -790,6 +791,9 @@ protected:
   /// only necessary for LES models including filtered quantities: filter type
   enum INPAR::FLUID::ScaleSeparation scale_sep_;
 
+  /// fine-scale scalar: only necessary for multfractal subgrid-scale modeling in loma
+  RCP<Epetra_Vector>    fsscaaf_;
+
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
 
@@ -915,6 +919,16 @@ private:
 
   */
   void SetElementTurbulenceParameter();
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementLomaParameter();
 
 }; // class FluidImplicitTimeInt
 

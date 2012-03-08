@@ -40,7 +40,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
   dens_     (1.0),
   visc_     (1.0),
-  shc_      (1.0)
+  shc_      (1.0),
+  scnum_    (1.0)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -193,7 +194,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
   }
 
-
   // ---------------------------------------------------------------------
   // up to now, there are no records written
   countrecord_ = 0;
@@ -203,8 +203,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   meanvelnp_     = LINALG::CreateVector(*dofrowmap,true);
-  // this vector is only necessary for low-Mach-number flow
-  if(physicaltype_ == INPAR::FLUID::loma) meanscanp_ = LINALG::CreateVector(*dofrowmap,true);
+  // this vector is only necessary for low-Mach-number flow or
+  // turbulent passive scalar transport
+  meanscanp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -913,6 +914,28 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     incrsumsgvisc_  =  rcp(new vector<double> );
     incrsumsgvisc_->resize(nodeplanes_->size()-1,0.0);
+
+    // vectors for statistics computation (sums and increments)
+    // means for Nphi
+    sumNphi_  =  rcp(new vector<double> );
+    sumNphi_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumNphi_  =  rcp(new vector<double> );
+    incrsumNphi_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for D
+    sumDphi_  =  rcp(new vector<double> );
+    sumDphi_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumDphi_  =  rcp(new vector<double> );
+    incrsumDphi_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for C_sgs_phi
+    sumCsgs_phi_  =  rcp(new vector<double> );
+    sumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
+    
+    incrsumCsgs_phi_  =  rcp(new vector<double> );
+    incrsumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
   }
 
   //----------------------------------------------------------------------
@@ -1507,6 +1530,151 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   return;
 }// TurbulenceStatisticsCha::DoLomaTimeSample
 
+
+/*----------------------------------------------------------------------*
+
+       Compute the in-plane mean values of first- and second-order
+                 moments for turbulent flow with passive scalar
+                            transport.
+
+  ----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
+  Teuchos::RefCountPtr<Epetra_Vector> velnp,
+  Teuchos::RefCountPtr<Epetra_Vector> scanp,
+  Epetra_Vector &                     force)
+{
+  // we have an additional sample
+
+  numsamp_++;
+
+  // meanvelnp and meanscanp are refcount copies
+  meanvelnp_->Update(1.0,*velnp,0.0);
+  meanscanp_->Update(1.0,*scanp,0.0);
+
+  //----------------------------------------------------------------------
+  // loop planes and calculate pointwise means in each plane
+
+  this->EvaluateScatraIntegralMeanValuesInPlanes();
+
+  //----------------------------------------------------------------------
+  // compute forces on top and bottom plate for normalization purposes
+
+  for(vector<double>::iterator plane=planecoordinates_->begin();
+      plane!=planecoordinates_->end();
+      ++plane)
+  {
+    // only true for bottom plane
+    if (*plane-2e-9 < (*planecoordinates_)[0] &&
+        *plane+2e-9 > (*planecoordinates_)[0])
+    {
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
+
+      // activate toggles for in plane dofs
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // if we have an inflow channel problem, the nodes outside the inflow discretization are
+        // not in the bounding box -> we don't consider them for averaging
+        if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+            node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+            node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+            node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+            node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+            node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
+        {
+          // this node belongs to the plane under consideration
+          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+          {
+            vector<int> dof = discret_->Dof(node);
+            double      one = 1.0;
+
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+            togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+          }
+        }
+      }
+
+      double inc=0.0;
+      force.Dot(*toggleu_,&inc);
+      sumforcebu_+=inc;
+      inc=0.0;
+      force.Dot(*togglev_,&inc);
+      sumforcebv_+=inc;
+      inc=0.0;
+      force.Dot(*togglew_,&inc);
+      sumforcebw_+=inc;
+      inc=0.0;
+      force.Dot(*togglep_,&inc);
+      sumqwb_+=inc;
+    }
+
+    // only true for top plane
+    if (*plane-2e-9 < (*planecoordinates_)[planecoordinates_->size()-1]
+         &&
+        *plane+2e-9 > (*planecoordinates_)[planecoordinates_->size()-1])
+    {
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
+
+      // activate toggles for in plane dofs
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // if we have an inflow channel problem, the nodes outside the inflow discretization are
+        // not in the bounding box -> we don't consider them for averaging
+        if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+            node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+            node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+            node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+            node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+            node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
+        {
+          // this node belongs to the plane under consideration
+          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+          {
+            vector<int> dof = discret_->Dof(node);
+            double      one = 1.0;
+
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+            togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+          }
+        }
+      }
+
+      double inc=0.0;
+      force.Dot(*toggleu_,&inc);
+      sumforcetu_+=inc;
+      inc=0.0;
+      force.Dot(*togglev_,&inc);
+      sumforcetv_+=inc;
+      inc=0.0;
+      force.Dot(*togglew_,&inc);
+      sumforcetw_+=inc;
+      inc=0.0;
+      force.Dot(*togglep_,&inc);
+      sumqwt_+=inc;
+    }
+  }
+
+  return;
+}// TurbulenceStatisticsCha::DoScatraTimeSample
+
+
 /*----------------------------------------------------------------------*
 
           Compute in plane means of u,u^2 etc. (integral version)
@@ -1945,6 +2113,220 @@ const double eosfac)
 
 }// TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes()
 
+
+/*----------------------------------------------------------------------*
+
+         Compute in-plane means of u,u^2 etc. (integral version)
+                     for turbulent passive scalar transport
+
+ -----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
+{
+
+  //----------------------------------------------------------------------
+  // loop elements and perform integration over homogeneous plane
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_turbscatra_statistics");
+
+  // choose what to assemble
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+
+  // set parameter list
+  eleparams.set("normal direction to homogeneous plane",dim_);
+  eleparams.set("coordinate vector for hom. planes",planecoordinates_);
+
+  // set size of vectors
+  int size = sumu_->size();
+
+  // generate processor local result vectors
+  RefCountPtr<vector<double> > locarea =  rcp(new vector<double> );
+  locarea->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
+  locsumu->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
+  locsumv->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumw =  rcp(new vector<double> );
+  locsumw->resize(size,0.0);
+  RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
+  locsump->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumphi =  rcp(new vector<double> );
+  locsumphi->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
+  locsumsqu->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
+  locsumsqv->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
+  locsumsqw->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
+  locsumsqp->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumsqphi =  rcp(new vector<double> );
+  locsumsqphi->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
+  locsumuv->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumuw  =  rcp(new vector<double> );
+  locsumuw->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
+  locsumvw->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumuphi  =  rcp(new vector<double> );
+  locsumuphi->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumvphi  =  rcp(new vector<double> );
+  locsumvphi->resize(size,0.0);
+  RefCountPtr<vector<double> > locsumwphi  =  rcp(new vector<double> );
+  locsumwphi->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
+  globarea->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
+  globsumu->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
+  globsumv->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumw =  rcp(new vector<double> );
+  globsumw->resize(size,0.0);
+  RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
+  globsump->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumphi =  rcp(new vector<double> );
+  globsumphi->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
+  globsumsqu->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
+  globsumsqv->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
+  globsumsqw->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
+  globsumsqp->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumsqphi =  rcp(new vector<double> );
+  globsumsqphi->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
+  globsumuv->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumuw  =  rcp(new vector<double> );
+  globsumuw->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
+  globsumvw->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumuphi  =  rcp(new vector<double> );
+  globsumuphi->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumvphi  =  rcp(new vector<double> );
+  globsumvphi->resize(size,0.0);
+  RefCountPtr<vector<double> > globsumwphi  =  rcp(new vector<double> );
+  globsumwphi->resize(size,0.0);
+
+  // communicate pointers to the result vectors to the element
+  eleparams.set("element layer area"  ,locarea );
+
+  eleparams.set("mean velocity u"   ,locsumu  );
+  eleparams.set("mean velocity v"   ,locsumv  );
+  eleparams.set("mean velocity w"   ,locsumw  );
+  eleparams.set("mean pressure p"   ,locsump  );
+  eleparams.set("mean scalar phi"   ,locsumphi);
+
+  eleparams.set("mean value u^2"    ,locsumsqu  );
+  eleparams.set("mean value v^2"    ,locsumsqv  );
+  eleparams.set("mean value w^2"    ,locsumsqw  );
+  eleparams.set("mean value p^2"    ,locsumsqp  );
+  eleparams.set("mean value phi^2"  ,locsumsqphi);
+
+  eleparams.set("mean value uv"  ,locsumuv   );
+  eleparams.set("mean value uw"  ,locsumuw   );
+  eleparams.set("mean value vw"  ,locsumvw   );
+  eleparams.set("mean value uphi",locsumuphi );
+  eleparams.set("mean value vphi",locsumvphi );
+  eleparams.set("mean value wphi",locsumwphi );
+
+  // counts the number of elements in the lowest homogeneous plane
+  // (the number is the same for all planes, since we use a structured
+  //  cartesian mesh)
+  int locprocessedeles=0;
+
+  eleparams.set("count processed elements",&locprocessedeles);
+
+  // factor for equation of state
+//  eleparams.set("eos factor",eosfac);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p (n+1,converged)",meanvelnp_ );
+  discret_->SetState("scalar (n+1,converged)" ,meanscanp_);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->ClearState();
+
+
+  //----------------------------------------------------------------------
+  // add contributions from all processors
+  discret_->Comm().SumAll(&((*locarea)[0]),&((*globarea)[0]),size);
+
+  discret_->Comm().SumAll(&((*locsumu)[0]),&((*globsumu)[0]),size);
+  discret_->Comm().SumAll(&((*locsumv)[0]),&((*globsumv)[0]),size);
+  discret_->Comm().SumAll(&((*locsumw)[0]),&((*globsumw)[0]),size);
+  discret_->Comm().SumAll(&((*locsump)[0]),&((*globsump)[0]),size);
+  discret_->Comm().SumAll(&((*locsumphi)[0]),&((*globsumphi)[0]),size);
+
+  discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*globsumsqu)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*globsumsqv)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*globsumsqw)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqphi)[0]),&((*globsumsqphi)[0]),size);
+
+  discret_->Comm().SumAll(&((*locsumuv )[0]),&((*globsumuv )[0]),size);
+  discret_->Comm().SumAll(&((*locsumuw )[0]),&((*globsumuw )[0]),size);
+  discret_->Comm().SumAll(&((*locsumvw )[0]),&((*globsumvw )[0]),size);
+  discret_->Comm().SumAll(&((*locsumuphi )[0]),&((*globsumuphi )[0]),size);
+  discret_->Comm().SumAll(&((*locsumvphi )[0]),&((*globsumvphi )[0]),size);
+  discret_->Comm().SumAll(&((*locsumwphi )[0]),&((*globsumwphi )[0]),size);
+
+
+  //----------------------------------------------------------------------
+  // the sums are divided by the layers area to get the area average
+  discret_->Comm().SumAll(&locprocessedeles,&numele_,1);
+
+
+  for(unsigned i=0; i<planecoordinates_->size(); ++i)
+  {
+    // get average element size
+    (*globarea)[i]/=numele_;
+
+    // renmark:
+    // scalar values named phi are stored in values named T (which are
+    // taken form the loma case)
+    (*sumu_)[i]  +=(*globsumu)[i]/(*globarea)[i];
+    (*sumv_)[i]  +=(*globsumv)[i]/(*globarea)[i];
+    (*sumw_)[i]  +=(*globsumw)[i]/(*globarea)[i];
+    (*sump_)[i]  +=(*globsump)[i]/(*globarea)[i];
+    (*sumT_)[i]  +=(*globsumphi)[i]/(*globarea)[i];
+
+    (*sumsqu_)[i]  +=(*globsumsqu)[i]/(*globarea)[i];
+    (*sumsqv_)[i]  +=(*globsumsqv)[i]/(*globarea)[i];
+    (*sumsqw_)[i]  +=(*globsumsqw)[i]/(*globarea)[i];
+    (*sumsqp_)[i]  +=(*globsumsqp)[i]/(*globarea)[i];
+    (*sumsqT_)[i]  +=(*globsumsqphi)[i]/(*globarea)[i];
+
+    (*sumuv_ )[i]+=(*globsumuv )[i]/(*globarea)[i];
+    (*sumuw_ )[i]+=(*globsumuw )[i]/(*globarea)[i];
+    (*sumvw_ )[i]+=(*globsumvw )[i]/(*globarea)[i];
+    (*sumuT_ )[i]+=(*globsumuphi )[i]/(*globarea)[i];
+    (*sumvT_ )[i]+=(*globsumvphi )[i]/(*globarea)[i];
+    (*sumwT_ )[i]+=(*globsumwphi )[i]/(*globarea)[i];
+  }
+
+  return;
+
+}// TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
+
+
 /*----------------------------------------------------------------------*
 
           Compute in plane means of u,u^2 etc. (nodal quantities)
@@ -2278,12 +2660,18 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
      Teuchos::RefCountPtr<Epetra_Vector> velnp,
-     Teuchos::RefCountPtr<Epetra_Vector> fsvelnp)
+     Teuchos::RefCountPtr<Epetra_Vector> fsvelnp,
+     bool                                withscatra)
 {
   // action for elements
   ParameterList paramsele;
   paramsele.set("action","calc model parameter multifractal subgid scales");
   paramsele.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+  paramsele.set("scalar", withscatra);
+  if (withscatra)
+  {
+    paramsele.set("scnum", scnum_);
+  }
 
   // vectors containing processor local values to sum element
   // contributions on this proc
@@ -2295,6 +2683,10 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   RefCountPtr<vector<double> > local_B_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   RefCountPtr<vector<double> > local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   RefCountPtr<vector<double> > local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Nphi_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Dphi_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Csgs_phi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+
 
   // store them in parameterlist for access on the element
   ParameterList *  modelparams = &(paramsele.sublist("TURBULENCE MODEL"));
@@ -2308,6 +2700,12 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   modelparams->set<RefCountPtr<vector<double> > >("local_B_span_sum"           ,local_B_span_sum           );
   modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_sum"             ,local_Csgs_sum             );
   modelparams->set<RefCountPtr<vector<double> > >("local_sgvisc_sum"           ,local_sgvisc_sum           );
+  if (withscatra)
+  {
+    modelparams->set<RefCountPtr<vector<double> > >("local_Nphi_sum"                 ,local_Nphi_sum         );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Dphi_sum"                 ,local_Dphi_sum         );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_phi_sum"             ,local_Csgs_phi_sum     );
+  }
 
   // set state vectors for element call
   discret_->ClearState();
@@ -2368,6 +2766,30 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   if(local_sgvisc_sum==Teuchos::null)
       dserror("local_sgvsic_sum==null from parameterlist");
 
+  RefCountPtr<vector<double> > global_incr_Nphi_sum;
+  global_incr_Nphi_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+
+  RefCountPtr<vector<double> > global_incr_Dphi_sum;
+  global_incr_Dphi_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));;
+
+  RefCountPtr<vector<double> > global_incr_Csgs_phi_sum;
+  global_incr_Csgs_phi_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+
+  if (withscatra)
+  {
+    local_Nphi_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Nphi_sum",Teuchos::null);
+    if(local_Nphi_sum==Teuchos::null)
+      dserror("local_Nphi_sum==null from parameterlist");
+
+    local_Dphi_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Dphi_sum",Teuchos::null);
+    if(local_Dphi_sum==Teuchos::null)
+      dserror("local_Dphi_sum==null from parameterlist");
+
+    local_Csgs_phi_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_Csgs_phi_sum",Teuchos::null);
+    if(local_Csgs_phi_sum==Teuchos::null)
+      dserror("local_Csgs_phi_sum==null from parameterlist");
+  }
+
   // now add all the stuff from the different processors
   discret_->Comm().SumAll(&((*local_N_stream_sum      )[0]),
                           &((*global_incr_N_stream_sum)[0]),
@@ -2393,12 +2815,24 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   discret_->Comm().SumAll(&((*local_sgvisc_sum      )[0]),
                           &((*global_incr_sgvisc_sum)[0]),
                           local_sgvisc_sum->size());
+  if (withscatra)
+  {
+    discret_->Comm().SumAll(&((*local_Nphi_sum      )[0]),
+                            &((*global_incr_Nphi_sum)[0]),
+                            local_Nphi_sum->size());
+     discret_->Comm().SumAll(&((*local_Dphi_sum      )[0]),
+                            &((*global_incr_Dphi_sum)[0]),
+                            local_Dphi_sum->size());
+    discret_->Comm().SumAll(&((*local_Csgs_phi_sum      )[0]),
+                            &((*global_incr_Csgs_phi_sum)[0]),
+                            local_Csgs_phi_sum->size());
+  }
 
   // Replace increment to compute average of parameters N and B as well as
   // subgrid viscosity
   for (unsigned rr=0;rr<global_incr_N_stream_sum->size();++rr)
   {
-    (*incrsumN_stream_     )[rr] =(*global_incr_N_normal_sum)[rr];
+    (*incrsumN_stream_     )[rr] =(*global_incr_N_stream_sum)[rr];
     (*incrsumN_normal_     )[rr] =(*global_incr_N_normal_sum)[rr];
     (*incrsumN_span_     )[rr] =(*global_incr_N_span_sum)[rr];
     (*incrsumB_stream_     )[rr] =(*global_incr_B_normal_sum)[rr];
@@ -2406,6 +2840,12 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
     (*incrsumB_span_     )[rr] =(*global_incr_B_span_sum)[rr];
     (*incrsumCsgs_)[rr] =(*global_incr_Csgs_sum)[rr];
     (*incrsumsgvisc_)[rr] =(*global_incr_sgvisc_sum)[rr];
+    if (withscatra)
+    {
+      (*incrsumNphi_     )[rr] =(*global_incr_Nphi_sum)[rr];
+      (*incrsumDphi_     )[rr] =(*global_incr_Dphi_sum)[rr];
+      (*incrsumCsgs_phi_)[rr] =(*global_incr_Csgs_phi_sum)[rr];
+    }
   }
 
   // reinitialize to zero for next element call
@@ -2418,6 +2858,13 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
+  if (withscatra)
+  {
+    local_Nphi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Dphi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Csgs_phi_sum      =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  }
+
   modelparams->set<RefCountPtr<vector<double> > >("local_N_stream_sum"     ,local_N_stream_sum);
   modelparams->set<RefCountPtr<vector<double> > >("local_N_normal_sum"     ,local_N_normal_sum);
   modelparams->set<RefCountPtr<vector<double> > >("local_N_span_sum"       ,local_N_span_sum  );
@@ -2426,6 +2873,12 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   modelparams->set<RefCountPtr<vector<double> > >("local_B_span_sum"       ,local_B_span_sum  );
   modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_sum"         ,local_Csgs_sum    );
   modelparams->set<RefCountPtr<vector<double> > >("local_sgvisc_sum"       ,local_sgvisc_sum  );
+  if (withscatra)
+  {
+    modelparams->set<RefCountPtr<vector<double> > >("local_Nphi_sum"         ,local_Nphi_sum         );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Dphi_sum"         ,local_Dphi_sum         );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_phi_sum"     ,local_Csgs_phi_sum     );
+  }
 
   // add increment of last iteration to the sum of all values
   for (unsigned rr=0;rr<(*incrsumN_stream_).size();++rr)
@@ -2438,6 +2891,12 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
     (*sumB_span_       )[rr]+=(*incrsumB_span_     )[rr];
     (*sumCsgs_)[rr]+=(*incrsumCsgs_)[rr];
     (*sumsgvisc_)[rr]+=(*incrsumsgvisc_)[rr];
+    if (withscatra)
+    {
+      (*sumNphi_     )[rr]+=(*incrsumNphi_   )[rr];
+      (*sumDphi_     )[rr]+=(*incrsumDphi_   )[rr];
+      (*sumCsgs_phi_)[rr]+=(*incrsumCsgs_phi_)[rr];
+    }
   }
 
   return;
@@ -3389,7 +3848,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
     } // end scalesimilarity_
 
     // ------------------------------------------------------------------
-    // additional output for dynamic Smagorinsky model
+    // additional output for multifractal subgrid-scale modeling
     if (multifractal_)
     {
       // get the outfile
@@ -3980,6 +4439,187 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
 
 /*----------------------------------------------------------------------*
 
+     Compute a time average of the mean values for turbulent passive
+     scalar transport over all steps of the sampling period so far.
+                      Dump the result to file.
+
+ -----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(int step)
+{
+  if (numsamp_ == 0) dserror("No samples to do time average");
+
+  //----------------------------------------------------------------------
+  // the sums are divided by the number of samples to get the time average
+  int aux = numele_*numsamp_;
+
+  //----------------------------------------------------------------------
+  // evaluate area of bottom and top wall to calculate u_tau, l_tau (and tau_W)
+  // and assume that area of bottom and top wall are equal
+  double area = 1.0;
+  for (int i=0;i<3;i++)
+  {
+    if(i!=dim_) area*=((*boundingbox_)(1,i)-(*boundingbox_)(0,i));
+  }
+  const double areanumsamp = area*numsamp_;
+
+  //----------------------------------------------------------------------
+  // we expect nonzero forces (tractions) only in flow direction
+  int flowdirection =0;
+
+  // tau_w at bottom and top wall
+  double tauwb = 0;
+  double tauwt = 0;
+  if      (sumforcebu_>sumforcebv_ && sumforcebu_>sumforcebw_)
+  {
+    flowdirection=0;
+    tauwb = sumforcebu_/areanumsamp;
+    tauwt = sumforcetu_/areanumsamp;
+  }
+  else if (sumforcebv_>sumforcebu_ && sumforcebv_>sumforcebw_)
+  {
+    flowdirection=1;
+    tauwb = sumforcebv_/areanumsamp;
+    tauwt = sumforcetv_/areanumsamp;
+  }
+  else if (sumforcebw_>sumforcebu_ && sumforcebw_>sumforcebv_)
+  {
+    flowdirection=2;
+    tauwb = sumforcebw_/areanumsamp;
+    tauwt = sumforcetw_/areanumsamp;
+  }
+  else
+    dserror("Cannot determine flow direction by traction (appears not unique)");
+
+  // flux at the wall is trueresidual of conv-diff equation
+  const double qwb = sumqwb_/areanumsamp;
+  const double qwt = sumqwt_/areanumsamp;
+
+  // u_tau and l_tau at bottom and top wall as well as mean values
+  const double utaub = sqrt(tauwb/dens_);
+  const double utaut = sqrt(tauwt/dens_);
+  double Ttaub = 0.0;
+  if (utaub < -2e-9 or utaub > 2e-9) Ttaub = qwb/utaub;
+  double Ttaut = 0.0;
+  if (utaut < -2e-9 or utaut > 2e-9) Ttaut = qwt/utaut;
+
+  //----------------------------------------------------------------------
+  // output to log-file
+  Teuchos::RefCountPtr<std::ofstream> log;
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".flow_statistics");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Statistics for turbulent passiv scalar transport in channel (first- and second-order moments)";
+    (*log) << "\n\n\n";
+    (*log) << "# Statistics record ";
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+    (*log) << "# bottom wall: tauwb, u_taub, qwb, Ttaub : ";
+    (*log) << "   " << setw(17) << setprecision(10) << tauwb;
+    (*log) << "   " << setw(17) << setprecision(10) << utaub;
+    (*log) << "   " << setw(17) << setprecision(10) << qwb;
+    (*log) << "   " << setw(17) << setprecision(10) << Ttaub;
+    (*log) << &endl;
+
+    (*log) << "# top wall:    tauwt, u_taut, qwt, Ttaut : ";
+    (*log) << "   " << setw(17) << setprecision(10) << tauwt;
+    (*log) << "   " << setw(17) << setprecision(10) << utaut;
+    (*log) << "   " << setw(17) << setprecision(10) << qwt;
+    (*log) << "   " << setw(17) << setprecision(10) << Ttaut;
+    (*log) << &endl;
+
+    (*log) << "#        y";
+    (*log) << "                  umean               vmean               wmean               pmean               Tmean";
+    (*log) << "              mean u^2            mean v^2            mean w^2            mean p^2            mean T^2";
+    (*log) << "            mean u*v            mean u*w            mean v*w            mean u*T            mean v*T            mean w*T\n";
+
+    (*log) << scientific;
+    for(unsigned i=0; i<planecoordinates_->size(); ++i)
+    {
+      (*log) <<  " "  << setw(17) << setprecision(10) << (*planecoordinates_)[i];
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumu_            )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumv_            )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumw_            )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sump_            )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumT_            )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqu_          )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqv_          )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqw_          )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqp_          )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqT_          )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumuv_           )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumuw_           )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumvw_           )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumuT_           )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumvT_           )[i]/aux;
+      (*log) << "   " << setw(17) << setprecision(10) << (*sumwT_           )[i]/aux;
+      (*log) << "\n";
+    }
+    log->flush();
+
+    // ------------------------------------------------------------------
+    // additional output for multifractal subgrid-scale modeling
+    if (multifractal_)
+    {
+      // get the outfile
+      Teuchos::RefCountPtr<std::ofstream> log_mf;
+
+      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_mf.append(".MF_statistics");
+
+      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::out));
+
+      (*log_mf) << "# Statistics for turbulent passiv scalar transport in channel (multifractal subgrid-scales parameters)";
+      (*log_mf) << "\n\n\n";
+      (*log_mf) << "# Statistics record ";
+      (*log_mf) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+      (*log_mf) << "#     y      ";
+      (*log_mf) << "  N_stream   ";
+      (*log_mf) << "  N_normal   ";
+      (*log_mf) << "  N_span     ",
+      (*log_mf) << "  B_stream   ";
+      (*log_mf) << "  B_normal   ";
+      (*log_mf) << "  B_span     ";
+      (*log_mf) << "    Csgs     ";
+      (*log_mf) << "    Nphi     ";
+      (*log_mf) << "    Dphi     ";
+      (*log_mf) << "  Csgs_phi   ";
+      (*log_mf) << "    sgvisc   ";
+      (*log_mf) << &endl;
+      (*log_mf) << scientific;
+      for (unsigned rr=0;rr<sumN_stream_->size();++rr)
+      {
+        // we associate the value with the midpoint of the element layer
+        (*log_mf) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        // the values to be visualised
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_stream_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_normal_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_span_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_stream_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_normal_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_span_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumNphi_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumDphi_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_phi_     )[rr])/aux   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumsgvisc_)[rr])/aux   << &endl;
+      }
+      log_mf->flush();
+    } // end multifractal_
+  }
+
+  return;
+
+}// TurbulenceStatisticsCha::DumpScatraStatistics
+
+
+/*----------------------------------------------------------------------*
+
                   Reset sums and number of samples to 0
 
   ----------------------------------------------------------------------*/
@@ -4073,6 +4713,9 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumB_span_)           [rr]=0;
       (*sumCsgs_)             [rr]=0;
       (*sumsgvisc_)           [rr]=0;
+      (*sumNphi_)         [rr]=0;
+      (*sumDphi_)         [rr]=0;
+      (*sumCsgs_phi_)             [rr]=0;
     }
   } // end multifractal_
 

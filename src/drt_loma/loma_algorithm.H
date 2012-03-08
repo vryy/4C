@@ -152,6 +152,8 @@ namespace LOMA
 
     /// flag for turbulent inflow
     bool turbinflow_;
+    /// number of inflow steps
+    int numinflowsteps_;
 
   private:
 

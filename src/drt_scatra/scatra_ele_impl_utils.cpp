@@ -13,6 +13,8 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
+//#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 namespace SCATRA
 {
@@ -80,6 +82,28 @@ double CalResDiffCoeff(
     dserror("denominator in resulting diffusion coefficient is nearly zero");
 
   return diffus[first]*diffus[second]*(valence[first]-valence[second])/n;
+}
+
+
+/*-------------------------------------------------------------------------------*
+ |find elements of inflow section                                rasthofer 01/12 |
+ |for turbulent low Mach number flows with turbulent inflow condition            |
+ *-------------------------------------------------------------------------------*/
+bool InflowElement(DRT::Element* ele)
+{
+  bool inflow_ele = false;
+
+  vector<DRT::Condition*> myinflowcond;
+
+  // check whether all nodes have a unique inflow condition
+  DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+  if (myinflowcond.size()>1)
+    dserror("More than one inflow condition on one node!");
+
+  if (myinflowcond.size()==1)
+   inflow_ele = true;
+
+  return inflow_ele;
 }
 
 

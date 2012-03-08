@@ -2633,6 +2633,66 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(0,1),
                                &fdyn_stab);
 
+  // these parameters active additional terms in loma continuity equation
+  // which might be identified as SUPG-/cross- and Reynolds-stress term
+  setStringToIntegralParameter<int>("LOMA_CONTI_SUPG",
+                               "no_supg",
+                               "Flag to (de)activate SUPG-term in loma continuity equation.",
+                               tuple<std::string>(
+                                 "no_supg",
+                                 "yes_supg"),
+                               tuple<std::string>(
+                                 "No SUPG",
+                                 "Use SUPG."),
+                               tuple<int>(
+                                 INPAR::FLUID::convective_stab_none,  // no SUPG stabilization
+                                 INPAR::FLUID::convective_stab_supg), // use SUPG stabilization
+                               &fdyn_stab);
+
+  setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS",
+                               "no_cross",
+                               "Flag to (de)activate cross-stress term loma continuity equation-> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_cross",
+                                 "yes_cross",
+                                 "cross_rhs"
+                                 //"cross_complete"
+                                 ),
+                               tuple<std::string>(
+                                 "No cross-stress term",
+                                 "Include the cross-stress term with a linearization of the convective part",
+                                 "Include cross-stress term, but only explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::cross_stress_stab_none,
+                                   INPAR::FLUID::cross_stress_stab,
+                                   INPAR::FLUID::cross_stress_stab_only_rhs
+                                ),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter<int>("LOMA_CONTI_REYNOLDS_STRESS",
+                               "no_reynolds",
+                               "Flag to (de)activate Reynolds-stress term loma continuity equation-> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_reynolds",
+                                 "yes_reynolds",
+                                 "reynolds_rhs"
+                                 //"reynolds_complete"
+                                 ),
+                               tuple<std::string>(
+                                 "No Reynolds-stress term",
+                                 "Include Reynolds-stress term with linearisation",
+                                 "Include Reynolds-stress term explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::reynolds_stress_stab_none,
+                                   INPAR::FLUID::reynolds_stress_stab,
+                                   INPAR::FLUID::reynolds_stress_stab_only_rhs
+                               ),
+                               &fdyn_stab);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 
@@ -2677,8 +2737,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,14> name;
-    Teuchos::Tuple<int,14> label;
+    Teuchos::Tuple<std::string,15> name;
+    Teuchos::Tuple<int,15> label;
     name[ 0] = "no";                                      label[ 0] = 0;
     name[ 1] = "time_averaging";                          label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                label[ 2] = 2;
@@ -2693,8 +2753,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[11] = "loma_backward_facing_step";               label[11] = 11;
     name[12] = "combust_oracles";                         label[12] = 12;
     name[13] = "bubbly_channel_flow";                     label[13] = 13;
+    name[14] = "scatra_channel_flow_of_height_2";         label[14] = 14;
 
-    Teuchos::Tuple<std::string,14> description;
+    Teuchos::Tuple<std::string,15> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -2709,6 +2770,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[11]="For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z.";
     description[12]="ORACLES test rig for turbulent premixed combustion.";
     description[13]="Turbulent two-phase flow: bubbly channel flow, statistical data are averaged in homogeneous planse and over time.";
+    description[14]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",
@@ -2890,6 +2952,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Proportionality constant between Re*Pr and ratio dissipative scale to element length. Usually equal cnu.",
     &fdyn_turbmfs);
 
+  // activate cross- and Reynolds-stress terms in loma continuity equation
+  BoolParameter("LOMA_CONTI","No","Flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation.",&fdyn_turbmfs);
+
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");
 
@@ -2924,12 +2989,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        tuple<std::string>(
        "no",
        "time_averaging",
-       "channel_flow_of_height_2"),
+       "channel_flow_of_height_2",
+       "loma_channel_flow_of_height_2"),
        tuple<std::string>(
        "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
        "The flow is not further specified, but time averaging of velocity and pressure field is performed",
-       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
-       tuple<int>(0,1,2),
+       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
+       tuple<int>(0,1,2,3),
        &fdyn_turbinf);
 
    DoubleParameter(
@@ -3180,7 +3247,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "Elch_ENC_PDE_ELIM",
                                  "Elch_Poisson",
                                  "Elch_Laplace",
-                                 "LevelSet"),
+                                 "LevelSet",
+                                 "TurbulentPassiveScalar"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
@@ -3190,7 +3258,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  INPAR::SCATRA::scatratype_elch_enc_pde_elim,
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_elch_laplace,
-                                 INPAR::SCATRA::scatratype_levelset),
+                                 INPAR::SCATRA::scatratype_levelset,
+                                 INPAR::SCATRA::scatratype_turbpassivesca),
                                  &scatradyn);
 
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
@@ -3450,23 +3519,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  ),
                                tuple<int>(0,1,2),
                                &lomacontrol);
-  setStringToIntegralParameter<int>(
-    "CANONICAL_FLOW",
-    "no",
-    "Information on special flows",
-    tuple<std::string>(
-      "no",
-      "loma_channel_flow_of_height_2",
-      "loma_lid_driven_cavity",
-      "loma_backward_facing_step"),
-    tuple<std::string>(
-      "The flow is not further specified.",
-      "low-Mach-number in channel",
-      "low-Mach-number flow in lid-driven cavity",
-      "low-Mach-number flow over a backward-facing step"),
-    tuple<int>(0,1,2,3),
-    &lomacontrol);
-  IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&lomacontrol);
+  BoolParameter("SGS_MATERIAL_UPDATE","no","update material by adding subgrid-scale scalar field",&lomacontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(

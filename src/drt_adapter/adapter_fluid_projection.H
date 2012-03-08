@@ -139,6 +139,7 @@ public:
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
                                    RCP<const Epetra_Vector> scalaram,
                                    RCP<const Epetra_Vector> scalardtam,
+                                   RCP<const Epetra_Vector> fsscalaraf,
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtaf,
