@@ -638,7 +638,7 @@ void DRT::Discretization::BuildElementRowColumn(
       // the proc with the largest number of nodes owns the element,
       // all others ghost it
       // if no. of nodes is equal among some procs,
-      // the higher rank owns the element
+      // the last node owner with equal number of nodes owns the element
       int owner   = -1;
       int maxnode = 0;
       for (int j=0; j<numnode; ++j)
