@@ -630,7 +630,14 @@ void DRT::Element::LocationVector(const Discretization& dis,
     }
   }
 
-  // fill the vector with element dofs
+  // fill the vectors with element dofs
+  unsigned bef = lm.size();
+  dis.Dof(0,this,lm);
+  unsigned aft = lm.size();
+  if (aft-bef) lmstride.push_back((int)(aft-bef));
+  lmowner.resize(lm.size(),Owner());  
+  
+  // do dirichlet BCs
   const vector<int>* flag = NULL;
   DRT::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
