@@ -65,6 +65,7 @@ void DRT::ELEMENTS::NStetType::NodalBlockInformation( DRT::Element * dwele, int 
   numdf = 3;
   dimns = 6;
   nv = 3;
+  np = 0;
 }
 
 //-----------------------------------------------------------------------
@@ -1023,7 +1024,6 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
   //----------------------------------------------------------------------
   // init elements, make maps of column elements and row nodes
-
   InitElementsandMaps(elecids_,noderids_,myrank,numproc,dis);
 
   //----------------------------------------------------------------------
@@ -1031,7 +1031,6 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   // make patch of adjacent elements
   // make patch of adjacent nodes (including center node itself)
   // make lm for nodal patch
-
   InitAdjacency(elecids_,noderids_,adjele_,adjnode_,adjlm_,dis);
 
   //----------------------------------------------------------------------

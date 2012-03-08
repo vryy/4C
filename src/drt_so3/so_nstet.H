@@ -41,12 +41,12 @@ using namespace Teuchos;
 
 //#define PRINT_NSTET            ///< printout of setup
 #define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
-#define MIS_MIN_PATCHSIZE 2      ///< minimum MIS patch size required
+#define MIS_MIN_PATCHSIZE 3      ///< minimum MIS patch size required
 
 // stabilization approach & parameters
 //#define PUSOSOLBERG              ///< run the Puso&Solberg tet
-#define ALPHA_NSTET       0.20   ///< stabilization parameter for vol-dev split stabilization & Puso-tet
-#define BETA_NSTET        0.9    ///< stabilization parameter for MIS-pressure stabilization
+#define ALPHA_NSTET       0.1    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
 
 // make parameters match for puso&solberg tet
 #ifdef PUSOSOLBERG
