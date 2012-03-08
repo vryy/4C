@@ -3,6 +3,7 @@
 
 #include "fluid3_weak_dbc.H"
 
+#include "fluid3.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"

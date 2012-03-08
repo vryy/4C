@@ -16,11 +16,9 @@ Maintainer: Martin Winklmaier
 #ifndef TOPOPT_UTILS_CPP_
 #define TOPOPT_UTILS_CPP_
 
-#include <iostream>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "topopt_utils.H"
 
+#include <iostream>
+#include "topopt_utils.H"
 
 
 void TOPOPT::printTopOptLogo()

@@ -18,10 +18,6 @@ Maintainer: Andreas Ehrl
 
 #ifdef D_FLUID3
 
-#include "../drt_f3/fluid3.H"
-
-//#include "../drt_inpar/inpar_xfem.H"
-
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
@@ -37,6 +33,7 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+  class Fluid3;
 
   /// Interface base class for Fluid3Impl
   /*!

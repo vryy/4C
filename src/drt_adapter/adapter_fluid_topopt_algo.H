@@ -45,7 +45,7 @@ namespace ADAPTER
 
     /// constructor using a Epetra_Comm
     explicit FluidTopOptCouplingAlgorithm(
-        Epetra_Comm& comm,              ///< communicator
+        const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn ///< problem-specific parameters
         );
 

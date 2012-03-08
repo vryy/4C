@@ -1,0 +1,102 @@
+/*!------------------------------------------------------------------------------------------------*
+\file topopt_fluidAdjoint3_interface.H
+
+\brief 
+
+<pre>
+Maintainer: Martin Winklmaier
+            winklmaier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+
+#ifndef TOPOPT_FLUIDADJOINT3_INTERFACE_H_
+#define TOPOPT_FLUIDADJOINT3_INTERFACE_H_
+
+
+namespace GEO
+{
+  namespace CUT
+  {
+    class BoundaryCell;
+  }
+}
+
+namespace DRT
+{
+class Discretization;
+
+namespace UTILS
+{
+class GaussIntegration;
+}
+
+namespace ELEMENTS
+{
+  class Fluid3;
+
+  /// Interface base class for FluidAdjoint3Impl
+  /*!
+    This class exists to provide a common interface for all template
+    versions of FluidAdjoint3Impl. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of FluidAdjoint3Impl.
+   */
+  class FluidAdjoint3ImplInterface : public DRT::SingletonDestruction
+  {
+  public:
+
+    /// Empty constructor
+    FluidAdjoint3ImplInterface() {}
+
+    /// Evaluate the element
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                         DRT::Discretization & discretization,
+                         const std::vector<int> & lm,
+                         Teuchos::ParameterList&    params,
+                         Teuchos::RCP<MAT::Material> & mat,
+                         Epetra_SerialDenseMatrix&  elemat1_epetra,
+                         Epetra_SerialDenseMatrix&  elemat2_epetra,
+                         Epetra_SerialDenseVector&  elevec1_epetra,
+                         Epetra_SerialDenseVector&  elevec2_epetra,
+                         Epetra_SerialDenseVector&  elevec3_epetra
+      ) = 0;
+
+    /// Evaluate the element at specified gauss points
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                         DRT::Discretization & discretization,
+                         const std::vector<int> & lm,
+                         Teuchos::ParameterList&    params,
+                         Teuchos::RCP<MAT::Material> & mat,
+                         Epetra_SerialDenseMatrix&  elemat_epetra,
+                         Epetra_SerialDenseVector&  elevec_epetra,
+                         const DRT::UTILS::GaussIntegration & intpoints ) = 0;
+
+    /// Compute Error
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
+    virtual int ComputeError(
+        DRT::ELEMENTS::Fluid3*          ele,
+        Teuchos::ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec1) = 0;
+
+    /// Internal implementation class for fluid element
+    static FluidAdjoint3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
+  };
+}
+}
+
+#endif /* TOPOPT_FLUIDADJOINT3_INTERFACE_H_ */
+#endif  // #ifdef CCADISCRET

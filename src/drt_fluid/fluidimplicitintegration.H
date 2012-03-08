@@ -721,14 +721,14 @@ protected:
   RCP<Epetra_Vector>    neumann_loads_;
 
   /// the vector containing potential Neumann-type outflow terms
-  RCP<Epetra_Vector>    outflow_;
+//  RCP<Epetra_Vector>    outflow_;
 
   /// (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>    residual_;
   RCP<Epetra_Vector>    trac_residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-  RCP<Epetra_Vector>    rhs_;
+//  RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
   RCP<Epetra_Vector>    robinrhs_;

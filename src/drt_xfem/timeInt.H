@@ -429,6 +429,10 @@ protected:
 
   RCP<vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
 
+public:
+  int numNodes(){return timeIntData_->size();};
+
+protected:
   //! return the number of Epetra vectors which shall get new values for a given node with according data
   size_t vectorSize(TimeIntData* data) const {return vectorSize(data->type_);};
 

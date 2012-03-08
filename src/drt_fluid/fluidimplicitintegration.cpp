@@ -444,7 +444,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   trac_residual_ = LINALG::CreateVector(*dofrowmap,true);
 
   // right hand side vector for linearised solution;
-  rhs_ = LINALG::CreateVector(*dofrowmap,true);
+//  rhs_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
@@ -663,7 +663,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
-
   SetElementGeneralFluidParameter();
   SetElementTimeParameter();
   SetElementTurbulenceParameter();
@@ -4865,6 +4864,9 @@ void FLD::FluidImplicitTimeInt::SetTopOptData(
     RCP<TOPOPT::Optimizer> optimizer
 )
 {
+  // currently the maps have to fit and, thus, this works
+  // in the future this simple procedure may have to be altered,
+  // see setiterlomafields or settimelomafields for examples
   topopt_porosity_ = porosity;
   optimizer_=optimizer;
 }

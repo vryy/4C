@@ -16,11 +16,8 @@ Maintainer: Martin Winklmaier
 #define TOPOPT_ALGORITHM_H_
 
 
-
-#include <Epetra_Comm.h>
 #include "../drt_adapter/adapter_fluid_topopt_algo.H"
 #include "../drt_inpar/inpar_topopt.H"
-
 
 
 namespace TOPOPT
@@ -50,7 +47,7 @@ namespace TOPOPT
 
     /// constructor using a Epetra_Comm
     explicit Algorithm(
-        Epetra_Comm& comm,
+        const Epetra_Comm& comm,
         const Teuchos::ParameterList& topoptdyn
     );
 
@@ -120,8 +117,8 @@ namespace TOPOPT
     RCP<Epetra_Vector> poro_;
 
     /// objective fields
-    RCP<Epetra_Vector> objective_ip_; // objective at new iteration in row map
-    RCP<Epetra_Vector> objective_i_; // objective at old iteration in row map
+    double objective_ip_; // objective at new iteration in row map
+    double objective_i_; // objective at old iteration in row map
   };
 
 } // namespace TOPOPT

@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_topopt_adjointTimeInt_adjointTimeInt_impl.cpp
+\file adapter_topopt_fluid_adjoint_impl.cpp
 
 \brief 
 
@@ -14,23 +14,26 @@ Maintainer: Martin Winklmaier
 
 #ifdef CCADISCRET
 
-#include "adapter_topopt_fluid_adjoint_impl.H"
-#include "../linalg/linalg_utils.H"
+
 #include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
+#include "../drt_lib/drt_dserror.H"
+
+#include "adapter_topopt_fluid_adjoint_impl.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidAdjointImpl::FluidAdjointImpl(
         Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output)
   : dis_(dis),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  adjointTimeInt_ = rcp(new TOPOPT::ADJOINT::ImplicitTimeInt(dis, *solver, *params, *output));
+  adjointTimeInt_ = Teuchos::rcp(new TOPOPT::ADJOINT::ImplicitTimeInt(dis, *solver, *params, *output));
 }
 
 
@@ -44,25 +47,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdjointImpl::Velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdjointImpl::Velaf()
-{
-  return adjointTimeInt_->Velaf();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdjointImpl::Veln()
 {
   return adjointTimeInt_->Veln();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdjointImpl::Velnm()
-{
-  return adjointTimeInt_->Velnm();
 }
 
 
@@ -87,21 +74,6 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidAdjointImpl::GetDBCMapExt
 void ADAPTER::FluidAdjointImpl::TimeLoop()
 {
    adjointTimeInt_->Integrate();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidAdjointImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
-{
-  if (stepinc!=Teuchos::null)
-  {
-    adjointTimeInt_->Evaluate(stepinc);
-  }
-  else
-  {
-    adjointTimeInt_->Evaluate(Teuchos::null);
-  }
 }
 
 
@@ -161,9 +133,12 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAdjointImpl::CreateFieldTest()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidAdjointImpl::SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer)
+void ADAPTER::FluidAdjointImpl::SetTopOptData(
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
+    Teuchos::RCP<Epetra_Vector> porosity,
+    Teuchos::RCP<TOPOPT::Optimizer> optimizer)
 {
-  adjointTimeInt_->SetTopOptData(porosity,optimizer);
+  adjointTimeInt_->SetTopOptData(fluidvelocities,porosity,optimizer);
   return;
 }
 

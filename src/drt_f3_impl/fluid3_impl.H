@@ -26,6 +26,8 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+  class Fluid3ImplParameter;
+
 
   /// Internal Fluid3 implementation
   /*!
@@ -1198,9 +1200,9 @@ namespace ELEMENTS
     double conres_old_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
-    //! global velocity second derivatives in gausspoint w.r.t x,y,z
+    //! global velocity second derivatives in gausspoint w.r.t local coordinates
     LINALG::Matrix<nsd_,nsd_> vderiv_;
-
+/*
     //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
     LINALG::Matrix<nsd_,1> resM_Du_;
     //! linearisation of residual of momentum equation wrt velocities (precomputed)
@@ -1217,7 +1219,7 @@ namespace ELEMENTS
     LINALG::Matrix<nen_,1>      preforce;
     //! rhs forces velocity
     LINALG::Matrix<nsd_,nen_>   velforce;
-
+*/
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! Jacobian determinant
@@ -1296,7 +1298,7 @@ namespace ELEMENTS
 
     DRT::UTILS::GaussIntegration intpoints_;
 
-    double L2_; //Jeffery-Hamel
+//    double L2_; //Jeffery-Hamel
 
     //! initial porosity
     LINALG::Matrix<nen_,1> initporosityfield_;

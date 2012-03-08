@@ -13,18 +13,18 @@ Maintainer: Martin Winklmaier
 
 #ifdef CCADISCRET
 
-#include "adapter_topopt_fluid_adjoint_base.H"
+
 
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
 
+#include "adapter_topopt_fluid_adjoint_base.H"
 #include "adapter_topopt_fluid_adjoint_impl.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -92,8 +92,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // set some pointers and variables
   // -------------------------------------------------------------------
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& probsize    = DRT::Problem::Instance()->ProblemSizeParams();
+  const Teuchos::ParameterList& fdyn        = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
+  const Teuchos::ParameterList& opti        = DRT::Problem::Instance()->OptimizationControlParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
@@ -147,28 +149,11 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // (which also can be fluiddyn itself!)
 
   // the default time step size
-  fluidadjointtimeparams->set<double> ("time step size"      ,-1.0*prbdyn.get<double>("TIMESTEP"));
+  fluidadjointtimeparams->set<double> ("time step size"      ,1.0*prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
   fluidadjointtimeparams->set<double> ("total time"          ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
   fluidadjointtimeparams->set<int>    ("max number timesteps",prbdyn.get<int>("NUMSTEP"));
-
-  // -------- additional parameters in list for generalized-alpha scheme
-#if 1
-  // parameter alpha_M
-  fluidadjointtimeparams->set<double> ("alpha_M", fdyn.get<double>("ALPHA_M"));
-  // parameter alpha_F
-  fluidadjointtimeparams->set<double> ("alpha_F", fdyn.get<double>("ALPHA_F"));
-  // parameter gamma
-  fluidadjointtimeparams->set<double> ("gamma",   fdyn.get<double>("GAMMA"));
-#else
-  // parameter alpha_M
-  fluidtimeparams->set<double> ("alpha_M", 1.-prbdyn.get<double>("ALPHA_M"));
-  // parameter alpha_F
-  fluidtimeparams->set<double> ("alpha_F", 1.-prbdyn.get<double>("ALPHA_F"));
-  // parameter gamma
-  fluidtimeparams->set<double> ("gamma",   prbdyn.get<double>("GAMMA"));
-#endif
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
@@ -182,8 +167,20 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // set convergence check
   fluidadjointtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
   // set adaptive linear solver tolerance
-  fluidadjointtimeparams->set<bool>            ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(fdyn,"ADAPTCONV")==1);
-  fluidadjointtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
+
+  // ---------------------------------------------- objective variables
+  // set if objective contains dissipation
+  fluidadjointtimeparams->set<bool>          ("OBJECTIVE_DISSIPATION" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_DISSIPATION")==1);
+  // set if objective contains inlet pressure
+  fluidadjointtimeparams->set<bool>          ("OBJECTIVE_INLET_PRESSURE" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_INLET_PRESSURE")==1);
+  // set if objective contains pressure drop
+  fluidadjointtimeparams->set<bool>          ("OBJECTIVE_PRESSURE_DROP" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_PRESSURE_DROP")==1);
+  // set objective's dissipation factor
+  fluidadjointtimeparams->set<double>        ("DISSIPATION_FAC" ,opti.get<double>("DISSIPATION_FAC"));
+  // set objective's inlet pressure factor
+  fluidadjointtimeparams->set<double>        ("PRESSURE_INLET_FAC" ,opti.get<double>("PRESSURE_INLET_FAC"));
+  // set objective's pressure drop factor
+  fluidadjointtimeparams->set<double>        ("PRESSURE_DROP_FAC" ,opti.get<double>("PRESSURE_DROP_FAC"));
 
   // ----------------------------------------------- restart and output
 //  // restart
@@ -194,9 +191,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -----------evaluate error for test flows with analytical solutions
   INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
 //  fluidadjointtimeparams->set<int>("eval err for analyt sol", initfield);
-
-  // ------------------------------------------ form of convective term
-  fluidadjointtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
 
   // ------------------------------------ potential Neumann inflow terms
   fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
@@ -219,11 +213,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   if(timeint == INPAR::FLUID::timeint_stationary or
-     timeint == INPAR::FLUID::timeint_one_step_theta or
-     timeint == INPAR::FLUID::timeint_bdf2 or
-     timeint == INPAR::FLUID::timeint_afgenalpha or
-     timeint == INPAR::FLUID::timeint_npgenalpha
-    )
+     timeint == INPAR::FLUID::timeint_one_step_theta
+  )
   {
     // -----------------------------------------------------------------
     // set additional parameters in list for
@@ -233,6 +224,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     fluidadjointtimeparams->set<int>("time int algo",timeint);
     // parameter theta for time-integration schemes
     fluidadjointtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
+    // parameter theta for time-integration schemes
+    fluidadjointtimeparams->set<double>           ("theta_pre"                ,adjointfdyn.get<double>("THETA_PRES"));
+    // parameter theta for time-integration schemes
+    fluidadjointtimeparams->set<double>           ("theta_div"                ,adjointfdyn.get<double>("THETA_DIV"));
     // number of steps for potential start algorithm
     fluidadjointtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter theta for potential start algorithm
@@ -263,13 +258,9 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
       }
     }
   }
-  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
-  {
-    dserror("not implemented for adjoint field");
-  }
   else
   {
-    dserror("Unknown time integration for fluid\n");
+    dserror("not implemented for adjoint field");
   }
 
   // set initial field by given function
@@ -284,6 +275,26 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     }
     adjoint_->SetInitialFlowField(initfield,startfuncno);
   }
+  // TODO activate when output is working
+//  adjoint_->Output();
+
   return;
 }
+
+
+
+Teuchos::RCP<ADAPTER::FluidAdjoint> ADAPTER::TopOptFluidAdjointAlgorithm::AdjointFluidField()
+{
+  return adjoint_;
+}
+
+
+
+const Teuchos::RCP<const ADAPTER::FluidAdjoint> ADAPTER::TopOptFluidAdjointAlgorithm::AdjointFluidField() const
+{
+  return adjoint_;
+}
+
+
+
 #endif  // #ifdef CCADISCRET

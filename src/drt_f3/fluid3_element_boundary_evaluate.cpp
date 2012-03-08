@@ -16,7 +16,10 @@ Maintainer: Andreas Ehrl
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+
+#include "fluid3.H"
 #include "fluid3_boundary_impl.H"
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |

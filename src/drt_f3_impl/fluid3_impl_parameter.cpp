@@ -54,6 +54,7 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   is_inconsistent_(false),
   reaction_(false),
   darcy_(false),
+  reaction_topopt_(false),
   physicaltype_(INPAR::FLUID::incompressible),
   tds_(INPAR::FLUID::subscales_none),
   transient_(INPAR::FLUID::inertia_stab_drop),
@@ -548,81 +549,120 @@ void DRT::ELEMENTS::Fluid3ImplParameter::PrintFluidParameter()
     cout << endl << "|-----------------------------------------------------------------------------" << endl;
     cout << "|  General Fluid parameter: " << endl;
     cout << "|-----------------------------------------------------------------------------" << endl;
+    //! flag SetGeneralParameter was called
     cout << "|    method SetElmentGeneralFluidParameter was called:    " << set_general_fluid_parameter_ << endl;
-    cout << "|    generalized alpha time integration active:   " << is_genalpha_ << endl;
+    //! flag to (de)activate generalized-alpha time-integration scheme
+    cout << "|    generalized alpha time integration active:    " << is_genalpha_ << endl;
+    //! flag to (de)activate generalized-alpha-np1 time-integration scheme
+    cout << "|    generalized alpha time integration np:    " << is_genalpha_np_ << endl;
+    //! flag to (de)activate conservative formulation
     cout << "|    conservative formulation:    " << is_conservative_ << endl;
     //! flag to (de)activate stationary formulation
-    cout << "|    steady state:   " << is_stationary_ << endl;
+    cout << "|    steady state:    " << is_stationary_ << endl;
     //! flag to (de)activate Newton linearization
-    cout << "|    Newton linearization:   " << is_newton_ << endl;
+    cout << "|    Newton linearization:    " << is_newton_ << endl;
     //! flag to (de)activate second derivatives
-    cout << "|    use inconsistent:  " << is_inconsistent_ << endl;
+    cout << "|    use inconsistent:    " << is_inconsistent_ << endl;
+    //! flag to (de)activate potential reactive terms
+    cout << "|    reaction term:    " << reaction_ << endl;
+    //! flag to (de)aktivate porous darcy flow
+    cout << "|    darcy equation:    " << darcy_ << endl;
+    //! flag to (de)aktivate reaction due to topology optimization
+    cout << "|    reaction term due to topology optimization:    " << reaction_topopt_ << endl;
     //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
     cout << "|    physical type:    "<< physicaltype_ << endl;
     //! Flag to (de)activate time-dependent subgrid stabilization
-    cout << "|    time-dependent subgrid stabilization:   " << tds_ << endl;
+    cout << "|    time-dependent subgrid stabilization:    " << tds_ << endl;
     //! Flag to (de)activate time-dependent term in large-scale momentum equation
     cout << "|    time dependent term:    " << transient_ << endl;
     //! Flag to (de)activate PSPG stabilization
-    cout << "|    PSPG:   " << pspg_ << endl;
+    cout << "|    PSPG:    " << pspg_ << endl;
     //! Flag to (de)activate SUPG stabilization
-    cout << "|    SUPG:   " << supg_<< endl ;
+    cout << "|    SUPG:    " << supg_<< endl ;
     //! Flag to (de)activate viscous term in residual-based stabilization
     cout << "|    VSTAB:    " << vstab_ << endl;
     //! Flag to (de)activate least-squares stabilization of continuity equation
     cout << "|    Grad-Div-Stab:    " << cstab_ << endl ;
+    //! Flag to (de)activate reactive term in residual-based stabilization
+    cout << "|    reactive stabilization:    " << rstab_ << endl;
     //! Flag to (de)activate cross-stress term -> residual-based VMM
     cout << "|    cross-stress term:    " << cross_ << endl;
     //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-    cout << "|    Reynolds-stress term:   " << reynolds_ << endl;
+    cout << "|    Reynolds-stress term:    " << reynolds_ << endl;
+    //! (sign) factor for viscous and reactive stabilization terms
+    cout << "|    viscous and reactive stabilization factor:    " << viscreastabfac_ << endl;
     //! Flag to define tau
     cout << "|    Definition of stabilization parameter:    " << whichtau_ << endl;
     //! flag to (de)activate fine-scale subgrid viscosity
     cout << "|    fine-scale subgrid viscosity::    " << fssgv_ << endl;
     //! flag for material evaluation at Gaussian integration points
-    cout << "|    material evaluation at Gaussian integration points:   " << mat_gp_ << endl;
+    cout << "|    material evaluation at Gaussian integration points:    " << mat_gp_ << endl;
     //! flag for stabilization parameter evaluation at Gaussian integration points
-    cout << "|    stabilization parameter evaluation at Gaussian integration points:  " << tau_gp_ << endl;
+    cout << "|    stabilization parameter evaluation at Gaussian integration points:    " << tau_gp_ << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
 
     cout << endl << "|---------------------------------------------------------------------------" << endl;
     cout << "|  Time parameter: " << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
     //! time algorithm
-    cout << "|    time algorithm:   " << timealgo_ << endl;
+    cout << "|    time algorithm:    " << timealgo_ << endl;
     //! actual time to evaluate the body BC
     cout << "|    time:    " << time_ << endl;
     //! time-step length
-    cout << "|    time step:   " << dt_ << endl;
+    cout << "|    time step:    " << dt_ << endl;
     //! timefac = dt_ * ("pseudo"-)theta_
-    cout << "|    time factor:   " << timefac_ << endl;
+    cout << "|    time factor:    " << timefac_ << endl;
     //! factor for left-hand side due to one-step-theta time-integration scheme
-    cout << "|    theta:   " << theta_ << endl;
+    cout << "|    theta:    " << theta_ << endl;
     //! factor for right-hand side due to one-step-theta time-integration scheme
-    cout << "|    (1-theta):   " << omtheta_ << endl;
+    cout << "|    (1-theta):    " << omtheta_ << endl;
     //! generalised-alpha parameter (connecting velocity and acceleration)
-    cout << "|    gamma:   " << gamma_ << endl;
+    cout << "|    gamma:    " << gamma_ << endl;
     //! generalised-alpha parameter (velocity)
-    cout << "|    alpha_F:   " << alphaF_ << endl;
+    cout << "|    alpha_F:    " << alphaF_ << endl;
     //! generalised-alpha parameter (acceleration)
-    cout << "|    alpha_M:   " << alphaM_ << endl;
+    cout << "|    alpha_M:    " << alphaM_ << endl;
     //! generalised-alpha parameter, alphaF_*gamma_*dt_
     cout << "|    time factor mat_u:    " << afgdt_ << endl;
     //! time integration factor for the right hand side (boundary elements)
-    cout << "|    time factor rhs:   " << timefacrhs_ << endl;
+    cout << "|    time factor rhs:    " << timefacrhs_ << endl;
     //! time integration factor for the left hand side (pressure)
-    cout << "|    time factor mat_p:   " << timefacpre_ << endl;
+    cout << "|    time factor mat_p:    " << timefacpre_ << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
 
     cout << endl << "|---------------------------------------------------------------------------" << endl;
     cout << "|  Turbulence parameter: " << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
     //! flag to define turbulence model
-    cout << "|    turbulence model:   " << turb_mod_action_ << endl;
+    cout << "|    turbulence model:    " << turb_mod_action_ << endl;
     //! smagorinsky constant
-    cout << "|    smagorinsky constant:   " << Cs_ << endl;
+    cout << "|    smagorinsky constant:    " << Cs_ << endl;
+    //! comment missing
+    cout << "|    Cs_averaged_ is    " << Cs_averaged_ << endl;
+    //! scale similarity constant
+    cout << "|    Cl_ is    " << Cl_ << endl;
+    /// multifractal subgrid-scales
+    cout << "|    Csgs_ is    " << Csgs_ << endl;
+    //! comment missing
+    cout << "|    alpha_ is    " << alpha_ << endl;
+    //! comment missing
+    cout << "|    CalcN_ is    " << CalcN_ << endl;
+    //! comment missing
+    cout << "|    N_ is    " << N_ << endl;
+    //! comment missing
+    cout << "|    refvel_ is    " << refvel_ << endl;
+    //! comment missing
+    cout << "|    reflength_ is    " << reflength_ << endl;
+    //! comment missing
+    cout << "|    c_nu_ is    " << c_nu_ << endl;
+    //! comment missing
+    cout << "|    near_wall_limit_ is    " << near_wall_limit_ << endl;
+    //! comment missing
+    cout << "|    B_gp_ is    " << B_gp_ << endl;
+    //! comment missing
+    cout << "|    beta_ is    " << beta_ << endl;
     //! channel length to normalize the normal wall distance
-    cout << "|    channel length to normalize the normal wall distance:   " << l_tau_ << endl;
+    cout << "|    channel length to normalize the normal wall distance:    " << l_tau_ << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
 
 }

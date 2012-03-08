@@ -16,6 +16,7 @@ Maintainer: Andreas Ehrl
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+#include "fluid3.H"
 #include "fluid3_boundary_impl.H"
 #include "fluid3_weak_dbc.H"
 #include "fluid3_internalfaces_stabilization.H"
@@ -27,8 +28,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-// TODO: remove after Nurbs functions are changed
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_geometry/position_array.H"

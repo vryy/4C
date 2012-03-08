@@ -725,6 +725,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
 
+  if (genprob.probtyp == prb_fluid_topopt)
+    fluid_->Output();
+
   // set initial porosity field by given function
   // we do this here, since we have direct access to all necessary parameters
 //   if (genprob.probtyp == prb_poroelast)

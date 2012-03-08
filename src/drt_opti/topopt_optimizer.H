@@ -16,12 +16,16 @@ Maintainer: Martin Winklmaier
 #define TOPOPT_OPTIMIZER_H_
 
 
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
 #include "../drt_inpar/inpar_topopt.H"
-#include "Epetra_Vector.h"
-#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 
-using namespace Teuchos;
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 namespace DRT
 {
@@ -47,18 +51,22 @@ namespace TOPOPT
   {
   public:
     /// constructor
-    explicit Optimizer(RCP<DRT::Discretization> discret, const ParameterList& params);
+    explicit Optimizer(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& params);
 
     /// desctructor
     virtual ~Optimizer(){};
 
-    void ImportFluidData(RCP<Epetra_Vector> vel,int step);
-    void ImportAdjointFluidData(RCP<Epetra_Vector> vel, int step);
+    double ComputeObjectiveValue(Teuchos::RCP<Epetra_Vector> porosity);
 
-    RCP<Epetra_Vector> DensityI(){return dens_i_;}; // density field of last optimization step
-    RCP<Epetra_Vector> DensityIp(){return dens_ip_;}; // density field of new optimization step
+    void ImportFluidData(Teuchos::RCP<Epetra_Vector> vel,int step);
+    void ImportAdjointFluidData(Teuchos::RCP<Epetra_Vector> vel, int step);
 
-    RCP<DRT::Discretization> Discret(){return discret_;}; // discretization of fluid field
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData(){return vel_;}; /// fluid velocity
+
+    Teuchos::RCP<Epetra_Vector> DensityI(){return dens_i_;}; // density field of last optimization step
+    Teuchos::RCP<Epetra_Vector> DensityIp(){return dens_ip_;}; // density field of new optimization step
+
+    Teuchos::RCP<DRT::Discretization> Discret(){return discret_;}; // discretization of fluid field
     const Epetra_Map* RowMap(); // row map of optimization variable
     const Epetra_Map* ColMap(); // column map of optimization variable
 
@@ -67,17 +75,38 @@ namespace TOPOPT
     /// set the initial density field of the optimization variable
     void SetInitialDensityField(const INPAR::TOPOPT::InitialField init,const int startfuncno);
 
+    /// evaluate the objective function
+    double EvaluateObjective(
+        Teuchos::RCP<Epetra_Vector> porosity,
+        const string& action);
 
   private:
 
-    RCP<Epetra_Vector> dens_i_; // old density in row map
-    RCP<Epetra_Vector> dens_ip_; // new density in row map
-    RCP<DRT::Discretization> discret_; // discretization of optimization field
-    const ParameterList& params_; // parameters
+    bool DataComplete() const;
 
-    // fields for optimization
-    RCP<map<int,Epetra_Vector> > vel_;
-    RCP<map<int,Epetra_Vector> > adjointvel_;
+    Teuchos::RCP<Epetra_Vector> dens_i_; // old density in row map
+    Teuchos::RCP<Epetra_Vector> dens_ip_; // new density in row map
+    Teuchos::RCP<DRT::Discretization> discret_; // discretization of optimization field
+    const Teuchos::ParameterList& params_; // parameters
+
+    //! @name fields for optimization
+
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > vel_;
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvel_;
+
+    size_t num_timesteps_;
+    //@}
+
+    //! @name parameter of the objective function
+
+    bool dissipation_; //! optimize dissipation
+    bool pressure_inlet_; //! optimize pressure at inlet
+    bool pressure_drop_; //! optimize pressure drop from inlet to outlet
+
+    double dissipation_fac_; //! dissipation weighting factor
+    double pressure_inlet_fac_; //! inlet pressure weighting factor
+    double pressure_drop_fac_; //! inlet pressure weighting factor
+    //@}
 
   }; // end class Optimizer
 } // end namespace TOPOPT

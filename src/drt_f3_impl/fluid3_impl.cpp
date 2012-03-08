@@ -22,6 +22,7 @@ Maintainer: Volker Gravemeier / Andreas Ehrl
 #include "fluid3_impl.H"
 #include "fluid3_impl_parameter.H"
 
+#include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_stabilization.H"
 #include "../drt_f3/fluid3_ele_impl_utils.H"
 
@@ -4532,7 +4533,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcCharEleLength(
     double&       hk
     )
 {
-  // cast dimension to a double varibale -> pow()
+  // cast dimension to a double variable -> pow()
   const double dim = double (nsd_);
 
   //---------------------------------------------------------------------
@@ -4547,6 +4548,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcCharEleLength(
     velino.Clear();
     velino(0,0) = 1.0;
   }
+
   LINALG::Matrix<nen_,1> tmp;
   tmp.MultiplyTN(derxy_,velino);
   const double val = tmp.Norm1();
@@ -6447,25 +6449,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
        }
      }  // end for(idim)
 
-  // SUPG and Reynolds-stress term on right-hand side of
-  // continuity equation for low-Mach-number flow
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
-  {
-    const double temp = rhsfac*scaconvfacaf_*sgscaint_;
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      preforce(vi) -= temp*conv_c_(vi);
-    }
-
-    if (f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
-    {
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        preforce(vi) -= temp*sgconv_c_(vi);
-      }
-    }
-  }
+//  // SUPG and Reynolds-stress term on right-hand side of
+//  // continuity equation for low-Mach-number flow
+//  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+//  {
+//    const double temp = rhsfac*scaconvfacaf_*sgscaint_;
+//
+//    for (int vi=0; vi<nen_; ++vi)
+//    {
+//      preforce(vi) -= temp*conv_c_(vi);
+//    }
+//
+//    if (f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+//    {
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        preforce(vi) -= temp*sgconv_c_(vi);
+//      }
+//    }
+//  }
 
   return;
 }

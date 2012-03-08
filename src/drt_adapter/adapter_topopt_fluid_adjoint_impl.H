@@ -17,10 +17,8 @@ Maintainer: Martin Winklmaier
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_IMPL_H_
 
 
-#include <Epetra_Vector.h>
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_lib/drt_dserror.H"
 #include "adapter_topopt_fluid_adjoint.H"
+
 
 //forward declarations
 namespace DRT
@@ -71,14 +69,11 @@ namespace ADAPTER {
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
 
     virtual void TimeLoop();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void Output();
     virtual IO::DiscretizationWriter& DiscWriter();
 
@@ -106,7 +101,10 @@ namespace ADAPTER {
     */
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
-    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer> optimizer);
+    virtual void SetTopOptData(
+        Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
+        Teuchos::RCP<Epetra_Vector> porosity,
+        Teuchos::RCP<TOPOPT::Optimizer> optimizer);
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);

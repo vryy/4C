@@ -17,8 +17,6 @@ Maintainer: Martin Winklmaier
 #define ADAPTER_TOPOPT_H_
 
 
-#include <Teuchos_ParameterList.hpp>
-
 /// forward declarations
 namespace TOPOPT
 {

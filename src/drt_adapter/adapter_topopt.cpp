@@ -13,12 +13,13 @@ Maintainer: Martin Winklmaier
 
 #ifdef CCADISCRET
 
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_opti/topopt_optimizer.H"
-#include "adapter_topopt.H"
+#include "../headers/standardtypes.h"
 
+#include "adapter_topopt.H"
 
 
 /*----------------------------------------------------------------------*
@@ -57,14 +58,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
 //  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-
-  const Teuchos::ParameterList& optimizationParams =
-    DRT::Problem::Instance()->OptimizationControlParams();
-
   // create instance of the optimization class (call the constructor)
-  optimizer_ = rcp(new TOPOPT::Optimizer(actdis,optimizationParams));
+  // -------------------------------------------------------------------
+  optimizer_ = rcp(new TOPOPT::Optimizer(actdis,prbdyn));
 
   return;
 

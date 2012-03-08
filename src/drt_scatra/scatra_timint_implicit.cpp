@@ -2848,7 +2848,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 #endif
     if (err>0) dserror("Error during pre-scaling of linear system");
 
-    /*
+
     {
       // matrix printing options (DEBUGGING!)
       RCP<LINALG::SparseMatrix> A = SystemMatrix();
@@ -2862,7 +2862,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
         LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
       }
     }
-     */
+
     if (myrank_==0)
     cout<<"Pre-Scaling of Linear System done."<<endl;
 

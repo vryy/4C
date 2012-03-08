@@ -3527,6 +3527,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   Teuchos::ParameterList& topoptcontrol = list->sublist("TOPOLOGY OPTIMIZATION CONTROL",false,
       "control parameters for topology optimization problems");
 
+  BoolParameter("IS_STATIONARY","no","optimization of stationary problem",&topoptcontrol);
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&topoptcontrol);
   IntParameter("NUMSTEP",100,"Total number of timesteps",&topoptcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&topoptcontrol);
@@ -3563,6 +3564,14 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("RESTOL",1e-5,"Convergence tolerance of the objective function",&topoptcontrol);
   DoubleParameter("INCTOL",1e-5,"Convergence tolerance of the optimized variable",&topoptcontrol);
 
+  BoolParameter("OBJECTIVE_DISSIPATION","No","dissipation part of the objective function",&topoptcontrol);
+  BoolParameter("OBJECTIVE_INLET_PRESSURE","No","inlet pressure part of the objective function",&topoptcontrol);
+  BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
+
+  DoubleParameter("DISSIPATION_FAC",0.0,"factor for the dissipation part of the objective",&topoptcontrol);
+  DoubleParameter("PRESSURE_INLET_FAC",0.0,"factor for the inlet pressure part of the objective",&topoptcontrol);
+  DoubleParameter("PRESSURE_DROP_FAC",0.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,
       "control parameters for the optimizer of a topology optimization problem");
@@ -3580,6 +3589,13 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    INPAR::TOPOPT::initfield_field_by_function),
                                &topoptoptimizer);
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
+      "control parameters for the adjoint fluid of a topology optimization problem");
+
+  DoubleParameter("THETA_PRES",-1.0,"One-Step-Theta-factor for pressure terms",&topoptadjointfluiddyn);
+  DoubleParameter("THETA_DIV",-1.0,"One-Step-Theta-factor for divergence terms",&topoptadjointfluiddyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,

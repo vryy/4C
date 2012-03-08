@@ -12,11 +12,13 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+
+#include "../drt_adapter/adapter_topopt_fluid_adjoint.H"
+#include "../linalg/linalg_utils.H"
+
 #include "topopt_algorithm.H"
 #include "topopt_optimizer.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
-#include <Teuchos_TimeMonitor.hpp>
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -25,7 +27,7 @@ Maintainer: Martin Winklmaier
   /* TODO description (winklmaier)
   */
 TOPOPT::Algorithm::Algorithm(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& topopt
 )
 : FluidTopOptCouplingAlgorithm(comm, topopt),
@@ -66,11 +68,11 @@ void TOPOPT::Algorithm::OptimizationLoop()
     // solve the primary field
     DoFluidField();
 
-//    // Transfer data from primary field to adjoint field
-//    PrepareAdjointField();
-//
-//    // solve the adjoint equations
-//    DoAdjointField();
+    // Transfer data from primary field to adjoint field
+    PrepareAdjointField();
+
+    // solve the adjoint equations
+    DoAdjointField();
 //
 //    // compute the gradient of the objective function
 //    GetGradient();
@@ -146,13 +148,7 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
       if ((conv_check_type_==INPAR::TOPOPT::res) or
           (conv_check_type_==INPAR::TOPOPT::inc_and_res))
       {
-        Epetra_Vector res(*Optimizer()->RowMap(),false);
-        res.Update(1.0,*objective_ip_,-1.0,*objective_i_,0.0);
-
-        double resvelnorm;
-        res.Norm2(&resvelnorm);
-
-        if (resvelnorm>res_tol_)
+        if (fabs(objective_ip_-objective_i_)>res_tol_)
           notFinished = true;
       }
       // TODO output
@@ -196,7 +192,8 @@ void TOPOPT::Algorithm::DoFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
-  dserror("change");
+  RCP<TOPOPT::Optimizer> optimizer = Optimizer();
+  AdjointFluidField()->SetTopOptData(optimizer->ExportFluidData(),poro_,optimizer);
   return;
 }
 
@@ -207,7 +204,7 @@ void TOPOPT::Algorithm::PrepareAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoAdjointField()
 {
-  dserror("change");
+  AdjointFluidField()->TimeLoop();
 }
 
 

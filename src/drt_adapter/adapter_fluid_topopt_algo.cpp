@@ -13,12 +13,14 @@ Maintainer: Martin Winklmaier
 
 #ifdef CCADISCRET
 
+
 #include "adapter_fluid_topopt_algo.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
-    Epetra_Comm& comm,
+    const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
 :  FluidBaseAlgorithm(prbdyn,false),

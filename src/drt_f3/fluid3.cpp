@@ -13,15 +13,16 @@ Maintainer: Georg Bauer
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+
 #include "fluid3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
+
 extern struct _GENPROB     genprob;
 
-using namespace DRT::UTILS;
 
 DRT::ELEMENTS::Fluid3Type DRT::ELEMENTS::Fluid3Type::instance_;
 

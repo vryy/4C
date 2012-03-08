@@ -25,16 +25,11 @@ Maintainer: Georg Bauer
 
 #include "Teuchos_RefCountPtr.hpp"
 
-using namespace std;
-using namespace Teuchos;
 
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 
 namespace DRT
 {
@@ -496,7 +491,10 @@ private:
     calc_fluid_elementvolume,
     set_general_fluid_parameter,
     set_time_parameter,
-    set_turbulence_parameter
+    set_turbulence_parameter,
+    calc_adjoint_systemmat_and_residual,
+    set_general_adjoint_parameter,
+    set_adjoint_time_parameter
   };
 
   //! discretization type

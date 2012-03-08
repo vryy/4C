@@ -87,7 +87,7 @@ namespace STR
 
     //! Update Element
     virtual void UpdateStepElement() = 0;
-
+/*
     //! Update configuration and time after time step
     void UpdateStepAndTime()
     {
@@ -102,7 +102,7 @@ namespace STR
       // element update
       UpdateStepElement();
     }
-
+*/
     //@}
 
     //! @name Output

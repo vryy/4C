@@ -254,8 +254,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_biofilm or
      mat->MaterialType() == INPAR::MAT::m_th_fourier_iso or
      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
-     mat->MaterialType() == INPAR::MAT::m_yoghurt or
-     mat->MaterialType() == INPAR::MAT::m_opti_dens // currently scatra used for density (hack...)
+     mat->MaterialType() == INPAR::MAT::m_yoghurt
      )
   {
     numdofpernode_=1; // we only have a single scalar

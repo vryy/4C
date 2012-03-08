@@ -47,7 +47,7 @@ namespace INPAR
       opti_step
     };
 
-    /// initial field for scalar transport problem
+    /// initial field for optimization variable
     enum InitialField
     {
       initfield_zero_field,

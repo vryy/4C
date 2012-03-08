@@ -16,16 +16,6 @@ Maintainer: Martin Winklmaier
 #ifndef TOPOPT_UTILS_H_
 #define TOPOPT_UTILS_H_
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-using namespace std;
-using namespace Teuchos;
-
-namespace DRT
-{
-  class Element;
-}
 
 namespace TOPOPT
 {

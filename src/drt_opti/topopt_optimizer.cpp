@@ -13,11 +13,13 @@ Maintainer: Martin Winklmaier
 
 #ifdef CCADISCRET
 
-#include "topopt_optimizer.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+
+#include "topopt_optimizer.H"
 
 
 TOPOPT::Optimizer::Optimizer(
@@ -25,20 +27,62 @@ TOPOPT::Optimizer::Optimizer(
     const ParameterList& params
 ) :
 discret_(discret),
-params_(params.sublist("TOPOLOGY OPTIMIZER"))
+params_(params)
 {
+  const Teuchos::ParameterList& optimizer_params = params_.sublist("TOPOLOGY OPTIMIZER");
+
   // topology density fields
   dens_i_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
   dens_ip_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
 
+  // TODO segmentation fault???
   // fluid fields for optimization
-  vel_ = rcp(new map<int,Epetra_Vector>);
-  adjointvel_ = rcp(new map<int,Epetra_Vector>);
+  vel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
+  adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
 
-  SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialField>(params_,"INITIALFIELD"),
-      params_.get<int>("INITFUNCNO"));
+  // set initial density field if present
+  SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialField>(optimizer_params,"INITIALFIELD"),
+      optimizer_params.get<int>("INITFUNCNO"));
+
+  // set parameters for the objective
+  dissipation_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_DISSIPATION")==1);
+  pressure_inlet_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_INLET_PRESSURE")==1);
+  pressure_drop_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_PRESSURE_DROP")==1);
+
+  dissipation_fac_ = params_.get<double>("DISSIPATION_FAC");
+  pressure_inlet_fac_ = params_.get<double>("PRESSURE_INLET_FAC");
+  pressure_drop_fac_ = params_.get<double>("PRESSURE_DROP_FAC");
+
+  // general data
+  if (DRT::INPUT::IntegralValue<int>(params_,"IS_STATIONARY")==1)
+    num_timesteps_ = 1;
+  else
+    num_timesteps_ = params_.get<int>("NUMSTEP");
+
 
   return;
+}
+
+
+
+double TOPOPT::Optimizer::ComputeObjectiveValue(
+    Teuchos::RCP<Epetra_Vector> porosity
+)
+{
+  double value = 0.0;
+
+  DataComplete();
+
+  if (dissipation_)
+    value += EvaluateObjective(porosity,"dissipation");
+
+  if (pressure_inlet_)
+    value += EvaluateObjective(porosity,"pressure inlet");
+
+  if (pressure_drop_)
+    value += EvaluateObjective(porosity,"pressure drop");
+
+  return value;
 }
 
 
@@ -82,7 +126,7 @@ void TOPOPT::Optimizer::ImportFluidData(
     RCP<Epetra_Vector> vel,
     int step)
 {
-  vel_->insert(pair<int,Epetra_Vector>(step,*vel));
+  vel_->insert(pair<int,RCP<Epetra_Vector> >(step,vel));
 }
 
 
@@ -91,7 +135,21 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
     RCP<Epetra_Vector> vel,
     int step)
 {
-  adjointvel_->insert(pair<int,Epetra_Vector>(step,*vel));
+  adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,vel));
+}
+
+
+
+bool TOPOPT::Optimizer::DataComplete() const
+{
+  if (num_timesteps_!=vel_->size())
+    return false;
+
+  if (num_timesteps_!=adjointvel_->size())
+    return false;
+
+  cout << "here" << endl;
+  return true;
 }
 
 

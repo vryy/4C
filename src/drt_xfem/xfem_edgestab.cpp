@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_cut/cut_volumecell.H"
 
+#include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_boundary_impl.H"
 
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(

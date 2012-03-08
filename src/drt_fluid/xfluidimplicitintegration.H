@@ -542,7 +542,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
   /// the vector containing potential Neumann-type outflow terms
-  Teuchos::RCP<Epetra_Vector>    outflow_;
+//  Teuchos::RCP<Epetra_Vector>    outflow_;
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;

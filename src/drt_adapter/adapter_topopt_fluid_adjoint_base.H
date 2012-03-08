@@ -16,13 +16,6 @@ Maintainer: Martin Winklmaier
 #ifndef ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
 
-#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_fluid.H"
-
-using namespace std;
-using namespace Teuchos;
 
 //forward declarations
 namespace DRT
@@ -67,7 +60,6 @@ namespace ADAPTER
 {
   class FluidAdjoint;
 
-
   /// adapter for the coupling of the fluid adjoint algorithm in topology optimization
   /*!
 
@@ -91,15 +83,15 @@ namespace ADAPTER
 
     virtual void ReadRestart(int step);
 
-    /// fluid field solver
-    RCP<FluidAdjoint> AdjointFluidField() { return adjoint_; }
-    /// return instance of fluid time integration class
-    RCP<const FluidAdjoint> AdjointFluidField() const { return adjoint_; }
+    /// fluid adjoint field solver
+    Teuchos::RCP<FluidAdjoint> AdjointFluidField();
+    /// return instance of fluid adjoint time integration class
+    const Teuchos::RCP<const FluidAdjoint> AdjointFluidField() const;
 
   protected:
 
     /// adjoint fluid field
-    RCP<FluidAdjoint> adjoint_;
+    Teuchos::RCP<FluidAdjoint> adjoint_;
 
   private:
 

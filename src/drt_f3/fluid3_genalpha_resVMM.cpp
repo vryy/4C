@@ -22,6 +22,7 @@ Maintainer: Peter Gamnitzer
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+#include "fluid3.H"
 #include "fluid3_genalpha_resVMM.H"
 #include "fluid3_genalpha_resVMM_2D.H"
 

@@ -69,7 +69,6 @@ Maintainer: Lena Wiechert
 #include "growth_ip.H"
 #include "constraintmixture.H"
 #include "biofilm.H"
-#include "optimization_density.H"
 #include "fluidporo.H"
 #include "structporo.H"
 
@@ -482,13 +481,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Biofilm(curmat));
     MAT::PAR::Biofilm* params = static_cast<MAT::PAR::Biofilm*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_opti_dens:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::TopOptDens(curmat));
-    MAT::PAR::TopOptDens* params = static_cast<MAT::PAR::TopOptDens*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pl_mises_3D:

@@ -32,6 +32,7 @@
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 
+#include "../drt_f3/fluid3.H"
 #include "../drt_f3_impl/fluid3_interface.H"
 
 

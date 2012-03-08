@@ -12,7 +12,7 @@
 ELEMENTS    90
 NODES       176
 DIM           3
-MATERIALS    2
+MATERIALS    1
 NUMDF        4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid_Top_Opt
@@ -79,7 +79,6 @@ VSTAB                           no_vstab
 SOLVER         UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
-MAT       2 MAT_optimization
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3

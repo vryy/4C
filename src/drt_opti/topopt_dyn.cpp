@@ -14,20 +14,15 @@ Maintainer: Martin Winklmaier
 #ifdef CCADISCRET
 
 #ifdef PARALLEL
-#include <mpi.h>
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
-#include "Epetra_Time.h"
+#include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_scatra/scatra_utils.H"
 #include "topopt_algorithm.H"
 #include "topopt_dyn.H"
 #include "topopt_utils.H"
-#include <Teuchos_TimeMonitor.hpp>
 
 
 
@@ -47,7 +42,7 @@ void fluid_topopt_dyn()
 {
   // create a communicator
 #ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
 #else
   Epetra_SerialComm comm;
 #endif

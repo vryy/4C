@@ -33,13 +33,21 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID3_GENALPHA_H
 #define FLUID3_GENALPHA_H
 
-#include "fluid3.H"
+
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
+class ParameterList;
 namespace DRT
 {
+  class Discretization;
+
   namespace ELEMENTS
   {
+    class Fluid3;
 
     /// Interface base class for Fluid3GenalphaResVMM
 

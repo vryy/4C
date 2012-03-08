@@ -30,13 +30,20 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID3_WEAKDBC_H
 #define FLUID3_WEAKDBC_H
 
-#include "fluid3.H"
-#include "../drt_f3_impl/fluid3_impl_parameter.H"
 
+#include "../drt_f3_impl/fluid3_impl_parameter.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+
+class ParameterList;
 namespace DRT
 {
+  class Discretization;
+
   namespace ELEMENTS
   {
+    class Fluid3Boundary;
 
 
     //-----------------------------------------------------------------

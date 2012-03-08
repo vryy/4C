@@ -19,13 +19,23 @@ Maintainer: Andreas Ehrl
 #ifndef FLUID3_BOUNDARY_IMPL_H
 #define FLUID3_BOUNDARY_IMPL_H
 
-#include "fluid3.H"
+
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_f3_impl/fluid3_impl_parameter.H"
+#include "../drt_lib/drt_element.H"
+
+class ParameterList;
+
 
 namespace DRT
 {
+class Condition;
+class Discretization;
+
 namespace ELEMENTS
 {
+  class Fluid3Boundary;
 
 /// Interface base class for Fluid3BoundaryImpl
 /*!

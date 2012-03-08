@@ -1636,17 +1636,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // optimization modeling
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_optimization",
-                                            "optimization material",
-                                            INPAR::MAT::m_opti_dens));
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity
   {
     Teuchos::RCP<MaterialDefinition> m

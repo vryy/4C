@@ -17,19 +17,11 @@ Maintainer: Martin Winklmaier
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_H_
 
 
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-#include <Epetra_CrsGraph.h>
-
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_combust.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+
+
+// forward declarations
+class Epetra_Vector;
 
 namespace LINALG
 {
@@ -98,14 +90,8 @@ namespace ADAPTER {
     /// velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
-    /// velocities (and pressures) at t(n+alpha_F)
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf() = 0;
-
     /// velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
-
-    /// velocities (and pressures) at t(n-1)
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -121,18 +107,6 @@ namespace ADAPTER {
 
     /// run a complete simulation (for fluid stand-alone simulations)
     virtual void TimeLoop() = 0;
-
-    /// update fluid unknowns and evaluate elements
-    ///
-    /// there are two increments possible
-    /// x^n+1_i+1 = x^n+1_i + iterinc, and
-    ///
-    /// x^n+1_i+1 = x^n     + stepinc
-    ///
-    /// with n and i being time and Newton iteration step
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
-        ) = 0;
 
     /// output results
     virtual void Output() = 0;
@@ -157,8 +131,11 @@ namespace ADAPTER {
 
     //! @name Transfer the porosity field used in the topology optimization to the fluid
 
-    /// set pseudo-porosity field in the fluid
-    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer) = 0;
+    /// set required optimization data for the adjoint fluid field
+    virtual void SetTopOptData(
+        Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
+        Teuchos::RCP<Epetra_Vector> porosity,
+        Teuchos::RCP<TOPOPT::Optimizer> optimizer) = 0;
     //@}
 
     /// create result test for encapulated fluid algorithm
