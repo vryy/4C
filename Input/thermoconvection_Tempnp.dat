@@ -55,7 +55,6 @@ THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 --------------------------------------------------------PROBLEM TYP
-ADAPTIVE                        No
 NUMFIELD                        1
 PROBLEMTYP                      Thermo
 RESTART                         0

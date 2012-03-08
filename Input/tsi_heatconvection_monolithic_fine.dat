@@ -71,7 +71,6 @@ THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
 --------------------------------------------------------PROBLEM TYP
-ADAPTIVE                        No
 NUMFIELD                        1
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0

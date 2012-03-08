@@ -48,7 +48,6 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 --------------------------------------------------------PROBLEM TYP
-ADAPTIVE                        No
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
