@@ -164,6 +164,7 @@ namespace MAT
       virtual void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
 	double HU, ///< Hounsfield units (HU) of the respective element
+	int HUlumen, ///< maximum Hounsfield unit (HU) in the lumen
         LINALG::Matrix<3,1>& gamma,  ///< same as for AddCoefficientsPrincipal()
         LINALG::Matrix<8,1>& delta,  ///< dito
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor

@@ -67,6 +67,7 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
   bool& havecoefficients,
   double HU,
+  int HUlumen,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv
@@ -74,21 +75,19 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
 {
   havecoefficients = havecoefficients or true;
 
-  if (HU==-999.0) dserror("Failed to get HU for at least one element!");
-
   double alpha = 0.;
+  
+  //if HU is smaller than the threshold for calcification or smaller than
+  // the Lumen HU (+10 security factor), we do not need to do anything... 
+  if (HU <= params_->ctmin_ || HU < (HUlumen + 10)) return;
 
-  if (HU <= params_->ctmin_)
-  { 
-    alpha = 0.0; 
-  } 
-  else if (HU >= params_->ctmax_) 
+  if (HU >= params_->ctmax_) 
   { 
     alpha = params_->alphamax_; 
   } 
   else 
   { 
-    alpha = 0.5*params_->alphamax_*(tanh(6.907*(HU - 0.5*(params_->ctmin_ +params_->ctmax_))/(params_->ctmax_ - params_->ctmin_)) + 1.0);
+    alpha = 0.5 * params_->alphamax_ * (sin(PI * (HU - params_->ctmin_)/(params_->ctmax_ - params_->ctmin_) -PI/2) + 1.0);
   } 
 
   // principal coefficients

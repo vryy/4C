@@ -125,6 +125,7 @@ namespace ELASTIC
     void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
 	double HU,   ///< the element Hounsfield Unit
+	int HUlumen, ///< the maximum HU within the lumen
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor

@@ -228,7 +228,8 @@ private:
                   Epetra_SerialDenseVector* stress_e);
 
     void Setup(DRT::INPUT::LineDefinition* linedef);
-    void SetupILTthickness(Teuchos::ParameterList& params);
+    /// setup patient-specific AAA stuff
+    void SetupAAA(Teuchos::ParameterList& params);
 
     /// return if anisotropic
     bool Anisotropic() const { return anisotropic_;}
@@ -361,6 +362,7 @@ private:
 
     /// information about HU from medical image data?
     double HU_;
+    int HUlumen_;
 
     /// for Gasser AAA-ILT material
     double normdist_;

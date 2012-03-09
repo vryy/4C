@@ -67,6 +67,14 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
 
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
 
+  int maxhulumen  = pslist.get<int>("MAXHULUMEN");
+  params.set("max hu lumen", maxhulumen);
+  if (!dis.Comm().MyPID()) 
+  {
+    if (maxhulumen == 0) cout << "max HU in lumen not set \n";
+    else printf("max HU in lumen %4i \n", maxhulumen);
+  }
+
   int calc_strength  = DRT::INPUT::IntegralValue<int>(pslist,"CALCSTRENGTH");
 
   if (gfoundit or calc_strength)

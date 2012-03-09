@@ -694,6 +694,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
 
+  IntParameter("MAXHULUMEN",0,"max HU value within the blood lumen",&ps);
   setNumericStringParameter("CENTERLINEFILE","name.txt",
                             "filename of file containing centerline points",
                             &ps);

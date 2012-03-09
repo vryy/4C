@@ -136,6 +136,7 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
   AddtoPack(data,HU_);
+  AddtoPack(data,HUlumen_);
   AddtoPack(data,normdist_);
 }
 
@@ -176,6 +177,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
   ExtractfromPack(position,data,HU_);
+  ExtractfromPack(position,data,HUlumen_);
   ExtractfromPack(position,data,normdist_);
 
   if (position != data.size())
@@ -227,9 +229,11 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::SetupILTthickness(Teuchos::ParameterList& params)
+void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 {
   normdist_ = params.get("iltthick meanvalue",-999.0);
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  HUlumen_ = pslist.get<int>("MAXHULUMEN");
   return;
 }
 
@@ -543,7 +547,7 @@ void MAT::ElastHyper::Evaluate(
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv,normdist_);
       //Do all the HU dependency (medical images) stuff!
-      p->second->AddCoefficientsPrincipal(havecoeffprinc,HU_,gamma,delta,prinv);
+      p->second->AddCoefficientsPrincipal(havecoeffprinc,HU_,HUlumen_,gamma,delta,prinv);
     }
   }
 
