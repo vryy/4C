@@ -515,6 +515,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid_impl.cpp
   src/drt_adapter/adapter_fluid_lung.cpp
   src/drt_adapter/adapter_fluid_moving_boundary.cpp
+  src/drt_adapter/adapter_fluid_poro.cpp
   src/drt_adapter/adapter_fluid_projection.cpp
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_fluid_xfem.cpp

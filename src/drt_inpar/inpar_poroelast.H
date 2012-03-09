@@ -51,7 +51,7 @@ namespace POROELAST
     bop_or	  ///<  or
   };
 
-  /// initial field for poroelasticity problem
+  /// type of initial field for poroelasticity problem
   enum InitialField
   {
   //  initfield_zero_field,

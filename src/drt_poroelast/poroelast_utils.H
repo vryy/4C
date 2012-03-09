@@ -16,17 +16,16 @@
 #ifndef POROELAST_UTILS_H_
 #define POROELAST_UTILS_H_
 
-#include <set>
-#include <string>
-#include <functional>
-#include <iostream>
-
 /*----------------------------------------------------------------------*
  |  headers                                                             |
  *----------------------------------------------------------------------*/
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include "Epetra_Vector.h"
+#include "Teuchos_RCP.hpp"
+
+namespace DRT
+{
+  class Element;
+}
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -50,13 +49,13 @@ namespace POROELAST
 
       /// determine element type string and whether element is copied or not
       bool DetermineEleType(DRT::Element* actele, const bool ismyele,
-          vector<string>& eletype);
+          std::vector<std::string>& eletype);
       /// set element-specific data (material etc.)
       void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
           const int matid, const bool isnurbs);
 
       /// returns conditions names to be copied (source and target name)
-      map<string, string> ConditionsToCopy();
+      std::map<std::string, std::string> ConditionsToCopy();
 
       /// check for correct material
       void CheckMaterialType(const int matid);

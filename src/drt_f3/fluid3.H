@@ -942,6 +942,21 @@ public:
   }
 
   /*!
+  \brief Get number of degrees of freedom of a certain node in case of multiple
+         dofsets (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    return parent_->NumDofPerNode(nds,node);
+  }
+
+  /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
 
@@ -1057,6 +1072,7 @@ public:
     center_of_mass_calc,
     traction_velocity_component,
     traction_Uv_integral_component,
+    no_penetration,
     edge_based_stabilization,
     ghost_penalty
   };

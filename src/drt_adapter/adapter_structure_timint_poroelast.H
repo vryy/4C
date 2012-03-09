@@ -23,12 +23,9 @@
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Vector.h>
 
-#include "adapter_structure.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "adapter_structure_timint.H"
 #include "../linalg/linalg_utils.H"
-//#include "../drt_structure/structure_utils_mapextractor.H"
-
 
 /*----------------------------------------------------------------------*/
 namespace ADAPTER
@@ -39,8 +36,8 @@ namespace ADAPTER
     public:
 
       /// Constructor
-      StructureTimIntImplPoro(Teuchos::RCP<STR::TimIntImpl> stii, Teuchos::RCP<
-          Teuchos::ParameterList> ioparams, ///< I/O flags
+      StructureTimIntImplPoro(Teuchos::RCP<STR::TimIntImpl> stii, ///< time integrator
+          Teuchos::RCP<Teuchos::ParameterList> ioparams, ///< I/O flags
           Teuchos::RCP<Teuchos::ParameterList> sdynparams, ///< input parameters
           Teuchos::RCP<Teuchos::ParameterList> xparams, ///< extra flags
           Teuchos::RCP<DRT::Discretization> discret, ///< current discretisation

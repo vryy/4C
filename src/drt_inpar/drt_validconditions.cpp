@@ -2808,10 +2808,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          "NoPenetration",
                                          "No Penetration",
                                          DRT::Condition::NoPenetration,
-                                         false,
+                                         true,
                                          DRT::Condition::Surface));
-
-  nopenetration->AddComponent(Teuchos::rcp(new IntConditionComponent("normalDir")));
 
   condlist.push_back(nopenetration);
 

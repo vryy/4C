@@ -37,9 +37,9 @@ namespace ADAPTER
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;};
     virtual Teuchos::RCP<const Epetra_Vector> Accnp()
-    { dserror("not implemented"); return Teuchos::null; };
+    { return fluid_->Accnp(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
-    { dserror("not implemented"); return Teuchos::null; };
+    { return fluid_->Accn(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accam()
     { return fluid_->Accam(); }
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf()
@@ -48,7 +48,8 @@ namespace ADAPTER
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist()
     { return fluid_->Hist(); }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVel() {dserror("not implemented"); return Teuchos::null;}
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel()
+    { return fluid_->GridVel(); }
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
     { return fluid_->Dispnp(); }
     virtual Teuchos::RCP<const Epetra_Vector> Dispn()
@@ -66,7 +67,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return fluid_->DofRowMap(); }
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
-    { dserror("not implemented"); return Teuchos::null; };
+    { return fluid_->DofRowMap(nds); };
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
     { return fluid_->SystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
@@ -82,8 +83,9 @@ namespace ADAPTER
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialFlowField(initfield, startfuncno); }
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
-    { dserror("not implemented!");return; };
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)  { dserror("not implemented!");return; };
+    { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
+    { return fluid_->UpdateNewton(vel); };
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,

@@ -530,7 +530,7 @@ void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
 }
 
 /*----------------------------------------------------------------------*/
-/* apply current velocities and pressures (FSI like)                     */
+/* apply current velocities and pressures (FSI like)       vuong 01/12  */
 void ADAPTER::StructureTimIntImpl::ApplyVelAndPress(
   Teuchos::RCP<const Epetra_Vector> velnp
   )

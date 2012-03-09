@@ -3293,15 +3293,14 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->SetState("dispnp", dispnp_);
     discret_->SetState("gridv", gridv_);
 
-    if(poroelast_)
+    if (poroelast_)
     {
-		//just for poroelasticity
-		discret_->SetState("dispn", dispn_);
-		discret_->SetState("veln", veln_);
-		discret_->SetState("accnp", accnp_);
-		discret_->SetState("accn", accn_);
+      //just for poroelasticity
+      discret_->SetState("dispn", dispn_);
+      discret_->SetState("veln", veln_);
+      discret_->SetState("accnp", accnp_);
+      discret_->SetState("accn", accn_);
     }
-
   }
 
   // set the only required state vectors
@@ -6183,39 +6182,39 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
   )
 {
 
-	// set the new solution we just got
-	if (vel!=Teuchos::null)
-	{
-	  // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
-	  // values.
-	  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-	  aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
-	  //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
-	  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
+  // set the new solution we just got
+  if (vel != Teuchos::null)
+  {
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(
+        *(discret_->DofRowMap(0)), true);
+    aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
+    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
 
-	  //
-	  vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
-		vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(velnp_),
-		aux);
+    //
+    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+        vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(
+            velnp_), aux);
 
-	  *velnp_ = *aux;
+    *velnp_ = *aux;
 
-	  if(poroelast_)
-	  {
-		  //only one step theta
+    if (poroelast_)
+    {
+      //only one step theta
 
-		  // new end-point accelerations
-		  aux->Update(1.0/(theta_*dta_), *velnp_,
-		               -1.0/(theta_*dta_), *(*veln_)(0),
-		               0.0);
-		  aux->Update(-(1.0-theta_)/theta_, *(*accn_)(0), 1.0);
-		  // put only to free/non-DBC DOFs
-		  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
-		  *accnp_= *aux;
-	  }
-	}
+      // new end-point accelerations
+      aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_),
+          *(*veln_)(0), 0.0);
+      aux->Update(-(1.0 - theta_) / theta_, *(*accn_)(0), 1.0);
+      // put only to free/non-DBC DOFs
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
+      *accnp_ = *aux;
+    }
+  }
 
-	return;
+  return;
 }
 
 // -------------------------------------------------------------------

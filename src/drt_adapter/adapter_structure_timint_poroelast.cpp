@@ -16,8 +16,6 @@
 
 /*----------------------------------------------------------------------*/
 #include "adapter_structure_timint_poroelast.H"
-//#include "../drt_io/io.H"
-//#include "../drt_lib/drt_condition_utils.H"
 
 //constructor
 ADAPTER::StructureTimIntImplPoro::StructureTimIntImplPoro(Teuchos::RCP<

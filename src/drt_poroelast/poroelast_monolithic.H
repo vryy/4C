@@ -23,11 +23,9 @@
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_io/io_control.H"
 
 #include "../drt_inpar/inpar_poroelast.H"
 
-#include "../drt_adapter/adapter_fluid_ale.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -48,12 +46,6 @@ namespace ADAPTER
 
 namespace POROELAST
 {
-  namespace UTILS
-  {
-    // forward declaration of clone strategy
-    class ThermoStructureCloneStrategy;
-  }
-
   /// monolithic Poroelasticity algorithm base
 
   class MonolithicBase: public ADAPTER::AlgorithmBase,
@@ -62,10 +54,10 @@ namespace POROELAST
   {
     public:
 
-      /// create using a Epetra_Comm
+      //! create using a Epetra_Comm
       explicit MonolithicBase(const Epetra_Comm& comm);
 
-      /// virtual destructor to support polymorph destruction
+      //! virtual destructor to support polymorph destruction
       virtual ~MonolithicBase();
 
       /// read restart data
@@ -74,13 +66,13 @@ namespace POROELAST
 
       //! @name Time loop building blocks
 
-      /// start a new time step
+      //! start a new time step
       virtual void PrepareTimeStep();
 
-      /// take current results for converged and save for next time step
+      //! take current results for converged and save for next time step
       virtual void Update();
 
-      /// calculate stresses, strains, energies
+      //! calculate stresses, strains, energies
       virtual void PrepareOutput()
       {
         StructureField().PrepareOutput();
@@ -89,24 +81,33 @@ namespace POROELAST
     protected:
       //! @name Transfer helpers
 
-      /// field transform
+      //! field transform
       virtual Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<
           const Epetra_Vector> iv) const;
 
-      /// field transform
+      //! field transform
       virtual Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<
           const Epetra_Vector> iv) const;
 
       void BuidNoPenetrationMap();
 
-      //! Extractor used for constraint stucture
+      //! Extractor used for constraint structure
       LINALG::MapExtractor consplitter_;
 
       //! map of gids of fluid  DOFs and respective structure DOFs
       Teuchos::RCP<std::map<int, int> > nopenetrationmap_;
 
+      //! Extractor used for no penetration condition
+      LINALG::MapExtractor nopenetration_;
+
+      //! vector containing no penetration - conditions
+      std::vector<DRT::Condition*> nopencond_;
+
+      //! vector containing globla IDs of dofs with no penetration condition
+      Teuchos::RCP<std::set<int> >condIDs_;
+
     private:
-      /// coupling of fluid and structure (whole field)
+      //! coupling of fluid and structure (whole field)
     Teuchos::RCP<ADAPTER::Coupling> coupfa_;
 
       //@}
@@ -119,6 +120,7 @@ namespace POROELAST
   {
 
     public:
+      //! create using a Epetra_Comm
       explicit Monolithic(const Epetra_Comm& comm,
           const Teuchos::ParameterList& sdynparams);
 
@@ -144,26 +146,23 @@ namespace POROELAST
       void TimeLoop(const Teuchos::ParameterList& sdynparams //!< structural dynamic input parameters
           );
 
-      //! @name Apply current field state to system
-
-      /// setup composed right hand side from field solvers
+      //! setup composed right hand side from field solvers
       // implemented in FSI in the "split level"
       void SetupRHS();
 
-      /// setup composed system matrix from field solvers
+      //! setup composed system matrix from field solvers
       void SetupSystemMatrix(const Teuchos::ParameterList& sdynparams);
 
-      /// composed system matrix
+      //! composed system matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
       {
         return systemmatrix_;
       }
 
-      /// solve linear Poroelasticity system
+      //! solve linear Poroelasticity system
       void LinearSolve();
 
-      void ApplyNoPenetrationCondition(
-          Teuchos::RCP<LINALG::SparseMatrix> sparse);
+      //! @name Apply current field state to system
 
       //! Evaluate mechanical-fluid system matrix
       void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseMatrix> k_sf, //!< mechanical-fluid stiffness matrix
@@ -175,11 +174,11 @@ namespace POROELAST
 
       //@}
 
-      /// evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+      //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
           );
 
-      /// extract initial guess from fields
+      //! extract initial guess from fields
       //! returns \f$\Delta x_{n+1}^{<k>}\f$
       virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
@@ -188,7 +187,7 @@ namespace POROELAST
       //! \author lw  \date 12/07
       bool Converged();
 
-      /// outer iteration loop
+      //! outer iteration loop
       void NewtonFull(const Teuchos::ParameterList& sdyn);
 
       //! @name Output
@@ -210,13 +209,18 @@ namespace POROELAST
       //! print statistics of converged Newton-Raphson iteration
       void PrintNewtonConv();
 
-      //finite difference check of stiffness matrix
-      void PoroFDCheck();
-
-      /// write output
+      //! write output
       void Output();
 
       //@}
+
+      //!finite difference check of stiffness matrix
+      void PoroFDCheck();
+
+      /// Evaluate no penetration condition
+      void EvaluateCondition(Teuchos::RCP<LINALG::SparseMatrix> Sysmat,
+                             Teuchos::RCP<Epetra_Vector> Cond_RHS,
+                             int coupltype=0);
 
     protected:
 
@@ -332,7 +336,6 @@ namespace POROELAST
 
       Epetra_Time timer_; //!<timer for solution technique
 
-
       //@}
 
       //! @name Various global forces
@@ -340,6 +343,7 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
       // Teuchos::RCP<Epetra_Vector> rhs_fs_;//!< rhs of fluid-structure coupling
       // Teuchos::RCP<Epetra_Vector> rhs_sf_;//!< rhs of structure-fluid coupling
+      Teuchos::RCP<Epetra_Vector> cond_rhs_; //!< additional rhs-Terms for no penetration condition
 
       Teuchos::RCP<Epetra_Vector> freact_; //!< reaction force
       Teuchos::RCP<Epetra_Vector> iterinc_; //!< increment between Newton steps k and k+1

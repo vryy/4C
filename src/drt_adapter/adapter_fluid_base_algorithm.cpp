@@ -36,6 +36,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_combust.H"
 #include "adapter_fluid_lung.H"
 #include "adapter_fluid_fluid_impl.H"
+#include "adapter_fluid_poro.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -553,8 +554,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   if (genprob.probtyp == prb_poroelast)
   {
-	fluidtimeparams->set<double>("initporosity",prbdyn.get<double>("INITPOROSITY"));
-	fluidtimeparams->set<bool>("poroelast",true);
+    fluidtimeparams->set<double>("initporosity",prbdyn.get<double>("INITPOROSITY"));
+    fluidtimeparams->set<bool>("poroelast",true);
   }
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
@@ -691,6 +692,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       if (genprob.probtyp == prb_fsi_lung)
         fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
+      else if (genprob.probtyp == prb_poroelast)
+        fluid_ = rcp(new ADAPTER::FluidPoro(rcp(new FluidWrapper(tmpfluid))));
       else
         fluid_ = tmpfluid;
     }
@@ -734,21 +737,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   if (genprob.probtyp == prb_fluid_topopt)
     fluid_->Output();
-
-  // set initial porosity field by given function
-  // we do this here, since we have direct access to all necessary parameters
-//   if (genprob.probtyp == prb_poroelast)
-//   {
-//	INPAR::POROELAST::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::POROELAST::InitialField>(prbdyn,"INITIALFIELD");
-//	int startfuncno = prbdyn.get<int>("INITFUNCNO");
-
-//	cout<<"ADAPTER::FluidBaseAlgorithm::SetupFluid SetInitialPorosityField"<<endl;
-//	fluid_->SetInitialPorosityField(initfield,startfuncno);
-
-    //fluidtimeparams->set<int>("INITIALFIELD"   ,DRT::INPUT::IntegralValue<int>(prbdyn,"INITIALFIELD"));
-
-    // fluidtimeparams->set<int>("INITFUNCNO"   ,prbdyn.get<int>("INITFUNCNO"));
-//   }
 
   return;
 }

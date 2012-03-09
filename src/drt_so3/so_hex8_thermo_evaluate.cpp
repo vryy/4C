@@ -1596,37 +1596,29 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiff_poroelast(
     //dF^-T/dus : dF/dX = - (F^-1 . dN/dX . u_s . F^-1)^T : dF/dX
     LINALG::Matrix<NUMDIM_SOH8,NUMDOF_SOH8> dFinvdus_dFdX(true);
     for (int i=0; i<NUMDIM_SOH8; i++)
-    for (int n =0; n<NUMNOD_SOH8; n++)
-    for(int j=0; j<NUMDIM_SOH8; j++)
-    {
-      const int gid = NUMDIM_SOH8 * n +j;
-      for (int k=0; k<NUMDIM_SOH8; k++)
-      for(int l=0; l<NUMDIM_SOH8; l++)
-      for(int p=0; p<NUMDIM_SOH8; p++)
-      {
-        dFinvdus_dFdX(p, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i) * F_X(i*NUMDIM_SOH8+l,p);
-
-      }
-    }
+      for (int n =0; n<NUMNOD_SOH8; n++)
+        for(int j=0; j<NUMDIM_SOH8; j++)
+        {
+          const int gid = NUMDIM_SOH8 * n +j;
+          for (int k=0; k<NUMDIM_SOH8; k++)
+            for(int l=0; l<NUMDIM_SOH8; l++)
+              for(int p=0; p<NUMDIM_SOH8; p++)
+              {
+                dFinvdus_dFdX(p, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i) * F_X(i*NUMDIM_SOH8+l,p);
+              }
+        }
 
     //dF^-T/dus
     LINALG::Matrix<NUMDIM_SOH8*NUMDIM_SOH8,NUMDOF_SOH8> dFinvdus(true);
     for (int i=0; i<NUMDIM_SOH8; i++)
-    for (int n =0; n<NUMNOD_SOH8; n++)
-    for(int j=0; j<NUMDIM_SOH8; j++)
-    {
-      const int gid = NUMDIM_SOH8 * n +j;
-      for (int k=0; k<NUMDIM_SOH8; k++)
-      for(int l=0; l<NUMDIM_SOH8; l++)
-      dFinvdus(i*NUMDIM_SOH8+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
-    }
-
-    LINALG::Matrix<NUMDIM_SOH8,NUMDOF_SOH8> dFinvdus_dFdX2;
-    dFinvdus_dFdX2.MultiplyTN(F_X,dFinvdus);
-    for (int i=0; i<NUMDIM_SOH8; i++)
-    for (int j =0; j<NUMDOF_SOH8; j++)
-    if(dFinvdus_dFdX(i,j)-dFinvdus_dFdX2(i,j)>1e-8)
-    dserror("dFinvdus_dFdX falsch");
+      for (int n =0; n<NUMNOD_SOH8; n++)
+        for(int j=0; j<NUMDIM_SOH8; j++)
+        {
+          const int gid = NUMDIM_SOH8 * n +j;
+          for (int k=0; k<NUMDIM_SOH8; k++)
+            for(int l=0; l<NUMDIM_SOH8; l++)
+              dFinvdus(i*NUMDIM_SOH8+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
+        }
 
     //F^-T : N_X_X
     LINALG::Matrix<NUMDIM_SOH8,NUMDOF_SOH8> Finv_N_XYZ2(true);

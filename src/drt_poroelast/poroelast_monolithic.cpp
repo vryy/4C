@@ -37,6 +37,12 @@
 // include this header for coupling stiffness terms
 #include "../drt_lib/drt_assemblestrategy.H"
 
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_condition_utils.H"
+
+#include "../drt_f3/fluid3.H"
+#include "../drt_adapter/adapter_fluid_poro.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -56,7 +62,7 @@ POROELAST::MonolithicBase::MonolithicBase(const Epetra_Comm& comm) :
       AlgorithmBase(comm, DRT::Problem::Instance()->PoroelastDynamicParams()),
       StructureBaseAlgorithm(DRT::Problem::Instance()->PoroelastDynamicParams()),
       FluidBaseAlgorithm(DRT::Problem::Instance()->PoroelastDynamicParams(),
-          true)
+      true)
 {
   // monolithic Poroelasticity must know the other discretization
   // build a proxy of the structure discretization for the fluid field
@@ -112,8 +118,7 @@ POROELAST::MonolithicBase::MonolithicBase(const Epetra_Comm& comm) :
   consplitter_=LINALG::MapExtractor(*StructureField().DofRowMap(),
       StructureField().DofRowMap(0));
 
-  //map of fluid and structure dofs for no flux constraint
-  BuidNoPenetrationMap();
+  FluidField().Discretization()->GetCondition("NoPenetration", nopencond_);
 }
 
 /*----------------------------------------------------------------------*
@@ -204,57 +209,16 @@ Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicBase::FluidToStructureField(
 /*----------------------------------------------------------------------*/
 void POROELAST::MonolithicBase::BuidNoPenetrationMap()
 {
-  nopenetrationmap_ = rcp(new std::map<int, int>);
-  vector<DRT::Condition*> nopencond_fluid;
-  vector<DRT::Condition*> nopencond_struct;
-
-  FluidField().Discretization()->GetCondition("NoPenetration", nopencond_fluid);
-  StructureField().Discretization()->GetCondition("NoPenetration",nopencond_struct);
-
-  if (nopencond_fluid.size() != nopencond_struct.size())
-    dserror("something went wrong!");
-
-  if (nopencond_fluid.size())
+  std::vector<int> condIDs;
+  std::set<int>::iterator it;
+  for(it=condIDs_->begin();it!=condIDs_->end();it++)
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-    Teuchos::RCP<DRT::Discretization> structuredis = StructureField().Discretization();
-
-    for (unsigned int i=0; i<nopencond_fluid.size();i++)
-    {
-      //get GIDs of Nodes with condition
-      const vector< int > * nID_fluid = nopencond_fluid[i]->Nodes();
-      const vector< int > * nID_structure = nopencond_struct[i]->Nodes();
-
-      int normaldir = (*(nopencond_fluid[i]->Get<vector<int> >("normalDir")))[0];
-
-      if(nID_fluid->size() != nID_structure->size())
-        dserror("something went wrong!");
-
-      for (unsigned int j=0; j<nID_fluid->size();j++)
-      {
-        int nid_fluid = (*nID_fluid)[j];
-        int nid_structure = (*nID_structure)[j];
-
-        if(nid_fluid != nid_structure)
-          dserror("something went wrong!");
-
-       // if (fluiddis->HaveGlobalNode(nid_fluid) and structuredis->HaveGlobalNode(nid_structure))
-        if (fluiddis->HaveGlobalNode(nid_fluid) and structuredis->HaveGlobalNode(nid_structure))
-        {
-          DRT::Node * fluidnode = fluiddis->gNode(nid_fluid);
-          vector<int> fluiddofs = fluiddis->Dof(0,fluidnode);
-
-          DRT::Node * structurenode = structuredis->gNode(nid_structure);
-          vector<int> structuredofs = structuredis->Dof(0,structurenode);
-
-          if(fluiddofs.size() and structuredofs.size())
-            (*nopenetrationmap_)[fluiddofs[normaldir]]=structuredofs[normaldir];
-        }
-      //  else
-      //    dserror("fluid and structure node not on same processor");
-      }
-    }
+    condIDs.push_back(*it);
   }
+  Teuchos::RCP<Epetra_Map> nopendofmap = rcp(new Epetra_Map(-1, condIDs.size(), &condIDs[0], 0, FluidField().Discretization()->Comm()));
+
+  nopenetration_ = LINALG::MapExtractor(*FluidField().DofRowMap(), nopendofmap);
+
   return;
 }
 
@@ -263,16 +227,18 @@ void POROELAST::MonolithicBase::BuidNoPenetrationMap()
  *----------------------------------------------------------------------*/
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     const Teuchos::ParameterList& sdynparams) :
-  MonolithicBase(comm), solveradapttol_(DRT::INPUT::IntegralValue<int>(
-      sdynparams, "ADAPTCONV") == 1), solveradaptolbetter_(sdynparams.get<
-      double> ("ADAPTCONV_BETTER")),
-      printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY")),
-      printiter_(true), // ADD INPUT PARAMETER
-      printerrfile_(true and errfile_), // ADD INPUT PARAMETER FOR 'true'
-      errfile_(NULL), zeros_(Teuchos::null), strmethodname_(
-          DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
-              "DYNAMICTYP")), timer_(comm), veln_(Teuchos::null), dispn_(
-          Teuchos::null)
+    MonolithicBase(comm),
+    solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
+    solveradaptolbetter_(sdynparams.get<double> ("ADAPTCONV_BETTER")),
+    printscreen_(true), // ADD INPUT PARAMETER
+    printiter_(true), // ADD INPUT PARAMETER
+    printerrfile_(true and errfile_), // ADD INPUT PARAMETER FOR 'true'
+    errfile_(NULL),
+    zeros_(Teuchos::null),
+    strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
+    timer_(comm),
+    veln_(Teuchos::null),
+    dispn_(Teuchos::null)
 {
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(
@@ -311,7 +277,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
         dserror("implicit solver not implemented");
 #endif
 
-      }
+}
 
 /*----------------------------------------------------------------------*
  | output                                                vuong 01/12    |
@@ -551,7 +517,9 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     dispn_ = consplitter_.ExtractCondVector(StructureField().Dispnp());
   }
   else
+  {
     dispn_ = StructureField().ExtractDispnp();
+  }
 
   veln_ = StructureField().ExtractVelnp();
 
@@ -693,8 +661,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_sf = Teuchos::null;
   k_sf = Teuchos::rcp(new LINALG::SparseMatrix(
-  // *(StructureField().Discretization()->DofRowMap()),
-      *(StructureField().DofRowMap()), 81, true, true));
+                      *(StructureField().DofRowMap()), 81, true, true));
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf, sdynparams);
@@ -716,6 +683,12 @@ void POROELAST::Monolithic::SetupSystemMatrix(
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField().SystemMatrix();
 
+  if(nopencond_.size())
+  {
+    //Evaluate poroelasticity specific conditions
+    EvaluateCondition(k_ff, Teuchos::null);
+  }
+
   // Uncomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   k_ff->UnComplete();
@@ -730,9 +703,9 @@ void POROELAST::Monolithic::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::null;
   k_fs = Teuchos::rcp(new LINALG::SparseMatrix(
-      *(FluidField().Discretization()->DofRowMap(0)),
-      //*(FluidField().DofRowMap()),
-      81, true, true));
+                        *(FluidField().Discretization()->DofRowMap(0)),
+                        //*(FluidField().DofRowMap()),
+                        81, true, true));
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs, sdynparams);
@@ -747,7 +720,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
-
 } // SetupSystemMatrix
 
 /*----------------------------------------------------------------------*
@@ -792,13 +764,17 @@ void POROELAST::Monolithic::LinearSolve()
       *CombinedDBCMap());
   //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
-  //applying no flux/penetration constraints (this is a hack, sorry)
-  ApplyNoPenetrationCondition(sparse);
+  if(nopencond_.size())
+  {
+    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_.Map(1);
+    //Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
+    //iterinc = LINALG::CreateVector(*DofRowMap(), true);
+    LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
+  }
 
   // standard solver call
   solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
   //  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
-
 
 #else // use bgs2x2_operator
   dserror("implicit solver not implemented");
@@ -806,71 +782,6 @@ void POROELAST::Monolithic::LinearSolve()
 #endif
 }
 
-/*----------------------------------------------------------------------*
- |                                                        vuong 01/12    |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::ApplyNoPenetrationCondition(Teuchos::RCP<
-    LINALG::SparseMatrix> sparse)
-{
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse->EpetraMatrix();
-
-  const double dt = Dt();
-  const Teuchos::ParameterList& fdyn =
-      DRT::Problem::Instance()->FluidDynamicParams();
-  double theta = fdyn.get<double> ("THETA");
-
-  double val = -1 / (dt * theta);
-
-  Teuchos::RCP<const Epetra_Vector> fvel = FluidField().Velnp();
-  //Teuchos::RCP<const Epetra_Vector> svel= StructureField().Velnp();
-
-  const Epetra_BlockMap& frhsmap = fvel->Map();
-  const Epetra_BlockMap& srhsmap = veln_->Map();
-
-  const int nummyrows = sparse_crs->NumMyRows();
-  for (int i = 0; i < nummyrows; ++i)
-  {
-    int row = sparse_crs->GRID(i);
-    if (nopenetrationmap_->find(row) != nopenetrationmap_->end())
-    {
-      int *indexOffset;
-      int *indices;
-      double *values;
-      int err =
-          sparse_crs->ExtractCrsDataPointers(indexOffset, indices, values);
-#ifdef DEBUG
-      if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
-#endif
-      // zero row
-      memset(&values[indexOffset[i]], 0, (indexOffset[i + 1] - indexOffset[i])
-          * sizeof(double));
-
-      double one = 1.0;
-      err = sparse_crs->SumIntoMyValues(i, 1, &one, &i);
-#ifdef DEBUG
-      if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
-#endif
-
-      int index = (*nopenetrationmap_)[row];
-      sparse_crs->SumIntoMyValues(i, 1, &val, &index);
-
-      if (iter_ == 1)
-      {
-        int rhslid_s = srhsmap.LID(index);
-        int rhslid_f = frhsmap.LID(row);
-        double svalue = (*veln_)[rhslid_s];
-        double fvalue = (*fvel)[rhslid_f];
-        double value = svalue - fvalue;
-        rhs_->ReplaceGlobalValue(row, 0, value);
-      }
-      else
-        rhs_->ReplaceGlobalValue(row, 0, 0.0);
-    }
-  }
-
-  sparse = rcp(new LINALG::SparseMatrix(sparse_crs));
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | initial guess of the displacements/velocities           vuong 01/12  |
@@ -1263,15 +1174,10 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<
   // set general vector values needed by elements
   FluidField().Discretization()->SetState(0,"hist",FluidField().Hist());
   FluidField().Discretization()->SetState(0,"accam",FluidField().Accam());
-
   FluidField().Discretization()->SetState(0,"dispnp",FluidField().Dispnp());
-
   FluidField().Discretization()->SetState(0,"gridv",FluidField().GridVel());
-
   FluidField().Discretization()->SetState(0,"dispn",FluidField().Dispn());
-
   FluidField().Discretization()->SetState(0,"veln",FluidField().Veln());
-
   FluidField().Discretization()->SetState(0,"accnp",FluidField().Accnp());
 
   // set scheme-specific element parameters and vector values
@@ -1297,12 +1203,24 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<
       Teuchos::null
   );
 
-  // evaluate the fluid-mechancial system matrix on the thermal element
+  // evaluate the fluid-mechancial system matrix on the fluid element
   FluidField().Discretization()->Evaluate(fparams,fluidstrategy);
   FluidField().Discretization()->ClearState();
-}    // ApplyThrCouplMatrix()
 
-/***********************************************************************/
+  //apply normal flux condition on coupling part
+  if(nopencond_.size())
+  {
+    k_fs->Complete(StructureField().SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
+    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_.Map(1);
+    k_fs->ApplyDirichlet(*nopenetrationmap, false);
+
+    cond_rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+    cond_rhs_->PutScalar(0.0);
+
+    EvaluateCondition(k_fs,cond_rhs_,1);
+    //cond_rhs_->Scale(-1.0);
+  }
+}    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
  |  map containing the dofs with Dirichlet BC               vuong 01/12 |
@@ -1549,6 +1467,81 @@ void POROELAST::Monolithic::PoroFDCheck()
    cout<<"sparse_crs: "<<endl<<(*sparse_crs)<<endl;
    dserror("finite difference check failed!");
    }*/
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseMatrix> Sysmat,
+                                              Teuchos::RCP<Epetra_Vector> Cond_RHS,
+                                              int coupltype)
+{
+
+  Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix = Teuchos::null;
+  ConstraintMatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+                        *(FluidField().Discretization()->DofRowMap(0)),
+                        //*(FluidField().DofRowMap()),
+                        StructureField().Discretization()->DofRowMap()->NumGlobalElements(),
+                        true, true));
+
+  Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix = Teuchos::null;
+
+  StructVelConstraintMatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+                        *(FluidField().Discretization()->DofRowMap(0)),
+                        StructureField().Discretization()->DofRowMap()->NumGlobalElements(),
+                        true, true));
+
+  ADAPTER::FluidPoro& fluidfield = dynamic_cast<ADAPTER::FluidPoro&>(FluidField());
+
+  condIDs_ = rcp(new std::set<int>());
+  condIDs_->clear();
+
+  //evaluate condition on elements and assemble matrixes
+  fluidfield.EvaluateNoPenetrationCond( Cond_RHS,
+                                        ConstraintMatrix,
+                                        StructVelConstraintMatrix,
+                                        condIDs_,
+                                        coupltype);
+
+  if(coupltype==0)
+  {
+    ConstraintMatrix->Complete();
+    BuidNoPenetrationMap();
+  }
+  else
+  {
+    const Teuchos::ParameterList& fdyn =
+        DRT::Problem::Instance()->FluidDynamicParams();
+    double timefactor = -1.0;
+    double dt=Dt();
+
+    switch (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,
+        "TIMEINTEGR"))
+    {
+      case INPAR::FLUID::timeint_one_step_theta:
+      {
+        timefactor = fdyn.get<double> ("THETA");
+        break;
+      }
+      default:
+      {
+        dserror("No penetration condition implemented for one-step-theta time integration scheme only");
+        break;
+      }//TODO other time integration schemes
+    }
+
+    StructVelConstraintMatrix->Scale(-1/(dt*timefactor));
+    StructVelConstraintMatrix->Complete(StructureField().SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
+    ConstraintMatrix->Add(*StructVelConstraintMatrix, false, 1.0, 1.0);
+    ConstraintMatrix->Complete(StructureField().SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
+  }
+
+  const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_.Map(1);
+  Sysmat->ApplyDirichlet(*nopenetrationmap, false);
+  Sysmat->UnComplete();
+  Sysmat->Add(*ConstraintMatrix, false, 1.0, 1.0);
+
   return;
 }
 

@@ -495,6 +495,26 @@ private:
       Epetra_SerialDenseMatrix&       elemat,
       Epetra_SerialDenseVector&       elevec);
 
+    /*!
+    \brief apply no penetration boundary condition
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                                the controling method does not epxect the element to fill
+                                this matrix.                          and elements
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+    */
+    void NoPenetration(
+      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      ParameterList&             params,
+      DRT::Discretization&       discretization,
+      vector<int>&               lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseMatrix&  elemat2,
+      Epetra_SerialDenseVector&  elevec1);
 
     enum ActionType
     {
@@ -515,7 +535,8 @@ private:
       integ_pressure_calc,
       center_of_mass_calc,
       traction_velocity_component,
-      traction_Uv_integral_component
+      traction_Uv_integral_component,
+      no_penetration
     };
 
   //! evaluate shape functions/derivatives, metric tensor and

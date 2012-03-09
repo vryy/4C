@@ -1,0 +1,61 @@
+/*!------------------------------------------------------------------------------------------------*
+ \file adapter_fluid_poro.H
+
+ \brief Fluid field adapter for poroelasticity
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
+#ifndef ADAPTER_FLUID_PORO_H
+#define ADAPTER_FLUID_PORO_H
+
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+#include "adapter_fluid_wrapper.H"
+#include "../linalg/linalg_mapextractor.H"
+
+namespace DRT
+{
+  class Condition;
+}
+
+namespace ADAPTER {
+
+  class FluidPoro : public FluidWrapper
+  {
+  public:
+
+    //! Constructor
+    FluidPoro(Teuchos::RCP<Fluid> fluid);
+
+    //! Evaluate no penetration constraint
+    /*!
+     \param Cond_RHS                  (o) condition part of rhs
+     \param ConstraintMatrix          (o) static part of Fluid matrix associated with constraints
+     \param StructVelConstraintMatrix (o) transient part of Fluid matrix associated with constraints
+     \param condIDs                   (o) vector containing constraint dofs
+     \param coupltype                 (i) coupling type, determines which matrix is to be evaluated
+                                         (0== fluid-fluid, 1== fluid -structure)
+     */
+    void EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
+                           Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
+                           Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+                           Teuchos::RCP<std::set<int> > condIDs,
+                           int coupltype=0);
+
+  private:
+
+    std::vector<DRT::Condition*> nopencond_; ///< vector containing no penetration conditions
+
+  };
+}
+
+#endif
+#endif

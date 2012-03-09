@@ -350,6 +350,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::traction_velocity_component;
     else if (action == "calculate Uv integral component")
         act = Fluid3Boundary::traction_Uv_integral_component;
+    else if (action == "no penetration")
+        act = Fluid3Boundary::no_penetration;
     else dserror("Unknown type of action for Fluid3_Boundary: %s",action.c_str());
 
     // get status of Ale
@@ -570,6 +572,18 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     case traction_Uv_integral_component:
     {
       ComputeNeumannUvIntegral(ele, params,discretization,lm, elevec1);
+      break;
+    }
+    case no_penetration:
+    {
+      NoPenetration(
+        ele,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elemat2,
+        elevec1);
       break;
     }
     default:
@@ -4403,6 +4417,218 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeNeumannUvIntegral(
   }
 }//DRT::ELEMENTS::Fluid3Surface::ComputeNeumannUvIntegral
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NoPenetration(
+                                                 DRT::ELEMENTS::Fluid3Boundary*   ele,
+                                                 ParameterList&                   params,
+                                                 DRT::Discretization&             discretization,
+                                                 vector<int>&                     lm,
+                                                 Epetra_SerialDenseMatrix&        elemat1,
+                                                 Epetra_SerialDenseMatrix&        elemat2,
+                                                 Epetra_SerialDenseVector&        elevec1)
+{
+  // This function is only implemented for 3D
+  if(bdrynsd_!=2)
+    dserror("NoPenetration is only implemented for 3D!");
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+  // displacements
+  Teuchos::RCP<const Epetra_Vector>      dispnp;
+  std::vector<double>                mydispnp;
+
+  Teuchos::RCP<std::vector<int> >mycondIDs;
+  mycondIDs = rcp(new  vector<int>);
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"no displacement values for boudary element");
+
+    // Add the deformation of the ALE mesh to the nodes coordinates
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+
+  //calculate normal
+  Epetra_SerialDenseVector        normal;
+  normal.Size(lm.size());
+
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+    for (int inode=0; inode<bdrynen_; ++inode)
+    {
+      for(int idim=0; idim<nsd_; ++idim)
+      {
+        normal(inode*numdofpernode_+idim) += unitnormal_(idim) * funct_(inode) * fac_;
+      }
+      // pressure dof is set to zero
+      normal(inode*numdofpernode_+(nsd_)) = 0.0;
+    }
+  } /* end of loop over integration points gpid */
+
+  LINALG::Matrix<numdofpernode_,1> nodenormal(true);
+
+  //check what matrix is to fill
+  string coupling = params.get<string>("coupling","fluid fluid");
+  if (coupling == "fluid fluid")
+  {
+    //fill element matrix
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      for(int i=0;i<numdofpernode_;i++)
+        nodenormal(i)=normal(inode*numdofpernode_+i);
+      double norm = nodenormal.Norm2();
+      nodenormal.Scale(1/norm);
+
+      bool isset=false;
+      for (int idof=0;idof<numdofpernode_;idof++)
+      {
+        if(isset==false and abs(nodenormal(idof)) > 0.5)
+        {
+          for (int idof2=0;idof2<numdofpernode_;idof2++)
+          {
+              elemat1(inode*numdofpernode_+idof,inode*numdofpernode_+idof2) += nodenormal(idof2);
+          }
+          elevec1(inode*numdofpernode_+idof) = 0.0;
+          mycondIDs->push_back(lm[inode*numdofpernode_+idof]);
+          isset=true;
+        }
+        else //no condition set on dof
+          mycondIDs->push_back(-1);
+      }
+    }
+  }
+  else if (coupling == "fluid structure")
+  {
+    // extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
+
+    if (velnp==null)
+      dserror("Cannot get state vector 'velnp'");
+    if (gridvel==null)
+      dserror("Cannot get state vector 'gridv'");
+
+    std::vector<double> myvelnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+    std::vector<double> mygridvel(lm.size());
+    DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
+
+    // allocate velocity vectors
+    LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+    LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
+
+    // split velocity and pressure, insert into element arrays
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      for (int idim=0; idim< nsd_; idim++)
+      {
+        evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
+        egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
+      }
+    }
+
+    //  derivatives of surface normals wrt mesh displacements
+    LINALG::Matrix<3,bdrynen_*3> normalderiv(true);
+
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    {
+      // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+      // Computation of the unit normal vector at the Gauss points is not activated here
+      // Computation of nurb specific stuff is not activated here
+      EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+      // dxyzdrs vector -> normal which is not normalized
+      LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(0.0);
+      dxyzdrs.MultiplyNT(deriv_,xyze_);
+
+      // The integration factor is not multiplied with drs
+      // since it is the same as the scaling factor for the unit normal derivatives
+      // Therefore it cancels out!!
+      const double fac = intpoints.IP().qwgt[gpid];
+
+      for (int node=0;node<bdrynen_;++node)
+      {
+        normalderiv(0,3*node)   += 0.;
+        normalderiv(0,3*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2)) * funct_(node) * fac;
+        normalderiv(0,3*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1)) * funct_(node) * fac;
+
+        normalderiv(1,3*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2)) * funct_(node) * fac;
+        normalderiv(1,3*node+1) += 0.;
+        normalderiv(1,3*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0)) * funct_(node) * fac;
+
+        normalderiv(2,3*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1)) * funct_(node) * fac;
+        normalderiv(2,3*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0)) * funct_(node) * fac;
+        normalderiv(2,3*node+2) += 0.;
+      }
+    }//loop over gp
+
+    //allocate auxiliary variable (= normalderiv^T * velocity)
+    LINALG::Matrix<1,3*bdrynen_> temp(true);
+    //allocate convective velocity at node
+    LINALG::Matrix<1,3> convvel(true);
+
+    elemat1.Shape(bdrynen_*numdofpernode_,bdrynen_*nsd_);
+    //fill element matrix
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      for(int i=0;i<numdofpernode_;i++)
+        nodenormal(i)=normal(inode*numdofpernode_+i);
+
+      double norm = nodenormal.Norm2();
+      nodenormal.Scale(1/norm);
+
+      for (int idof=0;idof<nsd_;idof++)
+        convvel(idof)=evelnp(idof,inode) - egridvel(idof,inode);
+      temp.Multiply(convvel,normalderiv);
+      for (int idof=0;idof<numdofpernode_;idof++)
+      {
+        if(abs(nodenormal(idof)) > 0.5)
+        {
+          for (int idof2=0;idof2<nsd_;idof2++)
+          {
+            elemat1(inode*numdofpernode_+idof,inode*nsd_+idof2) += temp(0,inode*nsd_+idof2);
+            elemat2(inode*numdofpernode_+idof,inode*nsd_+idof2) += - nodenormal(idof2);
+          }
+          double normalconvvel = 0.0;
+          for(int dim=0;dim<nsd_;dim++)
+            normalconvvel += convvel(dim)*nodenormal(dim);
+          elevec1(inode*numdofpernode_+idof) += -normalconvvel;
+          break;
+        }
+      }
+    }
+  }//coupling == "fluid structure"
+  else
+    dserror("unknown coupling type for no penetration boundary condition");
+
+  //save the vector containing the constraint dofs in the parameter list
+  params.set<Teuchos::RCP<std::vector<int> > >("mycondIDs", mycondIDs);
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3
