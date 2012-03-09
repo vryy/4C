@@ -210,6 +210,9 @@ namespace ELEMENTS
     //! calculate lumped capacity matrix in case of explicit time integration
     void CalculateLumpMatrix(LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa);
 
+    //! calculate characteristic element length
+    double CalculateCharEleLength();
+
     //@}
 
     //! @name TSI related stuff

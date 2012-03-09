@@ -152,7 +152,6 @@ namespace ELEMENTS
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    // 17.12.10 TODO
     //! number of Gauss points
     static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 

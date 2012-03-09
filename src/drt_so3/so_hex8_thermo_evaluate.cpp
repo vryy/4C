@@ -23,6 +23,7 @@ Maintainer: Caroline Danowski
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/robinson.H"
 #include "../drt_mat/micromaterial.H"
 #include <iterator>
 
@@ -94,6 +95,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_internalforce")         act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")              act = So_hex8::calc_struct_nlnstiff;
   else if (action=="calc_struct_nlnstiffmass")          act = So_hex8::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_stress")                act = So_hex8::calc_struct_stress;
@@ -169,7 +171,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
-
   }
   break;
 
@@ -239,6 +240,28 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     }
+  }
+  break;
+
+  //==================================================================================
+  // linear stiffness, internal force vector, and consistent mass matrix
+  case calc_struct_stifftemp:
+  {
+    // mechanical-thermal system matrix
+    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> stiffmatrixcoupl(elemat1_epetra.A(),true);
+    // elemat2,elevec1-3 are not used anyway
+
+    // need current displacement and residual forces
+    Teuchos::RCP<const Epetra_Vector> disp
+      = discretization.GetState(0,"displacement");
+    if (disp==null)
+      dserror("Cannot get state vectors 'displacement'");
+    vector<double> mydisp((la[0].lm_).size());
+    // build the location vector only for the structure field
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+
+    // calculate the mechanical-thermal system matrix
+    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
   }
   break;
 
@@ -319,7 +342,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         soh8_nlnstifftemp(la,mydisp,myres,mytempnp,NULL,NULL,&stresstemp,NULL,
           params,iostress,INPAR::STR::strain_none);
 
-        // 08.04.11
         // calculate the THERMOmechanical term for fint: temperature stresses
         soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
           iostress,INPAR::STR::strain_none);
@@ -365,6 +387,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
       micro->Update();
+    }
+    // incremental update of internal variables/history
+    if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
+    {
+      MAT::Robinson* robinson = static_cast<MAT::Robinson*>(mat.get());
+      robinson->Update();
     }
   }
   break;
@@ -550,7 +578,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
     // call the well-known soh8_nlnstiffmass for the normal structure solution
-    // soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+    // soh8_linstiffmass(lm,mydisp,myres,NULL,matptr,NULL,&elevec1,NULL,NULL,params,
     //        INPAR::STR::stress_none,INPAR::STR::strain_none);
     soh8_nlnstiffmass(lm,mydisp,myres,matptr,&elemat2,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
@@ -771,28 +799,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   break;
 
   //==================================================================================
-  // linear stiffness, internal force vector, and consistent mass matrix
-  case calc_struct_stifftemp:
-  {
-    // mechanical-thermal system matrix
-    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> stiffmatrixcoupl(elemat1_epetra.A(),true);
-    // elemat2,elevec1-3 are not used anyway
-
-    // need current displacement and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp
-      = discretization.GetState(0,"displacement");
-    if (disp==null)
-      dserror("Cannot get state vectors 'displacement'");
-    vector<double> mydisp((la[0].lm_).size());
-    // build the location vector only for the structure field
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-
-    // calculate the mechanical-thermal system matrix
-    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
-  }
-  break;
-
-  //==================================================================================
   default:
   dserror("Unknown type of action for So_hex8");
   } // action
@@ -859,7 +865,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
 
   // identical shapefunctions for the displacements and the temperatures
   LINALG::Matrix<NUMNOD_SOH8,1> shapetemp;
@@ -933,6 +939,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
     // product of shapefunctions and element temperatures for stresstemp
     LINALG::Matrix<1,1> Ntemp(true);
     Ntemp.MultiplyTN(shapetemp,etemp);
+    double scalartemp  = shapetemp.Dot(etemp);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -943,10 +950,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stresstemp(true);
+    LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> glstrain(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> straininc(true);
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) stresstemp = C . Delta T
-    soh8_mat_temp(&stresstemp,&ctemp,&density,&Ntemp,&defgrd);
+    soh8_mat_temp(&stresstemp,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1082,11 +1093,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
 void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,
-  double* density,
   LINALG::Matrix<1,1>* Ntemp,  // temperature of element
-  LINALG::Matrix<3,3>* defgrd //,
-//  const int gp,
-//  Teuchos::ParameterList& params
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+  LINALG::Matrix<3,3>* defgrd, //
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>& straininc,
+  const double& scalartemp,
+  double* density,
+  const int gp,
+  Teuchos::ParameterList& params
   )
 {
 #ifdef DEBUG
@@ -1123,51 +1139,21 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
       return;
       break;
     }
+    case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
+    {
+      MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
+      robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*stresstemp);
+      *density = robinson->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of temperature dependent material");
     break;
   } // switch (mat->MaterialType())
 
   return;
-} // of soh8_mat_temp
-
-
-
-/*----------------------------------------------------------------------*
- | get the constant temperature fraction for stresstemp      dano 05/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Stempconst(
-  LINALG::Matrix<6,1>* ctemp,
-  LINALG::Matrix<6,1>* stempconst
-  )
-{
-  Teuchos::RCP<MAT::Material> mat = Material();
-  switch (mat->MaterialType())
-  {
-    /*-------- thermo st.venant-kirchhoff-material */
-    case INPAR::MAT::m_thermostvenant:
-    {
-      MAT::ThermoStVenantKirchhoff* thrstvk
-        = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->Stempconst(*ctemp,*stempconst);
-       break;
-    }
-    // small strain von Mises thermoelastoplastic material
-    case INPAR::MAT::m_thermopllinelast:
-    {
-      MAT::ThermoPlasticLinElast* thrpllinelast
-        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-      return thrpllinelast->Stempconst(*ctemp,*stempconst);
-      break;
-    }
-    default:
-      dserror("Cannot ask material for the temperature rhs");
-      break;
-  } // switch (mat->MaterialType())
-
-  return;
-
-} // So_hex8::Stempconst
+} // of soh8_mat_temp()
 
 
 /*----------------------------------------------------------------------*

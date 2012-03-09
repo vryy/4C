@@ -12,13 +12,13 @@
 
        plastic materail with kinematic hardening
         - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress \sigma_y = const.
+        - constant uniaxial yield stress sigma_y = const.
 
        geometric linear, for small strains including temperature dependency
 
        example input line:
        MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-             THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 KINHARD 0.0 TOL 1.0e-6
+             THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 
 <pre>
 Maintainer: Caroline Danowski
@@ -71,13 +71,15 @@ namespace MAT
       const double poissonratio_;
       /// mass density
       const double density_;
-      /// linear coefficient of thermal expansion
+      /// linear coefficient of thermal expansion \f$ \alpha_T \f$
       const double thermexpans_;
-      /// initial temperature (constant) \f \Theta_0 \f
+      /// initial temperature (constant) \f$ \theta_0 \f$
       const double thetainit_;
-      /// yield stress (constant for perfect plasticity)
+      /// yield stress (constant for perfect plasticity)  \f$ \sigma_y \f$
       const double yield_;
-      /// kinematic hardening modulus
+      /// isotropic hardening modulus \f$ H_i \f$
+      const double isohard_;
+      /// kinematic hardening modulus \f$ H_k \f$
       const double kinhard_;
       // tolerance for local Newton iteration
       const double abstol_;
@@ -127,7 +129,10 @@ private:
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ThermoPlasticLinElastType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ThermoPlasticLinElastType::Instance().UniqueParObjectId();
+    }
 
     //!  \brief Pack this class so it can be communicated
     //!
@@ -135,9 +140,9 @@ private:
     //!  The first information to be stored in data has to be the
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
-    //!
-    //!  \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(
+      DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
+      ) const;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -146,22 +151,27 @@ private:
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
-    //!
-    //!  \param data (in) : vector storing all data to be unpacked into this
-    //!  instance.
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(
+      const vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
+      );
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermopllinelast; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_thermopllinelast;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ThermoPlasticLinElast( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp( new ThermoPlasticLinElast( *this ) );
+    }
 
     /// initialize internal stress variables
     void Setup(
-      const int numgp ///< number of Gauss points
+      const int numgp //!< number of Gauss points
       );
 
     /// update internal stress variables
@@ -173,11 +183,11 @@ private:
     /// evaluate material
     void Evaluate(
       const LINALG::Matrix<6,1>& linstrain,
-      LINALG::Matrix<6,1>& plstrain, ///< return the plastic strains to the element
-      const int gp,  ///< current Gaus point
-      Teuchos::ParameterList& params,  ///< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  ///< 2nd PK-stress
+      LINALG::Matrix<6,1>& plstrain, //!< return the plastic strains to the element
+      const int gp,  //!< current Gaus point
+      Teuchos::ParameterList& params,  //!< parameter list for communication
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
       );
 
     // computes stress
@@ -195,7 +205,9 @@ private:
       );
 
     /// computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6,6>& cmat);
+    void SetupCmat(
+      LINALG::Matrix<6,6>& cmat  //!< elastic material tangent
+      );
 
     /// computes isotropic elastoplastic tensor in matrix notion for 3d
     void SetupCmatElastoPlastic(
@@ -206,6 +218,7 @@ private:
       const LINALG::Matrix<6,1> flowvector,  //!< flow vector
       const LINALG::Matrix<6,1> eta,  //!< relative stress
       double heaviside,  //!< Heaviside function
+      double Hiso,  //!< isotropic hardening modulus
       double Hkin  //!< kinematic hardening modulus
       );
 
@@ -237,21 +250,6 @@ private:
     /// return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    /// finite difference check for debugging purposes
-    void FDCheck(
-      LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
-      LINALG::Matrix<6,6>& cmatFD, //!< material tangent calculated with FD of stresses
-      LINALG::Matrix<6,1>& beta,  //!< updated back stresses
-      double p,  //!< volumetric stress
-      const LINALG::Matrix<6,1>& strain,  //!< elastic strain vector
-      double Dgamma,  //!< plastic multiplier
-      double G,  //!< shear modulus
-      double qbar,  //!< elastic trial von Mises effective stress
-      double kappa, //!< bulk modulus
-      LINALG::Matrix<6,1>& N, // flow vector
-      double heaviside  //!< Heaviside function
-      );
-
     //! flag plastic step was called
     bool plastic_step;
 
@@ -261,20 +259,16 @@ private:
     /// main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(
-      const LINALG::Matrix<1,1>& Ntemp,  // temperature of element
-      LINALG::Matrix<6,1>& ctemp,
-      LINALG::Matrix<6,1>& stresstemp
-      );
-
-    /// computes the constant temperature fraction of the stress
-    void Stempconst(
-      LINALG::Matrix<6,1>& ctemp,
-      LINALG::Matrix<6,1>& stempconst
+      const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element
+      LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
+      LINALG::Matrix<6,1>& stresstemp  //!< temperature dependent stress term
       );
 
     /// computes temperature dependent isotropic elasticity tensor in matrix
     /// notion for 3d
-    void SetupCthermo(LINALG::Matrix<6,1>& ctemp);
+    void SetupCthermo(
+      LINALG::Matrix<6,1>& ctemp  //!< temperature dependent material tangent
+      );
 
     /// calculates stress-temperature modulus
     double STModulus();
@@ -290,14 +284,12 @@ private:
     /// @name specific methods for TSI and plastic material
     //@{
 
-    /// additive split of strain rates needed for TSI
-    //   \param stepsize      (in): stepsize
-    //   \param strainlinrate (in): total strain rate ( B d')
-    //   \param strainelrate_ (out): elastic strain rate ( B d^e' = B d - Dgama N)
+    /// additive split into elastic and plastic strain rates needed for TSI
+    /// elastic strain rate ( B d^e' = B d - Dgama N)
     void StrainRateSplit(
-      int gp,
-      const double stepsize,
-      LINALG::Matrix<6,1>& strainlinrate
+      int gp,  //!< (i): current Gauss point
+      const double stepsize,  //!< (i): stepsize
+      LINALG::Matrix<6,1>& strainlinrate  //!< (i): total strain rate ( B d')
       );
 
     /// return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$

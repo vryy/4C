@@ -772,10 +772,10 @@ void THR::TimInt::ApplyForceExternalConv(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState(0,"old temperature", tempn);  // (*temp_)(0)
-  discret_->SetState(0,"temperature", temp);  // tempn_
+  discret_->SetState(0,"old temperature", tempn);  // T_n (*temp_)(0)
+  discret_->SetState(0,"temperature", temp);  // T_{n+1} tempn_
   // get load vector
-  // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
+  // use general version of EvaluateCondition(), following the example set by ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
   discret_->EvaluateCondition(p,tang,Teuchos::null,fext,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();

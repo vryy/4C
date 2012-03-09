@@ -139,13 +139,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       *density = pllinelast->Density();
       break;
     }
-    case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
-    {
-      MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      robinson->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
-      *density = robinson->Density();
-      break;
-    }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());

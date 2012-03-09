@@ -40,42 +40,42 @@ namespace PAR
 {
 
   /*----------------------------------------------------------------------*/
-  /// material parameters for de St. Venant--Kirchhoff with temperature
-  /// dependent term
-  ///
-  /// <h3>Input line</h3>
-  /// MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
+  //! material parameters for de St. Venant--Kirchhoff with temperature
+  //! dependent term
+  //!
+  //! <h3>Input line</h3>
+  //! MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
   class ThermoStVenantKirchhoff : public Parameter
   {
   public:
 
-    /// standard constructor
+    //! standard constructor
     ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-    /// destructor
+    //! destructor
     virtual ~ThermoStVenantKirchhoff() { ; }
 
-    /// @name material parameters
+    //! @name material parameters
     //@{
 
-    /// Young's modulus
+    //! Young's modulus
     const double youngs_;
-    /// Possion's ratio
+    //! Possion's ratio \f$ \nu \f$
     const double poissonratio_;
-    /// mass density
+    //! mass density \f$ \rho \f$
     const double density_;
-    /// linear coefficient of thermal expansion
+    //! linear coefficient of thermal expansion  \f$ \alpha_T \f$
     const double thermexpans_;
-    /// heat capacity
+    //! heat capacity \f$ C_V \f$
     const double capa_;
-    /// heat conductivity
+    //! heat conductivity \f$ k \f$
     const double conduct_;
-    /// initial temperature (constant) \f \Theta_0 \f
+    //! initial temperature (constant) \f$ \theta_0 \f$
     const double thetainit_;
 
     //@}
 
-    /// create material instance of matching type with my parameters
+    //! create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
   };  // class ThermoStVenantKirchhoff
@@ -98,15 +98,15 @@ private:
 };
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for St.-Venant-Kirchhoff material with temperature term
+  //! Wrapper for St.-Venant-Kirchhoff material with temperature term
   class ThermoStVenantKirchhoff : public Material
   {
   public:
 
-    /// construct empty material object
+    //! construct empty material object
     ThermoStVenantKirchhoff();
 
-    /// construct the material object given material parameters
+    //! construct the material object given material parameters
     explicit ThermoStVenantKirchhoff(MAT::PAR::ThermoStVenantKirchhoff* params);
 
     //! @name Packing and Unpacking
@@ -129,10 +129,10 @@ private:
       The first information to be stored in data has to be the
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
-
-      \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(
+      DRT::PackBuffer& data  //!< (i/o): char vector to store class information
+      ) const;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -142,99 +142,95 @@ private:
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
-
-      \param data (in) : vector storing all data to be unpacked into this
-      instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(
+      const vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
+      );
 
     //@}
 
-    /// material type
+    //! material type
     virtual INPAR::MAT::MaterialType MaterialType() const
     {
       return INPAR::MAT::m_thermostvenant;
     }
 
-    /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ThermoStVenantKirchhoff( *this ) ); }
+    //! return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp( new ThermoStVenantKirchhoff( *this ) );
+    }
 
     // evaluates stresses for 3d
     void Evaluate(
-      const Epetra_SerialDenseVector* glstrain_e,
-      Epetra_SerialDenseMatrix* cmat_e,
-      Epetra_SerialDenseVector* stress_e
+      const Epetra_SerialDenseVector* glstrain_e,  //!< Green-Lagrange strain (SerialDense)
+      Epetra_SerialDenseMatrix* cmat_e,  //!< elastic material tangent (SerialDense)
+      Epetra_SerialDenseVector* stress_e  //!< stress (SerialDense)
       );
 
-    /// evaluates stresses for 3d
+    //! evaluates stresses for 3d
     void Evaluate(
-      const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,6>& cmat,
-      LINALG::Matrix<6,1>& stress
+      const LINALG::Matrix<6,1>& glstrain,  //!< Green-Lagrange strain
+      LINALG::Matrix<6,6>& cmat,  //!< elastic material tangent
+      LINALG::Matrix<6,1>& stress  //!< stress
       );
 
-    /// main 3D material call to determine stress and constitutive tensor ctemp
+    //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(
-      const LINALG::Matrix<1,1>& Ntemp,  // temperature of element
-      LINALG::Matrix<6,1>& ctemp,
-      LINALG::Matrix<6,1>& stresstemp
+      const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element (N . T)
+      LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
+      LINALG::Matrix<6,1>& stresstemp  //!< temperature dependent stress term
       );
 
-    /// computes isotropic elasticity tensor in matrix notion for 3d
+    //! computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
 
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry
     void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
 
-    /// computes temperature dependent isotropic elasticity tensor in matrix
-    /// notion for 3d
+    //! computes temperature dependent isotropic elasticity tensor in matrix
+    //! notion for 3d
     void SetupCthermo(LINALG::Matrix<6,1>& ctemp);
 
-    // computes temperature dependent isotropic elasticity tensor in matrix
-    // notion for 2d plane strain, rotational symmetry
+    //! computes temperature dependent isotropic elasticity tensor in matrix
+    //" notion for 2d plane strain, rotational symmetry
     void SetupCthermo2d(Epetra_SerialDenseMatrix* ctemp);
 
-    /// computes the constant temperature fraction of the stress
-    void Stempconst(
-      LINALG::Matrix<6,1>& ctemp,
-      LINALG::Matrix<6,1>& stempconst
-      );
-
-    /// calculates stress-temperature modulus
+    //! calculates stress-temperature modulus
     double STModulus() const;
 
-    /// Young's modulus
+    //! Young's modulus
     double Youngs() const { return params_->youngs_; }
 
-    /// Poisson's ratio \f \nu \f
+    //! Poisson's ratio \f$ \nu \f$
     double PoissonRatio() const { return params_->poissonratio_; }
 
-    /// density
+    //! density \f$ \rho \f$
     virtual double Density() const { return params_->density_; }
 
-    /// conductivity
+    //! conductivity \f$ k \f$
     double Conductivity() const { return params_->conduct_; }
 
-    /// material capacity
+    //! material capacity \f$ C_V \f$
     double Capacity() const { return params_->capa_; }
 
-    /// Initial temperature
+    //! Initial temperature \f$ \theta_0 \f$
     double InitTemp() const { return params_->thetainit_; }
 
-    /// shear modulus \f \mu \f
+    //! shear modulus \f$ \mu \f$
     double ShearMod() const
     {
       return 0.5*params_->youngs_/(1.0+params_->poissonratio_);
     }
 
-    /// Return quick accessible material parameter data
+    //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 
-    /// my material parameters
+    //! my material parameters
     MAT::PAR::ThermoStVenantKirchhoff* params_;
 
   };  // ThermoStVenantKirchhoff

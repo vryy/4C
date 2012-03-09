@@ -865,7 +865,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // check length of elevec1
     if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
-    // get the material capacity
     double kappa = 0.0;
 
     // material
@@ -911,7 +910,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       // internal energy
       intenergy +=kappa*fac_*temp(0,0);
 
-      /* =======================================================================*/
+     /* =======================================================================*/
     }/* ================================================== end of Loop over GP */
 
     elevec1_epetra(0) = intenergy;
@@ -1191,14 +1190,25 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
-  // START OF COUPLING
+  // ---------------------------------------------- START OF COUPLING
 
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
 
 #ifdef COUPLEINITTEMPERATURE
   double thetainit = 0.0;
-#endif // COUPLEINITTEMPERATURE
+#endif  // COUPLEINITTEMPERATURE
+
+#ifdef CALCSTABILOFREACTTERM
+  // check critical parameter of reactive term
+  // initialise kinematic diffusivity for checking stability of reactive term
+  // kappa = k/(rho C_V) = Conductivity()/Capacitity()
+  double kappa = 0.0;
+  // calculate element length h = (vol)^(dim)
+  double h = CalculateCharEleLength();
+//  cout << "h = " << h << endl;
+//  double h2 = h^2;
+#endif  // CALCSTABILOFREACTTERM
 
   // access the structure discretization, needed later for calling the solid
   // material and getting its tangent
@@ -1221,6 +1231,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     MAT::ThermoStVenantKirchhoff* thrstvk
       = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
     thrstvk->SetupCthermo(ctemp);
+#ifdef CALCSTABILOFREACTTERM
+    // kappa = k / (rho C_V)
+    kappa = thrstvk->Conductivity();
+    kappa /= thrstvk->Capacity();
+#endif  // CALCSTABILOFREACTTERM
 
     //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
 #ifdef COUPLEINITTEMPERATURE
@@ -1238,7 +1253,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     thetainit = thrpllinelast->InitTemp();
 #endif // COUPLEINITTEMPERATURE
   }
-  // END OF COUPLING
+  // ------------------------------------------------ END OF COUPLING
 
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
@@ -1356,10 +1371,32 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
       plasticstrainlinrate.Update(1.0, (thrpllinelast->PlasticStrainRate(iquad)), 0.0);
     }
 
-    // scalar product Ctemp : (B . (d^e)') == (B . d') in case of elastic step
+    // scalar product Ctemp : (B . (d^e)')
+    // in case of elastic step Ctemp : (B . (d^e)') ==  Ctemp : (B . d')
     double cbv = 0.0;
     for (int i=0; i<6; ++i)
       cbv += ctemp(i,0)*strainvel(i,0);
+
+#ifdef CALCSTABILOFREACTTERM
+    // ------------------------------------ start reactive term check
+    // check reactive term for stability
+    // check critical parameter of reactive term
+    // K = sigma / ( kappa * h^2 ) > 1 --> problems occur
+    // kappa: kinematic diffusitivity
+    // sigma = m I : (B . (d^e)') = Ctemp : (B . (d^e)')
+    double sigma = cbv;
+    cout << "sigma = " << sigma << endl;
+    cout << "h = " << h << endl;
+    cout << "h^2 = " << h*h << endl;
+    cout << "kappa = " << kappa << endl;
+    cout << "strainvel = " << strainvel << endl;
+    // critical parameter for reactive dominated problem
+    double K_thr = sigma / ( kappa * (h*h) );
+    cout << "K_thr abs = " << abs(K_thr) << endl;
+    if (abs(K_thr) > 1.0)
+      cout << "stability problems can occur: abs(K_thr) = " << abs(K_thr) << endl;
+    // -------------------------------------- end reactive term check
+#endif  // CALCSTABILOFREACTTERM
 
     // N^T . Ctemp : ( B .  (d^e)' )
     LINALG::Matrix<nen_,6> nctemp(true); // (8x1)(1x6)
@@ -1381,7 +1418,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
       }
       nt.Scale(thetainit);
 #else
-      // default: use current temperature
+      // default: use scalar-valued current temperature T = N . T
       nt.MultiplyTN(funct_,etemp_);
 #endif
 
@@ -2097,6 +2134,33 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   // bye
   return;
 } // ExtrapolateFromGaussPointsToNodes
+
+
+/*----------------------------------------------------------------------*
+ | calculation of characteristic element length              dano 02/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
+{
+  // volume of the element (2D: element surface area; 1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double vol = fac_;
+
+  // as shown in CalcCharEleLength() in ScaTraImpl
+  // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
+  // cast dimension to a double varible -> pow()
+
+  // get number of dimensions
+  const double dim = (double) nsd_;
+
+  // get characteristic element length as cubic root of element volume
+  // (2D: square root of element area, 1D: element length)
+  // h = vol^(1/dim)
+  double h = pow(vol,(1.0/dim));
+
+  return h;
+
+}  // CalculateCharEleLength()
 
 
 /*----------------------------------------------------------------------*/

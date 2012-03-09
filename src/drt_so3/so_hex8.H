@@ -737,56 +737,53 @@ protected:
 
   //! Calculate temperature coupling term for the internal force (geometric linear)
   virtual void soh8_finttemp(
-    DRT::Element::LocationArray& la,  // location array
-    vector<double>& disp,  // current displacements
-    vector<double>& residual,  // current residual displ
-    vector<double>& temp, // current temperature
-    LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  // stress output option
-    const INPAR::STR::StrainType iostrain  // strain output option
+    DRT::Element::LocationArray& la,  //!< location array
+    vector<double>& disp,  //!< current displacements
+    vector<double>& residual,  //!< current residual displ
+    vector<double>& temp, //!< current temperature
+    LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  //!< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  //!< strains at GP
+    Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  //!< stress output option
+    const INPAR::STR::StrainType iostrain  //!< strain output option
     );
 
-  /*!
-   * \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
-   */
+  //! \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
+  //!
   virtual void soh8_stifftemp(
     DRT::Element::LocationArray& la,
     vector<double>& disp,  //!< (i): current displacement
     LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
     );
 
-  /*!
-   * \brief Interface to the temperature dependent material law working with soh8.
-   *
-   * Here the interface to the first solid material with temperature takes place.
-   * Stress and material tangent must be retrieved whereas all necessary data
-   * is passed.
-   * Add whatever your material needs, but make sure that exchange is not
-   * overdone performance-wise.
-   *
-   */
+  //! \brief Interface to the temperature dependent material law working with soh8.
+  //!
+  //! Here the interface to the first solid material with temperature takes place.
+  //! Stress and material tangent must be retrieved whereas all necessary data
+  //! is passed.
+  //! Add whatever your material needs, but make sure that exchange is not
+  //! overdone performance-wise.
+  //!
   void soh8_mat_temp(
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,   //!< (o): Voigt-Vector of stresses at current gp
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
-    double* density,  //!< (o): density of material
-    LINALG::Matrix<1,1>* Ntemp,  //!< (o): (shapefcts . element temperature) at current gp
-    LINALG::Matrix<3,3>* defgrd  //!< (i): F at current gp, CAUTION! only for disp-based soh8
+    LINALG::Matrix<1,1>* Ntemp,  // temperature of element: (shapefcts . element temperature) at current gp
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,  //!< (o): material tangent matrix at current gp
+    LINALG::Matrix<3,3>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,  //!< (o): total strain
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain,  //!< (o): plastic strain
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>& straininc,  //!< (i): total strain increment
+    const double& scalartemp,  //!< scalar-valued temperature of the element
+    double* density,  //!< density of material
+    const int gp,  //!< current Gauss point
+    Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
     );
 
-  // calculate the constant temperature fraction for stresstemp
-  void Stempconst(
-    LINALG::Matrix<6,1>* ctemp,
-    LINALG::Matrix<6,1>* stempconst
-    );
-
-  // calculate the constant temperature fraction for stresstemp
+  //! calculate the constant temperature tangent for stresstemp
   void Ctemp(
-    LINALG::Matrix<6,1>* ctemp
+    LINALG::Matrix<6,1>* ctemp  // temperature dependent material tangent
     );
-
 
   //@}
 

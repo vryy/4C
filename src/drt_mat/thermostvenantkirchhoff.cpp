@@ -50,15 +50,24 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 {
 }
 
+/*----------------------------------------------------------------------*
+ | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::ThermoStVenantKirchhoff::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ThermoStVenantKirchhoff(this));
 }
 
+
 MAT::ThermoStVenantKirchhoffType MAT::ThermoStVenantKirchhoffType::instance_;
 
 
-DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create( const std::vector<char> & data )
+/*----------------------------------------------------------------------*
+ | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(
+  const std::vector<char> & data
+  )
 {
   MAT::ThermoStVenantKirchhoff* thrstvenantk = new MAT::ThermoStVenantKirchhoff();
   thrstvenantk->Unpack(data);
@@ -404,25 +413,6 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   stresstemp.MultiplyNN(ctemp,deltaT);
 
 } // Evaluate
-
-
-/*----------------------------------------------------------------------*
- | calculates the constant temperature stress                dano 05/10 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Stempconst(
-  LINALG::Matrix<6,1>& ctemp,
-  LINALG::Matrix<6,1>& stempconst
-  )
-{
-  const double inittemp = -1.0*(params_->thetainit_);
-
-  // C_theta * theta_init = const
-  SetupCthermo(ctemp);
-  stempconst.Update(inittemp,ctemp);
-
-  // done
-  return;
-} // Ctempconst()
 
 
 /*----------------------------------------------------------------------*/

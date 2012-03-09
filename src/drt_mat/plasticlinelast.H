@@ -8,7 +8,7 @@
 
        plastic materail with kinematic hardening
         - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress \sigma_y = const.
+        - constant uniaxial yield stress sigma_y = const.
 
        geometric linear, for small strains
 
@@ -43,38 +43,38 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for plastic lin elastic Material
+    //! material parameters for linear elasto-plastic material
     class PlasticLinElast : public Parameter
     {
     public:
 
-      /// standard constructor
+      //! standard constructor
       PlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
+      //! destructor
       virtual ~PlasticLinElast() { ; }
 
-      /// @name material parameters
+      //! @name material parameters
       //@{
 
-      /// Young's modulus
+      //! Young's modulus
       const double youngs_;
-      /// Possion's ratio
+      //! Possion's ratio
       const double poissonratio_;
-      /// mass density
+      //! mass density
       const double density_;
-      /// initial yield stress (constant)
+      //! initial yield stress (constant)
       const double yield_;
-      /// linear isotropic hardening modulus
+      //! linear isotropic hardening modulus
       const double isohard_;
-      /// linear kinematic hardening modulus
+      //! linear kinematic hardening modulus
       const double kinhard_;
       // tolerance for local Newton iteration
       const double abstol_;
 
       //@}
 
-      /// create material instance of matching type with my parameters
+      //! create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class PlasticLinElast
@@ -100,15 +100,15 @@ private:
 
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for linear elasto-plastic material
+  //! wrapper for linear elasto-plastic material
   class PlasticLinElast : public Material
   {
   public:
 
-    /// construct empty material object
+    //! construct empty material object
     PlasticLinElast();
 
-    /// construct the material object given material parameters
+    //! construct the material object given material parameters
     explicit PlasticLinElast(MAT::PAR::PlasticLinElast* params);
 
     //! @name Packing and Unpacking
@@ -143,101 +143,104 @@ private:
 
     //@}
 
-    /// material type
+    //! material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_pllinelast; }
 
-    /// return copy of this material object
+    //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticLinElast( *this ) ); }
 
-    /// Initialize internal stress variables
+    //! initialise internal stress variables
     void Setup(
-      const int numgp ///< number of Gauss points
+      const int numgp //!< number of Gauss points
       );
 
-    /// Update internal stress variables
+    //! update internal stress variables
     void Update();
 
-    /// Reset internal stress variables
+    //! reset internal stress variables
     void Reset();
 
-    /// Evaluate material
+    //! evaluate material
     void Evaluate(
-      const LINALG::Matrix<6,1>& linstrain,
-      LINALG::Matrix<6,1>& plstrain, ///< return the plastic strains to the element
-      const int gp,  ///< current Gaus point
-      Teuchos::ParameterList& params,  ///< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  ///< 2nd PK-stress
+      const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,
+      LINALG::Matrix<NUM_STRESS_3D,1>& plstrain, //!< return the plastic strains to the element
+      const int gp,  //!< current Gaus point
+      Teuchos::ParameterList& params,  //!< parameter list for communication
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
       );
 
-    // computes stress
+    //! computes stress
     void Stress(
       const double p,  //!< volumetric stress tensor
-      const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  //!< deviatoric stress tensor
       LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
       );
 
+    //! calculate relative/over strees
     void RelStress(
-      const LINALG::Matrix<6,1>& devstrain,  //!< deviatoric stress tensor
-      const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& devstrain,  //!< deviatoric stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< back stress tensor
       LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
       );
 
-    /// computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6,6>& cmat);
-
-    /// computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(
-      LINALG::Matrix<6,6>& cmat,
-      double Dgamma,
-      double G,
-      double q,
-      const LINALG::Matrix<6,1> flowvector,
-      const LINALG::Matrix<6,1> eta,
-      double heaviside,
-      double Hiso,
-      double Hkin
+    //! computes isotropic elasticity tensor in matrix notion for 3d
+    void SetupCmat(
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat  //!< elastic material tangent
       );
 
-    /// computes isotropic elastoplastic tensor in matrix notion for 3d
+    //! computes isotropic elastoplastic tensor in matrix notion for 3d
+    void SetupCmatElastoPlastic(
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
+      double Dgamma,  //!< plastic multiplier
+      double G,  //!< shear modulus
+      double q,  //!< effective stress
+      const LINALG::Matrix<NUM_STRESS_3D,1> flowvector,  //!< flow vector
+      const LINALG::Matrix<NUM_STRESS_3D,1> eta,  //!< relative stress
+      double heaviside,  //!< heaviside function: decide if loading/unloading
+      double Hiso,  //!< isotropic hardening modulus
+      double Hkin  //!< kinematic hardening modulus
+      );
+
+    //! computes isotropic elastoplastic tensor in matrix notion for 3d
     void SetupCmatElastoPlastic2(
-      LINALG::Matrix<6,6>& cmat,
-      double Dgamma,
-      double q,
-      LINALG::Matrix<6,1> unitflow
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
+      double Dgamma,  //!< plastic multiplier
+      double q,  //!< effective stress
+      LINALG::Matrix<NUM_STRESS_3D,1> unitflow  //!< unit flow vector
       );
 
     void SetupContinuumCmatElastoPlastic(
-      LINALG::Matrix<6,6>& cmat,
-      double Dgamma,
-      double q,
-      LINALG::Matrix<6,1> unitflow
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
+      double Dgamma,  //!< plastic multiplier
+      double q,  //!< effective stress
+      LINALG::Matrix<NUM_STRESS_3D,1> unitflow  //!< unit flow vector
       );
 
-    /// Return density
+    //! Return density
     virtual double Density() const { return params_->density_; }
 
-    /// Check if history variables are already initialized
+    //! Check if history variables are already initialized
     bool Initialized() const
     {
       return ( isinit_ && (strainplcurr_!=Teuchos::null) );
     }
 
-    /// Return quick accessible material parameter data
+    //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    /// Finite difference check for debugging purposes
+    //! Finite difference check for debugging purposes
     void FDCheck(
-      LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
-      LINALG::Matrix<6,6>& cmatFD, //!< material tangent calculated with FD of stresses
-      LINALG::Matrix<6,1>& beta,  //!< updated back stresses
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress,  //!< updated stress sigma_n+1
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, //!< material tangent calculated with FD of stresses
+      LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< updated back stresses
       double p,  //!< volumetric stress
-      const LINALG::Matrix<6,1>& strain,  //!< elastic strain vector
+      const LINALG::Matrix<NUM_STRESS_3D,1>& strain,  //!< elastic strain vector
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
       double qbar,  //!< elastic trial von Mises effective stress
       double kappa, //!< bulk modulus
-      LINALG::Matrix<6,1>& N, // flow vector
+      LINALG::Matrix<NUM_STRESS_3D,1>& N, // flow vector
       double heaviside  //!< Heaviside function
       );
 
@@ -246,10 +249,10 @@ private:
 
   private:
 
-    /// my material parameters
+    //! my material parameters
     MAT::PAR::PlasticLinElast* params_;
 
-    /// plastic history vector
+    //! plastic history vector
     // old plastic strain at t_n
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
@@ -264,7 +267,7 @@ private:
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
 
 
-    /// indicator if #Initialize routine has been called
+    //! indicator if #Initialize routine has been called
     bool isinit_;
 
   };  // class PlasticLinElast : public Material
