@@ -109,6 +109,7 @@ namespace UTILS
   class FluidWkOptimizationWrapper;
   class FluidVolumetricSurfaceFlowWrapper;
   class TotalTractionCorrector;
+  class FluidInfNormScaling;
 #ifdef D_ARTNET
   class Fluid_couplingWrapperBase;
   template <class red_D_time_int>
@@ -883,6 +884,9 @@ protected:
 
   // flag for poroelasticity
   double poroelast_;
+
+  // possible inf-norm scaling of linear system / fluid matrix
+  RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
 private:
 

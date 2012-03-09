@@ -947,6 +947,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_meshtying.cpp
   src/drt_fluid/fluid_discret_extractor.cpp
   src/drt_fluid/fluid_utils.cpp
+  src/drt_fluid/fluid_utils_infnormscaling.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
   src/drt_fluid/fluid_windkessel_optimization.cpp

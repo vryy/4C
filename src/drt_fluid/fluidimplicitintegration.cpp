@@ -51,6 +51,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_adapter/adapter_topopt.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_opti/topopt_optimizer.H"
+#include "fluid_utils_infnormscaling.H"
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -663,6 +664,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                                                 output_,
                                                                 impedancebc_,
                                                                 dta_) );
+
+  if (params_.get<bool>("INFNORMSCALING"))
+  {
+    fluid_infnormscaling_ = rcp(new FLD::UTILS::FluidInfNormScaling(velpressplitter_));
+  }
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -1818,7 +1824,18 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (msht_!= INPAR::FLUID::no_meshtying)
         meshtying_->SolveMeshtying(solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
       else
+      {
+        // scale system prior to solver call
+        if (fluid_infnormscaling_!= Teuchos::null)
+          fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
+
+        // solve the system
         solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+
+        // unscale solution
+        if (fluid_infnormscaling_!= Teuchos::null)
+          fluid_infnormscaling_->UnscaleSolution(sysmat_, *incvel_,*residual_);
+      }
 
       solver_.ResetTolerance();
 
