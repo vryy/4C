@@ -97,23 +97,30 @@ private:
 
   static NStet5Type                                   instance_;
 
-  // map of row nodes adjacent to NStet5 elements
+  //! map of row nodes adjacent to NStet5 elements
   map<int,DRT::Node*>                                 noderids_;
 
-  // map of column NStet5 elements
+  //! map of column NStet5 elements
   map<int,DRT::ELEMENTS::NStet5*>                     elecids_;
 
-  // nodal stresses and strains for output
+  //! nodal stresses and strains for output
   Teuchos::RCP<Epetra_MultiVector>                    nstress_;
   Teuchos::RCP<Epetra_MultiVector>                    nstrain_;
 
-  // vector of elements adjacent to each row node
-  map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
-
-  // map of nodes forming a patch around a node
+  //! map of nodes forming a patch around a node (includes center node)
+  // map<centernodeid,map<nodeid,nodeptr> >
   map<int,map<int,DRT::Node*> >                       adjnode_;
 
-  // map of location vectors for patch around a node
+  //! vector of elements adjacent to each row node
+  // map<centernodeid,vector of ptrs to elements>
+  map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
+
+  //! map of subelements of adjacent elements
+  // map<centernodeid,map<eleid,vector of local subele numbers> >
+  map<int,map<int,vector<int> > >                     adjsubele_;
+
+  //! map of location vectors for patch around a node
+  // map<centernodeid,vector of degrees of freedom on patch including element dofs>
   map<int,vector<int> >                               adjlm_;
 
   void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet5*>& elecids,
@@ -135,7 +142,8 @@ private:
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
                         map<int,DRT::Node*>&            adjnode,
-                        vector<DRT::ELEMENTS::NStet5*>&  adjele,
+                        vector<DRT::ELEMENTS::NStet5*>& adjele,
+                        map<int,vector<int> >&          adjsubele,
                         vector<int>&                    lm,
                         const Epetra_Vector&            disp,
                         DRT::Discretization&            dis,

@@ -182,9 +182,10 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     const int  nodeLid = nodeL->Id();
 
     // standard quantities for all nodes
-    vector<DRT::ELEMENTS::NStet5*>& adjele  = adjele_[nodeLid];
-    map<int,DRT::Node*>&            adjnode = adjnode_[nodeLid];
-    vector<int>&                    lm      = adjlm_[nodeLid];
+    vector<DRT::ELEMENTS::NStet5*>&  adjele    = adjele_[nodeLid];
+    map<int,vector<int> >&           adjsubele = adjsubele_[nodeLid];
+    map<int,DRT::Node*>&             adjnode   = adjnode_[nodeLid];
+    vector<int>&                     lm        = adjlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
     if (action != "calc_struct_stress")
@@ -193,7 +194,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
       stiff.LightShape(ndofperpatch,ndofperpatch);
       force.LightSize(ndofperpatch);
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
-      NodalIntegration(&stiff,&force,adjnode,adjele,lm,*disp,dis,
+      NodalIntegration(&stiff,&force,adjnode,adjele,adjsubele,lm,*disp,dis,
                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
@@ -202,7 +203,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p,"iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      NodalIntegration(NULL,NULL,adjnode,adjele,lm,*disp,dis,
+      NodalIntegration(NULL,NULL,adjnode,adjele,adjsubele,lm,*disp,dis,
                        &nodalstress,&nodalstrain,iostress,iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
@@ -389,16 +390,18 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     }
   }
 
+  exit(0);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
+void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      stiff,
                                                 Epetra_SerialDenseVector*       force,
                                                 map<int,DRT::Node*>&            adjnode,
-                                                vector<DRT::ELEMENTS::NStet5*>&  adjele,
+                                                vector<DRT::ELEMENTS::NStet5*>& adjele,
+                                                map<int,vector<int> >&          adjsubele,
                                                 vector<int>&                    lm,
                                                 const Epetra_Vector&            disp,
                                                 DRT::Discretization&            dis,
@@ -437,6 +440,57 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     if (lid==-1) dserror("Cannot find degree of freedom on this proc");
     patchdisp[i] = disp[disp.Map().LID(lm[i])];
     patchdisp[i].diff(i,ndofinpatch);
+  }
+
+  //-----------------------------------------------------------------------
+  // build averaged F and volume of node (using sacado)
+  {
+  //double VnodeL = 0.0;
+  LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
+  vector<vector<vector<int> > > lmlm(neleinpatch);
+  for (int i=0; i<neleinpatch; ++i)
+  {
+    DRT::ELEMENTS::NStet5* ele = adjele[i];
+    vector<int>& subele = adjsubele[ele->Id()];
+    
+    printf("ele %d subele %d %d %d\n",ele->Id(),subele[0],subele[1],subele[2]);
+    
+    lmlm[i].resize((int)subele.size());
+    for (unsigned j=0; j<subele.size(); ++j)
+    {
+      const int   subeleid = subele[j];
+      const int*  sublm    = ele->SubLM(subeleid);
+      vector<int> elelm;
+      for (int k=0; k<4; ++k) // loop nodes of subelement and collect dofs
+      {
+        if (sublm[k]!=4) // node 4 is center node owned by the element
+        {
+          vector<int> dofs = dis.Dof(ele->Nodes()[sublm[k]]);
+          for (unsigned l=0; l<dofs.size(); ++l) elelm.push_back(dofs[l]);
+        }
+        else
+        {
+          vector<int> dofs = dis.Dof(ele);
+          for (unsigned l=0; l<dofs.size(); ++l) elelm.push_back(dofs[l]);
+        }
+      }
+      if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
+      printf("dofs "); for (int k=0; k<12; ++k) printf("%d ",elelm[k]); printf("\n");
+
+      // find position of elelm[k] in lm
+      // lmlm[i][j][k] : element i subelement j degree of freedom k, lmlm[i][j][k] position in patchdisp[0..ndofinpatch]
+      lmlm[i][j].resize(12);
+      for (int k=0; k<12; ++k)
+      {
+        vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[k]);
+        lmlm[i][j][k] = fool-lm.begin();
+      }
+
+
+    } // for (unsigned j=0; j<subele.size(); ++j)
+  } // for (int i=0; i<neleinpatch; ++i)
+
+
   }
 
   //-----------------------------------------------------------------------

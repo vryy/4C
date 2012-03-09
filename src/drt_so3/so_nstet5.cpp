@@ -376,15 +376,78 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
       for (unsigned j=0; j<dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
+    
+#if 1
+    printf("node %d nodal dofs: ",nodeidL);
+    for (int i=0; i<count; ++i) printf("%d ",lm[i]);
+    printf("\n");
+    int start = count;
+#endif
+    
     // add dofs of center nodes from elements. These appear as element dofs
     for (unsigned j=0; j<myadjele.size(); ++j)
     {
       const vector<int>& dofs = dis.Dof(myadjele[j]);
-      printf("element %d ndof %d\n",myadjele[j]->Id(),(int)dofs.size());
       for (unsigned j=0; j<dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
+    
+#if 1
+    printf("node %d ele   dofs: ",nodeidL);
+    for (int i=start; i<count; ++i) printf("%d ",lm[i]);
+    printf("\n\n");
+#endif    
+    
     adjlm[nodeidL] = lm;
+
+    // for each adjele, find out which subelements I participate in
+    map<int,vector<int> > masterele;
+    for (unsigned j=0; j<myadjele.size(); ++j)
+    {
+      DRT::ELEMENTS::NStet5* ele = myadjele[j];
+      bool foundit = false;
+      for (int i=0; i<ele->NumNode(); ++i)
+      {
+        if (ele->Nodes()[i]->Id() == nodeL->Id())
+        {
+          // found the center node on the element
+          // local to the element, its node i
+          foundit = true;
+          // determine subelements node i is attached to
+          // its attached to definitely 3 out of 4 subelements
+          vector<int> subele;
+          for (int k=0; k<4; ++k)
+          {
+            const int* sublm = ele->SubLM(k); // subelement k
+            for (int l=0; l<3; ++l) // the first 3 nodes of the subelement
+              if (sublm[l] == i)
+              {
+                subele.push_back(k);
+                break;
+              }
+          }
+          if ((int)subele.size()!=3) dserror("Node not attached to exactly 3 subelements");
+#if 1
+          printf("node %d ele %d subele.size %d :",nodeidL,ele->Id(),(int)subele.size());
+          for (int l=0; l<(int)subele.size(); ++l) printf("%d ",subele[l]);
+          printf("\n");
+#endif
+
+          masterele[ele->Id()] = subele;
+          
+          // no longer need to look at this element
+          break; 
+        } 
+      }
+      if (!foundit) dserror("Weired, this adjele seems not attached to me");
+    } // for (unsigned j=0; j<myadjele.size(); ++j)
+    if (masterele.size() != myadjele.size()) dserror("subelement connectivity wrong");
+
+    adjsubele_[nodeidL] = masterele;
+
+#if 1
+    printf("\n");
+#endif
   } // for (node=noderids.begin(); node != noderids.end(); ++node)
   return;
 }
