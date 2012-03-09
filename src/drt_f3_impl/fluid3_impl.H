@@ -219,6 +219,19 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&  Cuiui
       );
 
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 * ele,
+                                         DRT::Discretization & dis,
+                                         const std::vector<int> & lm,
+                                         Epetra_SerialDenseVector&  elevec1_epetra,
+                                         const DRT::UTILS::GaussIntegration & intpoints
+      );
+
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 * ele,
+                                         DRT::Discretization & dis,
+                                         const std::vector<int> & lm,
+                                         Epetra_SerialDenseVector&  elevec1_epetra
+      );
+
     virtual void ElementXfemInterfaceNitsche( DRT::ELEMENTS::Fluid3 * ele,
                                        DRT::Discretization & dis,
                                        const std::vector<int> & lm,

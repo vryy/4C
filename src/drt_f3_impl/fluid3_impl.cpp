@@ -14872,8 +14872,66 @@ void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterfaceNitscheTwoSided(
   }
 }
 
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalculateContinuityXFEM(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  const DRT::UTILS::GaussIntegration & intpoints
+  )
+{
+  LINALG::Matrix<(nsd_+1)*nen_,1> elevec1(elevec1_epetra,true);
+  int eid = ele->Id();
 
+  //------------------------------------------------------------------------
+  //  start loop over integration points
+  //------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
+    for(int ui=0; ui<nen_; ++ui)
+    {
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        const int fui = (nsd_+1)*ui;
+        /* continuity term */
+        /*
+             /           \
+            |             |
+            | nabla o Du  |
+            |             |
+             \           /
+        */
+
+        elevec1(fui+idim) += fac_*derxy_(idim,ui);
+      }
+    }
+
+  }
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalculateContinuityXFEM(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+
+  CalculateContinuityXFEM(ele,
+                          dis,
+                          lm,
+                          elevec1_epetra,
+                          intpoints_);
+}
 
 /*----------------------------------------------------------------------*
  * evaluation of system matrix and residual for porous flow (1)

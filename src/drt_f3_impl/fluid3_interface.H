@@ -253,6 +253,19 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&  Cuiui
       ) = 0;
 
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 * ele,
+                                         DRT::Discretization & dis,
+                                         const std::vector<int> & lm,
+                                         Epetra_SerialDenseVector&  elevec1_epetra,
+                                         const DRT::UTILS::GaussIntegration & intpoints
+     ) = 0;
+
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 * ele,
+                                         DRT::Discretization & dis,
+                                         const std::vector<int> & lm,
+                                         Epetra_SerialDenseVector&  elevec1_epetra
+     ) = 0;
+
 //
 //    /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
 //    virtual void ElementXfemInterfaceNeumann( DRT::ELEMENTS::Fluid3 * ele,

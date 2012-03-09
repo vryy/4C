@@ -1846,7 +1846,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
   if (alefluid_)
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
-                                                                              xfem_timeintapproach_));
+                                                                              xfem_timeintapproach_,params_));
 }
 // -------------------------------------------------------------------
 //
@@ -2107,7 +2107,6 @@ void FLD::XFluidFluid::NonlinearSolve()
   dtsolve_  = 0.0;
   dtele_    = 0.0;
   dtfilter_ = 0.0;
-
 
 
   if (myrank_ == 0)
@@ -2854,6 +2853,13 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,disp);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccn_,disp);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnp_,disp);
+
+//       //enforce incompressibility
+//       xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
+//       // hier wizard in tn+1
+//       xfluidfluid_timeint_->EnforceIncompressibility(bgdis_,state_->wizard_,state_->velnp_);
+
+
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
     // the enriched values are not projected from the embedded fluid anymore.

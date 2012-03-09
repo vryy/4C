@@ -41,7 +41,8 @@ public:
     const RCP<DRT::Discretization> embdis,
     RCP<XFEM::FluidWizard>         wizard,
     int                            step,
-    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach
+    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
+    const ParameterList&              params
     );
 
   //! destructor
@@ -57,6 +58,7 @@ public:
 
   // Save the old state
   void SaveBgNodeMaps();
+
 
   int SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
                                  RCP<XFEM::FluidWizard>   wizard);
@@ -102,6 +104,16 @@ public:
 
   void GmshOutput(const RCP<DRT::Discretization>        bgdis);
 
+  void PatchelementForIncompressibility(const RCP<DRT::Discretization>     bgdis,
+                                        XFEM::FluidWizard                  wizard_n,
+                                        XFEM::FluidWizard                  wizard_np,
+                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+
+  void EnforceIncompressibility(const RCP<DRT::Discretization>  bgdis,
+                                XFEM::FluidWizard               wizard,
+                                Teuchos::RCP<Epetra_Vector>     initialvel);
+
+
 //  void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> &
 //  patchboxes);
 
@@ -124,6 +136,8 @@ public:
   // vectos
   std::map<int, std::vector< std::vector< int > > > parenteletondsset_;
 
+  std::set<int> projectednodeids_;
+
   const Epetra_Map* currentbgdofmap_;
   const Epetra_Map* oldbgdofmap_;
 
@@ -132,6 +146,17 @@ public:
   bool samemaps_;
 
   enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
+
+  // elements of the incompressibility patch
+  vector<int> incompelementidsAllproc_;
+
+  // Incompressibilitypatch dofrowmap
+  // map of all dofs of incompressibility patch
+  Teuchos::RCP<const Epetra_Map>  incompressibilitydofrowmap_;
+  // map of all velcoity-dofs of incompressibility patch (no pressure)
+  Teuchos::RCP<const Epetra_Map>  incompressibilityveldofrowmap_;
+
+  Teuchos::ParameterList        params_;
 
   int step_;
 };
