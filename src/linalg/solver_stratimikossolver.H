@@ -8,6 +8,8 @@
 #ifndef SOLVER_STRATIMIKOSSOLVER_H_
 #define SOLVER_STRATIMIKOSSOLVER_H_
 
+#ifdef HAVE_Stratimikos
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_Comm.hpp"
@@ -69,5 +71,7 @@ namespace LINALG
     };
   }
 }
+
+#endif // #ifdef HAVE_Stratimikos
 
 #endif /* SOLVER_STRATIMIKOSSOLVER_H_ */

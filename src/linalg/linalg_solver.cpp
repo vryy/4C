@@ -264,7 +264,11 @@ void LINALG::Solver::Setup(
     }
     else if ("stratimikos" == solvertype)
     {
+#ifdef HAVE_Stratimikos
       solver_ = Teuchos::rcp( new LINALG::SOLVER::StratimikosSolver(comm_, Params(), outfile_) );
+#else
+      dserror("no Stratimikos solvers available. Please add Stratimikos to your configuration.");
+#endif
     }
     else if ("klu"    ==solvertype or
              "umfpack"==solvertype or

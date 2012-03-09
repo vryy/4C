@@ -7,6 +7,10 @@
 
 #ifdef HAVE_TEKO
 
+#ifndef HAVE_Stratimikos
+#error "Stratimikos is needed by Teko. Please add Stratimikos to your configuration."
+#endif
+
 #include "../drt_lib/drt_dserror.H"
 #include "solver_tekopreconditioner.H"
 

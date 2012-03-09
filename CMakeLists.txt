@@ -94,7 +94,7 @@ if (TRILINOS_DEV)
   add_definitions("-DTRILINOS_DEV")
 endif (TRILINOS_DEV)
 
-option (HAVE_TEKO "Turn on Teko support (needs Teko to be compiled within Trilinos" OFF)
+option (HAVE_TEKO "Turn on Teko support (needs Teko and Stratimikos to be compiled within Trilinos" OFF)
 if (HAVE_TEKO)
   add_definitions("-DHAVE_TEKO")
 endif (HAVE_TEKO)
@@ -103,6 +103,11 @@ option (HAVE_MueLu "Turn on MueLu support (needs MueLu to be compiled within Tri
 if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
+
+option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" ON)
+if (HAVE_Stratimikos)
+  add_definitions("-DHAVE_Stratimikos")
+endif (HAVE_Stratimikos)
 
 option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
 
