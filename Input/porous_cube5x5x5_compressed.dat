@@ -199,7 +199,6 @@ ML_SMOTIMES                     1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------PROBLEM TYP
-ADAPTIVE                        No
 NUMFIELD                        1
 PROBLEMTYP                      Poroelasticity
 RESTART                         0

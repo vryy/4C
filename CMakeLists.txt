@@ -89,11 +89,6 @@ if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
 endif (DEBUGCUTLIBRARY)
 
-option (STKADAPTIVE "adaptive meshes based on the stk library" OFF)
-if (STKADAPTIVE)
-  add_definitions("-DSTKADAPTIVE")
-endif (STKADAPTIVE)
-
 option (TRILINOS_DEV "Turn on advanced functionality from most recent Trilinos packages" OFF)
 if (TRILINOS_DEV)
   add_definitions("-DTRILINOS_DEV")
@@ -1045,7 +1040,6 @@ set(OBJS_BACI_MAIN
   src/global_full/global_cal_control.cpp
   src/global_full/global_control.cpp
   src/global_full/baci.cpp
-  src/drt_stk/stk_adaptive_main.cpp
 )
 set(OBJS_DRT_B3II_LIB
   src/drt_beam3ii/beam3ii.cpp
@@ -1294,46 +1288,6 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_manager.cpp
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
-)
-set(OBJS_STK_LIB
-  src/stk_lib/stk_discret.cpp
-  src/stk_lib/stk_discret_state.cpp
-  src/stk_lib/stk_dofset.cpp
-  src/stk_lib/stk_field_comm.cpp
-  src/stk_lib/stk_gnuplot.cpp
-  src/stk_lib/stk_iterator.cpp
-  src/stk_lib/stk_linearsystem.cpp
-)
-set(OBJS_STK_REFINE
-  src/stk_refine/stk_comm.cpp
-  src/stk_refine/stk_io.cpp
-  src/stk_refine/stk_mesh.cpp
-  src/stk_refine/stk_refine.cpp
-  src/stk_refine/stk_topology.cpp
-  src/stk_refine/stk_unrefine.cpp
-  src/stk_refine/stk_utils.cpp
-)
-set(OBJS_STK_FLUID
-  src/stk_fluid/fluid_errorestimate.cpp
-  src/stk_fluid/fluid_implicit.cpp
-  src/stk_fluid/fluid_problem.cpp
-  src/stk_fluid/fluid_resulttest.cpp
-)
-set(OBJS_STK_STRUCTURE
-  src/stk_structure/str_genalpha.cpp
-  src/stk_structure/str_problem.cpp
-  src/stk_structure/str_resulttest.cpp
-)
-set(OBJS_STK_FSI
-  src/stk_fsi/fsi_problem.cpp
-)
-set(OBJS_DRT_STK
-  src/drt_stk/stk_adaptive.cpp
-  src/drt_stk/stk_assemblestrategy.cpp
-  src/drt_stk/stk_errorestimate.cpp
-  src/drt_stk/stk_fluid.cpp
-  src/drt_stk/stk_fluidresulttest.cpp
-  src/drt_stk/stk_gmsh.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
@@ -1604,7 +1558,6 @@ add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
-add_library(alg_stk_fsi ${OBJS_STK_FSI})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 
 set(MULTIFIELD_LIBRARIES
@@ -1612,7 +1565,6 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_loma
   alg_tsi
-  alg_stk_fsi
   alg_stru_ale
   alg_poroelast
   alg_fs3i
@@ -1637,9 +1589,6 @@ add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 
-add_library(alg_stk_structure ${OBJS_STK_STRUCTURE})
-add_library(alg_stk_fluid ${OBJS_STK_FLUID})
-
 set(SINGLEFIELD_LIBRARIES
   alg_ale
   alg_artnet
@@ -1653,8 +1602,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_mlmc
   alg_thermo
   alg_contact
-  alg_stk_structure
-  alg_stk_fluid
   alg_fluid_adjoint
   )
 
@@ -1689,10 +1636,6 @@ add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
 
-add_library(stk_refine ${OBJS_STK_REFINE})
-add_library(stk_drt_lib ${OBJS_STK_LIB})
-add_library(drt_lib_stk ${OBJS_DRT_STK})
-
 set(SUPPORT_LIBRARIES
   drt_lib
   drt_lib_artnet 
@@ -1701,10 +1644,6 @@ set(SUPPORT_LIBRARIES
   drt_lib_statmech
   drt_lib_constraint
   drt_lib_contact
-  # STK based libraries
-  drt_lib_stk
-  stk_drt_lib
-  stk_refine
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_potential
@@ -1796,38 +1735,6 @@ endif(NOT TRILINOS_DEV)
 
 #add_executable(graph_test ${OBJS_GRAPH_TEST})
 #target_link_libraries(graph_test ${Boost_LIBRARIES})
-
-if (STKADAPTIVE)
-
-  # Test programs based on stk
-
-  add_library(stk_test_utils tests/stk_test/stk_test_utils.cpp)
-
-  add_executable(stk_test_change_owner tests/stk_test/stk_test_change_owner.cpp)
-  target_link_libraries(stk_test_change_owner stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_change_owner COMMAND $<TARGET_FILE:stk_test_change_owner>)
-
-  add_executable(stk_test_corner1 tests/stk_test/stk_test_corner1.cpp)
-  target_link_libraries(stk_test_corner1 stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_corner1 COMMAND $<TARGET_FILE:stk_test_corner1>)
-
-  add_executable(stk_test_corner2 tests/stk_test/stk_test_corner2.cpp)
-  target_link_libraries(stk_test_corner2 stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_corner2 COMMAND $<TARGET_FILE:stk_test_corner2>)
-
-  add_executable(stk_test_ghosttoshared tests/stk_test/stk_test_ghosttoshared.cpp)
-  target_link_libraries(stk_test_ghosttoshared stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_ghosttoshared COMMAND $<TARGET_FILE:stk_test_ghosttoshared>)
-
-  add_executable(stk_test_ownership tests/stk_test/stk_test_ownership.cpp)
-  target_link_libraries(stk_test_ownership stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_ownership COMMAND $<TARGET_FILE:stk_test_ownership>)
-
-  add_executable(stk_test_ownership2 tests/stk_test/stk_test_ownership2.cpp)
-  target_link_libraries(stk_test_ownership2 stk_test_utils ${LIBRARIES})
-  add_test(NAME run_stk_test_ownership2 COMMAND $<TARGET_FILE:stk_test_ownership2>)
-
-endif (STKADAPTIVE)
 
 ###------------------------------------------------------------------ Test definitions
 

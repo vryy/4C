@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file
-\brief
+\file global_cal_control.cpp
+\brief routine to control execution phase
 
 <pre>
 Maintainer: Michael Gee
@@ -13,7 +13,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
 
-/* header for DRT style input */
 #include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
@@ -31,20 +30,13 @@ Maintainer: Michael Gee
 #include "../drt_stru_ale/stru_ale_dyn.H"
 #include "../drt_poroelast/poroelast.H"
 
-#include "../drt_stk/stk_adaptive_main.H"
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-  if ( genprob.adaptive )
-  {
-    adaptive_main();
-  }
-  else
-  {
-
+  // choose the entry-routine depending on the problem type
   switch (genprob.probtyp)
   {
     case prb_structure:
@@ -145,7 +137,6 @@ void ntacal()
     default:
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
       break;
-  }
   }
 
 }

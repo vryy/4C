@@ -278,9 +278,6 @@ void DRT::Problem::InputControl()
       dserror("Restart flags in input file and command line are non-zero and different!");
   }
 
-  // If we have an adaptive mesh, things are totally different.
-  genprob.adaptive       = DRT::INPUT::IntegralValue<int>(type,"ADAPTIVE");
-
   // set field numbers depending on problem type and numfld
   switch (genprob.probtyp)
   {
