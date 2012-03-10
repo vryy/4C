@@ -164,6 +164,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
 
+  // set DofsPerNode in A operator
+  A->SetFixedBlockSize(nDofsPerNode);
+  
   // translate verbosity parameter
   Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
   if(verbosityLevel == 0)  eVerbLevel = Teuchos::VERB_NONE;
@@ -203,8 +206,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // Coalesce and drop factory with constant number of Dofs per freedom
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(segAFact,nspFact));
-  dropFact->SetFixedBlockSize(nDofsPerNode);
-
+  //dropFact->SetFixedBlockSize(nDofsPerNode);
+  
   // aggregation factory
   Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
   // note: this class does not derive from VerboseObject. Therefore we cannot use GetOStream

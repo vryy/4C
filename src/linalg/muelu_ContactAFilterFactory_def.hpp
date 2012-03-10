@@ -144,12 +144,15 @@ namespace MueLu {
         }
         indout.resize(nNonzeros);
         valout.resize(nNonzeros);
-
+	
         Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
     }
 
     Aout->fillComplete(Ain->getDomainMap(), Ain->getRangeMap());
 
+    // copy block size information
+    Aout->SetFixedBlockSize(Ain->GetFixedBlockSize());
+    
     GetOStream(Statistics0, 0) << "Nonzeros in " << varName_ << "(input): " << Ain->getGlobalNumEntries() << ", Nonzeros after filtering " << varName_ << " (parameter: " << threshold_ << "): " << Aout->getGlobalNumEntries() << std::endl;
 
     currentLevel.Set(varName_, Teuchos::rcp_dynamic_cast<OOperator>(Aout), this);
