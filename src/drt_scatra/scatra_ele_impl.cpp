@@ -10040,31 +10040,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatReinitialize(
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
         // compute matrix and rhs
-        if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_stabilized_convection)
-        {
-//      	     CalMatAndRHS_REINITIALIZATION(sys_mat,
-//                                      residual,
-//                                      fac,
-//                                      fssgd,
-//                                      timefac,
-//                                      alphaF,
-//                                      k/*,
-//                                      sign_phi0*/);
-          //TODO: penalty ansatz!!!
-        }
         if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_linear_convection)
         {
-//             // compute matrix and rhs
-//             CalMatAndRHS_LinearAdvection_REINITIALIZATION(sys_mat,
-//                                        residual,
-//                                        fac,
-//                                        k,
-//                                        ele,
-//                                        pseudo_timestep_size,
-//                                        mesh_size,
-//                                        penalty_interface_reinit,
-//                                        epsilon_bandwidth,
-//                                        smoothedSignType);
+
           dserror("should not be called here!");
         }
         else if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin)

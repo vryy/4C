@@ -1,13 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_tg.cpp
 
-\brief explicit Taylor Galerkin time integration scheme (TG) and implicit Characteristic Galerkin scheme (ICG)
+\brief  explicit Taylor Galerkin time integration scheme (TG) and implicit Characteristic Galerkin scheme (ICG)
+        just for the pure 1st order transport equation, not yet implemented for convections-diffusion equation
 
 <pre>
 Maintainer: Benedikt Schott
-			schott@lnm.mw.tum.de
-			http://www.lnm.mw.tum.de
-			089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -17,7 +18,6 @@ Maintainer: Benedikt Schott
 #include "scatra_timint_tg.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -36,7 +36,7 @@ SCATRA::TimIntTaylorGalerkin::TimIntTaylorGalerkin(
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output)
 {
   if(scatratype_ != INPAR::SCATRA::scatratype_levelset)
-	 dserror("Third order Taylor Galerkin timeintegration scheme should be used only for the 1D transport equation");
+	 dserror("Taylor Galerkin timeintegration scheme should be used only for the 1D level-set transport equation");
 
 
   // -------------------------------------------------------------------
@@ -47,7 +47,7 @@ SCATRA::TimIntTaylorGalerkin::TimIntTaylorGalerkin(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   //solution at time n-1, for level set problems
-  //TODO: only used for 2-step 3rd order taylor galerkin method
+  // only used for 2-step 3rd order taylor galerkin method
   phinm_  = LINALG::CreateVector(*dofrowmap,true);
 
   return;
@@ -62,41 +62,20 @@ SCATRA::TimIntTaylorGalerkin::~TimIntTaylorGalerkin()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                         schott 05/11 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntTaylorGalerkin::SetOldPartOfRighthandside()
-{
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | perform an explicit predictor step                      schott 05/11 |
+ | perform an explicit predictor step                         gjb 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::ExplicitPredictor()
 {
-  dserror("do we need an explicit predictor");
-
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | predict thermodynamic pressure and time derivative          vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::PredictThermPressure()
 {
-  // same-thermodynamic-pressure predictor (not required to be performed,
-  // since we just updated the thermodynamic pressure, and thus,
-  // thermpressnp_ = thermpressn_)
-
-  // same-thermodynamic-pressure-derivative predictor (currently not used)
-  //thermpressnp_ += dta_*thermpressdtn_;
-
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -125,7 +104,7 @@ void SCATRA::TimIntTaylorGalerkin::AddNeumannToResidual()
 
 
 /*----------------------------------------------------------------------*
- | compute potential Neumann inflow                        schott 05/11 |
+ | compute Neumann inflow terms                            schott 05/11 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
     RCP<LINALG::SparseOperator> matrix,
@@ -174,8 +153,7 @@ void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::AVM3Separation()
 {
-  dserror("adapt this function");
-
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -189,7 +167,6 @@ void SCATRA::TimIntTaylorGalerkin::AddSpecificTimeIntegrationParameters(
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);
   params.set("total time",time_);
-//  params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 
 
@@ -199,15 +176,7 @@ void SCATRA::TimIntTaylorGalerkin::AddSpecificTimeIntegrationParameters(
 
   if(reinitswitch_) discret_->SetState("phistart", phistart_);
 
-  if(timealgo_ == INPAR::SCATRA::timeint_tg4_leapfrog)
-  {
-    //=======================================================================
-    // do the first time step with Taylor Galerkin 3rd order
-    //=======================================================================
-    if(step_==1) params.set<int>("timealgo",INPAR::SCATRA::timeint_tg3);
-    else params.set<int>("timealgo",timealgo_);
-  }
-  else params.set<int>("timealgo",timealgo_);
+  params.set<int>("timealgo",timealgo_);
 
   return;
 }
@@ -218,7 +187,7 @@ void SCATRA::TimIntTaylorGalerkin::AddSpecificTimeIntegrationParameters(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::ComputeThermPressure()
 {
-	dserror("do not call this function");
+  dserror("not available for TaylorGalerkin time integration");
 }
 
 
@@ -227,8 +196,7 @@ void SCATRA::TimIntTaylorGalerkin::ComputeThermPressure()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::ComputeTimeDerivative()
 {
-  dserror("do not call this function");
-
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -238,8 +206,7 @@ void SCATRA::TimIntTaylorGalerkin::ComputeTimeDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::ComputeThermPressureTimeDerivative()
 {
-	  dserror("do not call this function");
-
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -265,8 +232,6 @@ void SCATRA::TimIntTaylorGalerkin::Update()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::UpdateReinit()
 {
-  // at the moment the same function as Update()
-  // for Taylor Galerkin methods we do not have to compute new time derivatives
 
   //phinm is needed for restart of level set problems
   phinm_ ->Update(1.0,*phin_,0.0);
@@ -282,8 +247,7 @@ void SCATRA::TimIntTaylorGalerkin::UpdateReinit()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::UpdateThermPressure()
 {
-	dserror("do not call this function");
-
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -293,7 +257,7 @@ void SCATRA::TimIntTaylorGalerkin::UpdateThermPressure()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::UpdateDensityElch()
 {
-	dserror("do not call this function");
+  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 
@@ -304,7 +268,6 @@ void SCATRA::TimIntTaylorGalerkin::UpdateDensityElch()
 void SCATRA::TimIntTaylorGalerkin::OutputRestart()
 {
   // additional state vectors that are needed for One-Step-Theta restart
-//  output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
 
   // phinm is needed for 2-step Taylor Galerkin methods and to reconstruct the interface
@@ -323,10 +286,9 @@ void SCATRA::TimIntTaylorGalerkin::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  // read state vectors that are needed for One-Step-Theta restart
+  // read state vectors that are needed
   reader.ReadVector(phinp_, "phinp");
   reader.ReadVector(phin_,  "phin");
-  reader.ReadVector(phidtn_,"phidtn");
 
   // phinm is needed for restart of level set problems
   reader.ReadVector(phinm_,  "phinm");
@@ -411,8 +373,7 @@ void SCATRA::TimIntTaylorGalerkin::SetPhin(Teuchos::RCP<Epetra_Vector> phireinit
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::CalcPhidtReinit()
 {
-	dserror("do not call this function");
-
+  dserror("do not call this function");
   return;
 }
 

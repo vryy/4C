@@ -3904,22 +3904,19 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   IntParameter("NUM_CONVEL_LAYERS",0,"number of layers around the interface which keep their computed convective velocity",&combustcontrolgfunc);
 
   /*----------------------------------------------------------------------*/
-  // schott 04/11
   Teuchos::ParameterList& combustcontrolpdereinit = combustcontrol.sublist("COMBUSTION PDE REINITIALIZATION",false,"");
 
   setStringToIntegralParameter<int>("REINIT_METHOD", "PDE_Based_Characteristic_Galerkin",
                                  "Type of reinitialization method",
                                  tuple<std::string>(
                                   "PDE_Based_Characteristic_Galerkin",
-                                  "PDE_Based_Stabilized_Convection",
                                   "PDE_Based_Linear_Convection",
                                   "None"),
                                 tuple<int>(
                                   INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin,
-                                  INPAR::SCATRA::reinitstrategy_pdebased_stabilized_convection,
                                   INPAR::SCATRA::reinitstrategy_pdebased_linear_convection,
                                   INPAR::SCATRA::reinitstrategy_none),
-                                  &combustcontrolpdereinit); // schott
+                                  &combustcontrolpdereinit);
 
   setStringToIntegralParameter<int>("REINIT_TIMEINTEGR","Taylor_Galerkin_2",
                                "Time Integration Scheme for PDE-based reinitialization",
@@ -3941,7 +3938,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                 tuple<int>(
                                   INPAR::SCATRA::reinit_stationarycheck_L1normintegrated,
                                   INPAR::SCATRA::reinit_stationarycheck_numsteps),
-                                  &combustcontrolpdereinit); // schott
+                                  &combustcontrolpdereinit);
 
   setStringToIntegralParameter<int>("SMOOTHED_SIGN_TYPE", "LinEtAl2005",
                                  "Type of check for stationary solution",
@@ -3955,7 +3952,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                   INPAR::SCATRA::signtype_Nagrath2005,
                                   INPAR::SCATRA::signtype_LinEtAl2005,
                                   INPAR::SCATRA::signtype_LinEtAl_normalized),
-                                  &combustcontrolpdereinit); // schott
+                                  &combustcontrolpdereinit);
 
   setStringToIntegralParameter<int>("PENALTY_METHOD", "None",
                                  "Type of interface penalizing",
@@ -3967,7 +3964,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                   INPAR::SCATRA::penalty_method_none,
                                   INPAR::SCATRA::penalty_method_intersection_points,
                                   INPAR::SCATRA::penalty_method_akkerman),
-                                  &combustcontrolpdereinit); // schott
+                                  &combustcontrolpdereinit);
 
   IntParameter("NUMPSEUDOSTEPS", 5, "number of pseudo time steps for pde based reinitialization", &combustcontrolpdereinit);
   DoubleParameter("PSEUDOTIMESTEP_FACTOR", 0.1, "factor for pseudo time step size for pde based reinitialization (factor*meshsize)", &combustcontrolpdereinit);

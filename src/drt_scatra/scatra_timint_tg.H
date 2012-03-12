@@ -1,13 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_timint_tg.H
 
-\brief explicit Taylor Galerkin time integration scheme (TG) and implicit Characteristic Galerkin scheme (ICG)
+\brief  explicit Taylor Galerkin time integration scheme (TG) and implicit Characteristic Galerkin scheme (ICG)
+        just for the pure 1st order transport equation, not yet implemented for convections-diffusion equation
 
 <pre>
 Maintainer: Benedikt Schott
-			schott@lnm.mw.tum.de
-			http://www.lnm.mw.tum.de
-			089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -25,156 +26,151 @@ class TimIntTaylorGalerkin : public ScaTraTimIntImpl
 {
 public:
 
-	  /// Standard Constructor
-	TimIntTaylorGalerkin(Teuchos::RCP<DRT::Discretization>       dis,
-	    Teuchos::RCP<LINALG::Solver>            solver,
-	    Teuchos::RCP<Teuchos::ParameterList>    params,
-	    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-	    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    /// Standard Constructor
+    TimIntTaylorGalerkin(Teuchos::RCP<DRT::Discretization>       dis,         ///< discretization
+                         Teuchos::RCP<LINALG::Solver>            solver,      ///< solver
+                         Teuchos::RCP<Teuchos::ParameterList>    params,      ///< time integration parameters
+                         Teuchos::RCP<Teuchos::ParameterList>    extraparams, ///< extra parameters
+                         Teuchos::RCP<IO::DiscretizationWriter>  output);     ///< output discretization writer
 
-	  /// Destructor
-	  virtual ~TimIntTaylorGalerkin();
+    /// Destructor
+    virtual ~TimIntTaylorGalerkin();
 
-	  /// Print information about current time step to screen (reimplementation for OST)
-	  virtual void PrintTimeStepInfo()
-	  {
-	    if (myrank_==0)
-	        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
-	               time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
-	    return;
-	  }
+    /// Print information about current time step to screen (reimplementation for OST)
+    virtual void PrintTimeStepInfo()
+    {
+      if (myrank_==0)
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
+            time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
+      return;
+    }
 
-	  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
-	  void PredictThermPressure();
+    /// predict thermodynamic pressure and time derivative for low-Mach-number flow
+    void PredictThermPressure();
 
-	  /// compute values at intermediate time steps (required for generalized-alpha)
-	  void ComputeIntermediateValues(){return;};
+    /// compute values at intermediate time steps (required for generalized-alpha)
+    void ComputeIntermediateValues(){return;};
 
-	  /// compute values of thermodynamic pressure at intermediate time steps (required for generalized-alpha)
-	  void ComputeThermPressureIntermediateValues(){return;};
+    /// compute values of thermodynamic pressure at intermediate time steps (required for generalized-alpha)
+    void ComputeThermPressureIntermediateValues(){return;};
 
-	  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-	  void ComputeThermPressure();
+    /// compute thermodynamic pressure and time derivative for low-Mach-number flow
+    void ComputeThermPressure();
 
-	  ///  compute scalar time derivative
-	  void ComputeTimeDerivative();
+    ///  compute scalar time derivative
+    void ComputeTimeDerivative();
 
-	  ///  compute time derivative of thermodynamic pressure
-	  void ComputeThermPressureTimeDerivative();
+    ///  compute time derivative of thermodynamic pressure
+    void ComputeThermPressureTimeDerivative();
 
-	  /// Update the solution after convergence of the nonlinear iteration.
-	  /// Current solution becomes old solution of next timestep.
-	  void Update();
+    /// Update the solution after convergence of the nonlinear iteration.
+    /// Current solution becomes old solution of next timestep.
+    void Update();
 
-	  /// update the solution after reinitialization
-	  void UpdateReinit();
+    /// update the solution after reinitialization
+    void UpdateReinit();
 
-	  /// update thermodynamic pressure and time derivative for low-Mach-number flow
-	  void UpdateThermPressure();
+    /// update thermodynamic pressure and time derivative for low-Mach-number flow
+    void UpdateThermPressure();
 
-	  /// update density field for ELCH natural convection
-	  void UpdateDensityElch();
+    /// update density field for ELCH natural convection
+    void UpdateDensityElch();
 
-	  /// read restart data
-	  void ReadRestart(int step);
+    /// read restart data
+    void ReadRestart(int step);
 
-	  // routine to return scalar field phi at time step n-1
-	  Teuchos::RCP<Epetra_Vector> Phinm() { return phinm_; }
+    // routine to return scalar field phi at time step n-1
+    Teuchos::RCP<Epetra_Vector> Phinm() { return phinm_; }
 
-	  /// routine to return scalar field phi at time step n+alpha_F
-	  Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
+    /// routine to return scalar field phi at time step n+alpha_F
+    Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
 
-	  /// routine to return scalar field phi at time step n+alpha_M
-	  Teuchos::RCP<Epetra_Vector> Phiam(){return Teuchos::null;}
+    /// routine to return scalar field phi at time step n+alpha_M
+    Teuchos::RCP<Epetra_Vector> Phiam(){return Teuchos::null;}
 
-	  /// routine to return time derivative of scalar field phi at time step n+alpha_M
-	  Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
+    /// routine to return time derivative of scalar field phi at time step n+alpha_M
+    Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
 
-	  /// routine to return fine-scale scalar field fsphi at time step n+1
-	  virtual Teuchos::RCP<Epetra_Vector> FsPhi() { return fsphinp_; };
+    /// routine to return fine-scale scalar field fsphi at time step n+1
+    virtual Teuchos::RCP<Epetra_Vector> FsPhi() { return fsphinp_; };
 
-	  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
-	  double ThermPressAf(){return 1.0;}
+    /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
+    double ThermPressAf(){return 1.0;}
 
-	  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
-	  double ThermPressAm(){return 1.0;}
+    /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+    double ThermPressAm(){return 1.0;}
 
-          /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
-          double ThermPressDtAf(){return 0.0;}
+    /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
+    double ThermPressDtAf(){return 0.0;}
 
-          /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
-          double ThermPressDtAm(){return 0.0;}
+    /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
+    double ThermPressDtAm(){return 0.0;}
 
-	  /// redistribute the scatra discretization and vectors according to nodegraph
-	  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+    /// redistribute the scatra discretization and vectors according to nodegraph
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
 
 
-	protected:
+protected:
 
-	  /// don't want = operator and cctor
-	  TimIntTaylorGalerkin operator = (const TimIntTaylorGalerkin& old);
+    /// don't want = operator and cctor
+    TimIntTaylorGalerkin operator = (const TimIntTaylorGalerkin& old);
 
-	  /// copy constructor
-	  TimIntTaylorGalerkin (const TimIntTaylorGalerkin& old);
+    /// copy constructor
+    TimIntTaylorGalerkin (const TimIntTaylorGalerkin& old);
 
-//	  /// verify if given coefficients are in the admissable range;
-//	  void VerifyCoeff();
+    /// Initialization procedure before the first time step is done
+    void PrepareFirstTimeStep();
 
-	  /// Initialization procedure before the first time step is done
-	  void PrepareFirstTimeStep();
+    /// Set the part of the righthandside belonging to the last timestep.
+    void SetOldPartOfRighthandside(){ dserror("not available for TaylorGalerkin time integration"); }
 
-	  /// Set the part of the righthandside belonging to the last timestep.
-	  void SetOldPartOfRighthandside();
+    /// do explicit predictor step (-> better starting value for nonlinear solver)
+    void ExplicitPredictor();
 
-	  /// do explicit predictor step (-> better starting value for nonlinear solver)
-	  void ExplicitPredictor();
+    /// set time for evaluation of Neumann boundary conditions
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-	  /// set time for evaluation of Neumann boundary conditions
-	  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    /// add actual Neumann loads with time factor
+    void AddNeumannToResidual();
 
-	  /// add actual Neumann loads with time factor
-	  void AddNeumannToResidual();
+    /// add actual Neumann inflow loads
+    void ComputeNeumannInflowTG(
+        Teuchos::RCP<LINALG::SparseOperator> matrix,
+        Teuchos::RCP<Epetra_Vector>          rhs
+        );
 
-	  /// add actual Neumann inflow loads
-	  void ComputeNeumannInflowTG(
-	      Teuchos::RCP<LINALG::SparseOperator> matrix,
-	      Teuchos::RCP<Epetra_Vector>          rhs);
+    /// AVM3-based scale separation
+    void AVM3Separation();
 
-	  /// AVM3-based scale separation
-	  void AVM3Separation();
+    /// add parameters specific for time-integration scheme
+    void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
 
-	  /// add parameters specific for time-integration scheme
-	  void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
+    /// write additional data required for restart
+    void OutputRestart();
 
-	  /// write additional data required for restart
-	  void OutputRestart();
+    /// return the right time-scaling-factor for the true residual
+    double ResidualScaling() const { return 1.0; }
 
-	  /// return the right time-scaling-factor for the true residual
-	  double ResidualScaling() const { return 1.0; }
+    /// update time-dependent electrode state variables at the end of an time step
+    void ElectrodeKineticsTimeUpdate(const bool init = false);
 
-	  /// update time-dependent electrode state variables at the end of an time step
-	  void ElectrodeKineticsTimeUpdate(const bool init = false);
+    /// set old part of RHS for galvanostatic equation
+    void ElectrodeKineticsSetOldPartOfRHS();
 
-	  /// set old part of RHS for galvanostatic equation
-	  void ElectrodeKineticsSetOldPartOfRHS();
+    /// routine to reset phi vector due to reinitialization for OST scheme
+    void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);
 
-	  /// routine to reset phi vector due to reinitialization for OST scheme
-	  void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);
+    /// calcuate phidt after reinitialization for OST scheme
+    void CalcPhidtReinit();
 
-	  /// calcuate phidt after reinitialization for OST scheme
-	  void CalcPhidtReinit();
+private:
 
-	private:
+    /// fine-scale solution vector at time n+1
+    Teuchos::RCP<Epetra_Vector>  fsphinp_;
 
-//	  /// time factor for one-step-theta/BDF2 time integration
-//	  double theta_;
-
-	  /// fine-scale solution vector at time n+1
-	  Teuchos::RCP<Epetra_Vector>  fsphinp_;
-
-	  /// solution vector phi at time n-1
-	  Teuchos::RCP<Epetra_Vector>    phinm_;
+    /// solution vector phi at time n-1
+    Teuchos::RCP<Epetra_Vector>    phinm_;
 
 
 }; // class TimIntTaylorGalerkin

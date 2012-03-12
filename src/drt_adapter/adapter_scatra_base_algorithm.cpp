@@ -27,8 +27,7 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 #include "../drt_scatra/scatra_timint_genalpha.H"
-#include "../drt_scatra/scatra_timint_tg.H"             //schott 05/11
-//#include "../drt_scatra/scatra_timint_reinitialization.H"       //schott 05/11
+#include "../drt_scatra/scatra_timint_tg.H"
 #include "../drt_scatra/scatra_resulttest.H"
 
 /*----------------------------------------------------------------------*
@@ -247,31 +246,13 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
-   case INPAR::SCATRA::timeint_tg2: //schott 05/11
-   {
-     // create instance of time integration class (call the constructor)
-	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_tg2_LW: //schott 05/11
-   {
-     // create instance of time integration class (call the constructor)
-	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_tg3: //schott 05/11
-   {
-     // create instance of time integration class (call the constructor)
-	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_tg4_leapfrog: //schott 05/11
+   case INPAR::SCATRA::timeint_tg2:
    {
      // create instance of time integration class (call the constructor)
      scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
-   case INPAR::SCATRA::timeint_tg4_onestep: //schott 05/11
+   case INPAR::SCATRA::timeint_tg3:
    {
      // create instance of time integration class (call the constructor)
      scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
@@ -285,13 +266,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
    if (genprob.probtyp == prb_combust)
    {
 
-	   //TODO: Do this within the Combust Algorithm !!!
-
 	   // -------------------------------------------------------------------
 	   // create a solver
 	   // -------------------------------------------------------------------
 	   RCP<LINALG::Solver> solver_reinit =
-	     rcp(new LINALG::Solver(solverparams, //DRT::Problem::Instance()->ScalarTransportSolverParams(),
+	     rcp(new LINALG::Solver(solverparams,
 	                            actdis->Comm(),
 	                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 	   actdis->ComputeNullSpaceIfNecessary(solver_reinit->Params());
@@ -306,15 +285,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      // make a copy (inside an rcp) containing also all sublists
      RCP<ParameterList> reinittimeparams= rcp(new ParameterList(scatradyn));
 
-
-//     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"REINIT_TIMEINTEGR")
      // -------------------------------------------------------------------
      // overrule certain parameters for coupled problems
      // -------------------------------------------------------------------
-//     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>
-     // the default time step size
-//     reinittimeparams->set<int>      ("TIMEINTEGR"  ,DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(prbdyn.sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR"));
-     // the default time step size
      reinittimeparams->set<double>   ("TIMESTEP"    ,prbdyn.sublist("COMBUSTION PDE REINITIALIZATION").get<double>("PSEUDOTIMESTEP_FACTOR"));
      // maximum simulation time
      reinittimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));

@@ -11,9 +11,9 @@
 
      o generalized-alpha time-integration scheme
 
-     o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
+     o implicit characteristic Galerkin (ICG) time-integration scheme (only for level-set transport)
 
-     o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
+     o explicit taylor galerkin (TG) time-integration schemes (only for level-set transport)
 
      and stationary solver.
 
@@ -94,7 +94,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   isale_    (extraparams_->get<bool>("isale")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
-  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false)),
   stepmax_  (params_->get<int>("NUMSTEP")),
   maxtime_  (params_->get<double>("MAXTIME")),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
@@ -122,7 +121,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   c_(Teuchos::null),
   msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING")),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
-  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
+  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false))
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -176,7 +176,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  // schott:
   // do not apply periodic boundary conditions for the second scatra reinit object
   // then again a new redistribution of the redistributed scatra discretization would be performed
   if(reinitswitch_ == false)
@@ -605,20 +604,11 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
   case INPAR::SCATRA::timeint_gen_alpha :
     return "  Gen. Alpha  ";
     break;
-  case INPAR::SCATRA::timeint_tg2_LW :    //schott
-    return "  Taylor Galerkin Lax-Wendroff 2rd order  ";
-    break;
-  case INPAR::SCATRA::timeint_tg2 :    //schott
+  case INPAR::SCATRA::timeint_tg2 :
     return "  Taylor Galerkin 2rd order  ";
     break;
-  case INPAR::SCATRA::timeint_tg3 :    //schott
+  case INPAR::SCATRA::timeint_tg3 :
     return "  Taylor Galerkin 3rd order  ";
-    break;
-  case INPAR::SCATRA::timeint_tg4_leapfrog :    //schott
-    return "  Taylor Galerkin Leapfrog 4rd order  ";
-    break;
-  case INPAR::SCATRA::timeint_tg4_onestep :    //schott
-    return "  Taylor Galerkin 4rd order one step ";
     break;
   default :
     dserror("Cannot cope with name enum %d", term);
@@ -1657,10 +1647,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     eleparams.set("action","reinitialize_levelset");
   }
   else if(timealgo_ == INPAR::SCATRA::timeint_tg2
-       or timealgo_ == INPAR::SCATRA::timeint_tg2_LW
-       or timealgo_ == INPAR::SCATRA::timeint_tg3
-       or timealgo_ == INPAR::SCATRA::timeint_tg4_leapfrog
-       or timealgo_ == INPAR::SCATRA::timeint_tg4_onestep)
+       or timealgo_ == INPAR::SCATRA::timeint_tg3)
   {
     // taylor galerkin transport of levelset
     eleparams.set("action","levelset_TaylorGalerkin");

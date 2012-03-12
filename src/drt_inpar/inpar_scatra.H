@@ -186,7 +186,6 @@ namespace INPAR
     enum ReinitializationStrategy
     {
       reinitstrategy_pdebased_characteristic_galerkin,
-      reinitstrategy_pdebased_stabilized_convection,
       reinitstrategy_pdebased_linear_convection,
       reinitstrategy_none,
     };

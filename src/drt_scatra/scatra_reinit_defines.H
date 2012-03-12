@@ -1,10 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file scatra_reinit_defines.H
 
-  \brief preprocessor define flags for reinitialization problems
+  \brief preprocessor define flags for reinitialization via solving an advection equation
+         only used for level set problems
 
 <pre>
-Maintainer: Schott Benedikt
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
@@ -38,5 +42,5 @@ Maintainer: Schott Benedikt
 
 
 
-#endif // #ifndef COMBUST_DEFINES_H
+#endif // #ifdef SCATRA_REINIT_DEFINES_H
 #endif // #ifdef CCADISCRET

@@ -108,13 +108,7 @@ public:
                time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
   }
 
-  /// print information about current pseudo time step to screen
-  virtual void PrintPseudoTimeStepInfoReinit()
-  {
-    if (myrank_==0)
-      printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
-          dta_,MethodTitle().c_str(),step_,stepmax_);
-  }
+
 
   /// increment time and step value
   void SetTimeStep(double time = 0.0, int step = 0)
@@ -123,14 +117,8 @@ public:
     step_ = step;
   }
 
-  /// evaluate integrated error norm for reinitialization stop criterion
-  double EvaluateGradientNormError();
-
   /// do time integration (time loop)
   void TimeLoop();
-
-  /// do time integration for reinitialization (time loop)
-  void TimeLoop_Reinit();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -153,31 +141,8 @@ public:
   /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
-  /// update the solution after reinitialization
-  virtual void UpdateReinit() = 0;
-
   /// update configuration and output to file
   void Output();
-
-  /// output to file for reinitialized scatra field
-  void OutputReinit(const int globalstep, const double globaltime);
-
-  /// output reinitialization steps
-  void OutputReinitializationSteps();
-
-  /// write state vectors to Gmsh postprocessing files
-  void OutputToGmshReinitializationSteps(
-      const int reinit_step,
-      const double reinit_pseudo_time
-  ) const;
-
-  /// write state vectors (phinp) to Gmsh postprocessing files
-  void OutputToGmshReinit(
-      const int globalstep,
-      const double globaltime,
-      const int step,
-      const double time
-  ) const;
 
   /// Access output object
   IO::DiscretizationWriter& DiscWriter() { return *output_; }
@@ -195,11 +160,8 @@ public:
       Teuchos::RCP<const Epetra_Vector> acc,     ///< acceleration vector
       Teuchos::RCP<const Epetra_Vector> vel,     ///< velocity vector
       Teuchos::RCP<const Epetra_Vector> fsvel,   ///< fine-scale velocity vector
-      Teuchos::RCP<const DRT::DofSet>   dofset,
+      Teuchos::RCP<const DRT::DofSet>   dofset,  ///< dofset pointer
       Teuchos::RCP<DRT::Discretization> dis);    ///< fluid/structure discretization
-
-  /// call different reinitialization techniques based on solving the sussman equation
-  bool CallReinitialization();
 
  /// apply moving mesh data
  void ApplyMeshMovement(
@@ -289,16 +251,6 @@ public:
 
   /// routine to reset phi vector due to reinitialization for OST scheme
   virtual void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) = 0;
-
-  /// routine to set phi vectors due to reinitialization
-  void SetPhinp(Teuchos::RCP<Epetra_Vector> phinp);
-
-  /// routine to set phi vectors due to reinitialization
-  void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
-
-  /// routine to check for steady state due to reinitialization
-  void CheckSteadyState(double&    Gradient_Error_old,
-  		                bool&      STOP);
 
   /// output of all electrode information to screen and/or file (default: 2x true)
   void OutputElectrodeInfo(bool printtoscreen = true, bool printtofile = true);
@@ -428,6 +380,30 @@ public:
   /// redistribute the scatra discretization and vectors according to nodegraph
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
+
+  //! @name functions used for reinitialization of level sets
+
+  /// call different reinitialization techniques based on solving the sussman equation
+  bool CallReinitialization();
+
+  /// output to file for reinitialized scatra field
+  void OutputReinit(const int globalstep, const double globaltime);
+
+  /// do time integration for reinitialization (time loop)
+  void TimeLoop_Reinit();
+
+  /// update the solution after reinitialization
+  virtual void UpdateReinit() = 0;
+
+  /// routine to set phi vectors due to reinitialization
+  void SetPhinp(Teuchos::RCP<Epetra_Vector> phinp);
+
+  /// routine to set phi vectors due to reinitialization
+  void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
+
+  //@}
+
+
 protected:
 
   /// don't want = operator and cctor
@@ -451,9 +427,6 @@ protected:
     step_ += 1;
     time_ += dta_;
   }
-
-  /// calculate phidt after reinitialization for OST scheme
-  virtual void CalcPhidtReinit() = 0;
 
   /// calculate initial field for electric potential based on ion concentrations (ELCH)
   void CalcInitialPotentialField();
@@ -511,17 +484,8 @@ protected:
   /// call elements to calculate system matrix and rhs and assemble
   void AssembleMatAndRHS();
 
-  /// call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
-  void AssembleMatAndRHS_Boundary();
-
   /// apply Dirichlet boundary conditions
   void ApplyDirichletToSystem();
-
-  /// output of all reinitialization information to screen and/or file
-  void ReinitializeInfo(bool printtoscreen = true, bool printtofile = true); //schott
-
-  /// add reinitialization specific parameters
-  void AddReinitializationParameters(Teuchos::ParameterList& params);
 
   /// solve linear system
   void LinearSolve();
@@ -625,6 +589,59 @@ protected:
       const int funcno ///< number of spatial function that defines the vector field
       );
 
+  //! @name functions used for reinitialization of level sets
+
+  /// add reinitialization specific parameters
+  void AddReinitializationParameters(Teuchos::ParameterList& params);
+
+  /// call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
+  void AssembleMatAndRHS_Boundary();
+
+  /// calculate phidt after reinitialization for OST scheme
+  virtual void CalcPhidtReinit() = 0;
+
+  /// routine to check for steady state due to reinitialization
+  void CheckSteadyState(
+                         double&    Gradient_Error_old, ///< gradient error at old time step
+                         bool&      STOP                ///< has the reinit procedure to be stopped
+                         );
+
+  /// evaluate integrated error norm for reinitialization stop criterion
+  double EvaluateGradientNormError();
+
+
+  /// output reinitialization steps
+  void OutputReinitializationSteps();
+
+  /// write state vectors to Gmsh postprocessing files
+  void OutputToGmshReinitializationSteps(
+       const int reinit_step,
+       const double reinit_pseudo_time
+  ) const;
+
+  /// write state vectors (phinp) to Gmsh postprocessing files
+  void OutputToGmshReinit(
+       const int globalstep,
+       const double globaltime,
+       const int step,
+       const double time
+  ) const;
+
+  /// print information about current pseudo time step to screen
+  virtual void PrintPseudoTimeStepInfoReinit()
+  {
+    if (myrank_==0)
+      printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
+          dta_,MethodTitle().c_str(),step_,stepmax_);
+  }
+
+  /// output of all reinitialization information to screen and/or file
+  void ReinitializeInfo(bool printtoscreen = true, bool printtofile = true);
+
+
+  //@}
+
+
   /// the scalar transport discretization
   Teuchos::RCP<DRT::Discretization>   discret_;
   /// the solver
@@ -657,12 +674,6 @@ protected:
 
   /// flag for type of scalar transport problem
   INPAR::SCATRA::ScaTraType scatratype_;
-
-  /// boolian if scatra object is used for level set reinitialization
-  bool reinitswitch_;
-
-  /// boolian if a reinitialization step is accepted or not
-  bool reinitialization_accepted_;
 
   /// maximum number of steps
   int stepmax_;
@@ -759,8 +770,6 @@ protected:
   Teuchos::RCP<Epetra_Vector>    phinp_;
   Teuchos::RCP<Epetra_Vector>    phin_;
 
-  /// phi at time 0 as reference for reinitialization procedure
-  Teuchos::RCP<Epetra_Vector>    phistart_;
 
   /// time derivative of phi at times n+1 and n
   Teuchos::RCP<Epetra_Vector>  phidtnp_;
@@ -877,6 +886,20 @@ protected:
   bool turbinflow_;
   /// number of inflow generation time steps (turbulent loma specific)
   int numinflowsteps_;
+
+
+  //! @name reinitialization variables
+
+  /// boolian if scatra object is used for level set reinitialization
+  bool reinitswitch_;
+
+  /// boolian if a reinitialization step is accepted or not
+  bool reinitialization_accepted_;
+
+  /// phi at time 0 as reference for reinitialization procedure
+  Teuchos::RCP<Epetra_Vector>    phistart_;
+
+  //@}
 
 
 }; // class ScaTraTimIntImpl
