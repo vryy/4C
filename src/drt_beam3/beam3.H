@@ -25,10 +25,12 @@ Maintainer: Christian Cyron
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech/statmech_time.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fem_general/largerotations.H"
+
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+
 
 //forward declarations
 namespace LINALG
@@ -40,6 +42,11 @@ namespace LINALG
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
+
+namespace UTILS
+{
+
+}
 
 namespace ELEMENTS
 {
@@ -200,7 +207,7 @@ public:
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */
-  const double& Iyy() const { return Iyy_;};
+  const double& Iyy() const { return Iyy_;}
 
   /*!
   \brief Get moment of inertia of area Izz_ of this element

@@ -22,9 +22,6 @@ Maintainer: Christian Cyron
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
-
 DRT::ELEMENTS::Beam3iiType DRT::ELEMENTS::Beam3iiType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Beam3iiType::Create( const std::vector<char> & data )

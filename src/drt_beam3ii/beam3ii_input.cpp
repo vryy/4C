@@ -16,10 +16,6 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
@@ -64,13 +60,58 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
       for(int j=0; j<3; j++)
         nodeangle(j) = triads[3*i+j];
         
-      angletoquaternion(nodeangle,Qnew_[i]);
+      LARGEROTATIONS::angletoquaternion(nodeangle,Qnew_[i]);
     }
     
   Qold_  = Qnew_;
   Qconv_ = Qnew_;
 
   return true;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ii::SetIyy(const double& Iyy)
+{
+  Iyy_ = Iyy;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ii::SetIzz(const double& Izz)
+{
+  Izz_ = Izz;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ii::SetIrr(const double& Irr)
+{
+  Irr_ = Irr;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set cross section area                           (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ii::SetCrossSec(const double& crosssec)
+{
+  crosssec_ = crosssec;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set cross section area with shear correction     (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ii::SetCrossSecShear(const double& crosssecshear)
+{
+  crosssecshear_ = crosssecshear;
+  return;
 }
 
 #endif  // #ifdef CCADISCRET
