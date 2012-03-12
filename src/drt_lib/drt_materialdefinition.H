@@ -18,12 +18,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <string>
-#include <vector>
-#include <iostream>
-
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_Array.hpp>
 
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_material.H"

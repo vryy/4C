@@ -175,6 +175,13 @@ namespace ELASTIC
     void SetBeta(const double& beta) { params_->beta_ = beta; }
     //@}
 
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
 
   private:
 

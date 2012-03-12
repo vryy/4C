@@ -153,6 +153,14 @@ namespace ELASTIC
 
     //@}
 
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      isaniso = true;
+      return;
+    };
 
   private:
 

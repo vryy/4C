@@ -98,7 +98,7 @@ PARTITION      Cut_Elements
 // ug / um^3
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 200 201 34 DENS 0.194e-6 GAMMA 1   
 MAT 11 ELAST_CoupBlatzKo MUE 10. NUE .49 F 0.8
-MAT 12 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE 1. YOUNG 10. NUE 0.3
+MAT 12 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE YN YOUNG 10. NUE 0.3
 MAT 21 ELAST_IsoNeoHooke MUE 10.
 MAT 200 ELAST_IsoQuad  C 1.0    
 MAT 201 ELAST_IsoCub  C 1.0     
@@ -109,8 +109,6 @@ MAT 31 ELAST_VolPenalty EPSILON 1. GAMMA .01
 MAT 32 ELAST_VolOgden KAPPA 1.0 BETA -2
 MAT 34 ELAST_VolOgden KAPPA 1. BETA -2
 MAT 33 ELAST_VolSussmanBathe KAPPA 1.0 
-
-
 ------------------------------------------------------------CURVE1
 //Specimen 8
 CURVE1 on EXPR FUNC 0007.250*(1-exp(-(0.002537*t)^6.160450))+0.002324*(1-exp(-(0.004203*t)^1.908044)) t1 0.0 t2 1000.0   // nN/um^2

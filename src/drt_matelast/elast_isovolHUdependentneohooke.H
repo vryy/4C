@@ -28,7 +28,7 @@ namespace MAT
 {
 namespace ELASTIC
 {
-  
+
   namespace PAR
   {
 
@@ -38,9 +38,9 @@ namespace ELASTIC
     /// Hooke material. The Hounsfield Units (HU) of e.g. CT data are
     /// used to determine the material stiffness for each finite
     /// element. The input line for the consideration of
-    /// calcifications in AAA simulation reads: 
+    /// calcifications in AAA simulation reads:
     ///
-    /// MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0 
+    /// MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
     ///
     /// An Neo Hooke material is chosen for the isochoric contribution
     /// with varying stiffness parameters according to the HU and the
@@ -79,7 +79,7 @@ namespace ELASTIC
       double nue_;
       ///
       double beta_;
-      
+
       //@}
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -103,7 +103,7 @@ namespace ELASTIC
 
     /// @name Access material constants
     //@{
-    
+
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovolHUdependentneohooke; }
 
@@ -120,7 +120,7 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-    
+
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
     void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -172,6 +172,15 @@ namespace ELASTIC
     void SetNUE(const double nue) { params_->nue_ = nue; }
     void SetBETA(const double beta) { params_->beta_ = beta; }
     //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
   private:
 
     /// my material parameters

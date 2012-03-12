@@ -5,7 +5,8 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
+  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3 MODE YN
+  MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE Lame
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -32,10 +33,22 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
 : Parameter(matdata),
   mue_(matdata->GetDouble("MUE")),
   lambda_(matdata->GetDouble("LAMBDA")),
-  parmode_(matdata->GetInt("MODE")),
+  parmode_(*(matdata->Get<std::string>("MODE"))),
   youngs_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE"))
 {
+  if (parmode_ == "YN")
+  {
+    if (nue_ < 0.5 and nue_ > -1.0)
+    {
+      lambda_ = youngs_*nue_/((1.0+nue_)*(1.0-2.0*nue_));  // Lame coeff.
+      mue_ = youngs_/(2.0*(1.0+nue_));  // shear modulus
+    }
+    else
+      dserror("Poisson's ratio must be between -1.0 and 0.5!");
+  }
+  else if (parmode_ != "Lame")
+    dserror("unknown parameter set for NeoHooke material!\n Must be either YN (Young's modulus and Poisson's ratio) or Lame");
 }
 
 
@@ -70,20 +83,9 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
   double& shearmod  ///< variable to add upon
   ) const
 {
-  haveshearmod = haveshearmod or true;
+  haveshearmod = true;
 
-  // material parameters for isochoric part
-  if (params_->parmode_ == 0) {
-    shearmod += params_->mue_;
-  }
-  else if (params_->parmode_ == 1) {
-    const double youngs = params_->youngs_;  // Young's modulus
-    const double nue = params_->nue_;  // Poisson's ratio
-    shearmod += youngs/(2.0*(1.0+nue));  // shear modulus
-  }
-  else {
-    dserror("Cannot handle mode=%d", params_->parmode_);
-  }
+  shearmod += params_->mue_;
 
   return;
 }
@@ -97,36 +99,19 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
+  havecoefficients = true;
 
-  // material parameters for isochoric part
-  double lambda = 0.0;
-  double mue = 0.0;
-  if (params_->parmode_ == 0) {
-    lambda = params_->lambda_;
-    mue = params_->mue_;
-  }
-  else if (params_->parmode_ == 1) {
-    const double youngs = params_->youngs_;  // Young's modulus
-    const double nue = params_->nue_;  // Poisson's ratio
-    lambda = (nue==0.5) ? 0.0 : youngs*nue/((1.0+nue)*(1.0-2.0*nue));  // Lame coeff.
-    mue = youngs/(2.0*(1.0+nue));  // shear modulus
-  }
-  else {
-    dserror("Cannot handle mode=%d", params_->parmode_);
-  }
-
-  // determinant of deformation gradient
-  const double detf = std::sqrt(prinv(2));
+   // determinant of deformation gradient
+  const double logdetf = std::log(std::sqrt(prinv(2)));
 
   // gammas
-  gamma(0) += mue;
+  gamma(0) += params_->mue_;
   gamma(1) += 0.0;
-  gamma(2) += -mue+lambda*std::log(detf);
+  gamma(2) += - params_->mue_ + params_->lambda_ * logdetf;
 
   // deltas
-  delta(5) += lambda;
-  delta(6) += 2.0*(mue - lambda*std::log(detf));
+  delta(5) += params_->lambda_;
+  delta(6) += 2.0 * (params_->mue_ - params_->lambda_ * logdetf);
 
   return;
 }

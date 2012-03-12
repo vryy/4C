@@ -247,7 +247,15 @@ namespace ELASTIC
     //double K4() const { return params_->k4_; }
     //@}
 
-    private:
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
+  private:
 
     /// my material parameters
     MAT::ELASTIC::PAR::Holzapfel_Cardiac* params_;

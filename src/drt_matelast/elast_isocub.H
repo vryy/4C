@@ -141,6 +141,14 @@ namespace ELASTIC
 
     //@}
 
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
   private:
 
     /// my material parameters

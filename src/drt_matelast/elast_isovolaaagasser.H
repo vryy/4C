@@ -30,7 +30,7 @@ namespace MAT
 {
 namespace ELASTIC
 {
-  
+
   namespace PAR
   {
 
@@ -39,7 +39,7 @@ namespace ELASTIC
     /// contribution for a AAA thromubs. The input line should read
     /// like this:
     ///     MAT 21 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3
-    ///     CABLUM 1.73E3 NUE 0.49 BETA -2.0 
+    ///     CABLUM 1.73E3 NUE 0.49 BETA -2.0
     ///
     /// An Ogden type material
     /// \f$\Psi=c\underset{i=1}{\overset{3}{\sum}}(\lambda_{i}^{4}-1)\f$ is chosen for the isochoric
@@ -81,7 +81,7 @@ namespace ELASTIC
       /// numerical parameter (should be -2.0 (Doll and Schwizerhof)
       /// or 9.0(Holzapfel and Ogden))
       const double beta_;
-      
+
       //@}
 
       /// create material instance of matching type with my parameters
@@ -105,7 +105,7 @@ namespace ELASTIC
 
     /// @name Access material constants
     //@{
-    
+
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovolaaagasser; }
 
@@ -122,8 +122,8 @@ namespace ELASTIC
     {
       havecoefficients = havecoefficients or false;
     };
-    
-   
+
+
     /// Add principal coefficients for IsoVolAAAGasser material.
     void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
@@ -175,6 +175,15 @@ namespace ELASTIC
     //void SetBETA(const double beta) { params_->beta_ = beta; }
 
     //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
   private:
 
     /// my material parameters

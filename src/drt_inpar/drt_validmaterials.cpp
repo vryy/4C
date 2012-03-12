@@ -1157,7 +1157,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"MUE","shear modulus");
     AddNamedReal(m,"LAMBDA","Lame's constant");
-    AddNamedInt(m,"MODE","parameter mode: 0=use MUE and LAMBDA (default); 1=use YOUNG and NUE",0,true);
+    AddNamedString(m,"MODE","parameter set: Lame=use MUE and LAMBDA (default); YN=use YOUNG and NUE","Lame");
     AddNamedReal(m,"YOUNG","Young's modulus",true);
     AddNamedReal(m,"NUE","Poisson's ratio",true);
 

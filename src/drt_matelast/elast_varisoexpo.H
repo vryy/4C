@@ -148,6 +148,15 @@ namespace ELASTIC
     void SetK1(const double k1) { params_->k1_ = k1; }
     void SetK2(const double k2) { params_->k2_ = k2; }
     //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
   private:
 
     /// my material parameters

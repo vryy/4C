@@ -405,7 +405,7 @@ namespace MAT
       ///
       /// The coefficients \f$\bar{\gamma}_\alpha\f$ are based on \f$\alpha=1,2,3\f$
       ///\f[
-      /// \bar{\gamma}_\alpha 
+      /// \bar{\gamma}_\alpha
       /// = \frac{\partial \Psi}{\partial \bar{\lambda}_\alpha}
       ///\f]
       /// and \f$\bar{\lambda}_\alpha = J^{-1/3} \lambda_\alpha\f$.
@@ -426,6 +426,11 @@ namespace MAT
       {
         return;  // do nothing
       }
+
+      /// Indicator for anisotropic summand
+      virtual void IsAnisotropic(
+        bool& isaniso ///< global indicator for anisotropy
+        ) = 0;
 
     private:
 

@@ -18,11 +18,6 @@ Maintainer: Burkhard Bornemann
 #define ELAST_LOGNEOHOOKE_H_
 #ifdef CCADISCRET
 
-// Linalg matrices used instead; included in elast_summand
-//#include <Epetra_SerialDenseVector.h>
-//#include <Epetra_SerialDenseMatrix.h>
-// included in elast_summand
-//#include "../drt_inpar/inpar_material.H"
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 
@@ -61,7 +56,7 @@ namespace ELASTIC
       /// Lame's constant
       double lambda_;
       /// Parameter mode
-      int parmode_;
+      std::string parmode_;
       /// Young's modulus
       double youngs_;
       /// Possion's ratio
@@ -220,11 +215,19 @@ namespace ELASTIC
     //@{
     double Mue() const { return params_->mue_; }
     double Lambda() const { return params_->lambda_; }
-    int Parmode() const { return params_->parmode_; }
+    std::string Parmode() const { return params_->parmode_; }
     double Youngs() const { return params_->youngs_; }
     double Nue() const { return params_->nue_; }
 
     //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
 
   private:
 

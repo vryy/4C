@@ -164,6 +164,15 @@ namespace ELASTIC
     void SetFrac(const double frac) { params_->frac_ = frac; }
     void SetMue(const double mue)   { params_->mue_ = mue; }
     //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
   private:
 
     /// my material parameters

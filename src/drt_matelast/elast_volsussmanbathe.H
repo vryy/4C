@@ -17,11 +17,6 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 #define ELAST_VOLSUSSMANBATHE_H_
 #ifdef CCADISCRET
 
-// Linalg matrices used instead; included in elast_summand
-//#include <Epetra_SerialDenseVector.h>
-//#include <Epetra_SerialDenseMatrix.h>
-// included in elast_summand
-//#include "../drt_inpar/inpar_material.H"
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 
@@ -144,6 +139,13 @@ namespace ELASTIC
 
     //@}
 
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
 
   private:
 

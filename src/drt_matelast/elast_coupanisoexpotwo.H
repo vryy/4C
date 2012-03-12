@@ -125,8 +125,6 @@ namespace ELASTIC
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     )
     {
-      havecoefficients = havecoefficients or false;
-
       return;
     };
 
@@ -138,7 +136,7 @@ namespace ELASTIC
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     )
     {
-      havecoefficients = havecoefficients or false;
+      return;
     };
 
     /// Add anisotropic principal coeffiencts.
@@ -159,8 +157,16 @@ namespace ELASTIC
 
     //@}
 
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      isaniso = true;
+      return;
+    };
 
-    private:
+  private:
 
     /// my material parameters
     MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params_;
