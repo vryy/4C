@@ -29,76 +29,47 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   linedef->ExtractDouble("THICK",thickness_);
+  if  (thickness_<=0) dserror("WALL element thickness needs to be < 0");
 
   std::vector<int> ngp;
   linedef->ExtractIntVector("GP",ngp);
 
-  if ((NumNode()==4) and ((ngp[0]<2) or (ngp[1]<2)))
-  {
-    dserror("Insufficient number of Gauss points");
-  }
-  else if ((NumNode()==8) and ((ngp[0]<3) or (ngp[1]<3)))
-  {
-    dserror("Insufficient number of Gauss points");
-  }
-  else if ((NumNode()==9) and ((ngp[0]<3) or (ngp[1]<3)))
-  {
-    dserror("Insufficient number of Gauss points");
-  }
-  else if ((NumNode()==6) and (ngp[0]<3))
-  {
-    dserror("Insufficient number of Gauss points");
-  }
-
+  if      ((NumNode()==4) and ((ngp[0]<2) or (ngp[1]<2))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==8) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==9) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==6) and (ngp[0]<3)) dserror("Insufficient number of Gauss points");
+  
   gaussrule_ = getGaussrule(&ngp[0]);
 
   std::string buffer;
+  // reduced dimension assumption
   linedef->ExtractString("STRESS_STRAIN",buffer);
-  if      (buffer=="PLANE_STRESS") wtype_ = plane_stress;
-  else if (buffer=="PLANE_STRAIN") wtype_ = plane_strain;
+  if      (buffer=="plane_stress") wtype_ = plane_stress;
+  else if (buffer=="plane_strain") wtype_ = plane_strain;
   else dserror("Illegal strain/stress type '%s'",buffer.c_str());
 
   // kinematics type
   linedef->ExtractString("KINEM",buffer);
-
   // geometrically linear
-  if      (buffer=="W_GeoLin")    kintype_ = w1_geolin;
+  if      (buffer=="linear")    kintype_ = w1_geolin;
   // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="W_TotalLagr")    kintype_ = w1_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="W_UpdLagr")
-  {
-    kintype_ = w1_updlag;
-    dserror("Updated Lagrange for wall element NOT implemented!");
-  }
-  else dserror("Reading of WALL element failed");
+  else if (buffer=="nonlinear")    kintype_ = w1_totlag;
+  else dserror("Illegal KINEM type '%s'",buffer.c_str());
 
   // EAS type
   linedef->ExtractString("EAS",buffer);
-  if (buffer=="Displ_Model")
+  if (buffer=="none")
   {
     iseas_ = false;
   }
-  else if (buffer=="EAS_Model")
+  else if (buffer=="full")
   {
     iseas_ = true;
 
-    if (NumNode()==9)
-    {
-      dserror("eas-technology not necessary with 9 nodes");
-    }
-    else if (NumNode()==8)
-    {
-      dserror("eas-technology not necessary with 8 nodes");
-    }
-    else if (NumNode()==3)
-    {
-      dserror("eas-technology not implemented for tri3 elements");
-    }
-    else if (NumNode()==6)
-    {
-      dserror("eas-technology not implemented for tri6 elements");
-    }
+    if (NumNode()==9) dserror("eas-technology not necessary with 9 nodes");
+    else if (NumNode()==8) dserror("eas-technology not necessary with 8 nodes");
+    else if (NumNode()==3) dserror("eas-technology not implemented for tri3 elements");
+    else if (NumNode()==6) dserror("eas-technology not implemented for tri6 elements");
     else
     {
       // EAS enhanced deformation gradient parameters
@@ -139,10 +110,6 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   }
 
   stresstype_ = w1_xy;
-//   linedef->ExtractString("STRESSES",buffer);
-//   if      (buffer=="XY")       stresstype_ = w1_xy;
-//   else if (buffer=="RS")       stresstype_ = w1_rs;
-//   else dserror("Reading of WALL1 element failed");
 
   // check for invalid combinations
   if (kintype_==w1_geolin && iseas_==true)

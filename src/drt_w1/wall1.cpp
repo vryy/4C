@@ -72,78 +72,72 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 
   defs["QUAD8"]
     .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 
   defs["QUAD9"]
     .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
 
   defs["TRI6"]
     .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 
   defs["NURBS4"]
     .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 
   defs["NURBS9"]
     .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
     .AddNamedDouble("THICK")
+    .AddNamedString("STRESS_STRAIN")
     .AddNamedIntVector("GP",2)
-    .AddString("STRESS_STRAIN")
-    .AddString("KINEM")
-    .AddString("EAS")
-    //.AddNamedString("STRESSES")
     ;
 }
 
