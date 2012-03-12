@@ -24,7 +24,7 @@
 #include "fsi_constrmonolithic_fluidsplit.H"
 #include "fsi_constrmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_structuresplit.H"
-#include "fsi_fluidfluidmonolithic_structuresplit.H"
+#include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
@@ -733,7 +733,7 @@ void fluid_fluid_fsi_drt()
   {
   case fsi_iter_fluidfluid_monolithicstructuresplit:
   {
-    Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
+    Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(*comm,fsidyn));
 
      // now do the coupling setup an create the combined dofmap
     fsi->SetupSystem();
