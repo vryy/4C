@@ -943,7 +943,7 @@ void fsi_ale_drt()
   case fsi_iter_mortar_monolithicstructuresplit:
   case fsi_iter_mortar_monolithicfluidsplit:
   {
-    Teuchos::RCP<FSI::MonolithicNOX> fsi;
+    Teuchos::RCP<FSI::Monolithic> fsi;
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 

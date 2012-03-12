@@ -15,7 +15,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 
 #include "fs3i_partitioned_2wc.H"
 
-#include "../drt_fsi/fsi_monolithic_nox.H"
+#include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_scatra/passive_scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*/

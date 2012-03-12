@@ -3,7 +3,7 @@
 #ifndef FSI_MONOLITHICFLUIDSPLIT_H
 #define FSI_MONOLITHICFLUIDSPLIT_H
 
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 namespace FSI

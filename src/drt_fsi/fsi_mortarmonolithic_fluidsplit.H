@@ -3,7 +3,7 @@
 #ifndef FSI_MORTARMONOLITHICFLUID_H
 #define FSI_MORTARMONOLITHICFLUID_H
 
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_utils.H"

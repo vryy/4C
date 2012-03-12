@@ -21,7 +21,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FSI::PartitionedMonolithic::PartitionedMonolithic(const Epetra_Comm& comm,
                                                   const Teuchos::ParameterList& timeparams)
-  : MonolithicNOX(comm,timeparams)
+  : Monolithic(comm,timeparams)
 {
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }

@@ -3,16 +3,23 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Direction_UserDefinedFactory.H>
 
-#include "../drt_lib/standardtypes_cpp.H"
-
-#include "fsi_debugwriter.H"
 #include "fsi_monolithic.H"
+#include "fsi_debugwriter.H"
+#include "fsi_nox_aitken.H"
+#include "fsi_nox_group.H"
+#include "fsi_nox_newton.H"
 #include "fsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+
+#include "../drt_constraint/constraint_manager.H"
 
 #include "../drt_io/io_control.H"
 
@@ -20,14 +27,180 @@
 #include <mpi.h>
 #endif
 
+
+
 /*----------------------------------------------------------------------*/
-// constructor (public)
+// Note: The order of calling the three BaseAlgorithm-constructors is
+// important here! In here control file entries are written. And these
+// entries define the order in which the filters handle the
+// Discretizations, which in turn defines the dof number ordering of the
+// Discretizations.
+/*----------------------------------------------------------------------*/
+FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
+                                    const Teuchos::ParameterList& timeparams)
+  : AlgorithmBase(comm,timeparams),
+    StructureBaseAlgorithm(timeparams),
+    FluidBaseAlgorithm(timeparams,true),
+    AleBaseAlgorithm(timeparams)
+{
+  coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::MonolithicBase::~MonolithicBase()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::ReadRestart(int step)
+{
+  StructureField().ReadRestart(step);
+  FluidField()    .ReadRestart(step);
+  AleField()      .ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+
+  PrintHeader();
+
+  StructureField().PrepareTimeStep();
+  FluidField().    PrepareTimeStep();
+  AleField().      PrepareTimeStep();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::Update()
+{
+  StructureField().Update();
+  FluidField().    Update();
+  AleField().      Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::Output()
+{
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
+  StructureField().Output();
+  FluidField().    Output();
+  AleField().      Output();
+
+  FluidField().LiftDrag();
+
+  if (StructureField().GetConstraintManager()->HaveMonitor())
+  {
+    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
+    if(Comm().MyPID() == 0)
+      StructureField().GetConstraintManager()->PrintMonitorValues();
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_->MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_->SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_->MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_->SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupfa_->SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_->MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_->SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_->MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_->SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupfa_->SlaveToMaster(iv);
+}
+
+
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
-  : MonolithicBase(comm,timeparams),
-    cout0_(StructureField().Discretization()->Comm(), std::cout),
-    zeros_(Teuchos::null)
+  : MonolithicBase(comm,timeparams)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -41,281 +214,267 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
-  itermax_ = fsidyn.get<int>("ITEMAX");
-  normtypeinc_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_INC");
-  normtypefres_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_RESF");
-  combincfres_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
-  tolinc_ =  fsidyn.get<double>("CONVTOL");
-  tolfres_ = fsidyn.get<double>("CONVTOL");
-
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Monolithic::Timeloop()
+void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
+  PrepareTimeloop();
+
   while (NotFinished())
   {
     PrepareTimeStep();
-    Newton();
+    TimeStep(interface);
     PrepareOutput();
     Update();
     Output();
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Monolithic::Newton()
+void FSI::Monolithic::PrepareTimeloop()
 {
-  // initialise equilibrium loop
-  iter_ = 1;
-  normrhs_ = 0.0;
-  normstrrhs_ = 0.0;
-  normflrhs_ = 0.0;
-  normalerhs_ = 0.0;
-  norminc_ = 0.0;
+  // make sure we didn't destroy the maps before we entered the timeloop
+  Extractor().CheckForValidMapExtractor();
 
-  // get length of the structural, fluid and ale vector
-  ns_ = (*(StructureField().RHS())).GlobalLength();
-  nf_ = (*(FluidField().RHS())).GlobalLength();
-  na_ = (*(AleField().RHS())).GlobalLength();
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = NOXParameterList();
 
-  x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
-  x_sum_->PutScalar(0.0);
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  printParams.set("MyPID", Comm().MyPID());
 
-  // incremental solution vector with length of all FSI dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-  iterinc_->PutScalar(0.0);
+#if 0
+  // there is a strange NOX bug...
+  Teuchos::ParameterList& oo = printParams.sublist("Output Information");
 
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-  zeros_->PutScalar(0.0);
+  oo.set<bool>("Error",false);
+  oo.set<bool>("Warning",false);
+  oo.set<bool>("Outer Iteration",false);
+  oo.set<bool>("Inner Iteration",false);
+  oo.set<bool>("Parameters",false);
+  oo.set<bool>("Details",false);
+  oo.set<bool>("Outer Iteration StatusTest",false);
+  oo.set<bool>("Linear Solver Details",false);
+  oo.set<bool>("Test Details",false);
+  oo.set<bool>("Stepper Iteration",false);
+  oo.set<bool>("Stepper Details",false);
+  oo.set<bool>("Stepper Parameters",false);
+  oo.set<bool>("Debug",false);
+#else
+  printParams.set("Output Information",
+                  NOX::Utils::Error |
+                  NOX::Utils::Warning |
+                  NOX::Utils::OuterIteration |
+                  NOX::Utils::InnerIteration |
+                  //NOX::Utils::Parameters |
+                  NOX::Utils::Details |
+                  NOX::Utils::OuterIterationStatusTest |
+                  NOX::Utils::LinearSolverDetails |
+                  NOX::Utils::TestDetails |
+                  NOX::Utils::StepperIteration |
+                  NOX::Utils::StepperDetails |
+                  NOX::Utils::StepperParameters |
+                  NOX::Utils::Debug |
+                  0);
+#endif
 
-  // residual vector with length of all FSI dofs
-  rhs_ = LINALG::CreateVector(*DofRowMap(), true);
-  rhs_->PutScalar(0.0);
-  nall_ = (*rhs_).GlobalLength();
+  // Create printing utilities
+  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
-  firstcall_ = true;
-
-  // equilibrium iteration loop (loop over k)
-  while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
+  if (Comm().MyPID()==0)
   {
-    // compute residual forces #rhs_ and tangent #tang_
-    // build linear system stiffness matrix and rhs/force
-    // residual for each field
+    (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
+           << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+           << "#\n"
+      ;
+  }
 
-    Evaluate(iterinc_);
-
-    // create the linear system
-    // J(x_i) \Delta x_i = - R(x_i)
-    // create the systemmatrix
-    SetupSystemMatrix();
-
-    // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled())
+  // check for prestressing,
+  // do not allow monolithic in the pre-phase
+  // allow monolithic in the post-phase
+  {
+    double time = 0.0;
+    double dt = 0.0;
+    double pstime = -1.0;
+    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    if (pstype != INPAR::STR::prestress_none)
     {
-      dserror("Effective tangent matrix must be filled here");
+      time   = StructureField().GetTime();
+      dt     = StructureField().GetTimeStepSize();
+      pstime = pslist.get<double>("PRESTRESSTIME");
+      if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
-
-    SetupRHS(*rhs_,firstcall_);
-
-    LinearSolve();
-
-    // reset solver tolerance
-    solver_->ResetTolerance();
-
-    // build residual force norm
-    // for now use for simplicity only L2/Euclidian norm
-    rhs_->Norm2(&normrhs_);
-    StructureField().RHS()->Norm2(&normstrrhs_);
-    FluidField().RHS()->Norm2(&normflrhs_);
-    AleField().RHS()->Norm2(&normalerhs_);
-
-    // build residual increment norm
-    iterinc_->Norm2(&norminc_);
-
-    // print stuff
-    PrintNewtonIter();
-
-    // increment equilibrium loop index
-    iter_ += 1;
-
-    firstcall_ = false;
-
-  }// end while loop
-
-  // correct iteration counter
-  iter_ -= 1;
-
-  // test whether max iterations was hit
-  if ( (Converged()) and (Comm().MyPID()==0) )
-  {
-    cout << endl;
-    cout << endl;
-    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
-  }
-  else if (iter_ >= itermax_)
-  {
-    cout << endl;
-    cout << endl;
-    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::Monolithic::Converged()
+void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
-  // check for single norms
-  bool convinc = false;
-  bool convfres = false;
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = NOXParameterList();
 
-  // residual increments
-  switch (normtypeinc_)
+  // sublists
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  printParams.set("MyPID", Comm().MyPID());
+
+  Teuchos::Time timer("time step timer");
+
+  if (sdbg_!=Teuchos::null)
+    sdbg_->NewTimeStep(Step(),"struct");
+  if (fdbg_!=Teuchos::null)
+    fdbg_->NewTimeStep(Step(),"fluid");
+
+  // start time measurement
+  Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+
+  // calculate initial linear system at current position
+  // (no increment)
+  // This initializes the field algorithms and creates the first linear
+  // systems. And this is the reason we know the initial linear system is
+  // there when we create the NOX::Group.
+  Evaluate(Teuchos::null);
+
+  // Get initial guess.
+  // The initial system is there, so we can happily extract the
+  // initial guess. (The Dirichlet conditions are already build in!)
+  Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
+  InitialGuess(initial_guess);
+
+  NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
+
+  // Create the linear system
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
+    CreateLinearSystem(nlParams, noxSoln, utils_);
+
+  // Create the Group
+  Teuchos::RCP<NOX::FSI::Group> grp =
+    Teuchos::rcp(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
+
+  // Convergence Tests
+  Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+
+  // Create the solver
+  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
+
+  // we know we already have the first linear system calculated
+  grp->CaptureSystemState();
+
+  // solve the whole thing
+  noxstatus_ = solver->solve();
+
+  if (noxstatus_ != NOX::StatusTest::Converged)
+    if (Comm().MyPID()==0)
+      utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+
+  // cleanup
+  //mat_->Zero();
+
+  // stop time measurement
+  timemonitor = Teuchos::null;
+
+  if (Comm().MyPID()==0)
   {
-    case INPAR::FSI::convnorm_abs:
-      convinc = norminc_ < tolinc_;
-      break;
-      //case INPAR::FSI::convnorm_rel:
-
-      //break;
-    default:
-      dserror("Cannot check for convergence of residual values!");
+    (*log_) << Step()
+            << " " << timer.totalElapsedTime()
+            << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+            << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
+            << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+      ;
+    (*log_) << std::endl;
+    lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
   }
-
-  // structural, fluid and ale residual forces
-  switch (normtypefres_)
-  {
-  case INPAR::FSI::convnorm_abs:
-    convfres = normrhs_ < tolfres_;
-    //convfres = (normrhs_/nall_) < tolfres_;
-    break;
-  case INPAR::FSI::convnorm_rel:
-    convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normflrhs_/nf_) < tolfres_) and ((normalerhs_/na_) < tolfres_));
-    //convfres = ( (normstrrhs_) and (normflrhs_)  and (normalerhs_));
-    break;
-  case INPAR::FSI::convnorm_mix:
-    convfres = ( (normstrrhs_ < tolfres_) and (normflrhs_ < tolfres_) and (normalerhs_ < tolfres_) );
-    break;
-  default:
-    dserror("Cannot check for convergence of residual forces!");
-  }
-
-  // combined
-  bool conv = false;
-  if (combincfres_==INPAR::FSI::bop_and)
-     conv = convinc and convfres;
-   else
-     dserror("Something went terribly wrong with binary operator!");
-
-  return conv;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::Monolithic::LinearSolve()
-{
-  // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-  // apply Dirichlet BCs to system of equations
-  if(firstcall_)
-    InitialGuess(iterinc_);
-  else
-    iterinc_->PutScalar(0.0);
-
-  LINALG::ApplyDirichlettoSystem(
-    sparse,
-    iterinc_,
-    rhs_,
-    Teuchos::null,
-    zeros_,
-    *CombinedDBCMap()
-    );
-
-  // get UMFPACK...
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
-
-  solver_ = rcp(new LINALG::Solver(solverparams, Comm(),
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-
-  // standard solver call
-  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
-   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
-   Teuchos::RCP<const Epetra_Vector> sx;
-   Teuchos::RCP<const Epetra_Vector> fx;
-   Teuchos::RCP<const Epetra_Vector> ax;
+  Teuchos::RCP<const Epetra_Vector> sx;
+  Teuchos::RCP<const Epetra_Vector> fx;
+  Teuchos::RCP<const Epetra_Vector> ax;
 
-   if (x!=Teuchos::null)
-   {
-     // structure, ale and fluid fields expects the step increment. So
-     // we add all of the increments together to build the step
-     // increment.
-     //
-     // The update of the latest increment with iteration increments:
-     // x^n+1_i+1 = x^n+1_i + iterinc
-     //
-     // The update of the latest increment with step increment:
-     // x^n+1_i+1 = x^n     + stepinc
-
-     x_sum_->Update(1.0,*x,1.0);
-
-     ExtractFieldVectors(x_sum_,sx,fx,ax);
-     if (sdbg_!=Teuchos::null)
-     {
-       sdbg_->NewIteration();
-       sdbg_->WriteVector("x",*StructureField().Interface().ExtractFSICondVector(sx));
-     }
-   }
-
-   // Call all fileds evaluate method and assemble rhs and matrices
-
-   {
-     Epetra_Time ts(Comm());
-     StructureField().Evaluate(sx);
-     //cout0_  << "structure time: " << ts.ElapsedTime() << endl;
-   }
-
+  if (x!=Teuchos::null)
   {
-     // ALE field expects the sum of all increments and not the
-     // latest increment. It adds the sum of all increments to the
-     // displacement of the last time step. So we need to build the
-     // sum of all increments and give it to ALE.
+    // This does not seem very reasonable.
+    // It is a premature optimization.
+#if 0
+    double norm;
+    int err = x->Norm2(&norm);
+    if (err)
+      dserror("failed to calculate norm");
 
-     Epetra_Time ta(Comm());
-     AleField().Evaluate(ax);
+    if (norm==0.)
+      return;
+#endif
+
+    ExtractFieldVectors(x,sx,fx,ax);
+
+    if (sdbg_!=Teuchos::null)
+    {
+      sdbg_->NewIteration();
+      sdbg_->WriteVector("x",*StructureField().Interface().ExtractFSICondVector(sx));
+    }
   }
 
-   // transfer the current ale mesh positions to the fluid field
-   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
-   FluidField().ApplyMeshDisplacement(fluiddisp);
+  // Call all elements and assemble rhs and matrices
+  // We only need the rhs here because NOX will ask for the rhs
+  // only. But the Jacobian is stored internally and will be returnd
+  // later on without looking at x again!
 
-   {
-     Epetra_Time tf(Comm());
-     FluidField().Evaluate(fx);
-     //cout0_ << "fluid time : " << tf.ElapsedTime() << endl;
-   }
+  Utils()->out() << "\nEvaluate elements\n";
 
-   //cout0_ << endl;
+  {
+    Epetra_Time ts(Comm());
+    StructureField().Evaluate(sx);
+    Utils()->out() << "structure: " << ts.ElapsedTime() << "\n";
+  }
+
+  {
+    Epetra_Time ta(Comm());
+    AleField()      .Evaluate(ax);
+    Utils()->out() << "ale      : " << ta.ElapsedTime() << "\n";
+  }
+
+  // transfer the current ale mesh positions to the fluid field
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
+
+  {
+    Epetra_Time tf(Comm());
+    FluidField().Evaluate(fx);
+    Utils()->out() << "fluid    : " << tf.ElapsedTime() << "\n";
+  }
+
+  Utils()->out() << "\n";
 }
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap_,maps);
+  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  blockrowdofmap_.Setup(*fullmap,maps);
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -379,8 +538,8 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method","User Defined");
-//   Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
-//   dirParams.set("User Defined Direction Factory",newtonfactory);
+  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
+  dirParams.set("User Defined Direction Factory",newtonfactory);
 
 
 #if 0 // polynominal line search
@@ -478,132 +637,111 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 #endif
 }
 
-/*----------------------------------------------------------------------*/
-/*  print Newton-Raphson iteration to screen and error file             */
-/*----------------------------------------------------------------------*/
-void FSI::Monolithic::PrintNewtonIter()
-{
-  // print to standard out
-  // replace myrank_ here general by Comm().MyPID()
-  if ( Comm().MyPID()==0 )
-  {
-    if (iter_== 1)
-      PrintNewtonIterHeader(stdout);
-    PrintNewtonIterText(stdout);
-  }
 
-//   // print to error file
-//   if ( printerrfile_ and printiter_ )
-//   {
-//     if (iter_== 1)
-//       PrintNewtonIterHeader(errfile_);
-//     PrintNewtonIterText(errfile_);
-//   }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Direction::Generic>
+FSI::Monolithic::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                                Teuchos::ParameterList& params) const
+{
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd,params));
+  for (unsigned i=0; i<statustests_.size(); ++i)
+  {
+    statustests_[i]->SetNewton(newton);
+  }
+  return newton;
 }
 
+
 /*----------------------------------------------------------------------*/
-/* print Newton-Raphson iteration to screen and error file              */
 /*----------------------------------------------------------------------*/
-void FSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
+bool FSI::Monolithic::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  cout << "CONVTOL: " << tolfres_ << endl;
-  // open outstringstream
-  std::ostringstream oss;
-
-  // enter converged state etc
-  oss << std::setw(6)<< "numiter  |";
-
-  // different style due relative or absolute error checking
-  // displacement
-  switch ( normtypefres_ )
-  {
-  case INPAR::FSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-res-norm  |";
-    break;
-  case INPAR::FSI::convnorm_rel :
-    oss <<std::setw(18)<< "rel-res-norm  |";
-    break;
-  case INPAR::FSI::convnorm_mix :
-    oss <<std::setw(18)<< "mix-res-norm";
-    break;
-  default:
-    dserror("You should not turn up here.");
-  }
-
-  switch ( normtypeinc_ )
-  {
-  case INPAR::FSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-inc-norm |";
-    break;
-  default:
-    dserror("You should not turn up here.");
-  }
-
-  // add solution time
-  oss << std::setw(12)<< "wct    |";
-  cout << "=========================================================="<< endl;
-
-  // finish oss
-  oss << std::ends;
-
-  // print to screen (could be done differently...)
-  if (ofile==NULL)
-    dserror("no ofile available");
-  fprintf(ofile, "%s\n", oss.str().c_str());
-
-  // print it, now
-  fflush(ofile);
-  cout << "==========================================================";
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
+  Evaluate(Teuchos::rcp(&x,false));
+  SetupRHS(F);
+  return true;
 }
 
-/*---------------------------------------------------------------------*/
-/*  print Newton-Raphson iteration to screen                           */
-/*---------------------------------------------------------------------*/
-void FSI::Monolithic::PrintNewtonIterText(FILE* ofile)
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
-  // open outstringstream
-  std::ostringstream oss;
+  return true;
+}
 
-  // enter converged state etc
-  oss << std::setw(7)<< iter_ << "/" << itermax_;
 
-  // different style due relative or absolute error checking
-  // displacement
-  switch ( normtypefres_ )
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
+                                            Epetra_Operator &M,
+                                            Teuchos::ParameterList *precParams)
+{
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
+                                      const Teuchos::ParameterList& timeparams)
+  : Monolithic(comm,timeparams),
+    precondreusecount_(0)
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
+  Evaluate(Teuchos::rcp(&x,false));
+  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
+  SetupSystemMatrix(mat);
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
+                                                 Epetra_Operator &M,
+                                                 Teuchos::ParameterList *precParams)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computePreconditioner");
+
+  if (precondreusecount_<=0)
   {
-  case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_/nall_);
-    break;
-  case INPAR::FSI::convnorm_rel :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
-    break;
-  case INPAR::FSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
-    break;
-  default:
-    dserror("You should not turn up here.");
- }
+    // Create preconditioner operator. The blocks are already there. This is
+    // the perfect place to initialize the block preconditioners.
+    SystemMatrix()->SetupPreconditioner();
 
-  switch ( normtypeinc_ )
-  {
-  case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << norminc_;
-    printf("\n");
-    break;
-  default:
-    dserror("You should not turn up here.");
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    precondreusecount_ = fsidyn.get<int>("PRECONDREUSE");
   }
 
-  // finish oss
-  oss << std::ends;
+  precondreusecount_ -= 1;
 
-  // print to screen (could be done differently...)
-  if (ofile==NULL)
-    dserror("no ofile available");
-  fprintf(ofile, "%s", oss.str().c_str());
+  if (pcdbg_!=Teuchos::null)
+  {
+    pcdbg_->NewLinearSystem();
+  }
 
-  // print it, now
-  fflush(ofile);
+  return true;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::BlockMonolithic::PrepareTimeStep()
+{
+  FSI::Monolithic::PrepareTimeStep();
+
+  // new time step, rebuild preconditioner
+  precondreusecount_ = 0;
+}
+
 
 #endif

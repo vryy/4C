@@ -19,7 +19,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_io/io_control.H"
-#include "../drt_fsi/fsi_monolithic_nox.H"
+#include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_fsi/fsi_partitionedmonolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_fsi/fsi_monolithiclagrange.H"

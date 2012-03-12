@@ -4,7 +4,7 @@
 #define FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 #include "fsi_monolithic_nonox.H"
 #include "fsi_overlapprec.H"
 

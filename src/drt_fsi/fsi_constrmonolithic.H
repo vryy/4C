@@ -5,7 +5,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_constr_overlapprec.H"
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 
 //forward declarations
 namespace UTILS

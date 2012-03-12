@@ -133,7 +133,7 @@ void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //-----------------------------------------------------------------------------
   // evaluation of all fields; constraints are evaluated by strucuture
   //-----------------------------------------------------------------------------
-  FSI::MonolithicNOX::Evaluate(x);
+  FSI::Monolithic::Evaluate(x);
 
 }
 

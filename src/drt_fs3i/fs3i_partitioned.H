@@ -33,7 +33,7 @@ namespace ADAPTER
 
 namespace FSI
 {
-  class MonolithicNOX;
+  class Monolithic;
 
   namespace UTILS
   {
@@ -171,7 +171,7 @@ namespace FS3I
   protected:
 
     /// fsi algorithm
-    Teuchos::RCP<FSI::MonolithicNOX> fsi_;
+    Teuchos::RCP<FSI::Monolithic> fsi_;
 
     /// vector of scatra algorithms
     std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;

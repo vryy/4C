@@ -14,7 +14,7 @@
 #include <Teuchos_Time.hpp>
 
 #include "fsi_monolithicinterface.H"
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 

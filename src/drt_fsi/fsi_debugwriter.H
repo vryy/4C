@@ -24,7 +24,7 @@ namespace DRT
 
 namespace FSI
 {
-  class MonolithicNOX;
+  class Monolithic;
 
 namespace UTILS
 {
@@ -122,7 +122,7 @@ namespace UTILS
   {
   public:
 
-    MonolithicDebugWriter(FSI::MonolithicNOX& algorithm);
+    MonolithicDebugWriter(FSI::Monolithic& algorithm);
 
     virtual ~MonolithicDebugWriter() {}
 
@@ -143,7 +143,7 @@ namespace UTILS
     virtual void WriteVector(const std::string& name, const Teuchos::RCP<Epetra_Vector>& v);
 
   private:
-    FSI::MonolithicNOX& algorithm_;
+    FSI::Monolithic& algorithm_;
 
     Teuchos::RCP<SimpleDebugWriter> struct_writer_;
     Teuchos::RCP<SimpleDebugWriter> fluid_writer_;

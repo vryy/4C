@@ -4,7 +4,7 @@
 #define FSI_PARTITIONEDMONOLITHIC_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_monolithic_nox.H"
+#include "fsi_monolithic.H"
 
 namespace NOX
 {
@@ -36,7 +36,7 @@ namespace FSI
     \author u.kue
     \date 10/08
    */
-  class PartitionedMonolithic : public MonolithicNOX
+  class PartitionedMonolithic : public Monolithic
   {
     friend class NOX::FSI::LinearPartitioned;
 
