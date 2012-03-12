@@ -30,6 +30,9 @@
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../drt_inpar/inpar_solver.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton

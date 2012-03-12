@@ -32,8 +32,10 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_lib/drt_dofset_transparent.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_thermo/thermo_element.H"
-
+#include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/position_array.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

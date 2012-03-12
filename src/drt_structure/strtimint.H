@@ -554,14 +554,14 @@ namespace STR
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_); }
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_); }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! Return sparse mass matrix
-    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_); }
+    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();
 
     //! Return domain map of mass matrix
     const Epetra_Map& GetDomainMap();

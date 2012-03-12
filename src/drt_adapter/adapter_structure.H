@@ -25,9 +25,9 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_structure/stru_resulttest.H"
+#include "../drt_structure/stru_aux.H"
 
 
 namespace ADAPTER {
@@ -369,9 +369,6 @@ namespace ADAPTER {
 
     /// setup structure algorithm
     void SetupStructure(const Teuchos::ParameterList& prbdyn);
-
-    /// setup structure algorithm of StruGenAlpha type
-    void SetupStruGenAlpha(const Teuchos::ParameterList& prbdyn);
 
     /// setup structure algorithm of STR::TimIntImpl type
     void SetupTimIntImpl(const Teuchos::ParameterList& prbdyn);
