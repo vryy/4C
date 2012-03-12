@@ -1,4 +1,16 @@
+/*!----------------------------------------------------------------------
+\file xfluid.cpp
+\brief Control routine for fluid (in)stationary solvers with XFEM,
+       including instationary solvers for fluid and fsi problems coupled with an internal embedded interface
 
+<pre>
+Maintainer:  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+
+*----------------------------------------------------------------------*/
 #include "xfluid.H"
 #include "fluid_utils.H"
 
@@ -42,8 +54,10 @@
 
 #include "xfluid_defines.H"
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+
+/*----------------------------------------------------------------------*
+ |  Constructor for XFluidState                            schott 03/12 |
+ *----------------------------------------------------------------------*/
 FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol  )
   : xfluid_( xfluid ),
     wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
@@ -145,8 +159,9 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  evaluate elements, volumecells and boundary cells      schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                          DRT::Discretization & discret,
                                          DRT::Discretization & cutdiscret,
@@ -552,8 +567,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 #endif
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  calls the Gmsh output for elements, volumecells...     schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                                            DRT::Discretization & cutdiscret,
                                            const std::string & filename_base,
@@ -762,8 +778,9 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
   if(myrank==0) std::cout << " done\n" << std::flush;
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  Gmsh output for elements                               schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
                                                   std::ofstream & vel_f,
                                                   std::ofstream & press_f,
@@ -853,8 +870,9 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   if(acc_output) acc_f << "};\n";
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  Gmsh output for volumecells                            schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discret,
                                                      std::ofstream & vel_f,
                                                      std::ofstream & press_f,
@@ -1006,8 +1024,9 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
 
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  Gmsh output for boundary cells                         schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & discret,
                                                        DRT::Discretization & cutdiscret,
                                                        std::ofstream & bound_f,
@@ -1157,8 +1176,11 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluid::XFluidState::BlockSyste
   return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor for basic XFluid class                     schott 03/12 |
+ *----------------------------------------------------------------------*/
 FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> soliddis,
                      LINALG::Solver & solver,
@@ -1413,8 +1435,11 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   SetElementTurbulenceParameter();
 }
 
-// -------------------------------------------------------------------
-// -------------------------------------------------------------------
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate errors compared to an analytical solution   shahmiri 02/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 {
   /*     _______________
@@ -1622,6 +1647,10 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Print fluid stabilization parameters                   schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::PrintStabilizationParams()
 {
   // output of stabilization details
@@ -1711,6 +1740,9 @@ void FLD::XFluid::PrintStabilizationParams()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  print time integration information                     schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::PrintTimeInt()
 {
 
@@ -1743,6 +1775,9 @@ void FLD::XFluid::PrintTimeInt()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  calls SolveStationaryProblem() of Timeloop()           schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::Integrate()
 {
   if(myrank_== 0) std::cout << YELLOW_LIGHT << "Integrate routine for STATIONARY INTERFACES" << END_COLOR << endl;
@@ -1759,7 +1794,9 @@ void FLD::XFluid::Integrate()
 }
 
 
-
+/*----------------------------------------------------------------------*
+ |  Timeloop()                                             schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeLoop()
 {
   printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
@@ -1812,6 +1849,9 @@ void FLD::XFluid::TimeLoop()
   }
 }
 
+/*----------------------------------------------------------------------*
+ |  solve stationary problems                              schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::SolveStationaryProblem()
 {
   // -------------------------------------------------------------------
@@ -1933,6 +1973,9 @@ void FLD::XFluid::PrepareTimeStep()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  prepare the nonlinear solver                           schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::PrepareNonlinearSolve()
 {
 
@@ -1971,7 +2014,9 @@ void FLD::XFluid::PrepareNonlinearSolve()
 }
 
 
-
+/*----------------------------------------------------------------------*
+ |  solve the nonlinear problem                            schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::NonlinearSolve()
 {
   // ---------------------------------------------- nonlinear iteration
@@ -2253,7 +2298,7 @@ void FLD::XFluid::NonlinearSolve()
 
 void FLD::XFluid::LinearSolve()
 {
-
+  dserror("LinearSolve not implemented for Xfluid");
 }
 
 void FLD::XFluid::Predictor()
@@ -2273,6 +2318,10 @@ void FLD::XFluid::Evaluate(
 
 }
 
+
+/*----------------------------------------------------------------------*
+ |  time update                                            schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeUpdate()
 {
   cout << "FLD::XFluid::TimeUpdate " << endl;
@@ -2364,9 +2413,9 @@ void FLD::XFluid::TimeUpdate()
 } //XFluid::TimeUpdate()
 
 
-// -------------------------------------------------------------------
-//
-// -------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+ |  cut at interface positions and set new state vectors   schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::CutAndSetStateVectors()
 {
   cout << "CutAndSetStateVectors " << endl;
@@ -2572,6 +2621,9 @@ void FLD::XFluid::LiftDrag() const
 }
 
 
+/*----------------------------------------------------------------------*
+ |  evaluate statistics and write output                   schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::StatisticsAndOutput()
 {
   // time measurement: output and statistics
@@ -2610,6 +2662,10 @@ void FLD::XFluid::StatisticsAndOutput()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  write output                                           schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::Output()
 {
   //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
@@ -2961,6 +3017,10 @@ void FLD::XFluid::Output()
    return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  set an initial flow field                              schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::SetInitialFlowField(
   const INPAR::FLUID::InitialField initfield,
   const int startfuncno
@@ -3079,6 +3139,10 @@ void FLD::XFluid::SetInitialFlowField(
   return;
 } // end SetInitialFlowField
 
+
+/*----------------------------------------------------------------------*
+ |   set an initial interface field                        schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::SetInitialInterfaceField()
 {
 
@@ -3116,7 +3180,9 @@ void FLD::XFluid::SetInitialInterfaceField()
 } // end SetInitialSolidField
 
 
-
+/*----------------------------------------------------------------------*
+ |  set interface displacement at current time             schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::SetInterfaceDisplacement( double time )
 {
   cout << "\t set interface displacement at current time " << time << endl;
@@ -3181,8 +3247,9 @@ void FLD::XFluid::SetInterfaceDisplacement( double time )
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  compute and set the interface velocities               schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::ComputeInterfaceVelocities()
 {
   // compute interface velocities for different moving boundary applications
@@ -3269,9 +3336,9 @@ void FLD::XFluid::ComputeInterfaceVelocities()
 
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  extract interface fields from solid fields             schott 03/12 |
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::SetInterfaceFields()
 {
 
