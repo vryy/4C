@@ -14,25 +14,18 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
 #include "combust_algorithm.H"
-#include "combust_defines.H"
-#include "two_phase_defines.H"
-#include "combust_flamefront.H"
 #include "combust_reinitializer.H"
-#include "combust_utils.H"
 #include "combust_fluidimplicitintegration.H"
+
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_xfem/xfem_utils.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_io/io_gmsh.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |

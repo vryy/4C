@@ -4,6 +4,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "xfem_fluidwizard.H"
 #include "xfem_fluiddofset.H"

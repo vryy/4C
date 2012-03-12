@@ -48,11 +48,11 @@ namespace XFLUID
       const DRT::Node* node = nodes[inode];
       const std::vector<int> lm = boundarydis->Dof(node);
 
-      DRT::UTILS::ExtractMyValues(ivalcol,myval,lm);
+//      DRT::UTILS::ExtractMyValues(ivalcol,myval,lm); TODO winklmaier
       for (std::size_t isd = 0; isd < nsd; ++isd)
         val_boundary(isd,inode  ) = myval[isd];
 
-      DRT::UTILS::ExtractMyValues(ivalcol,myval,lm);
+//      DRT::UTILS::ExtractMyValues(ivalcol,myval,lm); TODO winklmaier
       for (std::size_t isd = 0; isd < nsd; ++isd)
         val_boundary(isd,inode+4) = myval[isd];
     }

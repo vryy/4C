@@ -12,6 +12,7 @@
 
 #include "fsi_nox_linearsystem_gcr.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

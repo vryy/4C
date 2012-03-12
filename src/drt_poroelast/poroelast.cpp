@@ -27,6 +27,7 @@
 #include "poroelast_monolithic.H"
 #include "poroelast_utils.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

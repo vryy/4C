@@ -10,6 +10,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"

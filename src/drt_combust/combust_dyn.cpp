@@ -13,22 +13,19 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #ifdef PARALLEL
-#include <mpi.h>
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "combust_dyn.H"
 #include "combust_utils.H"
 #include "combust_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

@@ -16,31 +16,44 @@ Maintainer: Florian Henke
 #define COMBUST_FLUIDIMPLICITINTEGRATION_H
 
 
-#include "../drt_io/io_ostream0.H"
-
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_combust.H"
+#include "../drt_io/io_ostream0.H"
 #include "../drt_lib/drt_dofset_pbc.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
-#include "../drt_fluid/drt_transfer_turb_inflow.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_xfem/dofkey.H"
 
 
 // forward declarations
 namespace XFEM
 {
-  class TIMEINT;
-  class STD;
+  class DofManager;
+  class ElementAnsatz;
   class ENR;
-  class SemiLagrange;
-  class Extrapolation;
   class EnrichmentProjection;
+  class Extrapolation;
+  class SemiLagrange;
+  class STD;
+  class TIMEINT;
 }
 
 // forward declarations
 class PeriodicBoundaryConditions;
 
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+  class FlameFront;
+}
+
 namespace FLD
 {
+  namespace UTILS
+  {
+    class KSPMapExtractor;
+  }
+
 /*!
 \brief implicit time integration for combustion problems
 
@@ -668,7 +681,7 @@ protected:
   LINALG::MapExtractor      velpressplitter_;
 
   //! Krylov space projection map extractor
-  FLD::UTILS::KSPMapExtractor kspsplitter_;
+  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;

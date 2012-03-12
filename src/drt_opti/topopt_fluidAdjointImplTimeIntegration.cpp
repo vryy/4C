@@ -37,6 +37,7 @@ Maintainer: Martin Winklmaier
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_opti/topopt_optimizer.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "topopt_fluidAdjointImplTimeIntegration.H"
 

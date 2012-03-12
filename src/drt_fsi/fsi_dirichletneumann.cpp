@@ -3,6 +3,7 @@
 
 #include "fsi_dirichletneumann.H"
 #include "fsi_debugwriter.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

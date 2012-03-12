@@ -13,6 +13,8 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+#include "../drt_lib/drt_resulttest.H"
+
 #include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
 
 namespace DRT

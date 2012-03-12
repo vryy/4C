@@ -8,6 +8,7 @@
 
 #include "fsi_nox_linearsystem_partitioned.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

@@ -263,8 +263,8 @@ public:
   double Theta() const { return theta_; }
   Teuchos::RCP<LINALG::Solver> LinearSolver()
   {
-    return rcp(new LINALG::Solver(fluidsolverparams_, discret_->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+//    return rcp(new LINALG::Solver(fluidsolverparams_, discret_->Comm(),
+//      DRT::Problem::Instance()->ErrorFile()->Handle()));
   }
 
   int Itemax() const { return itemax_; }

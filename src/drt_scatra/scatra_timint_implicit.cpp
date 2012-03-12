@@ -34,6 +34,7 @@ Maintainer: Georg Bauer
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
 #include "scatra_utils.H"
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy

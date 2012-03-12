@@ -32,6 +32,7 @@ Maintainer: Volker Gravemeier / Andreas Ehrl
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"

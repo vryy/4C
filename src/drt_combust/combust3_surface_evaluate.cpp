@@ -25,6 +25,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

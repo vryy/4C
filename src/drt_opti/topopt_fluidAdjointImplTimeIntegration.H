@@ -206,9 +206,6 @@ public:
                   Teuchos::RCP<const Epetra_Vector> readaccnp,
                   Teuchos::RCP<const Epetra_Vector> readaccn);
 
-  //! @name access methods for composite algorithms
-  /// monolithic FSI needs to access the linear fluid problem
-
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }

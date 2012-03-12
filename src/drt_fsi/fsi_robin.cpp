@@ -4,7 +4,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "fsi_robin.H"
 #include "../drt_inpar/inpar_fsi.H"
-
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/

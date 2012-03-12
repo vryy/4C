@@ -20,6 +20,7 @@ Maintainer: Lena Yoshihara
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

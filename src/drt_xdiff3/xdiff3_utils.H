@@ -13,6 +13,7 @@ Maintainer: Axel Gerstenberger
 #define XDIFF3_UTILS_H
 
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_xfem/xfem_utils.H"
 #include "../drt_geometry/intersection_service.H"
 #include <Epetra_SerialDenseSolver.h>

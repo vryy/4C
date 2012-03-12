@@ -20,6 +20,7 @@ Maintainer: Martin Winklmaier
 #endif
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "topopt_algorithm.H"
 #include "topopt_dyn.H"
 #include "topopt_utils.H"

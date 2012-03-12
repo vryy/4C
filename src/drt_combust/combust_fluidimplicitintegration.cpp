@@ -24,45 +24,24 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <stdio.h>
 
-#include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
-#include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
-#include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_xfem/dof_management.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
-#include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/timeInt_std_SemiLagrange.H"
 #include "../drt_xfem/timeInt_std_extrapolation.H"
 #include "../drt_xfem/timeInt_enr.H"
-#include "../drt_xfem/xfem_utils.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_dofset_pbc.H"
-#include "../drt_lib/drt_dofset_independent_pbc.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_ana.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-
-
-
-#include "../drt_io/io.H"
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -732,7 +711,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
       project_ = true;
       w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
       c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      kspsplitter_.Setup(*discret_);
+
+      kspsplitter_ = rcp(new FLD::UTILS::KSPMapExtractor());
+      kspsplitter_->Setup(*discret_);
     }
     else if (numfluid == 0)
     {
@@ -1526,7 +1507,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               XFEM::Enrichment::typeStandard, (*mode)[predof], false);
 
           // select only a certain volume to be affected by this projection
-          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*w_);
+          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_->ExtractKSPCondVector(*w_);
           w_->PutScalar(0.0);
           LINALG::Export(*tmpkspw,*w_);
 
@@ -1534,7 +1515,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
               XFEM::Enrichment::typeStandard, 1.0, false);
 
-          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*c_);
           c_->PutScalar(0.0);
           LINALG::Export(*tmpkspc,*c_);
         }
@@ -1574,7 +1555,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
               XFEM::Enrichment::typeStandard, 1.0, false);
 
-          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*c_);
           c_->PutScalar(0.0);
           LINALG::Export(*tmpkspc,*c_);
         }

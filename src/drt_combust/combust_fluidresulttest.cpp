@@ -20,10 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "combust_fluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
+#include "../drt_xfem/dof_management.H" // TODO Martin temporary
 
 
 

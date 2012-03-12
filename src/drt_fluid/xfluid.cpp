@@ -11,6 +11,7 @@
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"

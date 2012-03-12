@@ -29,6 +29,7 @@
 #include "poroelast_defines.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton

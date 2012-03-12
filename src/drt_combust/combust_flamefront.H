@@ -14,8 +14,9 @@ Maintainer: Florian Henke
 #ifndef COMBUST_FLAMEFRONT_H
 #define COMBUST_FLAMEFRONT_H
 
-#include "combust_refinementcell.H"
-#include "../drt_lib/drt_globalproblem.H"
+
+//#include "combust_refinementcell.H"
+//#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"
@@ -23,6 +24,7 @@ Maintainer: Florian Henke
 
 namespace COMBUST
 {
+  class RefinementCell;
 
   /// COMBUST FlameFront class
   /*!
