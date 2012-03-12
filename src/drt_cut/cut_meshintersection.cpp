@@ -1,5 +1,6 @@
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
@@ -7,6 +8,8 @@
 #include "cut_volumecell.H"
 
 #include "cut_meshintersection.H"
+
+#include "../drt_fluid/xfluid_defines.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -94,9 +97,44 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
   return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
+/*------------------------------------------------------------------------------------------------*
+ * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
+ * have not to be computed, standard cut for cut_est                                 schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
 {
   Status();
+
+  Cut_Mesh( include_inner );
+
+  Mesh & m = NormalMesh();
+
+  if ( options_.FindPositions() )
+  {
+    // find inside and outside positions of nodes
+    m.FindNodePositions();
+
+    m.FindFacetPositions();
+
+    // find number and connection of dofsets at nodes from cut volumes
+    m.FindNodalDOFSets( include_inner );
+
+  }
+
+  Cut_Finalize( include_inner, VCellgausstype, BCellgausstype);
+
+  Status(VCellgausstype);
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
+ * have to be parallelized                                                           schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
+{
 
   Mesh & m = NormalMesh();
 
@@ -116,54 +154,50 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgauss
   m.MakeFacets();
   m.MakeVolumeCells();
 
-  if ( options_.FindPositions() )
-  {
-    // find inside and outside positions of nodes
-    m.FindNodePositions();
 
-    // find number and connection of dofsets at nodes from cut volumes
-//    m.FindNodalDOFSets( include_inner );
-  }
+}
 
+
+/*------------------------------------------------------------------------------------------------*
+ * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
+ * have to be parallelized                                                           schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype)
+{
+
+  Mesh & m = NormalMesh();
 
   if(VCellgausstype=="Tessellation")
   {
-	  TEUCHOS_FUNC_TIME_MONITOR( "Tessellation time" );
-	  m.CreateIntegrationCells( 0, false );
-	  //m.RemoveEmptyVolumeCells();
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
+    m.CreateIntegrationCells( 0, false );
+    //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
-	  //m.TestVolumeSurface();
-	  m.TestFacetArea();
+    //m.TestVolumeSurface();
+    m.TestFacetArea();
 #endif
-	  m.SimplifyIntegrationCells();
+    m.SimplifyIntegrationCells();
 
 #ifdef DEBUGCUTLIBRARY
-	  m.TestElementVolume( true );
+    m.TestElementVolume( true );
 #endif
   }
 
   if(VCellgausstype=="MomentFitting")
   {
-	  TEUCHOS_FUNC_TIME_MONITOR( "MomentFitting time" );
-	  m.MomentFitGaussWeights(include_inner, BCellgausstype);
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::MomentFitting" );
+    m.MomentFitGaussWeights(include_inner, BCellgausstype);
   }
-  Status(VCellgausstype);
+
 }
 
 
-void GEO::CUT::MeshIntersection::CreateNodalDofSet( bool include_inner )
-{
-    Mesh & m = NormalMesh();
 
-    m.FindNodalDOFSets( include_inner );
-}
-
-
-void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::Discretization & dis )
+void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::Discretization& dis)
 {
 
-    std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/ouside (no duplicates!)
+    std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/outside (no duplicates!)
 
     Mesh & m = NormalMesh();
 
@@ -301,17 +335,31 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
         const std::vector<plain_volumecell_set> & ele_vc_sets_inside = eh->GetVcSetsInside();
         const std::vector<plain_volumecell_set> & ele_vc_sets_outside = eh->GetVcSetsOutside();
 
-        std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = eh->GetNodalDofSet_VcSets_Inside();
+        std::vector<std::vector<int> > & nodaldofset_vc_sets_inside  = eh->GetNodalDofSet_VcSets_Inside();
         std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = eh->GetNodalDofSet_VcSets_Outside();
+
+        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_inside  = eh->Get_NodeDofsetMap_VcSets_Inside_forCommunication();
+        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_outside = eh->Get_NodeDofsetMap_VcSets_Outside_forCommunication();
 
         if(include_inner )
         {
-        	ConnectNodalDOFSets(nodes, include_inner, ele_vc_sets_inside, nodaldofset_vc_sets_inside);
+          ConnectNodalDOFSets(nodes,
+                              include_inner,
+                              dis,
+                              ele_vc_sets_inside,
+                              nodaldofset_vc_sets_inside,
+                              vcsets_nid_dofsetnumber_map_toComm_inside);
         }
 
-        ConnectNodalDOFSets(nodes, include_inner, ele_vc_sets_outside, nodaldofset_vc_sets_outside);
+        ConnectNodalDOFSets(nodes,
+                            include_inner,
+                            dis,
+                            ele_vc_sets_outside,
+                            nodaldofset_vc_sets_outside,
+                            vcsets_nid_dofsetnumber_map_toComm_outside);
 
     }
+
 
 #if(0)
     DumpGmshNumDOFSets(include_inner, eids, dis);
@@ -319,7 +367,161 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 }
 
 
-// set nodal cell set inside and outside
+/*--------------------------------------------------------------------------------------*
+ | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData,
+                                                        DRT::Discretization& dis)
+{
+
+  //TODO: set bool include_inner
+  bool include_inner = false;
+
+  // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
+  // the communication is done element wise for all its sets of volumecells when there is a non-row node in this element
+  for ( int k = 0; k < dis.NumMyColElements(); ++k )
+  {
+    DRT::Element* ele = dis.lColElement( k );
+    int eid = ele->Id();
+    GEO::CUT::ElementHandle * e = GetElement( eid );
+
+    if(e!=NULL)
+    {
+
+      if( include_inner)
+      {
+        // get inside cell_sets connected within current element
+        const std::vector<plain_volumecell_set> & ele_vc_sets_inside = e->GetVcSetsInside();
+        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_inside = e->Get_NodeDofsetMap_VcSets_Inside_forCommunication();
+
+        int set_index=0;
+        // decide for each set of connected volumecells, if communication is necessary
+        for(std::vector<std::map<int,int> >::iterator set_it = vcsets_nid_dofsetnumber_map_toComm_inside.begin();
+            set_it != vcsets_nid_dofsetnumber_map_toComm_inside.end();
+            set_it++)
+        {
+
+          // does the current set contain dofset data to communicate
+          if(set_it->size() > 0)
+          {
+            // communicate data for the first Volumecell in this set
+            // REMARK: all cells contained in a set carry the same dofset information
+
+            //first vc in set
+            VolumeCell * cell = *(ele_vc_sets_inside[set_index].begin());
+
+            if(cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
+
+            CreateParallelDofSetDataVC(parallel_dofSetData, set_index, true, cell, *set_it);
+
+          }
+
+          set_index++;
+        }
+      }
+
+      // standard case for outside elements
+      {
+        // get outside cell_sets connected within current element
+        const std::vector<plain_volumecell_set> & ele_vc_sets_outside = e->GetVcSetsOutside();
+        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_outside = e->Get_NodeDofsetMap_VcSets_Outside_forCommunication();
+
+        int set_index=0;
+        // decide for each set of connected volumecells, if communication is necessary
+        for(std::vector<std::map<int,int> >::iterator set_it = vcsets_nid_dofsetnumber_map_toComm_outside.begin();
+            set_it != vcsets_nid_dofsetnumber_map_toComm_outside.end();
+            set_it++)
+        {
+
+          // does the current set contain dofset data to communicate
+          if(set_it->size() > 0)
+          {
+            // communicate data for the first Volumecell in this set
+            // REMARK: all cells contained in a set carry the same dofset information
+
+            //first vc in set
+            VolumeCell * cell = *(ele_vc_sets_outside[set_index].begin());
+
+            if(cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
+
+            CreateParallelDofSetDataVC(parallel_dofSetData, set_index, false, cell, *set_it);
+
+          }
+
+
+
+          set_index++;
+        }
+      }
+
+    }
+
+  }// end col elements
+
+}
+
+
+/*--------------------------------------------------------------------------------------*
+ | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData,
+                                                             int                           set_index,
+                                                             bool                          inside,
+                                                             VolumeCell *                  cell,
+                                                             std::map<int,int>&            node_dofset_map)
+{
+
+    if(node_dofset_map.size() > 0)
+    {
+      // get volumcell information
+      // REMARK: identify volumecells using the volumecells (its facets) points
+      std::vector<Point*> cut_points;
+      {
+        // get all the facets points
+        const plain_facet_set facets = cell->Facets();
+
+        for(plain_facet_set::const_iterator i = facets.begin(); i!=facets.end(); ++i)
+        {
+          Facet* f = *i;
+
+          // decide which points has to be send!!
+          // Points, CornerPoints, AllPoints
+          std::vector<Point*> facetpoints = f->Points();
+
+          std::copy( facetpoints.begin(), facetpoints.end(), std::inserter( cut_points, cut_points.begin() ) );
+        }
+      }
+
+      std::vector<LINALG::Matrix<3,1> > cut_points_coords_;
+
+      for(std::vector<Point*>::iterator p=cut_points.begin(); p!=cut_points.end(); ++p)
+      {
+        LINALG::Matrix<3,1> coords(true);
+        const double * x = (*p)->X();
+        for(int i=0; i<3; i++)
+        {
+          coords(i) = x[i];
+        }
+        cut_points_coords_.push_back(coords);
+      }
+
+
+
+      // get the parent element Id
+      int peid = cell->ParentElement()->Id();
+
+      // create dofset data for this volumecell for Communication
+      parallel_dofSetData->push_back( DofSetData( set_index, inside, cut_points_coords_, peid, node_dofset_map) );
+
+    }
+    else dserror("communication for empty node-dofset map not necessary!");
+
+}
+
+
+/*--------------------------------------------------------------------------------------*
+ | find cell sets around each node (especially for quadratic elements)     schott 03/12 |
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::FindNodalCellSets( bool include_inner,
                                                     std::set<int> & eids,
                                                     std::map<int, ElementHandle*> & sourrounding_elements,
@@ -387,11 +589,15 @@ void GEO::CUT::MeshIntersection::FindNodalCellSets( bool include_inner,
 
 }
 
-
-
-void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> & nodes, bool include_inner,
-		const std::vector<plain_volumecell_set> & connected_vc_sets,
-		std::vector<std::vector<int> > &    nodaldofset_vc_sets)
+/*--------------------------------------------------------------------------------------*
+ | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> &                     nodes,
+                                                      bool                                      include_inner,
+                                                      DRT::Discretization&                      dis,
+                                                      const std::vector<plain_volumecell_set> & connected_vc_sets,
+                                                      std::vector<std::vector<int> > &          nodaldofset_vc_sets,
+                                                      std::vector<std::map<int,int> >&          vcsets_nid_dofsetnumber_map_toComm)
 {
 
     for(std::vector<plain_volumecell_set>::const_iterator s=connected_vc_sets.begin();
@@ -402,20 +608,58 @@ void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> & node
 
         std::vector<int > nds;
 
+#ifdef PARALLEL
+        // fill the map with nids, whose dofsets for the current set of volumecells has to filled by the nodes row proc
+        // initialize the value (dofset_number with -1)
+        std::map<int,int> nids_dofsetnumber_map_toComm;
+#endif
+
         // find this plain_volumecell_set in dof_cellsets_ vector of each node
         {
             for ( std::vector<Node*>::iterator i=nodes.begin();
                   i!=nodes.end();
                   ++i )
             {
-                Node * n = *i;
+//                Node * n = *i;
+//
+//                if( n->Id() >= 0) nds.push_back( n->DofSetNumberNEW( cells ) );
+//                else dserror("node with negative Id gets no dofnumber!");
 
-                if( n->Id() >= 0) nds.push_back( n->DofSetNumberNEW( cells ) );
-                else dserror("node with negative Id gets no dofnumber!");
+              Node * n = *i;
+
+              int nid = n->Id();
+
+              DRT::Node* drt_node = dis.gNode(nid);
+
+              if( nid >= 0)
+              {
+#ifdef PARALLEL
+                // decide if the information for this cell has to be ordered from row-node or not
+                //REMARK:
+                if(drt_node->Owner() == dis.Comm().MyPID())
+                {
+                  nds.push_back( n->DofSetNumberNEW( cells ) );
+                }
+                else
+                {
+                  // insert the required pair of nid and unset dofsetnumber value (-1)
+                  nids_dofsetnumber_map_toComm.insert(pair<int,int>(nid,-1));
+
+                  // set dofset number to minus one, not a valid dofset number
+                  nds.push_back(-1);
+
+                }
+#else
+                nds.push_back( n->DofSetNumberNEW( cells ) );
+#endif
+              }
+              else dserror("node with negative Id gets no dofnumber!");
+
             }
 
         }
 
+        vcsets_nid_dofsetnumber_map_toComm.push_back(nids_dofsetnumber_map_toComm);
 
         // set the nds vector for each volumecell of the current set
         for(plain_volumecell_set::iterator c=cells.begin(); c!=cells.end(); c++)

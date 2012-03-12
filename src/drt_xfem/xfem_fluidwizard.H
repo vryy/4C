@@ -30,9 +30,11 @@ public:
   {
   }
 
-  void Cut(  bool include_inner, const Epetra_Vector & idispcol, std::string VCellgausstype,
+  /// cut routine for new XFEM framework (XFSI and XFLUIDFLUID)
+  void Cut(  bool include_inner, const Epetra_Vector & idispcol, bool parallel, std::string VCellgausstype,
       std::string BCellgausstype, bool positions=true  );
 
+  /// cut routine for old XFEM framework (combustion, twophaseflow, old xfsi)
   void Cut( const Epetra_Vector & idispcol,
             std::map< int, GEO::DomainIntCells > & domainintcells,
             std::map< int, GEO::BoundaryIntCells > & boundaryintcells,

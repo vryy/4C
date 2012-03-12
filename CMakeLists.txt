@@ -1319,6 +1319,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_meshhandle.cpp
   src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_node.cpp
+  src/drt_cut/cut_parallel.cpp
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointgraph.cpp
   src/drt_cut/cut_pointpool.cpp
@@ -2406,17 +2407,26 @@ baci_test(w1q9_dyn_rot_drt_gena 1 "")
 baci_test(womersley_f3 2 49)
 baci_test(womersley_f3_neumann_out 2 49)
 baci_test(xfluid_channel_constWDBC_inclinedCut 1 "")
+baci_test(xfluid_channel_constWDBC_inclinedCut 2 "")
 baci_test(xfluid_channel_constWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_constWDBC_straightCut 1 "")
+baci_test(xfluid_channel_constWDBC_straightCut 2 "")
 baci_test(xfluid_channel_constWDBC_straightCut_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut 2 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 2 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_instat 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_instat 2 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_Nitsche 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_Nitsche 2 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 2 "")
 baci_test(xfluid_multibody_hex8 1 "")
+baci_test(xfluid_multibody_hex8 2 "")
 baci_test(xfluid_stat_sliver_cut_instat 1 "")
+baci_test(xfluid_stat_sliver_cut_instat 2 "")
 baci_test(xfsi_fluid_pusher_instat_OST_1_Nitsche 1 "")
 baci_test(xfsi_fluid_pusher_instat_OST_1 1 "")
 baci_test(xfsi_fluid_pusher_stat 1 "")

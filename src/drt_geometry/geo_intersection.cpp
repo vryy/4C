@@ -27,6 +27,7 @@
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_side.H"
 #include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_parallel.H"
 
 
 // int GEO::CutDofSet::NumDofPerNode( const DRT::Node & node, unsigned dspos ) const
@@ -108,21 +109,87 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
   return mesh_->GetNode( nid );
 }
 
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
+{
+  // for XFSI and XFLUIDFLUID we have communicate node positions and dofset data
+  bool parallel = true;
+
+  mesh_->Status();
+
+
+  // FIRST step: cut the mesh
+  mesh_->Cut_Mesh( include_inner );
+
+  // SECOND step: find node positions and create dofset in PARALLEL
+  CutParallel_FindPositionDofSets( include_inner, parallel );
+
+  // THIRD step: perform tesselation or moment fitting on the mesh
+  mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
+
+
+  mesh_->Status(VCellgausstype);
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool parallel)
+{
+  GEO::CUT::Options options;
+  mesh_->GetOptions(options);
+
+  if ( options.FindPositions() )
+  {
+
+    GEO::CUT::Mesh & m = mesh_->NormalMesh();
+
+    // find inside and outside positions of nodes
+    m.FindNodePositions();
+
+    // find undecided nodes
+    // * for serial simulations all node positions should be set
+    // * for parallel simulations there can be some undecided nodes
+
+    // create a parallel Cut object for the current background mesh to communicate missing data
+    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( dis_, m, *mesh_ ) );
+
+    if(parallel) cut_parallel->CommunicateNodePositions();
+
+    m.FindFacetPositions();
+
+    // find number and connection of dofsets at nodes from cut volumes
+    #ifdef DOFSETS_NEW
+      mesh_->CreateNodalDofSetNEW( include_inner, dis_);
+    #else
+      m.FindNodalDOFSets( include_inner );
+    #endif
+
+    if(parallel) cut_parallel->CommunicateNodeDofSetNumbers();
+
+  }
+
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ *cut routine for standard non-parallel framework (only for cuttest)                 schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
 {
   mesh_->Cut( include_inner, VCellgausstype, BCellgausstype );
 }
 
-void GEO::CutWizard::CreateNodalDofSet( bool include_inner, DRT::Discretization & backdis )
-{
 
-#ifdef DOFSETS_NEW
-  mesh_->CreateNodalDofSetNEW( include_inner, backdis );
-#else
-  mesh_->CreateNodalDofSet( include_inner );
-#endif
-}
-
+/*------------------------------------------------------------------------------------------------*
+ * cut routine for standard combustion and two phase flow framework                  schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
                           std::map< int, BoundaryIntCells >& boundaryintcells,
                           std::string VCellgausstype,

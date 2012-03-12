@@ -7,11 +7,16 @@
 
 #include <vector>
 
-#include "../drt_lib/drt_element.H"
+
 
 #include "cut_meshhandle.H"
 #include "cut_pointpool.H"
 #include "cut_options.H"
+
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace GEO
 {
@@ -28,6 +33,69 @@ class MeshIntersection
 {
 public:
 
+
+    /*!
+    \brief This class holds data for all volumecells for that dofsets (dofset numbers) of non-row nodes have
+       to be communicated between processors.
+     */
+    class DofSetData
+    {
+    public:
+
+      //! constructor for creating volumecells dofset data for communication between processors (constructor during the Robin round)
+      DofSetData(
+          int                               set_index,         // set index for Volumecell
+          bool                              inside_cell,       // cell inside or outside
+          std::vector<LINALG::Matrix<3,1> > cut_points_coords, // coordinates of cut_points
+          int peid,
+          std::map<int,int> & node_dofsetnumber_map
+      ) :
+        set_index_(set_index),
+        inside_cell_(inside_cell),
+        peid_(peid)
+        //node_dofsetnumber_map_(node_dofsetnumber_map)
+      {
+        std::copy(node_dofsetnumber_map.begin(), node_dofsetnumber_map.end(), std::inserter(node_dofsetnumber_map_, node_dofsetnumber_map_.begin()) );
+        std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
+      }
+
+
+      //! print the dofset data to screen
+      void print()
+      {
+        // print volumecell information
+        std::cout << "Volumecell-DofSetData: " << endl;
+
+        // print parent element Id
+        std::cout << "\tparent element id: " << peid_ << endl;
+
+        // print node_dofsetnumber_map
+        std::cout << "\tnode_dofsetnumber_map" << endl;
+        for(std::map<int,int>::iterator i=node_dofsetnumber_map_.begin(); i!= node_dofsetnumber_map_.end(); ++i)
+        {
+          std::cout << "\t\tnodeId \t" << i->first << "\t dofsetnumber \t" << i->second << endl;
+        }
+      }
+
+      //! destructor
+      ~DofSetData()
+      {
+        return;
+      }
+
+      int                                set_index_;              // set index for Volumecell
+      bool                               inside_cell_;            // bool inside or outside cell
+      std::vector<LINALG::Matrix<3,1> >  cut_points_coords_;      // coordinates for points of Volumecell
+      int                                peid_;                   // parent element Id for volumecell
+      std::map<int,int>                  node_dofsetnumber_map_;  // node Ids and dofset numbers that for that data has to be communicated
+
+
+    private:
+
+    }; // end class DofSetData
+
+
+
   explicit MeshIntersection( int numcutmesh=1 )
     : pp_( Teuchos::rcp( new PointPool ) ),
       mesh_( options_, 1, pp_, false )
@@ -39,7 +107,10 @@ public:
     }
   }
 
+
   void SetFindPositions( bool positions ) { options_.SetFindPositions( positions ); }
+
+  void GetOptions(Options & options){options = options_;};
 
   ElementHandle * AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
 
@@ -47,12 +118,28 @@ public:
 
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
+  /// standard cut routine for non-parallel frameworks and cuttest
   void Cut( bool include_inner, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation" );
 
-  void CreateNodalDofSet ( bool include_inner );
+  /// cut routine for parallel xfsi and xfluidfluid cuts
+  void CutParallel( bool include_inner, DRT::Discretization& backdis, bool parallel, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation");
 
+  /// cut routine for cutting the mesh (cut the mesh and create lines, facets, volumecells)
+  void Cut_Mesh( bool include_inner );
+
+  /// cut routine for cutting the mesh (create integration cells or perform moment fitting)
+  void Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype);
+
+  /// create nodal dofset sets within the parallel cut framework
   void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
 
+  /// fill parallel DofSetData with information that has to be communicated
+  void FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData, DRT::Discretization& dis);
+
+  /// create parallel DofSetData for a volumecell that has to be communicated
+  void CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData , int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
+
+  /// find cell sets around each node (especially for quadratic elements)
   void FindNodalCellSets( bool include_inner,
                           std::set<int> & eids,
                           std::map<int, ElementHandle*> & sourrounding_elements,
@@ -62,11 +149,13 @@ public:
                           std::vector<plain_volumecell_set> & cell_sets_outside,
                           std::vector<plain_volumecell_set> & cell_sets );
 
-
-  void ConnectNodalDOFSets( std::vector<Node *> & nodes,
-                            bool include_inner,
-                            const std::vector<plain_volumecell_set> & connected_vc_sets,
-                            std::vector<std::vector<int> > &    nodaldofset_vc_sets);
+  /// connect sets of volumecells for neighboring elements around a node
+  void ConnectNodalDOFSets( std::vector<Node *> &                      nodes,
+                            bool                                       include_inner,
+                            DRT::Discretization&                       dis,
+                            const std::vector<plain_volumecell_set> &  connected_vc_sets,
+                            std::vector<std::vector<int> > &           nodaldofset_vc_sets,
+                            std::vector<std::map<int,int> >&           vcsets_nid_dofsetnumber_map_toComm);
 
   Node * GetNode( int nid ) const;
 
@@ -96,13 +185,22 @@ public:
 
   void DumpGmshVolumeCells( std::string name );
 
+
+
+
+
+
 private:
+
+
 
   Teuchos::RCP<PointPool> pp_;
 
   Options options_;
   MeshHandle mesh_;
   std::vector<Teuchos::RCP<MeshHandle> > cut_mesh_;
+
+
 };
 
 }

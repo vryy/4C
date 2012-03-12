@@ -52,8 +52,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     wizard_(  Teuchos::rcp( new XFEM::FluidWizard(*xfluid.bgdis_, *xfluid.boundarydis_ )))
 {
 
-  // do the cut for the 0 timestep and find the fluid dofset
-  wizard_->Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
+  // do the (parallel!) cut for the 0 timestep and find the fluid dofset
+  wizard_->Cut( false, idispcol, true, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);

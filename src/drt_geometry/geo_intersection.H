@@ -71,10 +71,16 @@ namespace GEO
 
     GEO::CUT::Node * GetNode( int nid );
 
+    /// cut routine for parallel framework in XFSI and XFLUIDFLUID
+    void CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
+
+    /// routine for finding node positions and computing vc dofsets in a parallel way
+    void CutParallel_FindPositionDofSets(bool include_inner, bool parallel);
+
+    /// cut routine for standard non-parallel framework (only for cut_test)
     void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
 
-    void CreateNodalDofSet ( bool include_inner, DRT::Discretization & dis );
-
+    /// cut routine for standard combustion and two phase flow framework
     void Cut( std::map< int, DomainIntCells >& domainintcells,
               std::map< int, BoundaryIntCells >& boundaryintcells,
               std::string VCellgausstype,

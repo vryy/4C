@@ -50,7 +50,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
-  wizard_->Cut( false, idispcol, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
+  wizard_->Cut( false, idispcol, true, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
 
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
@@ -561,6 +561,11 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                                            Teuchos::RCP<Epetra_Vector> vel,
                                            Teuchos::RCP<Epetra_Vector> acc)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::GmshOutput" );
+
+  int myrank = discret.Comm().MyPID();
+
+  if(myrank==0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
 
   const int step_diff = 100;
   bool screen_out = xfluid_.gmsh_debug_out_screen_;
@@ -659,7 +664,6 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
-
 #ifdef DOFSETS_NEW
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
@@ -676,6 +680,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
             GEO::CUT::plain_volumecell_set & cells = *s;
 
             std::vector<int> & nds = nds_sets[set_counter];
+
 
             for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
             {
@@ -752,6 +757,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
   if(count == -1) gmshfilecontent_acc_ghost   << "};\n";
   gmshfilecontent_bound << "};\n";
 
+
+  if(myrank==0) std::cout << " done\n" << std::flush;
 }
 
 // -------------------------------------------------------------------
@@ -1243,16 +1250,16 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   switch (boundIntType_)
   {
   case INPAR::XFEM::BoundaryTypeSigma:
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
+    if(myrank_ == 0) std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
     break;
   case INPAR::XFEM::BoundaryTypeTauPressure:
     dserror ("XFEM interface method: BoundaryTypeTauPressure not available");
     break;
   case INPAR::XFEM::BoundaryTypeNitsche:
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
+    if(myrank_ == 0) std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
     break;
   case INPAR::XFEM::BoundaryTypeNeumann:
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNeumann" << END_COLOR << endl;
+    if(myrank_ == 0) std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNeumann" << END_COLOR << endl;
     break;
   default:
     dserror("BoundaryType unknown!!!");
@@ -1289,10 +1296,33 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
     std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";
   }
 
+
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
+  const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
+  const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  boundarydis_->ExportColumnNodes(nodecolmap);
+  boundarydis_->ExportColumnElements(elemcolmap);
+
+  boundarydis_->FillComplete();
+
+
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_));
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
+
+//  cout << *soliddis_ << endl;
+//  sleep(0.1);
+//  cout << *discret_ << endl;
+//  sleep(0.1);
+//  cout << *boundarydis_ << endl;
+//  sleep(0.1);
 
   // get constant density variable for incompressible flow
 /*  {
@@ -2719,7 +2749,16 @@ void FLD::XFluid::Output()
    if(gmsh_sol_out_)
    {
        int count = -1; // no counter for standard solution output
-       state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , state_->velnp_ );
+
+       const Epetra_Map* colmap = discret_->DofColMap();
+       Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
+
+       LINALG::Export(*state_->velnp_,*output_col_vel);
+
+//       const Teuchos::RCP<const Epetra_Vector> output_col_vel;
+//       output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_->velnp_);
+
+       state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel );
 
    }
 

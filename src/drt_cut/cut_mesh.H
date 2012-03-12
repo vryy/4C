@@ -21,6 +21,8 @@
 //#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+
+
 namespace GEO
 {
 namespace CUT
@@ -52,6 +54,7 @@ class Wedge6IntegrationCell;
 class Pyramid5IntegrationCell;
 
 
+
 /// Keeps the whole thing. Volume mesh, cut surface, cuts
 /*!
  * There is one background mesh and one mesh for the cut surface. These meshes
@@ -63,6 +66,91 @@ class Pyramid5IntegrationCell;
 class Mesh
 {
 public:
+
+
+//  /*!
+//  \brief This class holds data for all volumecells for that dofsets (dofset numbers) of non-row nodes have
+//     to be communicated between processors.
+//   */
+//  class DofSetData
+//  {
+//  public:
+//
+//
+//    //! constructor for creating volumecells dofset data for communication between processors (initialize missing dofset numbers with -1)
+//    DofSetData(
+//        std::vector<Point*> cut_points,
+//        int peid,
+//        const std::vector<int> nodeIdsToCommunicate
+//    ) :
+//      peid_(peid)
+//    {
+//      for(std::vector<Point*>::iterator p=cut_points.begin(); p!=cut_points.end(); ++p)
+//      {
+//        LINALG::Matrix<3,1> coords(true);
+//        const double * x = (*p)->X();
+//        for(int i=0; i<3; i++)
+//        {
+//          coords(i) = x[i];
+//        }
+//        cut_points_coords_.push_back(coords);
+//      }
+//
+//      // initialize the dofset number map with dofsetnumber=-1 for each node
+//      for(int i=0; i< (int)nodeIdsToCommunicate.size(); i++)
+//      {
+//        node_dofsetnumber_map_.insert(pair<int,int>(nodeIdsToCommunicate[i], -1));
+//      }
+//
+//      if(cut_points.size() == 0) dserror("no cut_points for current volumecell in DofSetData!");
+//    }
+//
+//    //! constructor for creating volumecells dofset data for communication between processors (constructor during the Robin round)
+//    DofSetData(
+//        std::vector<LINALG::Matrix<3,1> > cut_points_coords, // coordinates of cut_points
+//        int peid,
+//        const std::map<int,int> node_dofsetnumber_map
+//    ) :
+//      peid_(peid)
+//      //node_dofsetnumber_map_(node_dofsetnumber_map)
+//    {
+//      std::copy(node_dofsetnumber_map.begin(), node_dofsetnumber_map.end(), std::inserter(node_dofsetnumber_map_, node_dofsetnumber_map_.begin()) );
+//      std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
+//    }
+//
+//
+//    //! print the dofset data to screen
+//    void print()
+//    {
+//      // print volumecell information
+//      std::cout << "Volumecell-DofSetData: " << endl;
+//
+//      // print parent element Id
+//      std::cout << "\tparent element id: " << peid_ << endl;
+//
+//      // print node_dofsetnumber_map
+//      std::cout << "\tnode_dofsetnumber_map" << endl;
+//      for(std::map<int,int>::iterator i=node_dofsetnumber_map_.begin(); i!= node_dofsetnumber_map_.end(); ++i)
+//      {
+//        std::cout << "\t\tnodeId \t" << i->first << "\t dofsetnumber \t" << i->second << endl;
+//      }
+//    }
+//
+//    //! destructor
+//    ~DofSetData()
+//    {
+//      return;
+//    }
+//
+//    std::vector<LINALG::Matrix<3,1> > cut_points_coords_;
+//    int peid_;                                // parent element Id for volumecell
+//    std::map<int,int> node_dofsetnumber_map_; // node Ids and dofset numbers that for that data has to be communicated
+//
+//
+//  private:
+//
+//  }; // end class DofSetData
+
 
   Mesh( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
@@ -135,7 +223,13 @@ public:
 
   void FindFacetPositions();
 
+  /// check if there are nodes whose position is undecided, return whether undecided node positions available
+  bool CheckForUndecidedNodePositions( std::map<int,int> & undecided_node );
+
   void FindNodalDOFSets( bool include_inner );
+
+//  /// fill parallel DofSetData with information that has to be communicated
+//  void FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData_);
 
   void CreateIntegrationCells( int count, bool levelset );
 
@@ -304,6 +398,9 @@ private:
 
   /// internally generated element (quadratic to linear conversation)
   std::list<Teuchos::RCP<Element> > shadow_elements_;
+
+
+//  RCP<std::vector<DofSetData> > parallel_dofSetData_ ;
 
   //@}
 };

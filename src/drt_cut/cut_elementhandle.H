@@ -85,6 +85,10 @@ public:
 
   std::vector<std::vector<int> > & GetNodalDofSet_VcSets_Outside() {return nodaldofset_vc_sets_outside_; };
 
+  std::vector<std::map<int,int> > & Get_NodeDofsetMap_VcSets_Inside_forCommunication() {return vcsets_nid_dofsetnumber_toComm_inside_; };
+
+  std::vector<std::map<int,int> > & Get_NodeDofsetMap_VcSets_Outside_forCommunication() {return vcsets_nid_dofsetnumber_toComm_outside_; };
+
   void GetVolumeCellsDofSets( std::vector< plain_volumecell_set > & cellsets,
   		                              std::vector< std::vector< int > >   & nds_sets  );
 
@@ -131,6 +135,10 @@ protected:
   /// dof set number of all element nodes, contains the dofset numbers for all nodes of the superior element (i.e. 20 for hex20 superior element)
   std::vector<std::vector<int> > nodaldofset_vc_sets_inside_;
   std::vector<std::vector<int> > nodaldofset_vc_sets_outside_;
+
+  /// for each set of volumecells a map containing nids and dofsetnumbers that has to be communicated for the superior element (i.e. 20 for hex20 superior element)
+  std::vector<std::map<int,int> > vcsets_nid_dofsetnumber_toComm_inside_;
+  std::vector<std::map<int,int> > vcsets_nid_dofsetnumber_toComm_outside_;
 
 
 };

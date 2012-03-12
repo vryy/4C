@@ -16,6 +16,7 @@
 
 void XFEM::FluidWizard::Cut(  bool include_inner,
                               const Epetra_Vector & idispcol,
+                              bool parallel,
                               std::string VCellgausstype,     //Gauss point generation method for Volumecell
                               std::string BCellgausstype,     //Gauss point generation method for Boundarycell
                               bool positions )
@@ -104,17 +105,23 @@ void XFEM::FluidWizard::Cut(  bool include_inner,
     cw.AddElement( element );
   }
 
-  // run the Cut
-  cw.Cut( include_inner, VCellgausstype, BCellgausstype );
-
-  cw.CreateNodalDofSet( include_inner, backdis_ );
+  // run the (parallel) Cut
+  if(parallel)
+  {
+    cw.CutParallel( include_inner, VCellgausstype, BCellgausstype );
+  }
+  else
+  {
+    dserror("the non-parallel cutwizard does not support the DofsetNEW framework");
+//    cw.Cut( include_inner, VCellgausstype, BCellgausstype );
+  }
 
   // cleanup
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( backdis_.Comm().MyPID() == 0 )
   {
-    std::cout << " Success (" << t_end  <<  " secs)\n";
+    std::cout << "\n XFEM::FluidWizard::Cut: Success (" << t_end  <<  " secs)\n";
   }
 
   cw.DumpGmshNumDOFSets(include_inner);
