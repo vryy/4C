@@ -49,4 +49,49 @@ bool DRT::ELEMENTS::Beam3::ReadElement(const std::string& eletype,
   return true;
 }
 
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetIyy(const double& Iyy)
+{
+  Iyy_ = Iyy;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetIzz(const double& Izz)
+{
+  Izz_ = Izz;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                            (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetIrr(const double& Irr)
+{
+  Irr_ = Irr;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set cross section area                           (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetCrossSec(const double& crosssec)
+{
+  crosssec_ = crosssec;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set cross section area with shear correction     (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetCrossSecShear(const double& crosssecshear)
+{
+  crosssecshear_ = crosssecshear;
+  return;
+}
+
 #endif  // #ifdef CCADISCRET

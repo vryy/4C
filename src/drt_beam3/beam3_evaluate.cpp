@@ -26,22 +26,17 @@ Maintainer: Christian Cyron
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
-
-
-
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
-    DRT::Discretization& discretization,
-    vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+                                   DRT::Discretization& discretization,
+                                   vector<int>& lm,
+                                   Epetra_SerialDenseMatrix& elemat1,
+                                   Epetra_SerialDenseMatrix& elemat2,
+                                   Epetra_SerialDenseVector& elevec1,
+                                   Epetra_SerialDenseVector& elevec2,
+                                   Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Beam3::ActionType act = Beam3::calc_none;
   // get the action required
@@ -613,17 +608,17 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(const LINALG::Matrix<3,1>& deltath
 {
   //computing quaternion equivalent to rotation by deltatheta
   LINALG::Matrix<4,1> Qrot;
-  angletoquaternion(deltatheta,Qrot);
+  LARGEROTATIONS::angletoquaternion(deltatheta,Qrot);
 
   //computing quaternion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
-  quaternionproduct(Qold_[numgp],Qrot,Qnew_[numgp]);
+  LARGEROTATIONS::quaternionproduct(Qold_[numgp],Qrot,Qnew_[numgp]);
 
   //normalizing quaternion in order to make sure that it keeps unit absolute values through time stepping
   double abs = Qnew_[numgp].Norm2();
   for(int i = 0; i<4; i++)
     Qnew_[numgp](i) = Qnew_[numgp](i) / abs;
 
-  quaterniontotriad(Qnew_[numgp],Tnew);
+  LARGEROTATIONS::quaterniontotriad(Qnew_[numgp],Tnew);
 
   return;
 } //DRT::ELEMENTS::Beam3::updatetriad
@@ -674,8 +669,8 @@ inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tne
      *
      *
      *  LINALG::Matrix<4,1> q;
-     *   angletoquaternion(deltatheta,q);
-     *  quaterniontoangle(q,deltatheta);
+     *  LARGEROTATIONS::angletoquaternion(deltatheta,q);
+     *  LARGEROTATIONS::quaterniontoangle(q,deltatheta);
      *
      * in the very beginning of this method. However, for the above reason we assume that theta lies always in the proper
      * region and thus save the related compuational cost and just throw an error if this prerequesite is unexpectedly not
@@ -713,11 +708,11 @@ inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3
 {
   //old triad
   LINALG::Matrix<3,3> Told;
-  quaterniontotriad(Qold_[numgp],Told);
+  LARGEROTATIONS::quaterniontotriad(Qold_[numgp],Told);
 
   //compute spin matrix from eq. (17.73)
   LINALG::Matrix<3,3> spin;
-  computespin(spin, deltatheta);
+  LARGEROTATIONS::computespin(spin, deltatheta);
 
   //turning spin matrix to left right hand side matrix of eq. (17.73)
   for(int i = 0; i<3; i++)
@@ -749,8 +744,8 @@ inline void DRT::ELEMENTS::Beam3::computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& 
   LINALG::Matrix<3,3> Sn;
   LINALG::Matrix<3,3> Sm;
   //first we caluclate S(n) and S(m)
-  computespin(Sn,stressn);
-  computespin(Sm,stressm);
+  LARGEROTATIONS::computespin(Sn,stressn);
+  LARGEROTATIONS::computespin(Sm,stressm);
 
   //then we insert them blockwise in Ksig1
   for (int n = 0; n < nnode; ++n)
@@ -786,7 +781,7 @@ inline void DRT::ELEMENTS::Beam3::computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& 
   LINALG::Matrix<3,3> Sn;
   LINALG::Matrix<3,3> Y;
   //first we compute S(n) and Y according to (17.107b)
-  computespin(Sn,stressn);
+  LARGEROTATIONS::computespin(Sn,stressn);
   Y.Multiply(S,Sn);
 
   //then we insert them into Ksig2 by means of a blockwise algorithm
@@ -884,7 +879,7 @@ void DRT::ELEMENTS::Beam3::b3_energy( ParameterList& params,
 
 
     //compute current triad at numgp-th Gauss point
-    quaterniontotriad(Qnew_[numgp],Tnew);
+    LARGEROTATIONS::quaterniontotriad(Qnew_[numgp],Tnew);
 
     //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
     Cm(0) = ym*crosssec_;
@@ -1055,7 +1050,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 		/*update triad at Gauss point as shown in Crisfield, Vol. 2, equation (17.65) Note: instead of the matrix multiplication of (17.65) we use
 		 *a quaternion product*/
-		updatetriad(deltatheta_gp,Tnew,numgp);
+    updatetriad(deltatheta_gp,Tnew,numgp);
 
 		//updating local curvature according
 		//updatecurvature(Tnew,deltatheta_gp,deltathetaprime_gp,numgp);
@@ -1075,7 +1070,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 		S_gp.Clear();
 
-		computespin(S_gp,dxdxi_gp);
+		 LARGEROTATIONS::computespin(S_gp,dxdxi_gp);
 
 		//stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
 		epsilonn(0) *= ym*crosssec_;
@@ -1279,13 +1274,13 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
     //computing angle increment from current position in comparison with last converged position for damping
     LINALG::Matrix<4,1> deltaQ;
-    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
     LINALG::Matrix<3,1> deltatheta;
-    quaterniontoangle(deltaQ,deltatheta);
+    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
 
     //isotropic artificial stiffness
     LINALG::Matrix<3,3> artstiff;
-    artstiff = Tmatrix(deltatheta);
+    artstiff = LARGEROTATIONS::Tmatrix(deltatheta);
 
     //scale artificial damping with crotptc parameter for PTC method
     artstiff.Scale( params.get<double>("crotptc",0.0) );
@@ -1435,11 +1430,11 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 
     //rotation between last converged position and current position expressend as a quaternion
     LINALG::Matrix<4,1>  deltaQ;
-    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
 
     //rotation between last converged position and current position expressed as a three element rotation vector
     LINALG::Matrix<3,1> deltatheta;
-    quaterniontoangle(deltaQ,deltatheta);
+    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
 
     //angular velocity at this Gauss point
     LINALG::Matrix<3,1> omega(true);
@@ -1449,7 +1444,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
     //compute matrix T*W*T^t
     LINALG::Matrix<3,3> Tnew;
     LINALG::Matrix<3,3> TWTt;
-    quaterniontotriad(Qnew_[gp],Tnew);
+    LARGEROTATIONS::quaterniontotriad(Qnew_[gp],Tnew);
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
         TWTt(k,j) = Tnew(k,0)*Tnew(j,0);
@@ -1460,11 +1455,11 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 
     //compute matrix T*W*T^t*H^(-1)
     LINALG::Matrix<3,3> TWTtHinv;
-    TWTtHinv.Multiply(TWTt,Tmatrix(deltatheta));
+    TWTtHinv.Multiply(TWTt,LARGEROTATIONS::Tmatrix(deltatheta));
 
     //compute spin matrix S(\omega)
     LINALG::Matrix<3,3> Sofomega;
-    computespin(Sofomega,omega);
+    LARGEROTATIONS::computespin(Sofomega,omega);
 
     //compute matrix T*W*T^t*S(\omega)
     LINALG::Matrix<3,3> TWTtSofomega;
@@ -1472,7 +1467,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 
     //compute spin matrix S(T*W*T^t*\omega)
     LINALG::Matrix<3,3> SofTWTtomega;
-    computespin(SofTWTtomega,TWTtomega);
+    LARGEROTATIONS::computespin(SofTWTtomega,TWTtomega);
 
     //loop over all line nodes
     for(int i=0; i<nnode; i++)
@@ -1723,7 +1718,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
 
     //get current triad at this Gauss point:
     LINALG::Matrix<3,3> Tnew;
-    quaterniontotriad(Qnew_[gp],Tnew);
+    LARGEROTATIONS::quaterniontotriad(Qnew_[gp],Tnew);
 
     //get first column out of Tnew
     LINALG::Matrix<3,1> t1;
@@ -1732,7 +1727,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
 
     //compute spin matrix from first column of Tnew times random number
     LINALG::Matrix<3,3> S;
-    computespin(S,t1);
+    LARGEROTATIONS::computespin(S,t1);
     S.Scale((*randomnumbers)[gp*randompergauss+3][LID()]);
 
 

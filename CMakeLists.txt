@@ -1253,11 +1253,6 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
 )
-set(OBJS_DRT_TLM_LIB
-  src/drt_trusslm/trusslm.cpp
-  src/drt_trusslm/trusslm_evaluate.cpp
-  src/drt_trusslm/trusslm_input.cpp
-)
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale.cpp
   src/drt_ale/ale_dyn.cpp
@@ -1434,51 +1429,6 @@ if (D_SOLID3)
   add_definitions("-DD_SOLID3")
 endif(D_SOLID3)
 
-option (D_BEAM2       "2D Timoshenko beam element" ON)
-if (D_BEAM2)
-  add_definitions("-DD_BEAM2")
-endif(D_BEAM2)
-
-option (D_BEAM2R      "2D Reissner beam element" ON)
-if (D_BEAM2R)
-  add_definitions("-DD_BEAM2R")
-endif(D_BEAM2R)
-
-option (D_BEAM3       "3D Reissner beam element" ON)
-if (D_BEAM3)
-  add_definitions("-DD_BEAM3")
-endif(D_BEAM3)
-
-option (D_BEAM3II     "3D Reissner beam element of type II" ON)
-if (D_BEAM3II)
-  add_definitions("-DD_BEAM3II")
-endif(D_BEAM3II)
-
-option (D_SMOOTHROD      "3D smooth rod element" ON)
-if (D_SMOOTHROD)
-  add_definitions("-DD_SMOOTHROD")
-endif(D_SMOOTHROD)
-
-option (D_TRUSS3      "3D truss element" ON)
-if (D_TRUSS3)
-  add_definitions("-DD_TRUSS3")
-endif(D_TRUSS3)
-
-option (D_TRUSS2      "2D truss element" ON)
-if (D_TRUSS2)
-  add_definitions("-DD_TRUSS2")
-endif(D_TRUSS2)
-
-option (D_TORSION3    "3D torsion spring element" ON)
-if (D_TORSION3)
-  add_definitions("-DD_TORSION3")
-endif(D_TORSION3)
-
-option (D_TORSION2    "2D torsion spring element" ON)
-if (D_TORSION2)
-  add_definitions("-DD_TORSION2")
-endif(D_TORSION2)
-
 option (D_ARTNET      "1D Arterial network elements" OFF)
 if (D_ARTNET)
   add_definitions("-DD_ARTNET")
@@ -1522,13 +1472,11 @@ add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
-add_library(ele_sr ${OBJS_DRT_SR_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
 add_library(ele_t2 ${OBJS_DRT_T2_LIB})
 add_library(ele_t3 ${OBJS_DRT_T3_LIB})
-add_library(ele_tlm ${OBJS_DRT_TLM_LIB})
 add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
@@ -1544,13 +1492,11 @@ set(ELEMENT_LIBRARIES
   ele_combust3
   ele_f3
   ele_f3_impl
-  ele_sr
   ele_s8
   ele_scatra
   ele_so
   ele_t2
   ele_t3
-  ele_tlm
   ele_thermo
   ele_to2
   ele_to3
@@ -2437,12 +2383,10 @@ baci_test(one_d_3_artery_network 1 9999)
 baci_test(trachea 2 100)
 baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 1 599)
 
-if (D_BEAM3II)
-  baci_test(beam3iitest1linear 1 "")
-  baci_test(beam3iitest1linear 2 "")
-  baci_test(beam3iitest2linear 1 "")
-  baci_test(beam3iitest2linear 2 "")
-endif (D_BEAM3II)
+baci_test(beam3iitest1linear 1 "")
+baci_test(beam3iitest1linear 2 "")
+baci_test(beam3iitest2linear 1 "")
+baci_test(beam3iitest2linear 2 "")
 
 baci_test(inversedesign_wedge6 1 "")
 baci_test(inversedesign_wedge6 2 "")

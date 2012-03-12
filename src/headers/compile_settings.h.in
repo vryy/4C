@@ -50,38 +50,6 @@
 #cmakedefine D_SOLID3
 #endif
 
-#ifndef D_BEAM2
-#cmakedefine D_BEAM2
-#endif
-
-#ifndef D_BEAM2R
-#cmakedefine D_BEAM2R
-#endif
-
-#ifndef D_BEAM3
-#cmakedefine D_BEAM3
-#endif
-
-#ifndef D_SMOOTHROD
-#cmakedefine D_SMOOTHROD
-#endif
-
-#ifndef D_TRUSS3
-#cmakedefine D_TRUSS3
-#endif
-
-#ifndef D_TRUSS2
-#cmakedefine D_TRUSS2
-#endif
-
-#ifndef D_TORSION3
-#cmakedefine D_TORSION3
-#endif
-
-#ifndef D_TORSION2
-#cmakedefine D_TORSION2
-#endif
-
 #ifndef D_ARTNET
 #cmakedefine D_ARTNET
 #endif

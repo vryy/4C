@@ -19,30 +19,23 @@ Maintainer: Christian Cyron
 
 
 #include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-#include "../drt_lib/drt_element.H"
+
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fem_general/largerotations.H"
 
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
-
-
+//forward declarations
+namespace LINALG
+{
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+}
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -103,17 +96,6 @@ public:
 
   //! @name Friends
   friend class Beam3Type;
-  friend class StatMechManager;
-  friend void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* nodaltriadscol);
-  friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
-  friend void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element);
-  friend void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step,RCP<CONTACT::Beam3cmanager> beamcmanager);
-  friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid);
-  friend void StatMechTime::Integrate();
-  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
-  friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil);
-  friend void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
-
 
   //! @name Constructors and destructors and related methods
 
@@ -175,7 +157,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
   { return Beam3Type::Instance(); }
@@ -191,7 +173,7 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -213,7 +195,7 @@ public:
   /*!
   \brief Print this element
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
@@ -230,8 +212,39 @@ public:
   */
   const double& Irr() const { return Irr_;}
 
+  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
+
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIyy(const double& Iyy);
+
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIzz(const double& Izz);
+
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIrr(const double& Irr);
+
+  /*!
+  \brief Set cross section area of this element
+  */
+  void SetCrossSec(const double& crosssec);
+
+  /*!
+  \brief Set cross section with shear correction factor of this element
+  */
+  void SetCrossSecShear(const double& crosssecshear);
+
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  int HowManyRandomNumbersINeed();
+
   //! \brief internal force vector
-  const RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
   //@}
 
   //! @name Construction
@@ -286,9 +299,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -314,10 +327,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -335,104 +348,17 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  template<int nnode>
-  void EvaluatePTC(ParameterList& params,
-                          Epetra_SerialDenseMatrix& elemat1);
+  template<int nnode> void EvaluatePTC(Teuchos::ParameterList&      params,
+                                       Epetra_SerialDenseMatrix& elemat1);
 
   //@}
-
-
-private:
-
-  //! action parameters recognized by Beam3
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_update_imrlike,
-    calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy, //calculate current elastic energy of element
-  };
-
-  //! kind of integration to be performed
-  enum IntegrationType
-  {
-    gaussexactintegration,
-    gaussunderintegration,
-    lobattointegration
-  };
-
-  //! variable saving whether element has already been initialized (then isinit_ == true)
-  bool isinit_;
-  //! vector storing the internal force vector
-  RCP<Epetra_SerialDenseVector> internalforces_;
-
-  //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
-  vector<LINALG::Matrix<4,1> > Qconv_;
-  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
-  vector<LINALG::Matrix<4,1> > Qold_;
-  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
-  vector<LINALG::Matrix<4,1> > Qnew_;
-  //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvconv_;
-  //!curvaturea at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvold_;
-  //!curvaturea during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvnew_;
-
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  vector<LINALG::Matrix<3,1> > thetaconv_;
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  vector<LINALG::Matrix<3,1> > thetaold_;
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
-  vector<LINALG::Matrix<3,1> > thetanew_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  vector<LINALG::Matrix<3,1> > thetaprimeconv_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  vector<LINALG::Matrix<3,1> > thetaprimeold_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
-  vector<LINALG::Matrix<3,1> > thetaprimenew_;
-
-  //! cross section area
-  double crosssec_;
-
-   //! cross section area including shear corretion factor
-  double crosssecshear_;
-
-  //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
-  double Iyy_;
-
-  //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
-  double Izz_;
-
-  //!polar moment of inertia of area
-  double Irr_;
-
-  //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
-  vector<double> jacobi_;
-
-  //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
-  vector<double> jacobimass_;
-
-  //! Vector holding value of Jacobi determinant jacobi at nodes
-  vector<double> jacobinode_;
 
   //! @name methods for initilization of the element
 
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   template<int nnode>
-  void SetUpReferenceGeometry(const vector<double>& xrefe,
-                              const vector<double>& rotrefe,
+  void SetUpReferenceGeometry(const std::vector<double>& xrefe,
+                              const std::vector<double>& rotrefe,
                               const bool secondinit = false)
   {
     /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
@@ -546,7 +472,7 @@ private:
 
       /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
       * from the identity matrix into the reference configuration*/
-      triadtoquaternion(Tref,Qconv_[numgp]);
+      LARGEROTATIONS::triadtoquaternion(Tref,Qconv_[numgp]);
 
       //the here employed beam element does not need data about the current position of the nodal directors so that
       //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
@@ -630,6 +556,91 @@ private:
 
   //@}
 
+private:
+
+  //! action parameters recognized by Beam3
+  enum ActionType
+  {
+    calc_none,
+    calc_struct_linstiff,
+    calc_struct_nlnstiff,
+    calc_struct_internalforce,
+    calc_struct_linstiffmass,
+    calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+    calc_struct_stress,
+    calc_struct_eleload,
+    calc_struct_fsiload,
+    calc_struct_update_istep,
+    calc_struct_update_imrlike,
+    calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
+    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_energy, //calculate current elastic energy of element
+  };
+
+  //! kind of integration to be performed
+  enum IntegrationType
+  {
+    gaussexactintegration,
+    gaussunderintegration,
+    lobattointegration
+  };
+
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+  //! vector storing the internal force vector
+  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+
+  //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > Qconv_;
+  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > Qold_;
+  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > Qnew_;
+  //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
+  std::vector<LINALG::Matrix<3,1> > curvconv_;
+  //!curvaturea at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
+  std::vector<LINALG::Matrix<3,1> > curvold_;
+  //!curvaturea during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
+  std::vector<LINALG::Matrix<3,1> > curvnew_;
+
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
+  std::vector<LINALG::Matrix<3,1> > thetaconv_;
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<3,1> > thetaold_;
+  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
+  std::vector<LINALG::Matrix<3,1> > thetanew_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
+  std::vector<LINALG::Matrix<3,1> > thetaprimeconv_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<3,1> > thetaprimeold_;
+  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
+  std::vector<LINALG::Matrix<3,1> > thetaprimenew_;
+
+  //! cross section area
+  double crosssec_;
+
+   //! cross section area including shear corretion factor
+  double crosssecshear_;
+
+  //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
+  double Iyy_;
+
+  //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
+  double Izz_;
+
+  //!polar moment of inertia of area
+  double Irr_;
+
+  //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
+  std::vector<double> jacobi_;
+
+  //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
+  std::vector<double> jacobimass_;
+
+  //! Vector holding value of Jacobi determinant jacobi at nodes
+  std::vector<double> jacobinode_;
+
   //! @name Internal calculation methods
 
   /*!this function performs an update of the rotation (in quaterion form) at the numgp-th Gauss point by the incremental rotation deltatheta,
@@ -656,17 +667,17 @@ private:
 
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>
-  void b3_nlnstiffmass( ParameterList& params,
-                        vector<double>&           vel,
-                        vector<double>&           disp,
+  void b3_nlnstiffmass( Teuchos::ParameterList& params,
+                        std::vector<double>&           vel,
+                        std::vector<double>&           disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
 
   //!calculation of elastic energy
   template<int nnode>
-  void b3_energy( ParameterList& params,
-                  vector<double>&           disp,
+  void b3_energy( Teuchos::ParameterList& params,
+                  std::vector<double>&           disp,
                   Epetra_SerialDenseVector* intenergy);
 
   //! lump mass matrix
@@ -682,61 +693,58 @@ private:
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(ParameterList& params,  //!<parameter list
-                     const vector<double>&           vel,  //!< element velocity vector
-                     const vector<double>&           disp, //!<element disp vector
+   void CalcBrownian(Teuchos::ParameterList& params,  //!<parameter list
+                     const std::vector<double>&           vel,  //!< element velocity vector
+                     const std::vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                      Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
-
-   //!computes the number of different random numbers required in each time step for generation of stochastic forces
-   int HowManyRandomNumbersINeed();
+   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
 
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes
-   void MyRotationalDamping(ParameterList& params,  //!<parameter list
-                           const vector<double>&           vel,  //!< element velocity vector
-                           const vector<double>&           disp, //!<element disp vector
+   void MyRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                           const std::vector<double>&           vel,  //!< element velocity vector
+                           const std::vector<double>&           disp, //!<element disp vector
                            Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                            Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                             const vector<double>&           vel,  //!< element velocity vector
-                             const vector<double>&           disp, //!<element disp vector
+   void MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                             const std::vector<double>&           vel,  //!< element velocity vector
+                             const std::vector<double>&           disp, //!<element disp vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                              Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void MyStochasticForces(ParameterList& params,  //!<parameter list
-                         const vector<double>&           vel,  //!< element velocity vector
-                         const vector<double>&           disp, //!<element disp vector
+   void MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                         const std::vector<double>&           vel,  //!< element velocity vector
+                         const std::vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                          Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes stochastic rotational moments and resulting stiffness
    template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
-   void MyStochasticMoments(ParameterList& params,  //!<parameter list
-                         const vector<double>&           vel,  //!< element velocity vector
-                         const vector<double>&           disp, //!<element disp vector
+   void MyStochasticMoments(Teuchos::ParameterList& params,  //!<parameter list
+                         const std::vector<double>&           vel,  //!< element velocity vector
+                         const std::vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                          Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
-   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+   void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                              LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(ParameterList& params,  //!<parameter list
-                 vector<double>&           disp); //!<element disp vector
+   void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+                  std::vector<double>&           disp); //!<element disp vector
 
    //@}
 

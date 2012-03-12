@@ -136,9 +136,6 @@ public:
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
-  //! \brief Initializes trusslm elements in case of perioddic boundary conditions
-  void PeriodicBoundaryTrussLmInit(DRT::Element* element);
-
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
 

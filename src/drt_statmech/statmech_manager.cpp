@@ -34,7 +34,6 @@ Maintainer: Christian Cyron
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_truss3/truss3.H"
-#include "../drt_trusslm/trusslm.H"
 #include "../drt_torsion3/torsion3.H"
 
 #include <iostream>
@@ -805,48 +804,6 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
   truss->SetUpReferenceGeometry(xrefe, true);
 }
 
-/*------------------------------------------------------------------------*
- | This function loops through all the elements of the discretization and |
- | tests whether truss3 are broken by periodic boundary conditions in the |
- | reference configuration; if yes initial values of jacobi determinants  |
- | are adapted in a proper way                               mueller 10/11|
- *-----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
-{
-  DRT::ELEMENTS::TrussLm* truss = dynamic_cast<DRT::ELEMENTS::TrussLm*> (element);
-
-  //3D truss elements are embeddet into R^3:
-  const int ndim = 3;
-
-  //get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry
-  vector<double> xrefe(truss->NumNode() * ndim, 0);
-
-  for (int i=0; i<truss->NumNode(); i++)
-    for (int dof = 0; dof < ndim; dof++)
-      xrefe[3* i + dof] = truss->Nodes()[i]->X()[dof];
-
-  // loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
-  // shifted due to periodic boundary conditions if required
-  for (int i=1; i<truss->NumNode(); i++)
-  {
-    for (int dof = 0; dof < ndim; dof++)
-    {
-      //if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
-      // the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
-      // back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
-      // is smaller than half the periodic length
-      if (fabs((truss->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] += periodlength_->at(dof);
-
-      if (fabs((truss->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
-        xrefe[3* i + dof] -= periodlength_->at(dof);
-    }
-  }
-
-  //note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file
-  truss->SetUpReferenceGeometry(xrefe, true);
-}
-
 /*----------------------------------------------------------------------*
  | Assign crosslink molecules and nodes to volume partitions            |
  |																								(public) mueller 08/10|
@@ -1475,11 +1432,11 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     newcrosslinker->BuildNodalPointers(&nodes[0]);
 
     //setting up crosslinker element parameters and reference geometry
-    newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
-    newcrosslinker ->crosssecshear_ = 1.1*statmechparams_.get<double>("ALINK",0.0);
-    newcrosslinker ->Iyy_ = statmechparams_.get<double>("ILINK",0.0);
-    newcrosslinker ->Izz_ = statmechparams_.get<double>("ILINK",0.0);
-    newcrosslinker ->Irr_ = statmechparams_.get<double>("IPLINK",0.0);
+    newcrosslinker ->SetCrossSec(statmechparams_.get<double>("ALINK",0.0));
+    newcrosslinker ->SetCrossSecShear(1.1*statmechparams_.get<double>("ALINK",0.0));
+    newcrosslinker ->SetIyy(statmechparams_.get<double>("ILINK",0.0));
+    newcrosslinker ->SetIzz(statmechparams_.get<double>("ILINK",0.0));
+    newcrosslinker ->SetIrr(statmechparams_.get<double>("IPLINK",0.0));
     newcrosslinker->SetMaterial(2);
 
     //set up reference configuration of crosslinker
@@ -1499,7 +1456,6 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
   else	// crosslinker is a truss element
   {
     RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(crossgid, (mydiscret.gNode(globalnodeids[0]))->Owner() ) );
-    //RCP<DRT::ELEMENTS::TrussLm> newcrosslinker = rcp(new DRT::ELEMENTS::TrussLm(newcrosslinkerGID, (discret_.gNode(GID1))->Owner() ) );
 
     newcrosslinker->SetNodeIds(2,globalnodeids);
     newcrosslinker->BuildNodalPointers(&nodes[0]);
@@ -1909,7 +1865,7 @@ void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
 
       //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
       for(int j=0; j<4; j++)
-        bspottriadsrow[j][i] = (filele->Qnew_[0])(j);
+        bspottriadsrow[j][i] = ((filele->Qnew())[0])(j);
     }
     else
       dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");

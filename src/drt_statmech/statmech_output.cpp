@@ -29,7 +29,6 @@ Maintainer: Christian Cyron
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_truss3/truss3.H"
-#include "../drt_trusslm/trusslm.H"
 
 #include "../drt_torsion3/torsion3.H"
 
@@ -641,7 +640,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
                     coordout(m,n)=coord(m,j+n);
 
                  GmshWedge(nline,coordout,element,gmshfilecontent,color);
-
               }
             }
             else
@@ -662,30 +660,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             else
               GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
-          else if (eot == DRT::ELEMENTS::TrussLmType::Instance())
-          {
-            LINALG::SerialDenseMatrix tmpcoord(3,2);
-            // the framing trusses (filaments)
-            for (int j=0; j<element->NumNode()-1; j=j+2)
-            {
-              for(int k=0; k<tmpcoord.M(); k++)
-              {
-                tmpcoord(k,0) = coord(k,j);
-                tmpcoord(k,1) = coord(k,j+1);
-              }
-              GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
-            }
-            // the interpolated truss
-            RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
-            for (int j=0; j<tmpcoord.M(); j++)
-            {
-              tmpcoord(j,0) = (*xint)(j);
-              tmpcoord(j,1) = (*xint)(j+3);
-            }
-            // change the color since elements of this type are considered crosslinkers ( currently)
-            color = 0.5;
-            GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
-          }
           else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
           {
             double beadcolor = 0.75;
@@ -702,35 +676,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         }
         //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
         else
-        {
-          const DRT::ElementType & eot = element->ElementType();
-          if(eot==DRT::ELEMENTS::TrussLmType::Instance())
-          {
-            // coordinates of trusses A and B
-            LINALG::SerialDenseMatrix coordA(3,2);
-            LINALG::SerialDenseMatrix coordB(3,2);
-            for(int j=0; j<coordA.M(); j++)
-              for(int k=0; k<coordA.N(); k++)
-              {
-                coordA(j,k) = coord(j,k);
-                coordB(j,k) = coord(j,k+2);
-              }
-            GmshOutputPeriodicBoundary(coordA, color, gmshfilecontent,element->Id(),false);
-            GmshOutputPeriodicBoundary(coordB, color, gmshfilecontent,element->Id(),false);
-            // interpolated node coordinates
-            RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
-            LINALG::SerialDenseMatrix intcoord(3,2);
-            for(int j=0; j<intcoord.M(); j++)
-            {
-              intcoord(j,0) = (*xint)(j);
-              intcoord(j,1) = (*xint)(j+3);
-            }
-            color = 0.5;
-            GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
-          }
-          else
-        		GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
-        }
+          GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
       }
       //write content into file and close it (this way we make sure that the output is written serially)
       fprintf(fp, gmshfilecontent.str().c_str());
@@ -817,8 +763,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
     if (element->ElementType().Name() == "Truss3Type")
       dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
-    if (element->ElementType().Name() == "TrussLmType")
-      dotline = dotline or eot == DRT::ELEMENTS::TrussLmType::Instance();
     // draw spheres at node positions ("beads" of the bead spring model)
     if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
     {
@@ -1595,8 +1539,8 @@ void StatMechManager::GmshWedge(const int& n,
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-    else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
-      radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
+    else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
+      radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
     else
       dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
     // case: crosslinker
@@ -4133,7 +4077,7 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
 
         //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
         for(int j=0; j<4; j++)
-          nodaltriadsrow[j][i] = (filele->Qnew_[0])(j);
+          nodaltriadsrow[j][i] = ((filele->Qnew())[0])(j);
       }
       else
         dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");

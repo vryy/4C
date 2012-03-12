@@ -17,13 +17,11 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
-
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 

@@ -30,7 +30,6 @@ Maintainer: Christian Cyron
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_truss3/truss3.H"
-#include "../drt_trusslm/trusslm.H"
 #include "../drt_truss2/truss2.H"
 
 
@@ -93,14 +92,6 @@ isconverged_(0)
       //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
         statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
-    }
-    else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
-    {
-      //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-      //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-      if((statmechmanager_->GetPeriodLength())->at(0) > 0.0)
-        statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
     }
     else
       continue;
@@ -1254,6 +1245,28 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 
     if (!myrank_ and (printscreen or printerr))
       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,fresmnorm,disinorm,convcheck,crotptc);
+
+    double fresmmean = 0.0;
+    fresm_->MeanValue(&fresmmean);
+
+    if(numiter == maxiter)
+      for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+      {
+        if(pid==discret_.Comm().MyPID())
+          for(int i=0; i<fresm_->MyLength(); i++)
+            if((*fresm_)[i]>1e-2)
+            {
+              int elerowid = (i-i%6)/6;
+              int elegid = discret_.ElementRowMap()->GID(elerowid);
+              cout<<"Proc "<<discret_.Comm().MyPID()<<": Element "<<elegid<<" has residual at element dof "<<i%6<<"(";
+              if(i%6<3)
+                cout<<"trans)";
+              else
+                cout<<"rot  )";
+              cout<<": "<<(*fresm_)[i]<<endl;
+            }
+        discret_.Comm().Barrier();
+      }
 
     //------------------------------------ PTC update of artificial time
     // SER step size control

@@ -10,9 +10,8 @@
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
-#include "../drt_smoothrod/smoothrod.H"
+//#include "../drt_smoothrod/smoothrod.H"
 #include "../drt_truss3/truss3.H"
-#include "../drt_trusslm/trusslm.H"
 #include "../drt_truss2/truss2.H"
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_torsion2/torsion2.H"
@@ -115,34 +114,15 @@ std::string DRT::ParObjectList()
     << DRT::ConditionObjectType::Instance().Name() << " "
     << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
-#ifdef D_BEAM2
     << DRT::ELEMENTS::Beam2Type::Instance().Name() << " "
-#endif
-#ifdef D_BEAM2R
     << DRT::ELEMENTS::Beam2rType::Instance().Name() << " "
-#endif
-#ifdef D_BEAM3
     << DRT::ELEMENTS::Beam3Type::Instance().Name() << " "
-#endif
-#ifdef D_BEAM3II
     << DRT::ELEMENTS::Beam3iiType::Instance().Name() << " "
-#endif
-#ifdef D_SMOOTHROD
-    << DRT::ELEMENTS::SmoothrodType::Instance().Name() << " "
-#endif
-#ifdef D_TRUSS3
+//    << DRT::ELEMENTS::SmoothrodType::Instance().Name() << " "
     << DRT::ELEMENTS::Truss3Type::Instance().Name() << " "
-    << DRT::ELEMENTS::TrussLmType::Instance().Name() << " "
-#endif
-#ifdef D_TRUSS2
     << DRT::ELEMENTS::Truss2Type::Instance().Name() << " "
-#endif
-#ifdef D_TORSION3
     << DRT::ELEMENTS::Torsion3Type::Instance().Name() << " "
-#endif
-#ifdef D_TORSION2
     << DRT::ELEMENTS::Torsion2Type::Instance().Name() << " "
-#endif
 #ifdef D_SHELL8
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
 #endif
