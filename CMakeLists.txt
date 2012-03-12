@@ -1758,6 +1758,14 @@ macro (baci_test arg nproc restart)
   set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000 )
 endmacro (baci_test)
 
+# Run test case for nested parallelism
+macro (baci_test_Nested_Par arg restart)
+  add_test(NAME ${arg}-nestedPar
+    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxxAdditional restart=${restart})
+
+  set_tests_properties ( ${arg}-nestedPar PROPERTIES TIMEOUT 200 )
+endmacro (baci_test_Nested_Par)
+
 # Run the test but ignore any complaints. Can be used to silence tests that
 # are known to fail for a good reason.  
 macro (passive_baci_test arg nproc restart)
@@ -2473,6 +2481,7 @@ baci_test(two_phase_rayleigh_taylor_instability_32x128_FGI 2 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128_redis 3 "")
 baci_test(two_phase_stat_bubble_surftens_20x20x20 2 "")
 baci_test(two_phase_stat_bubble_surftens_50x50x1 1 "")
+baci_test_Nested_Par(tsi_heatconvection_monolithic "")
 passive_baci_test(xf3_beltrami_tet4_drt 1 2)
 passive_baci_test(xf3_beltrami_tet4_drt 2 2)
 passive_baci_test(xf3_drivencavity_stat_drt 1 "")
