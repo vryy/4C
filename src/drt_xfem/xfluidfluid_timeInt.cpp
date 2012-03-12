@@ -211,7 +211,7 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // -------------------------------------------------------------------
 int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
                                                                  RCP<XFEM::FluidWizard>   wizard)
-{
+{ 
 
   // save the old maps and clear the maps for the new cut
   // (all maps are related to the background fluid)
@@ -1446,7 +1446,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
            s!=cell_sets.end();
            s++)
       {
-        GEO::CUT::plain_volumecell_set & cells = *s;
+        //       GEO::CUT::plain_volumecell_set & cells = *s;
         const std::vector<int> & nds = nds_sets[set_counter];
 
         // get element location vector, dirichlet flags and ownerships
