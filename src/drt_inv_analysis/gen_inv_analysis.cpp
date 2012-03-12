@@ -355,153 +355,157 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
 //--------------------------------------------------------------------------------------------
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
-  int myrank = discret_->Comm().MyPID();
-
-  // create a StruGenAlpha solver
-  ParameterList genalphaparams;
-  StruGenAlpha::SetDefaults(genalphaparams);
-  const Teuchos::ParameterList& sdyn    = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-
-  // get input parameter lists
-  genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
-  genalphaparams.set<bool>  ("damping",(! (sdyn.get<std::string>("DAMPING") == "no"
-                                        || sdyn.get<std::string>("DAMPING") == "No"
-                                        || sdyn.get<std::string>("DAMPING") == "NO")));
-  genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
-  genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
-#ifdef STRUGENALPHA_BE
-  genalphaparams.set<double>("delta",sdyn.get<double>("DELTA"));
-#endif
-  genalphaparams.set<double>("gamma",sdyn.get<double>("GAMMA"));
-  genalphaparams.set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-  genalphaparams.set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-  genalphaparams.set<double>("total time",0.0);
-  genalphaparams.set<double>("delta time",sdyn.get<double>("TIMESTEP"));
-  genalphaparams.set<double>("max time",sdyn.get<double>("MAXTIME"));
-  genalphaparams.set<int>   ("step",0);
-  genalphaparams.set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
-  genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-  genalphaparams.set<int>   ("num iterations",-1);
-  genalphaparams.set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
-  genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-  genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
-  genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
-  genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
-  genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
-  genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-  genalphaparams.set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
-  genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
-  genalphaparams.set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
-  genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
-  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-  genalphaparams.set<int>("io structural stress", iostress);
-  genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
-  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
-  genalphaparams.set<int>("io structural strain", iostrain);
-  genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
-  genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
-  genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
-  genalphaparams.set<bool>  ("print to screen",false);
-  genalphaparams.set<bool>  ("print to err",true);
-  genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-  genalphaparams.set<bool>  ("LOADLIN",false);
-  INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
-  genalphaparams.set<int>("CONTROLTYPE",controltype);
-  {
-    vector<int> controlnode;
-    std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
-    std::string word;
-    while (contnode >> word)
-      controlnode.push_back(std::atoi(word.c_str()));
-    if ((int)controlnode.size() != 3) dserror("Give proper values for CONTROLNODE in input file");
-    genalphaparams.set("CONTROLNODE",controlnode[0]);
-    genalphaparams.set("CONTROLDOF",controlnode[1]);
-    genalphaparams.set("CONTROLCURVE",controlnode[2]);
-  }
-  genalphaparams.set<string>("equilibrium iteration","full newton");
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
-  {
-    case INPAR::STR::pred_vague:
-      dserror("You have to define the predictor");
-      break;
-    case INPAR::STR::pred_constdis:
-      genalphaparams.set<string>("predictor","consistent");
-      break;
-    case INPAR::STR::pred_constdisvelacc:
-      genalphaparams.set<string>("predictor","constant");
-      break;
-    case INPAR::STR::pred_tangdis:
-      genalphaparams.set<string>("predictor","tangdis");
-      break;
-    default:
-      dserror("Cannot cope with choice of predictor");
-      break;
-  }
-
-  if (outputtofile)
-  {
-    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-    int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
-    if (newfiles)
-      output_->NewResultFile((numb_run_));
-    else
-      output_->OverwriteResultFile();
-
-    output_->WriteMesh(0,0.0);
-  }
-
-  RCP<StruGenAlpha> tintegrator = rcp(new StruGenAlpha(genalphaparams,*discret_,*solver_,*output_));
-  int    step    = genalphaparams.get<int>("step",0);
-  int    nstep   = genalphaparams.get<int>("nstep",-1);
-  //double time    = genalphaparams.get<double>("total time",0.0);
-  double maxtime = genalphaparams.get<double>("max time",0.0);
-  string pred    = genalphaparams.get<string>("predictor","constant");
-  string equil   = genalphaparams.get<string>("equilibrium iteration","full newton");
-  int predictor=-1;
-  if      (pred=="constant")   predictor = 1;
-  else if (pred=="consistent") predictor = 2;
-  else dserror("Unknown type of predictor");
-
-  Epetra_SerialDenseVector cvector;
-  if (!myrank) cvector.Size(nmp_);
-
-//  if (outputtofile) output_->WriteMesh(0,0.0);
-
-  int writestep = 0;
-  double endtime = 0.0;
-
-  // load controled Newton only
-  for (int i=step; i<nstep; ++i)
-  {
-    if      (predictor==1) tintegrator->ConstantPredictor();
-    else if (predictor==2) tintegrator->ConsistentPredictor();
-    tintegrator->FullNewton();
-    tintegrator->PrepareOutput();
-    tintegrator->Update();
-    tintegrator->UpdateElement();
-    if (outputtofile) tintegrator->Output();
-    if (!myrank) printf("Step %d",i);
-    double time = genalphaparams.get<double>("total time",0.0);
-    if (abs(time - timesteps_[writestep]) < 1.0e-12)
-    {
-      if (!myrank) printf(" monitored %f", time);
-      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
-      if (!myrank)
-        for (int j=0; j<ndofs_; ++j)
-          cvector[writestep*ndofs_+j] = cvector_arg[j];
-      writestep += 1;
-    }
-    if (!myrank) printf("\n");
-    endtime = time;
-    if (time>=maxtime) break;
-  }
-  if (!myrank && (abs(timesteps_.back() - endtime) > 1.0e-12 || nsteps_ != writestep))
-    printf("Warning: there is something unclean!\nLook at your monitor file and/or your STRUCTURAL DYNAMIC parameters.\n");
-
-  return cvector;
+  /*----------------------------------------------------
+   * commented in order to remove the strugenalpha adapter 12.03.2012
+   ------------------------------------------------------*/
+//  int myrank = discret_->Comm().MyPID();
+//
+//  // create a StruGenAlpha solver
+//  ParameterList genalphaparams;
+//  StruGenAlpha::SetDefaults(genalphaparams);
+//  const Teuchos::ParameterList& sdyn    = DRT::Problem::Instance()->StructuralDynamicParams();
+//  const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
+//  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+//
+//  // get input parameter lists
+//  genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
+//  genalphaparams.set<bool>  ("damping",(! (sdyn.get<std::string>("DAMPING") == "no"
+//                                        || sdyn.get<std::string>("DAMPING") == "No"
+//                                        || sdyn.get<std::string>("DAMPING") == "NO")));
+//  genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
+//  genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
+//#ifdef STRUGENALPHA_BE
+//  genalphaparams.set<double>("delta",sdyn.get<double>("DELTA"));
+//#endif
+//  genalphaparams.set<double>("gamma",sdyn.get<double>("GAMMA"));
+//  genalphaparams.set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
+//  genalphaparams.set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
+//  genalphaparams.set<double>("total time",0.0);
+//  genalphaparams.set<double>("delta time",sdyn.get<double>("TIMESTEP"));
+//  genalphaparams.set<double>("max time",sdyn.get<double>("MAXTIME"));
+//  genalphaparams.set<int>   ("step",0);
+//  genalphaparams.set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
+//  genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
+//  genalphaparams.set<int>   ("num iterations",-1);
+//  genalphaparams.set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
+//  genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
+//  genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
+//  genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
+//  genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
+//  genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
+//  genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
+//  genalphaparams.set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
+//  genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
+//  genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
+//  genalphaparams.set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
+//  genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
+//  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+//  genalphaparams.set<int>("io structural stress", iostress);
+//  genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
+//  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+//  genalphaparams.set<int>("io structural strain", iostrain);
+//  genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
+//  genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
+//  genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
+//  genalphaparams.set<bool>  ("print to screen",false);
+//  genalphaparams.set<bool>  ("print to err",true);
+//  genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+//  genalphaparams.set<bool>  ("LOADLIN",false);
+//  INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
+//  genalphaparams.set<int>("CONTROLTYPE",controltype);
+//  {
+//    vector<int> controlnode;
+//    std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
+//    std::string word;
+//    while (contnode >> word)
+//      controlnode.push_back(std::atoi(word.c_str()));
+//    if ((int)controlnode.size() != 3) dserror("Give proper values for CONTROLNODE in input file");
+//    genalphaparams.set("CONTROLNODE",controlnode[0]);
+//    genalphaparams.set("CONTROLDOF",controlnode[1]);
+//    genalphaparams.set("CONTROLCURVE",controlnode[2]);
+//  }
+//  genalphaparams.set<string>("equilibrium iteration","full newton");
+//  switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
+//  {
+//    case INPAR::STR::pred_vague:
+//      dserror("You have to define the predictor");
+//      break;
+//    case INPAR::STR::pred_constdis:
+//      genalphaparams.set<string>("predictor","consistent");
+//      break;
+//    case INPAR::STR::pred_constdisvelacc:
+//      genalphaparams.set<string>("predictor","constant");
+//      break;
+//    case INPAR::STR::pred_tangdis:
+//      genalphaparams.set<string>("predictor","tangdis");
+//      break;
+//    default:
+//      dserror("Cannot cope with choice of predictor");
+//      break;
+//  }
+//
+//  if (outputtofile)
+//  {
+//    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+//    int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
+//    if (newfiles)
+//      output_->NewResultFile((numb_run_));
+//    else
+//      output_->OverwriteResultFile();
+//
+//    output_->WriteMesh(0,0.0);
+//  }
+//
+//  RCP<StruGenAlpha> tintegrator = rcp(new StruGenAlpha(genalphaparams,*discret_,*solver_,*output_));
+//  int    step    = genalphaparams.get<int>("step",0);
+//  int    nstep   = genalphaparams.get<int>("nstep",-1);
+//  //double time    = genalphaparams.get<double>("total time",0.0);
+//  double maxtime = genalphaparams.get<double>("max time",0.0);
+//  string pred    = genalphaparams.get<string>("predictor","constant");
+//  string equil   = genalphaparams.get<string>("equilibrium iteration","full newton");
+//  int predictor=-1;
+//  if      (pred=="constant")   predictor = 1;
+//  else if (pred=="consistent") predictor = 2;
+//  else dserror("Unknown type of predictor");
+//
+//  Epetra_SerialDenseVector cvector;
+//  if (!myrank) cvector.Size(nmp_);
+//
+////  if (outputtofile) output_->WriteMesh(0,0.0);
+//
+//  int writestep = 0;
+//  double endtime = 0.0;
+//
+//  // load controled Newton only
+//  for (int i=step; i<nstep; ++i)
+//  {
+//    if      (predictor==1) tintegrator->ConstantPredictor();
+//    else if (predictor==2) tintegrator->ConsistentPredictor();
+//    tintegrator->FullNewton();
+//    tintegrator->PrepareOutput();
+//    tintegrator->Update();
+//    tintegrator->UpdateElement();
+//    if (outputtofile) tintegrator->Output();
+//    if (!myrank) printf("Step %d",i);
+//    double time = genalphaparams.get<double>("total time",0.0);
+//    if (abs(time - timesteps_[writestep]) < 1.0e-12)
+//    {
+//      if (!myrank) printf(" monitored %f", time);
+//      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
+//      if (!myrank)
+//        for (int j=0; j<ndofs_; ++j)
+//          cvector[writestep*ndofs_+j] = cvector_arg[j];
+//      writestep += 1;
+//    }
+//    if (!myrank) printf("\n");
+//    endtime = time;
+//    if (time>=maxtime) break;
+//  }
+//  if (!myrank && (abs(timesteps_.back() - endtime) > 1.0e-12 || nsteps_ != writestep))
+//    printf("Warning: there is something unclean!\nLook at your monitor file and/or your STRUCTURAL DYNAMIC parameters.\n");
+//
+//  return cvector;
+  return Epetra_SerialDenseVector(3);
 }
 
 
