@@ -30,6 +30,8 @@ Maintainer: Jonas Biehler
 //#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 /*----------------------------------------------------------------------*/
 //! General problem data
 //!

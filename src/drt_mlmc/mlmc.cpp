@@ -31,6 +31,9 @@ Maintainer: Jonas Biehler
 #include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 #include "../drt_comm/comm_utils.H"
 //for file output
 #include <fstream>
@@ -39,8 +42,8 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
-                                    Teuchos::RCP<LINALG::Solver> solver,
-                                    Teuchos::RCP<IO::DiscretizationWriter> output)
+                Teuchos::RCP<LINALG::Solver> solver,
+                Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(dis),
     solver_(solver),
     output_(output)
