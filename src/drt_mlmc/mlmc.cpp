@@ -30,6 +30,7 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 #include "../drt_comm/comm_utils.H"
 //for file output
 #include <fstream>
