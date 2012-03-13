@@ -172,7 +172,6 @@ namespace INPAR
                                ///< constraint system
       soltech_newtonuzawanonlin,  ///< non-linear Uzawa iteration
                                   ///< for constraint system
-      soltech_nlncg,  ///< nonlinear CG iteration using Nox
       soltech_ptc,  ///< pseudo transient continuation nonlinear iteration
       soltech_noxnewtonlinesearch,  ///< Line search Newton
                                     ///< utilising NOX
@@ -213,9 +212,6 @@ namespace INPAR
         break;
       case soltech_noxgeneral :
         return "noxgeneral";
-        break;
-      case soltech_nlncg :
-        return "nlncg";
         break;
       case soltech_ptc :
         return "ptc";
