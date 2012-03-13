@@ -283,19 +283,14 @@ namespace STR
     //! \author tk (originally) \date 11/07
     void UzawaLinearNewtonFull();
 
-    //! Do non-linear CG iteration using NOX ?
-    //!
-    //! \author mwgee (originally) \date 03/07
-    void NonlinearCG() { dserror("Not impl."); }
-
     //! Do pseudo transient continuation non-linear iteration
     //!
     //! Pseudo transient continuation is a variant of full newton that has a
     //! larger convergence radius than newton and is therefore more stable
     //! and/or can do larger time steps
     //!
-    //! \author mwgee (originally) \date 03/07
-    void PTC() { dserror("Not impl."); }
+    //! \author mwgee (originally) \date 03/12
+    void PTC();
 
     //! Do nonlinear iteration for contact / meshtying
     //!
@@ -771,6 +766,12 @@ namespace STR
     int stclayer_;  //! number of layers for multilayered case
     Teuchos::RCP<LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
     bool stccompl_; ///< keep track if stc matrix has been evaluated
+    //@}
+
+    //! @name Pseudo Transient Continuation Parameters
+    //@{
+    double ptcdt_; //!< psdeudo stime step size for PTC
+    double dti_;   //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
     //@}
 
   };  // class TimIntImpl

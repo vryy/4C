@@ -94,7 +94,9 @@ STR::TimIntImpl::TimIntImpl
   freact_(Teuchos::null),
   fifc_(Teuchos::null),
   stcscale_(DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
-  stclayer_(sdynparams.get<int>("STC_LAYER"))
+  stclayer_(sdynparams.get<int>("STC_LAYER")),
+  ptcdt_(sdynparams.get<double>("PTCDT")),
+  dti_(1.0/ptcdt_)
 {
   // verify: Old-style convergence check has to be 'vague' to
   if (DRT::INPUT::IntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
@@ -840,6 +842,9 @@ void STR::TimIntImpl::Solve()
     case INPAR::STR::soltech_noxgeneral :
       NoxSolve();
       break;
+    case INPAR::STR::soltech_ptc :
+      PTC();
+      break;
     // catch problems
     default :
       dserror("Solution technique \"%s\" is not implemented",
@@ -998,8 +1003,6 @@ void STR::TimIntImpl::NewtonFull()
   {
     printf("Newton unconverged in %d iterations ... continuing\n", iter_);
   }
-
-
   // get out of here
   return;
 }
@@ -1589,6 +1592,182 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
 }
 
 /*----------------------------------------------------------------------*/
+/* solution with pseudo transient continuation */
+void STR::TimIntImpl::PTC()
+{
+  // we do a PTC iteration here.
+  // the specific time integration has set the following
+  // --> On #fres_ is the positive force residuum
+  // --> On #stiff_ is the effective dynamic stiffness matrix
+
+  // check whether we have a sanely filled stiffness matrix
+  if (not stiff_->Filled())
+  {
+    dserror("Effective stiffness matrix must be filled here");
+  }
+
+  // initialise equilibrium loop
+  iter_ = 1;
+  normfres_ = CalcRefNormForce();
+  // normdisi_ was already set in predictor; this is strictly >0
+  timer_->ResetStartTime();
+  
+  double fresmnorm = normfres_;
+  double disinorm  = normdisi_;
+  double ptcdt     = ptcdt_;
+  double nc; fres_->NormInf(&nc);
+  double dti = 1/ptcdt;
+  printf("fresmnorm %10.5e disinorm %10.5e nc %10.5e\n",fresmnorm,disinorm,nc);
+
+  // equilibrium iteration loop
+  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  {
+    // make negative residual
+    fres_->Scale(-1.0);
+
+    // transform to local co-ordinate systems
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+
+    // modify stiffness matrix with dti
+    {
+      RCP<Epetra_Vector> tmp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
+      tmp->PutScalar(dti);
+      RCP<Epetra_Vector> diag = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
+      SystemMatrix()->ExtractDiagonalCopy(*diag);
+      diag->Update(1.0,*tmp,1.0);
+      SystemMatrix()->ReplaceDiagonalValues(*diag);
+    }
+
+    // apply Dirichlet BCs to system of equations
+    disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                   GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+    // *********** time measurement ***********
+    double dtcpu = timer_->WallTime();
+    // *********** time measurement ***********
+
+    // STC preconditioning
+    STCPreconditioning();
+
+    
+    // solve for disi_
+    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    if (solveradapttol_ and (iter_ > 1))
+    {
+      double worst = normfres_;
+      double wanted = tolfres_;
+      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+    }
+    // linear solver call (contact / meshtying case or default)
+    if (HaveContactMeshtying())
+      CmtLinearSolve();
+    else
+      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
+    solver_->ResetTolerance();
+
+    // recover standard displacements
+    RecoverSTCSolution();
+
+    // recover contact / meshtying Lagrange multipliers
+    if (HaveContactMeshtying())
+      cmtman_->GetStrategy().Recover(disi_);
+
+    // *********** time measurement ***********
+    dtsolve_ = timer_->WallTime() - dtcpu;
+    // *********** time measurement ***********
+
+    // update end-point displacements etc
+    UpdateIter(iter_);
+
+    // compute residual forces #fres_ and stiffness #stiff_
+    // whose components are globally oriented
+    EvaluateForceStiffResidual();
+
+    // blank residual at (locally oriented) Dirichlet DOFs
+    // rotate to local co-ordinate systems
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(fres_);
+
+    // extract reaction forces
+    // reactions are negative to balance residual on DBC
+    freact_->Update(-1.0, *fres_, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+    // rotate reaction forces back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(freact_);
+
+    // blank residual at DOFs on Dirichlet BC
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+    // rotate back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(fres_);
+
+    // (trivial)
+    if (pressure_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    }
+    else
+    {
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    }
+
+    // print stuff
+    dti_ = dti;
+    PrintNewtonIter();
+
+    // update ptc
+    {
+      double np; fres_->NormInf(&np);
+      dti *= (np/nc);
+      dti = max(dti,0.0);
+      nc = np;
+    }
+    // increment equilibrium loop index
+    iter_ += 1;
+  }  // end equilibrium loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // call monitor
+  if (conman_->HaveMonitor())
+  {
+    conman_->ComputeMonitorValues(disn_);
+  }
+
+  // test whether max iterations was hit
+  if ( (Converged()) and (myrank_ == 0) )
+  {
+    PrintNewtonConv();
+  }
+  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
+  {
+    dserror("Newton unconverged in %d iterations", iter_);
+  }
+  else if ( (iter_ >= itermax_) and (iterdivercont_) and (myrank_ == 0) )
+  {
+    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
+  }
+  // get out of here
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
 /* Update iteration */
 void STR::TimIntImpl::UpdateIter
 (
@@ -1681,18 +1860,19 @@ void STR::TimIntImpl::PrintPredictor()
   return;
 }
 
+
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file
  * originally by lw 12/07, tk 01/08 */
 void STR::TimIntImpl::PrintNewtonIter()
 {
   // print to standard out
-
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
   {
     if (iter_== 1)
-      PrintNewtonIterHeader(stdout);
-    PrintNewtonIterText(stdout);
+      PrintNewtonIterHeader(stdout); 
+    PrintNewtonIterText(stdout); 
+    
   }
 
   // print to error file
@@ -1707,6 +1887,7 @@ void STR::TimIntImpl::PrintNewtonIter()
   return;
 }
 
+/*----------------------------------------------------------------------*/
 void STR::TimIntImpl::PrintNewtonIterHeader
 (
   FILE* ofile
@@ -1778,6 +1959,11 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   if (conman_->HaveConstraintLagr())
   {
     oss << std::setw(16)<< "abs-constr-norm";
+  }
+  
+  if (itertype_==INPAR::STR::soltech_ptc)
+  {
+    oss << std::setw(16)<< "        PTC-dti";
   }
 
   // add solution time
@@ -1888,6 +2074,11 @@ void STR::TimIntImpl::PrintNewtonIterText
   if (conman_->HaveConstraintLagr())
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcon_;
+  }
+
+  if (itertype_==INPAR::STR::soltech_ptc)
+  {
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
   }
 
   // add solution time
