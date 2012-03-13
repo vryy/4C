@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isoquad.H"
 #include "elast_isocub.H"
 #include "elast_iso1pow.H"
+#include "elast_iso2pow.H"
 #include "elast_isoexpo.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
@@ -118,6 +119,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::Iso1Pow(curmat));
     MAT::ELASTIC::PAR::Iso1Pow* params = static_cast<MAT::ELASTIC::PAR::Iso1Pow*>(curmat->Parameter());
     return Teuchos::rcp(new Iso1Pow(params));
+  }
+  case INPAR::MAT::mes_iso2pow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Iso2Pow(curmat));
+    MAT::ELASTIC::PAR::Iso2Pow* params = static_cast<MAT::ELASTIC::PAR::Iso2Pow*>(curmat->Parameter());
+    return Teuchos::rcp(new Iso2Pow(params));
   }
   case INPAR::MAT::mes_isoexpo:
   {

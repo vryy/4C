@@ -1305,6 +1305,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // isochoric contribution of iso2pow
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Iso2Pow",
+                                            "isochoric part of general power material",
+                                            INPAR::MAT::mes_iso2pow));
+
+    AddNamedReal(m,"C","material parameter");
+    AddNamedInt(m,"D","exponent");
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
 
 
 

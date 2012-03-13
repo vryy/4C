@@ -484,6 +484,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isoneohooke.cpp
   src/drt_matelast/elast_isoquad.cpp
   src/drt_matelast/elast_iso1pow.cpp
+  src/drt_matelast/elast_iso2pow.cpp
   src/drt_matelast/elast_isovarga.cpp
   src/drt_matelast/elast_isoyeoh.cpp
   src/drt_matelast/elast_summand.cpp
