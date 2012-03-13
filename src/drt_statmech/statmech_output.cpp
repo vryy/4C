@@ -4067,8 +4067,8 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
           nodenumber = 1;
 
         //save nodal triad of this node in nodaltriadrow
-        //for(int j=0; j<4; j++)
-          //nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = ((filele->Qnew())[nodenumber])(j);
       }
       else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
@@ -4076,8 +4076,8 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
         filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
 
         //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
-        //for(int j=0; j<4; j++)
-        //nodaltriadsrow[j][i] = ((filele->Qnew())[0])(j);
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = ((filele->Qnew())[0])(j);
       }
       else
         dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
