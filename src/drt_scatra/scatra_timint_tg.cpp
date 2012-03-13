@@ -117,7 +117,6 @@ void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
   ParameterList condparams;
 
   // action for elements
-  condparams.set("action","calc_Neumann_inflow_TaylorGalerkin");
   condparams.set<int>("scatratype",scatratype_);
   condparams.set<int>("timealgo",timealgo_);
   condparams.set("incremental solver",incremental_);

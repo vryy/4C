@@ -329,28 +329,27 @@ public:
                        Epetra_SerialDenseMatrix&          elemat_epetra,
                        Epetra_SerialDenseVector&          elevec_epetra);
 
-
-    // schott
-    //! calculate potential boundary integrals for Characteristic Galerkin LSM
+    //! calculate boundary conditions for expl Taylor Galerkin time integration and ICG2, just for the reinitialization equation
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void TaylorGalerkinBoundaryOutflow(
-    		 DRT::ELEMENTS::TransportBoundary*  ele,
-    		 ParameterList&                     params,
-    		 DRT::Discretization&               discretization,
-    		 Teuchos::RCP<const MAT::Material>  material,
-    		 Epetra_SerialDenseMatrix&          elemat_epetra,
-    		 Epetra_SerialDenseVector&          elevec_epetra);
+        DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+        ParameterList&                     params,               //!< parameter list
+        DRT::Discretization&               discretization,       //!< discretization
+        Teuchos::RCP<const MAT::Material>  material,             //!< material
+        Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
+        Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
+        );
 
-    // schott
-    //! calculate potential boundary integrals for Characteristic Galerkin Reinitialization
+    //! calculate boundary conditions for impl. Characteristic Galerkin time integration, just for the reinitialization equation
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void ReinitCharacteristicGalerkinBoundary(
-    		 DRT::ELEMENTS::TransportBoundary*  ele,
-    		 ParameterList&                     params,
-    		 DRT::Discretization&               discretization,
-    		 Teuchos::RCP<const MAT::Material>  material,
-    		 Epetra_SerialDenseMatrix&          elemat_epetra,
-    		 Epetra_SerialDenseVector&          elevec_epetra);
+        DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+        ParameterList&                     params,               //!< parameter list
+        DRT::Discretization&               discretization,       //!< discretization
+        Teuchos::RCP<const MAT::Material>  material,             //!< material
+        Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
+        Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
+        );
 
      //! number of dof per node
     const int numdofpernode_;

@@ -42,14 +42,7 @@
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
-#include "scatra_reinit_defines.H" // schott
 
-//#define VISUALIZE_ELEMENT_DATA
-#include "../drt_geometry/integrationcell_coordtrafo.H"
-//#define VISUALIZE_ELEDATA_GMSH
-// only if VISUALIZE_ELEDATA_GMSH
-//#include "../drt_io/io_gmsh.H"
-//#include "../drt_geometry/integrationcell_coordtrafo.H"
 
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
@@ -222,7 +215,6 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     gradphi_(true),     // initialized to zero
     fsgradphi_(true),   // initialized to zero
     mfsggradphi_(true), // initialized to zero
-    ephinm_(numscal_),  // size of vector
     ephin_(numscal_),   // size of vector
     ephinp_(numscal_),  // size of vector
     ephiam_(numscal_),  // size of vector
@@ -296,9 +288,6 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
 }
 
 
-// schott
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 //! compute largest element diameter for reinitialization pseudo time step size
 template<DRT::Element::DiscretizationType distype, class M1>
 double getEleDiameter(const M1& xyze)
@@ -306,20 +295,9 @@ double getEleDiameter(const M1& xyze)
   double elediam = 0.0;
 
   // number of nodes of this element
-//  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   // check all possible connections between nodes of an element
-  // node 1 to 2
-  //    :
-  // node 1 to 8 = numnode
-  // node 2 to 3
-  //    :
-  // node 2 to 8
-  //    :
-  //    :
-  //    :
-  // node 7 to 8
   for(size_t i_start=0; i_start< numnode-2; ++i_start)
   {
     for(size_t i_end= i_start+1; i_end < numnode-1; ++i_end)
@@ -843,11 +821,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     bool reinitswitch = params.get<bool>("reinitswitch",false);
     if(reinitswitch == false) dserror("action reinitialize_levelset should be called only with reinitswitch=true");
 
-    const INPAR::SCATRA::PenaltyMethod reinit_penalty_method = params.get<INPAR::SCATRA::PenaltyMethod>("reinit_penalty_method");
-    const double reinit_epsilon_bandwidth = params.get<double>("reinit_epsilon_bandwidth",false);
-    const double reinit_penalty_interface = params.get<double>("reinit_penalty_interface", false);
-    const INPAR::SCATRA::SmoothedSignType smoothedSignType = params.get<INPAR::SCATRA::SmoothedSignType>("reinit_smoothed_sign_type");
-    const double reinit_pseudo_timestepsize_factor = params.get<double>("reinit_pseudotimestepfactor",false);
+    const INPAR::SCATRA::PenaltyMethod reinit_penalty_method     = params.get<INPAR::SCATRA::PenaltyMethod>("reinit_penalty_method");
+    const double reinit_epsilon_bandwidth                        = params.get<double>("reinit_epsilon_bandwidth",false);
+    const double reinit_penalty_interface                        = params.get<double>("reinit_penalty_interface", false);
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType       = params.get<INPAR::SCATRA::SmoothedSignType>("reinit_smoothed_sign_type");
+    const double reinit_pseudo_timestepsize_factor               = params.get<double>("reinit_pseudotimestepfactor",false);
     const INPAR::SCATRA::ReinitializationStrategy reinitstrategy = params.get<INPAR::SCATRA::ReinitializationStrategy>("reinit_strategy");
 
 
@@ -872,16 +850,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       for (int k = 0; k< numscal_; ++k)
       {
         // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        ephinp_[k](i,0)                 = myphinp[k+(i*numdofpernode_)];
         // the phi reference vector contains information of pseudo time step tau=0
-//            ephin0_Reinit_Reference_[k](i,0) = myphin0[k+(i*numdofpernode_)];
-#ifdef PHIN_INSTEAD_OF_PHI_0
         ephi0_Reinit_Reference_[k](i,0) = myphin[k+(i*numdofpernode_)];
-#else
-        ephi0_Reinit_Reference_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-#endif
-        ephin_[k](i,0) = myphin[k+(i*numdofpernode_)];
-        ephi0_penalty_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+        ephin_[k](i,0)                  = myphin[k+(i*numdofpernode_)];
+        ephi0_penalty_[k](i,0)          = myphi0[k+(i*numdofpernode_)];
       }
     } // for i
 
@@ -889,18 +862,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin)
     {
       // calculate element coefficient matrix and rhs
-      SysmatReinitialize(
+      Sysmat_Reinit_TG(
         ele,
         elemat1_epetra,
         elevec1_epetra,
         reinitswitch,
         reinit_pseudo_timestepsize_factor,
         smoothedSignType,
-        reinitstrategy,
-        reinit_penalty_method,
-        reinit_penalty_interface,
         reinit_epsilon_bandwidth,
-        scatratype);
+        reinit_penalty_method,
+        reinit_penalty_interface);
     }
     else if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_linear_convection)
     {
@@ -1034,18 +1005,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
 
       // calculate element coefficient matrix and rhs
-      SysmatLinearAdvectionSysmat(
+      Sysmat_Reinit_OST(
         ele,
         elemat1_epetra,
         elevec1_epetra,
-        elevec2_epetra,
         dt,
         timefac,
         meshsize,
         reinitswitch,
         reinit_pseudo_timestepsize_factor,
         smoothedSignType,
-        reinitstrategy,
         reinit_penalty_method,
         reinit_penalty_interface,
         reinit_epsilon_bandwidth,
@@ -1473,17 +1442,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // extract local values from the global vectors
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
     RefCountPtr<const Epetra_Vector> phin  = discretization.GetState("phin");
-    RefCountPtr<const Epetra_Vector> phinm = discretization.GetState("phinm");
 
-    if (phinp==null || phin==null || phinm==null)
-      dserror("Cannot get state vector 'phinp' or 'phin_' or 'phinm'");
+    if (phinp==null || phin==null)
+      dserror("Cannot get state vector 'phinp' or 'phin_'");
     vector<double> myphinp(lm.size());
     vector<double> myphin(lm.size());
-    vector<double> myphinm(lm.size());
 
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
     DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
-    if(timealgo == INPAR::SCATRA::timeint_tg4_leapfrog)    DRT::UTILS::ExtractMyValues(*phinm,myphinm,lm);
 
 
     // fill all element arrays
@@ -1494,24 +1460,25 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         // split for each transported scalar, insert into element arrays
         ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
         ephin_[k](i,0) = myphin[k+(i*numdofpernode_)];
-        if (timealgo == INPAR::SCATRA::timeint_tg4_leapfrog)  ephinm_[k](i,0) = myphinm[k+(i*numdofpernode_)];
       }
     } // for i
 
 
     // calculate element coefficient matrix and rhs
-    Sysmat_TaylorGalerkin(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      dt,
-      scatratype,
-      timealgo);
+    if(scatratype==INPAR::SCATRA::scatratype_levelset)
+    {
+      Sysmat_Transport_TG(
+          ele,
+          elemat1_epetra,
+          elevec1_epetra,
+          dt,
+          timealgo);
+    }
+    else dserror("Sysmat_Taylor_Galerkin only for level set problems available");
   }
   else if (action=="calc_error_reinit")
   {
     // add error only for elements which are not ghosted
-//cout << ele->Owner() << endl;
     if(ele->Owner() == discretization.Comm().MyPID())
     {
 
@@ -1545,128 +1512,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   return 0;
 }
 
-
-/*----------------------------------------------------------------------*
-  |  calculate system matrix and rhs (public)                schott 05/11|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat_TaylorGalerkin(
-  DRT::Element*                         ele, ///< the element those matrix is calculated
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-  const double                          dt, ///< current time-step length
-  const enum INPAR::SCATRA::ScaTraType  scatratype, ///< type of scalar transport problem
-  const enum INPAR::SCATRA::TimeIntegrationScheme timealgo
-  )
-{
-  //----------------------------------------------------------------------
-  // calculation of element volume both for tau at ele. cent. and int. pt.
-  //----------------------------------------------------------------------
-  // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // volume of the element (2D: element surface area; 1D: element length)
-  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
-  //----------------------------------------------------------------------
-  // get material parameters (evaluation at element center)
-  //----------------------------------------------------------------------
-  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele, scatratype);
-
-
-  //----------------------------------------------------------------------
-  // integration loop for one element
-  //----------------------------------------------------------------------
-
-  if (scatratype==  INPAR::SCATRA::scatratype_levelset)
-  {
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-    // Assemble element rhs and vector for domain!!! integrals
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get velocity at integration point
-      velint_.Multiply(evelnp_,funct_);
-      convelint_.Multiply(econvelnp_,funct_);
-
-      //----------------------------------------------------------------------
-      // get material parameters (evaluation at integration point)
-      //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele, scatratype);
-
-      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-      {
-    	// REMARK: schott 12/10
-    	// the bodyforce vector is evaluated at each Gaussian point as nonlinear function
-    	// a node-wise rhs_-vector for the reinitialization bodyforce (smoothed sign-function) leads not the desired results
-
-        // compute matrix and rhs
-    	if(timealgo == INPAR::SCATRA::timeint_tg2)
-    	{
-          CalMatAndRHS_TG2                         (emat,
-                                                    erhs,
-                                                    fac,
-                                                    k,
-                                                    ele,
-                                                    dt
-            );
-    	}
-    	else if(timealgo == INPAR::SCATRA::timeint_tg2_LW)
-    	{
-          CalMatAndRHS_TG2_LW                      (emat,
-                                                    erhs,
-                                                    fac,
-                                                    k,
-                                                    ele,
-                                                    dt
-            );
-    	}
-    	else if(timealgo == INPAR::SCATRA::timeint_tg3)
-    	{
-          CalMatAndRHS_TG3                         (emat,
-                                                    erhs,
-                                                    fac,
-                                                    k,
-                                                    ele,
-                                                    dt
-            );
-    	}
-    	else if (timealgo == INPAR::SCATRA::timeint_tg4_leapfrog)
-    	{
-          CalMatAndRHS_TG4_Leapfrog   (emat,
-                                       erhs,
-                                       fac,
-                                       k,
-                                       ele,
-                                       dt
-            );
-    	}
-    	else if (timealgo == INPAR::SCATRA::timeint_tg4_onestep)
-    	{
-          CalMatAndRHS_TG4_1S         (emat,
-                                       erhs,
-                                       fac,
-                                       k,
-                                       ele,
-                                       dt
-            );
-    	}
-    	else dserror("no characteristic/Taylor Galerkin method chosen here");
-
-      } // loop over each scalar
-    } // integration loop
-
-  }
-  else // 'standard' scalar transport
-  {
-    cout << "WRONG NOW" << endl;
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
   |  calculate system matrix and rhs (public)                 g.bau 08/08|
@@ -2042,7 +1887,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
             if (scatratype != INPAR::SCATRA::scatratype_levelset)
               CalcSubgrVelocity(ele,time,dt,timefac,k,scatratype);
-            else CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
+            else dserror("CalcSubgrVelocityLevelSet not available anymore");
             //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
 
             // calculation of subgrid-scale convective part
@@ -2811,6 +2656,1936 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
   return;
 } //ScaTraImpl::GetMaterialParams
+
+
+/*----------------------------------------------------------------------*
+  |  evaluate element matrix and rhs (private)                   vg 02/09|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
+  Epetra_SerialDenseMatrix&             emat,
+  Epetra_SerialDenseVector&             erhs,
+  const double                          fac,
+  const bool                            fssgd,
+  const double                          timefac,
+  const double                          dt,
+  const double                          alphaF,
+  const int                             k
+  )
+{
+//----------------------------------------------------------------
+// 1) element matrix: stationary terms
+//----------------------------------------------------------------
+// stabilization parameter and integration factors
+  const double taufac     = tau_[k]*fac;
+  const double timefacfac = timefac*fac;
+  const double timetaufac = timefac*taufac;
+  const double fac_diffus = timefacfac*diffus_[k];
+
+//----------------------------------------------------------------
+// standard Galerkin terms
+//----------------------------------------------------------------
+// convective term in convective form
+  const double densfac = timefacfac*densnp_[k];
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const double v = densfac*funct_(vi);
+    const int fvi = vi*numdofpernode_+k;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+
+      emat(fvi,fui) += v*(conv_(ui)+sgconv_(ui));
+    }
+  }
+
+// addition to convective term for conservative form
+  if (is_conservative_)
+  {
+    // convective term using current scalar value
+    const double cons_conv_phi = convelint_.Dot(gradphi_);
+
+    const double consfac = timefacfac*(densnp_[k]*vdiv_+densgradfac_[k]*cons_conv_phi);
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = consfac*funct_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+  }
+
+// diffusive term
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      double laplawf(0.0);
+      GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+      emat(fvi,fui) += fac_diffus*laplawf;
+    }
+  }
+
+//----------------------------------------------------------------
+// convective stabilization term
+//----------------------------------------------------------------
+// convective stabilization of convective term (in convective form)
+  const double dens2taufac = timetaufac*densnp_[k]*densnp_[k];
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const double v = dens2taufac*(conv_(vi)+sgconv_(vi));
+    const int fvi = vi*numdofpernode_+k;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+
+      emat(fvi,fui) += v*conv_(ui);
+    }
+  }
+
+//----------------------------------------------------------------
+// stabilization terms for higher-order elements
+//----------------------------------------------------------------
+  if (use2ndderiv_)
+  {
+    const double denstaufac = timetaufac*densnp_[k];
+    // convective stabilization of diffusive term (in convective form)
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = denstaufac*(conv_(vi)+sgconv_(vi));
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) -= v*diff_(ui);
+      }
+    }
+
+    const double densdifftaufac = diffreastafac_*denstaufac;
+    // diffusive stabilization of convective term (in convective form)
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densdifftaufac*diff_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) -= v*conv_(ui);
+      }
+    }
+
+    const double difftaufac = diffreastafac_*timetaufac;
+    // diffusive stabilization of diffusive term
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = difftaufac*diff_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*diff_(ui);
+      }
+    }
+  }
+
+//----------------------------------------------------------------
+// 2) element matrix: instationary terms
+//----------------------------------------------------------------
+  if (not is_stationary_)
+  {
+    const double densamfac = fac*densam_[k];
+    //----------------------------------------------------------------
+    // standard Galerkin transient term
+    //----------------------------------------------------------------
+    // transient term
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densamfac*funct_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+
+    const double densamnptaufac = taufac*densam_[k]*densnp_[k];
+    //----------------------------------------------------------------
+    // stabilization of transient term
+    //----------------------------------------------------------------
+    // convective stabilization of transient term (in convective form)
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densamnptaufac*(conv_(vi)+sgconv_(vi));
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+
+    if (use2ndderiv_)
+    {
+      const double densamreataufac = diffreastafac_*taufac*densam_[k];
+      // diffusive stabilization of transient term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = densamreataufac*diff_(vi);
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) -= v*funct_(ui);
+        }
+      }
+    }
+  }
+
+//----------------------------------------------------------------
+// 3) element matrix: reactive terms
+//----------------------------------------------------------------
+  if (is_reactive_)
+  {
+    const double fac_reac        = timefacfac*densnp_[k]*reacoeffderiv_[k];
+    const double timetaufac_reac = timetaufac*densnp_[k]*reacoeffderiv_[k];
+    //----------------------------------------------------------------
+    // standard Galerkin reactive term
+    //----------------------------------------------------------------
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = fac_reac*funct_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+
+    //----------------------------------------------------------------
+    // stabilization of reactive term
+    //----------------------------------------------------------------
+    double densreataufac = timetaufac_reac*densnp_[k];
+    // convective stabilization of reactive term (in convective form)
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densreataufac*(conv_(vi)+sgconv_(vi));
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+
+    if (use2ndderiv_)
+    {
+      // diffusive stabilization of reactive term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = diffreastafac_*timetaufac_reac*diff_(vi);
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) -= v*funct_(ui);
+        }
+      }
+    }
+
+    //----------------------------------------------------------------
+    // reactive stabilization
+    //----------------------------------------------------------------
+    densreataufac = diffreastafac_*timetaufac_reac*densnp_[k];
+    // reactive stabilization of convective (in convective form) and reactive term
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densreataufac*funct_(vi);
+      const int fvi = vi*numdofpernode_+k;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+
+        emat(fvi,fui) += v*(conv_(ui)+reacoeff_[k]*funct_(ui));
+
+        /*  if (abs(diffreastafac_)>1e-5)
+            {
+            if (reacoeff_[k]!=reacoeffderiv_[k])
+            dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
+            cout<<"additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term"<<endl;
+            }*/
+
+      }
+    }
+
+    if (use2ndderiv_)
+    {
+      // reactive stabilization of diffusive term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = diffreastafac_*timetaufac_reac*funct_(vi);
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) -= v*diff_(ui);
+        }
+      }
+    }
+  }
+
+//----------------------------------------------------------------
+// 4) element right hand side
+//----------------------------------------------------------------
+//----------------------------------------------------------------
+// computation of bodyforce (and potentially history) term,
+// residual, integration factors and standard Galerkin transient
+// term (if required) on right hand side depending on respective
+// (non-)incremental stationary or time-integration scheme
+//----------------------------------------------------------------
+  double rhsint    = rhs_[k];
+  double rhsfac    = 0.0;
+  double rhstaufac = 0.0;
+
+  if (is_incremental_ and is_genalpha_)
+  {
+    rhsfac    = timefacfac/alphaF;
+    rhstaufac = timetaufac/alphaF;
+    rhsint   *= (timefac/alphaF);
+
+    const double vtrans = rhsfac*densam_[k]*hist_[k];
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      erhs[fvi] -= vtrans*funct_(vi);
+    }
+
+    // addition to convective term due to subgrid-scale velocity
+    // (not included in residual)
+    double sgconv_phi = sgvelint_.Dot(gradphi_);
+    conv_phi_[k] += sgconv_phi;
+
+    // addition to convective term for conservative form
+    // (not included in residual)
+    if (is_conservative_)
+    {
+      // scalar at integration point at time step n
+      const double phi = funct_.Dot(ephinp_[k]);
+
+      // convective term in conservative form
+      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi_[k]);
+    }
+
+    // multiply convective term by density
+    conv_phi_[k] *= densnp_[k];
+  }
+  else if (not is_incremental_ and is_genalpha_)
+  {
+    // for this case, gradphi_ (i.e. the gradient
+    // at time n+1) is overwritten by the gradient at time n
+    // analogously, conv_phi_ at time n+1 is replace by its
+    // value at time n
+    // gradient of scalar value at n
+    gradphi_.Multiply(derxy_,ephin_[k]);
+
+    // convective term using scalar value at n
+    conv_phi_[k] = convelint_.Dot(gradphi_);
+
+    // diffusive term using current scalar value for higher-order elements
+    double diff_phin = 0.0;
+    if (use2ndderiv_) diff_phin = diff_.Dot(ephin_[k]);
+
+    // diffusive term using current scalar value for higher-order elements
+//    if (use2ndderiv_) diff_phi_[k] = diff_.Dot(ephin_[k]);
+
+    // reactive term using scalar value at n
+    if (is_reactive_)
+    {
+      // scalar at integration point
+      const double phi = funct_.Dot(ephin_[k]);
+
+      rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+    }
+
+    rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
+    scatrares_[k] = (1.0-alphaF) * (densn_[k]*conv_phi_[k]
+                                           - diff_phin + rea_phi_[k]) - rhsint;
+//    - diff_phi_[k] + rea_phi_[k]) - rhsint;
+    rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
+    rhstaufac = timetaufac/alphaF;
+    rhsint   *= (timefac/alphaF);
+
+    // addition to convective term due to subgrid-scale velocity
+    // (not included in residual)
+    double sgconv_phi = sgvelint_.Dot(gradphi_);
+    conv_phi_[k] += sgconv_phi;
+
+    // addition to convective term for conservative form
+    // (not included in residual)
+    if (is_conservative_)
+    {
+      // scalar at integration point at time step n
+      const double phi = funct_.Dot(ephin_[k]);
+
+      // convective term in conservative form
+      // caution: velocity divergence is for n+1 and not for n!
+      // -> hopefully, this inconsistency is of small amount
+      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densn_[k])*conv_phi_[k]);
+    }
+
+    // multiply convective term by density
+    conv_phi_[k] *= densn_[k];
+  }
+  else if (is_incremental_ and not is_genalpha_)
+  {
+    if (not is_stationary_)
+    {
+      scatrares_[k] *= dt;
+      rhsint               *= timefac;
+      rhsint               += densnp_[k]*hist_[k];
+      rhsfac                = timefacfac;
+
+      // compute scalar at integration point
+      const double phi = funct_.Dot(ephinp_[k]);
+
+      const double vtrans = fac*densnp_[k]*phi;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vtrans*funct_(vi);
+      }
+    }
+    else rhsfac   = fac;
+
+    rhstaufac = taufac;
+
+    // addition to convective term due to subgrid-scale velocity
+    // (not included in residual)
+    double sgconv_phi = sgvelint_.Dot(gradphi_);
+    conv_phi_[k] += sgconv_phi;
+
+    // addition to convective term for conservative form
+    // (not included in residual)
+    if (is_conservative_)
+    {
+      // scalar at integration point at time step n
+      const double phi = funct_.Dot(ephinp_[k]);
+
+      // convective term in conservative form
+      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi_[k]);
+    }
+
+    // multiply convective term by density
+    conv_phi_[k] *= densnp_[k];
+  }
+  else
+  {
+    if (not is_stationary_)
+    {
+      rhsint *= timefac;
+      rhsint += densnp_[k]*hist_[k];
+    }
+    scatrares_[k] = -rhsint;
+    rhstaufac            = taufac;
+  }
+
+//----------------------------------------------------------------
+// standard Galerkin bodyforce term
+//----------------------------------------------------------------
+  double vrhs = fac*rhsint;
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    erhs[fvi] += vrhs*funct_(vi);
+  }
+
+//----------------------------------------------------------------
+// standard Galerkin terms on right hand side
+//----------------------------------------------------------------
+// convective term
+  vrhs = rhsfac*conv_phi_[k];
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    erhs[fvi] -= vrhs*funct_(vi);
+  }
+
+// diffusive term
+  vrhs = rhsfac*diffus_[k];
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    double laplawf(0.0);
+    GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+    erhs[fvi] -= vrhs*laplawf;
+  }
+
+//----------------------------------------------------------------
+// stabilization terms
+//----------------------------------------------------------------
+// convective rhs stabilization (in convective form)
+  vrhs = rhstaufac*scatrares_[k]*densnp_[k];
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi));
+  }
+
+// diffusive rhs stabilization
+  if (use2ndderiv_)
+  {
+    vrhs = rhstaufac*scatrares_[k];
+    // diffusive stabilization of convective temporal rhs term (in convective form)
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      erhs[fvi] += diffreastafac_*vrhs*diff_(vi);
+    }
+  }
+
+//----------------------------------------------------------------
+// reactive terms (standard Galerkin and stabilization) on rhs
+//----------------------------------------------------------------
+// standard Galerkin term
+  if (is_reactive_)
+  {
+    vrhs = rhsfac*rea_phi_[k];
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      erhs[fvi] -= vrhs*funct_(vi);
+    }
+
+    // reactive rhs stabilization
+    vrhs = diffreastafac_*rhstaufac*densnp_[k]*reacoeff_[k]*scatrares_[k];
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      erhs[fvi] -= vrhs*funct_(vi);
+    }
+  }
+
+//----------------------------------------------------------------
+// fine-scale subgrid-diffusivity term on right hand side
+//----------------------------------------------------------------
+  if (is_incremental_ and fssgd)
+  {
+    vrhs = rhsfac*sgdiff_[k];
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,fsgradphi_,vi);
+      erhs[fvi] -= vrhs*laplawf;
+    }
+  }
+
+//---------------------------------------------------------------
+// advanced turbulence models
+//---------------------------------------------------------------
+// multifractal subgrid-scale modeling
+// convective form only
+  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  {
+    if (nsd_<3) dserror("Turbulence is 3D!");
+    // fixed-point iteration only (i.e. beta=0.0 assumed), cf
+    // turbulence part in Evaluate()
+   {
+     double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
+     double reynolds = mfsgvelint_.Dot(mfsggradphi_);
+
+     for (int vi=0; vi<nen_; ++vi)
+     {
+       const int fvi = vi*numdofpernode_+k;
+       erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
+     }
+   }
+  }
+
+  return;
+} //ScaTraImpl::CalMatAndRHS
+
+
+
+/*----------------------------------------------------------------------*
+  |  Integrate shape functions over domain (private)           gjb 07/09 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
+  const DRT::Element*             ele,
+  Epetra_SerialDenseVector&       elevec1,
+  const Epetra_IntSerialDenseVector& dofids
+  )
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // safety check
+  if (dofids.M() < numdofpernode_)
+    dserror("Dofids vector is too short. Received not enough flags");
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
+
+    // compute integral of shape functions (only for dofid)
+    for (int k=0;k<numdofpernode_;k++)
+    {
+      if (dofids[k] >= 0)
+      {
+        for (int node=0;node<nen_;node++)
+        {
+          elevec1[node*numdofpernode_+k] += funct_(node) * fac;
+        }
+      }
+    }
+
+  } //loop over integration points
+
+  return;
+
+} //ScaTraImpl<distype>::IntegrateShapeFunction
+
+
+/*----------------------------------------------------------------------*
+  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
+  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+  const int                                    iquad,      ///< id of current Gauss point
+  const int                                    eleid       ///< the element id
+  )
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {xsi_(idim) = gpcoord[idim];}
+
+  if (not DRT::NURBS::IsNurbs(distype))
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+    if (use2ndderiv_)
+    {
+      // get the second derivatives of standard element at current GP
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+    }
+  }
+  else // nurbs elements are always somewhat special...
+  {
+    if (use2ndderiv_)
+    {
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+        (funct_  ,
+         deriv_  ,
+         deriv2_ ,
+         xsi_    ,
+         myknots_,
+         weights_,
+         distype );
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+        (funct_  ,
+         deriv_  ,
+         xsi_    ,
+         myknots_,
+         weights_,
+         distype );
+    }
+  } // IsNurbs()
+
+  // compute Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+
+  xjm_.MultiplyNT(deriv_,xyze_);
+  const double det = xij_.Invert(xjm_);
+
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
+
+  // set integration factor: fac = Gauss weight * det(J)
+  const double fac = intpoints.IP().qwgt[iquad]*det;
+
+  // compute global derivatives
+  derxy_.Multiply(xij_,deriv_);
+
+  // compute second global derivatives (if needed)
+  if (use2ndderiv_)
+  {
+    // get global second derivatives
+    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+  }
+  else
+    derxy2_.Clear();
+
+  // return integration factor for current GP: fac = Gauss weight * det(J)
+  return fac;
+
+} //ScaTraImpl::CalcSubgrVelocity
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculate the Laplacian for all shape functions (strong form)       |
+ |                                                  (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianStrongForm(
+  LINALG::Matrix<nen_,1>& diff,
+  const LINALG::Matrix<numderiv2_,nen_>& deriv2
+  )
+{
+  diff.Clear();
+  // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
+  for (int i=0; i<nen_; ++i)
+  {
+    for (int j = 0; j<nsd_; ++j)
+    {
+      diff(i) += deriv2(j,i);
+    }
+  }
+  return;
+}; // ScaTraImpl<distype>::GetLaplacianStrongForm
+
+/*----------------------------------------------------------------------*
+ |  calculate the Laplacian (weak form)             (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
+  double& val,
+  const LINALG::Matrix<nsd_,nen_>& derxy,
+  const int vi,
+  const int ui)
+{
+  val = 0.0;
+  for (int j = 0; j<nsd_; j++)
+  {
+    val += derxy(j, vi)*derxy(j, ui);
+  }
+  return;
+}; // ScaTraImpl<distype>::GetLaplacianWeakForm
+
+/*----------------------------------------------------------------------*
+ |  calculate rhs of Laplacian (weak form)          (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
+    double& val,
+    const LINALG::Matrix<nsd_,nen_>& derxy,
+    const LINALG::Matrix<nsd_,1>&   gradphi,
+    const int vi)
+{
+  val = 0.0;
+  for (int j = 0; j<nsd_; j++)
+  {
+    val += derxy(j,vi)*gradphi(j);
+  }
+  return;
+}; // ScaTraImpl<distype>::GetLaplacianWeakFormRHS
+
+
+/*----------------------------------------------------------------------*
+ |  calculate divergence of vector field (e.g., velocity)  (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
+  double&                          vdiv,
+  const LINALG::Matrix<nsd_,nen_>& evel,
+  const LINALG::Matrix<nsd_,nen_>& derxy)
+{
+  LINALG::Matrix<nsd_,nsd_> vderxy;
+  vderxy.MultiplyNT(evel,derxy);
+
+  vdiv = 0.0;
+  // compute vel x,x  + vel y,y +  vel z,z at integration point
+  for (int j = 0; j<nsd_; ++j)
+  {
+    vdiv += vderxy(j,j);
+  }
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
+  | calculate mass matrix + rhs for determ. initial time deriv. gjb 08/08|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
+  DRT::Element*                         ele,
+  Epetra_SerialDenseMatrix&             emat,
+  Epetra_SerialDenseVector&             erhs,
+  const double                          frt,
+  const enum INPAR::SCATRA::ScaTraType  scatratype
+  )
+{
+  // dead load in element nodes at initial point in time
+  const double time = 0.0;
+
+  BodyForce(ele,time);
+
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  if (not mat_gp_)
+  {
+    // use one-point Gauss rule to do calculations at the element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+    // evaluate shape functions and derivatives at element center
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id()); //fac unused
+
+    GetMaterialParams(ele,scatratype);
+  }
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  /*----------------------------------------------------------------------*/
+  // element integration loop
+  /*----------------------------------------------------------------------*/
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    if (mat_gp_) GetMaterialParams(ele,scatratype);
+
+#if 0
+    int lastionidx(-1);
+    if (is_elch_)
+    {  for (int k=numscal_-1;k>-1;--k)
+      {
+        if (abs(valence_[k]) > EPS14)
+        {
+          lastionidx=k;
+          break;
+        }
+      }
+      //cout<<"lastionidx="<<lastionidx<<endl;
+    }
+#endif
+
+    //------------ get values of variables at integration point
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    {
+      // get bodyforce in gausspoint (divided by specific heat capacity)
+      // (For temperature equation, time derivative of thermodynamic pressure
+      //  is added, if not constant.)
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
+      rhs_[k] += thermpressdt_/shc_;
+
+      // get gradient of el. potential at integration point
+      gradpot_.Multiply(derxy_,epotnp_);
+
+      // migration part
+      migconv_.MultiplyTN(-frt,derxy_,gradpot_);
+
+      // get velocity at element center
+      velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
+
+      // convective part in convective form: u_x*N,x+ u_y*N,y
+      conv_.MultiplyTN(derxy_,convelint_);
+
+      // velocity divergence required for conservative form
+      if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
+
+      // diffusive integration factor
+      const double fac_diffus = fac*diffus_[k];
+
+      // get value of current scalar
+      conint_[k] = funct_.Dot(ephinp_[k]);
+
+      // gradient of current scalar value
+      gradphi_.Multiply(derxy_,ephinp_[k]);
+
+      // convective part in convective form times initial scalar field
+      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
+
+      // addition to convective term for conservative form
+      // -> spatial variation of density not yet accounted for
+      if (is_conservative_)
+        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
+
+      //----------------------------------------------------------------
+      // element matrix: transient term
+      //----------------------------------------------------------------
+      // transient term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi)*densnp_[k];
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) += v*funct_(ui);
+        }
+      }
+#if 0
+      // initial time derivative of last scalar
+      // is obtained from electroneutrality!
+      if (is_elch_)
+      {
+        if (k==lastionidx)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const double v = fac*funct_(vi)*densnp_[k];
+            const int fvi = vi*numdofpernode_+k;
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+k;
+
+              emat(fvi,fui) += valence_[k]*v*funct_(ui);
+              for (int kk=0; kk<lastionidx ; kk++)
+              {
+                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
+              }
+              for (int kk=lastionidx+1; kk<numscal_; kk++)
+              {
+                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
+              }
+            }
+          }
+        }
+        // we do not have to add anything to the rhs! -> go on with next k!
+        continue;
+      }
+#endif
+      //----------------------------------------------------------------
+      // element right hand side: convective term in convective form
+      //----------------------------------------------------------------
+      double vrhs = fac*densnp_[k]*conv_ephi0_k;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: diffusive term
+      //----------------------------------------------------------------
+      vrhs = fac_diffus;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+        erhs[fvi] -= vrhs*laplawf;
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: nonlinear migration term
+      //----------------------------------------------------------------
+      vrhs = fac_diffus*conint_[k]*valence_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] += vrhs*migconv_(vi);
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: reactive term
+      //----------------------------------------------------------------
+      if (is_reactive_)
+      {
+        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vrhs*funct_(vi);
+        }
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: bodyforce term
+      //----------------------------------------------------------------
+      vrhs = fac*rhs_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] += vrhs*funct_(vi);
+      }
+    } // loop over each scalar k
+
+    if (is_elch_) // ELCH
+    {
+      // we put a dummy mass matrix here in order to have a regular
+      // matrix in the lower right block of the whole system-matrix
+      // A identity matrix would cause problems with ML solver in the SIMPLE
+      // schemes since ML needs to have off-diagonal entries for the aggregation!
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi); // density assumed to be 1.0 here
+        const int fvi = vi*numdofpernode_+numscal_;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+numscal_;
+
+          emat(fvi,fui) += v*funct_(ui);
+        }
+      }
+      // dof for el. potential have no 'velocity' -> rhs is zero!
+    }
+
+  } // integration loop
+
+  return;
+} // ScaTraImpl::InitialTimeDerivative
+
+/*----------------------------------------------------------------------------*
+  | calculate mass matrix + rhs for determ. time deriv. reinit. rasthofer 02/10|
+  *----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
+  DRT::Element*                         ele,
+  Epetra_SerialDenseMatrix&             emat,
+  Epetra_SerialDenseVector&             erhs,
+  const double                          dt,
+  const double                          timefac,
+  const enum INPAR::SCATRA::ScaTraType  scatratype
+  )
+{
+  //----------------------------------------------------------------------
+  // calculation of element volume both for tau at ele. cent. and int. pt.
+  //----------------------------------------------------------------------
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // volume of the element (2D: element surface area; 1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+  //------------------------------------------------------------------------------------
+  // get material parameters and stabilization parameters (evaluation at element center)
+  //------------------------------------------------------------------------------------
+  if (not mat_gp_ or not tau_gp_)
+  {
+
+    GetMaterialParams(ele,scatratype);
+
+    if (not tau_gp_)
+    {
+      // get velocity at element center
+      velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
+
+      for (int k = 0;k<numscal_;++k) // loop of each transported scalar
+      {
+        // calculation of stabilization parameter at element center
+        CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
+      }
+    }
+  }
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  /*----------------------------------------------------------------------*/
+  // element integration loop
+  /*----------------------------------------------------------------------*/
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    if (mat_gp_) GetMaterialParams(ele,scatratype);
+
+    //------------ get values of variables at integration point
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    {
+      // get bodyforce in gausspoint (divided by specific heat capacity)
+      // (For temperature equation, time derivative of thermodynamic pressure
+      //  is added, if not constant.)
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
+
+      // get gradient of el. potential at integration point
+      gradpot_.Multiply(derxy_,epotnp_);
+
+      // get velocity at element center
+      velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
+
+      // convective part in convective form: u_x*N,x+ u_y*N,y
+      conv_.MultiplyTN(derxy_,convelint_);
+
+      // velocity divergence required for conservative form
+      if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
+
+      // calculation of stabilization parameter at integration point
+      if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
+
+      const double fac_tau = fac*tau_[k];
+
+      // diffusive integration factor
+      const double fac_diffus = fac*diffus_[k];
+
+      // get value of current scalar
+      conint_[k] = funct_.Dot(ephinp_[k]);
+
+      // gradient of current scalar value
+      gradphi_.Multiply(derxy_,ephinp_[k]);
+
+      // convective part in convective form times initial scalar field
+      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
+
+      // addition to convective term for conservative form
+      // -> spatial variation of density not yet accounted for
+      if (is_conservative_)
+        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
+
+      //----------------------------------------------------------------
+      // element matrix: transient term
+      //----------------------------------------------------------------
+      // transient term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi)*densnp_[k];
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) += v*funct_(ui);
+        }
+      }
+
+      //----------------------------------------------------------------
+      // element matrix: stabilization of transient term
+      //----------------------------------------------------------------
+      // convective stabilization of transient term (in convective form)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac_tau*conv_(vi)*densnp_[k];//v = densamnptaufac*(conv_(vi)+sgconv_(vi));
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) += v*funct_(ui);
+        }
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: convective term in convective form
+      //----------------------------------------------------------------
+      double vrhs = fac*densnp_[k]*conv_ephi0_k;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: convective stabilization term
+      //----------------------------------------------------------------
+      // convective stabilization of convective term (in convective form)
+      vrhs = fac_tau*densnp_[k]*conv_ephi0_k*densnp_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*conv_(vi);
+      }
+
+      if (use2ndderiv_)
+      {
+        dserror("TimeDerivativePhidt not yet implemented for higher order elements");
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: diffusive term
+      //----------------------------------------------------------------
+      vrhs = fac_diffus;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+        erhs[fvi] -= vrhs*laplawf;
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: reactive term
+      //----------------------------------------------------------------
+      if (is_reactive_)
+      {
+        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vrhs*funct_(vi);
+        }
+      }
+
+      //----------------------------------------------------------------
+      // element right hand side: bodyforce term
+      //----------------------------------------------------------------
+      vrhs = fac*rhs_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] += vrhs*funct_(vi);
+      }
+    } // loop over each scalar k
+
+  } // integration loop
+
+  return;
+} // ScaTraImpl::TimeDerivativeReinit
+
+
+/*---------------------------------------------------------------------*
+  |  calculate error compared to analytical solution           gjb 10/08|
+  *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
+  const DRT::Element*                   ele,
+  const enum INPAR::SCATRA::ScaTraType  scatratype,
+  ParameterList&                        params,
+  Epetra_SerialDenseVector&             errors
+  )
+{
+  //at the moment, there is only one analytical test problem available!
+  if (params.get<string>("action") != "calc_error")
+    dserror("How did you get here?");
+
+  // -------------- prepare common things first ! -----------------------
+  // in the ALE case add nodal displacements
+  if (is_ale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
+
+  // set constants for analytical solution
+  const double t = params.get<double>("total time");
+  const double frt = params.get<double>("frt");
+
+  // get material constants
+  GetMaterialParams(ele,scatratype);
+
+  // integrations points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  switch(errortype)
+  {
+  case INPAR::SCATRA::calcerror_Kwok_Wu:
+  {
+    //   References:
+    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+    //   Numerical Methods for Partial Differential Equations
+    //   1995, Vol 11, 389-397
+
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+
+    if (numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
+    // working arrays
+    double                  potint(0.0);
+    LINALG::Matrix<2,1>     conint(true);
+    LINALG::Matrix<nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>     c(true);
+    double                  deltapot(0.0);
+    LINALG::Matrix<2,1>     deltacon(true);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // get values of all transported scalars at integration point
+      for (int k=0; k<numscal_; ++k)
+      {
+        conint(k) = funct_.Dot(ephinp_[k]);
+      }
+
+      // get el. potential solution at integration point
+      potint = funct_.Dot(epotnp_);
+
+      // get global coordinate of integration point
+      xint.Multiply(xyze_,funct_);
+
+      // compute various constants
+      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+      if (abs(d) == 0.0) dserror("division by zero");
+      const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
+
+      // compute analytical solution for cation and anion concentrations
+      const double A0 = 2.0;
+      const double m = 1.0;
+      const double n = 2.0;
+      const double k = 3.0;
+      const double A_mnk = 1.0;
+      double expterm;
+      double c_0_0_0_t;
+
+      if (nsd_==3)
+      {
+        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+      }
+      else if (nsd_==2)
+      {
+        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
+      }
+      else if (nsd_==1)
+      {
+        expterm = exp((-D)*(m*m)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-valence_[0]/valence_[1])* c(0);
+      // compute analytical solution for el. potential
+      const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
+
+      // compute differences between analytical solution and numerical solution
+      deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // Kwok and Wu
+  break;
+  case INPAR::SCATRA::calcerror_cylinder:
+  {
+    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+
+    if (numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
+    // working arrays
+    LINALG::Matrix<2,1>     conint(true);
+    LINALG::Matrix<nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>     c(true);
+    LINALG::Matrix<2,1>     deltacon(true);
+
+    // some constants that are needed
+    const double c0_inner = 0.6147737641011396;
+    const double c0_outer = 1.244249192148809;
+    const double r_inner = 1.0;
+    const double r_outer = 2.0;
+    const double pot_inner = 2.758240847314454;
+    const double b = log(r_outer/r_inner);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // get values of all transported scalars at integration point
+      for (int k=0; k<numscal_; ++k)
+      {
+        conint(k) = funct_.Dot(ephinp_[k]);
+      }
+
+      // get el. potential solution at integration point
+      const double potint = funct_.Dot(epotnp_);
+
+      // get global coordinate of integration point
+      xint.Multiply(xyze_,funct_);
+
+      // evaluate analytical solution for cation concentration at radial position r
+      if (nsd_==3)
+      {
+        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
+        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-valence_[0]/valence_[1])* c(0);
+      // compute analytical solution for el. potential
+      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+      if (abs(d) == 0.0) dserror("division by zero");
+      // reference value + ohmic resistance + concentration potential
+      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
+
+      // compute differences between analytical solution and numerical solution
+      double deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // concentric cylinders
+  break;
+  case INPAR::SCATRA::calcerror_electroneutrality:
+  {
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // get values of transported scalars at integration point
+      // and compute electroneutrality
+      double deviation(0.0);
+      for (int k=0; k<numscal_; ++k)
+      {
+        const double conint_k = funct_.Dot(ephinp_[k]);
+        deviation += valence_[k]*conint_k;
+      }
+
+    // add square to L2 error
+    errors[0] += deviation*deviation*fac;
+    } // loop over integration points
+  }
+  break;
+  default: dserror("Unknown analytical solution!");
+  } //switch(errortype)
+
+  return;
+} // ScaTraImpl::CalErrorComparedToAnalytSolution
+
+
+/*----------------------------------------------------------------------*
+  |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
+LINALG::Matrix<3,nen_>&         flux,
+const DRT::Element*             ele,
+const double                    frt,
+const INPAR::SCATRA::FluxType   fluxtype,
+const int                       k,
+const enum INPAR::SCATRA::ScaTraType  scatratype
+)
+{
+/*
+* Actually, we compute here a weighted (and integrated) form of the fluxes!
+* On time integration level, these contributions are then used to calculate
+* an L2-projected representation of fluxes.
+* Thus, this method here DOES NOT YET provide flux values that are ready to use!!
+/                                                         \
+|                /   \                               /   \  |
+| w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
+|                \   /                               \   /  |
+\                      [optional]      [optional]         /
+*/
+
+// get material parameters (evaluation at element center)
+if (not mat_gp_) GetMaterialParams(ele,scatratype);
+
+// integration rule
+DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+// integration loop
+for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
+{
+  // evaluate shape functions and derivatives at integration point
+  const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+  // get material parameters (evaluation at integration point)
+  if (mat_gp_) GetMaterialParams(ele,scatratype);
+
+  // get velocity at integration point
+  velint_.Multiply(evelnp_,funct_);
+  convelint_.Multiply(econvelnp_,funct_);
+
+  // get scalar at integration point
+  const double phi = funct_.Dot(ephinp_[k]);
+
+  // get gradient of scalar at integration point
+  gradphi_.Multiply(derxy_,ephinp_[k]);
+
+  // get gradient of electric potential at integration point if required
+  if (frt > 0.0) gradpot_.Multiply(derxy_,epotnp_);
+
+  // allocate and initialize!
+  LINALG::Matrix<nsd_,1> q(true);
+
+  // add different flux contributions as specified by user input
+  switch (fluxtype)
+  {
+  case INPAR::SCATRA::flux_total_domain:
+
+    // convective flux contribution
+    q.Update(densnp_[k]*phi,convelint_);
+
+    // no break statement here!
+  case INPAR::SCATRA::flux_diffusive_domain:
+    // diffusive flux contribution
+    q.Update(-diffus_[k],gradphi_,1.0);
+
+    // ELCH (migration flux contribution)
+    if (frt > 0.0) q.Update(-diffusvalence_[k]*frt*phi,gradpot_,1.0);
+
+    break;
+  default:
+    dserror("received illegal flag inside flux evaluation for whole domain");
+  };
+  // q at integration point
+
+  // integrate and assemble everything into the "flux" vector
+  for (int vi=0; vi < nen_; vi++)
+  {
+    for (int idim=0; idim<nsd_ ;idim++)
+    {
+      flux(idim,vi) += fac*funct_(vi)*q(idim);
+    } // idim
+  } // vi
+
+} // integration loop
+
+  //set zeros for unused space dimensions
+for (int idim=nsd_; idim<3; idim++)
+{
+  for (int vi=0; vi < nen_; vi++)
+  {
+    flux(idim,vi) = 0.0;
+  }
+}
+
+return;
+} // ScaTraImpl::CalculateFlux
+
+/*----------------------------------------------------------------------*
+|  calculate scalar(s) and domain integral                     vg 09/08|
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
+const DRT::Element*             ele,
+const vector<double>&           ephinp,
+Epetra_SerialDenseVector&       scalars,
+const bool                      inverting
+)
+{
+// integrations points and weights
+const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+// integration loop
+for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+{
+  const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+  // calculate integrals of (inverted) scalar(s) and domain
+  if (inverting)
+  {
+    for (int i=0; i<nen_; i++)
+    {
+      const double fac_funct_i = fac*funct_(i);
+      for (int k = 0; k < numscal_; k++)
+      {
+        scalars[k] += fac_funct_i/ephinp[i*numdofpernode_+k];
+      }
+      scalars[numscal_] += fac_funct_i;
+    }
+  }
+  else
+  {
+    for (int i=0; i<nen_; i++)
+    {
+      const double fac_funct_i = fac*funct_(i);
+      for (int k = 0; k < numscal_; k++)
+      {
+        scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
+      }
+      scalars[numscal_] += fac_funct_i;
+    }
+  }
+} // loop over integration points
+
+return;
+} // ScaTraImpl::CalculateScalars
+
+
+/*----------------------------------------------------------------------*
+|  calculate domain integral                                   vg 01/09|
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
+Epetra_SerialDenseVector&  scalars,
+const DRT::Element*        ele,
+const double               time
+)
+{
+// ---------------------------------------------------------------------
+// call routine for calculation of body force in element nodes
+// (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+// ---------------------------------------------------------------------
+
+BodyForce(ele,time);
+
+// integrations points and weights
+const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+// integration loop
+for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+{
+  const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+  // get bodyforce in gausspoint
+  rhs_[0] = bodyforce_[0].Dot(funct_);
+
+  // calculate integrals of domain and bodyforce
+  for (int i=0; i<nen_; i++)
+  {
+    scalars[0] += fac*funct_(i);
+  }
+  scalars[1] += fac*rhs_[0];
+
+} // loop over integration points
+
+return;
+} // ScaTraImpl::CalculateDomain
+
+
+
+/*----------------------------------------------------------------------*
+ |  Do a finite difference check for a given element id. Meant for      |
+ |  debugging only!                                 (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
+  DRT::Element*                         ele,
+  Epetra_SerialDenseMatrix&             emat,
+  Epetra_SerialDenseVector&             erhs,
+  Epetra_SerialDenseVector&             subgrdiff,
+  const double                          time,
+  const double                          dt,
+  const double                          timefac,
+  const double                          alphaF,
+  const enum INPAR::SCATRA::AssgdType   whichassgd,
+  const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
+  const bool                            assgd,
+  const bool                            fssgd,
+  const enum INPAR::FLUID::TurbModelAction turbmodel,
+  const double                          Cs,
+  const double                          tpn,
+  const double                          frt,
+  const enum INPAR::SCATRA::ScaTraType  scatratype
+  )
+{
+  // magnitude of dof perturbation
+  const double epsilon=1e-6; // 1.e-8 seems already too small!
+
+  // make a copy of all input parameters potentially modified by Sysmat
+  // call --- they are not intended to be modified
+
+  // alloc the vectors that will store the original, non-perturbed values
+  vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
+  LINALG::Matrix<nen_,1>          origepotnp(true);
+  vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
+
+  // copy original concentrations and potentials to these storage arrays
+  for (int i=0;i<nen_;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      origephinp[k](i,0) = ephinp_[k](i,0);
+      origehist[k](i,0)  = ehist_[k](i,0);
+    }
+    origepotnp(i) = epotnp_(i);
+  } // for i
+
+  // allocate arrays to compute element matrices and vectors at perturbed positions
+  Epetra_SerialDenseMatrix  checkmat1(emat);
+  Epetra_SerialDenseVector  checkvec1(erhs);
+  Epetra_SerialDenseVector  checkvec2(subgrdiff);
+
+  // echo to screen
+  printf("+-------------------------------------------+\n");
+  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",ele->Id());
+  printf("+-------------------------------------------+\n");
+  printf("\n");
+
+  // loop columns of matrix by looping nodes and then dof per nodes
+  // loop nodes
+  for(int nn=0;nn<nen_;++nn)
+  {
+    printf("-------------------------------------\n");
+    printf("-------------------------------------\n");
+    printf("NODE of element local id %d\n",nn);
+    // loop dofs
+    for(int rr=0;rr<numdofpernode_;++rr)
+    {
+      // number of the matrix column to check
+      int dof=nn*(numdofpernode_)+rr;
+
+      // clear element matrices and vectors to assemble
+      checkmat1.Scale(0.0);
+      checkvec1.Scale(0.0);
+      checkvec2.Scale(0.0);
+
+      // first put the non-perturbed values to the working arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          ephinp_[k](i,0) = origephinp[k](i,0);
+          ehist_[k](i,0)  = origehist[k](i,0);
+        }
+        epotnp_(i) = origepotnp(i);
+      } // for i
+
+      // now perturb the respective elemental quantities
+      if((is_elch_) and (rr==(numdofpernode_-1)))
+      {
+        printf("potential dof (%d). eps=%g\n",nn,epsilon);
+
+        if (is_genalpha_)
+        {
+          // we want to disturb phi(n+1) with epsilon
+          // => we have to disturb phi(n+alphaF) with alphaF*epsilon
+          epotnp_(nn)+=(alphaF*epsilon);
+        }
+        else
+        {
+          epotnp_(nn)+=epsilon;
+        }
+      }
+      else
+      {
+        printf("concentration dof %d (%d)\n",rr,nn);
+
+        if (is_genalpha_)
+        {
+          // perturbation of phi(n+1) in phi(n+alphaF) => additional factor alphaF
+          ephinp_[rr](nn,0)+=(alphaF*epsilon);
+
+          // perturbation of solution variable phi(n+1) for gen.alpha
+          // leads to perturbation of phidtam (stored in ehist_)
+          // with epsilon*alphaM/(gamma*dt)
+          const double factor = alphaF/timefac; // = alphaM/(gamma*dt)
+          ehist_[rr](nn,0)+=(factor*epsilon);
+
+        }
+        else
+        {
+          ephinp_[rr](nn,0)+=epsilon;
+        }
+      }
+
+      // calculate the right hand side for the perturbed vector
+      Sysmat(
+        ele,
+        checkmat1,
+        checkvec1,
+        checkvec2,
+        time,
+        dt,
+        timefac,
+        alphaF,
+        whichassgd,
+        whichfssgd,
+        assgd,
+        fssgd,
+        turbmodel,
+        Cs,
+        tpn,
+        frt,
+        scatratype);
+
+      // compare the difference between linaer approximation and
+      // (nonlinear) right hand side evaluation
+
+      // note that it makes more sense to compare these quantities
+      // than to compare the matrix entry to the difference of the
+      // the right hand sides --- the latter causes numerical problems
+      // do to deletion //gammi
+
+      // however, matrix entries delivered from the element are compared
+      // with the finite-difference suggestion, too. It works surprisingly well
+      // for epsilon set to 1e-6 (all displayed digits nearly correct)
+      // and allows a more obvious comparison!
+      // when matrix entries are small, lin. and nonlin. approximation
+      // look identical, although the matrix entry may be rubbish!
+      // gjb
+
+      for(int mm=0;mm<(numdofpernode_*nen_);++mm)
+      {
+        double val   =-erhs(mm)/epsilon;
+        double lin   =-erhs(mm)/epsilon+emat(mm,dof);
+        double nonlin=-checkvec1(mm)/epsilon;
+
+        double norm=abs(lin);
+        if(norm<1e-12)
+        {
+          norm=1e-12;
+          cout<<"warning norm of lin is set to 10e-12"<<endl;
+        }
+
+        // output to screen
+        {
+          printf("relerr  %+12.5e   ",(lin-nonlin)/norm);
+          printf("abserr  %+12.5e   ",lin-nonlin);
+          printf("orig. value  %+12.5e   ",val);
+          printf("lin. approx. %+12.5e   ",lin);
+          printf("nonlin. funct.  %+12.5e   ",nonlin);
+          printf("matrix[%d,%d]  %+12.5e   ",mm,dof,emat(mm,dof));
+          // finite difference approximation (FIRST divide by epsilon and THEN subtract!)
+          // ill-conditioned operation has to be done as late as possible!
+          printf("FD suggestion  %+12.5e ",((erhs(mm)/epsilon)-(checkvec1(mm)/epsilon)) );
+          printf("\n");
+        }
+      }
+    }
+  } // loop nodes
+
+  // undo changes in state variables
+  for (int i=0;i<nen_;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      ephinp_[k](i,0) = origephinp[k](i,0);
+      ehist_[k](i,0)  = origehist[k](i,0);
+    }
+    epotnp_(i) = origepotnp(i);
+  } // for i
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiffMatrix(
+  const DRT::Element*           ele,
+  Epetra_SerialDenseMatrix&     emat,
+  const double                  timefac
+  )
+{
+/*----------------------------------------------------------------------*/
+// integration loop for one element
+/*----------------------------------------------------------------------*/
+// integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+// integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    for (int k=0;k<numscal_;++k)
+    {
+      // parameter for artificial diffusivity (scaled to one here)
+      double kartfac = fac;
+      if (not is_stationary_) kartfac *= timefac;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+          double laplawf(0.0);
+          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+          emat(fvi,fui) += kartfac*laplawf;
+
+          /*subtract SUPG term */
+          //emat(fvi,fui) -= taufac*conv(vi)*conv(ui);
+        }
+      }
+    }
+  } // integration loop
+
+  return;
+} // ScaTraImpl::CalcSubgrDiffMatrix
 
 
 /*----------------------------------------------------------------------*
@@ -4467,356 +6242,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   return;
 } //ScaTraImpl::CalcSubgrVelocity
 
-/*-----------------------------------------------------------------------------------------------*
-  |  calculate subgrid-scale velocity for level set / two-phase flow problems      rasthofer 04/10|
-  *-----------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
-  DRT::Element*  ele,
-  const double   time,
-  const double   dt,
-  const double   timefac,
-  const int      k
-//    const int id,
-//    const int gp,
-//    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-//    const int                                    iquad      ///< id of current Gauss point
-  )
-{
-
-  dserror("Read comment!");
-
-  /*
-   * Aufgrund der Vernachlaessigung der Anreicherung der Geschwindigkeit in den vom Level-Set geschnittenen Elementen
-   * ergibt sich hier ein falsches Residuum der Impulsgleichung. Insbesondere ergeben sich somit subgrid velocities in
-   * der Größenordung von u^h, die dann zu einer unphysikalischen Verformung oder sogar zu Zerstoerung des Interfaces
-   * führen koennen. Folglich sollten Cross- und Reynoldsstress-Terme für Level-Set-Probleme mit XFEM im Moment nicht
-   * verwendet werden.
-   */
-
-  /*
-   * Hinweis:
-   * trotz des Tauschs von G-Feld und Fluid sollte hier phin benoetigt werden
-   * das ist aber noch nicht getestet
-   */
-
-  std::cout << "* Warning! Check parameter of fluid field! *"<< std::endl;
-  // definitions
-  LINALG::Matrix<nsd_,1> acc;
-  LINALG::Matrix<nsd_,1> conv;
-  LINALG::Matrix<nsd_,1> gradp;
-  LINALG::Matrix<nsd_,1> visc;
-  LINALG::Matrix<nsd_,1> bodyforce;
-  LINALG::Matrix<nsd_,nen_> nodebodyforce;
-
-  // get acceleration or momentum history data
-  acc.Multiply(eaccnp_,funct_);
-
-  // get velocity derivatives
-  LINALG::Matrix<nsd_,nsd_> vderxy;
-  vderxy.MultiplyNT(evelnp_,derxy_);
-
-  // compute convective fluid term
-  conv.Multiply(vderxy,convelint_);
-
-  // get pressure gradient
-  gradp.Multiply(derxy_,eprenp_);
-
-  //--------------------------------------------------------------------
-  // get nodal values of fluid body force
-  //--------------------------------------------------------------------
-  vector<DRT::Condition*> myfluidneumcond;
-
-  // check whether all nodes have a unique Fluid Neumann condition
-  switch(nsd_)
-  {
-  case 3:
-    DRT::UTILS::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
-    break;
-  case 2:
-    DRT::UTILS::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
-    break;
-  case 1:
-    DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
-    break;
-  default:
-    dserror("Illegal number of space dimensions: %d",nsd_);
-  }
-
-  if (myfluidneumcond.size()>1)
-    dserror("more than one Fluid Neumann condition on one node");
-
-  if (myfluidneumcond.size()==1)
-  {
-    // find out whether we will use a time curve
-    const vector<int>* curve  = myfluidneumcond[0]->Get<vector<int> >("curve");
-    int curvenum = -1;
-
-    if (curve) curvenum = (*curve)[0];
-
-    // initialisation
-    double curvefac(0.0);
-
-    if (curvenum >= 0) // yes, we have a timecurve
-    {
-      // time factor for the intermediate step
-      // (negative time value indicates error)
-      if(time >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      else
-        dserror("Negative time value in body force calculation: time = %f",time);
-    }
-    else // we do not have a timecurve: timefactors are constant equal 1
-      curvefac = 1.0;
-
-    // get values and switches from the condition
-    const vector<int>*    onoff = myfluidneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myfluidneumcond[0]->Get<vector<double> >("val"  );
-
-    // set this condition to the body force array
-    for(int isd=0;isd<nsd_;isd++)
-    {
-      for (int jnode=0; jnode<nen_; jnode++)
-      {
-        nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
-      }
-    }
-  }
-  else nodebodyforce.Clear();
-
-  // get fluid body force
-  bodyforce.Multiply(nodebodyforce,funct_);
-
-  //overwrite bodyforce
-//  bodyforce(0) = 0.0;
-  //bodyforce(1) = -9.81;
-//  bodyforce(1) = -980.0;
-//  bodyforce(2) = 0.0;
-
-  // get viscous term
-  if (use2ndderiv_)
-  {
-    dserror("second order elements not supported");
-    /*--- viscous term: div(epsilon(u)) --------------------------------*/
-    /*   /                                                \
-         |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
-         1 |                                                |
-         - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
-         2 |                                                |
-         |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
-         \                                                /
-//
-//         with N_x .. x-line of N
-//         N_y .. y-line of N                                             */
-//
-              /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
-              /*   /                            \
-                   |  N_x,xx + N_y,yx + N_z,zx  |
-                   1 |                            |
-                   -  - |  N_x,xy + N_y,yy + N_z,zy  |
-                   3 |                            |
-                   |  N_x,xz + N_y,yz + N_z,zz  |
-                   \                            /
-//
-//           with N_x .. x-line of N
-//           N_y .. y-line of N                                             */
-//
-//    double prefac = 1.0/3.0;
-//    derxy2_.Scale(prefac);
-//
-//    for (int i=0; i<nsd_; ++i)
-//    {
-//      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
-//
-//      visc(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
-//      visc(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
-//      visc(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
-//    }
-              }
-  else visc.Clear();
-
-  double tau = 0.0;
-  double dens = 0.0;
-  double viscosity = 0.0;
-
-  // theta_Scatra != theta_Fluid
-  double timefacmod = (timefac / 0.5) * 0.65;
-  //double timefacmod = timefac;
-
-  // compute phi at gausspoint
-  double phi = 0.0;
-  for (int i = 0; i < nen_; i++)
-  {
-    phi = phi + funct_(i) * ephin_[k](i,0);
-  }
-
-  // set density and viscosity depending on phi
-  if (phi == 0.0 or phi > 0.0)
-  {
-    //std::cout << "in Omega +" << std::endl;
-    //dens = 1.5;
-    //viscosity = 0.0033;
-    //dens = 1000.0;
-    //viscosity = 0.35;
-    dens = 1.0;
-    viscosity = 0.01;
-    //dens = 3.0;
-    //viscosity = 0.0135;
-    //dens = 1.0;
-    //viscosity = 0.1;
-  }
-  else
-  {
-    //std::cout << "in Omega -" << std::endl;
-    //dens = 1.0;
-    //viscosity = 0.0022;
-    //dens = 1.225;
-    //viscosity = 0.00358;
-    dens = 1000.0;
-    viscosity = 1.0;
-    //dens = 1.0;
-    //viscosity = 0.0045;
-    //dens = 1000.0;
-    //viscosity = 0.1;
-  }
-
-  // stabilization parameter definition according to Bazilevs et al. (2007)
-  // (weighted) convective velocity
-  LINALG::Matrix<nsd_,1> veleff(convelint_,false);
-  /*
-    1.0
-    +-                                                      -+ - ---
-    |        2                                               |   2.0
-    | 4.0*rho         n+1             n+1          2         |
-    tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
-    |     2                  -                I        -   - |
-    |   dt                   -                         -   - |
-    +-                                                      -+
-
-  */
-  /*          +-           -+   +-           -+   +-           -+
-              |             |   |             |   |             |
-              |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-              ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-              |    i     j  |   |    i     j  |   |    i     j  |
-              +-           -+   +-           -+   +-           -+
-  */
-  /*          +----
-              \
-              G : G =   +   G   * G
-              -   -    /     ij    ij
-              -   -   +----
-              i,j
-  */
-  /*                               +----
-                                   n+1             n+1     \         n+1              n+1
-                                   rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
-                                   -                /         i     -ij        j
-                                   -               +----        -
-                                   i,j
-  */
-  double G;
-  double normG(0.0);
-  double Gnormu(0.0);
-  const double dens_sqr = dens*dens;
-  for (int nn=0;nn<nsd_;++nn)
-  {
-    for (int rr=0;rr<nsd_;++rr)
-    {
-      G = xij_(nn,0)*xij_(rr,0);
-      for(int tt=1;tt<nsd_;tt++)
-      {
-        G += xij_(nn,tt)*xij_(rr,tt);
-      }
-      normG+=G*G;
-      Gnormu+=dens_sqr*veleff(nn,0)*G*veleff(rr,0);
-    }
-  }
-
-  // definition of constant:
-  // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
-  // (differently defined, e.g., in Akkerman et al. (2008))
-  // get element-type constant for tau
-  const double mk = SCATRA::MK<distype>();
-  const double CI = 12.0/mk;
-
-  // stabilization parameters for stationary and instationary case, respectively
-  if (is_stationary_)
-    tau = 1.0/(sqrt(Gnormu+CI*viscosity*viscosity*normG));
-  else
-    tau = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt))+Gnormu+CI*viscosity*viscosity*normG));
-
-  //--------------------------------------------------------------------
-  // calculation of subgrid-scale velocity based on momentum residual
-  // and stabilization parameter
-  // (different for generalized-alpha and other time-integration schemes)
-  //--------------------------------------------------------------------
-  if (is_genalpha_)
-  {
-    dserror("genalpha not supported");
-//    for (int rr=0;rr<nsd_;++rr)
-//    {
-//      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr));
-//    }
-  }
-  else
-  {
-    for (int rr=0;rr<nsd_;++rr)
-    {
-      sgvelint_(rr) = -tau*(dens*convelint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
-
-//test
-//       if (id==2076)
-//       {
-//           std::cout << id << std::endl;
-//           std::cout<< "Residuum" << sgvelint_(rr)/(-tau)*dt << std::endl;
-//           std::cout<< "subgrid vel" << sgvelint_(rr) << std::endl;
-//           std::cout<< "Histvektor" << acc(rr) << std::endl;
-//           std::cout<< "Geschw" << velint_(rr) << std::endl;
-//           std::cout<< "Druck" << gradp(rr) << std::endl;
-//           std::cout<< "Konvek" << conv(rr) << std::endl;
-//           std::cout<< "Epsilon" << visc(rr) << std::endl;
-//           std::cout<< "Bodyforce" << bodyforce(rr) << std::endl;
-//           std::cout<< "dens" << dens << std::endl;
-//           std::cout<< "visc" << viscosity << std::endl;
-//           std::cout<< "timefac" << timefacmod << std::endl;
-//           std::cout << "tau: " << tau<< std::endl;
-//       }
-    }
-  }
-
-#ifdef VISUALIZE_ELEDATA_GMSH
-  //Gmsh-output of element data
-  {
-    const bool screen_out = false;
-
-    const std::string filename = IO::GMSH::GetFileName("SubgridVelocityScatra", 0, screen_out, 0);
-    std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
-    {
-      const double* gpcoord = (intpoints.IP().qxg)[iquad];
-      if (nsd_!=3)
-        dserror("change dimension");
-      LINALG::Matrix<3,1> xsi;
-      for (int idim=0;idim<nsd_;idim++)
-      {xsi(idim) = gpcoord[idim];}
-      LINALG::SerialDenseMatrix xyze(3,nen_);
-      for(int inode=0;inode<nen_;inode++)
-      {
-        xyze(0,inode) = xyze_(0,inode);
-        xyze(1,inode) = xyze_(1,inode);
-        xyze(2,inode) = xyze_(2,inode);
-      }
-      // transform gp from local (element) coordinates to global (physical) coordinates
-      GEO::elementToCurrentCoordinatesInPlace(distype, xyze, xsi);
-      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, sgvelint_, xsi, gmshfilecontent);
-    }
-    gmshfilecontent.close();
-  }
-#endif
-
-  return;
-} //ScaTraImpl::CalcSubgrVelocityLevelSet
 
 /*----------------------------------------------------------------------*
   |  calculate residual of scalar transport equation and                 |
@@ -4859,1187 +6284,63 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
   return;
 } //ScaTraImpl::CalcResidualAndSubgrScalar
 
-/*----------------------------------------------------------------------*
-  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-  const int                                    iquad,      ///< id of current Gauss point
-  const int                                    eleid       ///< the element id
-  )
-{
-  // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
-  {xsi_(idim) = gpcoord[idim];}
-
-  if (not DRT::NURBS::IsNurbs(distype))
-  {
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-    if (use2ndderiv_)
-    {
-      // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-    }
-  }
-  else // nurbs elements are always somewhat special...
-  {
-    if (use2ndderiv_)
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
-        (funct_  ,
-         deriv_  ,
-         deriv2_ ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-    else
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv
-        (funct_  ,
-         deriv_  ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-  } // IsNurbs()
-
-  // compute Jacobian matrix and determinant
-  // actually compute its transpose....
-  /*
-    +-            -+ T      +-            -+
-    | dx   dx   dx |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dr   dr   dr |
-    |              |        |              |
-    | dy   dy   dy |        | dx   dy   dz |
-    | --   --   -- |   =    | --   --   -- |
-    | dr   ds   dt |        | ds   ds   ds |
-    |              |        |              |
-    | dz   dz   dz |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dt   dt   dt |
-    +-            -+        +-            -+
-  */
-
-  xjm_.MultiplyNT(deriv_,xyze_);
-  const double det = xij_.Invert(xjm_);
-
-  if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
-
-  // set integration factor: fac = Gauss weight * det(J)
-  const double fac = intpoints.IP().qwgt[iquad]*det;
-
-  // compute global derivatives
-  derxy_.Multiply(xij_,deriv_);
-
-  // compute second global derivatives (if needed)
-  if (use2ndderiv_)
-  {
-    // get global second derivatives
-    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
-  }
-  else
-    derxy2_.Clear();
-
-  // return integration factor for current GP: fac = Gauss weight * det(J)
-  return fac;
-
-} //ScaTraImpl::CalcSubgrVelocity
 
 
 /*----------------------------------------------------------------------*
-  |  evaluate element matrix and rhs (private)                   vg 02/09|
-  *----------------------------------------------------------------------*/
+ |  calculate rate of strain of (fine-scale) velocity        (private)  |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const bool                            fssgd,
-  const double                          timefac,
-  const double                          dt,
-  const double                          alphaF,
-  const int                             k
-  )
+inline double DRT::ELEMENTS::ScaTraImpl<distype>::GetStrainRate(
+  const LINALG::Matrix<nsd_,nen_>& evel
+)
 {
-//----------------------------------------------------------------
-// 1) element matrix: stationary terms
-//----------------------------------------------------------------
-// stabilization parameter and integration factors
-  const double taufac     = tau_[k]*fac;
-  const double timefacfac = timefac*fac;
-  const double timetaufac = timefac*taufac;
-  const double fac_diffus = timefacfac*diffus_[k];
+  // evel is tranferred here since the evaluation of the strain rate can be performed
+  // for various velocities such as velint_, fsvel_, ...
 
-//----------------------------------------------------------------
-// standard Galerkin terms
-//----------------------------------------------------------------
-// convective term in convective form
-  const double densfac = timefacfac*densnp_[k];
-  for (int vi=0; vi<nen_; ++vi)
+  double rateofstrain=0;
+
+  // get velocity derivatives at integration point
+  //
+  //              +-----  dN (x)
+  //   dvel (x)    \        k
+  //   -------- =   +     ------ * vel
+  //      dx       /        dx        k
+  //        j     +-----      j
+  //              node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  LINALG::Matrix<nsd_,nsd_> velderxy;
+  velderxy.MultiplyNT(evel,derxy_);
+
+  // compute (resolved) rate of strain
+  //
+  //          +-                                 -+ 1
+  //          |          /   \           /   \    | -
+  //          | 2 * eps | vel |   * eps | vel |   | 2
+  //          |          \   / ij        \   / ij |
+  //          +-                                 -+
+  //
+  LINALG::Matrix<nsd_,nsd_> two_epsilon;
+  for(int rr=0;rr<nsd_;++rr)
   {
-    const double v = densfac*funct_(vi);
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
+    for(int mm=0;mm<nsd_;++mm)
     {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += v*(conv_(ui)+sgconv_(ui));
+      two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
     }
   }
 
-// addition to convective term for conservative form
-  if (is_conservative_)
+  for(int rr=0;rr<nsd_;rr++)
   {
-    // convective term using current scalar value
-    const double cons_conv_phi = convelint_.Dot(gradphi_);
-
-    const double consfac = timefacfac*(densnp_[k]*vdiv_+densgradfac_[k]*cons_conv_phi);
-    for (int vi=0; vi<nen_; ++vi)
+    for(int mm=0;mm<nsd_;mm++)
     {
-      const double v = consfac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
+      rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
     }
   }
 
-// diffusive term
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
+  return(sqrt(rateofstrain/2.0));
+};
 
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-      double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
-      emat(fvi,fui) += fac_diffus*laplawf;
-    }
-  }
-
-//----------------------------------------------------------------
-// convective stabilization term
-//----------------------------------------------------------------
-// convective stabilization of convective term (in convective form)
-  const double dens2taufac = timetaufac*densnp_[k]*densnp_[k];
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const double v = dens2taufac*(conv_(vi)+sgconv_(vi));
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += v*conv_(ui);
-    }
-  }
-
-//----------------------------------------------------------------
-// stabilization terms for higher-order elements
-//----------------------------------------------------------------
-  if (use2ndderiv_)
-  {
-    const double denstaufac = timetaufac*densnp_[k];
-    // convective stabilization of diffusive term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = denstaufac*(conv_(vi)+sgconv_(vi));
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) -= v*diff_(ui);
-      }
-    }
-
-    const double densdifftaufac = diffreastafac_*denstaufac;
-    // diffusive stabilization of convective term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densdifftaufac*diff_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) -= v*conv_(ui);
-      }
-    }
-
-    const double difftaufac = diffreastafac_*timetaufac;
-    // diffusive stabilization of diffusive term
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = difftaufac*diff_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*diff_(ui);
-      }
-    }
-  }
-
-//----------------------------------------------------------------
-// 2) element matrix: instationary terms
-//----------------------------------------------------------------
-  if (not is_stationary_)
-  {
-    const double densamfac = fac*densam_[k];
-    //----------------------------------------------------------------
-    // standard Galerkin transient term
-    //----------------------------------------------------------------
-    // transient term
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densamfac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    const double densamnptaufac = taufac*densam_[k]*densnp_[k];
-    //----------------------------------------------------------------
-    // stabilization of transient term
-    //----------------------------------------------------------------
-    // convective stabilization of transient term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densamnptaufac*(conv_(vi)+sgconv_(vi));
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    if (use2ndderiv_)
-    {
-      const double densamreataufac = diffreastafac_*taufac*densam_[k];
-      // diffusive stabilization of transient term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = densamreataufac*diff_(vi);
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) -= v*funct_(ui);
-        }
-      }
-    }
-  }
-
-//----------------------------------------------------------------
-// 3) element matrix: reactive terms
-//----------------------------------------------------------------
-  if (is_reactive_)
-  {
-    const double fac_reac        = timefacfac*densnp_[k]*reacoeffderiv_[k];
-    const double timetaufac_reac = timetaufac*densnp_[k]*reacoeffderiv_[k];
-    //----------------------------------------------------------------
-    // standard Galerkin reactive term
-    //----------------------------------------------------------------
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = fac_reac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    //----------------------------------------------------------------
-    // stabilization of reactive term
-    //----------------------------------------------------------------
-    double densreataufac = timetaufac_reac*densnp_[k];
-    // convective stabilization of reactive term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densreataufac*(conv_(vi)+sgconv_(vi));
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    if (use2ndderiv_)
-    {
-      // diffusive stabilization of reactive term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = diffreastafac_*timetaufac_reac*diff_(vi);
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) -= v*funct_(ui);
-        }
-      }
-    }
-
-    //----------------------------------------------------------------
-    // reactive stabilization
-    //----------------------------------------------------------------
-    densreataufac = diffreastafac_*timetaufac_reac*densnp_[k];
-    // reactive stabilization of convective (in convective form) and reactive term
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densreataufac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*(conv_(ui)+reacoeff_[k]*funct_(ui));
-
-        /*  if (abs(diffreastafac_)>1e-5)
-            {
-            if (reacoeff_[k]!=reacoeffderiv_[k])
-            dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
-            cout<<"additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term"<<endl;
-            }*/
-
-      }
-    }
-
-    if (use2ndderiv_)
-    {
-      // reactive stabilization of diffusive term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = diffreastafac_*timetaufac_reac*funct_(vi);
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) -= v*diff_(ui);
-        }
-      }
-    }
-  }
-
-//----------------------------------------------------------------
-// 4) element right hand side
-//----------------------------------------------------------------
-//----------------------------------------------------------------
-// computation of bodyforce (and potentially history) term,
-// residual, integration factors and standard Galerkin transient
-// term (if required) on right hand side depending on respective
-// (non-)incremental stationary or time-integration scheme
-//----------------------------------------------------------------
-  double rhsint    = rhs_[k];
-  double rhsfac    = 0.0;
-  double rhstaufac = 0.0;
-
-  if (is_incremental_ and is_genalpha_)
-  {
-    rhsfac    = timefacfac/alphaF;
-    rhstaufac = timetaufac/alphaF;
-    rhsint   *= (timefac/alphaF);
-
-    const double vtrans = rhsfac*densam_[k]*hist_[k];
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= vtrans*funct_(vi);
-    }
-
-    // addition to convective term due to subgrid-scale velocity
-    // (not included in residual)
-    double sgconv_phi = sgvelint_.Dot(gradphi_);
-    conv_phi_[k] += sgconv_phi;
-
-    // addition to convective term for conservative form
-    // (not included in residual)
-    if (is_conservative_)
-    {
-      // scalar at integration point at time step n
-      const double phi = funct_.Dot(ephinp_[k]);
-
-      // convective term in conservative form
-      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi_[k]);
-    }
-
-    // multiply convective term by density
-    conv_phi_[k] *= densnp_[k];
-  }
-  else if (not is_incremental_ and is_genalpha_)
-  {
-    // for this case, gradphi_ (i.e. the gradient
-    // at time n+1) is overwritten by the gradient at time n
-    // analogously, conv_phi_ at time n+1 is replace by its
-    // value at time n
-    // gradient of scalar value at n
-    gradphi_.Multiply(derxy_,ephin_[k]);
-
-    // convective term using scalar value at n
-    conv_phi_[k] = convelint_.Dot(gradphi_);
-
-    // diffusive term using current scalar value for higher-order elements
-    double diff_phin = 0.0;
-    if (use2ndderiv_) diff_phin = diff_.Dot(ephin_[k]);
-
-    // diffusive term using current scalar value for higher-order elements
-//    if (use2ndderiv_) diff_phi_[k] = diff_.Dot(ephin_[k]);
-
-    // reactive term using scalar value at n
-    if (is_reactive_)
-    {
-      // scalar at integration point
-      const double phi = funct_.Dot(ephin_[k]);
-
-      rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
-    }
-
-    rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
-    scatrares_[k] = (1.0-alphaF) * (densn_[k]*conv_phi_[k]
-                                           - diff_phin + rea_phi_[k]) - rhsint;
-//    - diff_phi_[k] + rea_phi_[k]) - rhsint;
-    rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
-    rhstaufac = timetaufac/alphaF;
-    rhsint   *= (timefac/alphaF);
-
-    // addition to convective term due to subgrid-scale velocity
-    // (not included in residual)
-    double sgconv_phi = sgvelint_.Dot(gradphi_);
-    conv_phi_[k] += sgconv_phi;
-
-    // addition to convective term for conservative form
-    // (not included in residual)
-    if (is_conservative_)
-    {
-      // scalar at integration point at time step n
-      const double phi = funct_.Dot(ephin_[k]);
-
-      // convective term in conservative form
-      // caution: velocity divergence is for n+1 and not for n!
-      // -> hopefully, this inconsistency is of small amount
-      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densn_[k])*conv_phi_[k]);
-    }
-
-    // multiply convective term by density
-    conv_phi_[k] *= densn_[k];
-  }
-  else if (is_incremental_ and not is_genalpha_)
-  {
-    if (not is_stationary_)
-    {
-      scatrares_[k] *= dt;
-      rhsint               *= timefac;
-      rhsint               += densnp_[k]*hist_[k];
-      rhsfac                = timefacfac;
-
-      // compute scalar at integration point
-      const double phi = funct_.Dot(ephinp_[k]);
-
-      const double vtrans = fac*densnp_[k]*phi;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vtrans*funct_(vi);
-      }
-    }
-    else rhsfac   = fac;
-
-    rhstaufac = taufac;
-
-    // addition to convective term due to subgrid-scale velocity
-    // (not included in residual)
-    double sgconv_phi = sgvelint_.Dot(gradphi_);
-    conv_phi_[k] += sgconv_phi;
-
-    // addition to convective term for conservative form
-    // (not included in residual)
-    if (is_conservative_)
-    {
-      // scalar at integration point at time step n
-      const double phi = funct_.Dot(ephinp_[k]);
-
-      // convective term in conservative form
-      conv_phi_[k] += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi_[k]);
-    }
-
-    // multiply convective term by density
-    conv_phi_[k] *= densnp_[k];
-  }
-  else
-  {
-    if (not is_stationary_)
-    {
-      rhsint *= timefac;
-      rhsint += densnp_[k]*hist_[k];
-    }
-    scatrares_[k] = -rhsint;
-    rhstaufac            = taufac;
-  }
-
-//----------------------------------------------------------------
-// standard Galerkin bodyforce term
-//----------------------------------------------------------------
-  double vrhs = fac*rhsint;
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += vrhs*funct_(vi);
-  }
-
-//----------------------------------------------------------------
-// standard Galerkin terms on right hand side
-//----------------------------------------------------------------
-// convective term
-  vrhs = rhsfac*conv_phi_[k];
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= vrhs*funct_(vi);
-  }
-
-// diffusive term
-  vrhs = rhsfac*diffus_[k];
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-    erhs[fvi] -= vrhs*laplawf;
-  }
-
-//----------------------------------------------------------------
-// stabilization terms
-//----------------------------------------------------------------
-// convective rhs stabilization (in convective form)
-  vrhs = rhstaufac*scatrares_[k]*densnp_[k];
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi));
-  }
-
-// diffusive rhs stabilization
-  if (use2ndderiv_)
-  {
-    vrhs = rhstaufac*scatrares_[k];
-    // diffusive stabilization of convective temporal rhs term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] += diffreastafac_*vrhs*diff_(vi);
-    }
-  }
-
-//----------------------------------------------------------------
-// reactive terms (standard Galerkin and stabilization) on rhs
-//----------------------------------------------------------------
-// standard Galerkin term
-  if (is_reactive_)
-  {
-    vrhs = rhsfac*rea_phi_[k];
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= vrhs*funct_(vi);
-    }
-
-    // reactive rhs stabilization
-    vrhs = diffreastafac_*rhstaufac*densnp_[k]*reacoeff_[k]*scatrares_[k];
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= vrhs*funct_(vi);
-    }
-  }
-
-//----------------------------------------------------------------
-// fine-scale subgrid-diffusivity term on right hand side
-//----------------------------------------------------------------
-  if (is_incremental_ and fssgd)
-  {
-    vrhs = rhsfac*sgdiff_[k];
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf,derxy_,fsgradphi_,vi);
-      erhs[fvi] -= vrhs*laplawf;
-    }
-  }
-
-//---------------------------------------------------------------
-// advanced turbulence models
-//---------------------------------------------------------------
-// multifractal subgrid-scale modeling
-// convective form only
-  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-  {
-    if (nsd_<3) dserror("Turbulence is 3D!");
-    // fixed-point iteration only (i.e. beta=0.0 assumed), cf
-    // turbulence part in Evaluate()
-   {
-     double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
-     double reynolds = mfsgvelint_.Dot(mfsggradphi_);
-
-     for (int vi=0; vi<nen_; ++vi)
-     {
-       const int fvi = vi*numdofpernode_+k;
-       erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
-     }
-   }
-  }
-
-  return;
-} //ScaTraImpl::CalMatAndRHS
-
-
-
-/*----------------------------------------------------------------------*
-  | calculate mass matrix + rhs for determ. initial time deriv. gjb 08/08|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
-  DRT::Element*                         ele,
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          frt,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
-  )
-{
-  // dead load in element nodes at initial point in time
-  const double time = 0.0;
-
-  BodyForce(ele,time);
-
-  //----------------------------------------------------------------------
-  // get material parameters (evaluation at element center)
-  //----------------------------------------------------------------------
-  if (not mat_gp_)
-  {
-    // use one-point Gauss rule to do calculations at the element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-    // evaluate shape functions and derivatives at element center
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id()); //fac unused
-
-    GetMaterialParams(ele,scatratype);
-  }
-
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  /*----------------------------------------------------------------------*/
-  // element integration loop
-  /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    //----------------------------------------------------------------------
-    // get material parameters (evaluation at integration point)
-    //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele,scatratype);
-
-#if 0
-    int lastionidx(-1);
-    if (is_elch_)
-    {  for (int k=numscal_-1;k>-1;--k)
-      {
-        if (abs(valence_[k]) > EPS14)
-        {
-          lastionidx=k;
-          break;
-        }
-      }
-      //cout<<"lastionidx="<<lastionidx<<endl;
-    }
-#endif
-
-    //------------ get values of variables at integration point
-    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-    {
-      // get bodyforce in gausspoint (divided by specific heat capacity)
-      // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
-      rhs_[k] += thermpressdt_/shc_;
-
-      // get gradient of el. potential at integration point
-      gradpot_.Multiply(derxy_,epotnp_);
-
-      // migration part
-      migconv_.MultiplyTN(-frt,derxy_,gradpot_);
-
-      // get velocity at element center
-      velint_.Multiply(evelnp_,funct_);
-      convelint_.Multiply(econvelnp_,funct_);
-
-      // convective part in convective form: u_x*N,x+ u_y*N,y
-      conv_.MultiplyTN(derxy_,convelint_);
-
-      // velocity divergence required for conservative form
-      if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
-
-      // diffusive integration factor
-      const double fac_diffus = fac*diffus_[k];
-
-      // get value of current scalar
-      conint_[k] = funct_.Dot(ephinp_[k]);
-
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      // convective part in convective form times initial scalar field
-      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
-
-      // addition to convective term for conservative form
-      // -> spatial variation of density not yet accounted for
-      if (is_conservative_)
-        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
-
-      //----------------------------------------------------------------
-      // element matrix: transient term
-      //----------------------------------------------------------------
-      // transient term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = fac*funct_(vi)*densnp_[k];
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-#if 0
-      // initial time derivative of last scalar
-      // is obtained from electroneutrality!
-      if (is_elch_)
-      {
-        if (k==lastionidx)
-        {
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const double v = fac*funct_(vi)*densnp_[k];
-            const int fvi = vi*numdofpernode_+k;
-
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui = ui*numdofpernode_+k;
-
-              emat(fvi,fui) += valence_[k]*v*funct_(ui);
-              for (int kk=0; kk<lastionidx ; kk++)
-              {
-                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
-              }
-              for (int kk=lastionidx+1; kk<numscal_; kk++)
-              {
-                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
-              }
-            }
-          }
-        }
-        // we do not have to add anything to the rhs! -> go on with next k!
-        continue;
-      }
-#endif
-      //----------------------------------------------------------------
-      // element right hand side: convective term in convective form
-      //----------------------------------------------------------------
-      double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*funct_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: diffusive term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= vrhs*laplawf;
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: nonlinear migration term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus*conint_[k]*valence_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*migconv_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: reactive term
-      //----------------------------------------------------------------
-      if (is_reactive_)
-      {
-        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          const int fvi = vi*numdofpernode_+k;
-
-          erhs[fvi] -= vrhs*funct_(vi);
-        }
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: bodyforce term
-      //----------------------------------------------------------------
-      vrhs = fac*rhs_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*funct_(vi);
-      }
-    } // loop over each scalar k
-
-    if (is_elch_) // ELCH
-    {
-      // we put a dummy mass matrix here in order to have a regular
-      // matrix in the lower right block of the whole system-matrix
-      // A identity matrix would cause problems with ML solver in the SIMPLE
-      // schemes since ML needs to have off-diagonal entries for the aggregation!
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = fac*funct_(vi); // density assumed to be 1.0 here
-        const int fvi = vi*numdofpernode_+numscal_;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+numscal_;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-      // dof for el. potential have no 'velocity' -> rhs is zero!
-    }
-
-  } // integration loop
-
-  return;
-} // ScaTraImpl::InitialTimeDerivative
-
-/*----------------------------------------------------------------------------*
-  | calculate mass matrix + rhs for determ. time deriv. reinit. rasthofer 02/10|
-  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
-  DRT::Element*                         ele,
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          dt,
-  const double                          timefac,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
-  )
-{
-  //----------------------------------------------------------------------
-  // calculation of element volume both for tau at ele. cent. and int. pt.
-  //----------------------------------------------------------------------
-  // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // volume of the element (2D: element surface area; 1D: element length)
-  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
-  //------------------------------------------------------------------------------------
-  // get material parameters and stabilization parameters (evaluation at element center)
-  //------------------------------------------------------------------------------------
-  if (not mat_gp_ or not tau_gp_)
-  {
-
-    GetMaterialParams(ele,scatratype);
-
-    if (not tau_gp_)
-    {
-      // get velocity at element center
-      velint_.Multiply(evelnp_,funct_);
-      convelint_.Multiply(econvelnp_,funct_);
-
-      for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-      {
-        // calculation of stabilization parameter at element center
-        CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
-      }
-    }
-  }
-
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  /*----------------------------------------------------------------------*/
-  // element integration loop
-  /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    //----------------------------------------------------------------------
-    // get material parameters (evaluation at integration point)
-    //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele,scatratype);
-
-    //------------ get values of variables at integration point
-    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-    {
-      // get bodyforce in gausspoint (divided by specific heat capacity)
-      // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
-
-      // get gradient of el. potential at integration point
-      gradpot_.Multiply(derxy_,epotnp_);
-
-      // get velocity at element center
-      velint_.Multiply(evelnp_,funct_);
-      convelint_.Multiply(econvelnp_,funct_);
-
-      // convective part in convective form: u_x*N,x+ u_y*N,y
-      conv_.MultiplyTN(derxy_,convelint_);
-
-      // velocity divergence required for conservative form
-      if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
-
-      // calculation of stabilization parameter at integration point
-      if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
-
-      const double fac_tau = fac*tau_[k];
-
-      // diffusive integration factor
-      const double fac_diffus = fac*diffus_[k];
-
-      // get value of current scalar
-      conint_[k] = funct_.Dot(ephinp_[k]);
-
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      // convective part in convective form times initial scalar field
-      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
-
-      // addition to convective term for conservative form
-      // -> spatial variation of density not yet accounted for
-      if (is_conservative_)
-        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
-
-      //----------------------------------------------------------------
-      // element matrix: transient term
-      //----------------------------------------------------------------
-      // transient term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = fac*funct_(vi)*densnp_[k];
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-
-      //----------------------------------------------------------------
-      // element matrix: stabilization of transient term
-      //----------------------------------------------------------------
-      // convective stabilization of transient term (in convective form)
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = fac_tau*conv_(vi)*densnp_[k];//v = densamnptaufac*(conv_(vi)+sgconv_(vi));
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: convective term in convective form
-      //----------------------------------------------------------------
-      double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*funct_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: convective stabilization term
-      //----------------------------------------------------------------
-      // convective stabilization of convective term (in convective form)
-      vrhs = fac_tau*densnp_[k]*conv_ephi0_k*densnp_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*conv_(vi);
-      }
-
-      if (use2ndderiv_)
-      {
-        dserror("TimeDerivativePhidt not yet implemented for higher order elements");
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: diffusive term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= vrhs*laplawf;
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: reactive term
-      //----------------------------------------------------------------
-      if (is_reactive_)
-      {
-        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          const int fvi = vi*numdofpernode_+k;
-
-          erhs[fvi] -= vrhs*funct_(vi);
-        }
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: bodyforce term
-      //----------------------------------------------------------------
-      vrhs = fac*rhs_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*funct_(vi);
-      }
-    } // loop over each scalar k
-
-  } // integration loop
-
-  return;
-} // ScaTraImpl::TimeDerivativeReinit
-
-/*----------------------------------------------------------------------*
-  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiffMatrix(
-  const DRT::Element*           ele,
-  Epetra_SerialDenseMatrix&     emat,
-  const double                  timefac
-  )
-{
-/*----------------------------------------------------------------------*/
-// integration loop for one element
-/*----------------------------------------------------------------------*/
-// integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-// integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    for (int k=0;k<numscal_;++k)
-    {
-      // parameter for artificial diffusivity (scaled to one here)
-      double kartfac = fac;
-      if (not is_stationary_) kartfac *= timefac;
-
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-          double laplawf(0.0);
-          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
-          emat(fvi,fui) += kartfac*laplawf;
-
-          /*subtract SUPG term */
-          //emat(fvi,fui) -= taufac*conv(vi)*conv(ui);
-        }
-      }
-    }
-  } // integration loop
-
-  return;
-} // ScaTraImpl::CalcSubgrDiffMatrix
 
 
 /*----------------------------------------------------------------------*
@@ -6757,460 +7058,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 } // ScaTraImpl::CalMatElch
 
 
-/*---------------------------------------------------------------------*
-  |  calculate error compared to analytical solution           gjb 10/08|
-  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
-  const DRT::Element*                   ele,
-  const enum INPAR::SCATRA::ScaTraType  scatratype,
-  ParameterList&                        params,
-  Epetra_SerialDenseVector&             errors
-  )
-{
-  //at the moment, there is only one analytical test problem available!
-  if (params.get<string>("action") != "calc_error")
-    dserror("How did you get here?");
 
-  // -------------- prepare common things first ! -----------------------
-  // in the ALE case add nodal displacements
-  if (is_ale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
-
-  // set constants for analytical solution
-  const double t = params.get<double>("total time");
-  const double frt = params.get<double>("frt");
-
-  // get material constants
-  GetMaterialParams(ele,scatratype);
-
-  // integrations points and weights
-  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
-  switch(errortype)
-  {
-  case INPAR::SCATRA::calcerror_Kwok_Wu:
-  {
-    //   References:
-    //   Kwok, Yue-Kuen and Wu, Charles C. K.
-    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
-    //   Numerical Methods for Partial Differential Equations
-    //   1995, Vol 11, 389-397
-
-    //   G. Bauer, V. Gravemeier, W.A. Wall,
-    //   A 3D finite element approach for the coupled numerical simulation of
-    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
-
-    if (numscal_ != 2)
-      dserror("Numscal_ != 2 for desired error calculation.");
-
-    // working arrays
-    double                  potint(0.0);
-    LINALG::Matrix<2,1>     conint(true);
-    LINALG::Matrix<nsd_,1>  xint(true);
-    LINALG::Matrix<2,1>     c(true);
-    double                  deltapot(0.0);
-    LINALG::Matrix<2,1>     deltacon(true);
-
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of all transported scalars at integration point
-      for (int k=0; k<numscal_; ++k)
-      {
-        conint(k) = funct_.Dot(ephinp_[k]);
-      }
-
-      // get el. potential solution at integration point
-      potint = funct_.Dot(epotnp_);
-
-      // get global coordinate of integration point
-      xint.Multiply(xyze_,funct_);
-
-      // compute various constants
-      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
-      if (abs(d) == 0.0) dserror("division by zero");
-      const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
-
-      // compute analytical solution for cation and anion concentrations
-      const double A0 = 2.0;
-      const double m = 1.0;
-      const double n = 2.0;
-      const double k = 3.0;
-      const double A_mnk = 1.0;
-      double expterm;
-      double c_0_0_0_t;
-
-      if (nsd_==3)
-      {
-        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
-      }
-      else if (nsd_==2)
-      {
-        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
-      }
-      else if (nsd_==1)
-      {
-        expterm = exp((-D)*(m*m)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
-      }
-      else
-        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
-
-      // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
-      // compute analytical solution for el. potential
-      const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
-
-      // compute differences between analytical solution and numerical solution
-      deltapot = potint - pot;
-      deltacon.Update(1.0,conint,-1.0,c);
-
-      // add square to L2 error
-      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
-      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
-      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
-
-    } // end of loop over integration points
-  } // Kwok and Wu
-  break;
-  case INPAR::SCATRA::calcerror_cylinder:
-  {
-    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
-    //   G. Bauer, V. Gravemeier, W.A. Wall,
-    //   A 3D finite element approach for the coupled numerical simulation of
-    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
-
-    if (numscal_ != 2)
-      dserror("Numscal_ != 2 for desired error calculation.");
-
-    // working arrays
-    LINALG::Matrix<2,1>     conint(true);
-    LINALG::Matrix<nsd_,1>  xint(true);
-    LINALG::Matrix<2,1>     c(true);
-    LINALG::Matrix<2,1>     deltacon(true);
-
-    // some constants that are needed
-    const double c0_inner = 0.6147737641011396;
-    const double c0_outer = 1.244249192148809;
-    const double r_inner = 1.0;
-    const double r_outer = 2.0;
-    const double pot_inner = 2.758240847314454;
-    const double b = log(r_outer/r_inner);
-
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of all transported scalars at integration point
-      for (int k=0; k<numscal_; ++k)
-      {
-        conint(k) = funct_.Dot(ephinp_[k]);
-      }
-
-      // get el. potential solution at integration point
-      const double potint = funct_.Dot(epotnp_);
-
-      // get global coordinate of integration point
-      xint.Multiply(xyze_,funct_);
-
-      // evaluate analytical solution for cation concentration at radial position r
-      if (nsd_==3)
-      {
-        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
-        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
-      }
-      else
-        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
-
-      // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
-      // compute analytical solution for el. potential
-      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
-      if (abs(d) == 0.0) dserror("division by zero");
-      // reference value + ohmic resistance + concentration potential
-      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
-
-      // compute differences between analytical solution and numerical solution
-      double deltapot = potint - pot;
-      deltacon.Update(1.0,conint,-1.0,c);
-
-      // add square to L2 error
-      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
-      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
-      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
-
-    } // end of loop over integration points
-  } // concentric cylinders
-  break;
-  case INPAR::SCATRA::calcerror_electroneutrality:
-  {
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of transported scalars at integration point
-      // and compute electroneutrality
-      double deviation(0.0);
-      for (int k=0; k<numscal_; ++k)
-      {
-        const double conint_k = funct_.Dot(ephinp_[k]);
-        deviation += valence_[k]*conint_k;
-      }
-
-    // add square to L2 error
-    errors[0] += deviation*deviation*fac;
-    } // loop over integration points
-  }
-  break;
-  default: dserror("Unknown analytical solution!");
-  } //switch(errortype)
-
-  return;
-} // ScaTraImpl::CalErrorComparedToAnalytSolution
-
-
-  /*----------------------------------------------------------------------*
-    |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
-    *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
-  LINALG::Matrix<3,nen_>&         flux,
-  const DRT::Element*             ele,
-  const double                    frt,
-  const INPAR::SCATRA::FluxType   fluxtype,
-  const int                       k,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
-  )
-{
-/*
- * Actually, we compute here a weighted (and integrated) form of the fluxes!
- * On time integration level, these contributions are then used to calculate
- * an L2-projected representation of fluxes.
- * Thus, this method here DOES NOT YET provide flux values that are ready to use!!
- /                                                         \
- |                /   \                               /   \  |
- | w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
- |                \   /                               \   /  |
- \                      [optional]      [optional]         /
-*/
-
-  // get material parameters (evaluation at element center)
-  if (not mat_gp_) GetMaterialParams(ele,scatratype);
-
-  // integration rule
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
-  {
-    // evaluate shape functions and derivatives at integration point
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    // get material parameters (evaluation at integration point)
-    if (mat_gp_) GetMaterialParams(ele,scatratype);
-
-    // get velocity at integration point
-    velint_.Multiply(evelnp_,funct_);
-    convelint_.Multiply(econvelnp_,funct_);
-
-    // get scalar at integration point
-    const double phi = funct_.Dot(ephinp_[k]);
-
-    // get gradient of scalar at integration point
-    gradphi_.Multiply(derxy_,ephinp_[k]);
-
-    // get gradient of electric potential at integration point if required
-    if (frt > 0.0) gradpot_.Multiply(derxy_,epotnp_);
-
-    // allocate and initialize!
-    LINALG::Matrix<nsd_,1> q(true);
-
-    // add different flux contributions as specified by user input
-    switch (fluxtype)
-    {
-    case INPAR::SCATRA::flux_total_domain:
-
-      // convective flux contribution
-      q.Update(densnp_[k]*phi,convelint_);
-
-      // no break statement here!
-    case INPAR::SCATRA::flux_diffusive_domain:
-      // diffusive flux contribution
-      q.Update(-diffus_[k],gradphi_,1.0);
-
-      // ELCH (migration flux contribution)
-      if (frt > 0.0) q.Update(-diffusvalence_[k]*frt*phi,gradpot_,1.0);
-
-      break;
-    default:
-      dserror("received illegal flag inside flux evaluation for whole domain");
-    };
-    // q at integration point
-
-    // integrate and assemble everything into the "flux" vector
-    for (int vi=0; vi < nen_; vi++)
-    {
-      for (int idim=0; idim<nsd_ ;idim++)
-      {
-        flux(idim,vi) += fac*funct_(vi)*q(idim);
-      } // idim
-    } // vi
-
-  } // integration loop
-
-    //set zeros for unused space dimensions
-  for (int idim=nsd_; idim<3; idim++)
-  {
-    for (int vi=0; vi < nen_; vi++)
-    {
-      flux(idim,vi) = 0.0;
-    }
-  }
-
-  return;
-} // ScaTraImpl::CalculateFlux
-
-/*----------------------------------------------------------------------*
-  |  calculate scalar(s) and domain integral                     vg 09/08|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
-  const DRT::Element*             ele,
-  const vector<double>&           ephinp,
-  Epetra_SerialDenseVector&       scalars,
-  const bool                      inverting
-  )
-{
-  // integrations points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    // calculate integrals of (inverted) scalar(s) and domain
-    if (inverting)
-    {
-      for (int i=0; i<nen_; i++)
-      {
-        const double fac_funct_i = fac*funct_(i);
-        for (int k = 0; k < numscal_; k++)
-        {
-          scalars[k] += fac_funct_i/ephinp[i*numdofpernode_+k];
-        }
-        scalars[numscal_] += fac_funct_i;
-      }
-    }
-    else
-    {
-      for (int i=0; i<nen_; i++)
-      {
-        const double fac_funct_i = fac*funct_(i);
-        for (int k = 0; k < numscal_; k++)
-        {
-          scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
-        }
-        scalars[numscal_] += fac_funct_i;
-      }
-    }
-  } // loop over integration points
-
-  return;
-} // ScaTraImpl::CalculateScalars
-
-
-/*----------------------------------------------------------------------*
-  |  calculate domain integral                                   vg 01/09|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
-  Epetra_SerialDenseVector&  scalars,
-  const DRT::Element*        ele,
-  const double               time
-  )
-{
-  // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
-  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-  // ---------------------------------------------------------------------
-
-  BodyForce(ele,time);
-
-  // integrations points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    // get bodyforce in gausspoint
-    rhs_[0] = bodyforce_[0].Dot(funct_);
-
-    // calculate integrals of domain and bodyforce
-    for (int i=0; i<nen_; i++)
-    {
-      scalars[0] += fac*funct_(i);
-    }
-    scalars[1] += fac*rhs_[0];
-
-  } // loop over integration points
-
-  return;
-} // ScaTraImpl::CalculateDomain
-
-
-/*----------------------------------------------------------------------*
-  |  Integrate shape functions over domain (private)           gjb 07/09 |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
-  const DRT::Element*             ele,
-  Epetra_SerialDenseVector&       elevec1,
-  const Epetra_IntSerialDenseVector& dofids
-  )
-{
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // safety check
-  if (dofids.M() < numdofpernode_)
-    dserror("Dofids vector is too short. Received not enough flags");
-
-  // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
-
-    // compute integral of shape functions (only for dofid)
-    for (int k=0;k<numdofpernode_;k++)
-    {
-      if (dofids[k] >= 0)
-      {
-        for (int node=0;node<nen_;node++)
-        {
-          elevec1[node*numdofpernode_+k] += funct_(node) * fac;
-        }
-      }
-    }
-
-  } //loop over integration points
-
-  return;
-
-} //ScaTraImpl<distype>::IntegrateShapeFunction
 
 
 /*----------------------------------------------------------------------*
@@ -7330,395 +7178,320 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 
-/*----------------------------------------------------------------------*
- |  calculate the Laplacian for all shape functions (strong form)       |
- |                                                  (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianStrongForm(
-  LINALG::Matrix<nen_,1>& diff,
-  const LINALG::Matrix<numderiv2_,nen_>& deriv2
-  )
-{
-  diff.Clear();
-  // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
-  for (int i=0; i<nen_; ++i)
-  {
-    for (int j = 0; j<nsd_; ++j)
-    {
-      diff(i) += deriv2(j,i);
-    }
-  }
-  return;
-}; // ScaTraImpl<distype>::GetLaplacianStrongForm
 
-/*----------------------------------------------------------------------*
- |  calculate the Laplacian (weak form)             (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
-  double& val,
-  const LINALG::Matrix<nsd_,nen_>& derxy,
-  const int vi,
-  const int ui)
-{
-  val = 0.0;
-  for (int j = 0; j<nsd_; j++)
-  {
-    val += derxy(j, vi)*derxy(j, ui);
-  }
-  return;
-}; // ScaTraImpl<distype>::GetLaplacianWeakForm
 
-/*----------------------------------------------------------------------*
- |  calculate rhs of Laplacian (weak form)          (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
-    double& val,
-    const LINALG::Matrix<nsd_,nen_>& derxy,
-    const LINALG::Matrix<nsd_,1>&   gradphi,
-    const int vi)
-{
-  val = 0.0;
-  for (int j = 0; j<nsd_; j++)
-  {
-    val += derxy(j,vi)*gradphi(j);
-  }
-  return;
-}; // ScaTraImpl<distype>::GetLaplacianWeakFormRHS
+
 
 
 /*----------------------------------------------------------------------*
- |  calculate divergence of vector field (e.g., velocity)  (private) gjb 04/10 |
+  |  calculate system matrix and rhs for TaylorGalerkin scheme          |
+  |  just for the pure transport equation                   schott 05/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
-  double&                          vdiv,
-  const LINALG::Matrix<nsd_,nen_>& evel,
-  const LINALG::Matrix<nsd_,nen_>& derxy)
-{
-  LINALG::Matrix<nsd_,nsd_> vderxy;
-  vderxy.MultiplyNT(evel,derxy);
-
-  vdiv = 0.0;
-  // compute vel x,x  + vel y,y +  vel z,z at integration point
-  for (int j = 0; j<nsd_; ++j)
-  {
-    vdiv += vderxy(j,j);
-  }
-  return;
-};
-
-/*----------------------------------------------------------------------*
- |  calculate rate of strain of (fine-scale) velocity        (private)  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-inline double DRT::ELEMENTS::ScaTraImpl<distype>::GetStrainRate(
-  const LINALG::Matrix<nsd_,nen_>& evel
+void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat_Transport_TG(
+    DRT::Element*                         ele,               ///< the element those matrix is calculated
+    Epetra_SerialDenseMatrix&             emat,              ///< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,              ///< element rhs to calculate
+    const double                          dt,                ///< current time-step length
+    const enum INPAR::SCATRA::TimeIntegrationScheme timealgo ///< time algorithm
 )
 {
-  // evel is tranferred here since the evaluation of the strain rate can be performed
-  // for various velocities such as velint_, fsvel_, ...
+  //----------------------------------------------------------------------
+  // calculation of element volume both for tau at ele. cent. and int. pt.
+  //----------------------------------------------------------------------
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
-  double rateofstrain=0;
+  // volume of the element (2D: element surface area; 1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
-  // get velocity derivatives at integration point
-  //
-  //              +-----  dN (x)
-  //   dvel (x)    \        k
-  //   -------- =   +     ------ * vel
-  //      dx       /        dx        k
-  //        j     +-----      j
-  //              node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  LINALG::Matrix<nsd_,nsd_> velderxy;
-  velderxy.MultiplyNT(evel,derxy_);
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  // compute (resolved) rate of strain
-  //
-  //          +-                                 -+ 1
-  //          |          /   \           /   \    | -
-  //          | 2 * eps | vel |   * eps | vel |   | 2
-  //          |          \   / ij        \   / ij |
-  //          +-                                 -+
-  //
-  LINALG::Matrix<nsd_,nsd_> two_epsilon;
-  for(int rr=0;rr<nsd_;++rr)
+  // Assemble element rhs and vector for domain!!! integrals
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    for(int mm=0;mm<nsd_;++mm)
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // get velocity at integration point
+    velint_.Multiply(evelnp_,funct_);
+    convelint_.Multiply(econvelnp_,funct_);
+
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
-    }
-  }
+      // REMARK:
+      // the bodyforce vector is evaluated at each Gaussian point as a nonlinear function
+      // a node-wise rhs_-vector for the reinitialization bodyforce (smoothed sign-function) leads not the desired results
 
-  for(int rr=0;rr<nsd_;rr++)
-  {
-    for(int mm=0;mm<nsd_;mm++)
-    {
-      rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
-    }
-  }
-
-  return(sqrt(rateofstrain/2.0));
-};
-
-
-
-/*----------------------------------------------------------------------*
- |  Do a finite difference check for a given element id. Meant for      |
- |  debugging only!                                 (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
-  DRT::Element*                         ele,
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  Epetra_SerialDenseVector&             subgrdiff,
-  const double                          time,
-  const double                          dt,
-  const double                          timefac,
-  const double                          alphaF,
-  const enum INPAR::SCATRA::AssgdType   whichassgd,
-  const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
-  const bool                            assgd,
-  const bool                            fssgd,
-  const enum INPAR::FLUID::TurbModelAction turbmodel,
-  const double                          Cs,
-  const double                          tpn,
-  const double                          frt,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
-  )
-{
-  // magnitude of dof perturbation
-  const double epsilon=1e-6; // 1.e-8 seems already too small!
-
-  // make a copy of all input parameters potentially modified by Sysmat
-  // call --- they are not intended to be modified
-
-  // alloc the vectors that will store the original, non-perturbed values
-  vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
-  LINALG::Matrix<nen_,1>          origepotnp(true);
-  vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
-
-  // copy original concentrations and potentials to these storage arrays
-  for (int i=0;i<nen_;++i)
-  {
-    for (int k = 0; k< numscal_; ++k)
-    {
-      origephinp[k](i,0) = ephinp_[k](i,0);
-      origehist[k](i,0)  = ehist_[k](i,0);
-    }
-    origepotnp(i) = epotnp_(i);
-  } // for i
-
-  // allocate arrays to compute element matrices and vectors at perturbed positions
-  Epetra_SerialDenseMatrix  checkmat1(emat);
-  Epetra_SerialDenseVector  checkvec1(erhs);
-  Epetra_SerialDenseVector  checkvec2(subgrdiff);
-
-  // echo to screen
-  printf("+-------------------------------------------+\n");
-  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",ele->Id());
-  printf("+-------------------------------------------+\n");
-  printf("\n");
-
-  // loop columns of matrix by looping nodes and then dof per nodes
-  // loop nodes
-  for(int nn=0;nn<nen_;++nn)
-  {
-    printf("-------------------------------------\n");
-    printf("-------------------------------------\n");
-    printf("NODE of element local id %d\n",nn);
-    // loop dofs
-    for(int rr=0;rr<numdofpernode_;++rr)
-    {
-      // number of the matrix column to check
-      int dof=nn*(numdofpernode_)+rr;
-
-      // clear element matrices and vectors to assemble
-      checkmat1.Scale(0.0);
-      checkvec1.Scale(0.0);
-      checkvec2.Scale(0.0);
-
-      // first put the non-perturbed values to the working arrays
-      for (int i=0;i<nen_;++i)
+      // compute matrix and rhs
+      if(timealgo == INPAR::SCATRA::timeint_tg2)
       {
-        for (int k = 0; k< numscal_; ++k)
-        {
-          ephinp_[k](i,0) = origephinp[k](i,0);
-          ehist_[k](i,0)  = origehist[k](i,0);
-        }
-        epotnp_(i) = origepotnp(i);
-      } // for i
-
-      // now perturb the respective elemental quantities
-      if((is_elch_) and (rr==(numdofpernode_-1)))
-      {
-        printf("potential dof (%d). eps=%g\n",nn,epsilon);
-
-        if (is_genalpha_)
-        {
-          // we want to disturb phi(n+1) with epsilon
-          // => we have to disturb phi(n+alphaF) with alphaF*epsilon
-          epotnp_(nn)+=(alphaF*epsilon);
-        }
-        else
-        {
-          epotnp_(nn)+=epsilon;
-        }
+        // implicit characteristic galerkin scheme 2nd order
+        CalMatAndRHS_Transport_ICG2(emat, erhs, fac, k, ele, dt );
       }
-      else
+      else if(timealgo == INPAR::SCATRA::timeint_tg3)
       {
-        printf("concentration dof %d (%d)\n",rr,nn);
-
-        if (is_genalpha_)
-        {
-          // perturbation of phi(n+1) in phi(n+alphaF) => additional factor alphaF
-          ephinp_[rr](nn,0)+=(alphaF*epsilon);
-
-          // perturbation of solution variable phi(n+1) for gen.alpha
-          // leads to perturbation of phidtam (stored in ehist_)
-          // with epsilon*alphaM/(gamma*dt)
-          const double factor = alphaF/timefac; // = alphaM/(gamma*dt)
-          ehist_[rr](nn,0)+=(factor*epsilon);
-
-        }
-        else
-        {
-          ephinp_[rr](nn,0)+=epsilon;
-        }
+        // explicit Taylor-Galerkin scheme 3rd order
+        CalMatAndRHS_Transport_TG3(emat, erhs, fac, k, ele, dt );
       }
+      else dserror("no characteristic/Taylor Galerkin method chosen here");
 
-      // calculate the right hand side for the perturbed vector
-      Sysmat(
-        ele,
-        checkmat1,
-        checkvec1,
-        checkvec2,
-        time,
-        dt,
-        timefac,
-        alphaF,
-        whichassgd,
-        whichfssgd,
-        assgd,
-        fssgd,
-        turbmodel,
-        Cs,
-        tpn,
-        frt,
-        scatratype);
-
-      // compare the difference between linaer approximation and
-      // (nonlinear) right hand side evaluation
-
-      // note that it makes more sense to compare these quantities
-      // than to compare the matrix entry to the difference of the
-      // the right hand sides --- the latter causes numerical problems
-      // do to deletion //gammi
-
-      // however, matrix entries delivered from the element are compared
-      // with the finite-difference suggestion, too. It works surprisingly well
-      // for epsilon set to 1e-6 (all displayed digits nearly correct)
-      // and allows a more obvious comparison!
-      // when matrix entries are small, lin. and nonlin. approximation
-      // look identical, although the matrix entry may be rubbish!
-      // gjb
-
-      for(int mm=0;mm<(numdofpernode_*nen_);++mm)
-      {
-        double val   =-erhs(mm)/epsilon;
-        double lin   =-erhs(mm)/epsilon+emat(mm,dof);
-        double nonlin=-checkvec1(mm)/epsilon;
-
-        double norm=abs(lin);
-        if(norm<1e-12)
-        {
-          norm=1e-12;
-          cout<<"warning norm of lin is set to 10e-12"<<endl;
-        }
-
-        // output to screen
-        {
-          printf("relerr  %+12.5e   ",(lin-nonlin)/norm);
-          printf("abserr  %+12.5e   ",lin-nonlin);
-          printf("orig. value  %+12.5e   ",val);
-          printf("lin. approx. %+12.5e   ",lin);
-          printf("nonlin. funct.  %+12.5e   ",nonlin);
-          printf("matrix[%d,%d]  %+12.5e   ",mm,dof,emat(mm,dof));
-          // finite difference approximation (FIRST divide by epsilon and THEN subtract!)
-          // ill-conditioned operation has to be done as late as possible!
-          printf("FD suggestion  %+12.5e ",((erhs(mm)/epsilon)-(checkvec1(mm)/epsilon)) );
-          printf("\n");
-        }
-      }
-    }
-  } // loop nodes
-
-  // undo changes in state variables
-  for (int i=0;i<nen_;++i)
-  {
-    for (int k = 0; k< numscal_; ++k)
-    {
-      ephinp_[k](i,0) = origephinp[k](i,0);
-      ehist_[k](i,0)  = origehist[k](i,0);
-    }
-    epotnp_(i) = origepotnp(i);
-  } // for i
+    } // loop over each scalar
+  } // integration loop
 
   return;
 }
 
 
 
-double EvaluateDerivSmoothedHeavySide(
-  double                             phi_0,
-  const double                       epsilon_bandwidth,
-  const double                       mesh_size,
-  INPAR::SCATRA::SmoothedSignType    smoothedSignType
+/*-------------------------------------------------------------------------------*
+  |  evaluate element matrix and rhs for transport equation based                 |
+  |  on an implicit characteristic Galerkin scheme 2nd order          schott 12/10|
+  *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_Transport_ICG2(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
   )
 {
   //==========================================================
-  // evaluate smoothed sign function for reference phi-field
+  // evaluate element vectors and gradients
   //==========================================================
+  // get element vectors
+  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
+  // dist_n     distance vector for reinitialization at old timestep n
+  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
+  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
 
-  double deriv_smoothed_Heavyside = 0.0;
 
-  if(smoothedSignType == INPAR::SCATRA::signtype_nonsmoothed)
+  // get gradients and norms
+  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
+  // dist_n     distance vector for reinitialization at old timestep n
+  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+
+  LINALG::Matrix<nsd_,1> grad_dist_n(true);
+  grad_dist_n.Multiply(derxy_,ephin_[k]);
+
+  LINALG::Matrix<nsd_,1> grad_dist_npi(true);
+  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
+
+  //----------------------------------------------------------------
+  // standard Galerkin transient term
+  //----------------------------------------------------------------
+
+  //     |           |
+  //     | w, D(psi) |
+  //     |           |
+
+  for (int vi=0; vi<nen_; ++vi)
   {
-    deriv_smoothed_Heavyside = 0.0;
+    const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
+    }
   }
-  else if (smoothedSignType == INPAR::SCATRA::signtype_LinEtAl2005)
+
+
+  //               |                           |
+  //   1/4   dt^2  | u*grad(v), u*grad(D(psi)) |
+  //               |                           |
+
+  LINALG::Matrix<nen_,1> uGradDphi(true);
+  uGradDphi.MultiplyTN(derxy_,convelint_);
+
+
+  for (int vi=0; vi<nen_; ++vi)
   {
-//		double alpha = epsilon_bandwidth * mesh_size;
-//		sign_phi_0 = phi_0/sqrt(phi_0*phi_0 + alpha*alpha * grad_norm_phi_0*grad_norm_phi_0);
-    dserror("derivative of smoothed Heavyside fucntion not implemented yet");
+    const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += uGradDphi(vi,0)*uGradDphi(ui,0)* (fac*dt*dt/4.0);
+    }
   }
-  else if (smoothedSignType == INPAR::SCATRA::signtype_LinEtAl_normalized)
+
+
+  //----------  --------------    |          n+1     n    |
+  //  rhs                       - | w, u*(phi   - phi  )  |
+  //--------------------------    |          i            |
+
+  for (int vi=0; vi<nen_; ++vi)
   {
-//		double alpha = epsilon_bandwidth * mesh_size;
-//		sign_phi_0 = phi_0/sqrt(phi_0*phi_0 + alpha*alpha);
-    dserror("derivative of smoothed Heavyside fucntion not implemented yet");
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= funct_(vi)*fac*(dist_npi-dist_n);
   }
-  else if (smoothedSignType == INPAR::SCATRA::signtype_Nagrath2005)
+
+
+  //----------  --------------                |              n   |
+  //  rhs                                 -dt | w, u*grad(phi )  |
+  //--------------------------                |                  |
+
+  LINALG::Matrix<1,1> uGradPhi(true);
+  uGradPhi.MultiplyTN(convelint_,grad_dist_n);
+
+  for (int vi=0; vi<nen_; ++vi)
   {
-    double alpha = epsilon_bandwidth * mesh_size;
-    if(fabs(alpha) < 1e-15) dserror("divide by zero in evaluate for smoothed sign function");
-
-    if (phi_0 < -alpha)       deriv_smoothed_Heavyside = 0.0;
-    else if (phi_0 > alpha)   deriv_smoothed_Heavyside = 0.0;
-    else                      deriv_smoothed_Heavyside = 1.0/(2.0*alpha)*(1.0 + cos(PI*phi_0/alpha));
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= funct_(vi)*dt*fac*uGradPhi(0,0);
   }
-  else dserror("unknown type of smoothed sign function!");
+
+  //               |                       n+1     n  |
+  //    -dt*dt/4.0 |  grad(w)*u, u*grad(psi   + psi ) |
+  //               |                       i          |
+
+  LINALG::Matrix<nsd_,1> sum_phi(true);
+  sum_phi.Update(1.0,grad_dist_npi, 1.0, grad_dist_n);
+
+  LINALG::Matrix<1,1> uGradSumPhi(true);
+  uGradSumPhi.MultiplyTN(convelint_,sum_phi);
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= uGradDphi(vi,0)*dt*dt/4.0*fac*uGradSumPhi(0,0);
+  }
+
+  return;
+} //ScaTraImpl::CalMatAndRHS_ICG2
 
 
-  return deriv_smoothed_Heavyside;
-}
+
+/*-------------------------------------------------------------------------------*
+  |  evaluate element matrix and rhs for transport equation with TG3  schott 12/10|
+  *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_Transport_TG3(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
+  )
+{
+
+  //==========================================================
+  // evaluate element vectors and gradients
+  //==========================================================
+  // get element vectors
+  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
+  // dist_n     distance vector for reinitialization at old timestep n
+  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
+  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
 
 
+  // get gradients and norms
+  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
+  // dist_n     distance vector for reinitialization at old timestep n
+  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+
+  LINALG::Matrix<nsd_,1> grad_dist_n(true);
+  grad_dist_n.Multiply(derxy_,ephin_[k]);
+
+  LINALG::Matrix<nsd_,1> grad_dist_npi(true);
+  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
+
+  //----------------------------------------------------------------
+  // standard Galerkin transient term
+  //----------------------------------------------------------------
+
+  //     |           |
+  //     | w, D(phi) |
+  //     |           |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
+    }
+  }
+
+  //               |                           |
+  //    1/6 *dt^2  | a*grad(w), a*grad(D(phi)) |
+  //               |                           |
+
+  // a*grad(w) bzw. a*grad(D(phi))
+  LINALG::Matrix<nen_,1> aGradD(true);
+  aGradD.MultiplyTN(derxy_,convelint_);
+
+  // a*grad(phi_n)
+  double a_phi_n = convelint_.Dot(grad_dist_n);
+
+  // a*grad(phi_npi)
+  double a_phi_npi = convelint_.Dot(grad_dist_npi);
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += aGradD(vi)*aGradD(ui)* (fac*dt*dt/6.0);
+    }
+  }
+
+  //----------  --------------    |                n    |
+  //  rhs                     +dt | a*grad(w) , phi     |
+  //--------------------------    |                     |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] += dt*fac*aGradD(vi)*dist_n;
+  }
+
+  //----------  --------------    |        n+1     n|
+  //  rhs                       - | w , phi    -phi |
+  //--------------------------    |        i        |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= fac*funct_(vi)*(dist_npi-dist_n);
+  }
+
+
+  //----------  --------------                |                      n   |
+  //  rhs                         -1/2*dt*dt* | a*grad(w), a*grad(phi )  |
+  //--------------------------                |                          |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= aGradD(vi)*dt*dt*0.5*fac*a_phi_n;
+  }
+
+  //----------  --------------                |                      n+1    n    |
+  //  rhs                         -1/6*dt*dt* | a*grad(w), a*grad(phi   -phi  )  |
+  //--------------------------                |                      i           |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= aGradD(vi)*dt*dt/6.0*fac*(a_phi_npi-a_phi_n);
+  }
+
+  return;
+} //ScaTraImpl::CalMatAndRHS_TG3
+
+
+/*-------------------------------------------------------------------------------*
+  |  evaluate a smoothed sign function for reinitialization          schott 12/10|
+  *-------------------------------------------------------------------------------*/
 double EvaluateSmoothedSign(
   double                             phi_0,
   double                             grad_norm_phi_0,
@@ -7764,6 +7537,385 @@ double EvaluateSmoothedSign(
   return sign_phi_0;
 }
 
+/*-------------------------------------------------------------------------------*
+  |  evaluate the derivative of a smoothed sign function             schott 12/10|
+  *-------------------------------------------------------------------------------*/
+double EvaluateSmoothedSignDeriv(
+  double                             phi_0,
+  const double                       epsilon_bandwidth,
+  const double                       mesh_size,
+  INPAR::SCATRA::SmoothedSignType    smoothedSignType
+  )
+{
+  //==========================================================
+  // evaluate smoothed sign function for reference phi-field
+  //==========================================================
+
+  double deriv_smoothed_Heavyside = 0.0;
+
+  if(smoothedSignType == INPAR::SCATRA::signtype_nonsmoothed)
+  {
+    deriv_smoothed_Heavyside = 0.0;
+  }
+  else if (smoothedSignType == INPAR::SCATRA::signtype_LinEtAl2005)
+  {
+    // double alpha = epsilon_bandwidth * mesh_size;
+    // sign_phi_0 = phi_0/sqrt(phi_0*phi_0 + alpha*alpha * grad_norm_phi_0*grad_norm_phi_0);
+    dserror("derivative of smoothed Heavyside function not implemented yet");
+  }
+  else if (smoothedSignType == INPAR::SCATRA::signtype_LinEtAl_normalized)
+  {
+    // double alpha = epsilon_bandwidth * mesh_size;
+    // sign_phi_0 = phi_0/sqrt(phi_0*phi_0 + alpha*alpha);
+    dserror("derivative of smoothed Heavyside function not implemented yet");
+  }
+  else if (smoothedSignType == INPAR::SCATRA::signtype_Nagrath2005)
+  {
+    double alpha = epsilon_bandwidth * mesh_size;
+    if(fabs(alpha) < 1e-15) dserror("divide by zero in evaluate for smoothed sign function");
+
+    if (phi_0 < -alpha)       deriv_smoothed_Heavyside = 0.0;
+    else if (phi_0 > alpha)   deriv_smoothed_Heavyside = 0.0;
+    else                      deriv_smoothed_Heavyside = 1.0/(2.0*alpha)*(1.0 + cos(PI*phi_0/alpha));
+  }
+  else dserror("unknown type of smoothed sign function!");
+
+
+  return deriv_smoothed_Heavyside;
+}
+
+/*----------------------------------------------------------------------*
+  | evaluate shape functions and derivatives at int. point  schott 01/11 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPointREINIT(
+  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+  const int                                    iquad,      ///< id of current Gauss point
+  const int                                    eleid       ///< the element id
+  )
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {xsi_(idim) = gpcoord[idim];}
+
+  if (not DRT::NURBS::IsNurbs(distype))
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+    if (use2ndderivReinitialization_)
+    {
+      // get the second derivatives of standard element at current GP
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+    }
+  }
+  else // nurbs elements are always somewhat special...
+  {
+    dserror("what to do in case of nurbs?");
+  }
+
+  // compute Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+
+  xjm_.MultiplyNT(deriv_,xyze_);
+  const double det = xij_.Invert(xjm_);
+
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
+
+  // set integration factor: fac = Gauss weight * det(J)
+  const double fac = intpoints.IP().qwgt[iquad]*det;
+
+  // compute global derivatives
+  derxy_.Multiply(xij_,deriv_);
+
+  // compute second global derivatives (if needed)
+  if (use2ndderivReinitialization_)
+  {
+    // get global second derivatives
+    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+  }
+  else
+    derxy2_.Clear();
+
+  // return integration factor for current GP: fac = Gauss weight * det(J)
+  return fac;
+
+}
+
+/*---------------------------------------------------------------------*
+  |  calculate error for reinitialization                   schott 12/10|
+  *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorsReinitialization(
+    const DRT::Element*          ele,   //!< the element
+    ParameterList&               params //!< parameter list
+  )
+{
+  // evaluate the error only within the transition region of the smoothed heavyside function
+#define L1_NORM_TRANSITION_REGION
+
+  //==================================== REINITIALIZATION error calculation  ========================
+  // gradient norm of phi || grad(phi) -1.0 ||_L1(Omega)                                 schott 12/10
+  //=================================================================================================
+
+  // get element params
+  double eleL1gradienterr  = params.get<double>("L1 integrated gradient error"); //squared errors
+  double elevolume         = params.get<double>("volume");                       // non-squared volume
+
+  int k = 0; // we assume only one scalar
+
+  // get Gaussian points for integrated L2-norm and volume calculation
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_reinit(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  // caculate element wise errors and volume
+  for (int iquad=0; iquad<intpoints_reinit.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints_reinit,iquad,ele->Id());
+
+#ifdef L1_NORM_TRANSITION_REGION
+    const double mesh_size = getEleDiameter<distype>(xyze_);
+
+    double phi_ref = funct_.Dot(ephinp_[k]);
+    double deriv_smoothed_Heavyside = EvaluateSmoothedSignDeriv(phi_ref, 3,mesh_size, INPAR::SCATRA::signtype_Nagrath2005);
+#endif
+
+    LINALG::Matrix<nsd_,1> gradphi;
+    gradphi.Clear();
+    gradphi.Multiply(derxy_,ephinp_[k]);
+    double gradphi_norm = gradphi.Norm2();
+    double gradphi_norm_err = gradphi_norm - 1.0;
+
+    // integrate L1-error ( || grad(phi)-1.0 || )_L1(Omega_ele)
+
+#ifdef L1_NORM_TRANSITION_REGION
+    eleL1gradienterr += fabs(gradphi_norm_err) * fac* deriv_smoothed_Heavyside;
+    // integrate volume
+    elevolume        += fac * deriv_smoothed_Heavyside;
+#else
+    eleL1gradienterr += fabs(gradphi_norm_err) * fac;
+
+    // integrate volume
+    elevolume        += fac;
+#endif
+  } // Gaussian points for correction factor
+
+  // set new element params
+  params.set<double>("L1 integrated gradient error", eleL1gradienterr);
+  params.set<double>("volume", elevolume);
+
+
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------------------*
+  |  evaluate element matrix and rhs for reinitialization equation based          |
+  |  on an implicit characteristic Galerkin scheme 2nd order          schott 12/10|
+  *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_REINIT_ICG2(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const double                          fac,                      //!< integration factor
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    double                                pseudo_timestep_size,     //!< pseudo time step size
+    double                                mesh_size,                //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,           //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit, //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,        //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType          //!< type of smoothing the sign function
+  )
+{
+
+//==========================================================
+// evaluate element vectors and gradients
+//==========================================================
+// get element vectors
+// dist_npi   distance vector for reinitialization at current timestep np and old increment i
+// dist_n     distance vector for reinitialization at old timestep n
+// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
+  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
+  const double phi_0    = funct_.Dot(ephi0_Reinit_Reference_[k]);
+
+// get gradients and norms
+// grad_dist_npi   distance vector for reinitialization at current timestep np and old increment i
+// grad_dist_n     distance vector for reinitialization at old timestep n
+// grad_phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
+
+  LINALG::Matrix<nsd_,1> grad_dist_n(true);
+  grad_dist_n.Multiply(derxy_,ephin_[k]);
+
+  LINALG::Matrix<nsd_,1> grad_dist_npi(true);
+  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
+
+  LINALG::Matrix<nsd_,1> grad_phi_0(true);
+  grad_phi_0.Multiply(derxy_,ephi0_Reinit_Reference_[k]);
+
+  double grad_norm_dist_n   = grad_dist_n.Norm2();
+  double grad_norm_phi_0    = grad_phi_0.Norm2();
+
+
+// get 2nd order derivatives
+  LINALG::Matrix<numderiv2_,1> second_dist_n(true);
+  second_dist_n.Multiply(derxy2_,ephin_[k]);
+
+  LINALG::Matrix<numderiv2_,1> second_dist_npi(true);
+  second_dist_npi.Multiply(derxy2_,ephinp_[k]);
+
+
+  double sign_phi_0 = EvaluateSmoothedSign(phi_0, grad_norm_phi_0, epsilon_bandwidth, mesh_size, smoothedSignType);
+
+
+  if(penalty_method == INPAR::SCATRA::penalty_method_akkerman)
+  {
+    // get derivative of smoothed sign_function
+    //evaluate phinp and phi_0
+    double phinp = funct_.Dot(ephinp_[k]);
+    double phi_ref = funct_.Dot(ephi0_Reinit_Reference_[k]);
+
+    double deriv_smoothed_Heavyside = EvaluateSmoothedSignDeriv(phi_ref, epsilon_bandwidth,mesh_size, smoothedSignType);
+
+    const double densfac_penalty = pseudo_timestep_size*fac*densnp_[k]*penalty_interface_reinit*deriv_smoothed_Heavyside;
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double v = densfac_penalty*funct_(vi);
+      const int fvi = vi*numdofpernode_+k;
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+k;
+        emat(fvi,fui) += v*funct_(ui);
+      }
+    }
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+      erhs[fvi] -= funct_(vi)*densfac_penalty*( phinp - phi_ref) ;
+    }
+  }
+
+
+  //----------------------------------------------------------------
+  // standard Galerkin transient term
+  //----------------------------------------------------------------
+
+  //     |           |
+  //     | w, D(psi) |
+  //     |           |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+
+      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
+    }
+  }
+
+
+  //               |                       |
+  //   1/4 dtau^2  | grad(w), grad(D(psi)) |
+  //               |                       |
+
+  LINALG::Matrix<nen_,nen_>  derxyMultderxy(true);
+  derxyMultderxy.MultiplyTN(derxy_,derxy_);
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += derxyMultderxy(vi,ui)* (fac*pseudo_timestep_size*pseudo_timestep_size/4.0);
+    }
+  }
+
+
+  //----------  --------------    |                       m         |
+  //  rhs                    dtau | w, so(1.0- || grad(psi ) ||)    |
+  //--------------------------    |                                 |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] += funct_(vi)*pseudo_timestep_size*fac*sign_phi_0*(1.0-grad_norm_dist_n);
+  }
+
+
+  //----------  --------------                |                 m   |
+  //  rhs                    - 1.0/2.0*dtau^2 | grad(w),grad(psi )  |
+  //--------------------------                |                     |
+
+  LINALG::Matrix<nen_,1> derxyMultGradn(true);
+  derxyMultGradn.MultiplyTN(derxy_,grad_dist_n);
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= derxyMultGradn(vi)*pseudo_timestep_size*pseudo_timestep_size*fac/2.0;
+  }
+
+
+  // Assemble rhs for linear part of weak formulation for nonlinear iteration
+
+
+  // get difference between psi^m+1 - psi^m
+  double Delta_Psi = dist_npi - dist_n;
+
+  LINALG::Matrix<nsd_,1> Delta_Grad_psi(true);
+  Delta_Grad_psi.Update(1.0,grad_dist_npi, -1.0, grad_dist_n);
+
+
+  //     |         m+1     m  |
+  //     | -w, (psi   - psi ) |
+  //     |         i          |
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= funct_(vi)*fac*Delta_Psi;
+  }
+
+
+  //                    |                   m+1     m  |
+  //    1/4*delta_tau^2 | -grad(w), grad(psi   - psi ) |
+  //                    |                   i          |
+
+  LINALG::Matrix<nen_,1> Grad_w_Grad_Dpsi(true);
+  Grad_w_Grad_Dpsi.MultiplyTN(derxy_,Delta_Grad_psi);
+
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= Grad_w_Grad_Dpsi(vi,0)*fac*pseudo_timestep_size*pseudo_timestep_size/4.0;
+  }
+
+  return;
+} //ScaTraImpl::CalMatAndRHS_REINIT_ICG2
 
 
 
@@ -7771,21 +7923,21 @@ double EvaluateSmoothedSign(
   |  evaluate element matrix and rhs for reinitialization (private)   schott 12/10|
   *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALIZATION(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  double                                pseudo_timestep_size_factor,
-  double                                meshsize,
-  const INPAR::SCATRA::PenaltyMethod    penalty_method,
-  const double                          penalty_interface_reinit,
-  const double                          epsilon_bandwidth,
-  INPAR::SCATRA::SmoothedSignType       smoothedSignType,
-  const bool                            shock_capturing,
-  const double                          shock_capturing_diffusivity,
-  double                                timefac
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_REINIT_OST(
+    Epetra_SerialDenseMatrix&             emat,                        //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                        //!< element rhs to calculate
+    const double                          fac,                         //!< integration factor
+    const int                             k,                           //!< index of current scalar
+    DRT::Element*                         ele,                         //!< the element we are dealing with
+    double                                pseudo_timestep_size_factor, //!< pseudo time step factor
+    double                                meshsize,                    //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,              //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit,    //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,           //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,            //!< type of smoothing the sign function
+    const bool                            shock_capturing,             //!< shock capturing switched on/off
+    const double                          shock_capturing_diffusivity, //!< shock capturing diffusivity
+    double                                timefac                      //!< time discretization factor
   )
 {
 
@@ -7822,25 +7974,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   // addition to convective term for conservative form
   if (is_conservative_)
   {
-    // gradient of current scalar value
-    gradphi_.Multiply(derxy_,ephinp_[k]);
-
-    // convective term using current scalar value
-    const double cons_conv_phi = convelint_.Dot(gradphi_);
-
-    const double consfac = timefacfac*(densnp_[k]*vdiv_+densgradfac_[k]*cons_conv_phi);
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = consfac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
+    dserror("no conservative form for reinitialization equation implemented");
   }
 
   // diffusive term
@@ -7899,7 +8033,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
     double phinp = funct_.Dot(ephinp_[k]);
     double phi_ref = funct_.Dot(ephi0_Reinit_Reference_[k]);
 
-    double deriv_smoothed_Heavyside = EvaluateDerivSmoothedHeavySide(phi_ref, epsilon_bandwidth,meshsize, smoothedSignType);
+    double deriv_smoothed_Heavyside = EvaluateSmoothedSignDeriv(phi_ref, epsilon_bandwidth,meshsize, smoothedSignType);
 
     const double densfac_penalty = timefacfac*densnp_[k]*penalty_interface_reinit*deriv_smoothed_Heavyside;
     for (int vi=0; vi<nen_; ++vi)
@@ -8056,99 +8190,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
     }
   }
 
-  //----------------------------------------------------------------
-  // 3) element matrix: reactive terms
-  //----------------------------------------------------------------
-  if (is_reactive_)
-  {
-    const double fac_reac        = timefacfac*densnp_[k]*reacoeff_[k];
-    const double timetaufac_reac = timetaufac*densnp_[k]*reacoeff_[k];
-    //----------------------------------------------------------------
-    // standard Galerkin reactive term
-    //----------------------------------------------------------------
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = fac_reac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    //----------------------------------------------------------------
-    // stabilization of reactive term
-    //----------------------------------------------------------------
-    double densreataufac = timetaufac_reac*densnp_[k];
-    // convective stabilization of reactive term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densreataufac*(conv_(vi)+sgconv_(vi));
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    if (use2ndderiv_)
-    {
-      // diffusive stabilization of reactive term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = diffreastafac_*timetaufac_reac*diff_(vi);
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) -= v*funct_(ui);
-        }
-      }
-    }
-
-    //----------------------------------------------------------------
-    // reactive stabilization
-    //----------------------------------------------------------------
-    densreataufac = diffreastafac_*timetaufac_reac*densnp_[k];
-    // reactive stabilization of convective (in convective form) and reactive term
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densreataufac*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*(conv_(ui)+reacoeff_[k]*funct_(ui));
-      }
-    }
-
-    if (use2ndderiv_)
-    {
-      // reactive stabilization of diffusive term
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = diffreastafac_*timetaufac_reac*funct_(vi);
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) -= v*diff_(ui);
-        }
-      }
-    }
-  }
 
   //----------------------------------------------------------------
   // 4) element right hand side
@@ -8169,104 +8210,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   if (is_incremental_ and is_genalpha_)
   {
     dserror("generalized alpha implementation not yet available");
-//	  // gradient of current scalar value
-//	  gradphi_.Multiply(derxy_,ephinp_[k]);
-//
-//	  // convective term using current scalar value
-//	  conv_phi = velint_.Dot(gradphi_);
-//
-//	  // diffusive term using current scalar value for higher-order elements
-//	  if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[k]);
-//
-//	  // reactive term using current scalar value
-//	  if (is_reactive_)
-//	  {
-//	    // scalar at integration point
-//	    const double phi = funct_.Dot(ephinp_[k]);
-//
-//	    rea_phi = densnp_[k]*reacoeff_[k]*phi;
-//	  }
-//
-//	  // time derivative stored on history variable
-//	  residual  = densam_[k]*hist_[k] + densnp_[k]*conv_phi - diff_phi + rea_phi - rhsint;
-//	  rhsfac    = timefacfac/alphaF;
-//	  rhstaufac = timetaufac/alphaF;
-//	  rhsint   *= (timefac/alphaF);
-//
-//	  const double vtrans = rhsfac*densam_[k]*hist_[k];
-//	  for (int vi=0; vi<nen_; ++vi)
-//	  {
-//	    const int fvi = vi*numdofpernode_+k;
-//
-//	    erhs[fvi] -= vtrans*funct_(vi);
-//	  }
-//
-//	  // addition to convective term due to subgrid-scale velocity
-//	  // (not included in residual)
-//	  double sgconv_phi = sgvelint_.Dot(gradphi_);
-//	  conv_phi += sgconv_phi;
-//
-//	  // addition to convective term for conservative form
-//	  // (not included in residual)
-//	  if (is_conservative_)
-//	  {
-//	    // scalar at integration point at time step n
-//	    const double phi = funct_.Dot(ephinp_[k]);
-//
-//	    // convective term in conservative form
-//	    conv_phi += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi);
-//	  }
-//
-//	  // multiply convective term by density
-//	  conv_phi *= densnp_[k];
   }
   else if (not is_incremental_ and is_genalpha_)
   {
     dserror("generalized alpha implementation not yet available");
-//	  // gradient of current scalar value
-//	  gradphi_.Multiply(derxy_,ephin_[k]);
-//
-//	  // convective term using current scalar value
-//	  conv_phi = velint_.Dot(gradphi_);
-//
-//	  // diffusive term using current scalar value for higher-order elements
-//	  if (use2ndderiv_) diff_phi = diff_.Dot(ephin_[k]);
-//
-//	  // reactive term using current scalar value
-//	  if (is_reactive_)
-//	  {
-//	    // scalar at integration point
-//	    const double phi = funct_.Dot(ephin_[k]);
-//
-//	    rea_phi = densnp_[k]*reacoeff_[k]*phi;
-//	  }
-//
-//	  rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
-//	  residual  = (1.0-alphaF) * (densn_[k]*conv_phi - diff_phi + rea_phi) - rhsint;
-//	  rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
-//	  rhstaufac = timetaufac/alphaF;
-//	  rhsint   *= (timefac/alphaF);
-//
-//	  // addition to convective term due to subgrid-scale velocity
-//	  // (not included in residual)
-//	  double sgconv_phi = sgvelint_.Dot(gradphi_);
-//	  conv_phi += sgconv_phi;
-//
-//	  // addition to convective term for conservative form
-//	  // (not included in residual)
-//	  if (is_conservative_)
-//	  {
-//	    // scalar at integration point at time step n
-//	    const double phi = funct_.Dot(ephin_[k]);
-//
-//	    // convective term in conservative form
-//	    // caution: velocity divergence is for n+1 and not for n!
-//	    // -> hopefully, this inconsistency is of small amount
-//	    conv_phi += phi*(vdiv_+(densgradfac_[k]/densn_[k])*conv_phi);
-//	  }
-//
-//	  // multiply convective term by density
-//	  conv_phi *= densn_[k];
   }
   else if (is_incremental_ and not is_genalpha_)
   {
@@ -8282,10 +8229,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
     // reactive term using current scalar value
     if (is_reactive_)
     {
-      // scalar at integration point
-      const double phi = funct_.Dot(ephinp_[k]);
-
-      rea_phi = densnp_[k]*reacoeff_[k]*phi;
+      dserror("no reactive terms in reinitializaton equation");
     }
 
     if (not is_stationary_)
@@ -8322,11 +8266,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
     // (not included in residual)
     if (is_conservative_)
     {
-      // scalar at integration point at time step n
-      const double phi = funct_.Dot(ephinp_[k]);
-
-      // convective term in conservative form
-      conv_phi += phi*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_phi);
+      dserror("no conservative form implemented for reinitialization equation");
     }
 
     // multiply convective term by density
@@ -8350,7 +8290,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
-
     erhs[fvi] += vrhs*funct_(vi);
   }
 
@@ -8362,7 +8301,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
-
     erhs[fvi] -= vrhs*funct_(vi);
   }
 
@@ -8371,13 +8309,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
-
     double laplawf(0.0);
     GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
     erhs[fvi] -= vrhs*laplawf;
   }
-
-
 
 
   //----------------------------------------------------------------
@@ -8388,7 +8323,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
-
     erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi));
   }
 
@@ -8400,551 +8334,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
-
       erhs[fvi] += diffreastafac_*vrhs*diff_(vi);
     }
   }
 
-  //----------------------------------------------------------------
-  // reactive terms (standard Galerkin and stabilization) on rhs
-  //----------------------------------------------------------------
-  // standard Galerkin term
-  if (is_reactive_)
-  {
-    vrhs = rhsfac*rea_phi;
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= vrhs*funct_(vi);
-    }
-
-    // reactive rhs stabilization
-    vrhs = diffreastafac_*rhstaufac*densnp_[k]*reacoeff_[k]*residual;
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= vrhs*funct_(vi);
-    }
-  }
-
   return;
-} //ScaTraImpl::CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION
+} //ScaTraImpl::CalMatAndRHS_LinearAdvection_REINITIALIZATION
 
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for reinitialization (private)   schott 12/10|
-  *-------------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------------------------*
+  |  calculate element matrix and rhs vector for the intersection penalty method   schott 12/10|
+  *--------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  double                                pseudo_timestep_size,
-  double                                mesh_size,
-  const INPAR::SCATRA::PenaltyMethod    penalty_method,
-  const double                          penalty_interface_reinit,
-  const double                          epsilon_bandwidth,
-  INPAR::SCATRA::SmoothedSignType       smoothedSignType
-  )
-{
-
-//==========================================================
-// evaluate element vectors and gradients
-//==========================================================
-// get element vectors
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-  const double phi_0    = funct_.Dot(ephi0_Reinit_Reference_[k]);
-
-// get gradients and norms
-// grad_dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// grad_dist_n     distance vector for reinitialization at old timestep n
-// grad_phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n(true);
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi(true);
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_phi_0(true);
-  grad_phi_0.Multiply(derxy_,ephi0_Reinit_Reference_[k]);
-
-  double grad_norm_dist_n   = grad_dist_n.Norm2();
-#ifdef HIGHER_ORDER_NEW
-  double grad_norm_dist_npi = grad_dist_npi.Norm2();
-#endif
-#ifdef FIXPOINTLIKE
-  double grad_norm_dist_npi = grad_dist_npi.Norm2();
-#endif
-  double grad_norm_phi_0    = grad_phi_0.Norm2();
-
-//bool grad_norm_zero = false;
-//if(grad_norm_dist_n< 1e-02) grad_norm_zero=true;	// do not assemble nonlinear higher order terms
-//if(grad_norm_dist_npi< 1e-02) grad_norm_zero=true;	// do not assemble nonlinear higher order terms
-
-
-// get 2nd order derivatives
-  LINALG::Matrix<numderiv2_,1> second_dist_n;
-  second_dist_n.Clear();
-  second_dist_n.Multiply(derxy2_,ephin_[k]);
-
-  LINALG::Matrix<numderiv2_,1> second_dist_npi;
-  second_dist_npi.Clear();
-  second_dist_npi.Multiply(derxy2_,ephinp_[k]);
-
-
-  double sign_phi_0 = EvaluateSmoothedSign(phi_0, grad_norm_phi_0, epsilon_bandwidth, mesh_size, smoothedSignType);
-
-
-  if(penalty_method == INPAR::SCATRA::penalty_method_akkerman)
-  {
-
-    // get derivative of smoothed sign_function
-    //evaluate phinp and phi_0
-    double phinp = funct_.Dot(ephinp_[k]);
-    double phi_ref = funct_.Dot(ephi0_Reinit_Reference_[k]);
-
-    double deriv_smoothed_Heavyside = EvaluateDerivSmoothedHeavySide(phi_ref, epsilon_bandwidth,mesh_size, smoothedSignType);
-    //deriv_smoohted_sign =
-
-    const double densfac_penalty = pseudo_timestep_size*fac*densnp_[k]*penalty_interface_reinit*deriv_smoothed_Heavyside;
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const double v = densfac_penalty*funct_(vi);
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += v*funct_(ui);
-      }
-    }
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] -= funct_(vi)*densfac_penalty*( phinp - phi_ref) ;
-    }
-  }
-
-
-
-//----------------------------------------------------------------
-// standard Galerkin transient term
-//----------------------------------------------------------------
-
-//     |           |
-//     | w, D(psi) |
-//     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-
-//               |                       |
-//   1/4 dtau^2  | grad(w), grad(D(psi)) |
-//               |                       |
-
-  LINALG::Matrix<nen_,nen_>  derxyMultderxy;
-  derxyMultderxy.Clear();
-  derxyMultderxy.MultiplyTN(derxy_,derxy_);
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += derxyMultderxy(vi,ui)* (fac*pseudo_timestep_size*pseudo_timestep_size/4.0);
-    }
-  }
-
-
-//----------  --------------    |                       m         |
-//  rhs                    dtau | w, so(1.0- || grad(psi ) ||)    |
-//--------------------------    |                                 |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += funct_(vi)*pseudo_timestep_size*fac*sign_phi_0*(1.0-grad_norm_dist_n);
-  }
-
-
-//----------  --------------                |                 m   |
-//  rhs                    - 1.0/2.0*dtau^2 | grad(w),grad(psi )  |
-//--------------------------                |                     |
-
-  LINALG::Matrix<nen_,1> derxyMultGradn;
-  derxyMultGradn.Clear();
-  derxyMultGradn.MultiplyTN(derxy_,grad_dist_n);
-
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= derxyMultGradn(vi)*pseudo_timestep_size*pseudo_timestep_size*fac/2.0;
-  }
-
-
-#ifdef NONLINEAR
-
-
-#ifdef HIGHER_ORDER_NEW
-//if(grad_norm_zero==false)
-  {
-//============================================================================================================================
-// Assemble domain 2nd order integrals!!!
-
-//----------  --------------                |                m+1                m+1                              m+1   |
-//  rhs                    + 1.0/4.0*dtau^2 | w,so^2/(grad(psi   ))^2  d/dxk psi   * sum(j=1..nsd)(d^2/dxjdxk psi    ) |
-//--------------------------                |                i                  i                                i     |
-
-    if(numderiv2_ != 6) dserror("this is not a 3D case!!!");
-
-
-//cout << "second_dist_npi" << second_dist_npi << endl;
-    double second_deriv_tmp_npi = 0.0;
-    second_deriv_tmp_npi = second_dist_npi(0,0) *grad_dist_npi(0,0)
-                           + second_dist_npi(1,0) *grad_dist_npi(1,0)
-                           + second_dist_npi(2,0) *grad_dist_npi(2,0)
-                           + second_dist_npi(3,0) *(grad_dist_npi(0,0) +grad_dist_npi(1,0))
-                           + second_dist_npi(4,0) *(grad_dist_npi(0,0) +grad_dist_npi(2,0))
-                           + second_dist_npi(5,0) *(grad_dist_npi(1,0) +grad_dist_npi(2,0));
-//cout << "second_deriv_tmp_npi_1" << second_deriv_tmp_npi;
-
-//cout << sign_phi_0*sign_phi_0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/4.0 << endl;
-    if(grad_norm_dist_npi< 1e-13){
-      cout << "warning: grad_norm_dist_npi is near zero!!! in element" << ele->Id() << grad_norm_dist_npi << endl;
-      cout << grad_dist_npi << endl;
-      cout << ephinp_[k] << endl;
-    }
-
-    if(grad_norm_dist_n< 1e-13) cout << "warning: grad_norm_dist_n is near zero!!!" << ele->Id() << grad_norm_dist_n << endl;
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] += funct_(vi)*sign_phi_0*sign_phi_0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_npi*grad_norm_dist_npi);
-//  erhs[fvi] += funct_(vi)*1.0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_npi*grad_norm_dist_npi);
-
-    }
-//cout << "second_deriv_tmp_npi" << second_deriv_tmp_npi << endl;
-
-//----------  --------------
-//  mat                    2)
-//--------------------------
-
-//double tmp_a = 2.0*sign_phi_0*sign_phi_0*second_deriv_tmp_npi/ pow(grad_norm_dist_npi,4.0);
-    double tmp_a = 2.0*second_deriv_tmp_npi/ pow(grad_norm_dist_npi,4.0);
-
-    LINALG::Matrix<1,nen_> grad_psi_Mult_Dpsi;
-    grad_psi_Mult_Dpsi.Clear();
-    grad_psi_Mult_Dpsi.MultiplyTN(grad_dist_npi,derxy_);
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) += funct_(vi)*pseudo_timestep_size*pseudo_timestep_size*fac/4.0*tmp_a*grad_psi_Mult_Dpsi(0,ui);
-      }
-    }
-
-//----------  --------------
-//  mat                    3b)
-//--------------------------
-//double tmp_b = sign_phi_0*sign_phi_0 /grad_norm_dist_npi;
-    double tmp_b = 1.0 /(grad_norm_dist_npi*grad_norm_dist_npi);
-
-    LINALG::Matrix<nen_,1> second_psi_Mult_grad_Dpsi;
-    second_psi_Mult_grad_Dpsi.Clear();
-
-    for (int i= 0; i< nen_; i++)
-    {
-      second_psi_Mult_grad_Dpsi(i,0) = derxy_(0,i)* (second_dist_npi(0,0)+second_dist_npi(3,0)+second_dist_npi(4,0))
-                                       + derxy_(1,i)* (second_dist_npi(3,0)+second_dist_npi(1,0)+second_dist_npi(5,0))
-                                       + derxy_(2,i)* (second_dist_npi(4,0)+second_dist_npi(5,0)+second_dist_npi(2,0));
-    }
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) -= funct_(vi)*pseudo_timestep_size*pseudo_timestep_size*fac/4.0*tmp_b*second_psi_Mult_grad_Dpsi(ui,0);
-      }
-    }
-
-
-
-//double tmp_c3 = sign_phi_0*sign_phi_0/ (grad_norm_dist_npi*grad_norm_dist_npi);
-    double tmp_c3 = 1.0/ (grad_norm_dist_npi*grad_norm_dist_npi);
-
-//double tmp_c3 = -1.0/ (pow(grad_norm_dist_npi,2.0));
-    LINALG::Matrix<1,nen_> GradPsi_DERIV2_GradPsi;
-    GradPsi_DERIV2_GradPsi.Clear();
-    for (int i=0; i< nen_; i++)
-    {
-      GradPsi_DERIV2_GradPsi(0,i) = (derxy2_(0,i)* grad_dist_npi(0))
-                                    +	  (derxy2_(1,i)* grad_dist_npi(1))
-                                    +	  (derxy2_(2,i)* grad_dist_npi(2))
-                                    +      (derxy2_(3,i)* (grad_dist_npi(0) + grad_dist_npi(1)))
-                                    +      (derxy2_(4,i)* (grad_dist_npi(0) + grad_dist_npi(2)))
-                                    +      (derxy2_(5,i)* (grad_dist_npi(1) + grad_dist_npi(2)));
-    }
-//cout << GradPsi_DERIV2_GradPsi << endl;
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+k;
-
-        emat(fvi,fui) -= funct_(vi)*pseudo_timestep_size*pseudo_timestep_size*fac/4.0*tmp_c3 * GradPsi_DERIV2_GradPsi(0,ui);
-      }
-    }
-
-
-
-//----------  --------------                |                m                  m                                m     |
-//  rhs                    + 1.0/4.0*dtau^2 | w,so^2/(grad(psi   ))^2  d/dxk psi   * sum(j=1..nsd)(d^2/dxjdxk psi    ) |
-//--------------------------                |                                                                          |
-
-    if(numderiv2_ != 6) dserror("this is not a 3D case!!!");
-
-    double second_deriv_tmp_n = 0.0;
-    second_deriv_tmp_n   = second_dist_n(0,0) *grad_dist_n(0,0)
-                           + second_dist_n(1,0) *grad_dist_n(1,0)
-                           + second_dist_n(2,0) *grad_dist_n(2,0)
-                           + second_dist_n(3,0) *(grad_dist_n(0,0) +grad_dist_n(1,0))
-                           + second_dist_n(4,0) *(grad_dist_n(0,0) +grad_dist_n(2,0))
-                           + second_dist_n(5,0) *(grad_dist_n(1,0) +grad_dist_n(2,0));
-//second_deriv_tmp_n /= (grad_norm_dist_n*grad_norm_dist_n);
-
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-      erhs[fvi] += funct_(vi)*sign_phi_0*sign_phi_0* second_deriv_tmp_n* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_n*grad_norm_dist_n);
-//  erhs[fvi] += funct_(vi)*1.0* second_deriv_tmp_n* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_n*grad_norm_dist_n);
-
-    }
-//cout << "second_deriv_tmp_n" << second_deriv_tmp_n << endl;
-
-  } // end if grad_norm_zero==false
-// END Assemble domain 2nd order integrals!!!
-#endif
-
-
-#ifdef FIXPOINTLIKE
-
-
-//cout << "second_dist_npi" << second_dist_npi << endl;
-  double second_deriv_tmp_npi = 0.0;
-  second_deriv_tmp_npi = second_dist_npi(0,0) *grad_dist_npi(0,0)
-                         + second_dist_npi(1,0) *grad_dist_npi(1,0)
-                         + second_dist_npi(2,0) *grad_dist_npi(2,0)
-                         + second_dist_npi(3,0) *(grad_dist_npi(0,0) +grad_dist_npi(1,0))
-                         + second_dist_npi(4,0) *(grad_dist_npi(0,0) +grad_dist_npi(2,0))
-                         + second_dist_npi(5,0) *(grad_dist_npi(1,0) +grad_dist_npi(2,0));
-//cout << "second_deriv_tmp_npi_1" << second_deriv_tmp_npi;
-//if(fabs(second_dist_npi(0,0))>1e-12 or
-//   fabs(second_dist_npi(1,0))>1e-12 or
-//   fabs(second_dist_npi(2,0))>1e-12) cout << second_dist_npi << endl;
-
-//cout << sign_phi_0*sign_phi_0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/4.0 << endl;
-  bool do_assembly = true;
-//if(grad_norm_dist_npi< 1e-1){
-////	cout << "warning: grad_norm_dist_npi is near zero!!! in element" << ele->Id() << grad_norm_dist_npi << endl;
-////	cout << grad_dist_npi << endl;
-////	cout << ephinp_[k] << endl;
-//	do_assembly=false;
-//}
-//
-  if(grad_norm_dist_n< 1e-1){
-    cout << "warning: grad_norm_dist_n is near zero!!!" << ele->Id() << grad_norm_dist_n << endl;
-    do_assembly=false;
-  }
-
-  if(do_assembly==true)
-  {
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-//  erhs[fvi] += funct_(vi)*sign_phi_0*sign_phi_0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_npi*grad_norm_dist_npi);
-      erhs[fvi] += funct_(vi)*1.0* second_deriv_tmp_npi* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_npi*grad_norm_dist_npi);
-
-    }
-  }
-
-
-  double second_deriv_tmp_n = 0.0;
-  second_deriv_tmp_n   = second_dist_n(0,0) *grad_dist_n(0,0)
-                         + second_dist_n(1,0) *grad_dist_n(1,0)
-                         + second_dist_n(2,0) *grad_dist_n(2,0)
-                         + second_dist_n(3,0) *(grad_dist_n(0,0) +grad_dist_n(1,0))
-                         + second_dist_n(4,0) *(grad_dist_n(0,0) +grad_dist_n(2,0))
-                         + second_dist_n(5,0) *(grad_dist_n(1,0) +grad_dist_n(2,0));
-//second_deriv_tmp_n /= (grad_norm_dist_n*grad_norm_dist_n);
-
-  if(do_assembly==true)
-  {
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-
-//  erhs[fvi] += funct_(vi)*sign_phi_0*sign_phi_0* second_deriv_tmp_n* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_n*grad_norm_dist_n);
-      erhs[fvi] += funct_(vi)*1.0* second_deriv_tmp_n* pseudo_timestep_size*pseudo_timestep_size*fac/(4.0*grad_norm_dist_n*grad_norm_dist_n);
-
-    }
-  }
-#endif
-
-
-
-// Assemble rhs for linear part of weak formulation for nonlinear iteration
-
-
-// get difference between psi^m+1 - psi^m
-  double Delta_Psi = dist_npi - dist_n;
-//double Delta_Psi = dist_npi;
-
-  LINALG::Matrix<nsd_,1> Delta_Grad_psi;
-  Delta_Grad_psi.Clear();
-  Delta_Grad_psi.Update(1.0,grad_dist_npi, -1.0, grad_dist_n);
-
-
-//     |         m+1     m  |
-//     | -w, (psi   - psi ) |
-//     |         i          |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= funct_(vi)*fac*Delta_Psi;
-  }
-
-
-//                    |                   m+1     m  |
-//    1/4*delta_tau^2 | -grad(w), grad(psi   - psi ) |
-//                    |                   i          |
-
-  LINALG::Matrix<nen_,1> Grad_w_Grad_Dpsi;
-  Grad_w_Grad_Dpsi.Clear();
-  Grad_w_Grad_Dpsi.MultiplyTN(derxy_,Delta_Grad_psi);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= Grad_w_Grad_Dpsi(vi,0)*fac*pseudo_timestep_size*pseudo_timestep_size/4.0;
-  }
-
-
-//============================================================================================================================
-#endif
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for reinitialization (private)   schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          penalty_interface_reinit,
-  LINALG::Matrix<3,1>&                  intersection_local
-  )
-{
-
-  // evaluate the shape functions at the intersection point
-  LINALG::Matrix<nen_,1> funct_intersection;
-  funct_intersection.Clear();
-  DRT::UTILS::shape_function_3D(funct_intersection,intersection_local(0),intersection_local(1),intersection_local(2),distype);
-
-  // assemble shape functions in sysmat
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_intersection(ui)*funct_intersection(vi)*penalty_interface_reinit;
-    }
-  }
-
-#ifdef NONLINEAR
-
-  LINALG::Matrix<1,1> distnpi_intersection(true);
-
-  distnpi_intersection.MultiplyTN(funct_intersection,ephinp_[k]);
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= penalty_interface_reinit*funct_intersection(vi,0)*distnpi_intersection(0,0);
-  }
-#endif
-
-  return;
-}
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for reinitialization (private)   schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          penalty_interface_reinit
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_REINIT_Penalty(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    const double                          penalty_interface_reinit  //!< penalty parameter to keep the interface position
   )
 {
 
@@ -8959,8 +8367,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
   // assemble G^T*G*phi = 0 into the sysmat
   //}
   //=======================================================================================================
-
-  int counter = 0;
 
   const size_t numnode = ele->NumNode();
 
@@ -9027,14 +8433,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
 
         interp_alpha = -phi_end/(phi_diff);
 
-        LINALG::Matrix<3,1> intersection_local;
-        intersection_local.Clear();
+        LINALG::Matrix<3,1> intersection_local(true);
         intersection_local.Update(interp_alpha,node_Xicoordinates_start, (1.0-interp_alpha), node_Xicoordinates_end);
 
 
         // evaluate the shape functions at the intersection point
-        LINALG::Matrix<nen_,1> funct_intersection;
-        funct_intersection.Clear();
+        LINALG::Matrix<nen_,1> funct_intersection(true);
         DRT::UTILS::shape_function_3D(funct_intersection,intersection_local(0),intersection_local(1),intersection_local(2),distype);
 
         // assemble shape functions in sysmat
@@ -9050,8 +8454,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
           }
         }
 
-#ifdef NONLINEAR
-
+        // assemble shape functions in rhs
         LINALG::Matrix<1,1> distnpi_intersection(true);
 
         distnpi_intersection.MultiplyTN(funct_intersection,ephinp_[k]);
@@ -9062,184 +8465,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
 
           erhs[fvi] -= penalty_interface_reinit*funct_intersection(vi,0)*distnpi_intersection(0,0);
         }
-#endif
+
       } // end if intersection
     } // end of hex8
-    else if(distype==DRT::Element::hex20)
-    {
-      counter++;
-      RCP<DRT::Element> pt_to_line = *line;
-      const DRT::Node* const* vecOfPtsToNode = pt_to_line->Nodes();
-
-      const int numberOfNodesOfLine = pt_to_line->NumNode();
-
-      if (numberOfNodesOfLine != 3) dserror("not exact 3 nodes on this line");
-
-      // get phi_value of current node
-      int nodeID_start = vecOfPtsToNode[0]->Id();
-      int nodeID_end   = vecOfPtsToNode[1]->Id();
-      int nodeID_mid   = vecOfPtsToNode[2]->Id();
-
-      const int* ptToNodeIds_adj = ele->NodeIds();
-
-      int ID_param_space_start = -1;
-      int ID_param_space_end   = -1;
-      int ID_param_space_mid   = -1;
-
-      for (size_t inode=0; inode < numnode; inode++)
-      {
-        // get local number of node actnode in ele_adj
-        if(nodeID_start == ptToNodeIds_adj[inode]) ID_param_space_start = inode;
-        if(nodeID_end   == ptToNodeIds_adj[inode]) ID_param_space_end   = inode;
-        if(nodeID_mid   == ptToNodeIds_adj[inode]) ID_param_space_mid   = inode;
-      }
-
-      if(ID_param_space_start == -1) dserror("node of line not a node of element!?!?!?");
-      if(ID_param_space_end   == -1) dserror("node of line not a node of element!?!?!?");
-      if(ID_param_space_mid   == -1) dserror("node of line not a node of element!?!?!?");
-
-
-      // get node xi coordinates
-      LINALG::Matrix<3,1> node_Xicoordinates_start;
-      node_Xicoordinates_start.Clear();
-      node_Xicoordinates_start = DRT::UTILS::getNodeCoordinates(ID_param_space_start, distype);
-
-      LINALG::Matrix<3,1> node_Xicoordinates_end;
-      node_Xicoordinates_end.Clear();
-      node_Xicoordinates_end = DRT::UTILS::getNodeCoordinates(ID_param_space_end, distype);
-
-      LINALG::Matrix<3,1> node_Xicoordinates_mid;
-      node_Xicoordinates_mid.Clear();
-      node_Xicoordinates_mid = DRT::UTILS::getNodeCoordinates(ID_param_space_mid, distype);
-
-
-      // get the intersection point (linear interpolation)
-      double phi_end   = ephi0_Reinit_Reference_[k](ID_param_space_end);
-      double phi_start = ephi0_Reinit_Reference_[k](ID_param_space_start);
-      double phi_mid   = ephi0_Reinit_Reference_[k](ID_param_space_mid);
-
-
-      // get intersection or not (roots of quadratic function a*xi^2+b*xi+c=0)
-      double a = 0.5*(phi_start + phi_end)-phi_mid;
-      double b = 0.5*(phi_end - phi_start);
-      double c = phi_mid;
-
-      bool intersection_linear = false;
-      bool intersection_1_quadratic =false;
-      bool intersection_2_quadratic =false;
-
-      double interp_start = 0.0;
-      double interp_end = 0.0;
-      double interp_mid = 0.0;
-
-      LINALG::Matrix<3,1> intersection_local;
-      intersection_local.Clear();
-
-      if(fabs(a)<1e-8) //linear case -> linear intersection possible (1e-10 is too small!!!)
-      {
-        if(phi_start*phi_end < 0.0) //intersection
-        {
-          intersection_linear = true;
-
-          //	dserror("this is not a real quadratic function");
-          double phi_diff = phi_start-phi_end;
-          if(fabs(phi_diff)< 1e-12)
-          {
-            // maybe a complete edge is zero -> do nothing for this element
-            cout << "!!! WARNING: one element edge is zero in element " << ele->Id() << "-> check this penalty case!!! (do nothing at the moment)" << endl;
-            return;
-          }
-
-          double interp_alpha = -phi_end/(phi_diff);
-
-          intersection_local.Update(interp_alpha,node_Xicoordinates_start, (1.0-interp_alpha), node_Xicoordinates_end);
-
-          CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(emat,erhs,k,ele,penalty_interface_reinit,intersection_local);
-        }
-      }
-      else // quadratic case
-      {
-        // determine diskriminante
-        double D = b*b - 4.0*a*c;
-        if( D > 1e-13){
-          // determine intersection points in local coordinates
-          // get square root
-          double sqrt_D = sqrt(D);
-          double inters_1 = (-1.0*b + sqrt_D)/(2*a);
-          double inters_2 = (-1.0*b - sqrt_D)/(2*a);
-
-          // check whether the intersection points lie in [-1,1]
-          if(fabs(inters_1)< 1.0) intersection_1_quadratic=true;
-          if(fabs(inters_2)< 1.0) intersection_2_quadratic=true;
-          if(intersection_1_quadratic && intersection_2_quadratic)
-          {
-            cout << "element:" << ele->Id() << endl;
-            cout << "D" << D << endl;
-            cout << "phi_start" << phi_start << endl;
-            cout << "phi_mid" << phi_mid << endl;
-            cout << "phi_end" << phi_end << endl;
-            cout << "intersection_1" << inters_1 << endl;
-            cout << "intersection_2" << inters_2 << endl;
-            cout << "two real roots in [-1,1]-> two intersection points on one line -> check this case" << endl;
-          }
-
-          // check this case!!!
-
-//				if(intersection_1_quadratic)
-//				{
-//					//get intersection_local
-//					CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(emat,erhs,k,ele,penalty_interface_reinit,intersection_local);
-//				}
-//				if(intersection_2_quadratic)
-//				{
-//					//get intersection_local
-//					CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(emat,erhs,k,ele,penalty_interface_reinit,intersection_local);
-//				}
-        }
-        else if (D< -1e-13)
-        {
-          intersection_1_quadratic = false;
-          intersection_2_quadratic = false;
-        }
-        else
-        {
-          double inters_1 = (-1.0*b)/(2*a);
-          if(fabs(inters_1)< 1.0) intersection_1_quadratic=true;
-
-          intersection_2_quadratic = false;
-
-          if(intersection_1_quadratic)
-          {
-            double tmp_a  = b/(2.0*a);
-            double tmp_b  = b/(4.0*a);
-//					double tmp_b = b/(4.0*a);
-
-            interp_start = tmp_b*(1.0+tmp_a);
-            interp_end   = tmp_b*(tmp_a-1.0);
-            interp_mid   = 1.0-tmp_a*tmp_a;
-
-            intersection_local.Update(interp_start,node_Xicoordinates_start, interp_end, node_Xicoordinates_end);
-            intersection_local.Update(interp_mid, node_Xicoordinates_mid, 1.0);
-
-            cout << "ele-Id " << ele->Id() << endl;
-            cout << "a " << a << endl;
-            cout << "nodeXi_start " << node_Xicoordinates_start << endl;
-            cout << "nodeXi_mid "   << node_Xicoordinates_mid << endl;
-            cout << "nodeXi_end "   << node_Xicoordinates_end << endl;
-            cout << "inters_local " << intersection_local       << endl;
-            cout << "phi_start " << phi_start << endl;
-            cout << "phi_mid " << phi_mid << endl;
-            cout << "phi_end " << phi_end << endl;
-
-            CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(emat,erhs,k,ele,penalty_interface_reinit,intersection_local);
-          }
-
-        }
-
-      }
-
-
-    }//end of hex20
     else dserror("penalty not implemented for this type of element");
   } // end loop over lines
 
@@ -9248,905 +8476,29 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PENALTY_REINITIALIZATION(
 
 
 
-/*---------------------------------------------------------------------*
-  |  calculate error for reinitialization                   schott 12/12|
-  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorsReinitialization(
-  const DRT::Element*                   ele,
-  ParameterList&                        params
-  )
-{
-  //==================================== REINITIALIZATION error calculation  ========================
-  // gradient norm of phi || grad(phi) -1.0 ||_L1(Omega)                                 schott 12/10
-  //=================================================================================================
 
-  // get element params
-  double eleL1gradienterr 	= params.get<double>("L1 integrated gradient error"); //squared errors
-  double elevolume 			= params.get<double>("volume");                       // non-squared volume
-
-//	  cout << "elevol before"<< elevolume << endl;
-  int k = 0; // we assume only one scalar
-
-  // get Gaussian points for integrated L2-norm and volume calculation
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_reinit(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-  // caculate element wise errors and volume
-  for (int iquad=0; iquad<intpoints_reinit.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints_reinit,iquad,ele->Id());
-
-#ifdef L1_NORM_TRANSITION_REGION
-    const double mesh_size = getEleDiameter<distype>(xyze_);
-
-    double phi_ref = funct_.Dot(ephinp_[k]);
-    double deriv_smoothed_Heavyside = EvaluateDerivSmoothedHeavySide(phi_ref, 3,mesh_size, INPAR::SCATRA::signtype_Nagrath2005);
-#endif
-
-    LINALG::Matrix<nsd_,1> gradphi;
-    gradphi.Clear();
-    gradphi.Multiply(derxy_,ephinp_[k]);
-    double gradphi_norm = gradphi.Norm2();
-    double gradphi_norm_err = gradphi_norm - 1.0;
-
-    // integrate L21-error ( || grad(phi)-1.0 || )_L1(Omega_ele)
-
-#ifdef L1_NORM_TRANSITION_REGION
-    eleL1gradienterr += fabs(gradphi_norm_err) * fac* deriv_smoothed_Heavyside;
-    // integrate volume
-    elevolume        += fac * deriv_smoothed_Heavyside;
-#else
-    eleL1gradienterr += fabs(gradphi_norm_err) * fac;
-
-    // integrate volume
-    elevolume        += fac;
-#endif
-  } // Gaussian points for correction factor
-
-  // set new element params
-  params.set<double>("L1 integrated gradient error", eleL1gradienterr);
-  params.set<double>("volume", elevolume);
-
-
-  return;
-}
 
 
 
 /*----------------------------------------------------------------------*
-  | evaluate shape functions and derivatives at int. point  schott 01/11 |
+  | calculate system matrix and rhs for the first order                 |
+  | reinitialization equation based on a                                 |
+  | implicit characteristic Galerkin scheme                  schott 12/10|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPointReinitialization(
-  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-  const int                                    iquad,      ///< id of current Gauss point
-  const int                                    eleid       ///< the element id
-  )
-{
-  // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
-  {xsi_(idim) = gpcoord[idim];}
-
-  if (not DRT::NURBS::IsNurbs(distype))
-  {
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-    if (use2ndderivReinitialization_)
-    {
-      // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-    }
-  }
-  else // nurbs elements are always somewhat special...
-  {
-    if (use2ndderivReinitialization_)
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
-        (funct_  ,
-         deriv_  ,
-         deriv2_ ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-    else
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv
-        (funct_  ,
-         deriv_  ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-  } // IsNurbs()
-
-  // compute Jacobian matrix and determinant
-  // actually compute its transpose....
-  /*
-    +-            -+ T      +-            -+
-    | dx   dx   dx |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dr   dr   dr |
-    |              |        |              |
-    | dy   dy   dy |        | dx   dy   dz |
-    | --   --   -- |   =    | --   --   -- |
-    | dr   ds   dt |        | ds   ds   ds |
-    |              |        |              |
-    | dz   dz   dz |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dt   dt   dt |
-    +-            -+        +-            -+
-  */
-
-  xjm_.MultiplyNT(deriv_,xyze_);
-  const double det = xij_.Invert(xjm_);
-
-  if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
-
-  // set integration factor: fac = Gauss weight * det(J)
-  const double fac = intpoints.IP().qwgt[iquad]*det;
-
-  // compute global derivatives
-  derxy_.Multiply(xij_,deriv_);
-
-  // compute second global derivatives (if needed)
-  if (use2ndderivReinitialization_)
-  {
-    // get global second derivatives
-    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
-  }
-  else
-    derxy2_.Clear();
-
-  // return integration factor for current GP: fac = Gauss weight * det(J)
-  return fac;
-
-}
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for transport equation with TG2   schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG2(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          dt
+void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat_Reinit_TG(
+    DRT::Element*                         ele,                               //!< the element those matrix is calculated
+    Epetra_SerialDenseMatrix&             emat,                              //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                              //!< element rhs to calculate
+    const bool                            reinitswitch,                      //!< flag if scatra object is a reinitializer
+    const double                          reinit_pseudo_timestepsize_factor, //!< pseudo timestep factor
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< time of smoothed sign function
+    const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+    const double                          penalty_interface_reinit           //!< penalty parameter to keep the interface position
   )
 {
 
-//==========================================================
-// evaluate element vectors and gradients
-//==========================================================
-// get element vectors
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-
-
-// get gradients and norms
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n;
-  grad_dist_n.Clear();
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi;
-  grad_dist_npi.Clear();
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-
-//double grad_norm_dist_n   = grad_dist_n.Norm2();
-//double grad_norm_dist_npi = grad_dist_npi.Norm2();
-
-
-//----------------------------------------------------------------
-// standard Galerkin transient term
-//----------------------------------------------------------------
-
-//     |           |
-//     | w, D(psi) |
-//     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-
-//               |                           |
-//   1/4   dt^2  | u*grad(v), u*grad(D(psi)) |
-//               |                           |
-
-  LINALG::Matrix<nen_,1> uGradDphi;
-  uGradDphi.Clear();
-
-  uGradDphi.MultiplyTN(derxy_,convelint_);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += uGradDphi(vi,0)*uGradDphi(ui,0)* (fac*dt*dt/4.0);
-    }
-  }
-
-
-//----------  --------------    |          n+1     n    |
-//  rhs                       - | w, u*(phi   - phi  )  |
-//--------------------------    |          i            |
-
-//cout << dist_npi-dist_n << endl;
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= funct_(vi)*fac*(dist_npi-dist_n);
-  }
-
-
-//----------  --------------                |              n   |
-//  rhs                                 -dt | w, u*grad(phi )  |
-//--------------------------                |                  |
-
-  LINALG::Matrix<1,1> uGradPhi;
-  uGradPhi.Clear();
-  uGradPhi.MultiplyTN(convelint_,grad_dist_n);
-
-//cout << uGradPhi << endl;
-//exit(1);
-
-//cout << "grad_dist_n" << grad_dist_n << endl;
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= funct_(vi)*dt*fac*uGradPhi(0,0);
-  }
-
-
-
-//               |                       n+1     n  |
-//    -dt*dt/4.0 |  grad(w)*u, u*grad(psi   + psi ) |
-//               |                       i          |
-
-
-  LINALG::Matrix<nsd_,1> sum_phi;
-  sum_phi.Clear();
-  sum_phi.Update(1.0,grad_dist_npi, 1.0, grad_dist_n);
-
-  LINALG::Matrix<1,1> uGradSumPhi;
-  uGradSumPhi.Clear();
-  uGradSumPhi.MultiplyTN(convelint_,sum_phi);
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= uGradDphi(vi,0)*dt*dt/4.0*fac*uGradSumPhi(0,0);
-  }
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_TG2
-
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for transport equation with TG3  schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG2_LW(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          dt
-  )
-{
-
-//==========================================================
-// evaluate element vectors and gradients
-//==========================================================
-// get element vectors
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-
-
-// get gradients and norms
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n;
-  grad_dist_n.Clear();
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi;
-  grad_dist_npi.Clear();
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-
-//double grad_norm_dist_n   = grad_dist_n.Norm2();
-//double grad_norm_dist_npi = grad_dist_npi.Norm2();
-
-
-//----------------------------------------------------------------
-// standard Galerkin transient term
-//----------------------------------------------------------------
-
-//     |           |
-//     | w, D(phi) |
-//     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-// a*grad(w) bzw. a*grad(D(phi))
-  LINALG::Matrix<nen_,1> aGradD(true);
-  aGradD.MultiplyTN(derxy_,convelint_);
-
-// a*grad(phi_n)
-  double a_phi_n = convelint_.Dot(grad_dist_n);
-
-// a*grad(phi_npi)
-//double a_phi_npi = convelint_.Dot(grad_dist_npi);
-
-//----------  --------------    |                n    |
-//  rhs                     +dt | a*grad(w) , phi     |
-//--------------------------    |                     |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += dt*fac*aGradD(vi)*dist_n;
-  }
-
-//----------  --------------    |        n+1     n|
-//  rhs                       - | w , phi    -phi |
-//--------------------------    |        i        |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= fac*funct_(vi)*(dist_npi-dist_n);
-  }
-
-
-//----------  --------------                |                      n   |
-//  rhs                         -1/2*dt*dt* | a*grad(w), a*grad(phi )  |
-//--------------------------                |                          |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= aGradD(vi)*dt*dt*0.5*fac*a_phi_n;
-  }
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_TG2_LW
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for transport equation with TG3  schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG3(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          dt
-  )
-{
-
-  //==========================================================
-  // evaluate element vectors and gradients
-  //==========================================================
-  // get element vectors
-  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
-  // dist_n     distance vector for reinitialization at old timestep n
-  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-
-
-  // get gradients and norms
-  // dist_npi   distance vector for reinitialization at current timestep np and old increment i
-  // dist_n     distance vector for reinitialization at old timestep n
-  // phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n;
-  grad_dist_n.Clear();
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi;
-  grad_dist_npi.Clear();
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-
-  //double grad_norm_dist_n   = grad_dist_n.Norm2();
-  //double grad_norm_dist_npi = grad_dist_npi.Norm2();
-
-
-  //----------------------------------------------------------------
-  // standard Galerkin transient term
-  //----------------------------------------------------------------
-
-  //     |           |
-  //     | w, D(phi) |
-  //     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-
-  //               |                           |
-  //    1/6 *dt^2  | a*grad(w), a*grad(D(phi)) |
-  //               |                           |
-
-  // a*grad(w) bzw. a*grad(D(phi))
-  LINALG::Matrix<nen_,1> aGradD(true);
-  aGradD.MultiplyTN(derxy_,convelint_);
-
-  // a*grad(phi_n)
-  double a_phi_n = convelint_.Dot(grad_dist_n);
-
-  // a*grad(phi_npi)
-  double a_phi_npi = convelint_.Dot(grad_dist_npi);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += aGradD(vi)*aGradD(ui)* (fac*dt*dt/6.0);
-    }
-  }
-
-
-  //----------  --------------    |                n    |
-  //  rhs                     +dt | a*grad(w) , phi     |
-  //--------------------------    |                     |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += dt*fac*aGradD(vi)*dist_n;
-  }
-
-  //----------  --------------    |        n+1     n|
-  //  rhs                       - | w , phi    -phi |
-  //--------------------------    |        i        |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= fac*funct_(vi)*(dist_npi-dist_n);
-  }
-
-
-  //----------  --------------                |                      n   |
-  //  rhs                         -1/2*dt*dt* | a*grad(w), a*grad(phi )  |
-  //--------------------------                |                          |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= aGradD(vi)*dt*dt*0.5*fac*a_phi_n;
-  }
-
-  //----------  --------------                |                      n+1    n    |
-  //  rhs                         -1/6*dt*dt* | a*grad(w), a*grad(phi   -phi  )  |
-  //--------------------------                |                      i           |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= aGradD(vi)*dt*dt/6.0*fac*(a_phi_npi-a_phi_n);
-  }
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_TG3
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for transport equation with TG3  schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG4_1S(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          dt
-  )
-{
-
-//==========================================================
-// evaluate element vectors and gradients
-//==========================================================
-// get element vectors
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-
-
-// get gradients and norms
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n;
-  grad_dist_n.Clear();
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi;
-  grad_dist_npi.Clear();
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-
-//double grad_norm_dist_n   = grad_dist_n.Norm2();
-//double grad_norm_dist_npi = grad_dist_npi.Norm2();
-
-
-//----------------------------------------------------------------
-// standard Galerkin transient term
-//----------------------------------------------------------------
-
-//     |           |
-//     | w, D(phi) |
-//     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-
-//               |                   |
-//      1/2 *dt  | w, a*grad(D(phi)) |
-//               |                   |
-
-// a*grad(w) bzw. a*grad(D(phi))
-  LINALG::Matrix<nen_,1> aGradD(true);
-  aGradD.MultiplyTN(derxy_,convelint_);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*aGradD(ui)* (fac*dt/2.0);
-    }
-  }
-
-
-
-//               |                           |
-//  -1/12 *dt^2  | a*grad(w), a*grad(D(phi)) |
-//               |                           |
-
-
-// a*grad(phi_n)
-  double a_phi_n = convelint_.Dot(grad_dist_n);
-
-// a*grad(phi_npi)
-  double a_phi_npi = convelint_.Dot(grad_dist_npi);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) -= aGradD(vi)*aGradD(ui)* (fac*dt*dt/12.0);
-    }
-  }
-
-
-//----------  --------------    |               n+1     n  |
-//  rhs                 -1/2*dt | w , a*grad(phi   + phi ) |
-//--------------------------    |               i          |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= 0.5*dt*fac*funct_(vi)*(a_phi_npi + a_phi_n);
-  }
-
-//----------  --------------    |        n+1     n|
-//  rhs                       - | w , phi    -phi |
-//--------------------------    |        i        |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= fac*funct_(vi)*(dist_npi-dist_n);
-  }
-
-
-//----------  --------------                |                      n+1   n   |
-//  rhs                        +1/12*dt*dt* | a*grad(w), a*grad(phi - phi )  |
-//--------------------------                |                      i         |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += aGradD(vi)*dt*dt/12.0*fac*(a_phi_npi - a_phi_n);
-  }
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_TG4_1S
-
-
-/*-------------------------------------------------------------------------------*
-  |  evaluate element matrix and rhs for transport equation with TG4  schott 12/10|
-  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG4_Leapfrog(
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          fac,
-  const int                             k,
-  DRT::Element*                         ele,
-  const double                          dt
-  )
-{
-
-//==========================================================
-// evaluate element vectors and gradients
-//==========================================================
-// get element vectors
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-  const double dist_nm  = funct_.Dot(ephinm_[k]);   // d^n
-  const double dist_n   = funct_.Dot(ephin_[k]);   // d^n
-  const double dist_npi = funct_.Dot(ephinp_[k]);  // d^(n+1)_i
-
-
-// get gradients and norms
-// dist_npi   distance vector for reinitialization at current timestep np and old increment i
-// dist_n     distance vector for reinitialization at old timestep n
-// phi_0      reference phi vector for smoothed sign function -> needed for directed transport along characteristics
-
-  LINALG::Matrix<nsd_,1> grad_dist_n;
-  grad_dist_n.Clear();
-  grad_dist_n.Multiply(derxy_,ephin_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_npi;
-  grad_dist_npi.Clear();
-  grad_dist_npi.Multiply(derxy_,ephinp_[k]);
-
-  LINALG::Matrix<nsd_,1> grad_dist_nm;
-  grad_dist_nm.Clear();
-  grad_dist_nm.Multiply(derxy_,ephinm_[k]);
-
-//double grad_norm_dist_n   = grad_dist_n.Norm2();
-//double grad_norm_dist_npi = grad_dist_npi.Norm2();
-
-
-//----------------------------------------------------------------
-// standard Galerkin transient term
-//----------------------------------------------------------------
-
-//     |           |
-//     | w, D(phi) |
-//     |           |
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += funct_(vi)*fac*funct_(ui);
-    }
-  }
-
-
-//               |                           |
-//    1/6 *dt^2  | a*grad(w), a*grad(D(phi)) |
-//               |                           |
-
-// a*grad(w) bzw. a*grad(D(phi))
-  LINALG::Matrix<nen_,1> aGradD(true);
-  aGradD.MultiplyTN(derxy_,convelint_);
-
-// a*grad(phi_n)
-//double a_phi_n = convelint_.Dot(grad_dist_n);
-
-// a*grad(phi_npi)
-  double a_phi_npi = convelint_.Dot(grad_dist_npi);
-
-// a*grad(phi_nm)
-  double a_phi_nm = convelint_.Dot(grad_dist_nm);
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-
-      emat(fvi,fui) += aGradD(vi)*aGradD(ui)* (fac*dt*dt/6.0);
-    }
-  }
-
-
-//----------  --------------    |                n    |
-//  rhs                    +2dt | a*grad(w) , phi     |
-//--------------------------    |                     |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] += 2.0*dt*fac*aGradD(vi)*dist_n;
-  }
-
-//----------  --------------    |        n+1     n-1|
-//  rhs                       - | w , phi    -phi   |
-//--------------------------    |        i          |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= fac*funct_(vi)*(dist_npi-dist_nm);
-  }
-
-
-////----------  --------------                |                      n   |
-////  rhs                         -1/2*dt*dt* | a*grad(w), a*grad(phi )  |
-////--------------------------                |                          |
-//
-//
-//for (int vi=0; vi<nen_; ++vi)
-//{
-//  const int fvi = vi*numdofpernode_+k;
-//
-//  erhs[fvi] -= aGradD(vi)*dt*dt*0.5*fac*a_phi_n;
-//}
-
-//----------  --------------                |                      n+1    n-1    |
-//  rhs                         -1/6*dt*dt* | a*grad(w), a*grad(phi   -phi    )  |
-//--------------------------                |                      i             |
-
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
-
-    erhs[fvi] -= aGradD(vi)*dt*dt/6.0*fac*(a_phi_npi-a_phi_nm);
-  }
-
-
-  return;
-} //ScaTraImpl::CalMatAndRHS_TG4_Leapfrog
-
-
-
-/*----------------------------------------------------------------------*
-  |  calculate system matrix and rhs (public)                schott 08/08|
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatReinitialize(
-  DRT::Element*                         ele, ///< the element those matrix is calculated
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-  const bool                            reinitswitch,
-  const double                          reinit_pseudo_timestepsize_factor,
-  const INPAR::SCATRA::SmoothedSignType smoothedSignType,
-  const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,
-  const INPAR::SCATRA::PenaltyMethod    penalty_method,
-  const double                          penalty_interface_reinit,
-  const double                          epsilon_bandwidth,
-  const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
-  )
-{
-  //ToDo !!!!
-#if 0
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -10157,103 +8509,57 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatReinitialize(
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
   EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
-  //----------------------------------------------------------------------
-  // get material parameters (evaluation at element center)
-  //----------------------------------------------------------------------
-  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele, scatratype);
+
+  const double mesh_size = getEleDiameter<distype>(xyze_);
+
+  const double pseudo_timestep_size = mesh_size * reinit_pseudo_timestepsize_factor;
+
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_reinit(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  //==================================== new implementation of REINITIALIZATION================================
+  // reinitialization according to sussman 1994, nagrath 2005                                     schott 12/10
+  //===========================================================================================================
 
 
-  if ((scatratype == INPAR::SCATRA::scatratype_levelset))
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+
+  // Assemble element rhs and vector for domain!!! integrals
+  for (int iquad=0; iquad<intpoints_reinit.IP().nquad; ++iquad)
   {
-    const double mesh_size = getEleDiameter<distype>(xyze_);
-
-    const double pseudo_timestep_size = mesh_size * reinit_pseudo_timestepsize_factor;
-
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_reinit(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-    //==================================== new implementation of REINITIALIZATION================================
-    // reinitialization according to sussman 1994, nagrath 2005                                     schott 12/10
-    //===========================================================================================================
-
-
-    //----------------------------------------------------------------------
-    // integration loop for one element
-    //----------------------------------------------------------------------
-
-    // Assemble element rhs and vector for domain!!! integrals
-    for (int iquad=0; iquad<intpoints_reinit.IP().nquad; ++iquad)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPointReinitialization(intpoints_reinit,iquad,ele->Id());
-
-      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-      {
-        // compute matrix and rhs
-        if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_stabilized_convection)
-        {
-//      	     CalMatAndRHS_REINITIALIZATION(emat,
-//                                      erhs,
-//                                      fac,
-//                                      fssgd,
-//                                      timefac,
-//                                      alphaF,
-//                                      k/*,
-//                                      sign_phi0*/);
-          //TODO: penalty ansatz!!!
-        }
-        if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_linear_convection)
-        {
-//             // compute matrix and rhs
-//             CalMatAndRHS_LinearAdvection_REINITIALIZATION(emat,
-//                                        erhs,
-//                                        fac,
-//                                        k,
-//                                        ele,
-//                                        pseudo_timestep_size,
-//                                        mesh_size,
-//                                        penalty_interface_reinit,
-//                                        epsilon_bandwidth,
-//                                        smoothedSignType);
-          dserror("should not be called here!");
-        }
-        else if (reinitstrategy == INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin)
-        {
-          // compute matrix and rhs
-          CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION(emat,
-                                                                erhs,
-                                                                fac,
-                                                                k,
-                                                                ele,
-                                                                pseudo_timestep_size,
-                                                                mesh_size,
-                                                                penalty_method,
-                                                                penalty_interface_reinit,
-                                                                epsilon_bandwidth,
-                                                                smoothedSignType);
-
-        }
-        else dserror("this reinitstrategy should not be called here!");
-
-      } // loop over each scalar
-    } // integration loop
+    const double fac = EvalShapeFuncAndDerivsAtIntPointREINIT(intpoints_reinit,iquad,ele->Id());
 
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      if(penalty_method == INPAR::SCATRA::penalty_method_intersection_points)
-      {
-        CalMatAndRHS_PENALTY_REINITIALIZATION(emat,
-                                              erhs,
-                                              k,
-                                              ele,
-                                              penalty_interface_reinit);
-      }
-    }
+      CalMatAndRHS_REINIT_ICG2(emat,
+          erhs,
+          fac,
+          k,
+          ele,
+          pseudo_timestep_size,
+          mesh_size,
+          penalty_method,
+          penalty_interface_reinit,
+          epsilon_bandwidth,
+          smoothedSignType);
 
-  }
-  else // 'standard' scalar transport
+    } // loop over each scalar
+  } // integration loop
+
+
+  if(penalty_method == INPAR::SCATRA::penalty_method_intersection_points)
   {
-    dserror("wrong scatratype!");
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    {
+      CalMatAndRHS_REINIT_Penalty(emat,
+          erhs,
+          k,
+          ele,
+          penalty_interface_reinit);
+    }
   }
-#endif
+
   return;
 }
 
@@ -10262,27 +8568,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatReinitialize(
   |  calculate system matrix and rhs (public)                schott 05/11|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
-  DRT::Element*                         ele, ///< the element those matrix is calculated
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-  Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-  const double                          dt, ///< current time-step length
-  const double                          timefac,
-  const double                          meshsize,
-  const bool                            reinitswitch,
-  const double                          reinit_pseudo_timestepsize_factor,
-  const INPAR::SCATRA::SmoothedSignType smoothedSignType,
-  const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,
-  const INPAR::SCATRA::PenaltyMethod    penalty_method,
-  const double                          penalty_interface_reinit,
-  const double                          epsilon_bandwidth,
-  const bool                            shock_capturing,
-  const double                          shock_capturing_diffusivity,
-  const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
-
+void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat_Reinit_OST(
+    DRT::Element*                         ele,           //!< the element we are dealing with
+    Epetra_SerialDenseMatrix&             emat,          //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,          //!< element rhs to calculate
+    const double                          dt,            //!< current time-step length
+    const double                          timefac,       //!< time discretization factor
+    const double                          meshsize,      //!< meshsize
+    const bool                            reinitswitch,  //!< flag if scatra object is a reinitialization object
+    const double                          reinit_pseudo_timestepsize_factor, //!< pseudo time step factor
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< type of smoothed sign function
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+    const double                          penalty_interface_reinit,          //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+    const bool                            shock_capturing,                   //!< shockcapturing operator turned on/off
+    const double                          shock_capturing_diffusivity,       //!< shockcapturing diffusivity
+    const enum INPAR::SCATRA::ScaTraType  scatratype                         //!< type of scalar transport problem
   )
 {
+#define REINIT_LINEAR_ADVECTION_PHIGRADIENT
+//#define REINIT_LINEAR_ADVECTION_RECONSTRUCTED_NORMALS
+//#define DONT_EVALUATE_SMALL_GRADIENTS
+
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -10297,62 +8604,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
   if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele, scatratype);
-
-  //----------------------------------------------------------------------
-  // calculation of subgrid diffusivity and stabilization parameter(s)
-  // at element center
-  //----------------------------------------------------------------------
-//  if (not tau_gp_)
-//  {
-//	    // get velocity at element center
-//	    velint_.Multiply(evelnp_,funct_);
-//
-//	    bool twoionsystem(false);
-//	    double resdiffus(diffus_[0]);
-//	    if (is_elch_) // electrochemistry problem
-//	    {
-//	      // when migration velocity is included to tau (we provide always now)
-//	      {
-//	        // compute global derivatives
-//	        derxy_.Multiply(xij_,deriv_);
-//
-//	        // get "migration velocity" divided by D_k*z_k at element center
-//	        migvelint_.Multiply(-frt,derxy_,epotnp_);
-//	      }
-//
-//	      // ELCH: special stabilization in case of binary electrolytes
-//	      twoionsystem= SCATRA::IsBinaryElectrolyte(valence_);
-//	      if (twoionsystem)
-//	      {
-//	        std::vector<int> indices_twoions = SCATRA::GetIndicesBinaryElectrolyte(valence_);
-//	        resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,indices_twoions);
-//	#ifdef ACTIVATEBINARYELECTROLYTE
-//	       migrationstab_=false;
-//	       migrationintau_=false;
-//	#endif
-//	      }
-//	    }
-//
-//	    for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-//	    {
-//	      // calculation of all-scale subgrid diffusivity (artificial or due to
-//	      // constant-coefficient Smagorinsky model) at element center
-//	      if (assgd or turbmodel)
-//	        CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
-//
-//	      // calculation of fine-scale artificial subgrid diffusivity at element center
-//	      if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
-//
-//	#ifdef ACTIVATEBINARYELECTROLYTE
-//	      if (twoionsystem && (abs(valence_[k])>EPS10))
-//	        CalTau(ele,resdiffus,dt,timefac,vol,k,frt,false);
-//	      else
-//	#endif
-//	      // calculation of stabilization parameter at element center
-//	      CalTau(ele,diffus_[k],dt,timefac,vol,k,frt,migrationintau_);
-//	    }
-////	  dserror("stabilization should be called at each gaussian point for reinitialization problems!");
-//  }
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -10425,16 +8676,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 
       double smoothedSign = EvaluateSmoothedSign(phi_0, grad_norm_phi_0, epsilon_bandwidth,meshsize, smoothedSignType);
 
-      // evaluate smoothed sign at nodes of element and then interpolate at Gaussian point
-//        LINALG::Matrix<nen_,1> sign_at_corners(true);
-//        // evaluate smoothed sign at corners of element -> then bilinear interpolation
-//        for(int i=0; i< nen_; i++)
-//        {
-//        	sign_at_corners(i,0) = EvaluateSmoothedSign(ephi0_Reinit_Reference_[k](i), grad_norm_phi_0, epsilon_bandwidth,meshsize, smoothedSignType);
-//        }
-//
-//        smoothedSign = funct_.Dot(sign_at_corners);
-
 #ifdef DONT_EVALUATE_SMALL_GRADIENTS
       // do not advect in elements with small gradients, but assemble the mass matrix
       if(do_evaluate==false) smoothedSign = 0.0;
@@ -10462,41 +8703,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
       //--------------------------------------------------------------------
       if (true) // tau_gp_
       {
-//          // calculation of all-scale subgrid diffusivity (artificial or due to
-//          // constant-coefficient Smagorinsky model) at integration point
-//          if (assgd or turbmodel)
-//            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
-//
-//          // calculation of fine-scale artificial subgrid diffusivity
-//          // at integration point
-//          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
-//
-//          // calculation of subgrid-scale velocity at integration point if required
-//          if (sgvel_)
-//          {
-//            // calculation of stabilization parameter related to fluid momentum
-//            // equation at integration point
-//            CalTau(ele,visc_,dt,timefac,vol,k,0.0,false);
-//
-//            if (scatratype != INPAR::SCATRA::scatratype_levelset)
-//                 CalcSubgrVelocity(ele,time,dt,timefac,k);
-//            else CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
-//            //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
-//
-//            // calculation of subgrid-scale convective part
-//            sgconv_.MultiplyTN(derxy_,sgvelint_);
-//          }
-
         // calculation of stabilization parameter at integration point
         CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
       }
 
-      // get history data (or acceleration)
-//        hist_[k] = funct_.Dot(ehist_[k]);
-//        cout <<"hist" << hist_[k] << endl;
-      // new local compuation of hist_-vector
-
-      //TODO: thats right for a theta = 1.0 implementation
       hist_[k] = funct_.Dot(ephin_[k]);
 
       // set the rhs_ for reinitialization problems
@@ -10504,20 +8714,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 
 
       // compute matrix and rhs
-      CalMatAndRHS_LinearAdvection_REINITIALIZATION(emat,
-                                                    erhs,
-                                                    fac,
-                                                    k,
-                                                    ele,
-                                                    reinit_pseudo_timestepsize_factor,
-                                                    meshsize,
-                                                    penalty_method,
-                                                    penalty_interface_reinit,
-                                                    epsilon_bandwidth,
-                                                    smoothedSignType,
-                                                    shock_capturing,
-                                                    shock_capturing_diffusivity,
-                                                    timefac);
+      CalMatAndRHS_REINIT_OST(emat,
+                              erhs,
+                              fac,
+                              k,
+                              ele,
+                              reinit_pseudo_timestepsize_factor,
+                              meshsize,
+                              penalty_method,
+                              penalty_interface_reinit,
+                              epsilon_bandwidth,
+                              smoothedSignType,
+                              shock_capturing,
+                              shock_capturing_diffusivity,
+                              timefac);
     } // loop over each scalar
   } // integration loop
 
@@ -10525,11 +8735,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
   {
     if(penalty_method == INPAR::SCATRA::penalty_method_intersection_points)
     {
-      CalMatAndRHS_PENALTY_REINITIALIZATION(emat,
-                                            erhs,
-                                            k,
-                                            ele,
-                                            penalty_interface_reinit);
+      CalMatAndRHS_REINIT_Penalty(emat,
+                                  erhs,
+                                  k,
+                                  ele,
+                                  penalty_interface_reinit);
     }
   }
 

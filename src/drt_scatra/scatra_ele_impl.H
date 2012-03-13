@@ -420,18 +420,6 @@ private:
     const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
   );
 
-  //! calculate subgrid-scale velocity for level set / two-phase flow problems
-  virtual void CalcSubgrVelocityLevelSet(
-    DRT::Element*  ele,      //!< the element we are dealing with
-    const double   time,     //!< current simulation time
-    const double   dt,       //!< current time-step length
-    const double   timefac,  //!< time discretization factor
-    const int      k         //!< index of current scalar
-//    const int      id,
-//    const int      gp,
-//    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-//    const int                                    iquad       //!< id of current Gauss point
-  );
 
   //! calculate residual of scalar transport equation and subgrid-scale part of scalar
   virtual void CalcResidualAndSubgrScalar(
@@ -445,69 +433,6 @@ private:
     const LINALG::Matrix<nsd_,nen_>& evel
   );
 
-  /*========================================================================*/
-  //! @name Taylor-Galerkin explicite time integration
-  /*========================================================================*/
-
-  //! Calculate matrix and rhs. Here the whole thing is hidden.
-  virtual void Sysmat_TaylorGalerkin(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const double                          dt,        //!< current time-step length
-    const enum INPAR::SCATRA::ScaTraType  scatratype,//!< type of scalar transport problem
-    const enum INPAR::SCATRA::TimeIntegrationScheme timealgo //?
-  );
-
-  //! calculate element matrix and rhs vector (TaylorGalerkin2)
-  virtual void CalMatAndRHS_TG2(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const int                  k,        //!< index of current scalar
-    DRT::Element*              ele,      //!< the element we are dealing with
-    const double               dt        //!< current time-step length
-  );
-
-  //! calculate element matrix and rhs vector (TaylorGalerkin3
-  virtual void CalMatAndRHS_TG2_LW(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const int                  k,        //!< index of current scalar
-    DRT::Element*              ele,      //!< the element we are dealing with
-    const double               dt        //!< current time-step length
-  );
-
-  //! calculate element matrix and rhs vector (TaylorGalerkin3
-  virtual void CalMatAndRHS_TG3(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const int                  k,        //!< index of current scalar
-    DRT::Element*              ele,      //!< the element we are dealing with
-    const double               dt        //!< current time-step length
-  );
-
-  //! calculate element matrix and rhs vector (TaylorGalerkin4 one step
-  virtual void CalMatAndRHS_TG4_1S(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const int                  k,        //!< index of current scalar
-    DRT::Element*              ele,      //!< the element we are dealing with
-    const double               dt        //!< current time-step length
-  );
-
-  //! calculate element matrix and rhs vector (TaylorGalerkin4 Leapfrog
-  virtual void CalMatAndRHS_TG4_Leapfrog(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const int                  k,        //!< index of current scalar
-    DRT::Element*              ele,      //!< the element we are dealing with
-    const double               dt        //!< current time-step length
-  );
 
   /*========================================================================*/
   //! @name ELCH ?
@@ -543,58 +468,48 @@ private:
 
 
   /*========================================================================*/
-  //! @name Reinitialization
+  //! @name expl. Taylor-Galerkin and impl. Characteristic Galerkin time integration
   /*========================================================================*/
 
-  //! calculate element matrix and rhs vector (One-Step-Theta)
-  virtual void CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION(
-    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
-    const double                          fac,                      //!< integration factor
-    const int                             k,                        //!< index of current scalar
-    DRT::Element*                         ele,                      //!< the element we are dealing with
-    double                                pseudo_timestep_size,     //!< ?
-    double                                mesh_size,                //!< ?
-    const INPAR::SCATRA::PenaltyMethod    penalty_method,           //!< ?
-    const double                          penalty_interface_reinit, //!< ?
-    const double                          epsilon_bandwidth,        //!< ?
-    const INPAR::SCATRA::SmoothedSignType smoothedSignType          //!< ?
+  //! Calculate matrix and rhs. Here the whole thing is hidden.
+  virtual void Sysmat_Transport_TG(
+    DRT::Element*                         ele,       //!< the element we are dealing with
+    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
+    const double                          dt,        //!< current time-step length
+    const enum INPAR::SCATRA::TimeIntegrationScheme timealgo //!< time algorithm
   );
 
-  //! calculate element matrix and rhs vector (One-Step-Theta)
-  virtual void CalMatAndRHS_LinearAdvection_REINITIALIZATION(
-    Epetra_SerialDenseMatrix&             emat,                        //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,                        //!< element rhs to calculate
-    const double                          fac,                         //!< integration factor
-    const int                             k,                           //!< index of current scalar
-    DRT::Element*                         ele,                         //!< the element we are dealing with
-    double                                pseudo_timestep_size_factor, //!< ?
-    double                                meshsize,                    //!< ?
-    const INPAR::SCATRA::PenaltyMethod    penalty_method,              //!< ?
-    const double                          penalty_interface_reinit,    //!< ?
-    const double                          epsilon_bandwidth,           //!< ?
-    const INPAR::SCATRA::SmoothedSignType smoothedSignType,            //!< ?
-    const bool                            shock_capturing,             //!< ?
-    const double                          shock_capturing_diffusivity, //!< ?
-    double                                timefac                      //!< time discretization factor
+  //! calculate element matrix and rhs vector (implicit characteristic Galerkin method 2nd order)
+  virtual void CalMatAndRHS_Transport_ICG2(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
   );
 
-  virtual void CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(
-    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
-    const int                             k,                        //!< index of current scalar
-    DRT::Element*                         ele,                      //!< the element we are dealing with
-    const double                          penalty_interface_reinit, //!< ?
-    LINALG::Matrix<3,1>&                  intersection_local        //!< ?
+  //! calculate element matrix and rhs vector (TaylorGalerkin3)
+  virtual void CalMatAndRHS_Transport_TG3(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
   );
 
-  //! calculate element matrix and rhs vector (One-Step-Theta)
-  virtual void CalMatAndRHS_PENALTY_REINITIALIZATION(
-    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
-    const int                             k,                        //!< index of current scalar
-    DRT::Element*                         ele,                      //!< the element we are dealing with
-    const double                          penalty_interface_reinit  //!< ?
+
+  /*========================================================================*/
+  //! @name Reinitialization (integrate element matrices and rhs)
+  /*========================================================================*/
+
+  //! evaluate shape functions and their derivatives at current integration point with second order derivatives
+  virtual double EvalShapeFuncAndDerivsAtIntPointREINIT(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
+    const int                                    iquad,     //!< id of current Gauss point
+    const int                                    eleid      //!< the element id
   );
 
   //! calculate error for steady state check
@@ -603,50 +518,77 @@ private:
     ParameterList&               params //!< parameter list
   );
 
-  //! evaluate shape functions and their derivatives at current integration point with second order derivatives //Schott 01/11
-  virtual double EvalShapeFuncAndDerivsAtIntPointReinitialization(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
-    const int                                    iquad,     //!< id of current Gauss point
-    const int                                    eleid       //!< the element id
+  //! calculate element matrix and rhs vector (One-Step-Theta)
+  virtual void CalMatAndRHS_REINIT_ICG2(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const double                          fac,                      //!< integration factor
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    double                                pseudo_timestep_size,     //!< pseudo time step size
+    double                                mesh_size,                //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,           //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit, //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,        //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType          //!< type of smoothing the sign function
   );
 
-  //! ? Calculate matrix and rhs. Here the whole thing is hidden.
-  virtual void SysmatReinitialize(
-    DRT::Element*                         ele,                               //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,                              //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,                              //!< element rhs to calculate
-    const bool                            reinitswitch,                      //!< ?
-    const double                          reinit_pseudo_timestepsize_factor, //!< ?
-    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< ?
-    const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,            //!< ?
-    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< ?
-    const double                          penalty_interface_reinit,          //!< ?
-    const double                          epsilon_bandwidth,                 //!< ?
-    const enum INPAR::SCATRA::ScaTraType  scatratype                         //!< type of scalar transport problem
+  //! calculate element matrix and rhs vector for the reinitialization equation (One-Step-Theta)
+  virtual void CalMatAndRHS_REINIT_OST(
+    Epetra_SerialDenseMatrix&             emat,                        //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                        //!< element rhs to calculate
+    const double                          fac,                         //!< integration factor
+    const int                             k,                           //!< index of current scalar
+    DRT::Element*                         ele,                         //!< the element we are dealing with
+    double                                pseudo_timestep_size_factor, //!< pseudo time step factor
+    double                                meshsize,                    //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,              //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit,    //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,           //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,            //!< type of smoothing the sign function
+    const bool                            shock_capturing,             //!< shock capturing switched on/off
+    const double                          shock_capturing_diffusivity, //!< shock capturing diffusivity
+    double                                timefac                      //!< time discretization factor
   );
 
-  /*========================================================================*/
-  //! @name ? To be done
-  /*========================================================================*/
+  //! calculate element matrix and rhs vector for the intersection penalty method
+  virtual void CalMatAndRHS_REINIT_Penalty(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    const double                          penalty_interface_reinit  //!< penalty parameter to keep the interface position
+  );
 
-  //! ? Calculate matrix and rhs. Here the whole thing is hidden.
-  virtual void SysmatLinearAdvectionSysmat(
+  //! calculate system matrix and rhs for the first order reinitialization equation based on an implicit characteristic Galerkin scheme
+  virtual void Sysmat_Reinit_TG(
+      DRT::Element*                         ele,                               //!< the element those matrix is calculated
+      Epetra_SerialDenseMatrix&             emat,                              //!< element matrix to calculate
+      Epetra_SerialDenseVector&             erhs,                              //!< element rhs to calculate
+      const bool                            reinitswitch,                      //!< flag if scatra object is a reinitializer
+      const double                          reinit_pseudo_timestepsize_factor, //!< pseudo timestep factor
+      const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< type of smoothed sign function
+      const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+      const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+      const double                          penalty_interface_reinit           //!< penalty parameter to keep the interface position
+  );
+
+  //! Calculate matrix and rhs for the reinitializaton equation based on standard OST time discretization
+  virtual void Sysmat_Reinit_OST(
     DRT::Element*                         ele,           //!< the element we are dealing with
     Epetra_SerialDenseMatrix&             emat,          //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,          //!< element rhs to calculate
-    Epetra_SerialDenseVector&             subgrdiff,     //!< subgrid-diff.-scaling vector
     const double                          dt,            //!< current time-step length
     const double                          timefac,       //!< time discretization factor
-    const double                          meshsize,      //!< ?
-    const bool                            reinitswitch,  //!< ?
-    const double                          reinit_pseudo_timestepsize_factor, //!< ?
-    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< ?
-    const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,            //!< ?
-    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< ?
-    const double                          penalty_interface_reinit,          //!< ?
-    const double                          epsilon_bandwidth,                 //!< ?
-    const bool                            shock_capturing,                   //!< ?
-    const double                          shock_capturing_diffusivity,       //!< ?
+    const double                          meshsize,      //!< meshsize
+    const bool                            reinitswitch,  //!< flag if scatra object is a reinitialization object
+    const double                          reinit_pseudo_timestepsize_factor, //!< pseudo time step factor
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< type of smoothed sign function
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+    const double                          penalty_interface_reinit,          //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+    const bool                            shock_capturing,                   //!< shockcapturing operator turned on/off
+    const double                          shock_capturing_diffusivity,       //!< shockcapturing diffusivity
     const enum INPAR::SCATRA::ScaTraType  scatratype                         //!< type of scalar transport problem
   );
 
@@ -724,8 +666,6 @@ private:
   //! (global) gradient of multifractal subgrid-scale scalar at integration point
   LINALG::Matrix<nsd_,1> mfsggradphi_;
 
-  //! scalar at t_(n-1)
-  vector<LINALG::Matrix<nen_,1> > ephinm_; //schott
   //! scalar at t_(n)
   vector<LINALG::Matrix<nen_,1> > ephin_;
   //! scalar at t_(n+1) or t_(n+alpha_F)
@@ -746,7 +686,7 @@ private:
   //! fine-scale solution ?
   vector<LINALG::Matrix<nen_,1> > fsphinp_;
 
-  //! ?
+  //! gradient of phi at global time for reinitialization(initialization for pseudo time loop)
   LINALG::Matrix<nsd_,1> grad_phi_0;
 
   /*========================================================================*/
