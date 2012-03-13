@@ -252,6 +252,7 @@ namespace ELASTIC
       bool& isaniso ///< global indicator for anisotropy
       )
     {
+      isaniso = true;
       return;
     };
 
