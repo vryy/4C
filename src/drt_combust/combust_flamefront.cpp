@@ -32,6 +32,10 @@ Maintainer: Florian Henke
 #include <Epetra_SerialComm.h>
 #endif
 
+#ifdef DEBUG
+#include "combust3.H"
+#endif
+
 
 #define VOLTOL 1e-4
 
