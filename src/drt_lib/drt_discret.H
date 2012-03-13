@@ -66,7 +66,7 @@ namespace LINALG
 
 
 /*!
-\brief DRT: namespace of the ccarat discretization module
+\brief DRT: namespace of the baci discretization module
 
 */
 namespace DRT
