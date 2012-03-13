@@ -218,6 +218,7 @@ void GenRandomField::CalcDiscretePSD()
   if(marginal_pdf_!=normal)
   {
     // compute underlying gaussian distribution based on shields2011
+    //cout << "NO SPECTRAL MATHCING"<< endl;
     SpectralMatching();
   }
   else

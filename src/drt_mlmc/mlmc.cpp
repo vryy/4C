@@ -19,7 +19,7 @@ Maintainer: Jonas Biehler
 #include <cstdlib>
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/global_inp_control2.H"
+#include "../global_full/global_inp_control.H"
 #include "../drt_io/io_hdf.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
@@ -930,7 +930,8 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
  {
    random_field_->CreateNewSample(random_seed);
  }
-   // field.WriteRandomFieldToFile();
+    //random_field_->WriteRandomFieldToFile();
+    //dserror("stop right here");
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
