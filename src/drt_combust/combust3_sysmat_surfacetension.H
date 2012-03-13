@@ -20,6 +20,10 @@ Maintainer: Benedikt Schott
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#ifdef DEBUG
+#include "../drt_mat/material.H"
+#include "../drt_inpar/inpar_material.H"
+#endif
 
 
 namespace COMBUST

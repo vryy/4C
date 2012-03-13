@@ -24,6 +24,10 @@ Maintainer: Florian Henke
 #include "combust3_sysmat_surfacetension.H"
 #include "combust_defines.H"
 #include "../drt_f3/fluid3_stabilization.H"
+#ifdef DEBUG
+#include "../drt_mat/material.H"
+#include "../drt_inpar/inpar_material.H"
+#endif
 
 
 namespace COMBUST
