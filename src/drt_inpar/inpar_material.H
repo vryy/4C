@@ -104,15 +104,12 @@ namespace INPAR
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
       mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)
-      mes_varisoneohooke,  ///< var isochoric Neo-Hooke hyperelastic potential summand
       mes_isoexpo,  ///< isochoric exponential hyperelastic potential summand
-      mes_varisoexpo,  ///< var isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,  ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand
       mes_isoquad,  ///< isochoric quadratic hyperelastic potential summand
-      mes_varisoquad,  ///< var isochoric quadrativ hyperelastic potential summand
       mes_isocub,  ///< isochoric cubic hyperelastic potential summand
-      mes_varisocub,  ///< var isochoric cubic hyperelastic potential summand
+      mes_iso1pow,  ///< isochoric general power hyperelastic potential summand
       mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
       mes_volpenalty,  ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand

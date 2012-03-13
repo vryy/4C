@@ -71,7 +71,7 @@ namespace ELASTIC
       //@{
       void SetMue    (const double mue    ) { mue_     =  mue    ; }
       void SetLambda (const double lambda ) { lambda_  =  lambda ; }
-      void SetParmode(const int    parmode) { parmode_ =  parmode; }
+      void SetParmode(const std::string    parmode) { parmode_ =  parmode; }
       void SetYoungs (const double youngs ) { youngs_  =  youngs ; }
       void SetNue    (const double nue    ) { nue_     =  nue    ; }
       //@}

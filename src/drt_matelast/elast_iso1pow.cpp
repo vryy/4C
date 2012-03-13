@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_varisocub.cpp
+\file elast_iso1pow.cpp
 \brief
 
 
 the input line should read
-  MAT 1 ELAST_VarIsoCub FRAC 0.5 C 100
+  MAT 1 ELAST_Iso1Pow C 1 D 1
 
 <pre>
 Maintainer: Sophie Rausch
@@ -20,32 +20,30 @@ Maintainer: Sophie Rausch
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "elast_varisocub.H"
+#include "elast_iso1pow.H"
 
 /*----------------------------------------------------------------------*
- |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::VarIsoCub::VarIsoCub(
+MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  frac_(matdata->GetDouble("FRAC")),
-  c_(matdata->GetDouble("C"))
+  c_(matdata->GetDouble("C")),
+  d_(matdata->GetInt("D"))
 {
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VarIsoCub::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::Iso1Pow::CreateMaterial()
 {
   return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::VarIsoCub( this ) );
+  //return Teuchos::rcp( new MAT::ELASTIC::Iso1Pow( this ) );
 }
 
 
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::VarIsoCub::VarIsoCub()
+MAT::ELASTIC::Iso1Pow::Iso1Pow()
   : Summand(),
     params_(NULL)
 {
@@ -53,16 +51,15 @@ MAT::ELASTIC::VarIsoCub::VarIsoCub()
 
 
 /*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::VarIsoCub::VarIsoCub(MAT::ELASTIC::PAR::VarIsoCub* params)
+MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params)
   : params_(params)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::VarIsoCub::AddCoefficientsModified(
+void MAT::ELASTIC::Iso1Pow::AddCoefficientsModified(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
@@ -71,12 +68,20 @@ void MAT::ELASTIC::VarIsoCub::AddCoefficientsModified(
 {
   havecoefficients = havecoefficients or true;
 
-  const double frac = params_ -> frac_;
   const double c = params_ -> c_;
+  const    int d = params_ -> d_;
 
-  gamma(0) += 6*c*frac*(modinv(0)-3)*(modinv(0)-3);
+  if (d<=0)
+    dserror("The Elast_Iso1Pow - material only works for positive integer exponents larger than one.");
 
-  delta(0) +=  24*c*frac*(modinv(0)-3);
+
+  gamma(0) += 2.*c*d*pow((modinv(0)-3),d-1);
+
+  if (d>=2)
+    delta(0) += 4.*c*d*(d-1)*pow((modinv(0)-3),d-2);
+  else
+    delta(0) += 0;
+
 
   return;
 }

@@ -1,10 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_varisoexpo.H
+\file elast_iso1pow.H
 \brief
-
 This file contains the routines required to calculate the isochoric contribution
-of an exponential material
+of a general power-type material.
 
 <pre>
 Maintainer: Sophie Rausch
@@ -13,17 +12,14 @@ Maintainer: Sophie Rausch
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_VARISOEXPO_H_
-#define ELAST_VARISOEXPO_H_
+#ifndef ELAST_ISO1POW_H_
+#define ELAST_ISO1POW_H_
 #ifdef CCADISCRET
 
-// Linalg matrices used instead; included in elast_summand
-//#include <Epetra_SerialDenseVector.h>
-//#include <Epetra_SerialDenseMatrix.h>
-// included in elast_summand
-//#include "../drt_inpar/inpar_material.H"
-#include "elast_summand.H"
+#include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "elast_summand.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace MAT
 {
@@ -34,68 +30,74 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a exponential type material
+    /// material parameters for isochoric contribution of a general power material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_VarIsoExpo FRAC 0.5 K1 1. K2 1.
-    class VarIsoExpo : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_Iso1Pow C 1 D 1
+    class Iso1Pow : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      VarIsoExpo(
+      Iso1Pow(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~VarIsoExpo() { ; }
+      virtual ~Iso1Pow() { ; }
 
       /// @name material parameters
       //@{
 
-      /// fraction parameter
-      double frac_;
-      /// Shear modulus
-      double k1_;
-      double k2_;
+      /// material parameters
+      double c_;
+      int d_;
 
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class VarIsoExpo
+      /// @name Write methods
+      //@{
+      void SetC(const double c) { c_ = c; }
+      void SetD(const int d) { d_ = d; }
+      //@}
+
+    };  // class Iso1Pow
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric exponential material
+  /// Isochoric general power material
   ///
+  /// This is the isochoric part of a third order hyperelastic, isotropic
+  /// material depending on the modified trace of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = frac * \frac{k_1}{2k_2} (e^{(\overline{I}_{\boldsymbol{C}}-3)^2}-1).
+  ///   \Psi = C (\overline{I}_{\boldsymbol{C}}-3)^D.
   ///\f]
   ///
   ///
   /// \author rausch
-  /// \date 08/09
-  class VarIsoExpo : public Summand
+  /// \date 03/11
+  class Iso1Pow : public Summand
   {
 
   public:
 
     /// empty constructor
-    VarIsoExpo();
+    Iso1Pow();
 
     /// constructor with given material parameters
-    VarIsoExpo(MAT::ELASTIC::PAR::VarIsoExpo* params);
+    Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params);
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_varisoexpo; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_iso1pow; }
 
     //@}
 
@@ -109,7 +111,6 @@ namespace ELASTIC
     )
     {
       havecoefficients = havecoefficients or false;
-
       return;
     };
 
@@ -120,7 +121,6 @@ namespace ELASTIC
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
-
 
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
@@ -134,19 +134,23 @@ namespace ELASTIC
       havecoefficients = havecoefficients or false;
     };
 
+    /// Add anisotropic modified coeffiencts.
+    /// Nothing to do for this (isotropic) material!
+    void AddCoefficientsModifiedAniso(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };
+
     /// @name Access methods
     //@{
-    double Frac() const { return params_->frac_; }
-    double K1() const { return params_->k1_; }
-    double K2() const { return params_->k2_; }
+    double C() const { return params_->c_; }
+    int D() const { return params_->d_; }
 
-    //@}
-
-    /// @name Write methods
-    //@{
-    void SetFrac(const double frac) { params_->frac_ = frac; }
-    void SetK1(const double k1) { params_->k1_ = k1; }
-    void SetK2(const double k2) { params_->k2_ = k2; }
     //@}
 
     /// Indicator for anisotropic summand
@@ -160,7 +164,7 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::VarIsoExpo* params_;
+    MAT::ELASTIC::PAR::Iso1Pow* params_;
 
   };
 
@@ -168,4 +172,4 @@ namespace ELASTIC
 }  // namespace MAT
 
 #endif  // CCADISCRET
-#endif
+#endif  // ISO1POW_H_

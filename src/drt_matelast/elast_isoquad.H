@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isocub.H
+\file elast_isoquad.H
 \brief
 This file contains the routines required to calculate the isochoric contribution
 of a quadratic material.
@@ -98,7 +98,7 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isocub; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoquad; }
 
     //@}
 

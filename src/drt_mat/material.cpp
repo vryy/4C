@@ -413,14 +413,11 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupblatzko:
   case INPAR::MAT::mes_holzapfel_cardiac:
   case INPAR::MAT::mes_isoneohooke:
-  case INPAR::MAT::mes_varisoneohooke:
   case INPAR::MAT::mes_isoyeoh:
   case INPAR::MAT::mes_isoquad:
-  case INPAR::MAT::mes_varisoquad:
   case INPAR::MAT::mes_isocub:
-  case INPAR::MAT::mes_varisocub:
+  case INPAR::MAT::mes_iso1pow:
   case INPAR::MAT::mes_isoexpo:
-  case INPAR::MAT::mes_varisoexpo:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
   case INPAR::MAT::mes_volpenalty:
@@ -1202,3 +1199,4 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
 }
 
 #endif
+

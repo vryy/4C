@@ -32,6 +32,7 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_isoyeoh.H"
 #include "../drt_matelast/elast_isoquad.H"
 #include "../drt_matelast/elast_isocub.H"
+#include "../drt_matelast/elast_iso1pow.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
@@ -706,6 +707,15 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j]   = params2->c_;
                 break;
               }
+              case INPAR::MAT::mes_iso1pow:
+              {
+                filename_=filename_+"_iso1pow";
+                const MAT::ELASTIC::PAR::Iso1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
               case INPAR::MAT::mes_isoexpo:
               {
                 filename_=filename_+"_isoexpo";
@@ -790,6 +800,7 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_isoyeoh:
         case INPAR::MAT::mes_isoquad:
         case INPAR::MAT::mes_isocub:
+        case INPAR::MAT::mes_iso1pow:
         case INPAR::MAT::mes_isoexpo:
         case INPAR::MAT::mes_isomooneyrivlin:
         case INPAR::MAT::mes_volsussmanbathe:
@@ -923,6 +934,14 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               {
                 MAT::ELASTIC::PAR::IsoCub* params2 =
                   dynamic_cast<MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_iso1pow:
+              {
+                MAT::ELASTIC::PAR::Iso1Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
                 params2->SetC(abs(p_cur(j)));
                 j = j+1;
                 break;

@@ -1248,20 +1248,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // isochoric contribution of Var Neo-Hooke
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_VarIsoNeoHooke",
-                                            "variation of the isochoric part of  neo-Hooke material acc. to Holzapfel",
-                                            INPAR::MAT::mes_varisoneohooke));
-
-    AddNamedReal(m,"FRAC","fraction after collagenase/elastase");
-    AddNamedReal(m,"MUE","Shear modulus");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*--------------------------------------------------------------------*/
   // isochoric contribution of Yeoh
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -1291,21 +1277,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   /*--------------------------------------------------------------------*/
 
 
-  /*--------------------------------------------------------------------*/
-  // isochoric contribution of Var Quad
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_VarIsoQuad",
-                                            "variation of the isochoric part quadratic",
-                                            INPAR::MAT::mes_varisoquad));
-
-    AddNamedReal(m,"FRAC","fraction after collagenase/elastase");
-    AddNamedReal(m,"C","material parameter");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-
 
   // isochoric contribution of Cub
   {
@@ -1321,20 +1292,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*--------------------------------------------------------------------*/
 
-
-  /*--------------------------------------------------------------------*/
-  // isochoric contribution of Var Cub
+  // isochoric contribution of iso1pow
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_VarIsoCub",
-                                            "variation of the isochoric part of cubic material",
-                                            INPAR::MAT::mes_varisocub));
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Iso1Pow",
+                                            "isochoric part of general power material",
+                                            INPAR::MAT::mes_iso1pow));
 
-    AddNamedReal(m,"FRAC","fraction after collagenase/elastase");
     AddNamedReal(m,"C","material parameter");
-
+    AddNamedInt(m,"D","exponent");
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*--------------------------------------------------------------------*/
+
+
 
   // isochoric contribution of expo
   {
@@ -1348,21 +1320,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-
-  /*--------------------------------------------------------------------*/
-  // isochoric contribution of Var expo
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_VarIsoExpo",
-                                            "variation of the isochoric part of exponential material",
-                                            INPAR::MAT::mes_varisoexpo));
-
-    AddNamedReal(m,"FRAC","fraction after collagenase/elastase");
-    AddNamedReal(m,"K1","material parameter");
-    AddNamedReal(m,"K2","material parameter");
-
-    AppendMaterialDefinition(matlist,m);
-  }
 
 
   /*--------------------------------------------------------------------*/
