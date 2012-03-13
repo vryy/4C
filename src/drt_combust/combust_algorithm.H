@@ -10,7 +10,7 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_ALGORITHM_H
 #define COMBUST_ALGORITHM_H
 
@@ -206,4 +206,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif // #ifndef COMBUST_ALGORITHM_H
-#endif // #ifdef CCADISCRET

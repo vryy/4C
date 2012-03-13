@@ -12,22 +12,12 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "combust_interface.H"
-
-#include "../drt_lib/standardtypes_cpp.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
- #include "../drt_lib/drt_utils.H"
-
-// #include "../drt_io/io_gmsh.H"
-// #include "../drt_io/io_gmsh_xfem_extension.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_gmsh_xfem_extension.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -377,7 +367,3 @@ COMBUST::FlameFront::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus
 
   return cutstat;
 }
-
-
-
-#endif // #ifdef CCADISCRET

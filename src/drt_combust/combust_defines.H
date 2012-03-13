@@ -10,7 +10,7 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_DEFINES_H
 #define COMBUST_DEFINES_H
 
@@ -146,4 +146,3 @@ Maintainer: Florian Henke
 
 
 #endif // #ifndef COMBUST_DEFINES_H
-#endif // #ifdef CCADISCRET

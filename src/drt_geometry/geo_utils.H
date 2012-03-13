@@ -1,0 +1,39 @@
+/*!------------------------------------------------------------------------------------------------*
+\file geo_utils.H
+
+\brief Within this file all geometry typedefs shall be defined. Thus they can
+be used from outside in header files without including the according geometry
+header file
+
+<pre>
+Maintainer: Martin Winklmaier
+            winklmaier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+
+#ifndef GEO_UTILS_H_
+#define GEO_UTILS_H_
+
+
+#include <vector>
+
+
+//forward declarations
+namespace GEO
+{
+  class BoundaryIntCell;
+  class DomainIntCell;
+
+  //! shortcut for a vector of BoundaryIntCells
+  typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
+
+  //! shortcut for a vector of DomainIntCells
+  typedef std::vector<GEO::DomainIntCell > DomainIntCells;
+}
+
+#endif /* GEO_UTILS_H_ */
+#endif  // #ifdef CCADISCRET

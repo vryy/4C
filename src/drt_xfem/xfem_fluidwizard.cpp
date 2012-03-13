@@ -6,6 +6,8 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_geometry/integrationcell.H"
+
 #include "xfem_fluidwizard.H"
 #include "xfem_fluiddofset.H"
 #include "enrichment.H"

@@ -10,8 +10,6 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include "combust3.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -110,5 +108,3 @@ bool DRT::ELEMENTS::Combust3::ReadElement()
 } // XFluid3::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3

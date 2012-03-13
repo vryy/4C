@@ -30,6 +30,14 @@ namespace DRT
   }
 }
 
+namespace GEO
+{
+  namespace CUT
+  {
+    class Side;
+  }
+}
+
 
 namespace XFEM
 {

@@ -10,14 +10,12 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include "combust3.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
-
-using namespace DRT::UTILS;
+#include "../drt_xfem/dof_management_element.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 DRT::ELEMENTS::Combust3Type DRT::ELEMENTS::Combust3Type::instance_;
@@ -244,6 +242,49 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
 }
 
 
+int DRT::ELEMENTS::Combust3::NumDofPerNode(const DRT::Node& node) const
+{
+  if (standard_mode_)
+  {
+    return 4;
+  }
+  else
+  {
+    if (eleDofManager_ != Teuchos::null)
+    {
+      return eleDofManager_->NumDofPerNode(node.Id());
+    }
+    else
+    {
+      dserror("no element dof information available!");
+      return 0;
+    }
+  }
+}
+
+
+
+int DRT::ELEMENTS::Combust3::NumDofPerElement() const
+{
+  if (standard_mode_)
+  {
+    return 0;
+  }
+  else
+  {
+    if (eleDofManager_ != Teuchos::null)
+    {
+      return eleDofManager_->NumElemDof();
+    }
+    else
+    {
+      dserror("no element dof information available!");
+      return 0;
+    }
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 02/08|
  *----------------------------------------------------------------------*/
@@ -440,14 +481,13 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
-: oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),
-  oldKad_(LINALG::SerialDenseMatrix(na,nd,true)),
-  oldfa_(LINALG::SerialDenseVector(na,true)),
-  stressdofs_(LINALG::SerialDenseVector(na,true))
 {
+  oldKaainv_ = rcp(new LINALG::SerialDenseMatrix(na,na,true));
+  oldKad_ = rcp(new LINALG::SerialDenseMatrix(na,nd,true));
+  oldfa_ = rcp(new LINALG::SerialDenseVector(na,true));
+  stressdofs_ = rcp(new LINALG::SerialDenseVector(na,true));
+
   return;
 }
 
 
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3

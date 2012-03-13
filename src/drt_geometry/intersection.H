@@ -16,12 +16,13 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
-#include "../drt_geometry/intersection_interfacepoint.H"
-#include "../drt_geometry/intersection_templates.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/position_array.H"
+#include "geo_utils.H"
+#include "intersection_interfacepoint.H"
+#include "intersection_templates.H"
+#include "intersection_service.H"
+#include "integrationcell.H"
+#include "searchtree.H"
+#include "position_array.H"
 
 
 #ifdef PARALLEL

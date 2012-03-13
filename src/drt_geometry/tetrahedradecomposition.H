@@ -14,9 +14,11 @@ Maintainer: Florian Henke
 #ifndef TETRAHEDRADECOMPOSITION_H_
 #define TETRAHEDRADECOMPOSITION_H_
 
+#include "geo_utils.H"
 #include "integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_combust/combust_refinementcell.H"
+
 
 namespace GEO
 {

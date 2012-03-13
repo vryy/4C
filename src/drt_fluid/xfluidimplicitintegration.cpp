@@ -2198,18 +2198,18 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
             dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
                  domainintcells.begin(); cell != domainintcells.end(); ++cell)
-          {
-            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
-                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
-            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-                                                               *cell, field, elementvalues, cellvalues);
+          { // TODO winklmaier: commented out several things...
+//            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//            LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//            XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
+//                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
+//            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//                                                               *cell, field, elementvalues, cellvalues);
             //IO::GMSH::cellWithScalarFieldToStream(
             //  cell->Shape(), cellvalues, cell->CellNodalPosXYZ(),
             //  gmshfilecontent);
-            IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cellpositions, gmshfilecontent);
+//            IO::GMSH::cellWithScalarFieldToStream(
+//              cell->Shape(), cellvalues, cellpositions, gmshfilecontent);
           }
         }
       }
@@ -2256,12 +2256,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           for (GEO::DomainIntCells::const_iterator cell =
                  domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
-            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-                                                               *cell, field, elementvalues, cellvalues);
-
-            IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+//            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//                                                               *cell, field, elementvalues, cellvalues);
+//
+//            IO::GMSH::cellWithScalarFieldToStream(
+//              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
         }
       }
@@ -2311,11 +2311,11 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
-          IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+//          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//              *cell, field, elementvalues, cellvalues);
+//          IO::GMSH::cellWithScalarFieldToStream(
+//              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           numplot++;
         }
       }
@@ -2446,45 +2446,45 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
           //cell->NodalPosXYZ(*actele, xyze_cell);
           // TODO remove
-          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
-
-          {
-          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-              *cell, fieldxx, elementvalues, cellvalues);
-           IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
-          }
-
-          {
-          LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxx, elementvaluexx, cellvaluexx);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
-          }
-          {
-          LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyy, elementvalueyy, cellvalueyy);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
-          }
-          {
-          LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldzz, elementvaluezz, cellvaluezz);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
-          }
-          {
-          LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxy, elementvaluexy, cellvaluexy);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
-          }
-          {
-          LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxz, elementvaluexz, cellvaluexz);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
-          }
-          {
-          LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyz, elementvalueyz, cellvalueyz);
-          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
-          }
+//          const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
+//
+//          {
+//          LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//              *cell, fieldxx, elementvalues, cellvalues);
+//           IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
+//          }
+//
+//          {
+//          LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxx, elementvaluexx, cellvaluexx);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
+//          }
+//          {
+//          LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyy, elementvalueyy, cellvalueyy);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
+//          }
+//          {
+//          LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldzz, elementvaluezz, cellvaluezz);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
+//          }
+//          {
+//          LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxy, elementvaluexy, cellvaluexy);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
+//          }
+//          {
+//          LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxz, elementvaluexz, cellvaluexz);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
+//          }
+//          {
+//          LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyz, elementvalueyz, cellvalueyz);
+//          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
+//          }
         }
       }
       gmshfilecontent   << "};\n";
@@ -2623,18 +2623,18 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
-            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-             LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
-                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            if(fluidfluidCoupling_){
-              XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
-                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
-              IO::GMSH::cellWithVectorFieldToStream(
-                cell->Shape(), cellvalues,  cellpositions, gmshfilecontent);
-            }
-            else
-              IO::GMSH::cellWithVectorFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+//            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//             LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//            XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
+//                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
+//            if(fluidfluidCoupling_){
+//              XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
+//                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
+//              IO::GMSH::cellWithVectorFieldToStream(
+//                cell->Shape(), cellvalues,  cellpositions, gmshfilecontent);
+//            }
+//            else
+//              IO::GMSH::cellWithVectorFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
 
           // draw uncut element
@@ -3599,11 +3599,11 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
           for (GEO::DomainIntCells::const_iterator cell =
                  domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
-            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-                                                               *cell, field, elementvalues, cellvalues);
-            IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+//            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//                                                               *cell, field, elementvalues, cellvalues);
+//            IO::GMSH::cellWithScalarFieldToStream(
+//              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
         }
       }
@@ -4102,10 +4102,10 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
               dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
               for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
               {
-                LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-                XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-                *cell, field, elementvalues, cellvalues);
-                IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, elementpositions, gmshfilecontent);
+//                LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+//                XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+//                *cell, field, elementvalues, cellvalues);
+//                IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, elementpositions, gmshfilecontent);
               }
             }
         }

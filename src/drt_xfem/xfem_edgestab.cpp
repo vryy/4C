@@ -16,6 +16,8 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_cut/cut_elementhandle.H"
+#include "../drt_cut/cut_side.H"
 #include "../drt_cut/cut_volumecell.H"
 
 #include "../drt_f3/fluid3.H"

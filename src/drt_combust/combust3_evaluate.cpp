@@ -9,8 +9,6 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
 */
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -912,13 +910,13 @@ void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
     // update old iteration residual of stresses and pressure
     //-------------------------------------------------------
     // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-    blas.GEMV('N', numeledof, numnodedof,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+    blas.GEMV('N', numeledof, numnodedof,-1.0, DLM_info_->oldKad_->A(), DLM_info_->oldKad_->LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_->A());
 
     //--------------------------------------
     // compute element stresses and pressure
     //--------------------------------------
     // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-    blas.GEMV('N', numeledof, numeledof,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+    blas.GEMV('N', numeledof, numeledof,1.0, DLM_info_->oldKaainv_->A(), DLM_info_->oldKaainv_->LDA(), DLM_info_->oldfa_->A(), 1.0, DLM_info_->stressdofs_->A());
 
     //----------------------------------------------------------------------
     // paste element dofs (stresses and pressure) in lovcal (element) vector
@@ -934,7 +932,7 @@ void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
     }
     for (int ieledof=0;ieledof<numeledof;ieledof++)
     {
-      mystate.velnp_[numnodedof+ieledof] = DLM_info_->stressdofs_(ieledof);
+      mystate.velnp_[numnodedof+ieledof] = (*DLM_info_->stressdofs_)(ieledof);
     }
   }
   else
@@ -1018,15 +1016,12 @@ void DRT::ELEMENTS::Combust3::CondenseElementStressAndStoreOldIterationStep(
 
     // store current DLM data in iteration history
     //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kssinv.A(), DLM_info_->oldKaainv_.A());
+    blas.COPY(DLM_info_->oldKaainv_->M()*DLM_info_->oldKaainv_->N(), Kssinv.A(), DLM_info_->oldKaainv_->A());
     //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), KGsu.A(), DLM_info_->oldKad_.A());
+    blas.COPY(DLM_info_->oldKad_->M()*DLM_info_->oldKad_->N(), KGsu.A(), DLM_info_->oldKad_->A());
     //DLM_info_->oldfa_.Update(1.0,fa,0.0);
-    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fs.A(), DLM_info_->oldfa_.A());
+    blas.COPY(DLM_info_->oldfa_->M()*DLM_info_->oldfa_->N(), fs.A(), DLM_info_->oldfa_->A());
   }
   else
     dserror("You should never have come here in the first place!");
 }
-
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3

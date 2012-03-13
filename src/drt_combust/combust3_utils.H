@@ -8,14 +8,15 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
 */
-#ifdef CCADISCRET
+
 #ifndef COMBUST3_UTILS_H
 #define COMBUST3_UTILS_H
 
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+
 
 namespace COMBUST
 {
@@ -179,4 +180,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif
-#endif  // #ifdef CCADISCRET

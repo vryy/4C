@@ -14,34 +14,12 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
-
 #ifndef COMBUST3_ERROR_ESTIMATION_H
 #define COMBUST3_ERROR_ESTIMATION_H
 
-#include <Teuchos_TimeMonitor.hpp>
 
-#include "combust3_sysmat.H"
 #include "combust_defines.H"
-#include "combust3_local_assembler.H"
-#include "combust3_utils.H"
-#include "combust3_interpolation.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/xfluid3_utils.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_xfem/enrichment.H"
-#include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
 
-
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -1464,7 +1442,7 @@ void Nitsche_BuildDomainIntegratedErrors(
 
         // shape functions and derivatives for nodal parameters (dofs)
         enrvals->ComputeModifiedEnrichedNodalShapefunction(
-            Velx,
+            XFEM::PHYSICS::Velx,
             funct,
             derxy,
             derxy2,
@@ -1493,7 +1471,7 @@ void Nitsche_BuildDomainIntegratedErrors(
         if(withkinks)
         {
           enrvals->ComputeModifiedEnrichedNodalShapefunction(
-              Pres,
+              XFEM::PHYSICS::Pres,
               funct,
               derxy,
               derxy2,
@@ -1982,17 +1960,17 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     if (!withkinks)
     {
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
-      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
     }
     else
     {
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Pres, funct, derxy, derxy2,
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Pres, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
-      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Pres, funct, derxy, derxy2,
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Pres, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
     }
 
@@ -2419,6 +2397,4 @@ void Nitsche_BuildBoundaryIntegratedErrors(
 } // namespace COMBUST
 
 
-#endif
-#endif
 #endif

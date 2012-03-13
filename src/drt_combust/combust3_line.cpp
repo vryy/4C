@@ -10,8 +10,6 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include "combust3.H"
 
@@ -122,7 +120,3 @@ void DRT::ELEMENTS::Combust3Line::Print(ostream& os) const
   return;
 }
 
-
-
-#endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3

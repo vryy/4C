@@ -13,14 +13,10 @@ Maintainer: Florian Henke
  */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
-
 #ifndef COMBUST3_INTERPOLATION_H
 #define COMBUST3_INTERPOLATION_H
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_xfem/physics.H"
+
 #include "../drt_xfem/element_ansatz.H"
 
 
@@ -204,4 +200,3 @@ namespace COMBUST
 }
 
 #endif /*COMBUST3_INTERPOLATION_H*/
-#endif

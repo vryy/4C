@@ -589,6 +589,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xfluidfluid_timeInt.cpp
   src/drt_geometry/geo_intersection.cpp
   src/drt_combust/combust_interface.cpp
+  src/drt_combust/combust_flamefront.cpp
 )
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
@@ -606,10 +607,8 @@ set(OBJS_DRT_ARTNET_LIB
 set(OBJS_DRT_COMBUST
   src/drt_combust/combust_algorithm.cpp
   src/drt_combust/combust_dyn.cpp
-  src/drt_combust/combust_flamefront.cpp
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
-#  src/drt_combust/combust_interface.cpp
   src/drt_combust/combust_reinitializer.cpp
   src/drt_combust/combust_utils.cpp
 )

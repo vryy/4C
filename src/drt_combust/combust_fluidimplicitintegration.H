@@ -11,7 +11,6 @@ Maintainer: Florian Henke
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef COMBUST_FLUIDIMPLICITINTEGRATION_H
 #define COMBUST_FLUIDIMPLICITINTEGRATION_H
 
@@ -696,4 +695,3 @@ protected:
 
 
 #endif  // #ifndef COMBUST_FLUIDIMPLICITINTEGRATION_H
-#endif  // #ifdef CCADISCRET

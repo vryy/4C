@@ -24,6 +24,8 @@ Maintainer: Shadan Shahmiri
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_fluid/fluid_utils.H"
+#include "../drt_inpar/inpar_xfem.H"
+
 
 namespace XFEM
 {

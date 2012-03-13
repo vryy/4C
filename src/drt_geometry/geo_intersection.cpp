@@ -7,13 +7,11 @@
 #include "../drt_fluid/xfluid_defines.H"
 
 #include "geo_intersection.H"
+#include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io_control.H"
-
-// #include "searchtree.H"
-// #include "searchtree_geometry_service.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 

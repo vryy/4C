@@ -10,18 +10,20 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_REINITIALIZER_H
 #define COMBUST_REINITIALIZER_H
 
-#include <Epetra_Comm.h>
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_geometry/geo_utils.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"
+
+
+namespace SCATRA
+{
+  class ScaTraTimIntImpl;
+}
 
 namespace COMBUST
 {
@@ -276,4 +278,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif // COMBUST_REINITIALIZER_H
-#endif // CCADISCRET

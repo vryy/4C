@@ -14,21 +14,14 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
-
 #ifndef COMBUST3_SYSMAT_STANDARD_H
 #define COMBUST3_SYSMAT_STANDARD_H
 
-#include <Teuchos_TimeMonitor.hpp>
 
 #include "combust3_local_assembler.H"
 #include "combust3_utils.H"
 #include "combust_defines.H"
-#include "../drt_xfem/xfem_element_utils.H"
 
-
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -97,21 +90,21 @@ void BuildStandardDomainIntegrals(
                                   |             |
                                    \           /
        */
-    assembler.template Matrix<Velx,Velx>(shpvel.d0, densfac, shpvel.d0);
-    assembler.template Matrix<Vely,Vely>(shpvel.d0, densfac, shpvel.d0);
-    assembler.template Matrix<Velz,Velz>(shpvel.d0, densfac, shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.d0, densfac, shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.d0, densfac, shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.d0, densfac, shpvel.d0);
 
     if (genalpha)
     {
-      assembler.template Vector<Velx>(shpvel.d0, -rhsdensfac*accam(0));
-      assembler.template Vector<Vely>(shpvel.d0, -rhsdensfac*accam(1));
-      assembler.template Vector<Velz>(shpvel.d0, -rhsdensfac*accam(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.d0, -rhsdensfac*accam(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.d0, -rhsdensfac*accam(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.d0, -rhsdensfac*accam(2));
     }
     else
     {
-      assembler.template Vector<Velx>(shpvel.d0, -rhsdensfac*velnp(0));
-      assembler.template Vector<Vely>(shpvel.d0, -rhsdensfac*velnp(1));
-      assembler.template Vector<Velz>(shpvel.d0, -rhsdensfac*velnp(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.d0, -rhsdensfac*velnp(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.d0, -rhsdensfac*velnp(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.d0, -rhsdensfac*velnp(2));
     }
   }
 #endif
@@ -127,17 +120,17 @@ void BuildStandardDomainIntegrals(
                      \                            cross-stress              /
    */
   const double denstimefacfac = densaf * timefacfac;
-  assembler.template Matrix<Velx,Velx>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
-  assembler.template Matrix<Vely,Vely>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
-  assembler.template Matrix<Velz,Velz>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
 
-  assembler.template Vector<Velx>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(0,0)
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(0,0)
                                                             +velnp(1)*vderxy(0,1)
                                                             +velnp(2)*vderxy(0,2)));
-  assembler.template Vector<Vely>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(1,0)
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(1,0)
                                                             +velnp(1)*vderxy(1,1)
                                                             +velnp(2)*vderxy(1,2)));
-  assembler.template Vector<Velz>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(2,0)
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.d0, -altrhsdensfac*(velnp(0)*vderxy(2,0)
                                                             +velnp(1)*vderxy(2,1)
                                                             +velnp(2)*vderxy(2,2)));
 
@@ -151,15 +144,15 @@ void BuildStandardDomainIntegrals(
                     |         \          /   (i)   |
                      \                             /
        */
-    assembler.template Matrix<Velx,Velx>(shpvel.d0, denstimefacfac*vderxy(0,0), shpvel.d0);
-    assembler.template Matrix<Velx,Vely>(shpvel.d0, denstimefacfac*vderxy(0,1), shpvel.d0);
-    assembler.template Matrix<Velx,Velz>(shpvel.d0, denstimefacfac*vderxy(0,2), shpvel.d0);
-    assembler.template Matrix<Vely,Velx>(shpvel.d0, denstimefacfac*vderxy(1,0), shpvel.d0);
-    assembler.template Matrix<Vely,Vely>(shpvel.d0, denstimefacfac*vderxy(1,1), shpvel.d0);
-    assembler.template Matrix<Vely,Velz>(shpvel.d0, denstimefacfac*vderxy(1,2), shpvel.d0);
-    assembler.template Matrix<Velz,Velx>(shpvel.d0, denstimefacfac*vderxy(2,0), shpvel.d0);
-    assembler.template Matrix<Velz,Vely>(shpvel.d0, denstimefacfac*vderxy(2,1), shpvel.d0);
-    assembler.template Matrix<Velz,Velz>(shpvel.d0, denstimefacfac*vderxy(2,2), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.d0, denstimefacfac*vderxy(0,0), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.d0, denstimefacfac*vderxy(0,1), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac*vderxy(0,2), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.d0, denstimefacfac*vderxy(1,0), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.d0, denstimefacfac*vderxy(1,1), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac*vderxy(1,2), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.d0, denstimefacfac*vderxy(2,0), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.d0, denstimefacfac*vderxy(2,1), shpvel.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.d0, denstimefacfac*vderxy(2,2), shpvel.d0);
   }
 #endif
 
@@ -172,35 +165,35 @@ void BuildStandardDomainIntegrals(
                      |       \ /                  \  /   |
                       \                                 /
    */
-  assembler.template Matrix<Velx,Velx>(shpvel.dx, 2.0*dynvisc*timefacfac, shpvel.dx);
-  assembler.template Matrix<Velx,Velx>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
-  assembler.template Matrix<Velx,Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dx);
-  assembler.template Matrix<Velx,Velx>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
-  assembler.template Matrix<Velx,Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, 2.0*dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dx);
 
-  assembler.template Matrix<Vely,Vely>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
-  assembler.template Matrix<Vely,Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dy);
-  assembler.template Matrix<Vely,Vely>(shpvel.dy, 2.0*dynvisc*timefacfac, shpvel.dy);
-  assembler.template Matrix<Vely,Vely>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
-  assembler.template Matrix<Vely,Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, 2.0*dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dy);
 
-  assembler.template Matrix<Velz,Velz>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
-  assembler.template Matrix<Velz,Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dz);
-  assembler.template Matrix<Velz,Velz>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
-  assembler.template Matrix<Velz,Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dz);
-  assembler.template Matrix<Velz,Velz>(shpvel.dz, 2.0*dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, 2.0*dynvisc*timefacfac, shpvel.dz);
 
-  assembler.template Vector<Velx>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(0, 0) + vderxy(0, 0)));
-  assembler.template Vector<Velx>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(0, 1) + vderxy(1, 0)));
-  assembler.template Vector<Velx>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(0, 2) + vderxy(2, 0)));
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(0, 0) + vderxy(0, 0)));
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(0, 1) + vderxy(1, 0)));
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(0, 2) + vderxy(2, 0)));
 
-  assembler.template Vector<Vely>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(1, 0) + vderxy(0, 1)));
-  assembler.template Vector<Vely>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(1, 1) + vderxy(1, 1)));
-  assembler.template Vector<Vely>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(1, 2) + vderxy(2, 1)));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(1, 0) + vderxy(0, 1)));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(1, 1) + vderxy(1, 1)));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(1, 2) + vderxy(2, 1)));
 
-  assembler.template Vector<Velz>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(2, 0) + vderxy(0, 2)));
-  assembler.template Vector<Velz>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(2, 1) + vderxy(1, 2)));
-  assembler.template Vector<Velz>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(2, 2) + vderxy(2, 2)));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dx,     -dynvisc*altrhsfac*(vderxy(2, 0) + vderxy(0, 2)));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dy,     -dynvisc*altrhsfac*(vderxy(2, 1) + vderxy(1, 2)));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz,     -dynvisc*altrhsfac*(vderxy(2, 2) + vderxy(2, 2)));
 #endif
 
 #ifdef COMBUST_DOM_PRESSURE
@@ -212,13 +205,13 @@ void BuildStandardDomainIntegrals(
                        |                  |
                         \                /
    */
-  assembler.template Matrix<Velx,Pres>(shpvel.dx, -timefacfac, shppres.d0);
-  assembler.template Matrix<Vely,Pres>(shpvel.dy, -timefacfac, shppres.d0);
-  assembler.template Matrix<Velz,Pres>(shpvel.dz, -timefacfac, shppres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Pres>(shpvel.dx, -timefacfac, shppres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Pres>(shpvel.dy, -timefacfac, shppres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Pres>(shpvel.dz, -timefacfac, shppres.d0);
 
-  assembler.template Vector<Velx>(shpvel.dx, altrhsfac*pres);
-  assembler.template Vector<Vely>(shpvel.dy, altrhsfac*pres);
-  assembler.template Vector<Velz>(shpvel.dz, altrhsfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dx, altrhsfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy, altrhsfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz, altrhsfac*pres);
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
@@ -231,12 +224,12 @@ void BuildStandardDomainIntegrals(
                       |                |
                        \              /
    */
-  assembler.template Matrix<Pres,Velx>(shppres.d0, timefacfac, shpvel.dx);
-  assembler.template Matrix<Pres,Vely>(shppres.d0, timefacfac, shpvel.dy);
-  assembler.template Matrix<Pres,Velz>(shppres.d0, timefacfac, shpvel.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.d0, timefacfac, shpvel.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.d0, timefacfac, shpvel.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.d0, timefacfac, shpvel.dz);
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
-  assembler.template Vector<Pres>(shppres.d0, -altrhsfac*trace_gamma);
+  assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.d0, -altrhsfac*trace_gamma);
 #endif
 
 #ifdef COMBUST_DOM_RHS
@@ -248,9 +241,9 @@ void BuildStandardDomainIntegrals(
                  |      |
                   \    /
    */
-  assembler.template Vector<Velx>(shpvel.d0, rhsfac*rhsint(0));
-  assembler.template Vector<Vely>(shpvel.d0, rhsfac*rhsint(1));
-  assembler.template Vector<Velz>(shpvel.d0, rhsfac*rhsint(2));
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.d0, rhsfac*rhsint(0));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.d0, rhsfac*rhsint(1));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.d0, rhsfac*rhsint(2));
 #endif
 
   //----------------------------------------------------------------------
@@ -273,9 +266,9 @@ void BuildStandardDomainIntegrals(
                              |                   |
                               \                 /
       */
-      assembler.template Matrix<Pres,Velx>(shppres.dx, denstauMp, shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dy, denstauMp, shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dz, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstauMp, shpvel.d0);
     }
 #endif
 
@@ -288,9 +281,9 @@ void BuildStandardDomainIntegrals(
                      |                \ i         /     |
                       \                                /
      */
-    assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstimetauMp, enr_conv_c);
 
     if (newton)
     {
@@ -301,17 +294,17 @@ void BuildStandardDomainIntegrals(
                        |              \          /   (i)  |
                         \                                /
          */
-      assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
-      assembler.template Matrix<Pres,Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
-      assembler.template Matrix<Pres,Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
 
-      assembler.template Matrix<Pres,Vely>(shppres.dx, denstimetauMp*vderxy(0,1), shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp*vderxy(1,1), shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dz, denstimetauMp*vderxy(2,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dx, denstimetauMp*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstimetauMp*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dz, denstimetauMp*vderxy(2,1), shpvel.d0);
 
-      assembler.template Matrix<Pres,Velz>(shppres.dx, denstimetauMp*vderxy(0,2), shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dy, denstimetauMp*vderxy(1,2), shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp*vderxy(2,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dx, denstimetauMp*vderxy(0,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dy, denstimetauMp*vderxy(1,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstimetauMp*vderxy(2,2), shpvel.d0);
     }
 #endif
 
@@ -324,17 +317,17 @@ void BuildStandardDomainIntegrals(
                       |                                  \  /  |
                        \                                      /
      */
-    assembler.template Matrix<Pres,Velx>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
-    assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
-    assembler.template Matrix<Pres,Velz>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
 
-    assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
-    assembler.template Matrix<Pres,Vely>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
-    assembler.template Matrix<Pres,Velz>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
 
-    assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
-    assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
-    assembler.template Matrix<Pres,Velz>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
 #endif
 
 #ifdef COMBUST_PSPG_PRESSURE
@@ -346,16 +339,16 @@ void BuildStandardDomainIntegrals(
                |                      |
                 \                    /
      */
-    assembler.template Matrix<Pres,Pres>(shppres.dx, timetauMp, shppres.dx);
-    assembler.template Matrix<Pres,Pres>(shppres.dy, timetauMp, shppres.dy);
-    assembler.template Matrix<Pres,Pres>(shppres.dz, timetauMp, shppres.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dx, timetauMp, shppres.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dy, timetauMp, shppres.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dz, timetauMp, shppres.dz);
 #endif
 
 #ifdef COMBUST_PSPG_RHS
     // pressure stabilization
-    assembler.template Vector<Pres>(shppres.dx, -rhstauMpfac*res_old(0));
-    assembler.template Vector<Pres>(shppres.dy, -rhstauMpfac*res_old(1));
-    assembler.template Vector<Pres>(shppres.dz, -rhstauMpfac*res_old(2));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dx, -rhstauMpfac*res_old(0));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dy, -rhstauMpfac*res_old(1));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dz, -rhstauMpfac*res_old(2));
 #endif
   }
 
@@ -380,9 +373,9 @@ void BuildStandardDomainIntegrals(
                             |              \ (i)       /           subgrid velocity    |
                              \                                    reynolds-stress     /
       */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
 
       if (newton)
       {
@@ -396,15 +389,15 @@ void BuildStandardDomainIntegrals(
                                   |      (i)          \          /     |
                                    \                                   /
              */
-          assembler.template Matrix<Velx,Velx>(shpvel.dx, densdenstimetauMu*accam(0), shpvel.d0);
-          assembler.template Matrix<Velx,Vely>(shpvel.dy, densdenstimetauMu*accam(0), shpvel.d0);
-          assembler.template Matrix<Velx,Velz>(shpvel.dz, densdenstimetauMu*accam(0), shpvel.d0);
-          assembler.template Matrix<Vely,Velx>(shpvel.dx, densdenstimetauMu*accam(1), shpvel.d0);
-          assembler.template Matrix<Vely,Vely>(shpvel.dy, densdenstimetauMu*accam(1), shpvel.d0);
-          assembler.template Matrix<Vely,Velz>(shpvel.dz, densdenstimetauMu*accam(1), shpvel.d0);
-          assembler.template Matrix<Velz,Velx>(shpvel.dx, densdenstimetauMu*accam(2), shpvel.d0);
-          assembler.template Matrix<Velz,Vely>(shpvel.dy, densdenstimetauMu*accam(2), shpvel.d0);
-          assembler.template Matrix<Velz,Velz>(shpvel.dz, densdenstimetauMu*accam(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstimetauMu*accam(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstimetauMu*accam(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstimetauMu*accam(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstimetauMu*accam(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstimetauMu*accam(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstimetauMu*accam(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstimetauMu*accam(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstimetauMu*accam(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstimetauMu*accam(2), shpvel.d0);
         }
         else
         {
@@ -416,15 +409,15 @@ void BuildStandardDomainIntegrals(
                                   |      (i)          \          /     |
                                    \                                   /
              */
-          assembler.template Matrix<Velx,Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
-          assembler.template Matrix<Velx,Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
-          assembler.template Matrix<Velx,Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
-          assembler.template Matrix<Vely,Velx>(shpvel.dx, densdenstauMu*velnp(1), shpvel.d0);
-          assembler.template Matrix<Vely,Vely>(shpvel.dy, densdenstauMu*velnp(1), shpvel.d0);
-          assembler.template Matrix<Vely,Velz>(shpvel.dz, densdenstauMu*velnp(1), shpvel.d0);
-          assembler.template Matrix<Velz,Velx>(shpvel.dx, densdenstauMu*velnp(2), shpvel.d0);
-          assembler.template Matrix<Velz,Vely>(shpvel.dy, densdenstauMu*velnp(2), shpvel.d0);
-          assembler.template Matrix<Velz,Velz>(shpvel.dz, densdenstauMu*velnp(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(1), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(2), shpvel.d0);
+          assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(2), shpvel.d0);
         }
       }
     }
@@ -439,9 +432,9 @@ void BuildStandardDomainIntegrals(
                 |     \ (i)        /         subgrid velocity             \ (i)        /      |
                  \                           reynolds-stress                                 /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -453,9 +446,9 @@ void BuildStandardDomainIntegrals(
                      |      \ (i)       /         subgrid velocity                 |
                       \                            reynolds-stress                /
      */
-    assembler.template Matrix<Velx,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dx);
-    assembler.template Matrix<Vely,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dy);
-    assembler.template Matrix<Velz,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dz);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -467,17 +460,17 @@ void BuildStandardDomainIntegrals(
                  |               \  /       \ (i)        /      subgrid velocity         |
                   \                                             reynolds-stress         /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
-    assembler.template Matrix<Velx,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
-    assembler.template Matrix<Velx,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
 
-    assembler.template Matrix<Vely,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
-    assembler.template Matrix<Vely,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
 
-    assembler.template Matrix<Velz,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
-    assembler.template Matrix<Velz,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
 #endif
 
     if (newton)
@@ -491,17 +484,17 @@ void BuildStandardDomainIntegrals(
                     |    \          /   (i)    \ (i)        /     |
                      \                                           /
        */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shpvel.d0);
 
       /*
                    /                                           \
@@ -511,19 +504,19 @@ void BuildStandardDomainIntegrals(
                    \                                           /
        */
       const double con0 = densdenstimetauMu*(velnp(0)*vderxy(0,0) + velnp(1)*vderxy(0,1) + velnp(2)*vderxy(0,2));
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, con0, shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, con0, shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, con0, shpvel.d0);
 
       const double con1 = densdenstimetauMu*(velnp(0)*vderxy(1,0) + velnp(1)*vderxy(1,1) + velnp(2)*vderxy(1,2));
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, con1, shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, con1, shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, con1, shpvel.d0);
 
       const double con2 = densdenstimetauMu*(velnp(0)*vderxy(2,0) + velnp(1)*vderxy(2,1) + velnp(2)*vderxy(2,2));
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, con2, shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, con2, shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, con2, shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -535,17 +528,17 @@ void BuildStandardDomainIntegrals(
                                |         (i)       \          /     |
                                 \                                  /
        */
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, denstimetauMu*gradp(0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, denstimetauMu*gradp(0), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, denstimetauMu*gradp(1), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, denstimetauMu*gradp(1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, denstimetauMu*gradp(2), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, denstimetauMu*gradp(2), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -557,17 +550,17 @@ void BuildStandardDomainIntegrals(
                          |               \ (i) /       \          /     |
                           \                                            /
        */
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_BODYFORCE
@@ -587,26 +580,26 @@ void BuildStandardDomainIntegrals(
         else
           tmpfac = denstauMu;
 
-        assembler.template Matrix<Velx,Velx>(shpvel.dx, -tmpfac*rhsint(0), shpvel.d0);
-        assembler.template Matrix<Velx,Vely>(shpvel.dy, -tmpfac*rhsint(0), shpvel.d0);
-        assembler.template Matrix<Velx,Velz>(shpvel.dz, -tmpfac*rhsint(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, -tmpfac*rhsint(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, -tmpfac*rhsint(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, -tmpfac*rhsint(0), shpvel.d0);
 
-        assembler.template Matrix<Vely,Velx>(shpvel.dx, -tmpfac*rhsint(1), shpvel.d0);
-        assembler.template Matrix<Vely,Vely>(shpvel.dy, -tmpfac*rhsint(1), shpvel.d0);
-        assembler.template Matrix<Vely,Velz>(shpvel.dz, -tmpfac*rhsint(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, -tmpfac*rhsint(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, -tmpfac*rhsint(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, -tmpfac*rhsint(1), shpvel.d0);
 
-        assembler.template Matrix<Velz,Velx>(shpvel.dx, -tmpfac*rhsint(2), shpvel.d0);
-        assembler.template Matrix<Velz,Vely>(shpvel.dy, -tmpfac*rhsint(2), shpvel.d0);
-        assembler.template Matrix<Velz,Velz>(shpvel.dz, -tmpfac*rhsint(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, -tmpfac*rhsint(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, -tmpfac*rhsint(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, -tmpfac*rhsint(2), shpvel.d0);
       }
 #endif
     } // if newton
 
 #ifdef COMBUST_SUPG_RHS
     // supg stabilisation
-    assembler.template Vector<Velx>(enr_conv_c_sg, -rhsdenstauMufac*res_old(0));
-    assembler.template Vector<Vely>(enr_conv_c_sg, -rhsdenstauMufac*res_old(1));
-    assembler.template Vector<Velz>(enr_conv_c_sg, -rhsdenstauMufac*res_old(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(enr_conv_c_sg, -rhsdenstauMufac*res_old(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(enr_conv_c_sg, -rhsdenstauMufac*res_old(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(enr_conv_c_sg, -rhsdenstauMufac*res_old(2));
 #endif
   }
 
@@ -626,21 +619,21 @@ void BuildStandardDomainIntegrals(
               |                          |
                \                        /
      */
-    assembler.template Matrix<Velx,Velx>(shpvel.dx, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Velx,Vely>(shpvel.dx, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Velx,Velz>(shpvel.dx, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dx, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dx, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Vely,Velx>(shpvel.dy, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Vely,Vely>(shpvel.dy, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Vely,Velz>(shpvel.dy, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dy, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dy, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Velz,Velx>(shpvel.dz, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Velz,Vely>(shpvel.dz, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Velz,Velz>(shpvel.dz, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dz, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dz, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, timefac_tau_C, shpvel.dz);
 
-    assembler.template Vector<Velx>(shpvel.dx, -altrhstauCfac_divu);
-    assembler.template Vector<Vely>(shpvel.dy, -altrhstauCfac_divu);
-    assembler.template Vector<Velz>(shpvel.dz, -altrhstauCfac_divu);
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dx, -altrhstauCfac_divu);
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy, -altrhstauCfac_divu);
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz, -altrhstauCfac_divu);
 #endif
   } // endif cstab
 }
@@ -714,9 +707,9 @@ void BuildStandardDomainIntegralsStab(
                              |                   |
                               \                 /
       */
-      assembler.template Matrix<Pres,Velx>(shppres.dx, denstauMp, shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dy, denstauMp, shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dz, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstauMp, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstauMp, shpvel.d0);
     }
 #endif
 
@@ -730,9 +723,9 @@ void BuildStandardDomainIntegralsStab(
                      |                \ i         /     |
                       \                                /
      */
-    assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstimetauMp, enr_conv_c);
 
     if (newton)
     {
@@ -743,17 +736,17 @@ void BuildStandardDomainIntegralsStab(
                        |              \          /   (i)  |
                         \                                /
          */
-      assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
-      assembler.template Matrix<Pres,Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
-      assembler.template Matrix<Pres,Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
 
-      assembler.template Matrix<Pres,Vely>(shppres.dx, denstimetauMp*vderxy(0,1), shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp*vderxy(1,1), shpvel.d0);
-      assembler.template Matrix<Pres,Vely>(shppres.dz, denstimetauMp*vderxy(2,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dx, denstimetauMp*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, denstimetauMp*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dz, denstimetauMp*vderxy(2,1), shpvel.d0);
 
-      assembler.template Matrix<Pres,Velz>(shppres.dx, denstimetauMp*vderxy(0,2), shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dy, denstimetauMp*vderxy(1,2), shpvel.d0);
-      assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp*vderxy(2,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dx, denstimetauMp*vderxy(0,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dy, denstimetauMp*vderxy(1,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, denstimetauMp*vderxy(2,2), shpvel.d0);
     }
 #endif
 
@@ -767,17 +760,17 @@ void BuildStandardDomainIntegralsStab(
                       |                                  \  /  |
                        \                                      /
      */
-    assembler.template Matrix<Pres,Velx>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
-    assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
-    assembler.template Matrix<Pres,Velz>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
 
-    assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
-    assembler.template Matrix<Pres,Vely>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
-    assembler.template Matrix<Pres,Velz>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
 
-    assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
-    assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
-    assembler.template Matrix<Pres,Velz>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
 #endif
 
 #ifdef COMBUST_PSPG_PRESSURE
@@ -789,16 +782,16 @@ void BuildStandardDomainIntegralsStab(
                |                      |
                 \                    /
      */
-    assembler.template Matrix<Pres,Pres>(shppres.dx, timetauMp, shppres.dx);
-    assembler.template Matrix<Pres,Pres>(shppres.dy, timetauMp, shppres.dy);
-    assembler.template Matrix<Pres,Pres>(shppres.dz, timetauMp, shppres.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dx, timetauMp, shppres.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dy, timetauMp, shppres.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shppres.dz, timetauMp, shppres.dz);
 #endif
 
 #ifdef COMBUST_PSPG_RHS
     // pressure stabilization
-    assembler.template Vector<Pres>(shppres.dx, -tauMp*res_old(0));
-    assembler.template Vector<Pres>(shppres.dy, -tauMp*res_old(1));
-    assembler.template Vector<Pres>(shppres.dz, -tauMp*res_old(2));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dx, -tauMp*res_old(0));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dy, -tauMp*res_old(1));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.dz, -tauMp*res_old(2));
 #endif
   }
 #endif
@@ -822,9 +815,9 @@ void BuildStandardDomainIntegralsStab(
                             |              \ (i)       /           subgrid velocity    |
                              \                                    reynolds-stress     /
       */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
 
       if (newton)
       {
@@ -837,15 +830,15 @@ void BuildStandardDomainIntegralsStab(
                                  \                                   /
 
            */
-        assembler.template Matrix<Velx,Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
-        assembler.template Matrix<Velx,Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
-        assembler.template Matrix<Velx,Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
-        assembler.template Matrix<Vely,Velx>(shpvel.dx, densdenstauMu*velnp(1), shpvel.d0);
-        assembler.template Matrix<Vely,Vely>(shpvel.dy, densdenstauMu*velnp(1), shpvel.d0);
-        assembler.template Matrix<Vely,Velz>(shpvel.dz, densdenstauMu*velnp(1), shpvel.d0);
-        assembler.template Matrix<Velz,Velx>(shpvel.dx, densdenstauMu*velnp(2), shpvel.d0);
-        assembler.template Matrix<Velz,Vely>(shpvel.dy, densdenstauMu*velnp(2), shpvel.d0);
-        assembler.template Matrix<Velz,Velz>(shpvel.dz, densdenstauMu*velnp(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, densdenstauMu*velnp(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, densdenstauMu*velnp(2), shpvel.d0);
+        assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, densdenstauMu*velnp(2), shpvel.d0);
       }
     }
 #endif
@@ -861,9 +854,9 @@ void BuildStandardDomainIntegralsStab(
                 |     \ (i)        /         subgrid velocity             \ (i)        /      |
                  \                           reynolds-stress                                 /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -875,9 +868,9 @@ void BuildStandardDomainIntegralsStab(
                      |      \ (i)       /         subgrid velocity                 |
                       \                            reynolds-stress                /
      */
-    assembler.template Matrix<Velx,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dx);
-    assembler.template Matrix<Vely,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dy);
-    assembler.template Matrix<Velz,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Pres>(enr_conv_c_sg, denstimetauMu, shppres.dz);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -889,17 +882,17 @@ void BuildStandardDomainIntegralsStab(
                  |               \  /       \ (i)        /      subgrid velocity         |
                   \                                             reynolds-stress         /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
-    assembler.template Matrix<Velx,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
-    assembler.template Matrix<Velx,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
 
-    assembler.template Matrix<Vely,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
-    assembler.template Matrix<Vely,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
 
-    assembler.template Matrix<Velz,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
-    assembler.template Matrix<Velz,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
 #endif
 
     if (newton)
@@ -913,17 +906,17 @@ void BuildStandardDomainIntegralsStab(
                     |    \          /   (i)    \ (i)        /     |
                      \                                           /
        */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shpvel.d0);
 
       /*
                    /                                           \
@@ -933,19 +926,19 @@ void BuildStandardDomainIntegralsStab(
                    \                                           /
        */
       const double con0 = densdenstimetauMu*(velnp(0)*vderxy(0,0) + velnp(1)*vderxy(0,1) + velnp(2)*vderxy(0,2));
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, con0, shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, con0, shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, con0, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, con0, shpvel.d0);
 
       const double con1 = densdenstimetauMu*(velnp(0)*vderxy(1,0) + velnp(1)*vderxy(1,1) + velnp(2)*vderxy(1,2));
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, con1, shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, con1, shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, con1, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, con1, shpvel.d0);
 
       const double con2 = densdenstimetauMu*(velnp(0)*vderxy(2,0) + velnp(1)*vderxy(2,1) + velnp(2)*vderxy(2,2));
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, con2, shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, con2, shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, con2, shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, con2, shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -957,17 +950,17 @@ void BuildStandardDomainIntegralsStab(
                                |         (i)       \          /     |
                                 \                                  /
        */
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, denstimetauMu*gradp(0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, denstimetauMu*gradp(0), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, denstimetauMu*gradp(1), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, denstimetauMu*gradp(1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, denstimetauMu*gradp(2), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, denstimetauMu*gradp(2), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, denstimetauMu*gradp(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -979,17 +972,17 @@ void BuildStandardDomainIntegralsStab(
                          |               \ (i) /       \          /     |
                           \                                            /
        */
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_BODYFORCE
@@ -1002,25 +995,25 @@ void BuildStandardDomainIntegralsStab(
                               \                                /
 
        */
-      assembler.template Matrix<Velx,Velx>(shpvel.dx, -denstauMu*rhsint(0), shpvel.d0);
-      assembler.template Matrix<Velx,Vely>(shpvel.dy, -denstauMu*rhsint(0), shpvel.d0);
-      assembler.template Matrix<Velx,Velz>(shpvel.dz, -denstauMu*rhsint(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, -denstauMu*rhsint(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dy, -denstauMu*rhsint(0), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dz, -denstauMu*rhsint(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shpvel.dx, -denstauMu*rhsint(1), shpvel.d0);
-      assembler.template Matrix<Vely,Vely>(shpvel.dy, -denstauMu*rhsint(1), shpvel.d0);
-      assembler.template Matrix<Vely,Velz>(shpvel.dz, -denstauMu*rhsint(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dx, -denstauMu*rhsint(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, -denstauMu*rhsint(1), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dz, -denstauMu*rhsint(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shpvel.dx, -denstauMu*rhsint(2), shpvel.d0);
-      assembler.template Matrix<Velz,Vely>(shpvel.dy, -denstauMu*rhsint(2), shpvel.d0);
-      assembler.template Matrix<Velz,Velz>(shpvel.dz, -denstauMu*rhsint(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dx, -denstauMu*rhsint(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dy, -denstauMu*rhsint(2), shpvel.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, -denstauMu*rhsint(2), shpvel.d0);
 #endif
     } // if newton
 
 #ifdef COMBUST_SUPG_RHS
     // supg stabilisation
-    assembler.template Vector<Velx>(enr_conv_c_sg, -denstauMu*res_old(0));
-    assembler.template Vector<Vely>(enr_conv_c_sg, -denstauMu*res_old(1));
-    assembler.template Vector<Velz>(enr_conv_c_sg, -denstauMu*res_old(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(enr_conv_c_sg, -denstauMu*res_old(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(enr_conv_c_sg, -denstauMu*res_old(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(enr_conv_c_sg, -denstauMu*res_old(2));
 #endif
   }
 #endif
@@ -1041,21 +1034,21 @@ void BuildStandardDomainIntegralsStab(
               |                          |
                \                        /
      */
-    assembler.template Matrix<Velx,Velx>(shpvel.dx, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Velx,Vely>(shpvel.dx, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Velx,Velz>(shpvel.dx, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shpvel.dx, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shpvel.dx, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shpvel.dx, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Vely,Velx>(shpvel.dy, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Vely,Vely>(shpvel.dy, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Vely,Velz>(shpvel.dy, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shpvel.dy, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shpvel.dy, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shpvel.dy, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Velz,Velx>(shpvel.dz, timefac_tau_C, shpvel.dx);
-    assembler.template Matrix<Velz,Vely>(shpvel.dz, timefac_tau_C, shpvel.dy);
-    assembler.template Matrix<Velz,Velz>(shpvel.dz, timefac_tau_C, shpvel.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shpvel.dz, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shpvel.dz, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shpvel.dz, timefac_tau_C, shpvel.dz);
 
-    assembler.template Vector<Velx>(shpvel.dx, -timefac_tau_C_divunp);
-    assembler.template Vector<Vely>(shpvel.dy, -timefac_tau_C_divunp);
-    assembler.template Vector<Velz>(shpvel.dz, -timefac_tau_C_divunp);
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shpvel.dx, -timefac_tau_C_divunp);
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy, -timefac_tau_C_divunp);
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz, -timefac_tau_C_divunp);
 #endif
   } // endif cstab
 #endif
@@ -1111,13 +1104,13 @@ void BuildStandardDomainIntegralsNormal(
                           |          |
                            \        /
      */
-    assembler.template MatrixNN<Velx,Velx>(shp.velx.d0, densfac, shp.velx.d0);
-    assembler.template MatrixNN<Vely,Vely>(shp.vely.d0, densfac, shp.vely.d0);
-    assembler.template MatrixNN<Velz,Velz>(shp.velz.d0, densfac, shp.velz.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.d0, densfac, shp.velx.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.d0, densfac, shp.vely.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.d0, densfac, shp.velz.d0);
 
-    assembler.template VectorN<Velx>(shp.velx.d0, -densfac*velnp(0));
-    assembler.template VectorN<Vely>(shp.vely.d0, -densfac*velnp(1));
-    assembler.template VectorN<Velz>(shp.velz.d0, -densfac*velnp(2));
+    assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.d0, -densfac*velnp(0));
+    assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.d0, -densfac*velnp(1));
+    assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.d0, -densfac*velnp(2));
   }
 #endif
 
@@ -1131,17 +1124,17 @@ void BuildStandardDomainIntegralsNormal(
                \                       /
    */
   const double denstimefacfac = densaf * timefacfac;
-  assembler.template MatrixNN<Velx,Velx>(shp.velx.d0, denstimefacfac, enr_conv_c.velx.d0);
-  assembler.template MatrixNN<Vely,Vely>(shp.vely.d0, denstimefacfac, enr_conv_c.vely.d0);
-  assembler.template MatrixNN<Velz,Velz>(shp.velz.d0, denstimefacfac, enr_conv_c.velz.d0);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.d0, denstimefacfac, enr_conv_c.velx.d0);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.d0, denstimefacfac, enr_conv_c.vely.d0);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.d0, denstimefacfac, enr_conv_c.velz.d0);
 
-  assembler.template VectorN<Velx>(shp.velx.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
                                                                 +velnp(1)*vderxy(0,1)
                                                                 +velnp(2)*vderxy(0,2)));
-  assembler.template VectorN<Vely>(shp.vely.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
                                                                 +velnp(1)*vderxy(1,1)
                                                                 +velnp(2)*vderxy(1,2)));
-  assembler.template VectorN<Velz>(shp.velz.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
                                                                 +velnp(1)*vderxy(2,1)
                                                                 +velnp(2)*vderxy(2,2)));
 
@@ -1155,15 +1148,15 @@ void BuildStandardDomainIntegralsNormal(
             |      \          /   (i)   |
              \                         /
      */
-    assembler.template MatrixNN<Velx,Velx>(shp.velx.d0, denstimefacfac*vderxy(0,0), shp.velx.d0);
-    assembler.template MatrixNN<Velx,Vely>(shp.velx.d0, denstimefacfac*vderxy(0,1), shp.vely.d0);
-    assembler.template MatrixNN<Velx,Velz>(shp.velx.d0, denstimefacfac*vderxy(0,2), shp.velz.d0);
-    assembler.template MatrixNN<Vely,Velx>(shp.vely.d0, denstimefacfac*vderxy(1,0), shp.velx.d0);
-    assembler.template MatrixNN<Vely,Vely>(shp.vely.d0, denstimefacfac*vderxy(1,1), shp.vely.d0);
-    assembler.template MatrixNN<Vely,Velz>(shp.vely.d0, denstimefacfac*vderxy(1,2), shp.velz.d0);
-    assembler.template MatrixNN<Velz,Velx>(shp.velz.d0, denstimefacfac*vderxy(2,0), shp.velx.d0);
-    assembler.template MatrixNN<Velz,Vely>(shp.velz.d0, denstimefacfac*vderxy(2,1), shp.vely.d0);
-    assembler.template MatrixNN<Velz,Velz>(shp.velz.d0, denstimefacfac*vderxy(2,2), shp.velz.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.d0, denstimefacfac*vderxy(0,0), shp.velx.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.d0, denstimefacfac*vderxy(0,1), shp.vely.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.d0, denstimefacfac*vderxy(0,2), shp.velz.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.d0, denstimefacfac*vderxy(1,0), shp.velx.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.d0, denstimefacfac*vderxy(1,1), shp.vely.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.d0, denstimefacfac*vderxy(1,2), shp.velz.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.d0, denstimefacfac*vderxy(2,0), shp.velx.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.d0, denstimefacfac*vderxy(2,1), shp.vely.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.d0, denstimefacfac*vderxy(2,2), shp.velz.d0);
   }
 #endif
 
@@ -1176,35 +1169,35 @@ void BuildStandardDomainIntegralsNormal(
                |       \ /                  \  /   |
                 \                                 /
    */
-  assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, 2.0*dynvisc*timefacfac, shp.velx.dx);
-  assembler.template MatrixNN<Velx,Velx>(shp.velx.dy,     dynvisc*timefacfac, shp.velx.dy);
-  assembler.template MatrixNN<Velx,Vely>(shp.velx.dy,     dynvisc*timefacfac, shp.vely.dx);
-  assembler.template MatrixNN<Velx,Velx>(shp.velx.dz,     dynvisc*timefacfac, shp.velx.dz);
-  assembler.template MatrixNN<Velx,Velz>(shp.velx.dz,     dynvisc*timefacfac, shp.velz.dx);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, 2.0*dynvisc*timefacfac, shp.velx.dx);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dy,     dynvisc*timefacfac, shp.velx.dy);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy,     dynvisc*timefacfac, shp.vely.dx);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dz,     dynvisc*timefacfac, shp.velx.dz);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz,     dynvisc*timefacfac, shp.velz.dx);
 
-  assembler.template MatrixNN<Vely,Vely>(shp.vely.dx,     dynvisc*timefacfac, shp.vely.dx);
-  assembler.template MatrixNN<Vely,Velx>(shp.vely.dx,     dynvisc*timefacfac, shp.velx.dy);
-  assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, 2.0*dynvisc*timefacfac, shp.vely.dy);
-  assembler.template MatrixNN<Vely,Vely>(shp.vely.dz,     dynvisc*timefacfac, shp.vely.dz);
-  assembler.template MatrixNN<Vely,Velz>(shp.vely.dz,     dynvisc*timefacfac, shp.velz.dy);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dx,     dynvisc*timefacfac, shp.vely.dx);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx,     dynvisc*timefacfac, shp.velx.dy);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, 2.0*dynvisc*timefacfac, shp.vely.dy);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dz,     dynvisc*timefacfac, shp.vely.dz);
+  assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz,     dynvisc*timefacfac, shp.velz.dy);
 
-  assembler.template MatrixNN<Velz,Velz>(shp.velz.dx,     dynvisc*timefacfac, shp.velz.dx);
-  assembler.template MatrixNN<Velz,Velx>(shp.velz.dx,     dynvisc*timefacfac, shp.velx.dz);
-  assembler.template MatrixNN<Velz,Velz>(shp.velz.dy,     dynvisc*timefacfac, shp.velz.dy);
-  assembler.template MatrixNN<Velz,Vely>(shp.velz.dy,     dynvisc*timefacfac, shp.vely.dz);
-  assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, 2.0*dynvisc*timefacfac, shp.velz.dz);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dx,     dynvisc*timefacfac, shp.velz.dx);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx,     dynvisc*timefacfac, shp.velx.dz);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dy,     dynvisc*timefacfac, shp.velz.dy);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy,     dynvisc*timefacfac, shp.vely.dz);
+  assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, 2.0*dynvisc*timefacfac, shp.velz.dz);
 
-  assembler.template VectorN<Velx>(shp.velx.dx,     -dynvisc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
-  assembler.template VectorN<Velx>(shp.velx.dy,     -dynvisc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-  assembler.template VectorN<Velx>(shp.velx.dz,     -dynvisc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.dx,     -dynvisc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.dy,     -dynvisc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.dz,     -dynvisc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
 
-  assembler.template VectorN<Vely>(shp.vely.dx,     -dynvisc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
-  assembler.template VectorN<Vely>(shp.vely.dy,     -dynvisc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
-  assembler.template VectorN<Vely>(shp.vely.dz,     -dynvisc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dx,     -dynvisc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dy,     -dynvisc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dz,     -dynvisc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
 
-  assembler.template VectorN<Velz>(shp.velz.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
-  assembler.template VectorN<Velz>(shp.velz.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
-  assembler.template VectorN<Velz>(shp.velz.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
 #endif
 
 #ifdef COMBUST_DOM_PRESSURE
@@ -1216,13 +1209,13 @@ void BuildStandardDomainIntegralsNormal(
                  |                  |
                   \                /
    */
-  assembler.template MatrixNS<Velx,Pres,shpVecSizePres>(shp.velx.dx, -timefacfac, shp_pres.d0);
-  assembler.template MatrixNS<Vely,Pres,shpVecSizePres>(shp.vely.dy, -timefacfac, shp_pres.d0);
-  assembler.template MatrixNS<Velz,Pres,shpVecSizePres>(shp.velz.dz, -timefacfac, shp_pres.d0);
+  assembler.template MatrixNS<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Pres,shpVecSizePres>(shp.velx.dx, -timefacfac, shp_pres.d0);
+  assembler.template MatrixNS<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Pres,shpVecSizePres>(shp.vely.dy, -timefacfac, shp_pres.d0);
+  assembler.template MatrixNS<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Pres,shpVecSizePres>(shp.velz.dz, -timefacfac, shp_pres.d0);
 
-  assembler.template VectorN<Velx>(shp.velx.dx, timefacfac*pres);
-  assembler.template VectorN<Vely>(shp.vely.dy, timefacfac*pres);
-  assembler.template VectorN<Velz>(shp.velz.dz, timefacfac*pres);
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.dx, timefacfac*pres);
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dy, timefacfac*pres);
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dz, timefacfac*pres);
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
@@ -1235,12 +1228,12 @@ void BuildStandardDomainIntegralsNormal(
                 |                |
                  \              /
    */
-  assembler.template MatrixSN<Pres,Velx,shpVecSizePres>(shp_pres.d0, timefacfac, shp.velx.dx);
-  assembler.template MatrixSN<Pres,Vely,shpVecSizePres>(shp_pres.d0, timefacfac, shp.vely.dy);
-  assembler.template MatrixSN<Pres,Velz,shpVecSizePres>(shp_pres.d0, timefacfac, shp.velz.dz);
+  assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx,shpVecSizePres>(shp_pres.d0, timefacfac, shp.velx.dx);
+  assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely,shpVecSizePres>(shp_pres.d0, timefacfac, shp.vely.dy);
+  assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz,shpVecSizePres>(shp_pres.d0, timefacfac, shp.velz.dz);
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
-  assembler.template Vector<Pres>(shp_pres.d0, -timefacfac*trace_gamma);
+  assembler.template Vector<XFEM::PHYSICS::Pres>(shp_pres.d0, -timefacfac*trace_gamma);
 #endif
 
 #ifdef COMBUST_DOM_RHS
@@ -1252,9 +1245,9 @@ void BuildStandardDomainIntegralsNormal(
                  |      |
                   \    /
    */
-  assembler.template VectorN<Velx>(shp.velx.d0, fac*rhsint(0));
-  assembler.template VectorN<Vely>(shp.vely.d0, fac*rhsint(1));
-  assembler.template VectorN<Velz>(shp.velz.d0, fac*rhsint(2));
+  assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.d0, fac*rhsint(0));
+  assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.d0, fac*rhsint(1));
+  assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.d0, fac*rhsint(2));
 #endif
 
   //----------------------------------------------------------------------
@@ -1274,9 +1267,9 @@ void BuildStandardDomainIntegralsNormal(
                      |                |
                       \              /
        */
-      assembler.template MatrixSN<Pres,Velx,shpVecSizePres>(shp_pres.dx, denstauMp, shp.velx.d0);
-      assembler.template MatrixSN<Pres,Vely,shpVecSizePres>(shp_pres.dy, denstauMp, shp.vely.d0);
-      assembler.template MatrixSN<Pres,Velz,shpVecSizePres>(shp_pres.dz, denstauMp, shp.velz.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx,shpVecSizePres>(shp_pres.dx, denstauMp, shp.velx.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely,shpVecSizePres>(shp_pres.dy, denstauMp, shp.vely.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz,shpVecSizePres>(shp_pres.dz, denstauMp, shp.velz.d0);
     }
 #endif
 
@@ -1290,9 +1283,9 @@ void BuildStandardDomainIntegralsNormal(
                |             \ i         /     |
                 \                             /
      */
-    assembler.template MatrixSN<Pres,Velx>(shp_pres.dx, denstimetauMp, enr_conv_c.velx.d0);
-    assembler.template MatrixSN<Pres,Vely>(shp_pres.dy, denstimetauMp, enr_conv_c.vely.d0);
-    assembler.template MatrixSN<Pres,Velz>(shp_pres.dz, denstimetauMp, enr_conv_c.velz.d0);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_pres.dx, denstimetauMp, enr_conv_c.velx.d0);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_pres.dy, denstimetauMp, enr_conv_c.vely.d0);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_pres.dz, denstimetauMp, enr_conv_c.velz.d0);
 
     if (newton)
     {
@@ -1303,17 +1296,17 @@ void BuildStandardDomainIntegralsNormal(
                |           \          /   (i)  |
                 \                             /
        */
-      assembler.template MatrixSN<Pres,Velx,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,0), shp.velx.d0);
-      assembler.template MatrixSN<Pres,Velx,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,0), shp.velx.d0);
-      assembler.template MatrixSN<Pres,Velx,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,0), shp.velx.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,0), shp.velx.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,0), shp.velx.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,0), shp.velx.d0);
 
-      assembler.template MatrixSN<Pres,Vely,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,1), shp.vely.d0);
-      assembler.template MatrixSN<Pres,Vely,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,1), shp.vely.d0);
-      assembler.template MatrixSN<Pres,Vely,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,1), shp.vely.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,1), shp.vely.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,1), shp.vely.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,1), shp.vely.d0);
 
-      assembler.template MatrixSN<Pres,Velz,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,2), shp.velz.d0);
-      assembler.template MatrixSN<Pres,Velz,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,2), shp.velz.d0);
-      assembler.template MatrixSN<Pres,Velz,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,2), shp.velz.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz,shpVecSizePres>(shp_pres.dx, denstimetauMp*vderxy(0,2), shp.velz.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz,shpVecSizePres>(shp_pres.dy, denstimetauMp*vderxy(1,2), shp.velz.d0);
+      assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz,shpVecSizePres>(shp_pres.dz, denstimetauMp*vderxy(2,2), shp.velz.d0);
     }
 #endif
 
@@ -1327,17 +1320,17 @@ void BuildStandardDomainIntegralsNormal(
                 |                         \  /  |
                  \                             /
      */
-    assembler.template MatrixSN<Pres,Velx>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
-    assembler.template MatrixSN<Pres,Vely>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
-    assembler.template MatrixSN<Pres,Velz>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_pres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
 
-    assembler.template MatrixSN<Pres,Velx>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
-    assembler.template MatrixSN<Pres,Vely>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
-    assembler.template MatrixSN<Pres,Velz>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_pres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
 
-    assembler.template MatrixSN<Pres,Velx>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
-    assembler.template MatrixSN<Pres,Vely>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
-    assembler.template MatrixSN<Pres,Velz>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
+    assembler.template MatrixSN<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_pres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
 #endif
 
 #ifdef COMBUST_PSPG_PRESSURE
@@ -1349,16 +1342,16 @@ void BuildStandardDomainIntegralsNormal(
                |                      |
                 \                    /
      */
-    assembler.template Matrix<Pres,Pres>(shp_pres.dx, timetauMp, shp_pres.dx);
-    assembler.template Matrix<Pres,Pres>(shp_pres.dy, timetauMp, shp_pres.dy);
-    assembler.template Matrix<Pres,Pres>(shp_pres.dz, timetauMp, shp_pres.dz);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shp_pres.dx, timetauMp, shp_pres.dx);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shp_pres.dy, timetauMp, shp_pres.dy);
+    assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Pres>(shp_pres.dz, timetauMp, shp_pres.dz);
 #endif
 
 #ifdef COMBUST_PSPG_RHS
     // pressure stabilization
-    assembler.template Vector<Pres>(shp_pres.dx, -tauMp*res_old(0));
-    assembler.template Vector<Pres>(shp_pres.dy, -tauMp*res_old(1));
-    assembler.template Vector<Pres>(shp_pres.dz, -tauMp*res_old(2));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shp_pres.dx, -tauMp*res_old(0));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shp_pres.dy, -tauMp*res_old(1));
+    assembler.template Vector<XFEM::PHYSICS::Pres>(shp_pres.dz, -tauMp*res_old(2));
 #endif
   }
 
@@ -1380,9 +1373,9 @@ void BuildStandardDomainIntegralsNormal(
                    |   \ (i)       /         |
                     \                       /
        */
-      assembler.template MatrixNN<Velx,Velx>(enr_conv_c.velx.d0, densdenstauMu, shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(enr_conv_c.vely.d0, densdenstauMu, shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(enr_conv_c.velz.d0, densdenstauMu, shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c.velx.d0, densdenstauMu, shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c.vely.d0, densdenstauMu, shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c.velz.d0, densdenstauMu, shp.velz.d0);
 
       if (newton)
       {
@@ -1394,15 +1387,15 @@ void BuildStandardDomainIntegralsNormal(
                         |   (i)      \          /     |
                          \                           /
          */
-        assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, densdenstauMu*velnp(0), shp.velx.d0);
-        assembler.template MatrixNN<Velx,Vely>(shp.velx.dy, densdenstauMu*velnp(0), shp.vely.d0);
-        assembler.template MatrixNN<Velx,Velz>(shp.velx.dz, densdenstauMu*velnp(0), shp.velz.d0);
-        assembler.template MatrixNN<Vely,Velx>(shp.vely.dx, densdenstauMu*velnp(1), shp.velx.d0);
-        assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, densdenstauMu*velnp(1), shp.vely.d0);
-        assembler.template MatrixNN<Vely,Velz>(shp.vely.dz, densdenstauMu*velnp(1), shp.velz.d0);
-        assembler.template MatrixNN<Velz,Velx>(shp.velz.dx, densdenstauMu*velnp(2), shp.velx.d0);
-        assembler.template MatrixNN<Velz,Vely>(shp.velz.dy, densdenstauMu*velnp(2), shp.vely.d0);
-        assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, densdenstauMu*velnp(2), shp.velz.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, densdenstauMu*velnp(0), shp.velx.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy, densdenstauMu*velnp(0), shp.vely.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz, densdenstauMu*velnp(0), shp.velz.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx, densdenstauMu*velnp(1), shp.velx.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, densdenstauMu*velnp(1), shp.vely.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz, densdenstauMu*velnp(1), shp.velz.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx, densdenstauMu*velnp(2), shp.velx.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy, densdenstauMu*velnp(2), shp.vely.d0);
+        assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, densdenstauMu*velnp(2), shp.velz.d0);
       }
     }
 #endif
@@ -1418,9 +1411,9 @@ void BuildStandardDomainIntegralsNormal(
           |  \ (i)        /        \ (i)        /      |
            \                                          /
      */
-    assembler.template MatrixNN<Velx,Velx>(enr_conv_c.velx.d0, densdenstimetauMu, enr_conv_c.velx.d0);
-    assembler.template MatrixNN<Vely,Vely>(enr_conv_c.vely.d0, densdenstimetauMu, enr_conv_c.vely.d0);
-    assembler.template MatrixNN<Velz,Velz>(enr_conv_c.velz.d0, densdenstimetauMu, enr_conv_c.velz.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c.velx.d0, densdenstimetauMu, enr_conv_c.velx.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c.vely.d0, densdenstimetauMu, enr_conv_c.vely.d0);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c.velz.d0, densdenstimetauMu, enr_conv_c.velz.d0);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -1432,9 +1425,9 @@ void BuildStandardDomainIntegralsNormal(
                |   \ (i)       /               |
                 \                             /
      */
-    assembler.template MatrixNS<Velx,Pres>(enr_conv_c.velx.d0, denstimetauMu, shp_pres.dx);
-    assembler.template MatrixNS<Vely,Pres>(enr_conv_c.vely.d0, denstimetauMu, shp_pres.dy);
-    assembler.template MatrixNS<Velz,Pres>(enr_conv_c.velz.d0, denstimetauMu, shp_pres.dz);
+    assembler.template MatrixNS<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Pres>(enr_conv_c.velx.d0, denstimetauMu, shp_pres.dx);
+    assembler.template MatrixNS<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Pres>(enr_conv_c.vely.d0, denstimetauMu, shp_pres.dy);
+    assembler.template MatrixNS<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Pres>(enr_conv_c.velz.d0, denstimetauMu, shp_pres.dz);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -1446,17 +1439,17 @@ void BuildStandardDomainIntegralsNormal(
            |               \  /    \ (i)        /     |
             \                                        /
      */
-    assembler.template MatrixNN<Velx,Velx>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
-    assembler.template MatrixNN<Velx,Vely>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
-    assembler.template MatrixNN<Velx,Velz>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c.velx.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
 
-    assembler.template MatrixNN<Vely,Velx>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
-    assembler.template MatrixNN<Vely,Vely>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
-    assembler.template MatrixNN<Vely,Velz>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c.vely.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
 
-    assembler.template MatrixNN<Velz,Velx>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
-    assembler.template MatrixNN<Velz,Vely>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
-    assembler.template MatrixNN<Velz,Velz>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c.velz.d0, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
 #endif
 
     if (newton)
@@ -1470,17 +1463,17 @@ void BuildStandardDomainIntegralsNormal(
                     |    \          /   (i)    \ (i)        /     |
                      \                                           /
        */
-      assembler.template MatrixNN<Velx,Velx>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,0), shp.velx.d0);
-      assembler.template MatrixNN<Velx,Vely>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,1), shp.vely.d0);
-      assembler.template MatrixNN<Velx,Velz>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(enr_conv_c.velx.d0, densdenstimetauMu*vderxy(0,2), shp.velz.d0);
 
-      assembler.template MatrixNN<Vely,Velx>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,0), shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,1), shp.vely.d0);
-      assembler.template MatrixNN<Vely,Velz>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(enr_conv_c.vely.d0, densdenstimetauMu*vderxy(1,2), shp.velz.d0);
 
-      assembler.template MatrixNN<Velz,Velx>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,0), shp.velx.d0);
-      assembler.template MatrixNN<Velz,Vely>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,1), shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enr_conv_c.velz.d0, densdenstimetauMu*vderxy(2,2), shp.velz.d0);
 
       /*
                    /                                           \
@@ -1490,19 +1483,19 @@ void BuildStandardDomainIntegralsNormal(
                    \                                           /
        */
       const double con0 = densdenstimetauMu*(velnp(0)*vderxy(0,0) + velnp(1)*vderxy(0,1) + velnp(2)*vderxy(0,2));
-      assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, con0, shp.velx.d0);
-      assembler.template MatrixNN<Velx,Vely>(shp.velx.dy, con0, shp.vely.d0);
-      assembler.template MatrixNN<Velx,Velz>(shp.velx.dz, con0, shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, con0, shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy, con0, shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz, con0, shp.velz.d0);
 
       const double con1 = densdenstimetauMu*(velnp(0)*vderxy(1,0) + velnp(1)*vderxy(1,1) + velnp(2)*vderxy(1,2));
-      assembler.template MatrixNN<Vely,Velx>(shp.vely.dx, con1, shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, con1, shp.vely.d0);
-      assembler.template MatrixNN<Vely,Velz>(shp.vely.dz, con1, shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx, con1, shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, con1, shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz, con1, shp.velz.d0);
 
       const double con2 = densdenstimetauMu*(velnp(0)*vderxy(2,0) + velnp(1)*vderxy(2,1) + velnp(2)*vderxy(2,2));
-      assembler.template MatrixNN<Velz,Velx>(shp.velz.dx, con2, shp.velx.d0);
-      assembler.template MatrixNN<Velz,Vely>(shp.velz.dy, con2, shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, con2, shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx, con2, shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy, con2, shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, con2, shp.velz.d0);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
@@ -1514,17 +1507,17 @@ void BuildStandardDomainIntegralsNormal(
                          |         (i)    \          /     |
                           \                               /
        */
-      assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, denstimetauMu*gradp(0), shp.velx.d0);
-      assembler.template MatrixNN<Velx,Vely>(shp.velx.dy, denstimetauMu*gradp(0), shp.vely.d0);
-      assembler.template MatrixNN<Velx,Velz>(shp.velx.dz, denstimetauMu*gradp(0), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, denstimetauMu*gradp(0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy, denstimetauMu*gradp(0), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz, denstimetauMu*gradp(0), shp.velz.d0);
 
-      assembler.template MatrixNN<Vely,Velx>(shp.vely.dx, denstimetauMu*gradp(1), shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, denstimetauMu*gradp(1), shp.vely.d0);
-      assembler.template MatrixNN<Vely,Velz>(shp.vely.dz, denstimetauMu*gradp(1), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx, denstimetauMu*gradp(1), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, denstimetauMu*gradp(1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz, denstimetauMu*gradp(1), shp.velz.d0);
 
-      assembler.template MatrixNN<Velz,Velx>(shp.velz.dx, denstimetauMu*gradp(2), shp.velx.d0);
-      assembler.template MatrixNN<Velz,Vely>(shp.velz.dy, denstimetauMu*gradp(2), shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, denstimetauMu*gradp(2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx, denstimetauMu*gradp(2), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy, denstimetauMu*gradp(2), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, denstimetauMu*gradp(2), shp.velz.d0);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
@@ -1536,17 +1529,17 @@ void BuildStandardDomainIntegralsNormal(
                    |               \ (i) /    \          /     |
                     \                                         /
        */
-      assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.velx.d0);
-      assembler.template MatrixNN<Velx,Vely>(shp.velx.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.vely.d0);
-      assembler.template MatrixNN<Velx,Velz>(shp.velx.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.velz.d0);
 
-      assembler.template MatrixNN<Vely,Velx>(shp.vely.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.vely.d0);
-      assembler.template MatrixNN<Vely,Velz>(shp.vely.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.velz.d0);
 
-      assembler.template MatrixNN<Velz,Velx>(shp.velz.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.velx.d0);
-      assembler.template MatrixNN<Velz,Vely>(shp.velz.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.velz.d0);
 #endif
 
 #ifdef COMBUST_SUPG_BODYFORCE
@@ -1558,25 +1551,25 @@ void BuildStandardDomainIntegralsNormal(
                        |              \          /     |
                         \                             /
        */
-      assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, -denstauMu*rhsint(0), shp.velx.d0);
-      assembler.template MatrixNN<Velx,Vely>(shp.velx.dy, -denstauMu*rhsint(0), shp.vely.d0);
-      assembler.template MatrixNN<Velx,Velz>(shp.velx.dz, -denstauMu*rhsint(0), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, -denstauMu*rhsint(0), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dy, -denstauMu*rhsint(0), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dz, -denstauMu*rhsint(0), shp.velz.d0);
 
-      assembler.template MatrixNN<Vely,Velx>(shp.vely.dx, -denstauMu*rhsint(1), shp.velx.d0);
-      assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, -denstauMu*rhsint(1), shp.vely.d0);
-      assembler.template MatrixNN<Vely,Velz>(shp.vely.dz, -denstauMu*rhsint(1), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dx, -denstauMu*rhsint(1), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, -denstauMu*rhsint(1), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dz, -denstauMu*rhsint(1), shp.velz.d0);
 
-      assembler.template MatrixNN<Velz,Velx>(shp.velz.dx, -denstauMu*rhsint(2), shp.velx.d0);
-      assembler.template MatrixNN<Velz,Vely>(shp.velz.dy, -denstauMu*rhsint(2), shp.vely.d0);
-      assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, -denstauMu*rhsint(2), shp.velz.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dx, -denstauMu*rhsint(2), shp.velx.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dy, -denstauMu*rhsint(2), shp.vely.d0);
+      assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, -denstauMu*rhsint(2), shp.velz.d0);
 #endif
     } // if newton
 
 #ifdef COMBUST_SUPG_RHS
     // supg stabilisation
-    assembler.template VectorN<Velx>(enr_conv_c.velx.d0, -denstauMu*res_old(0));
-    assembler.template VectorN<Vely>(enr_conv_c.vely.d0, -denstauMu*res_old(1));
-    assembler.template VectorN<Velz>(enr_conv_c.velz.d0, -denstauMu*res_old(2));
+    assembler.template VectorN<XFEM::PHYSICS::Velx>(enr_conv_c.velx.d0, -denstauMu*res_old(0));
+    assembler.template VectorN<XFEM::PHYSICS::Vely>(enr_conv_c.vely.d0, -denstauMu*res_old(1));
+    assembler.template VectorN<XFEM::PHYSICS::Velz>(enr_conv_c.velz.d0, -denstauMu*res_old(2));
 #endif
   }
 
@@ -1596,27 +1589,25 @@ void BuildStandardDomainIntegralsNormal(
               |                          |
                \                        /
      */
-    assembler.template MatrixNN<Velx,Velx>(shp.velx.dx, timefac_tau_C, shp.velx.dx);
-    assembler.template MatrixNN<Velx,Vely>(shp.velx.dx, timefac_tau_C, shp.vely.dy);
-    assembler.template MatrixNN<Velx,Velz>(shp.velx.dx, timefac_tau_C, shp.velz.dz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp.velx.dx, timefac_tau_C, shp.velx.dx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp.velx.dx, timefac_tau_C, shp.vely.dy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp.velx.dx, timefac_tau_C, shp.velz.dz);
 
-    assembler.template MatrixNN<Vely,Velx>(shp.vely.dy, timefac_tau_C, shp.velx.dx);
-    assembler.template MatrixNN<Vely,Vely>(shp.vely.dy, timefac_tau_C, shp.vely.dy);
-    assembler.template MatrixNN<Vely,Velz>(shp.vely.dy, timefac_tau_C, shp.velz.dz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp.vely.dy, timefac_tau_C, shp.velx.dx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp.vely.dy, timefac_tau_C, shp.vely.dy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp.vely.dy, timefac_tau_C, shp.velz.dz);
 
-    assembler.template MatrixNN<Velz,Velx>(shp.velz.dz, timefac_tau_C, shp.velx.dx);
-    assembler.template MatrixNN<Velz,Vely>(shp.velz.dz, timefac_tau_C, shp.vely.dy);
-    assembler.template MatrixNN<Velz,Velz>(shp.velz.dz, timefac_tau_C, shp.velz.dz);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp.velz.dz, timefac_tau_C, shp.velx.dx);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp.velz.dz, timefac_tau_C, shp.vely.dy);
+    assembler.template MatrixNN<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp.velz.dz, timefac_tau_C, shp.velz.dz);
 
-    assembler.template VectorN<Velx>(shp.velx.dx, -timefac_tau_C_divunp);
-    assembler.template VectorN<Vely>(shp.vely.dy, -timefac_tau_C_divunp);
-    assembler.template VectorN<Velz>(shp.velz.dz, -timefac_tau_C_divunp);
+    assembler.template VectorN<XFEM::PHYSICS::Velx>(shp.velx.dx, -timefac_tau_C_divunp);
+    assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dy, -timefac_tau_C_divunp);
+    assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dz, -timefac_tau_C_divunp);
 #endif
   } // endif cstab
 }
 
 } // namespace COMBUST
 
-#endif
-#endif
 #endif

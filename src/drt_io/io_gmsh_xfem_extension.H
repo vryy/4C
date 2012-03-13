@@ -15,7 +15,7 @@
 #define IO_GMSH_XFEM_EXTENSION_H
 #ifdef CCADISCRET
 
-#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/geo_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 namespace IO

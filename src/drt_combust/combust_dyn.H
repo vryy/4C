@@ -10,7 +10,7 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_DYN_H
 #define COMBUST_DYN_H
 
@@ -68,4 +68,3 @@ void combust_dyn();
 #endif
 
 #endif /* #ifndef COMBUST_DYN_H */
-#endif /* #ifdef CCADISCRET */

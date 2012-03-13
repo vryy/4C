@@ -12,32 +12,15 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
+#ifndef COMBUST3_SYSMAT_PREMIXED_STRESS_NORMAL_H
+#define COMBUST3_SYSMAT_PREMIXED_STRESS_NORMAL_H
 
-#include <Teuchos_TimeMonitor.hpp>
 
-#include "combust3_sysmat_standard.H"
-#include "combust3_local_assembler.H"
-#include "combust3_utils.H"
 #include "combust3_interpolation.H"
 #include "combust_defines.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/xfluid3_utils.H"
-#include "../drt_f3/fluid3_stabilization.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_xfem/enrichment.H"
-#include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
-
-using namespace XFEM::PHYSICS;
 
 #ifdef COMBUST_NORMAL_ENRICHMENT
 
@@ -2125,5 +2108,4 @@ void SysmatBoundaryStressNormal(
 
 #endif // define COMBUST_NORMAL_ENRICHMENT
 
-#endif
 #endif

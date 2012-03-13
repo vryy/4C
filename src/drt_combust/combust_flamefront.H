@@ -10,17 +10,38 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef COMBUST_FLAMEFRONT_H
 #define COMBUST_FLAMEFRONT_H
 
 
-//#include "combust_refinementcell.H"
-//#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometry/intersection.H"
-#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/geo_utils.H"
 #include "../drt_inpar/inpar_combust.H"
-#include "../drt_cut/cut_elementhandle.H"
+#include "../drt_lib/drt_element.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+
+namespace DRT
+{
+  class Discretization;
+  class PackBuffer;
+}
+
+namespace GEO
+{
+  class DomainIntCell;
+
+  namespace CUT
+  {
+    class Element;
+    class ElementHandle;
+  }
+}
+
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 namespace COMBUST
 {
@@ -61,7 +82,7 @@ namespace COMBUST
     explicit FlameFront(
              const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
              Teuchos::RCP<DRT::Discretization>              gfuncdis, ///< G-function discretization (condif3 elements) describing the level set function
-             const Teuchos::RCP<map<int,vector<int> > >     pbcmap    ///< map holding nodes with periodic boundary conditions
+             const Teuchos::RCP<std::map<int,std::vector<int> > >     pbcmap    ///< map holding nodes with periodic boundary conditions
     );
 
     /// destructor
@@ -77,26 +98,26 @@ namespace COMBUST
     };
 
     /// remote access method to vector on fluid NodeColMap holding G-function values at n
-    const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; }
+    const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; };
     /// remote access method to vector on fluid NodeColMap holding G-function values at n+1
-    const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
+    const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; };
 
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
-    const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; }
+    const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; };
 
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
-    const Teuchos::RCP<Epetra_Vector> Curvature() const { return curvature_; }
+    const Teuchos::RCP<Epetra_Vector> Curvature() const { return curvature_; };
 
-    const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
-    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
-    const std::map<int,CutStatus> ElementCutStatus() const {return myelementcutstatus_;}
+    const std::map<int,GEO::DomainIntCells> DomainIntCells() const;
+    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const;
+    const std::map<int,CutStatus> ElementCutStatus() const;
 
     /// update the flame front
     void UpdateFlameFront(
         const Teuchos::ParameterList& combustdyn,
         const Teuchos::RCP<const Epetra_Vector>& phin,
         const Teuchos::RCP<const Epetra_Vector>& phinp,
-        bool ReinitModifyPhi = false
+        bool ReinitModifyFlameFrontPhi = false
     );
 
     /// generate the interface geometry based on the G-function (level set field)
@@ -113,7 +134,7 @@ namespace COMBUST
 
     /// unpack boundary integration cells from char array
     void unpackBoundaryIntCells(
-        const vector<char>&                   dataRecv,
+        const std::vector<char>&                   dataRecv,
         std::map<int, GEO::BoundaryIntCells>& dofkeyset
     );
 
@@ -378,4 +399,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif // COMBUST_FLAMEFRONT_H
-#endif // CCADISCRET

@@ -13,15 +13,11 @@ Maintainer: Axel Gerstenberger
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
-#include <string>
-
+#include "combust_fluidimplicitintegration.H"
 #include "combust_fluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_xfem/dof_management.H" // TODO Martin temporary
-
+#include "../drt_xfem/dof_management.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -122,5 +118,3 @@ bool FLD::CombustFluidResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("FLUID");
 }
 
-
-#endif /* CCADISCRET       */

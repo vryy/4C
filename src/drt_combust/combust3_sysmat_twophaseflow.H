@@ -13,8 +13,9 @@ Maintainer: Ursula Rasthofer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
+#ifndef COMBUST3_SYSMAT_TWOPHASEFLOW_H
+#define COMBUST3_SYSMAT_TWOPHASEFLOW_H
+
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -40,7 +41,6 @@ Maintainer: Ursula Rasthofer
 // for gmsh output of subgrid velocity
 // #include "../drt_io/io_gmsh.H"
 
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -315,7 +315,7 @@ void SysmatTwoPhaseFlow(
 
         // shape function for nodal dofs
         enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            Velx,
+            XFEM::PHYSICS::Velx,
             funct,
             derxy,
             derxy2,
@@ -357,7 +357,7 @@ void SysmatTwoPhaseFlow(
         //                static LINALG::Matrix<6,shpVecSize> enr_derxy2_pres;
         // shape function for nodal dofs pressure
         enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            Pres,
+            XFEM::PHYSICS::Pres,
             funct,
             derxy,
             derxy2,
@@ -1287,4 +1287,4 @@ void SysmatTwoPhaseFlow(
 
 
 #endif
-#endif
+

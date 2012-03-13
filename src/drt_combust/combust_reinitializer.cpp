@@ -12,15 +12,13 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "combust_reinitializer.H"
 #include "combust_defines.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 12/09 |
@@ -1304,5 +1302,3 @@ void::COMBUST::Reinitializer::FindFacingPatchProjCellEdges(
   return;
 }
 
-
-#endif // #ifdef CCADISCRET

@@ -10,16 +10,17 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_INTERFACE_H
 #define COMBUST_INTERFACE_H
 
 #include "../drt_xfem/interface.H"
 #include "combust_flamefront.H"
-#include "combust_defines.H"
+
 
 namespace COMBUST
 {
+  class FlameFront;
 
   /// COMBUST Interface class
   /*!
@@ -94,4 +95,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif // COMBUST_INTERFACE_H
-#endif // CCADISCRET

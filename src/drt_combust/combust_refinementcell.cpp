@@ -11,12 +11,10 @@ Maintainer: Florian Henke
 </pre>
 
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "combust_refinementcell.H"
-#include "combust_defines.H"
-
 #include "../drt_io/io_gmsh.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor: create refinement cell from element                                   henke 12/08 |
@@ -743,4 +741,3 @@ void COMBUST::RefinementCell::RootCellToGmsh() const
   return;
 }
 
-#endif // #ifdef CCADISCRET

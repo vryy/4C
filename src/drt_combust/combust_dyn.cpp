@@ -10,7 +10,6 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -157,5 +156,3 @@ void combust_dyn()
   return;
 
 } // combust_dyn()
-
-#endif  // #ifdef CCADISCRET

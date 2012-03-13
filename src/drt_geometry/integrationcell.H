@@ -160,9 +160,6 @@ class DomainIntCell : public IntCell
 
 };
 
-//! shortcut for a vector of DomainIntCells
-typedef std::vector<GEO::DomainIntCell > DomainIntCells;
-
 
 
 
@@ -241,9 +238,6 @@ class BoundaryIntCell : public IntCell
     LINALG::Matrix<3,1>                   phys_center_;
 
 };
-
-//! shortcut for a vector of BoundaryIntCells
-typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
 
 
 }

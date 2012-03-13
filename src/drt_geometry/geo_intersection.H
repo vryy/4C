@@ -7,13 +7,12 @@
 #include <vector>
 
 #include <Teuchos_RCP.hpp>
-
 #include <Epetra_CrsGraph.h>
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_dofset.H"
+#include "geo_utils.H"
 
-#include "integrationcell.H"
 
 namespace DRT
 {

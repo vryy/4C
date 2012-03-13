@@ -12,32 +12,15 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
+#ifndef COMBUST3_SYSMAT_PREMIXED_STRESS_H
+#define COMBUST3_SYSMAT_PREMIXED_STRESS_H
 
-#include <Teuchos_TimeMonitor.hpp>
 
-#include "combust3_sysmat_standard.H"
-#include "combust3_local_assembler.H"
-#include "combust3_utils.H"
 #include "combust3_interpolation.H"
 #include "combust_defines.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/xfluid3_utils.H"
-#include "../drt_f3/fluid3_stabilization.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_xfem/enrichment.H"
-#include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
-
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -79,107 +62,107 @@ void BuildDomainIntegralsStress(
               \                              /
    */
   const double twomu = 2.0*dynvisc;
-  // remark: the symmetry properties are used here (Epsilonxy = Epsilonyx, Epsilonxz = Epsilonzx, Epsilonyz = Epsilonzy)
-  assembler.template Matrix<Epsilonxx,Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
-  assembler.template Matrix<Epsilonxy,Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
-  assembler.template Matrix<Epsilonxz,Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
-  assembler.template Matrix<Epsilonyy,Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
-  assembler.template Matrix<Epsilonyz,Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
-  assembler.template Matrix<Epsilonzz,Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
+  // remark: the symmetry properties are used here (XFEM::PHYSICS::Epsilonxy = XFEM::PHYSICS::Epsilonyx, XFEM::PHYSICS::Epsilonxz = XFEM::PHYSICS::Epsilonzx, XFEM::PHYSICS::Epsilonyz = XFEM::PHYSICS::Epsilonzy)
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*2.0, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac,     shp_epsilon.d0);
 
-  assembler.template Vector<Epsilonxx>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,0)    );
-  assembler.template Vector<Epsilonxy>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,1)*2.0);
-  assembler.template Vector<Epsilonxz>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,2)*2.0);
-  assembler.template Vector<Epsilonyy>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,1)    );
-  assembler.template Vector<Epsilonyz>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,2)*2.0);
-  assembler.template Vector<Epsilonzz>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,2)    );
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,0)    );
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,1)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,2)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,1)    );
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,2)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,2)    );
 
   // formulation without using symmetry of stress tensor
-  //  assembler.template Matrix<Epsilonxx,Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonxy,Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonxz,Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonyx,Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonyy,Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonyz,Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonzx,Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonzy,Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
-  //  assembler.template Matrix<Epsilonzz,Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
+  //  assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac, shp_epsilon.d0);
 
-  //  assembler.template Vector<Epsilonxx>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,0));
-  //  assembler.template Vector<Epsilonxy>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,1));
-  //  assembler.template Vector<Epsilonxz>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,2));
-  //  assembler.template Vector<Epsilonyx>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,0));
-  //  assembler.template Vector<Epsilonyy>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,1));
-  //  assembler.template Vector<Epsilonyz>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,2));
-  //  assembler.template Vector<Epsilonzx>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,0));
-  //  assembler.template Vector<Epsilonzy>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,1));
-  //  assembler.template Vector<Epsilonzz>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,2));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,0));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,1));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, twomu*timefacfac*epsilon(0,2));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,0));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,1));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, twomu*timefacfac*epsilon(1,2));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,0));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,1));
+  //  assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, twomu*timefacfac*epsilon(2,2));
 
   // epsilon-epsilon coupling, continuous epsilon term
   /*               /                      \
                   | virt epsilon , 2\mu*Du |
                    \                      /
    */
-  // remark: the symmetry properties are used here (Epsilonxy = Epsilonyx, Epsilonxz = Epsilonzx, Epsilonyz = Epsilonzy)
-  assembler.template Matrix<Epsilonxx,Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
-  assembler.template Matrix<Epsilonxy,Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
-  assembler.template Matrix<Epsilonxy,Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
-  assembler.template Matrix<Epsilonxz,Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
-  assembler.template Matrix<Epsilonxz,Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
-  assembler.template Matrix<Epsilonyy,Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
-  assembler.template Matrix<Epsilonyz,Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
-  assembler.template Matrix<Epsilonyz,Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
-  assembler.template Matrix<Epsilonzz,Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
+  // remark: the symmetry properties are used here (XFEM::PHYSICS::Epsilonxy = XFEM::PHYSICS::Epsilonyx, XFEM::PHYSICS::Epsilonxz = XFEM::PHYSICS::Epsilonzx, XFEM::PHYSICS::Epsilonyz = XFEM::PHYSICS::Epsilonzy)
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac , shp.dz);
 
-  assembler.template Vector<Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*vderxy(0,0));
-  assembler.template Vector<Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(0,1) + vderxy(1,0)));
-  assembler.template Vector<Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(0,2) + vderxy(2,0)));
-  assembler.template Vector<Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*vderxy(1,1));
-  assembler.template Vector<Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(1,2) + vderxy(2,1)));
-  assembler.template Vector<Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*vderxy(2,2));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*vderxy(0,0));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(0,1) + vderxy(1,0)));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(0,2) + vderxy(2,0)));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*vderxy(1,1));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*(vderxy(1,2) + vderxy(2,1)));
+  assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*vderxy(2,2));
 
   // formulation without using symmetry of stress tensor
-  // assembler.template Matrix<Epsilonxx,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
-  // assembler.template Matrix<Epsilonxx,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
-  // assembler.template Matrix<Epsilonxy,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
-  // assembler.template Matrix<Epsilonxy,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
-  // assembler.template Matrix<Epsilonxz,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
-  // assembler.template Matrix<Epsilonxz,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
   //
-  // assembler.template Matrix<Epsilonyx,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
-  // assembler.template Matrix<Epsilonyx,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
-  // assembler.template Matrix<Epsilonyy,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
-  // assembler.template Matrix<Epsilonyy,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
-  // assembler.template Matrix<Epsilonyz,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
-  // assembler.template Matrix<Epsilonyz,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
   //
-  // assembler.template Matrix<Epsilonzx,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
-  // assembler.template Matrix<Epsilonzx,Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
-  // assembler.template Matrix<Epsilonzy,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
-  // assembler.template Matrix<Epsilonzy,Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
-  // assembler.template Matrix<Epsilonzz,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
-  // assembler.template Matrix<Epsilonzz,Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dx);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Velx>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dy);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Vely>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
+  // assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_epsilon.d0, twomu*timefacfac*0.5, shp.dz);
   //
-  // assembler.template Vector<Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,0));
-  // assembler.template Vector<Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,0));
-  // assembler.template Vector<Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,1));
-  // assembler.template Vector<Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,0));
-  // assembler.template Vector<Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,2));
-  // assembler.template Vector<Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,0));
   //
-  // assembler.template Vector<Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,0));
-  // assembler.template Vector<Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,1));
-  // assembler.template Vector<Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,1));
-  // assembler.template Vector<Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,1));
-  // assembler.template Vector<Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,2));
-  // assembler.template Vector<Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,1));
   //
-  // assembler.template Vector<Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,0));
-  // assembler.template Vector<Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,2));
-  // assembler.template Vector<Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,1));
-  // assembler.template Vector<Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,2));
-  // assembler.template Vector<Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,2));
-  // assembler.template Vector<Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,0));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(0,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,1));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(1,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,2));
+  // assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -twomu*timefacfac*0.5*vderxy(2,2));
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_PRESSURE_COUPLING
@@ -188,26 +171,26 @@ void BuildDomainIntegralsStress(
                     | tr(virt epsilon) , p^e |
                      \                      /
    */
-  assembler.template Matrix<Epsilonxx,DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
-  assembler.template Matrix<Epsilonyy,DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
-  assembler.template Matrix<Epsilonzz,DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::DiscPres>(shp_epsilon.d0, timefacfac, shp_discpres.d0);
 
-  assembler.template Vector<Epsilonxx>(shp_epsilon.d0, -timefacfac*discpres);
-  assembler.template Vector<Epsilonyy>(shp_epsilon.d0, -timefacfac*discpres);
-  assembler.template Vector<Epsilonzz>(shp_epsilon.d0, -timefacfac*discpres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, -timefacfac*discpres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, -timefacfac*discpres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, -timefacfac*discpres);
 
   // pressure-pressure coupling, continuous pressure term
   /*                 /                    \
                   - | tr(virt epsilon) , p |
                      \                    /
    */
-  assembler.template Matrix<Epsilonxx,Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
-  assembler.template Matrix<Epsilonyy,Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
-  assembler.template Matrix<Epsilonzz,Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Pres>(shp_epsilon.d0, -timefacfac, shp.d0);
 
-  assembler.template Vector<Epsilonxx>(shp_epsilon.d0, timefacfac*pres);
-  assembler.template Vector<Epsilonyy>(shp_epsilon.d0, timefacfac*pres);
-  assembler.template Vector<Epsilonzz>(shp_epsilon.d0, timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon.d0, timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon.d0, timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon.d0, timefacfac*pres);
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_ZERO_TRACE
@@ -216,13 +199,13 @@ void BuildDomainIntegralsStress(
                   - | q^e , tr(eps^e) |
                      \               /
    */
-  assembler.template Matrix<DiscPres,Epsilonxx>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
-  assembler.template Matrix<DiscPres,Epsilonyy>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
-  assembler.template Matrix<DiscPres,Epsilonzz>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Epsilonxx>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Epsilonyy>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Epsilonzz>(shp_discpres.d0, -timefacfac, shp_epsilon.d0);
 
   // compute trace of discontinuous epsilon tensor
   const double trace_epsilon = (epsilon(0,0) + epsilon(1,1) + epsilon(2,2));
-  assembler.template Vector<DiscPres>(shp_discpres.d0, timefacfac*trace_epsilon);
+  assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres.d0, timefacfac*trace_epsilon);
 
   // enforce zero trace of continuous epsilon tensor (solenoidality of standard field)
   /*                 /                \
@@ -230,12 +213,12 @@ void BuildDomainIntegralsStress(
                      \                /
   */
   // new term; seems to have effect on third diagonal matrix entry
-  assembler.template Matrix<DiscPres,Velx>(shp_discpres.d0, timefacfac, shp.dx);
-  assembler.template Matrix<DiscPres,Vely>(shp_discpres.d0, timefacfac, shp.dy);
-  assembler.template Matrix<DiscPres,Velz>(shp_discpres.d0, timefacfac, shp.dz);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velx>(shp_discpres.d0, timefacfac, shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Vely>(shp_discpres.d0, timefacfac, shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velz>(shp_discpres.d0, timefacfac, shp.dz);
 
   const double trace = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
-  assembler.template Vector<DiscPres>(shp_discpres.d0, -timefacfac*trace);
+  assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres.d0, -timefacfac*trace);
 #endif
 
 #ifdef  COMBUST_EPSPRES_BASED_FORTHTERM
@@ -245,15 +228,15 @@ void BuildDomainIntegralsStress(
                   - | q^e , 3/(2\mu) p^e |
                      \                  /
    */
-  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres.d0, viscfac*timefacfac, shp_discpres.d0);
-  assembler.template Vector<DiscPres>(shp_discpres.d0, -viscfac*timefacfac*discpres);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::DiscPres>(shp_discpres.d0, viscfac*timefacfac, shp_discpres.d0);
+  assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres.d0, -viscfac*timefacfac*discpres);
   // new term
   /*                 /                \
                     | q^e , 3/(2\mu) p |
                      \                /
    */
-  assembler.template Matrix<DiscPres,Pres>(shp_discpres.d0, -viscfac*timefacfac, shp.d0);
-  assembler.template Vector<DiscPres>(shp_discpres.d0, viscfac*timefacfac*pres);
+  assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Pres>(shp_discpres.d0, -viscfac*timefacfac, shp.d0);
+  assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres.d0, viscfac*timefacfac*pres);
 #endif
 }
 
@@ -283,42 +266,42 @@ void BuildDomainIntegralsSigma(
              \                     /
    */
   const double reciprocal_viscfac = 1.0/(2.0*dynvisc);
-  assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
-  assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
-  assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
-  assembler.template Matrix<Sigmayy,Sigmayy>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
-  assembler.template Matrix<Sigmayz,Sigmayz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
-  assembler.template Matrix<Sigmazz,Sigmazz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxx,XFEM::PHYSICS::Sigmaxx>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxy,XFEM::PHYSICS::Sigmaxy>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxz,XFEM::PHYSICS::Sigmaxz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayy,XFEM::PHYSICS::Sigmayy>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayz,XFEM::PHYSICS::Sigmayz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac*2.0, shp_sigma.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmazz,XFEM::PHYSICS::Sigmazz>(shp_sigma.d0, -reciprocal_viscfac*timefacfac,     shp_sigma.d0);
 
-  assembler.template Vector<Sigmaxx>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,0)    );
-  assembler.template Vector<Sigmaxy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,1)*2.0);
-  assembler.template Vector<Sigmaxz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,2)*2.0);
-  assembler.template Vector<Sigmayy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(1,1)    );
-  assembler.template Vector<Sigmayz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(1,2)*2.0);
-  assembler.template Vector<Sigmazz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(2,2)    );
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,0)    );
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,1)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(0,2)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(1,1)    );
+  assembler.template Vector<XFEM::PHYSICS::Sigmayz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(1,2)*2.0);
+  assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*sigma(2,2)    );
 
   // stress-sigma coupling, sigma term
   /*               /                    \
                   | virt sigma , eps(Du) |
                    \                    /
    */
-  // remark: the symmetry properties are used here (Sigmaxy = Sigmayx, Sigmaxz = Sigmazx, Sigmayz = Sigmazy)
-  assembler.template Matrix<Sigmaxx,Velx>(shp_sigma.d0, timefacfac , shp.dx);
-  assembler.template Matrix<Sigmaxy,Velx>(shp_sigma.d0, timefacfac , shp.dy);
-  assembler.template Matrix<Sigmaxy,Vely>(shp_sigma.d0, timefacfac , shp.dx);
-  assembler.template Matrix<Sigmaxz,Velx>(shp_sigma.d0, timefacfac , shp.dz);
-  assembler.template Matrix<Sigmaxz,Velz>(shp_sigma.d0, timefacfac , shp.dx);
-  assembler.template Matrix<Sigmayy,Vely>(shp_sigma.d0, timefacfac , shp.dy);
-  assembler.template Matrix<Sigmayz,Vely>(shp_sigma.d0, timefacfac , shp.dz);
-  assembler.template Matrix<Sigmayz,Velz>(shp_sigma.d0, timefacfac , shp.dy);
-  assembler.template Matrix<Sigmazz,Velz>(shp_sigma.d0, timefacfac , shp.dz);
+  // remark: the symmetry properties are used here (XFEM::PHYSICS::Sigmaxy = XFEM::PHYSICS::Sigmayx, XFEM::PHYSICS::Sigmaxz = XFEM::PHYSICS::Sigmazx, XFEM::PHYSICS::Sigmayz = XFEM::PHYSICS::Sigmazy)
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxx,XFEM::PHYSICS::Velx>(shp_sigma.d0, timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxy,XFEM::PHYSICS::Velx>(shp_sigma.d0, timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxy,XFEM::PHYSICS::Vely>(shp_sigma.d0, timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxz,XFEM::PHYSICS::Velx>(shp_sigma.d0, timefacfac , shp.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxz,XFEM::PHYSICS::Velz>(shp_sigma.d0, timefacfac , shp.dx);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayy,XFEM::PHYSICS::Vely>(shp_sigma.d0, timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayz,XFEM::PHYSICS::Vely>(shp_sigma.d0, timefacfac , shp.dz);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayz,XFEM::PHYSICS::Velz>(shp_sigma.d0, timefacfac , shp.dy);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmazz,XFEM::PHYSICS::Velz>(shp_sigma.d0, timefacfac , shp.dz);
 
-  assembler.template Vector<Sigmaxx>(shp_sigma.d0, -timefacfac*vderxy(0,0));
-  assembler.template Vector<Sigmaxy>(shp_sigma.d0, -timefacfac*(vderxy(0,1) + vderxy(1,0)));
-  assembler.template Vector<Sigmaxz>(shp_sigma.d0, -timefacfac*(vderxy(0,2) + vderxy(2,0)));
-  assembler.template Vector<Sigmayy>(shp_sigma.d0, -timefacfac*vderxy(1,1));
-  assembler.template Vector<Sigmayz>(shp_sigma.d0, -timefacfac*(vderxy(1,2) + vderxy(2,1)));
-  assembler.template Vector<Sigmazz>(shp_sigma.d0, -timefacfac*vderxy(2,2));
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma.d0, -timefacfac*vderxy(0,0));
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxy>(shp_sigma.d0, -timefacfac*(vderxy(0,1) + vderxy(1,0)));
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxz>(shp_sigma.d0, -timefacfac*(vderxy(0,2) + vderxy(2,0)));
+  assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma.d0, -timefacfac*vderxy(1,1));
+  assembler.template Vector<XFEM::PHYSICS::Sigmayz>(shp_sigma.d0, -timefacfac*(vderxy(1,2) + vderxy(2,1)));
+  assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma.d0, -timefacfac*vderxy(2,2));
 #endif
 
 #ifdef COMBUST_SIGMA_BASED_TRACE
@@ -327,13 +310,13 @@ void BuildDomainIntegralsSigma(
                     | tr(virt sigma) , 1/(2\mu) p |
                      \                           /
    */
-  assembler.template Matrix<Sigmaxx,Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
-  assembler.template Matrix<Sigmayy,Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
-  assembler.template Matrix<Sigmazz,Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmaxx,XFEM::PHYSICS::Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmayy,XFEM::PHYSICS::Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Sigmazz,XFEM::PHYSICS::Pres>(shp_sigma.d0, -reciprocal_viscfac*timefacfac, shp.d0);
 
-  assembler.template Vector<Sigmaxx>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
-  assembler.template Vector<Sigmayy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
-  assembler.template Vector<Sigmazz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
+  assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma.d0, reciprocal_viscfac*timefacfac*pres);
 #endif
 }
 
@@ -601,7 +584,7 @@ void SysmatDomainStress(
 
         // shape functions and derivatives for nodal parameters (dofs)
         enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            Velx,
+            XFEM::PHYSICS::Velx,
             funct,
             derxy,
             derxy2,
@@ -632,7 +615,7 @@ void SysmatDomainStress(
           // shape functions for element dofs
           static LINALG::Matrix<shpVecSizeStress,1> enrfunct_stress;
           enrfunct_stress.Clear();
-          enrvals.ComputeShiftedEnrichedElementShapefunction(Epsilonxx, funct_stress, enrfunct_stress);
+          enrvals.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Epsilonxx, funct_stress, enrfunct_stress);
 
           for (size_t iparam = 0; iparam < numparamepsilonxx; ++iparam)
           {
@@ -644,7 +627,7 @@ void SysmatDomainStress(
           // shape functions for element dofs
           static LINALG::Matrix<shpVecSizeStress,1> enrfunct_stress;
           enrfunct_stress.Clear();
-          enrvals.ComputeShiftedEnrichedElementShapefunction(Sigmaxx, funct_stress, enrfunct_stress);
+          enrvals.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Sigmaxx, funct_stress, enrfunct_stress);
 
           for (size_t iparam = 0; iparam < numparamsigmaxx; ++iparam)
           {
@@ -662,7 +645,7 @@ void SysmatDomainStress(
           static LINALG::Matrix<shpVecSizeDiscPres,1> enrfunct_discpres;
           enrfunct_discpres.Clear();
 
-          enrvals.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres);
+          enrvals.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::DiscPres, funct_discpres, enrfunct_discpres);
 
           for (size_t iparam = 0; iparam < numparamdiscpres; ++iparam)
           {
@@ -1549,33 +1532,33 @@ void SysmatBoundaryStress(
       // viscous consistency term  + |  < v > , || Depsilon || n  |
       //-------------------------    |                            |
 
-      assembler.template Matrix<Velx,Epsilonxx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
-      assembler.template Matrix<Velx,Epsilonxy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
-      assembler.template Matrix<Velx,Epsilonxz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
 
-      assembler.template Matrix<Vely,Epsilonyx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
-      assembler.template Matrix<Vely,Epsilonyy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
-      assembler.template Matrix<Vely,Epsilonyz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
 
-      assembler.template Matrix<Velz,Epsilonzx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
-      assembler.template Matrix<Velz,Epsilonzy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
-      assembler.template Matrix<Velz,Epsilonzz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzx>(shp_mean.d0, timefacfac*normal(0), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzy>(shp_mean.d0, timefacfac*normal(1), shp_epsilon_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzz>(shp_mean.d0, timefacfac*normal(2), shp_epsilon_jump.d0);
 
       //   |                             |
       // - |  < v > , || epsilon_i || n  |
       //   |                             |
 
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(0,0));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(0,1));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(0,2));
 
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(1,0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(1,1));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(1,2));
 
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(2,0));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(2,1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*normal(0)*epsilonjump(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*normal(1)*epsilonjump(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*normal(2)*epsilonjump(2,2));
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_CONSISTPRESJUMP
@@ -1583,47 +1566,47 @@ void SysmatBoundaryStress(
       // pressure consistency term  - |  < v >, || Dp^e || n  |
       //--------------------------    |                       |
 
-      assembler.template Matrix<Velx,DiscPres>(shp_mean.d0, -timefacfac*normal(0), shp_discpres_jump.d0);
-      assembler.template Matrix<Vely,DiscPres>(shp_mean.d0, -timefacfac*normal(1), shp_discpres_jump.d0);
-      assembler.template Matrix<Velz,DiscPres>(shp_mean.d0, -timefacfac*normal(2), shp_discpres_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::DiscPres>(shp_mean.d0, -timefacfac*normal(0), shp_discpres_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::DiscPres>(shp_mean.d0, -timefacfac*normal(1), shp_discpres_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::DiscPres>(shp_mean.d0, -timefacfac*normal(2), shp_discpres_jump.d0);
 
       //   |                        |
       // + |  < v >, || p^e_i || n  |
       //   |                        |
 
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*pdiscjump);
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*pdiscjump);
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*pdiscjump);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(0)*pdiscjump);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(1)*pdiscjump);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(2)*pdiscjump);
 
       //---------  ---------------------------------    |                |
       // pressure (flux) jump (consistency) term RHS  + |  < v >, j_p*n  |
       //-----------  -------------------------------    |                |
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jp);
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(1)*jp);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_FLUXJUMP
       //---------------------------------------------------    |                 |
       // flux (traction/stress) jump (consistency) term RHS  - |  < v >, j_flux  |
       //---------------------------------------------------    |                 |
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*jflux(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*jflux(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*jflux(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*jflux(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*jflux(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*jflux(2));
 
 #if 0
       // j_sigma is a 3x3 Matrix -> j_sigma*normal
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jflux(0,0));
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(1)*jflux(0,1));
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(2)*jflux(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(0)*jflux(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(1)*jflux(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(2)*jflux(0,2));
 
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(0)*jflux(1,0));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jflux(1,1));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(2)*jflux(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(0)*jflux(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(1)*jflux(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(2)*jflux(1,2));
 
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(0)*jflux(2,0));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(1)*jflux(2,1));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jflux(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(0)*jflux(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(1)*jflux(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(2)*jflux(2,2));
 #endif
 #endif
 
@@ -1631,33 +1614,33 @@ void SysmatBoundaryStress(
       //-------------------------    |                            |
       // viscous consistency term  + |  || v || , < Depsilon > n  |
       //-------------------------    |                            |
-      assembler.template Matrix<Velx,Epsilonxx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Velx,Epsilonxy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Velx,Epsilonxz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
 
-      assembler.template Matrix<Vely,Epsilonyx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Vely,Epsilonyy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Vely,Epsilonyz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
 
-      assembler.template Matrix<Velz,Epsilonzx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Velz,Epsilonzy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
-      assembler.template Matrix<Velz,Epsilonzz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzx>(shp_jump.d0, timefacfac*normal(0), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzy>(shp_jump.d0, timefacfac*normal(1), shp_eps_visc_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzz>(shp_jump.d0, timefacfac*normal(2), shp_eps_visc_mean.d0);
 
       //   |                             |
       // - |  || v || , < epsilon_i > n  |
       //   |                             |
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(0,0));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(0,1));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(0,2));
 
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(1,0));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(1,1));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(1,2));
 
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(2,0));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(2,1));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(0)*epsilonmean(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(1)*epsilonmean(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(2)*epsilonmean(2,2));
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_CONSISTPRESMEAN
@@ -1665,83 +1648,83 @@ void SysmatBoundaryStress(
       // pressure consistency term  - |  || v ||, < Dp^e > n  |
       //--------------------------    |                       |
 
-      assembler.template Matrix<Velx,DiscPres>(shp_jump.d0, -timefacfac*normal(0), shp_discpres_mean.d0);
-      assembler.template Matrix<Vely,DiscPres>(shp_jump.d0, -timefacfac*normal(1), shp_discpres_mean.d0);
-      assembler.template Matrix<Velz,DiscPres>(shp_jump.d0, -timefacfac*normal(2), shp_discpres_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::DiscPres>(shp_jump.d0, -timefacfac*normal(0), shp_discpres_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::DiscPres>(shp_jump.d0, -timefacfac*normal(1), shp_discpres_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::DiscPres>(shp_jump.d0, -timefacfac*normal(2), shp_discpres_mean.d0);
 
       //   |                        |
       // + |  || v ||, < p^e_i > n  |
       //   |                        |
 
-      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*pdiscmean);
-      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*pdiscmean);
-      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*pdiscmean);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, timefacfac*normal(0)*pdiscmean);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, timefacfac*normal(1)*pdiscmean);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, timefacfac*normal(2)*pdiscmean);
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_ADJCONSISTVISCJUMP
       //---------------------------------    |                             |
       // viscous adjoint consistency term  + |  < epsilon^e > n, || Du ||  |
       //---------------------------------    |                             |
-      assembler.template Matrix<Epsilonxx,Velx>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Epsilonxy,Velx>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Epsilonxz,Velx>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Velx>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velx>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Epsilonyx,Vely>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Epsilonyy,Vely>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Epsilonyz,Vely>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Vely>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Vely>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Epsilonzx,Velz>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Epsilonzy,Velz>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Epsilonzz,Velz>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Velz>(shp_eps_visc_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Velz>(shp_eps_visc_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_eps_visc_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
       //   |                              |
       // - |  < epsilon^e > n, || u_i ||  |
       //   |                              |
 
-      assembler.template Vector<Epsilonxx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(0));
-      assembler.template Vector<Epsilonxy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(0));
-      assembler.template Vector<Epsilonxz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(0));
 
-      assembler.template Vector<Epsilonyx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(1));
-      assembler.template Vector<Epsilonyy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(1));
-      assembler.template Vector<Epsilonyz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(1));
 
-      assembler.template Vector<Epsilonzx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(2));
-      assembler.template Vector<Epsilonzy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(2));
-      assembler.template Vector<Epsilonzz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_eps_visc_mean.d0, -timefacfac*normal(0)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_eps_visc_mean.d0, -timefacfac*normal(1)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_eps_visc_mean.d0, -timefacfac*normal(2)*veljump(2));
 
       //-------------------------------------    |                        |
       // viscous adjoint consistency term RHS  + |  < epsilon^e > n, j_u  |
       //-------------------------------------    |                        |
 
 #if 1
-      assembler.template Vector<Epsilonxx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(0));
-      assembler.template Vector<Epsilonxy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(0));
-      assembler.template Vector<Epsilonxz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(0));
 #else
-      assembler.template Vector<Epsilonxx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(0)*ju_n);
-      assembler.template Vector<Epsilonxy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(0)*ju_n);
-      assembler.template Vector<Epsilonxz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(0)*ju_n);
 #endif
 
 #if 1
-      assembler.template Vector<Epsilonyx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(1));
-      assembler.template Vector<Epsilonyy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(1));
-      assembler.template Vector<Epsilonyz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(1));
 #else
-      assembler.template Vector<Epsilonyx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(1)*ju_n);
-      assembler.template Vector<Epsilonyy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(1)*ju_n);
-      assembler.template Vector<Epsilonyz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(1)*ju_n);
 #endif
 
 #if 1
-      assembler.template Vector<Epsilonzx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(2));
-      assembler.template Vector<Epsilonzy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(2));
-      assembler.template Vector<Epsilonzz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*ju(2));
 #else
-      assembler.template Vector<Epsilonzx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(2)*ju_n);
-      assembler.template Vector<Epsilonzy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(2)*ju_n);
-      assembler.template Vector<Epsilonzz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_eps_visc_mean.d0, timefacfac*normal(0)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_eps_visc_mean.d0, timefacfac*normal(1)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_eps_visc_mean.d0, timefacfac*normal(2)*normal(2)*ju_n);
 #endif
 #endif
 
@@ -1750,15 +1733,15 @@ void SysmatBoundaryStress(
       // pressure adjoint consistency term  +/- |  < q^e >, || Du || n  |
       //----------------------------------      |                       |
       // remark: the sign of this term is not clear, yet
-      assembler.template Matrix<DiscPres,Velx>(shp_discpres_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<DiscPres,Vely>(shp_discpres_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<DiscPres,Velz>(shp_discpres_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velx>(shp_discpres_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Vely>(shp_discpres_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velz>(shp_discpres_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
       //     |                        |
       // -/+ |  < q^e >, || u_i || n  |
       //     |                        |
       // remark: the sign of this term is not clear, yet
-      assembler.template Vector<DiscPres>(shp_discpres_mean.d0, -timefacfac*(veljump(0)*normal(0)
+      assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_mean.d0, -timefacfac*(veljump(0)*normal(0)
                                                                             +veljump(1)*normal(1)
                                                                             +veljump(2)*normal(2)));
 
@@ -1766,8 +1749,8 @@ void SysmatBoundaryStress(
       // pressure adjoint consistency term RHS  +/- |  < q^e >, j_u n  |
       //--------------------------------------      |                  |
       // remark: the sign of this term is not clear, yet
-//       assembler.template Vector<DiscPres>(shp_discpres_mean.d0, -timefacfac*ju);
-       assembler.template Vector<DiscPres>(shp_discpres_mean.d0, timefacfac*(ju(0)*normal(0)
+//       assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_mean.d0, -timefacfac*ju);
+       assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_mean.d0, timefacfac*(ju(0)*normal(0)
                                                                             +ju(1)*normal(1)
                                                                             +ju(2)*normal(2)));
 #endif
@@ -1779,16 +1762,16 @@ void SysmatBoundaryStress(
       //-----------------    |                   |
       //const double inflowvel = velinflow(0)*normal(0) + velinflow(1)*normal(1) + velinflow(2)*normal(2);
       const double inflowvel = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
-      assembler.template Matrix<Velx,Velx>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
-      assembler.template Matrix<Vely,Vely>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
-      assembler.template Matrix<Velz,Velz>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
 
       //   |                    |
       // + |  v, u_n*|| u_i ||  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_inflow.d0, timefacfac*inflowvel*velinflow(0));
-      assembler.template Vector<Vely>(shp_inflow.d0, timefacfac*inflowvel*velinflow(1));
-      assembler.template Vector<Velz>(shp_inflow.d0, timefacfac*inflowvel*velinflow(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_inflow.d0, timefacfac*inflowvel*velinflow(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_inflow.d0, timefacfac*inflowvel*velinflow(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_inflow.d0, timefacfac*inflowvel*velinflow(2));
 #endif
       //-----------------    |                       |
       // inflow flux term  - |  < v >, u_n*|| Du ||  |
@@ -1796,46 +1779,46 @@ void SysmatBoundaryStress(
       const double inflowvel = -1.0*(velmean(0)*normal(0) + velmean(1)*normal(1) + velmean(2)*normal(2));
       //const double inflowvel = 1000*(veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2));
 //      cout << "inflowvel" << inflowvel << endl;
-//      assembler.template Matrix<Velx,Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Vely,Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Velz,Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
 
-//      assembler.template Matrix<Velx,Velx>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Vely,Vely>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Velz,Velz>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
 
       //   |                        |
       // + |  < v >, u_n*|| u_i ||  |
       //   |                        |
-//      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*inflowvel*veljump(0));
-//      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*inflowvel*veljump(1));
-//      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*inflowvel*veljump(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*veljump(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*veljump(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*veljump(2));
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*inflowvel*veljump(0));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*inflowvel*veljump(1));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*inflowvel*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*inflowvel*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*inflowvel*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*inflowvel*veljump(2));
 
-//      assembler.template Vector<Velx>(enrfunct_minus, timefacfac*inflowvel*veljump(0));
-//      assembler.template Vector<Vely>(enrfunct_minus, timefacfac*inflowvel*veljump(1));
-//      assembler.template Vector<Velz>(enrfunct_minus, timefacfac*inflowvel*veljump(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(enrfunct_minus, timefacfac*inflowvel*veljump(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(enrfunct_minus, timefacfac*inflowvel*veljump(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(enrfunct_minus, timefacfac*inflowvel*veljump(2));
       //   |                 |
       // + |  < v >, u_n*ju  |
       //   |                 |
-//      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*inflowvel*ju(0));
-//      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*inflowvel*ju(1));
-//      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*inflowvel*ju(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel*ju(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel*ju(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel*ju(2));
 
-      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*inflowvel*ju(0));
-      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*inflowvel*ju(1));
-      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*inflowvel*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, timefacfac*inflowvel*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, timefacfac*inflowvel*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, timefacfac*inflowvel*ju(2));
 
-//      assembler.template Vector<Velx>(enrfunct_minus, -timefacfac*inflowvel*ju(0));
-//      assembler.template Vector<Vely>(enrfunct_minus, -timefacfac*inflowvel*ju(1));
-//      assembler.template Vector<Velz>(enrfunct_minus, -timefacfac*inflowvel*ju(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(enrfunct_minus, -timefacfac*inflowvel*ju(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(enrfunct_minus, -timefacfac*inflowvel*ju(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(enrfunct_minus, -timefacfac*inflowvel*ju(2));
 
 #endif
 
@@ -1844,42 +1827,42 @@ void SysmatBoundaryStress(
       // inflow flux term  + |  < v >, || Du ||  |
       //-----------------    |                   |
       const double inflowvel = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
-      assembler.template Matrix<Velx,Velx>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
 
       //   |                    |
       // - |  < v >, || u_i ||  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*inflowvel*veljump(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*inflowvel*veljump(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*inflowvel*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel*veljump(2));
 
       //-----------------       |                |
       // inflow flux term RHS + |  < v >, j_u n  |
       //-----------------       |                |
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*inflowvel*ju*normal(0));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*inflowvel*ju*normal(1));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*inflowvel*ju*normal(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*ju*normal(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*ju*normal(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*ju*normal(2));
 
       //-----------------    |                     |
       // inflow flux term  - |  < q >, || Du || n  |
       //-----------------    |                     |
-      assembler.template Matrix<Pres,Velx>(shp_mean.d0, timefacfac*inflowvel*normal(0), shp_jump.d0);
-      assembler.template Matrix<Pres,Vely>(shp_mean.d0, timefacfac*inflowvel*normal(1), shp_jump.d0);
-      assembler.template Matrix<Pres,Velz>(shp_mean.d0, timefacfac*inflowvel*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*normal(2), shp_jump.d0);
 
       //   |                      |
       // + |  < q >, || u_i || n  |
       //   |                      |
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*inflowvel*(veljump(0)*normal(0)
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp_mean.d0, -timefacfac*inflowvel*(veljump(0)*normal(0)
                                                                         +veljump(1)*normal(1)
                                                                         +veljump(2)*normal(2)));
 
       //-----------------       |                |
       // inflow flux term RHS - |  < q >, j_u n  |
       //-----------------       |                |
-      assembler.template Vector<Pres>(shp_mean.d0, timefacfac*inflowvel*ju);
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp_mean.d0, timefacfac*inflowvel*ju);
 #endif
 #ifdef COMBUST_STRESS_NITSCHEVEL
     const double alphau = 10.0;
@@ -1887,28 +1870,28 @@ void SysmatBoundaryStress(
     // Nitsche term (velocity)  + |  \alpha_u || v ||, || Du ||  |
     //------------------------    |                              |
 
-    assembler.template Matrix<Velx,Velx>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
-    assembler.template Matrix<Vely,Vely>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
-    assembler.template Matrix<Velz,Velz>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_jump.d0, alphau*timefacfac, shp_jump.d0);
 
     //    |                               |
     //  - |  \alpha_u || v ||, || u_i ||  |
     //    |                               |
 
-    assembler.template Vector<Velx>(shp_jump.d0, -alphau*timefacfac*veljump(0));
-    assembler.template Vector<Vely>(shp_jump.d0, -alphau*timefacfac*veljump(1));
-    assembler.template Vector<Velz>(shp_jump.d0, -alphau*timefacfac*veljump(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -alphau*timefacfac*veljump(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -alphau*timefacfac*veljump(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -alphau*timefacfac*veljump(2));
 
     //----------------------------    |                         |
     // Nitsche term (velocity) RHS  + |  \alpha_u || v ||, j_u  |
     //----------------------------    |                         |
 
-    //      assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
-    //      assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
-    //      assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
-    assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
-    assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
-    assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
+    //      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
+    //      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
+    //      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
 #endif
     } // loop Gaussian points
   } // loop boundary integration cells
@@ -2313,13 +2296,13 @@ void SysmatBoundarySigma(
       enrderxy2_minus.Clear();
 
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
-      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
-      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(Sigmaxx, funct_stress, enrfunct_stress_plus);
-      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(Sigmaxx, funct_stress, enrfunct_stress_minus);
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Sigmaxx, funct_stress, enrfunct_stress_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Sigmaxx, funct_stress, enrfunct_stress_minus);
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
@@ -2426,23 +2409,23 @@ void SysmatBoundarySigma(
       //---------------------------------------------------    |                 |
       // flux (traction/stress) jump (consistency) term RHS  - |  < v >, j_flux  |
       //---------------------------------------------------    |                 |
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*jflux(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*jflux(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*jflux(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*jflux(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*jflux(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*jflux(2));
 
 #if 0
       // j_sigma is a 3x3 Matrix -> j_sigma*normal
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jflux(0,0));
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(1)*jflux(0,1));
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(2)*jflux(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(0)*jflux(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(1)*jflux(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*normal(2)*jflux(0,2));
 
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(0)*jflux(1,0));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jflux(1,1));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(2)*jflux(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(0)*jflux(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(1)*jflux(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*normal(2)*jflux(1,2));
 
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(0)*jflux(2,0));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(1)*jflux(2,1));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jflux(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(0)*jflux(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(1)*jflux(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*normal(2)*jflux(2,2));
 #endif
 #endif
 
@@ -2450,98 +2433,98 @@ void SysmatBoundarySigma(
       //-------------------------    |                          |
       // viscous consistency term  + |  || v || , < Dsigma > n  |
       //-------------------------    |                          |
-      assembler.template Matrix<Velx,Sigmaxx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
-      assembler.template Matrix<Velx,Sigmaxy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
-      assembler.template Matrix<Velx,Sigmaxz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Sigmaxx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Sigmaxy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Sigmaxz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
 
-      assembler.template Matrix<Vely,Sigmayx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
-      assembler.template Matrix<Vely,Sigmayy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
-      assembler.template Matrix<Vely,Sigmayz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Sigmayx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Sigmayy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Sigmayz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
 
-      assembler.template Matrix<Velz,Sigmazx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
-      assembler.template Matrix<Velz,Sigmazy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
-      assembler.template Matrix<Velz,Sigmazz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Sigmazx>(shp_jump.d0, timefacfac*normal(0), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Sigmazy>(shp_jump.d0, timefacfac*normal(1), shp_sigma_mean.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Sigmazz>(shp_jump.d0, timefacfac*normal(2), shp_sigma_mean.d0);
 
       //   |                           |
       // - |  || v || , < sigma_i > n  |
       //   |                           |
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(0,0));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(0,1));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(0,2));
 
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(1,0));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(1,1));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(1,2));
 
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(2,0));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(2,1));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(0)*sigmamean(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(1)*sigmamean(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*normal(2)*sigmamean(2,2));
 #endif
 
 #ifdef COMBUST_SIGMA_BASED_ADJCONSISTVISCJUMP
       //---------------------------------    |                           |
       // viscous adjoint consistency term  + |  < sigma^e > n, || Du ||  |
       //---------------------------------    |                           |
-      assembler.template Matrix<Sigmaxx,Velx>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Sigmaxy,Velx>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Sigmaxz,Velx>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmaxx,XFEM::PHYSICS::Velx>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmaxy,XFEM::PHYSICS::Velx>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmaxz,XFEM::PHYSICS::Velx>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Sigmayx,Vely>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Sigmayy,Vely>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Sigmayz,Vely>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmayx,XFEM::PHYSICS::Vely>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmayy,XFEM::PHYSICS::Vely>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmayz,XFEM::PHYSICS::Vely>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Sigmazx,Velz>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Sigmazy,Velz>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Sigmazz,Velz>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmazx,XFEM::PHYSICS::Velz>(shp_sigma_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmazy,XFEM::PHYSICS::Velz>(shp_sigma_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Sigmazz,XFEM::PHYSICS::Velz>(shp_sigma_mean.d0, timefacfac*normal(2), shp_jump.d0);
 
       //   |                            |
       // - |  < sigma^e > n, || u_i ||  |
       //   |                            |
 
-      assembler.template Vector<Sigmaxx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(0));
-      assembler.template Vector<Sigmaxy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(0));
-      assembler.template Vector<Sigmaxz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(0));
 
-      assembler.template Vector<Sigmayx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(1));
-      assembler.template Vector<Sigmayy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(1));
-      assembler.template Vector<Sigmayz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(1));
 
-      assembler.template Vector<Sigmazx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(2));
-      assembler.template Vector<Sigmazy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(2));
-      assembler.template Vector<Sigmazz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazx>(shp_sigma_mean.d0, -timefacfac*normal(0)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazy>(shp_sigma_mean.d0, -timefacfac*normal(1)*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma_mean.d0, -timefacfac*normal(2)*veljump(2));
 
       //-------------------------------------    |                      |
       // viscous adjoint consistency term RHS  + |  < sigma^e > n, j_u  |
       //-------------------------------------    |                      |
 #if 1
-      assembler.template Vector<Sigmaxx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(0));
-      assembler.template Vector<Sigmaxy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(0));
-      assembler.template Vector<Sigmaxz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(0));
 #else
-      assembler.template Vector<Sigmaxx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(0)*ju_n);
-      assembler.template Vector<Sigmaxy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(0)*ju_n);
-      assembler.template Vector<Sigmaxz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(0)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmaxz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(0)*ju_n);
 #endif
 
 #if 1
-      assembler.template Vector<Sigmayx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(1));
-      assembler.template Vector<Sigmayy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(1));
-      assembler.template Vector<Sigmayz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Sigmayz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(1));
 #else
-      assembler.template Vector<Sigmayx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(1)*ju_n);
-      assembler.template Vector<Sigmayy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(1)*ju_n);
-      assembler.template Vector<Sigmayz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmayx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmayy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(1)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmayz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(1)*ju_n);
 #endif
 
 #if 1
-      assembler.template Vector<Sigmazx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(2));
-      assembler.template Vector<Sigmazy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(2));
-      assembler.template Vector<Sigmazz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazx>(shp_sigma_mean.d0, timefacfac*normal(0)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazy>(shp_sigma_mean.d0, timefacfac*normal(1)*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma_mean.d0, timefacfac*normal(2)*ju(2));
 #else
-      assembler.template Vector<Sigmazx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(2)*ju_n);
-      assembler.template Vector<Sigmazy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(2)*ju_n);
-      assembler.template Vector<Sigmazz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmazx>(shp_sigma_mean.d0, timefacfac*normal(0)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmazy>(shp_sigma_mean.d0, timefacfac*normal(1)*normal(2)*ju_n);
+      assembler.template Vector<XFEM::PHYSICS::Sigmazz>(shp_sigma_mean.d0, timefacfac*normal(2)*normal(2)*ju_n);
 #endif
 #endif
 
@@ -2552,16 +2535,16 @@ void SysmatBoundarySigma(
       //-----------------    |                   |
       //const double inflowvel = velinflow(0)*normal(0) + velinflow(1)*normal(1) + velinflow(2)*normal(2);
       const double inflowvel = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
-      assembler.template Matrix<Velx,Velx>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
-      assembler.template Matrix<Vely,Vely>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
-      assembler.template Matrix<Velz,Velz>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_inflow.d0, -timefacfac*inflowvel, shp_inflow.d0);
 
       //   |                    |
       // + |  v, u_n*|| u_i ||  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_inflow.d0, timefacfac*inflowvel*velinflow(0));
-      assembler.template Vector<Vely>(shp_inflow.d0, timefacfac*inflowvel*velinflow(1));
-      assembler.template Vector<Velz>(shp_inflow.d0, timefacfac*inflowvel*velinflow(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_inflow.d0, timefacfac*inflowvel*velinflow(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_inflow.d0, timefacfac*inflowvel*velinflow(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_inflow.d0, timefacfac*inflowvel*velinflow(2));
 #endif
       //-----------------    |                       |
       // inflow flux term  - |  < v >, u_n*|| Du ||  |
@@ -2569,46 +2552,46 @@ void SysmatBoundarySigma(
       const double inflowvel = -1.0*(velmean(0)*normal(0) + velmean(1)*normal(1) + velmean(2)*normal(2));
       //const double inflowvel = 1000*(veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2));
 //      cout << "inflowvel" << inflowvel << endl;
-//      assembler.template Matrix<Velx,Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Vely,Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Velz,Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_jump.d0, timefacfac*inflowvel, shp_jump.d0);
 
-//      assembler.template Matrix<Velx,Velx>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Vely,Vely>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
-//      assembler.template Matrix<Velz,Velz>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
+//      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(enrfunct_minus, -timefacfac*inflowvel, shp_jump.d0);
 
       //   |                        |
       // + |  < v >, u_n*|| u_i ||  |
       //   |                        |
-//      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*inflowvel*veljump(0));
-//      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*inflowvel*veljump(1));
-//      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*inflowvel*veljump(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*veljump(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*veljump(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*veljump(2));
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*inflowvel*veljump(0));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*inflowvel*veljump(1));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*inflowvel*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -timefacfac*inflowvel*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -timefacfac*inflowvel*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -timefacfac*inflowvel*veljump(2));
 
-//      assembler.template Vector<Velx>(enrfunct_minus, timefacfac*inflowvel*veljump(0));
-//      assembler.template Vector<Vely>(enrfunct_minus, timefacfac*inflowvel*veljump(1));
-//      assembler.template Vector<Velz>(enrfunct_minus, timefacfac*inflowvel*veljump(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(enrfunct_minus, timefacfac*inflowvel*veljump(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(enrfunct_minus, timefacfac*inflowvel*veljump(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(enrfunct_minus, timefacfac*inflowvel*veljump(2));
       //   |                 |
       // + |  < v >, u_n*ju  |
       //   |                 |
-//      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*inflowvel*ju(0));
-//      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*inflowvel*ju(1));
-//      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*inflowvel*ju(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel*ju(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel*ju(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel*ju(2));
 
-      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*inflowvel*ju(0));
-      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*inflowvel*ju(1));
-      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*inflowvel*ju(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, timefacfac*inflowvel*ju(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, timefacfac*inflowvel*ju(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, timefacfac*inflowvel*ju(2));
 
-//      assembler.template Vector<Velx>(enrfunct_minus, -timefacfac*inflowvel*ju(0));
-//      assembler.template Vector<Vely>(enrfunct_minus, -timefacfac*inflowvel*ju(1));
-//      assembler.template Vector<Velz>(enrfunct_minus, -timefacfac*inflowvel*ju(2));
+//      assembler.template Vector<XFEM::PHYSICS::Velx>(enrfunct_minus, -timefacfac*inflowvel*ju(0));
+//      assembler.template Vector<XFEM::PHYSICS::Vely>(enrfunct_minus, -timefacfac*inflowvel*ju(1));
+//      assembler.template Vector<XFEM::PHYSICS::Velz>(enrfunct_minus, -timefacfac*inflowvel*ju(2));
 
 #endif
 
@@ -2617,42 +2600,42 @@ void SysmatBoundarySigma(
       // inflow flux term  + |  < v >, || Du ||  |
       //-----------------    |                   |
       const double inflowvel = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
-      assembler.template Matrix<Velx,Velx>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel, shp_jump.d0);
 
       //   |                    |
       // - |  < v >, || u_i ||  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*inflowvel*veljump(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*inflowvel*veljump(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*inflowvel*veljump(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel*veljump(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel*veljump(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel*veljump(2));
 
       //-----------------       |                |
       // inflow flux term RHS + |  < v >, j_u n  |
       //-----------------       |                |
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*inflowvel*ju*normal(0));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*inflowvel*ju*normal(1));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*inflowvel*ju*normal(2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*ju*normal(0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*ju*normal(1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*ju*normal(2));
 
       //-----------------    |                     |
       // inflow flux term  - |  < q >, || Du || n  |
       //-----------------    |                     |
-      assembler.template Matrix<Pres,Velx>(shp_mean.d0, timefacfac*inflowvel*normal(0), shp_jump.d0);
-      assembler.template Matrix<Pres,Vely>(shp_mean.d0, timefacfac*inflowvel*normal(1), shp_jump.d0);
-      assembler.template Matrix<Pres,Velz>(shp_mean.d0, timefacfac*inflowvel*normal(2), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velx>(shp_mean.d0, timefacfac*inflowvel*normal(0), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Vely>(shp_mean.d0, timefacfac*inflowvel*normal(1), shp_jump.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Pres,XFEM::PHYSICS::Velz>(shp_mean.d0, timefacfac*inflowvel*normal(2), shp_jump.d0);
 
       //   |                      |
       // + |  < q >, || u_i || n  |
       //   |                      |
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*inflowvel*(veljump(0)*normal(0)
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp_mean.d0, -timefacfac*inflowvel*(veljump(0)*normal(0)
                                                                         +veljump(1)*normal(1)
                                                                         +veljump(2)*normal(2)));
 
       //-----------------       |                |
       // inflow flux term RHS - |  < q >, j_u n  |
       //-----------------       |                |
-      assembler.template Vector<Pres>(shp_mean.d0, timefacfac*inflowvel*ju);
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shp_mean.d0, timefacfac*inflowvel*ju);
 #endif
 
     } // loop Gaussian points
@@ -2974,16 +2957,16 @@ void SysmatBoundaryStressDoubleOneSided(
       enrderxy2_minus.Clear();
 
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
-      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
-      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(Epsilonxx, funct_stress, enrfunct_stress_plus);
-      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(Epsilonxx, funct_stress, enrfunct_stress_minus);
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Epsilonxx, funct_stress, enrfunct_stress_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Epsilonxx, funct_stress, enrfunct_stress_minus);
 
-      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_plus);
-      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_minus);
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::DiscPres, funct_discpres, enrfunct_discpres_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::DiscPres, funct_discpres, enrfunct_discpres_minus);
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<0,shpVecSize> shp_plus;
@@ -3059,64 +3042,64 @@ void SysmatBoundaryStressDoubleOneSided(
       //-------------------------    |                      |
       // viscous consistency term  + |  v^+ , Depsilon^+ n  |
       //-------------------------    |                      |
-      assembler.template Matrix<Velx,Epsilonxx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
-      assembler.template Matrix<Velx,Epsilonxy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
-      assembler.template Matrix<Velx,Epsilonxz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
 
-      assembler.template Matrix<Vely,Epsilonyx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
-      assembler.template Matrix<Vely,Epsilonyy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
-      assembler.template Matrix<Vely,Epsilonyz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
 
-      assembler.template Matrix<Velz,Epsilonzx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
-      assembler.template Matrix<Velz,Epsilonzy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
-      assembler.template Matrix<Velz,Epsilonzz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzx>(shp_plus.d0, timefacfac*normal(0), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzy>(shp_plus.d0, timefacfac*normal(1), shp_epsilon_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzz>(shp_plus.d0, timefacfac*normal(2), shp_epsilon_plus.d0);
 
       //   |                       |
       // - |  v^+ , epsilon_i^+ n  |
       //   |                       |
-      assembler.template Vector<Velx>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(0,0));
-      assembler.template Vector<Velx>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(0,1));
-      assembler.template Vector<Velx>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(0,2));
 
-      assembler.template Vector<Vely>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(1,0));
-      assembler.template Vector<Vely>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(1,1));
-      assembler.template Vector<Vely>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(1,2));
 
-      assembler.template Vector<Velz>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(2,0));
-      assembler.template Vector<Velz>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(2,1));
-      assembler.template Vector<Velz>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, -timefacfac*normal(0)*epsilonplus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, -timefacfac*normal(1)*epsilonplus(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, -timefacfac*normal(2)*epsilonplus(2,2));
 #endif
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
       //-------------------------    |                      |
       // viscous consistency term  - |  v^- , Depsilon^- n  |
       //-------------------------    |                      |
-      assembler.template Matrix<Velx,Epsilonxx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
-      assembler.template Matrix<Velx,Epsilonxy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
-      assembler.template Matrix<Velx,Epsilonxz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Epsilonxz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
 
-      assembler.template Matrix<Vely,Epsilonyx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
-      assembler.template Matrix<Vely,Epsilonyy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
-      assembler.template Matrix<Vely,Epsilonyz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Epsilonyz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
 
-      assembler.template Matrix<Velz,Epsilonzx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
-      assembler.template Matrix<Velz,Epsilonzy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
-      assembler.template Matrix<Velz,Epsilonzz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzx>(shp_minus.d0, -timefacfac*normal(0), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzy>(shp_minus.d0, -timefacfac*normal(1), shp_epsilon_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Epsilonzz>(shp_minus.d0, -timefacfac*normal(2), shp_epsilon_minus.d0);
 
       //   |                       |
       // + |  v^- , epsilon_i^- n  |
       //   |                       |
-      assembler.template Vector<Velx>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(0,0));
-      assembler.template Vector<Velx>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(0,1));
-      assembler.template Vector<Velx>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(0,2));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(0,1));
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(0,2));
 
-      assembler.template Vector<Vely>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(1,0));
-      assembler.template Vector<Vely>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(1,1));
-      assembler.template Vector<Vely>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(1,2));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(1,1));
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(1,2));
 
-      assembler.template Vector<Velz>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(2,0));
-      assembler.template Vector<Velz>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(2,1));
-      assembler.template Vector<Velz>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(2,2));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, timefacfac*normal(0)*epsilonminus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, timefacfac*normal(1)*epsilonminus(2,1));
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, timefacfac*normal(2)*epsilonminus(2,2));
 #endif
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_PLUS
@@ -3124,24 +3107,24 @@ void SysmatBoundaryStressDoubleOneSided(
       //--------------------------    |                   |
       // pressure consistency term  - |  v^+ , Dp^{e+} n  |
       //--------------------------    |                   |
-      assembler.template Matrix<Velx,DiscPres>(shp_plus.d0, -timefacfac*normal(0), shp_discpres_plus.d0);
-      assembler.template Matrix<Vely,DiscPres>(shp_plus.d0, -timefacfac*normal(1), shp_discpres_plus.d0);
-      assembler.template Matrix<Velz,DiscPres>(shp_plus.d0, -timefacfac*normal(2), shp_discpres_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::DiscPres>(shp_plus.d0, -timefacfac*normal(0), shp_discpres_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::DiscPres>(shp_plus.d0, -timefacfac*normal(1), shp_discpres_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::DiscPres>(shp_plus.d0, -timefacfac*normal(2), shp_discpres_plus.d0);
 
       //   |                    |
       // + |  v^+ , p^{e+}_i n  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_plus.d0, timefacfac*normal(0)*pdiscplus);
-      assembler.template Vector<Vely>(shp_plus.d0, timefacfac*normal(1)*pdiscplus);
-      assembler.template Vector<Velz>(shp_plus.d0, timefacfac*normal(2)*pdiscplus);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, timefacfac*normal(0)*pdiscplus);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, timefacfac*normal(1)*pdiscplus);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, timefacfac*normal(2)*pdiscplus);
 #endif
 #if 1
       //------------------------------------------    |                 |
       // pressure/flux jump (consistency) term RHS  + |  v^+ , j_p^+ n  |
       //------------------------------------------    |                 |
-      assembler.template Vector<Velx>(shp_plus.d0, timefacfac*normal(0)*jpplus);
-      assembler.template Vector<Vely>(shp_plus.d0, timefacfac*normal(1)*jpplus);
-      assembler.template Vector<Velz>(shp_plus.d0, timefacfac*normal(2)*jpplus);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, timefacfac*normal(0)*jpplus);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, timefacfac*normal(1)*jpplus);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, timefacfac*normal(2)*jpplus);
 #endif
 #endif
 
@@ -3150,24 +3133,24 @@ void SysmatBoundaryStressDoubleOneSided(
       //--------------------------    |                   |
       // pressure consistency term  + |  v^- , Dp^{e-} n  |
       //--------------------------    |                   |
-      assembler.template Matrix<Velx,DiscPres>(shp_minus.d0, timefacfac*normal(0), shp_discpres_minus.d0);
-      assembler.template Matrix<Vely,DiscPres>(shp_minus.d0, timefacfac*normal(1), shp_discpres_minus.d0);
-      assembler.template Matrix<Velz,DiscPres>(shp_minus.d0, timefacfac*normal(2), shp_discpres_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::DiscPres>(shp_minus.d0, timefacfac*normal(0), shp_discpres_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::DiscPres>(shp_minus.d0, timefacfac*normal(1), shp_discpres_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::DiscPres>(shp_minus.d0, timefacfac*normal(2), shp_discpres_minus.d0);
 
       //   |                    |
       // - |  v^- , p^{e-}_i n  |
       //   |                    |
-      assembler.template Vector<Velx>(shp_minus.d0, -timefacfac*normal(0)*pdiscminus);
-      assembler.template Vector<Vely>(shp_minus.d0, -timefacfac*normal(1)*pdiscminus);
-      assembler.template Vector<Velz>(shp_minus.d0, -timefacfac*normal(2)*pdiscminus);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, -timefacfac*normal(0)*pdiscminus);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, -timefacfac*normal(1)*pdiscminus);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, -timefacfac*normal(2)*pdiscminus);
 #endif
 #if 1
       //------------------------------------------    |                 |
       // pressure/flux jump (consistency) term RHS  + |  v^- , j_p^- n  |
       //------------------------------------------    |                 |
-      assembler.template Vector<Velx>(shp_minus.d0, timefacfac*normal(0)*jpminus);
-      assembler.template Vector<Vely>(shp_minus.d0, timefacfac*normal(1)*jpminus);
-      assembler.template Vector<Velz>(shp_minus.d0, timefacfac*normal(2)*jpminus);
+      assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, timefacfac*normal(0)*jpminus);
+      assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, timefacfac*normal(1)*jpminus);
+      assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, timefacfac*normal(2)*jpminus);
 #endif
 #endif
 
@@ -3175,134 +3158,134 @@ void SysmatBoundaryStressDoubleOneSided(
       //---------------------------------    |                        |
       // viscous adjoint consistency term  - |  epsilon^{e+} n, Du^+  |
       //---------------------------------    |                        |
-      assembler.template Matrix<Epsilonxx,Velx>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
-      assembler.template Matrix<Epsilonxy,Velx>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
-      assembler.template Matrix<Epsilonxz,Velx>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Velx>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velx>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
 
-      assembler.template Matrix<Epsilonyx,Vely>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
-      assembler.template Matrix<Epsilonyy,Vely>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
-      assembler.template Matrix<Epsilonyz,Vely>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Vely>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Vely>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
 
-      assembler.template Matrix<Epsilonzx,Velz>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
-      assembler.template Matrix<Epsilonzy,Velz>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
-      assembler.template Matrix<Epsilonzz,Velz>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Velz>(shp_epsilon_plus.d0, -timefacfac*normal(0), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Velz>(shp_epsilon_plus.d0, -timefacfac*normal(1), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_epsilon_plus.d0, -timefacfac*normal(2), shp_plus.d0);
 
       //   |                         |
       // + |  epsilon^{e+} n, u_i^+  |
       //   |                         |
-      assembler.template Vector<Epsilonxx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(0,0));
-      assembler.template Vector<Epsilonxy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(0,0));
-      assembler.template Vector<Epsilonxz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(0,0));
 
-      assembler.template Vector<Epsilonyx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(1,0));
-      assembler.template Vector<Epsilonyy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(1,0));
-      assembler.template Vector<Epsilonyz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(1,0));
 
-      assembler.template Vector<Epsilonzx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(2,0));
-      assembler.template Vector<Epsilonzy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(2,0));
-      assembler.template Vector<Epsilonzz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon_plus.d0, timefacfac*normal(0)*velplus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon_plus.d0, timefacfac*normal(1)*velplus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon_plus.d0, timefacfac*normal(2)*velplus(2,0));
 
       //-------------------------------------    |                         |
       // viscous adjoint consistency term RHS  - |  epsilon^{e+} n, j_u^+  |
       //-------------------------------------    |                         |
 
-      assembler.template Vector<Epsilonxx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(0)*juplus);
-      assembler.template Vector<Epsilonxy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(0)*juplus);
-      assembler.template Vector<Epsilonxz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(0)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(0)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(0)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(0)*juplus);
 
-      assembler.template Vector<Epsilonyx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(1)*juplus);
-      assembler.template Vector<Epsilonyy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(1)*juplus);
-      assembler.template Vector<Epsilonyz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(1)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(1)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(1)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(1)*juplus);
 
-      assembler.template Vector<Epsilonzx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(2)*juplus);
-      assembler.template Vector<Epsilonzy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(2)*juplus);
-      assembler.template Vector<Epsilonzz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(2)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon_plus.d0, -timefacfac*normal(0)*normal(2)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon_plus.d0, -timefacfac*normal(1)*normal(2)*juplus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon_plus.d0, -timefacfac*normal(2)*normal(2)*juplus);
 #endif
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_MINUS
       //---------------------------------    |                        |
       // viscous adjoint consistency term  + |  epsilon^{e-} n, Du^-  |
       //---------------------------------    |                        |
-      assembler.template Matrix<Epsilonxx,Velx>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
-      assembler.template Matrix<Epsilonxy,Velx>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
-      assembler.template Matrix<Epsilonxz,Velx>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxx,XFEM::PHYSICS::Velx>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxy,XFEM::PHYSICS::Velx>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonxz,XFEM::PHYSICS::Velx>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
 
-      assembler.template Matrix<Epsilonyx,Vely>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
-      assembler.template Matrix<Epsilonyy,Vely>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
-      assembler.template Matrix<Epsilonyz,Vely>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyx,XFEM::PHYSICS::Vely>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyy,XFEM::PHYSICS::Vely>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonyz,XFEM::PHYSICS::Vely>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
 
-      assembler.template Matrix<Epsilonzx,Velz>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
-      assembler.template Matrix<Epsilonzy,Velz>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
-      assembler.template Matrix<Epsilonzz,Velz>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzx,XFEM::PHYSICS::Velz>(shp_epsilon_minus.d0, timefacfac*normal(0), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzy,XFEM::PHYSICS::Velz>(shp_epsilon_minus.d0, timefacfac*normal(1), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::Epsilonzz,XFEM::PHYSICS::Velz>(shp_epsilon_minus.d0, timefacfac*normal(2), shp_minus.d0);
 
       //   |                         |
       // - |  epsilon^{e-} n, u_i^-  |
       //   |                         |
-      assembler.template Vector<Epsilonxx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(0,0));
-      assembler.template Vector<Epsilonxy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(0,0));
-      assembler.template Vector<Epsilonxz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(0,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(0,0));
 
-      assembler.template Vector<Epsilonyx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(1,0));
-      assembler.template Vector<Epsilonyy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(1,0));
-      assembler.template Vector<Epsilonyz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(1,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(1,0));
 
-      assembler.template Vector<Epsilonzx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(2,0));
-      assembler.template Vector<Epsilonzy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(2,0));
-      assembler.template Vector<Epsilonzz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon_minus.d0, -timefacfac*normal(0)*velminus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon_minus.d0, -timefacfac*normal(1)*velminus(2,0));
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon_minus.d0, -timefacfac*normal(2)*velminus(2,0));
 
       //-------------------------------------    |                         |
       // viscous adjoint consistency term RHS  + |  epsilon^{e-} n, j_u^-  |
       //-------------------------------------    |                         |
 
-      assembler.template Vector<Epsilonxx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(0)*juminus);
-      assembler.template Vector<Epsilonxy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(0)*juminus);
-      assembler.template Vector<Epsilonxz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(0)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(0)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(0)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonxz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(0)*juminus);
 
-      assembler.template Vector<Epsilonyx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(1)*juminus);
-      assembler.template Vector<Epsilonyy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(1)*juminus);
-      assembler.template Vector<Epsilonyz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(1)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(1)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(1)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonyz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(1)*juminus);
 
-      assembler.template Vector<Epsilonzx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(2)*juminus);
-      assembler.template Vector<Epsilonzy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(2)*juminus);
-      assembler.template Vector<Epsilonzz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(2)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzx>(shp_epsilon_minus.d0, timefacfac*normal(0)*normal(2)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzy>(shp_epsilon_minus.d0, timefacfac*normal(1)*normal(2)*juminus);
+      assembler.template Vector<XFEM::PHYSICS::Epsilonzz>(shp_epsilon_minus.d0, timefacfac*normal(2)*normal(2)*juminus);
 #endif
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_PLUS
       //----------------------------------    |                  |
       // pressure adjoint consistency term  + |  q^{e+} n, Du^+  |
       //----------------------------------    |                  |
-      assembler.template Matrix<DiscPres,Velx>(shp_discpres_plus.d0, timefacfac*normal(0), shp_plus.d0);
-      assembler.template Matrix<DiscPres,Vely>(shp_discpres_plus.d0, timefacfac*normal(1), shp_plus.d0);
-      assembler.template Matrix<DiscPres,Velz>(shp_discpres_plus.d0, timefacfac*normal(2), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velx>(shp_discpres_plus.d0, timefacfac*normal(0), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Vely>(shp_discpres_plus.d0, timefacfac*normal(1), shp_plus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velz>(shp_discpres_plus.d0, timefacfac*normal(2), shp_plus.d0);
       //   |                   |
       // - |  q^{e+} n, u_i^+  |
       //   |                   |
-      assembler.template Vector<DiscPres>(shp_discpres_plus.d0, -timefacfac*(velplus(0,0)*normal(0)
+      assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_plus.d0, -timefacfac*(velplus(0,0)*normal(0)
                                                                             +velplus(1,0)*normal(1)
                                                                             +velplus(2,0)*normal(2)));
       //--------------------------------------    |                   |
       // pressure adjoint consistency term RHS  + |  q^{e+} n, j_u^+  |
       //--------------------------------------    |                   |
-      assembler.template Vector<DiscPres>(shp_discpres_plus.d0, timefacfac*juplus);
+      assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_plus.d0, timefacfac*juplus);
 #endif
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_MINUS
       //----------------------------------    |                  |
       // pressure adjoint consistency term  - |  q^{e+} n, Du^+  |
       //----------------------------------    |                  |
-      assembler.template Matrix<DiscPres,Velx>(shp_discpres_minus.d0, -timefacfac*normal(0), shp_minus.d0);
-      assembler.template Matrix<DiscPres,Vely>(shp_discpres_minus.d0, -timefacfac*normal(1), shp_minus.d0);
-      assembler.template Matrix<DiscPres,Velz>(shp_discpres_minus.d0, -timefacfac*normal(2), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velx>(shp_discpres_minus.d0, -timefacfac*normal(0), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Vely>(shp_discpres_minus.d0, -timefacfac*normal(1), shp_minus.d0);
+      assembler.template Matrix<XFEM::PHYSICS::DiscPres,XFEM::PHYSICS::Velz>(shp_discpres_minus.d0, -timefacfac*normal(2), shp_minus.d0);
       //   |                   |
       // + |  q^{e+} n, u_i^+  |
       //   |                   |
-      assembler.template Vector<DiscPres>(shp_discpres_minus.d0, timefacfac*(velminus(0,0)*normal(0)
+      assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_minus.d0, timefacfac*(velminus(0,0)*normal(0)
                                                                             +velminus(1,0)*normal(1)
                                                                             +velminus(2,0)*normal(2)));
       //--------------------------------------    |                   |
       // pressure adjoint consistency term RHS  - |  q^{e+} n, j_u^+  |
       //--------------------------------------    |                   |
-      assembler.template Vector<DiscPres>(shp_discpres_minus.d0, -timefacfac*juminus);
+      assembler.template Vector<XFEM::PHYSICS::DiscPres>(shp_discpres_minus.d0, -timefacfac*juminus);
 #endif
     } // loop Gaussian points
   } // loop boundary integration cells
@@ -3312,5 +3295,4 @@ void SysmatBoundaryStressDoubleOneSided(
 
 } // namespace COMBUST
 
-#endif
 #endif

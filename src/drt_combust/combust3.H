@@ -13,18 +13,30 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
+
 #ifndef COMBUST3_H
 #define COMBUST3_H
 
+
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_xfem/dof_management_element.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_inpar/inpar_combust.H"
+
+
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+
+namespace LINALG
+{
+  class SerialDenseVector;
+}
+
+namespace XFEM
+{
+  class ElementDofManager;
+}
 
 namespace DRT
 {
@@ -187,45 +199,9 @@ private:
 
         //! @name Access methods
 
-        virtual int NumDofPerNode(const DRT::Node& node) const
-        {
-          if (standard_mode_)
-          {
-            return 4;
-          }
-          else
-          {
-            if (eleDofManager_ != Teuchos::null)
-            {
-              return eleDofManager_->NumDofPerNode(node.Id());
-            }
-            else
-            {
-              dserror("no element dof information available!");
-              return 0;
-            }
-          }
-        }
+        virtual int NumDofPerNode(const DRT::Node& node) const;
 
-        virtual int NumDofPerElement() const
-        {
-          if (standard_mode_)
-          {
-            return 0;
-          }
-          else
-          {
-            if (eleDofManager_ != Teuchos::null)
-            {
-              return eleDofManager_->NumElemDof();
-            }
-            else
-            {
-              dserror("no element dof information available!");
-              return 0;
-            }
-          }
-        }
+        virtual int NumDofPerElement() const;
 
         Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager(){ return eleDofManager_; }
 
@@ -371,14 +347,13 @@ private:
         {
         public:
           //! Kaa inv of old iteration step
-          LINALG::SerialDenseMatrix      oldKaainv_;
+          RCP<LINALG::SerialDenseMatrix>      oldKaainv_;
           //! Kad of old iteration step
-          LINALG::SerialDenseMatrix      oldKad_;
+          RCP<LINALG::SerialDenseMatrix>      oldKad_;
           //! fa inv of old iteration step
-          LINALG::SerialDenseVector      oldfa_;
-
+          RCP<LINALG::SerialDenseVector>      oldfa_;
           //! this map stores all element stresses (independent of the xfem label)
-          LINALG::SerialDenseVector      stressdofs_;
+          RCP<LINALG::SerialDenseVector>      stressdofs_;
 
           //! constructor
           explicit DLMInfo(const int nd, const int na);
@@ -745,5 +720,3 @@ private:
 } // namespace DRT
 
 #endif // #ifndef COMBUST3_H
-#endif // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3

@@ -44,6 +44,7 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_control.H"
 
 #include "intersection.H"
+#include "integrationcell.H"
 
 
 /*----------------------------------------------------------------------*

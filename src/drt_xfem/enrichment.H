@@ -18,6 +18,13 @@
 #include "xfem_utils.H"
 #include "../drt_combust/combust_interface.H"
 
+
+// forward declarations
+namespace GEO
+{
+  class IntCell;
+}
+
 //! namespace for all XFEM related stuff
 namespace XFEM
 {

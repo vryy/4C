@@ -22,9 +22,8 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
-
+#include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
@@ -5903,5 +5902,3 @@ std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum I
   }
 }
 
-
-#endif // CCADISCRET

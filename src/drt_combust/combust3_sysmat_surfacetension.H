@@ -10,31 +10,17 @@ Maintainer: Benedikt Schott
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
+#ifndef COMBUST3_SYSMAT_SURFACETENSION_H
+#define COMBUST3_SYSMAT_SURFACETENSION_H
 
-#include <Teuchos_TimeMonitor.hpp>
 
 #include "combust3_sysmat.H"
-#include "combust3_local_assembler.H"
-#include "combust3_utils.H"
-#include "combust3_interpolation.H"
-#include "combust_defines.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/xfluid3_utils.H"
-#include "../drt_f3/fluid3_stabilization.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_xfem/enrichment.H"
 #include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
 
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -271,7 +257,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
 
 
         // shape functions for nodal parameters (dofs) on plus and minus side
-        enrvals.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct);
+        enrvals.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct_gp, enrfunct);
 
         // (enriched) shape functions = approximation functions (P = N * \Psi)
         static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
@@ -371,9 +357,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         // surface tension term boundary of interface  |  < v > , surftens*n_gamma >      |
         //----------------------------------------     |                                 |
 
-        assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
-        assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
-        assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
+        assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
+        assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
+        assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
 
 
       } // ==================================== end loop gaussian points ==========================
@@ -619,8 +605,8 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
 
 
         // shape functions for nodal parameters (dofs) on plus and minus side
-        enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_plus);
-        enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_minus);
+        enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct_gp, enrfunct_plus);
+        enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct_gp, enrfunct_minus);
 
         // (enriched) shape functions = approximation functions (P = N * \Psi)
         static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
@@ -721,9 +707,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         // surface tension term boundary of interface  |  < v > , surftens*n_gamma >     |
         //----------------------------------------     |                                 |
 
-        assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
-        assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
-        assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
+        assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
+        assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
+        assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
 
 
       } // ==================================== end loop gaussian points ==========================
@@ -881,17 +867,17 @@ void RHS_SurfaceTension2DIntegrals(
     //-----------------------------------------------------------     |                                           |
     // surface tension (Laplace-Beltrami surface tension) term      - |  < nabla_BEL v > ° nabla_BEL id_gamma     |
     //-----------------------------------------------------------     |                                           |
-    assembler.template Vector<Velx>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(1.0 - normal(0)*normal(0)));
-    assembler.template Vector<Velx>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(    - normal(1)*normal(0)));
-    assembler.template Vector<Velx>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(    - normal(2)*normal(0)));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(1.0 - normal(0)*normal(0)));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(    - normal(1)*normal(0)));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(    - normal(2)*normal(0)));
 
-    assembler.template Vector<Vely>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(    - normal(0)*normal(1)));
-    assembler.template Vector<Vely>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(1.0 - normal(1)*normal(1)));
-    assembler.template Vector<Vely>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(    - normal(2)*normal(1)));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(    - normal(0)*normal(1)));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(1.0 - normal(1)*normal(1)));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(    - normal(2)*normal(1)));
 
-    assembler.template Vector<Velz>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(    - normal(0)*normal(2)));
-    assembler.template Vector<Velz>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(    - normal(1)*normal(2)));
-    assembler.template Vector<Velz>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(1.0 - normal(2)*normal(2)));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(    - normal(0)*normal(2)));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(    - normal(1)*normal(2)));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(1.0 - normal(2)*normal(2)));
 
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
@@ -962,17 +948,17 @@ void RHS_SurfaceTension2DIntegrals(
 
     Proj_combine.MultiplyNN(Proj,Proj_smooth);
 
-    assembler.template Vector<Velx>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,0));
-    assembler.template Vector<Velx>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,0));
-    assembler.template Vector<Velx>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,0));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,0));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,0));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,0));
 
-    assembler.template Vector<Vely>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,1));
-    assembler.template Vector<Vely>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,1));
-    assembler.template Vector<Vely>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,1));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,1));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,1));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,1));
 
-    assembler.template Vector<Velz>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,2));
-    assembler.template Vector<Velz>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,2));
-    assembler.template Vector<Velz>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,2));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dx, - timefacfac * surftenscoeff*Proj_combine(0,2));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,2));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,2));
 
 
   }
@@ -991,9 +977,9 @@ void RHS_SurfaceTension2DIntegrals(
     // 3D
     //double curvature = 1.0/rad_1 + 1.0/rad_2;
 
-    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
-    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
-    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
 
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad
@@ -1026,9 +1012,9 @@ void RHS_SurfaceTension2DIntegrals(
     }
 
 
-    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
-    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
-    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_none){;}
   else dserror("warning: wrong type of surface tension approximation");
@@ -1307,8 +1293,8 @@ void SysmatBoundarySurfaceTensionIntCell(
     enrderxy2_vel.Clear();
 
     // shape functions for nodal parameters (dofs) on plus and minus side
-    // Velx okay, all shapefunctions for Velx, Vely, Velz are the same (kink enriched)
-    enrvals.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+    // XFEM::PHYSICS::Velx okay, all shapefunctions for XFEM::PHYSICS::Velx, XFEM::PHYSICS::Vely, XFEM::PHYSICS::Velz are the same (kink enriched)
+    enrvals.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
         enrfunct_vel, enrderxy_vel, enrderxy2_vel);
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
@@ -1467,5 +1453,4 @@ void SysmatBoundarySurfaceTension(
 
 } // namespace COMBUST
 
-#endif
 #endif

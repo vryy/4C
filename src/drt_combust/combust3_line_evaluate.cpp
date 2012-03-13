@@ -10,8 +10,6 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include "combust3.H"
 
@@ -60,8 +58,3 @@ int DRT::ELEMENTS::Combust3Line::EvaluateNeumann(
   return 0;
 }
 
-
-
-
-#endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3

@@ -10,8 +10,6 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
 #include "combust3.H"
 #include "../drt_lib/drt_utils.H"
@@ -136,6 +134,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3Surface::Lines()
   return DRT::UTILS::ElementBoundaryFactory<Combust3Line,Combust3Surface>(DRT::UTILS::buildLines,this);
 }
 
-
-#endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3

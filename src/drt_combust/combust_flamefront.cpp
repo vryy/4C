@@ -12,33 +12,17 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
-#include <iterator>
-
-#include "../drt_lib/standardtypes_cpp.H" // has to be declared first
 
 #include "combust_flamefront.H"
 #include "combust_defines.H"
-#include "../drt_combust/combust3.H"
-#include "../drt_combust/combust3_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "combust3_utils.H"
 #include "../drt_geometry/tetrahedradecomposition.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_utils.H" // LINALG::Export
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/intersection_service_templates.H"
-
 #include "../drt_cut/cut_levelsetintersection.H"
-#include "../drt_cut/cut_meshintersection.H"
-#include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_volumecell.H"
 
@@ -48,7 +32,9 @@ Maintainer: Florian Henke
 #include <Epetra_SerialComm.h>
 #endif
 
+
 #define VOLTOL 1e-4
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 10/08 |
@@ -168,11 +154,9 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
     const DRT::Element *ele = fluiddis_->lColElement(iele);
 
 #ifdef DEBUG
-#ifdef D_FLUID3
     if(ele->ElementType() != DRT::ELEMENTS::Combust3Type::Instance())
       // this is not compulsory, but combust3 elements are expected here!
       dserror("unexpected element type: this should be of combust3 type!");
-#endif
 #endif
 
     // create refinement cell from a fluid element -> cell will have same geometry as element!
@@ -6372,4 +6356,25 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
   return;
 }
 
-#endif // #ifdef CCADISCRET
+
+const std::map<int,GEO::DomainIntCells> COMBUST::FlameFront::DomainIntCells(
+) const
+{
+  return myelementintcells_;
+}
+
+
+
+const std::map<int,GEO::BoundaryIntCells> COMBUST::FlameFront::BoundaryIntCells(
+) const
+{
+  return myboundaryintcells_;
+}
+
+
+const std::map<int,COMBUST::FlameFront::CutStatus> COMBUST::FlameFront::ElementCutStatus(
+) const
+{
+  return myelementcutstatus_;
+}
+

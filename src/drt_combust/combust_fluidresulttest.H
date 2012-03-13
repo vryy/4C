@@ -16,13 +16,20 @@ Maintainer: Axel Gerstenberger
 #ifndef COMBUST_FLUIDRESULTTEST_H
 #define COMBUST_FLUIDRESULTTEST_H
 
-#ifdef CCADISCRET
 
 #include "../drt_lib/drt_resulttest.H"
-#include "combust_fluidimplicitintegration.H"
+
+
+class Epetra_Vector;
+namespace DRT
+{
+  class Discretization;
+  class DofSet;
+}
 
 namespace FLD
 {
+  class CombustFluidImplicitTimeInt;
 
 /*!
   \brief CombustFluid specific result test class
@@ -59,7 +66,5 @@ private:
 };
 
 }
-
-#endif /* CCADISCRET       */
 
 #endif

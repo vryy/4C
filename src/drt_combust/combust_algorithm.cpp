@@ -12,10 +12,10 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 
 #include "combust_algorithm.H"
+#include "combust_defines.H"
+#include "two_phase_defines.H"
 #include "combust_reinitializer.H"
 #include "combust_fluidimplicitintegration.H"
 
@@ -3197,4 +3197,3 @@ void COMBUST::Algorithm::Redistribute()
   }
   return;
 }
-#endif // #ifdef CCADISCRET

@@ -10,14 +10,13 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef COMBUST_REFINEMENTCELL_
 #define COMBUST_REFINEMENTCELL_
 
+
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-//#include "../linalg/linalg_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 
 namespace COMBUST
 {
@@ -136,4 +135,3 @@ namespace COMBUST
 } // namespace COMBUST
 
 #endif // COMBUST_REFINEMENTCELL_H
-#endif // CCADISCRET

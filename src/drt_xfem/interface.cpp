@@ -197,6 +197,13 @@ std::size_t XFEM::InterfaceHandle::GetNumDomainIntCells(
 }
 
 
+std::map<int, GEO::BoundaryIntCells> XFEM::InterfaceHandle::GetElementalBoundaryIntCells (
+) const
+{
+  return elementalBoundaryIntCells_;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(

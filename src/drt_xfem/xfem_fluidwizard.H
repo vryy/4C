@@ -4,7 +4,8 @@
 #include <map>
 #include <set>
 
-#include "../drt_geometry/integrationcell.H"
+
+#include "../drt_geometry/geo_utils.H"
 #include "../drt_geometry/geo_intersection.H"
 
 #include "physics.H"

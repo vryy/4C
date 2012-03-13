@@ -14,40 +14,14 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
-#ifdef CCADISCRET
-
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "combust3_sysmat.H"
 #include "combust3_sysmat_premixed_nitsche.H"
 #include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
 #include "combust3_sysmat_premixed_stress_normal.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
-#include "combust3_local_assembler.H"
-#include "combust3_utils.H"
-#include "combust3_interpolation.H"
 #include "combust_defines.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/xfluid3_utils.H"
-#include "../drt_f3/fluid3_stabilization.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_xfem/enrichment.H"
-#include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/newtonianfluid.H"
 
-
-using namespace XFEM::PHYSICS;
 
 namespace COMBUST
 {
@@ -995,50 +969,6 @@ void Sysmat(
   default:
     dserror("unknown type of combustion problem");
   }
-
-  //----------------------------------
-  // symmetry check for element matrix
-  // TODO: remove symmetry check
-  //----------------------------------
-//if(ele->Id()==328)
-//{
-//  cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
-//  bool sym = true;
-//  int counter = 0;
-//  for (int row=0; row<estif.M(); ++row)
-//  {
-//    for (int col=0; col<estif.N(); ++col)
-//    {
-//      //cout << estif(row,col);
-//      cout << " " << setw(16)<< std::setprecision(10) << estif(row,col);
-//      double diff = estif(row,col);//-estif(col,row);
-//      //if (!((diff>-1.0E-9) and (diff<+1.0E-9)))
-//      {
-//        //cout << endl << counter << " difference of entry " << "Zeile "<< row << "Spalte " << col << " is not 0.0, but " << diff << endl;
-//        sym = false;
-//      }//std::setw(18) <<  << std::scientific
-//      counter++;
-//    }
-//    cout << endl;
-//  }
-//  //cout << "counter " << counter << endl;
-//  //if (sym==false) cout << "nicht symmetrisch"<<endl;
-//  //if (sym==true) cout << "symmetrisch"<<endl;
-//  //dserror("STOP after middle element matrix");
-//
-//  for (int i = 0; i < eforce.Length(); i++)
-//  {
-//    //if (std::isnan(eforce[i]))
-//    {
-//      cout << setw(16)<< std::setprecision(10) << eforce[i] << endl;
-//      //cout << "Laenge Vektor fuer element " << eforce.Length() << endl;
-//      //cout << "NaN in dof " << i << "of element " << ele->Id() << endl;
-//      //dserror("NaNs detected! Quitting...");
-//    }
-//  }
-//}
-
-
 }
 }
 
@@ -1696,7 +1626,7 @@ void IntegrateShape(
       {
         // shape function for nodal dofs pressure
         enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            Pres,
+            XFEM::PHYSICS::Pres,
             funct,
             enr_funct_pres);
 
@@ -1710,7 +1640,7 @@ void IntegrateShape(
       }
 
       // do the assembling
-      assembler.template Vector<Pres>(shppres.d0, fac);
+      assembler.template Vector<XFEM::PHYSICS::Pres>(shppres.d0, fac);
 
     } // end loop over gauss points
   } // end loop over integration cells
@@ -1765,5 +1695,3 @@ void COMBUST::callIntegrateShape(
 }
 
 
-#endif
-#endif

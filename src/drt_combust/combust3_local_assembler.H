@@ -13,19 +13,13 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifndef COMBUST3_LOCAL_ASSEMBLER_H
 #define COMBUST3_LOCAL_ASSEMBLER_H
 
-#include "../drt_xfem/physics.H"
-#include "../drt_xfem/dof_management_element.H"
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
-#include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_combust/combust_defines.H"
 #include "../drt_xfem/xfem_element_utils.H"
+
 
 namespace COMBUST
 {
@@ -474,5 +468,4 @@ private:
 
 }
 
-#endif
 #endif

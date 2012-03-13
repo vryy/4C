@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/geo_utils.H"
 #include "../drt_geometry/searchtree.H"
 
 namespace XFEM
@@ -92,7 +92,7 @@ namespace XFEM
     std::size_t GetNumDomainIntCells( const DRT::Element*  xfemElement) const;
 
     //! return map of elemental boundary integration cells
-    std::map<int, GEO::BoundaryIntCells> GetElementalBoundaryIntCells () const { return elementalBoundaryIntCells_; };
+    std::map<int, GEO::BoundaryIntCells> GetElementalBoundaryIntCells () const;
 
     //! return number of boundary integration cells for a given element
     std::size_t GetNumBoundaryIntCells( const DRT::Element*  xfemElement) const;

@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 
 #include "io_gmsh.H"
 #include "io_gmsh_xfem_extension.H"
+#include "../drt_geometry/integrationcell.H"
 
 void IO::GMSH::XdisToStream(
     const std::string& text,

@@ -13,23 +13,14 @@ Maintainer: Florian Henke
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
-#ifdef CCADISCRET
 
-#include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust_refinementcell.H"
-#include "../drt_geometry/integrationcell.H"
 #include "../drt_cut/cut_position.H"
-#include "../drt_f3/xfluid3_utils.H"
 #include "../drt_xfem/enrichment_utils.H"
-#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_io/io_gmsh.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1260,6 +1251,3 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
 
   return;
 }
-
-#endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3
