@@ -16,29 +16,15 @@ Maintainer: Christian Cyron
 #define BEAM2R_H
 
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-#include "../drt_lib/drt_element.H"
+
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech/statmech_time.H"
 #include "../drt_inpar/inpar_statmech.H"
-
-
-
-
 
 namespace DRT
 {
@@ -54,10 +40,10 @@ public:
 
   static Beam2rType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -92,7 +78,7 @@ public:
 
   //! @name Friends
   friend class Beam2rType;
-  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
+  //friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods
@@ -155,7 +141,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
   { return Beam2rType::Instance(); }
@@ -171,7 +157,7 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -189,6 +175,11 @@ public:
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
   */
   virtual int NumDofPerElement() const { return 0;}
+
+  /*!
+  \brief computes the number of different random numbers required in each time step for generation of stochastic forces
+  */
+  int HowManyRandomNumbersINeed();
 
   /*!
   \brief Print this element
@@ -250,9 +241,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -278,10 +269,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -336,19 +327,19 @@ private:
   double mominer_;
 
   //! Vector holding jacobi for each gausspoint
-  vector<double> jacobi_;
+  std::vector<double> jacobi_;
 
   //! Vector holding jacobi for each gausspoint for complete integration of massmatrix
-  vector<double> jacobimass_;
+  std::vector<double> jacobimass_;
 
   //! Vector holding value of Jacobi determinant jacobi at nodes
-  vector<double> jacobinode_;
+  std::vector<double> jacobinode_;
 
   /*! Vector holding theta0 for each gausspoint. The current implementation sets the initial
   director angles to zero, which can be done without loss of generality since any initial rotation
   cancels out in the equations (7.131). As a consequence the current nodal directors do not appear
   in the element, but only the values of the current directorat the GP*/
-  vector<double> theta0_;
+  std::vector<double> theta0_;
 
 
   //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
@@ -356,23 +347,23 @@ private:
   //    higher order element. For templating cf. Practical C++ Programming p.419++
   template<int nnode>
   void local_aux(LINALG::Matrix<3,3*nnode>& Bcurr_gp,//rotation matrix
-          LINALG::Matrix<3*nnode,1>& rcurr_gp,//local vector
-          LINALG::Matrix<3*nnode,1>& zcurr_gp,//local vector at GP
-          LINALG::Matrix<3*nnode,1>& scurr_gp,//local vector
-          const double& theta_gp, //current angle theta at GP
-          const double& c1,// geometric variable
-          const double& c2,// geometric variable
-          LINALG::Matrix<1,nnode>& funct,//holds values of shape functions at GP
-          LINALG::Matrix<1,nnode>& deriv);//holds derivates of shape functions at GP
+                 LINALG::Matrix<3*nnode,1>& rcurr_gp,//local vector
+                 LINALG::Matrix<3*nnode,1>& zcurr_gp,//local vector at GP
+                 LINALG::Matrix<3*nnode,1>& scurr_gp,//local vector
+                 const double&              theta_gp, //current angle theta at GP
+                 const double&              c1,// geometric variable
+                 const double&              c2,// geometric variable
+                 LINALG::Matrix<1,nnode>&   funct,//holds values of shape functions at GP
+                 LINALG::Matrix<1,nnode>&   deriv);//holds derivates of shape functions at GP
 
   //! calculation of nonlinear stiffness and mass matrix
   template<int nnode>
-  void nlnstiffmass(ParameterList& params,
-                       vector<double>&           vel,  //!< element velocity vector
-                       vector<double>&           disp,  //!< element displacement vector
-                       Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                       Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
-                       Epetra_SerialDenseVector* force);  //!< element internal force vector
+  void nlnstiffmass(Teuchos::ParameterList&   params,
+                    std::vector<double>&      vel,  //!< element velocity vector
+                    std::vector<double>&      disp,  //!< element displacement vector
+                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                    Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
+                    Epetra_SerialDenseVector* force);  //!< element internal force vector
 
   //!this function transforms the consistent massmatrix into a lumped massmatrix. Only called when needed
   template<int nnode>
@@ -385,46 +376,43 @@ private:
 
   //!sets up element reference geometry for reference nodal position vector xrefe (may be used also after simulation start)
   template<int nnode>
-  void SetUpReferenceGeometry(const vector<double>& xrefe);
+  void SetUpReferenceGeometry(const std::vector<double>& xrefe);
 
   //! @name Methods for Brownian dynamics simulations
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(ParameterList& params,  //!<parameter list
-                     const vector<double>&           vel,  //!< element velocity vector
-                     const vector<double>&           disp, //!<element disp vector
-                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector
+   void CalcBrownian(Teuchos::ParameterList&    params,  //!<parameter list
+                     const std::vector<double>& vel,  //!< element velocity vector
+                     const std::vector<double>& disp, //!<element disp vector
+                     Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                     Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel, const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi);
-
-   //!computes the number of different random numbers required in each time step for generation of stochastic forces
-   int HowManyRandomNumbersINeed();
+   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel, const DRT::UTILS::IntegrationPoints1D gausspoints, const std::vector<double> jacobi);
 
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                             const vector<double>&           vel,  //!< element velocity vector
-                             const vector<double>&           disp, //!<element disp vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyTranslationalDamping(Teuchos::ParameterList&  params,  //!<parameter list
+                             const std::vector<double>& vel,  //!< element velocity vector
+                             const std::vector<double>& disp, //!<element disp vector
+                             Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                             Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void MyStochasticForces(ParameterList& params,  //!<parameter list
-                         const vector<double>&           vel,  //!< element velocity vector
-                         const vector<double>&           disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
+                         const std::vector<double>& vel,  //!< element velocity vector
+                         const std::vector<double>& disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
-   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
-                             const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+   void MyBackgroundVelocity(Teuchos::ParameterList&        params,  //!<parameter list
+                             const LINALG::Matrix<ndim,1>&  evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                             LINALG::Matrix<ndim,1>&        velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>&     velbackgroundgrad); //!<gradient of velocity of background fluid
 
    //@}
 
@@ -436,7 +424,7 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 

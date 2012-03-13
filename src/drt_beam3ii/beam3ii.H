@@ -34,27 +34,6 @@ Maintainer: Christian Cyron
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-//forward declarations
-namespace LINALG
-{
-  class SerialDenseMatrix;
-  class SerialDenseVector;
-}
-
-namespace DRT
-{
-  class Node;
-}
-
-
-namespace DRT
-{
-  namespace ELEMENTS
-  {
-    class Beam3;
-  }
-}
-
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
@@ -74,8 +53,8 @@ public:
 
   virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
                                              const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+                                             const int         id,
+                                             const int         owner );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -267,7 +246,7 @@ public:
   template<int nnode>
   void SetUpReferenceGeometry(const std::vector<double>& xrefe,
                               const std::vector<double>& rotrefe,
-                              const bool secondinit = false)
+                              const bool                 secondinit = false)
   {
     /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
      *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -465,8 +444,8 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
+  bool ReadElement(const std::string&          eletype,
+                   const std::string&          distype,
                    DRT::INPUT::LineDefinition* linedef);
 
   //@}
@@ -503,7 +482,7 @@ public:
   */
   virtual int Evaluate(ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       std::vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -529,10 +508,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(ParameterList&            params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              std::vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -551,8 +530,8 @@ public:
   \return 0 if successful, negative otherwise
   */
   template<int nnode>
-  void EvaluatePTC(ParameterList& params,
-                          Epetra_SerialDenseMatrix& elemat1);
+  void EvaluatePTC(ParameterList&            params,
+                   Epetra_SerialDenseMatrix& elemat1);
 
   //@}
 
@@ -651,14 +630,14 @@ private:
    |required for elasticity only, but not for mass (or damping) matrix                                          cyron 05/10|
    *----------------------------------------------------------------------------------------------------------------------*/
   template<int nnode>
-  void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-                                       std::vector<LINALG::Matrix<1,nnode> >& I,
-                                       std::vector<LINALG::Matrix<1,nnode> >& Iprime,
+  void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D&           gausspoints,
+                                       std::vector<LINALG::Matrix<1,nnode> >&           I,
+                                       std::vector<LINALG::Matrix<1,nnode> >&           Iprime,
                                        std::vector<std::vector<LINALG::Matrix<3,3> > >& Itilde,
                                        std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildeprime,
-                                       std::vector<LINALG::Matrix<3,3> >& Lambda,
-                                       const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                                       std::vector<LINALG::Matrix<1,nnode> >& Imass,
+                                       std::vector<LINALG::Matrix<3,3> >&               Lambda,
+                                       const DRT::UTILS::IntegrationPoints1D&           gausspointsmass,
+                                       std::vector<LINALG::Matrix<1,nnode> >&           Imass,
                                        std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass)
   {
     //declaration of variables
@@ -787,15 +766,15 @@ private:
 
   //!computing convected stresses from convected strains vector and returing also convected constitutive matrix between both
   void strainstress(const LINALG::Matrix<3,1>& gamma, const LINALG::Matrix<3,1>& kappa,
-                    LINALG::Matrix<3,1>& stressN, LINALG::Matrix<3,3>& CN,
-                    LINALG::Matrix<3,1>& stressM, LINALG::Matrix<3,3>& CM);
+                    LINALG::Matrix<3,1>&       stressN, LINALG::Matrix<3,3>&     CN,
+                    LINALG::Matrix<3,1>&       stressM, LINALG::Matrix<3,3>&     CM);
 
   //!push forward strains, stresses and constitutive matrices to their spatial counterparts by rotation matrix Lambda according to Romero 2004, eq. (3.10)
   void pushforward(const LINALG::Matrix<3,3>& Lambda,
-                  const LINALG::Matrix<3,1>& stressN , const LINALG::Matrix<3,3>& CN,
-                  const LINALG::Matrix<3,1>& stressM , const LINALG::Matrix<3,3>& CM,
-                  LINALG::Matrix<3,1>& stressn, LINALG::Matrix<3,3>& cn,
-                  LINALG::Matrix<3,1>& stressm, LINALG::Matrix<3,3>& cm);
+                   const LINALG::Matrix<3,1>& stressN, const LINALG::Matrix<3,3>& CN,
+                   const LINALG::Matrix<3,1>& stressM, const LINALG::Matrix<3,3>& CM,
+                   LINALG::Matrix<3,1>&       stressn, LINALG::Matrix<3,3>&       cn,
+                   LINALG::Matrix<3,1>&       stressm, LINALG::Matrix<3,3>&       cm);
 
   //!compute convected strain at certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)
   void computestrain(const LINALG::Matrix<3,1> Psil, const LINALG::Matrix<3,1> Psilprime,
@@ -807,8 +786,8 @@ private:
    |compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point            cyron 04/10|
    *----------------------------------------------------------------------------------------------------------------------*/
   template<int nnode>
-  void computeItilde(const LINALG::Matrix<3,1>& Psil, std::vector<LINALG::Matrix<3,3> >& Itilde,
-                     const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
+  void computeItilde(const LINALG::Matrix<3,1>&               Psil,  std::vector<LINALG::Matrix<3,3> >& Itilde,
+                     const LINALG::Matrix<3,1>&               phiIJ, const LINALG::Matrix<3,3>& Lambdar,
                      const std::vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct)
   {
     //auxiliary matrices for storing intermediate results
@@ -869,9 +848,10 @@ private:
    |compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certaom Gauss point          cyron 04/10|
    *----------------------------------------------------------------------------------------------------------------------*/
   template<int nnode>
-  void computeItildeprime(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, std::vector<LINALG::Matrix<3,3> >& Itildeprime,
-                          const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
-                          const std::vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
+  void computeItildeprime(const LINALG::Matrix<3,1>&               Psil, const LINALG::Matrix<3,1>&      Psilprime, std::vector<LINALG::Matrix<3,3> >& Itildeprime,
+                          const LINALG::Matrix<3,1>&               phiIJ, const LINALG::Matrix<3,3>&     Lambdar,
+                          const std::vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct,
+                          const LINALG::Matrix<1,nnode>& deriv)
   {
     //auxiliary matrices for storing intermediate results
     LINALG::Matrix<3,3> auxmatrix;
@@ -1029,8 +1009,8 @@ private:
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>
   void b3_nlnstiffmass( ParameterList& params,
-                        std::vector<double>&           vel,
-                        std::vector<double>&           disp,
+                        std::vector<double>&      vel,
+                        std::vector<double>&      disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
@@ -1038,7 +1018,7 @@ private:
   //!calculation of elastic energy
   template<int nnode>
   void b3_energy( ParameterList& params,
-                  std::vector<double>&           disp,
+                  std::vector<double>&      disp,
                   Epetra_SerialDenseVector* intenergy);
 
   //! lump mass matrix
@@ -1054,12 +1034,12 @@ private:
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(ParameterList& params,  //!<parameter list
-                     const std::vector<double>&           vel,  //!< element velocity vector
-                     const std::vector<double>&           disp, //!<element disp vector
-                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force,
-                     std::vector<LINALG::Matrix<1,nnode> >& Imass,
+   void CalcBrownian(ParameterList&                                   params,  //!<parameter list
+                     const std::vector<double>&                       vel,  //!< element velocity vector
+                     const std::vector<double>&                       disp, //!<element disp vector
+                     Epetra_SerialDenseMatrix*                        stiffmatrix,  //!< element stiffness matrix
+                     Epetra_SerialDenseVector*                        force,
+                     std::vector<LINALG::Matrix<1,nnode> >&           Imass,
                      std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
@@ -1068,56 +1048,56 @@ private:
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes
    void MyRotationalDamping(ParameterList& params,  //!<parameter list
-                           const std::vector<double>&           vel,  //!< element velocity vector
-                           const std::vector<double>&           disp, //!<element disp vector
-                           Epetra_SerialDenseMatrix* stiffmatrix,//!< element stiffness matrix
-                           Epetra_SerialDenseVector* force,      //!< element internal force vector
-                           const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
-                           const std::vector<LINALG::Matrix<1,nnode> >& Idamping,
+                           const std::vector<double>&                             vel,  //!< element velocity vector
+                           const std::vector<double>&                             disp, //!<element disp vector
+                           Epetra_SerialDenseMatrix*                              stiffmatrix,//!< element stiffness matrix
+                           Epetra_SerialDenseVector*                              force,      //!< element internal force vector
+                           const DRT::UTILS::IntegrationPoints1D&                 gausspointsdamping,
+                           const std::vector<LINALG::Matrix<1,nnode> >&           Idamping,
                            const std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildedamping,
-                           const std::vector<LINALG::Matrix<4,1> >& Qconvdamping,
-                           const std::vector<LINALG::Matrix<4,1> >& Qnewdamping);
+                           const std::vector<LINALG::Matrix<4,1> >&               Qconvdamping,
+                           const std::vector<LINALG::Matrix<4,1> >&               Qnewdamping);
 
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                             const std::vector<double>&           vel,  //!< element velocity vector
-                             const std::vector<double>&           disp, //!<element disp vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyTranslationalDamping(ParameterList&           params,  //!<parameter list
+                             const std::vector<double>& vel,  //!< element velocity vector
+                             const std::vector<double>& disp, //!<element disp vector
+                             Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                             Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void MyStochasticForces(ParameterList& params,  //!<parameter list
-                         const std::vector<double>&           vel,  //!< element velocity vector
-                         const std::vector<double>&           disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyStochasticForces(ParameterList&           params,  //!<parameter list
+                         const std::vector<double>& vel,  //!< element velocity vector
+                         const std::vector<double>& disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes stochastic rotational moments and resulting stiffness
    template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
-   void MyStochasticMoments(ParameterList& params,  //!<parameter list
-                         const std::vector<double>&           vel,  //!< element velocity vector
-                         const std::vector<double>&           disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix* stiffmatrix,//!< element stiffness matrix
-                         Epetra_SerialDenseVector* force,      //!< element internal force vector
-                         const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
-                         const std::vector<LINALG::Matrix<1,nnode> >& Idamping,
+   void MyStochasticMoments(ParameterList&                                      params,  //!<parameter list
+                         const std::vector<double>&                             vel,  //!< element velocity vector
+                         const std::vector<double>&                             disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix*                              stiffmatrix,//!< element stiffness matrix
+                         Epetra_SerialDenseVector*                              force,      //!< element internal force vector
+                         const DRT::UTILS::IntegrationPoints1D&                 gausspointsdamping,
+                         const std::vector<LINALG::Matrix<1,nnode> >&           Idamping,
                          const std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildedamping,
-                         const std::vector<LINALG::Matrix<4,1> >& Qconvdamping,
-                         const std::vector<LINALG::Matrix<4,1> >& Qnewdamping);
+                         const std::vector<LINALG::Matrix<4,1> >&               Qconvdamping,
+                         const std::vector<LINALG::Matrix<4,1> >&               Qnewdamping);
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
-   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+   void MyBackgroundVelocity(ParameterList&                params,  //!<parameter list
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+                             LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>&    velbackgroundgrad); //!<gradient of velocity of background fluid
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(ParameterList& params,  //!<parameter list
-                 std::vector<double>&           disp); //!<element disp vector
+   void NodeShift(ParameterList&      params,  //!<parameter list
+                 std::vector<double>& disp); //!<element disp vector
 
    //@}
 

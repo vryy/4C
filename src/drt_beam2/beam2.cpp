@@ -13,14 +13,9 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "beam2.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_linedefinition.H"
-
 
 DRT::ELEMENTS::Beam2Type DRT::ELEMENTS::Beam2Type::instance_;
 
@@ -32,8 +27,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam2Type::Create( const std::vector<char> & data
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const string eletype,
-                                                             const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const std::string eletype,
+                                                             const std::string eledistype,
                                                              const int id,
                                                              const int owner )
 {
@@ -218,15 +213,15 @@ void DRT::ELEMENTS::Beam2::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Beam2::Unpack(const std::vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -261,9 +256,9 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
+std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
 }

@@ -13,7 +13,6 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "beam2r.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 

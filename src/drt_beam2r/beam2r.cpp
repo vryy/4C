@@ -13,12 +13,9 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "beam2r.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for shape functions
 #include "../drt_lib/drt_linedefinition.H"
 
@@ -32,8 +29,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam2rType::Create( const std::vector<char> & dat
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2rType::Create( const string eletype,
-                                                              const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2rType::Create( const std::string eletype,
+                                                              const std::string eledistype,
                                                               const int id,
                                                               const int owner )
 {
@@ -188,7 +185,7 @@ DRT::ELEMENTS::Beam2r::~Beam2r()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2r::Print(ostream& os) const
+void DRT::ELEMENTS::Beam2r::Print(std::ostream& os) const
 {
   os << "Beam2r ";
   Element::Print(os);
@@ -261,15 +258,15 @@ void DRT::ELEMENTS::Beam2r::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Beam2r::Unpack(const std::vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+	std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -294,9 +291,9 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08   |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
+std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2r::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
 }
@@ -410,7 +407,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2r::MyGaussRule(int nnode, Integratio
  |  vector xrefe (may be used also after simulation start)  cyron 01/08 |
  *----------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
+void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const std::vector<double>& xrefe)
 {
   /*this method initializes geometric variables of the element; such an initialization can only be done once when the element is
    * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
@@ -582,7 +579,7 @@ int DRT::ELEMENTS::Beam2rType::Initialize(DRT::Discretization& dis)
     if (!currele) dserror("cast to Beam2r* failed");
 
     //reference node position
-    vector<double> xrefe;
+    std::vector<double> xrefe;
 
     int nnode= currele->NumNode();
     //resize xrefe for the number of coordinates we need to store
