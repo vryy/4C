@@ -534,7 +534,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_topopt.cpp
   src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
   src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
-  src/drt_adapter/adapter_xfluid_impl.cpp
   src/drt_adapter/adapter_xfluid2_impl.cpp
   src/drt_adapter/adapter_fluid_fluid_impl.cpp
 )
@@ -568,16 +567,12 @@ set(OBJS_INTERSECTION
   src/drt_xfem/enrichment_utils.cpp
   src/drt_xfem/field_enriched.cpp
   src/drt_xfem/interface.cpp
-  src/drt_xfem/interfacexfsi.cpp
   src/drt_xfem/physics.cpp
-  src/drt_xfem/spacetime_boundary.cpp
   src/drt_xfem/timeInt.cpp
   src/drt_xfem/timeInt_enr.cpp
   src/drt_xfem/timeInt_std_extrapolation.cpp
   src/drt_xfem/timeInt_std_SemiLagrange.cpp
-  src/drt_xfem/xdofmapcreation.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
-  src/drt_xfem/xdofmapcreation_fsi.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
   src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_fluiddofset.cpp
@@ -950,7 +945,6 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidimpedancecondition.cpp
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp
-  src/drt_fluid/xfluidfluidresulttest.cpp
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/scale_sep_gmo.cpp
   src/drt_fluid/time_integration_scheme.cpp
@@ -964,10 +958,9 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/turbulence_statistics_ldc.cpp
   src/drt_fluid/turbulence_statistics_mean_general.cpp
   src/drt_fluid/turbulence_statistics_sqc.cpp
-  src/drt_fluid/xfluidimplicitintegration.cpp
-  src/drt_fluid/xfluidresulttest.cpp
   src/drt_fluid/xfluid.cpp
   src/drt_fluid/xfluidfluid.cpp
+  src/drt_fluid/xfluidfluidresulttest.cpp
 )
 set(OBJS_DRT_SR_LIB
   src/drt_smoothrod/smoothrod.cpp
@@ -1218,25 +1211,7 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_internalfaces_stabilization.cpp
   src/drt_f3/fluid3_stabilization.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
-  src/drt_f3/xfluid3.cpp
-  src/drt_f3/xfluid3_evaluate.cpp
-  src/drt_f3/xfluid3_input.cpp
-  src/drt_f3/xfluid3_line.cpp
-  src/drt_f3/xfluid3_line_evaluate.cpp
-  src/drt_f3/xfluid3_surface.cpp
-  src/drt_f3/xfluid3_surface_evaluate.cpp
-  src/drt_f3/xfluid3_sysmat_projection.cpp
-  src/drt_f3/xfluid3_sysmat_sigma.cpp
-  src/drt_f3/xfluid3_sysmat_tau_pressure.cpp
   src/drt_fluid/time_integration_element.cpp
-  src/drt_xdiff3/xdiff3.cpp
-  src/drt_xdiff3/xdiff3_evaluate.cpp
-  src/drt_xdiff3/xdiff3_input.cpp
-  src/drt_xdiff3/xdiff3_line.cpp
-  src/drt_xdiff3/xdiff3_line_evaluate.cpp
-  src/drt_xdiff3/xdiff3_surface.cpp
-  src/drt_xdiff3/xdiff3_surface_evaluate.cpp
-  src/drt_xdiff3/xdiff3_sysmat4.cpp
 )
 set(OBJS_DRT_F3_IMPL_LIB
   src/drt_f3_impl/fluid3_impl.cpp

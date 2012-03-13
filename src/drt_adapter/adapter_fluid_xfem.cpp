@@ -124,7 +124,7 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidXFEM::GetDBCMapExtractor(
 /*----------------------------------------------------------------------*/
 std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::CouplingMatrices()
 {
-  return XFluidField().CouplingMatrices();
+//  return XFluidField().CouplingMatrices();
 }
 
 
@@ -132,7 +132,7 @@ std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::Co
 /*----------------------------------------------------------------------*/
 std::map<std::string,Teuchos::RCP<Epetra_Vector> > ADAPTER::FluidXFEM::CouplingVectors()
 {
-  return XFluidField().CouplingVectors();
+//  return XFluidField().CouplingVectors();
 }
 
 

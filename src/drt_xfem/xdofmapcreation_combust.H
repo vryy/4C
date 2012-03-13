@@ -15,10 +15,25 @@ Maintainer: Axel Gerstenberger
 #ifndef XDOFMAPCREATION_COMBUST_H
 #define XDOFMAPCREATION_COMBUST_H
 
+
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_lib/drt_element.H"
+#include "physics.H"
+
+
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+namespace DRT
+{
+  class Element;
+}
 
 namespace XFEM
 {
+  class ElementAnsatz;
+  class FieldEnr;
 
   //! apply nodal enrichments to intersected element: used for combustion problem only
   bool ApplyJumpEnrichment(

@@ -13,7 +13,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "dof_management.H"
-#include "xdofmapcreation_fsi.H"
 #include "xdofmapcreation_combust.H"
 #include "enrichment_utils.H"
 #include "../drt_io/io_control.H"
@@ -28,39 +27,8 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_combust/combust_interface.H"
-#include "interfacexfsi.H"
 #include "xfem_fluidwizard.H"
 
-/*------------------------------------------------------------------------------------------------*
- | constructor: used for xfsi problems                                                   ag 11/07 |
- *------------------------------------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(
-    const RCP<XFEM::InterfaceHandleXFSI>&  ih,
-    const std::set<XFEM::PHYSICS::Field>&  fieldset,
-    const XFEM::ElementAnsatz&             element_ansatz,
-    const Teuchos::ParameterList&          params,
-    const vector<int>                      MovingFluidnodeGIDs
-    ) :
-  ih_(ih),
-  pbcmap_(Teuchos::null)
-{
-  XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params, MovingFluidnodeGIDs);
-
-#if 0
-  std::map<int, const std::set<XFEM::FieldEnr> >    nodalDofSet;
-  std::map<int, const std::set<XFEM::FieldEnr> >    elementalDofs;
-
-  ih->Wizard()->CreateDofMap( nodalDofSet, elementalDofs, fieldset, element_ansatz, params );
-
-  if ( nodalDofSet!=nodalDofSet_ )
-    dserror( "nodes mismatch" );
-
-  if ( elementalDofs!=elementalDofs_ )
-    dserror( "elements mismatch" );
-#endif
-
-  GatherUniqueEnrichments();
-}
 
 /*------------------------------------------------------------------------------------------------*
  | constructor: used for combustion problems only                                     henke 03/09 |

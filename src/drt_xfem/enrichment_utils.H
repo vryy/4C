@@ -1285,21 +1285,6 @@ namespace XFEM
   }
 
 
-/*! \brief for output, compute values on integration cells
- *
- * used for boundary discretization based XFEM problems
- */
-void computeScalarCellNodeValuesFromNodalUnknowns(
-  const DRT::Element&                 ele,
-  XFEM::InterfaceHandle*  ih,
-  const XFEM::ElementDofManager&      dofman,
-  const GEO::DomainIntCell&           cell,
-  const XFEM::PHYSICS::Field          field,
-  const LINALG::SerialDenseVector&    elementvalues,
-  LINALG::SerialDenseVector&          cellvalues
-  );
-
-
 /*! \brief for output, interpolate field to integration cells
  *
  * interpolate field from element node values to cell node values based
@@ -1407,47 +1392,6 @@ void computeVectorCellNodeValues(
   LINALG::SerialDenseMatrix&     cellvalues
   );
 
-/*!
- * \brief calculates the fraction of an element that is covered by fictitious domains.
- * \warning should be done separately for each enrichment, but currently it's not done
- *
- * \return ration between fictitious volume and element volume (can be between 0.0 and 1.0)
- */
-double DomainCoverageRatio(
-    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
-    const XFEM::InterfaceHandle&  ih             ///< interface information
-    );
-
-/*!
- * \brief calculates the fraction of an element that is covered by fictitious domains.
- * \warning should be done separately for each enrichment, but currently it's not done
- *
- * \return ratio between fictitious volume and element volume (can be between 0.0 and 1.0)
- */
-std::vector<double> DomainCoverageRatioPerNode(
-    const DRT::Element&           ele,           ///< the element whose area ratio we want to compute
-    const XFEM::InterfaceHandle&  ih             ///< interface information
-    );
-
-/*!
- * \brief calculates the area fraction of an element that is covered by fictitious domains.
- * \warning should be done separately for each enrichment, but currently it's not done
- */
-double BoundaryCoverageRatio(
-    const DRT::Element&               xele,          ///< the element whose area ratio we want to compute
-    const GEO::BoundaryIntCells&      boundaryIntCells,
-    const XFEM::InterfaceHandle&      ih             ///< interface information
-    );
-
-/*!
- * \brief calculates the volume fraction for each cell of an element .
- *
- * \return ratio between cell volume and element volume (can be between 0.0 and 1.0)
- */
-std::vector<double> DomainIntCellCoverageRatio(
-        const DRT::Element&           ele,
-        const XFEM::InterfaceHandle&  ih
-        );
 
 //! return assembly type depending on the DOF information
 XFEM::AssemblyType ComputeAssemblyType(

@@ -122,81 +122,10 @@ namespace XFEM
       std::map<int,int>      nodelabeln
     ) const;
 
-    void extrapolateOldTimeStepValues(
-        const Teuchos::RCP<DRT::Discretization>    bdis,
-        const std::map<int,LINALG::Matrix<3,1> >&  cutterposnp,
-        const Teuchos::RCP<const Epetra_Vector>    ivector,
-        Teuchos::RCP<Epetra_Vector>                state_vector
-    ) const;
-
-    // for fluid-fluid Coupling
-    // patchdis   (in): patchdis
-    // patchboxes (in): map of element id of the fluid-patch element to it's patchbox
-    void projectEmbeddedtoBackgroundfluid(
-      const RCP<DRT::Discretization>                patchdis,
-      const std::map<int,GEO::CUT::BoundingBox>&    patchboxes,
-      const RCP<const Epetra_Vector>                fluidstate_vector_n,
-      const RCP<Epetra_Vector>                      xfluidstate_vector_n,
-      const RCP<const Epetra_Vector>                fluiddispnm,
-      int                                           step
-    ) const;
-
-    // Transforms a backgroundFluid node in current coordinates to a point of patch fluid
-    // in element coordinates due to the given patch-element. After this the
-    // value of the node is interpolated from the embedded fluid.
-    // The nonlinar system is: F(xsi)=X_patch(xsi)-X_xfem=N(xsi)X_I_patch-X_xfem=0
-    // This nonlinear system of equation is solved with help of the Newton-method.
-    // The following linear system of equation is solved in every Newton-step:
-    // J(xsi)*delta_xsi=-F(xsi)
-    // pele                 (in)   :patch_element
-    // patchdis             (in)   :embedded
-    // x                    (in)   :backgr_node in current coordinates (x, y, z)
-    // xsi                  (inout):node in element coordinates
-    bool ComputeSpacialToElementCoordAndProject(
-      const DRT::Element*                                 pele, //patch_element
-      const RCP<DRT::Discretization>                      patchdis, // patch dis
-      const LINALG::Matrix<3,1>&                          x, // background node's coordinates (x,y,z)
-      const RCP<const Epetra_Vector>                      fluidstate_vector_n, //source
-      const RCP<Epetra_Vector>                            xfluidstate_vector_n, //the vector with unknowns
-      std::map<int, set<XFEM::FieldEnr> >::const_iterator unknownnodaldof,
-      const RCP<const Epetra_Vector>                      fluiddispnm  // embedded fluid position
-    ) const;
-
     //! switch from old to new dof distribution
     void generateTransferInformation(
         const Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
-
-    // needed for Round Robin
-    void PackValuestoSend(
-      const RCP<Epetra_Vector>                   state_vector,
-      std::map<int, set<XFEM::FieldEnr> >        unknownFieldEnr,
-      DRT::PackBuffer                          & sblock
-    ) const;
-
-    void UnpackValues(
-      RCP<Epetra_Vector>                         state_vector,
-      std::map<int, set<XFEM::FieldEnr> >         unknownFieldEnr,
-      vector<char>                             &  rblock
-    ) const;
-
-#ifdef PARALLEL
-    //! receive a block in the round robin communication pattern
-    void ReceiveBlock(
-      vector<char>                              & rblock,
-      DRT::Exporter                             & exporter,
-      MPI_Request                               & request
-    ) const;
-#endif
-
-#ifdef PARALLEL
-    //! send a block in the round robin communication pattern
-    void SendBlock(
-      vector<char>                             & sblock,
-      DRT::Exporter                            & exporter,
-      MPI_Request                              & request
-    ) const;
-#endif
 
     void GmshOutput(
       int                               step,

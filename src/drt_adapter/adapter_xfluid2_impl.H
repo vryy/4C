@@ -27,7 +27,6 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fluid/xfluid.H"
 
-#include "../drt_fluid/xfluidresulttest.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H" // should go away

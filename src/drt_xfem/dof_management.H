@@ -26,7 +26,6 @@ namespace COMBUST
 
 namespace XFEM
 {
-  class InterfaceHandleXFSI;
 
   /*!
  \brief He knows everything about the XFEM enrichments for one particular interface setup
@@ -38,15 +37,6 @@ namespace XFEM
 
       //! default constructor
       explicit DofManager();
-
-      //! constructor
-      explicit DofManager(
-          const RCP<XFEM::InterfaceHandleXFSI>&  ih,
-          const std::set<XFEM::PHYSICS::Field>&  fieldset,
-          const XFEM::ElementAnsatz&             element_ansatz,
-          const Teuchos::ParameterList&          params,
-          const vector<int>                      MovingFluidnodeGIDs
-          );
 
       //! constructor (for combustion problems)
       explicit DofManager(
@@ -115,7 +105,6 @@ namespace XFEM
           map<DofKey<onElem>, DofGID>&  ElementalDofDistributionMap     ///< element dofs
       ) const;
 
-      // TODO @Martin: change name (there are no nodal dofs)
       // fill column map with nodal dof positions in EpetraVectors for all DofKeys on this proc
       void fillNodalDofColDistributionMap(
           map<XFEM::DofKey<XFEM::onNode>, DofGID>&  NodalDofColDistributionMap

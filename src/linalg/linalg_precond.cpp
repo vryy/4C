@@ -19,9 +19,9 @@ Maintainer: Michael Gee
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_f3/fluid3.H"
-#include "../drt_f3/xfluid3.H"
 #include "../drt_combust/combust3.H"
 
 /*----------------------------------------------------------------------*
@@ -226,7 +226,6 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   bool is3d = false;
 #ifdef D_FLUID3
   if ( eot==DRT::ELEMENTS::Fluid3Type::Instance() or
-       eot==DRT::ELEMENTS::XFluid3Type::Instance() or
        eot==DRT::ELEMENTS::Combust3Type::Instance() )
   {
     // number of space dimensions is always one less than the number of dof's,

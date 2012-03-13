@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
-#include "adapter_xfluid_impl.H"
 
 namespace ADAPTER
 {
@@ -38,9 +37,6 @@ namespace ADAPTER
     /// fluid field
     Fluid& FluidField() { return fluid_.FluidField(); }
     const Fluid& FluidField() const { return fluid_.FluidField(); }
-
-    XFluidImpl& XFluidField() { return Teuchos::dyn_cast<XFluidImpl>(fluid_.FluidField()); }
-    const XFluidImpl& XFluidField() const { return Teuchos::dyn_cast<const XFluidImpl>(fluid_.FluidField()); }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const FLD::UTILS::MapExtractor& Interface() const;

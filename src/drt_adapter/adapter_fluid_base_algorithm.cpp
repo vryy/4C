@@ -30,7 +30,6 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_fluid_impl.H"
 #include "adapter_fluid_projection.H"
-#include "adapter_xfluid_impl.H"
 #include "adapter_xfluid2_impl.H"
 #include "adapter_fluid_genalpha.H"
 #include "adapter_fluid_combust.H"
@@ -624,14 +623,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
 
-    if (/*genprob.probtyp == prb_fsi_xfem or*/
-        genprob.probtyp == prb_fluid_xfem)
-    {
-      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
-      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, fluidtimeparams));
-    }
-    else if (genprob.probtyp == prb_fsi_xfem or
+    if (genprob.probtyp == prb_fsi_xfem or
              genprob.probtyp == prb_fluid_xfem2 )
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);

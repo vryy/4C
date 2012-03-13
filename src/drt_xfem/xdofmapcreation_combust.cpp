@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #include <iterator>
 
 
-#include "xdofmapcreation.H"
 #include "xdofmapcreation_combust.H"
 #include "xdofmapcreation_parallel_utils.H"
 #include "../drt_combust/two_phase_defines.H"
