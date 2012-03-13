@@ -1,0 +1,60 @@
+#####################################################
+#                                                   #
+# This file tells git which files are to be ignored #
+#                                                   #
+#####################################################
+
+# C++ build
+*.o
+*.a
+
+# Other build
+DartConfiguration.tcl
+
+# Executables
+baci-release
+baci-debug
+post_drt_ensight
+post_drt_generic
+post_drt_gid
+post_drt_monitor
+post_drt_s8convert
+pre_curve
+pre_exodus
+
+# Eclipse
+.cproject
+.project
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+
+# SVN
+.svn
+
+# Tests
+L2.txt
+Testing/
+artery?_.art
+test.out
+xxx*.control
+xxx*.s0
+xxx*.s-1
+xxx*.parameter
+xxx*.s0.p?
+xxx*.s-1.p?
+xxx*.err
+xxx*.p?.pos
+xxx*.p??.pos
+
+# Guides
+guides/build
+guides/reports
+guides/src/*/*/*.pdf
+
+# Doxygen
+doc/html/
