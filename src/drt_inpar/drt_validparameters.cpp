@@ -1010,6 +1010,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                "number of STC layers for multilayer case",
                &sdyn);
 
+  DoubleParameter("PTCDT",0.1,
+                  "pseudo time step for pseudo transient continuation (PTC) stabilized Newton procedure",
+                  &sdyn);
+
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -1042,7 +1046,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "lsnewton",
                                  "oppnewton",
                                  "modnewton",
-                                 "nlncg",
                                  "ptc",
                                  "newtonlinuzawa",
                                  "augmentedlagrange",
@@ -1054,7 +1057,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_newtonls,
                                  INPAR::STR::soltech_newtonopp,
                                  INPAR::STR::soltech_newtonmod,
-                                 INPAR::STR::soltech_nlncg,
                                  INPAR::STR::soltech_ptc,
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
