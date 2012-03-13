@@ -88,10 +88,24 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
 
   // a temprorary variable for read-in
   std::string buffer;
+  // read kinematic flag
+  linedef->ExtractString("KINEM",buffer);
+  if (buffer=="linear")
+  {
+    kintype_ = soh8_linear;
+    dserror ("Only nonlinear kinematics for SO_SH8P8 implemented!");
+  }
+  else if (buffer=="nonlinear")
+  {
+    kintype_ = soh8_nonlinear;
+  }
+  else dserror ("Reading SO_SH8P8 element failed unknown KINEM Type");
+
 
   // we expect kintype to be total lagrangian
-  kintype_ = soh8_totlag;
+  kintype_ = soh8_nonlinear;
   
+
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);
 

@@ -61,18 +61,16 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(const std::string& eletype,
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
-
-  // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = sow6_geolin;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = sow6_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="Updlag")
+  if (buffer=="linear")
   {
-    kintype_ = sow6_updlag;
-    dserror("Updated Lagrange for SO_WEG6 is not implemented!");
+    kintype_ = sow6_linear;
+    dserror("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
   }
-  else dserror("Reading of SO_WEG6 element failed");
+  else if (buffer=="nonlinear")
+  {
+    kintype_ = sow6_nonlinear;
+  }
+  else dserror ("Reading SO_WEG6 element failed KINEM unknwon");
 
   return true;
 }

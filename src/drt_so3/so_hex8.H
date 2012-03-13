@@ -526,9 +526,8 @@ protected:
   //! kinematic types of so_hex8 (default: total-lagrangian)
   enum KinematicType
   {
-    soh8_geolin,
-    soh8_totlag,
-    soh8_updlag // not yet implemented
+    soh8_linear,
+    soh8_nonlinear
   };
 
   /*!

@@ -72,6 +72,7 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
     .AddNamedString("EAS")
     .AddNamedString("ANS")
     .AddNamedString("THICKDIR")

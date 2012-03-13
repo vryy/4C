@@ -26,6 +26,20 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+  std::string buffer;
+   linedef->ExtractString("KINEM",buffer);
+   if (buffer=="linear")
+   {
+     // kintype_ not yet implemented for nstet5
+     //kintype_ = sonstet5_linear;
+     dserror("Reading of SO_NSTET element failed only nonlinear kinematics implemented");
+   }
+   else if (buffer=="nonlinear")
+   {
+     // kintype_ not yet implemented for nstet5
+     //kintype_ = sonstet5_nonlinear;
+   }
+   else dserror ("Reading SO_NSTET element failed KINEM unknown");
 
   return true;
 }

@@ -77,7 +77,6 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition( std::map<std::string,s
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
@@ -95,7 +94,7 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner) :
 DRT::Element(id,owner),
 data_()
 {
-  kintype_ = soh27_totlag;
+  kintype_ = soh27_nonlinear;
   invJ_.resize(NUMGPT_SOH27, LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
   return;

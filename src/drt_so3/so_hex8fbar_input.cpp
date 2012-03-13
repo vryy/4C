@@ -46,20 +46,19 @@ bool DRT::ELEMENTS::So_hex8fbar::ReadElement(const std::string& eletype,
   }
 
   // temporary variable for read-in
-  std::string buffer;
+   std::string buffer;
 
-	// read kinematic flag
-	linedef->ExtractString("KINTYP",buffer);
-	if (buffer=="lin")
-	{
-		kintype_ = soh8_geolin;
-		dserror("Only Total Lagrange for SO_HEX8FBAR implemented!");
-	}
-	else if (buffer=="nln")
-	{
-		kintype_ = soh8_totlag;
-	}
-	else dserror ("Reading SO_HEX8FBAR element failed");
+  // read kinematic flag
+  linedef->ExtractString("KINEM",buffer);
+  if (buffer=="linear")
+  {
+    dserror("Only nonlinear kinematics for SO_HEX8FBAR implemented!");
+  }
+  else if (buffer=="nonlinear")
+  {
+    kintype_ = soh8_nonlinear;
+  }
+  else dserror ("Reading SO_HEX8FBAR element failed KINEM unknown");
 
   return true;
 }

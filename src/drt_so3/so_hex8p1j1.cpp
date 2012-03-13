@@ -59,6 +59,7 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition( std::map<std::strin
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
     ;
 }
 

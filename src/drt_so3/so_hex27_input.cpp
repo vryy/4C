@@ -88,125 +88,26 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
     break;
   }
 
-  // read possible gaussian points, obsolete for computation
-  std::vector<int> ngp;
-  linedef->ExtractIntVector("GP",ngp);
-  for (int i=0; i<3; ++i)
-    if (ngp[i]!=3)
-      dserror("Only 3 GP for So_H27");
-
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
 
-  // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = soh27_geolin;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = soh27_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="Updlag")
+  if (buffer=="linear")
   {
-    kintype_ = soh27_updlag;
-    dserror("Only Total Lagrange for SO_HEX27 implemented!");
+    kintype_ = soh27_linear;
   }
-  else dserror("Reading of SO_HEX27 element failed");
+  else if (buffer=="nonlinear")
+  {
+    kintype_ = soh27_nonlinear;
+  }
+  else dserror ("Reading SO_HEX27 element failed KINEM unknown");
 
   // check for SVK material if geometrically linear
-  if (kintype_==soh27_geolin && Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+  if (kintype_==soh27_linear && Material()->MaterialType()!=INPAR::MAT::m_stvenant)
     dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex27 element");
 
   return true;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  read element input (public)                                maf 04/07|
- *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_hex27::ReadElement()
-{
-  // read element's nodes
-  int ierr=0;
-  const int nnode=27;
-  int nodes[27];
-  frchk("SOLIDH27",&ierr);
-  if (ierr==1)
-  {
-    frint_n("HEX27",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  else
-  {
-    dserror ("Reading of SOLIDH27 failed");
-  }
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
-
-  SetNodeIds(nnode,nodes);
-
-  // read number of material model
-  int material = 0;
-  frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of SO_HEX27 element material failed");
-  SetMaterial(material);
-
-  // special element-dependent input of material parameters
-  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
-    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
-    remo->Setup(NUMGPT_SOH27, this->Id());
-  } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
-    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    visco->Setup(NUMGPT_SOH27);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_visconeohooke){
-    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
-    visco->Setup(NUMGPT_SOH27);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_charmm){
-    MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
-    charmm->Setup(data_);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage){
-    double strength = 0.0; // section for extracting the element strength
-    frdouble("STRENGTH",&strength,&ierr);
-    if (ierr!=1) dserror("Reading of SO_SH8 element strength failed");
-    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
-    // aaadamage->Setup(NUMGPT_SOH8);
-    aaadamage->Setup(NUMGPT_SOH27,strength);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
-	holzcard->Setup(NUMGPT_SOH27, linedef);
-  }
-
-
-  // read possible gaussian points, obsolete for computation
-  int ngp[3];
-  frint_n("GP",ngp,3,&ierr);
-  if (ierr==1) for (int i=0; i<3; ++i) if (ngp[i]!=3) dserror("Only version with 3 GP for So_H27 implemented");
-
-  // we expect kintype to be total lagrangian
-  kintype_ = soh27_totlag;
-
-  // read kinematic type
-  char buffer[50];
-  frchar("KINEM",buffer,&ierr);
-  if (ierr)
-  {
-   // geometrically linear
-   if      (strncmp(buffer,"Geolin",6)==0)
-   {
-     kintype_ = soh27_geolin;
-     dserror("Only Total Lagrange for SO_HEX27 implemented!");
-   }
-   // geometrically non-linear with Total Lagrangean approach
-   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = soh27_totlag;
-   // geometrically non-linear with Updated Lagrangean approach
-   else if (strncmp(buffer,"Updlag",6)==0)
-   {
-       kintype_ = soh27_updlag;
-       dserror("Only Total Lagrange for SO_HEX27 implemented!");
-   }
-   else dserror("Reading of SO_HEX27 element failed");
-  }
-
-  return true;
-} // So_hex27::ReadElement()
-#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

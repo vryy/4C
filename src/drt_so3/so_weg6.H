@@ -390,9 +390,8 @@ protected:
   //! kinematic types of so_weg6
   enum KinematicType
   {
-    sow6_geolin,
-    sow6_totlag,
-    sow6_updlag
+    sow6_linear,
+    sow6_nonlinear,
   };
   //! kinematic type
   KinematicType                                            kintype_;

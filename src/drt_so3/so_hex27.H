@@ -385,9 +385,8 @@ protected:
   //! kinematic types of So_hex27, but yet only total-lagrangian is implemented
   enum KinematicType
   {
-    soh27_geolin,
-    soh27_totlag,
-    soh27_updlag
+    soh27_linear,
+    soh27_nonlinear
   };
 
    //! kinematic type

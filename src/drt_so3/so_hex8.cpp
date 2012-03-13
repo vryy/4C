@@ -92,8 +92,8 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
     .AddNamedString("EAS")
-    .AddNamedString("KINTYP")
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
@@ -114,7 +114,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = soh8_totlag;
+  kintype_ = soh8_nonlinear;
   eastype_ = soh8_easnone;
   neas_ = 0;
   invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));

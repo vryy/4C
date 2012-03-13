@@ -139,7 +139,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_totlag)
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
         if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_totlag)
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
         soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_totlag)
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
         if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_totlag)
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
         soh8_nlnstiffmass_gemm(lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                                INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_totlag)
+        if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
         {
           if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
             invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
@@ -1090,7 +1090,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       //
 
       // if a linear analysis is desired
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_linear)
         soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
       // standard is: geometrically non-linear with Total Lagrangean approach
       else

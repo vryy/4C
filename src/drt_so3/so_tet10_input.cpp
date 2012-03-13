@@ -42,16 +42,15 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
 
   // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = so_tet10_geolin;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = so_tet10_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="Updlag")
+  if(buffer=="linear")
   {
-    kintype_ = so_tet10_updlag;
-    dserror("Updated Lagrange for SO_TET10 is not implemented!");
+    kintype_ = so_tet10_linear;
+    dserror("Reading of SO_TET10 element failed only nonlinear kinematics implemented");
   }
-  else dserror("Reading of SO_TET10 element failed");
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="nonlinear")    kintype_ = so_tet10_nonlinear;
+  // geometrically non-linear with Updated Lagrangean approach
+  else dserror("Reading of SO_TET10 element failed KINEM unknown");
 
   return true;
 }

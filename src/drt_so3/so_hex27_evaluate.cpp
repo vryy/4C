@@ -105,7 +105,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_geolin)
+      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
         soh27_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27> myemat(true);
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_geolin)
+      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
         soh27_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_geolin)
+      if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
         soh27_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // special case: geometrically linear
-        if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_geolin)
+        if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
         {
           soh27_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         }

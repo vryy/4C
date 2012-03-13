@@ -365,9 +365,8 @@ protected:
   //! kinematic types of so_tet10 but yet only total-lagrangian is implemented
   enum KinematicType
   {
-    so_tet10_geolin,
-    so_tet10_totlag,
-    so_tet10_updlag
+    so_tet10_linear,
+    so_tet10_nonlinear
   };
 
 

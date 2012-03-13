@@ -91,7 +91,7 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner) :
 DRT::Element(id,owner),
 data_()
 {
-  kintype_ = so_tet10_totlag;
+  kintype_ = so_tet10_nonlinear;
   invJ_.resize(NUMGPT_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
   invJ_mass_.resize(NUMGPT_MASS_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));

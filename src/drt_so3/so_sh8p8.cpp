@@ -77,6 +77,7 @@ void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition( std::map<std::string,s
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
     .AddNamedString("STAB")
     .AddNamedString("ANS")
     .AddNamedString("LIN")

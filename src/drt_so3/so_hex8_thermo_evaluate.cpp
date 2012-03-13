@@ -74,7 +74,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
 
   // type of kinematic of the problem
   // solve a geometric linear system
-  if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+  if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_linear)
   {
     return LinEvaluate(
       params,

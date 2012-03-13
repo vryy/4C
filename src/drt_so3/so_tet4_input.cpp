@@ -51,77 +51,18 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
 
   // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = so_tet4_geolin;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = so_tet4_totlag;
-  // geometrically non-linear with Updated Lagrangean approach
-  else if (buffer=="Updlag")
+  if(buffer=="linear")
   {
-    kintype_ = so_tet4_updlag;
-    dserror("Updated Lagrange for SO_TET4 is not implemented!");
+    kintype_ = so_tet4_linear;
+    dserror("Reading of SO_TET4 element failed only nonlinear kinematics implemented");
   }
-  else dserror("Reading of SO_TET4 element failed");
-
-  //std::cout << (sizeof(*this)+NumNode()*(sizeof(DRT::Node*)+sizeof(int))) << "\n";
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="nonlinear")    kintype_ = so_tet4_nonlinear;
+  else dserror("Reading of SO_TET4 element failed KINEM unknown");
 
   return true;
 }
 
-
-#if 0
-/*----------------------------------------------------------------------*
- |  read element input (public)                                maf 04/07|
- *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_tet4::ReadElement()
-{
-  int ierr=0;
-  const int nnode=4;
-  int nodes[4];
-  frchk("SOLIDT4",&ierr);
-  if (ierr==1)
-  {
-    frint_n("TET4",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  else
-  {
-    dserror ("Reading of SOLIDTET4 failed");
-  }
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
-
-  SetNodeIds(nnode,nodes);
-
-  // read number of material model
-  int material = 0;
-  frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of SO_TET4 element material failed");
-  SetMaterial(material);
-
-  // we expect kintype to be total lagrangian
-  kintype_ = so_tet4_totlag;
-
-  // read kinematic type
-  char buffer[50];
-  frchar("KINEM",buffer,&ierr);
-  if (ierr)
-  {
-   // geometrically linear
-   if      (strncmp(buffer,"Geolin",6)==0)    kintype_ = so_tet4_geolin;
-   // geometrically non-linear with Total Lagrangean approach
-   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = so_tet4_totlag;
-   // geometrically non-linear with Updated Lagrangean approach
-   else if (strncmp(buffer,"Updlag",6)==0)
-   {
-       kintype_ = so_tet4_updlag;
-       dserror("Updated Lagrange for SO_TET4 is not implemented!");
-   }
-   else dserror("Reading of SO_TET4 element failed");
-  }
-
-  return true;
-} // So_tet4::ReadElement()
-#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

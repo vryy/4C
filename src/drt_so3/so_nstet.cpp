@@ -84,6 +84,7 @@ void DRT::ELEMENTS::NStetType::SetupElementDefinition( std::map<std::string,std:
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
+    .AddNamedInt("KINEM")
     ;
 }
 

@@ -36,48 +36,24 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
   }
-    
+  // temporary variable for read-in
+    std::string buffer;
+  // read kinematic flag
+  linedef->ExtractString("KINEM",buffer);
+  // no linear case implemented so far, hence just a dummy check
+  if (buffer=="linear")
+  {
+    //kintype_ = soh8_linear;
+    dserror("Only nonlinear kinematics for SO_HEX8p1j1 implemented!");
+  }
+  else if (buffer=="nonlinear")
+  {
+    // kintype_ = soh8_nonlinear;
+  }
+   else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
   return true;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  read element input (public)                                 lw 12/08|
- *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement()
-{
-  // read element's nodes
-  int ierr = 0;
-  const int nnode = NUMNOD_SOH8;
-  int nodes[nnode];
-  frchk("SOLIDH8P1J1",&ierr);
-  if (ierr==1)
-  {
-    frint_n("HEX8",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  else
-  {
-    dserror ("Reading of solid Q1P0 hex8 element failed");
-  }
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i)
-  {
-    nodes[i]--;
-  }
-
-  SetNodeIds(nnode,nodes);
-
-
-  // read number of material model
-  int material = 0;
-  frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of solid Q1P0 hex8 element material failed");
-  SetMaterial(material);
-
-  return true;
-} // So_Hex8P1J1::ReadElement()
-#endif
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

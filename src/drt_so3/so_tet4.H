@@ -393,9 +393,8 @@ protected:
   //! kinematic types of so_tet10
   enum KinematicType
   {
-    so_tet4_geolin,
-    so_tet4_totlag,
-    so_tet4_updlag
+    so_tet4_linear,
+    so_tet4_nonlinear
   };
 
   //! kinematic type

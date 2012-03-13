@@ -77,7 +77,6 @@ void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition( std::map<std::string,s
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
-    .AddNamedIntVector("GP",3)
     .AddNamedString("KINEM")
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
@@ -95,7 +94,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner) :
 DRT::Element(id,owner),
 data_()
 {
-  kintype_ = soh20_totlag;
+  kintype_ = soh20_nonlinear;
   invJ_.resize(NUMGPT_SOH20, LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
   return;
