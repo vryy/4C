@@ -1040,8 +1040,8 @@ set(OBJS_DRT_MAT
   src/drt_mat/micromaterialgp_static.cpp
 )
 set(OBJS_BACI_MAIN
-  src/drt_lib/drt_init_control.cpp
-  src/drt_lib/global_inp_control2.cpp
+  src/global_full/global_init_control.cpp
+  src/global_full/global_inp_control.cpp
   src/global_full/global_cal_control.cpp
   src/global_full/global_control.cpp
   src/global_full/baci.cpp

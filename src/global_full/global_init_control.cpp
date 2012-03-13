@@ -10,13 +10,12 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <string>
 #include <sstream>
 
-#include "drt_init_control.H"
-#include "standardtypes_cpp.H"
+#include "global_init_control.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 
@@ -24,15 +23,14 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
- | struct _GENPROB       genprob; defined in global_control.c           |
+ | struct _GENPROB       genprob;                                       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB  genprob;
 
 
 /*----------------------------------------------------------------------*/
 /*
-  Setup of input and output files. No actual read is performed
-  here.
+  Setup of input and output files. No actual read is performed here.
  */
 /*----------------------------------------------------------------------*/
 void ntaini_ccadiscret(
@@ -193,7 +191,6 @@ void ntaini_ccadiscret(
     }
   }
 
-
   /// set IO file names and kenners
   inputfile_name = infilename.str();
   outputfile_kenner = outfilekenner.str();
@@ -202,4 +199,3 @@ void ntaini_ccadiscret(
   return;
 }
 
-#endif

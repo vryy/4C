@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file global_inp_control.cpp
 \brief
 
 <pre>
@@ -10,18 +10,14 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
-
-#include "drt_globalproblem.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
-#include "drt_inputreader.H"
+#include "../drt_lib/drt_inputreader.H"
 
 
 /*----------------------------------------------------------------------*
-  | input of control, element and load information         m.gee 10/06  |
-  | This version of the routine uses the new discretization subsystem   |
-  | ccadiscret                                                          |
+  | general input of the problem to be solved              m.gee 10/06  |
  *----------------------------------------------------------------------*/
 void ntainp_ccadiscret(
   std::string& inputfile_name,
@@ -42,16 +38,16 @@ void ntainp_ccadiscret(
 
   problem->ReadParameter(reader);
 
-  /* input of not mesh or time based problem data  */
+  // input of not mesh or time based problem data
   problem->InputControl();
 
-  /* input of materials */
+  // input of materials
   problem->ReadMaterials(reader);
 
-  /* input of fields */
+  // input of fields
   problem->ReadFields(reader);
 
-  /* input of materials of cloned fields (if needed) */
+  // input of materials of cloned fields (if needed)
   problem->ReadClonedMaterials(reader);
 
   // read all types of geometry related conditions (e.g. boundary conditions)
@@ -80,4 +76,3 @@ void ntainp_ccadiscret(
 } // end of ntainp_ccadiscret()
 
 
-#endif  // #ifdef CCADISCRET

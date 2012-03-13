@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #include <cstdlib>
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
-#include "../drt_lib/global_inp_control2.H"
+//#include "../global_full/global_inp_control.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_hdf.H"

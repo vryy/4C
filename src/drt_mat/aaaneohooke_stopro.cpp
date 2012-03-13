@@ -29,11 +29,6 @@ Maintainer: Jonas Biehler
 #include "matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-// etest include
-#include "../drt_lib/global_inp_control2.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_io/io_hdf.H"
 
 using namespace DRT;
 /*----------------------------------------------------------------------*
