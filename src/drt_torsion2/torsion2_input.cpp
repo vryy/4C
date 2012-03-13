@@ -14,14 +14,11 @@ Maintainer: Christian Cyron
 
 #include "torsion2.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Torsion2::ReadElement(const std::string& eletype,
-                                          const std::string& distype,
+bool DRT::ELEMENTS::Torsion2::ReadElement(const std::string&          eletype,
+                                          const std::string&          distype,
                                           DRT::INPUT::LineDefinition* linedef)
 {
   //read constant of torsion spring

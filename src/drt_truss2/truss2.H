@@ -22,19 +22,8 @@ Maintainer: Christian Cyron
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech/statmech_time.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 
 
 /*!
@@ -55,7 +44,7 @@ public:
 
   static Truss2Type & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,
@@ -88,8 +77,8 @@ public:
 
   //! @name Friends
   friend class Truss2Type;
-  friend class StatMechManager;
-  friend void StatMechTime::Integrate();
+  //friend class StatMechManager;
+  //friend void StatMechTime::Integrate();
 
 
   //! @name Constructors and destructors and related methods
@@ -152,10 +141,9 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
-  virtual DRT::ElementType & ElementType() const
-  { return Truss2Type::Instance(); }
+  virtual DRT::ElementType & ElementType() const { return Truss2Type::Instance(); }
 
   //@}
 
@@ -168,7 +156,7 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -248,9 +236,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -276,10 +264,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -296,9 +284,9 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluatePTC(ParameterList& params,
+  virtual int EvaluatePTC(Teuchos::ParameterList&   params,
                           Epetra_SerialDenseMatrix& elemat1,
-                          int& ActNumDof0);
+                          int&                      ActNumDof0);
   //@}
 
 
@@ -367,17 +355,17 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t2_nlnstiffmass(vector<double>&           disp,
+  void t2_nlnstiffmass(std::vector<double>&      disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
 
 
   //!calculation of nonlinear stiffness and mass matrix
-  void t2_nlnstiffmass_totlag( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
+  void t2_nlnstiffmass_totlag(std::vector<double>&      disp,
+                              Epetra_SerialDenseMatrix* stiffmatrix,
+                              Epetra_SerialDenseMatrix* massmatrix,
+                              Epetra_SerialDenseVector* force);
 
   /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
@@ -386,11 +374,10 @@ private:
    * as strain measure.
    *
   */
-  void t2_nlnstiffmass_engstr( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force
-      );
+  void t2_nlnstiffmass_engstr(std::vector<double>&      disp,
+                              Epetra_SerialDenseMatrix* stiffmatrix,
+                              Epetra_SerialDenseMatrix* massmatrix,
+                              Epetra_SerialDenseVector* force);
 
   //! lump mass matrix
   void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -406,7 +393,7 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 } // namespace Elements

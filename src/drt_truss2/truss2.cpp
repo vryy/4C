@@ -13,10 +13,8 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "truss2.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Truss2Type DRT::ELEMENTS::Truss2Type::instance_;
@@ -30,10 +28,10 @@ DRT::ParObject* DRT::ELEMENTS::Truss2Type::Create( const std::vector<char> & dat
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const string eletype,
-                                                            const string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const std::string eletype,
+                                                              const std::string eledistype,
+                                                              const int    id,
+                                                              const int    owner )
 {
   if ( eletype=="TRUSS2" )
   {
@@ -193,15 +191,15 @@ void DRT::ELEMENTS::Truss2::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Truss2::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   //whether element has already been initialized
@@ -220,7 +218,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // kinematic type
   kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -232,9 +230,9 @@ void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
+std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
 }

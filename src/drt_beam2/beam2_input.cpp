@@ -18,8 +18,8 @@ Maintainer: Christian Cyron
 /*----------------------------------------------------------------------*
  |  read element input (public)                              cyron 01/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam2::ReadElement(const std::string& eletype,
-                                       const std::string& distype,
+bool DRT::ELEMENTS::Beam2::ReadElement(const std::string&          eletype,
+                                       const std::string&          distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model

@@ -22,20 +22,9 @@ Maintainer: Christian Cyron
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech/statmech_time.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -55,12 +44,12 @@ public:
 
   static Torsion3Type & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int         id,
+                                             const int         owner);
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -147,7 +136,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
   { return Torsion3Type::Instance(); }
@@ -163,7 +152,7 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -239,9 +228,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -267,10 +256,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&            params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -321,14 +310,14 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass(vector<double>&           disp,
+  void t3_nlnstiffmass(std::vector<double>&      disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
 
   //!calculation of elastic energy
-  void t3_energy( ParameterList& params,
-                  vector<double>&           disp,
+  void t3_energy( Teuchos::ParameterList& params,
+                  std::vector<double>&      disp,
                   Epetra_SerialDenseVector* intenergy);
 
 
@@ -339,8 +328,8 @@ private:
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(ParameterList& params,  //!<parameter list
-                 vector<double>&           disp); //!<element disp vector
+   void NodeShift(Teuchos::ParameterList&       params,  //!<parameter list
+                  std::vector<double>& disp); //!<element disp vector
 
    //@}
 
@@ -353,7 +342,7 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 } // namespace Elements

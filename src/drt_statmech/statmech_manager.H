@@ -153,7 +153,7 @@ public:
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params         a parameter list*/
-  void EvaluateDirichletPeriodic(Teuchos::ParameterList& params,
+  void EvaluateDirichletPeriodic(Teuchos::ParameterList&     params,
                                  Teuchos::RCP<Epetra_Vector> disn,
                                  Teuchos::RCP<Epetra_Vector> dirichtoggle,
                                  Teuchos::RCP<Epetra_Vector> invtoggle);
@@ -161,12 +161,12 @@ public:
   /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
    *  \param nodeids        vector containing DBC Node IDs
    *  \param onoff          vector containing onoff values for DOFs*/
-  void DoDirichletConditionPeriodic(std::vector<int>*              nodeids,
-                                    std::vector<int>*              onoff,
+  void DoDirichletConditionPeriodic(std::vector<int>*           nodeids,
+                                    std::vector<int>*           onoff,
                                     Teuchos::RCP<Epetra_Vector> disn,
                                     Teuchos::RCP<Epetra_Vector> dirichtoggle,
                                     Teuchos::RCP<Epetra_Vector> invtoggle,
-                                    Epetra_Vector& deltadbc);
+                                    Epetra_Vector&              deltadbc);
 
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename);
@@ -194,21 +194,21 @@ protected:
   void InitializePLengthAndSearchRes();
 
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
-  void SearchAndSetCrosslinkers(const int& istep,
-                                const double& dt,
-                                const Epetra_Map& noderowmap,
-                                const Epetra_Map& nodecolmap,
+  void SearchAndSetCrosslinkers(const int&                                istep,
+                                const double&                             dt,
+                                const Epetra_Map&                         noderowmap,
+                                const Epetra_Map&                         nodecolmap,
                                 const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                 const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
-                                Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
+                                Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
 
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void SearchAndDeleteCrosslinkers(const double& dt,
-                                   const Epetra_Map& noderowmap,
-                                   const Epetra_Map& nodecolmap,
+  void SearchAndDeleteCrosslinkers(const double&                             dt,
+                                   const Epetra_Map&                         noderowmap,
+                                   const Epetra_Map&                         nodecolmap,
                                    const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                                   Epetra_Vector& discol,
-                                   Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
+                                   Epetra_Vector&                            discol,
+                                   Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
 
   //! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
   bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol);
@@ -247,13 +247,13 @@ protected:
    *  \param crosslinkerpositions (in) vector holding the positions of the crosslink molecules
    *  \param crosslinkpartitions  (in) vector holding the information to which partial volume the crosslink molecules belong
    *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules*/
-  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
                             std::vector<std::vector<std::vector<int> > >* nodeinpartition,
-                            Epetra_Vector& numbond,
-                            Epetra_MultiVector& crosslinkerpositions,
-                            Epetra_MultiVector& crosslinkpartitions,
-                            Epetra_MultiVector& bspottriadscol,
-                            Teuchos::RCP<Epetra_MultiVector>& neighboursLID);
+                            Epetra_Vector&                                numbond,
+                            Epetra_MultiVector&                           crosslinkerpositions,
+                            Epetra_MultiVector&                           crosslinkpartitions,
+                            Epetra_MultiVector&                           bspottriadscol,
+                            Teuchos::RCP<Epetra_MultiVector>&             neighboursLID);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
   void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot);
@@ -296,13 +296,13 @@ protected:
    * 	\param filename (in) output file name
    * 	\param filorientoutput (in) determine whether or not to output filament element directional vectors
    */
-  void DDCorrCurrentStructure(const Epetra_Vector& disrow,
-                              LINALG::Matrix<3,1>* cog,
-                              LINALG::Matrix<3,1>* centershift,
-                              std::vector<int>* crosslinkerentries,
-                              const int& istep,
+  void DDCorrCurrentStructure(const Epetra_Vector&      disrow,
+                              LINALG::Matrix<3,1>*      cog,
+                              LINALG::Matrix<3,1>*      centershift,
+                              std::vector<int>*         crosslinkerentries,
+                              const int&                istep,
                               const std::ostringstream& filename,
-                              bool filorientoutput=true);
+                              bool                      filorientoutput=true);
 
   //! \brief iterate vector in order to obtain close approximation to actual (structure) vector
   void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
@@ -360,16 +360,19 @@ protected:
    *  \param init             (in) switch between methods
    */
   void CrosslinkerDiffusion(const Epetra_Vector& dis,
-                            double mean,
-                            double standarddev,
-                            const double &dt);
+                            double               mean,
+                            double               standarddev,
+                            const double&        dt);
 
   /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
    *  \param currentpositions     (in) column map node positions
    *  \param LID                  (in) column map node LIDs
    *  \param crosslinkernumber    (in) position in crosslink molecule vector*/
-  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
-                                     const int& crosslinkernumber, Epetra_MultiVector& bspottriadscol, bool coupledmovement=true);
+  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+                                     const LINALG::SerialDenseMatrix&          LID,
+                                     const int&                                crosslinkernumber,
+                                     Epetra_MultiVector&                       bspottriadscol,
+                                     bool                                      coupledmovement=true);
 
   /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
    *  \param currentpositions     (in)      column map node positions

@@ -22,19 +22,9 @@ Maintainer: Christian Cyron
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-#include "../drt_lib/drt_element.H"
+
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_condition.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_statmech/statmech_manager.H"
-#include "../drt_statmech/statmech_time.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_statmech.H"
 
 
@@ -56,12 +46,12 @@ public:
 
   static Truss3Type & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int         id,
+                                             const int         owner );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -89,11 +79,11 @@ public:
 
   //! @name Friends
   friend class Truss3Type;
-  friend class StatMechManager;
-  friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
-  friend void StatMechTime::Integrate();
-  friend void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element);
-  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
+  //friend class StatMechManager;
+  //friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
+  //friend void StatMechTime::Integrate();
+  //friend void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element);
+  //friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods
@@ -156,10 +146,17 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
   { return Truss3Type::Instance(); }
+
+  //@}
+
+  //! @name methods for initilization of the element
+
+  //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
+  void SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit = false);
 
   //@}
 
@@ -172,7 +169,7 @@ public:
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -191,6 +188,16 @@ public:
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
   */
   virtual int NumDofPerElement() const { return 0;}
+
+  /*!
+  \brief Set cross section area of this element
+  */
+  void SetCrossSec(const double& crosssec);
+
+  /*!
+  \brief computes the number of different random numbers required in each time step for generation of stochastic forces
+  */
+  int HowManyRandomNumbersINeed();
 
   /*!
   \brief Print this element
@@ -216,8 +223,8 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
+  bool ReadElement(const std::string&          eletype,
+                   const std::string&          distype,
                    DRT::INPUT::LineDefinition* linedef);
 
   //@}
@@ -252,9 +259,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -280,10 +287,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -302,7 +309,7 @@ public:
   \return 0 if successful, negative otherwise
   */
   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-  int EvaluatePTC(ParameterList&            params,
+  int EvaluatePTC(Teuchos::ParameterList&   params,
                   Epetra_SerialDenseMatrix& elemat1);
 
   //!\brief return cross section of the truss
@@ -365,10 +372,10 @@ private:
   double lrefe_;
 
   //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
-  vector<double> jacobimass_;
+  std::vector<double> jacobimass_;
 
-  //! Vector holding value of Jacobi determinant jacobi at nodes
-  vector<double> jacobinode_;
+  //! vector holding value of Jacobi determinant jacobi at nodes
+  std::vector<double> jacobinode_;
 
   //! cross section area
   double crosssec_;
@@ -379,37 +386,30 @@ private:
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
 
-  //! @name methods for initilization of the element
-
-  //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit = false);
-
-  //@}
-
   //! @name Internal calculation methods
 
   //!determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t3_nlnstiffmass(ParameterList&            params,
-                       vector<double>&           vel,
-                       vector<double>&           disp,
+  void t3_nlnstiffmass(Teuchos::ParameterList&   params,
+                       std::vector<double>&      vel,
+                       std::vector<double>&      disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
 
   //!calculation of elastic energy
-  void t3_energy( ParameterList& params,
-                  vector<double>&           disp,
+  void t3_energy( Teuchos::ParameterList&   params,
+                  std::vector<double>&      disp,
                   Epetra_SerialDenseVector* intenergy);
 
 
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass_totlag( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
+  void t3_nlnstiffmass_totlag(std::vector<double>&      disp,
+                              Epetra_SerialDenseMatrix* stiffmatrix,
+                              Epetra_SerialDenseMatrix* massmatrix,
+                              Epetra_SerialDenseVector* force);
 
   /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
@@ -418,10 +418,10 @@ private:
    * as strain measure.
    *
   */
-  void t3_nlnstiffmass_engstr( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
+  void t3_nlnstiffmass_engstr(std::vector<double>&      disp,
+                              Epetra_SerialDenseMatrix* stiffmatrix,
+                              Epetra_SerialDenseMatrix* massmatrix,
+                              Epetra_SerialDenseVector* force);
 
   //! lump mass matrix
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -432,45 +432,44 @@ private:
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void CalcBrownian(ParameterList& params,  //!<parameter list
-                     const vector<double>&           vel,  //!< element velocity vector
-                     const vector<double>&           disp, //!<element disp vector
-                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector
+   void CalcBrownian(Teuchos::ParameterList&    params,  //!<parameter list
+                     const std::vector<double>& vel,  //!< element velocity vector
+                     const std::vector<double>& disp, //!<element disp vector
+                     Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                     Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
-
-   //!computes the number of different random numbers required in each time step for generation of stochastic forces
-   int HowManyRandomNumbersINeed();
+   void MyDampingConstants(Teuchos::ParameterList&               params,
+                           LINALG::Matrix<3,1>&                  gamma,
+                           const INPAR::STATMECH::FrictionModel& frictionmodel);
 
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                             const vector<double>&           vel,  //!< element velocity vector
-                             const vector<double>&           disp, //!<element disp vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyTranslationalDamping(Teuchos::ParameterList&    params,  //!<parameter list
+                               const std::vector<double>& vel,  //!< element velocity vector
+                               const std::vector<double>& disp, //!<element disp vector
+                               Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                               Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-   void MyStochasticForces(ParameterList& params,  //!<parameter list
-                         const vector<double>&           vel,  //!< element velocity vector
-                         const vector<double>&           disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   void MyStochasticForces(Teuchos::ParameterList&    params,  //!<parameter list
+                           const std::vector<double>& vel,  //!< element velocity vector
+                           const std::vector<double>& disp, //!<element disp vector
+                           Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+                           Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
-   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+   void MyBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+                             LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>&    velbackgroundgrad); //!<gradient of velocity of background fluid
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions
-   void NodeShift(ParameterList& params,  //!<parameter list
-                 vector<double>&           disp); //!<element disp vector
+   void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+                  std::vector<double>&    disp); //!<element disp vector
 
    //@}
 
@@ -483,7 +482,7 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 } // namespace Elements

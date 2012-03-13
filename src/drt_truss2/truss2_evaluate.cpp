@@ -11,18 +11,13 @@ Maintainer: Christian Cyron
 
  *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#include <random/normal.h>
 
 #include "truss2.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
 #include "../drt_mat/stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*

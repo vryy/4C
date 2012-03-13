@@ -110,4 +110,13 @@ bool DRT::ELEMENTS::Truss3::ReadElement()
 } // Truss3::ReadElement()
 #endif
 
+/*------------------------------------------------------------------------*
+ | Set cross section area                           (public) mueller 03/12|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec)
+{
+  crosssec_ = crosssec;
+  return;
+}
+
 #endif  // #ifdef CCADISCRET

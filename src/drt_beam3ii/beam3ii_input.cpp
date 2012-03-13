@@ -18,9 +18,9 @@ Maintainer: Christian Cyron
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
-                                       const std::string& distype,
-                                       DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string&          eletype,
+                                         const std::string&          distype,
+                                         DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

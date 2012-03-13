@@ -18,8 +18,8 @@ Maintainer: Christian Cyron
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Truss2::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
+bool DRT::ELEMENTS::Truss2::ReadElement(const std::string&          eletype,
+                                        const std::string&          distype,
                                         DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model

@@ -31,7 +31,7 @@ Maintainer: Christian Cyron
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
     vector<int>& lm,
     Epetra_SerialDenseMatrix& elemat1,
@@ -391,7 +391,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
                                         DRT::Condition& condition,
                                         vector<int>& lm,
@@ -592,7 +592,7 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
  | calculation of elastic energy (private)                                                        cyron 12/10|
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_energy( ParameterList& params,
+void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
                                         vector<double>& disp,
                                         Epetra_SerialDenseVector* intenergy)
 {
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( ParameterList& params,
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
+void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
                                             vector<double>&           vel,
                                             vector<double>&           disp,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
@@ -948,7 +948,7 @@ void DRT::ELEMENTS::Beam3ii::lumpmass(Epetra_SerialDenseMatrix* emass)
  | Evaluate PTC damping (public)                                                                  cyron 10/08|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
+void DRT::ELEMENTS::Beam3ii::EvaluatePTC(Teuchos::ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
   //apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
@@ -991,7 +991,7 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -1044,7 +1044,7 @@ int DRT::ELEMENTS::Beam3ii::HowManyRandomNumbersINeed()
  |the physical space                                                         (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
                                                 const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                                                 LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(ParameterList& params,  //!<pa
  | computes rotational damping forces and stiffness (public)                                    cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode> //number of nodes
-inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
                                               const vector<double>&     vel,  //!< element velocity vector
                                               const vector<double>&     disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1201,7 +1201,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
  | computes translational damping forces and stiffness (public)                                 cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
                                                   const vector<double>&     vel,  //!< element velocity vector
                                                   const vector<double>&     disp, //!<element disp vector
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1315,7 +1315,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(ParameterList& params
  | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
                                               const vector<double>&     vel,  //!< element velocity vector
                                               const vector<double>&     disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1397,7 +1397,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(ParameterList& params,  /
  | computes stochastic moments and (if required) resulting stiffness (public)                   cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList& params,  //!<parameter list
                                               const vector<double>&     vel,  //!< element velocity vector
                                               const vector<double>&     disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1471,7 +1471,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
  | theorem                                                                               (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
+inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
                                               const vector<double>&           vel,  //!< element velocity vector
                                               const vector<double>&           disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1585,7 +1585,7 @@ return;
  |                                                                                       (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Beam3ii::NodeShift(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
                                             vector<double>& disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees

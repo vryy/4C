@@ -23,7 +23,7 @@ Maintainer: Christian Cyron
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Beam2::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Beam2::EvaluateNeumann(Teuchos::ParameterList&    params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -378,10 +378,10 @@ inline void DRT::ELEMENTS::Beam2::updatealpha(const LINALG::Matrix<3,2>& xcurr,c
  *----------------------------------------------------------------------------------------------------------*/
 //notation for this function similar to Crisfield, Volume 1;
 inline void DRT::ELEMENTS::Beam2::local_aux(LINALG::Matrix<3,6>& Bcurr,
-                                        LINALG::Matrix<6,1>& rcurr,
-                                        LINALG::Matrix<6,1>& zcurr,
-                                        const double& lcurr,
-                                        const double& lrefe_)
+                                        LINALG::Matrix<6,1>&     rcurr,
+                                        LINALG::Matrix<6,1>&     zcurr,
+                                        const double&            lcurr,
+                                        const double&            lrefe_)
 {
   double cos_alpha = cos(alphanew_);
   double sin_alpha = sin(alphanew_);
@@ -420,14 +420,14 @@ inline void DRT::ELEMENTS::Beam2::local_aux(LINALG::Matrix<3,6>& Bcurr,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2::nlnstiffmass(ParameterList& params,
+void DRT::ELEMENTS::Beam2::nlnstiffmass(Teuchos::ParameterList&   params,
                                         vector<int>&              lm,
                                         vector<double>&           vel,
                                         vector<double>&           disp,
                                         Epetra_SerialDenseMatrix* stiffmatrix,
                                         Epetra_SerialDenseMatrix* massmatrix,
                                         Epetra_SerialDenseVector* force,
-                                        int lumpedmass)
+                                        int                       lumpedmass)
 {
   const int numdf = 3;
   const int iel = NumNode();
@@ -619,7 +619,7 @@ int DRT::ELEMENTS::Beam2::HowManyRandomNumbersINeed()
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam2::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Beam2::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
 {  
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -657,10 +657,10 @@ inline void DRT::ELEMENTS::Beam2::MyDampingConstants(ParameterList& params,LINAL
  |the physical space                                                         (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam2::MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+void DRT::ELEMENTS::Beam2::MyBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
                                                 const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                                                LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                                                LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
+                                                LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
+                                                LINALG::Matrix<ndim,ndim>&    velbackgroundgrad) //!<gradient of velocity of background fluid
 {
   
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
@@ -679,11 +679,11 @@ void DRT::ELEMENTS::Beam2::MyBackgroundVelocity(ParameterList& params,  //!<para
  | computes translational damping forces and stiffness (public)                                 cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Beam2::MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                                                  const vector<double>&     vel,  //!< element velocity vector
-                                                  const vector<double>&     disp, //!<element disp vector
-                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector* force)//!< element internal force vector
+inline void DRT::ELEMENTS::Beam2::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                                  const vector<double>&          vel,  //!< element velocity vector
+                                                  const vector<double>&          disp, //!<element disp vector
+                                                  Epetra_SerialDenseMatrix*      stiffmatrix,  //!< element stiffness matrix
+                                                  Epetra_SerialDenseVector*      force)//!< element internal force vector
 {  
   //get time step size
   double dt = params.get<double>("delta time",0.0);
@@ -787,11 +787,11 @@ inline void DRT::ELEMENTS::Beam2::MyTranslationalDamping(ParameterList& params, 
  | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam2::MyStochasticForces(ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
-                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+inline void DRT::ELEMENTS::Beam2::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                              const vector<double>&          vel,  //!< element velocity vector
+                                              const vector<double>&          disp, //!<element disp vector
+                                              Epetra_SerialDenseMatrix*      stiffmatrix,  //!< element stiffness matrix
+                                              Epetra_SerialDenseVector*      force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -868,9 +868,9 @@ inline void DRT::ELEMENTS::Beam2::MyStochasticForces(ParameterList& params,  //!
  | theorem                                                                               (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam2::CalcBrownian(ParameterList& params,
-                                              const vector<double>&           vel,  //!< element velocity vector
-                                              const vector<double>&           disp, //!< element displacement vector
+inline void DRT::ELEMENTS::Beam2::CalcBrownian(Teuchos::ParameterList&  params,
+                                              const vector<double>&     vel,  //!< element velocity vector
+                                              const vector<double>&     disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force) //!< element internal force vector
 {   

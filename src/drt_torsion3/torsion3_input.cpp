@@ -18,8 +18,8 @@ Maintainer: Christian Cyron
 
 
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string& eletype,
-                                          const std::string& distype,
+bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string&          eletype,
+                                          const std::string&          distype,
                                           DRT::INPUT::LineDefinition* linedef)
 {
   //read constant of torsion spring

@@ -22,7 +22,7 @@ Maintainer: Christian Cyron
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Beam2r::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -339,7 +339,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam2r::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Beam2r::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -481,7 +481,7 @@ inline void DRT::ELEMENTS::Beam2r::local_aux(LINALG::Matrix<3,3*nnode>& Bcurr_gp
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
+void DRT::ELEMENTS::Beam2r::nlnstiffmass( Teuchos::ParameterList& params,
                                             vector<double>&           vel,
                                             vector<double>&           disp,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
@@ -819,7 +819,7 @@ int DRT::ELEMENTS::Beam2r::HowManyRandomNumbersINeed()
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel,const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi)
+inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel,const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi)
 {  
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -856,7 +856,7 @@ inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINA
  |the physical space                                                         (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam2r::MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+void DRT::ELEMENTS::Beam2r::MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
                                                 const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                                                 LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
@@ -878,7 +878,7 @@ void DRT::ELEMENTS::Beam2r::MyBackgroundVelocity(ParameterList& params,  //!<par
  | computes translational damping forces and stiffness (public)                                 cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
                                                   const vector<double>&     vel,  //!< element velocity vector
                                                   const vector<double>&     disp, //!<element disp vector
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -986,7 +986,7 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
  | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
                                               const vector<double>&     vel,  //!< element velocity vector
                                               const vector<double>&     disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -1066,7 +1066,7 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //
  | theorem                                                                               (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam2r::CalcBrownian(ParameterList& params,
+inline void DRT::ELEMENTS::Beam2r::CalcBrownian(Teuchos::ParameterList& params,
                                               const vector<double>&           vel,  //!< element velocity vector
                                               const vector<double>&           disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix

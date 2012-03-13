@@ -32,10 +32,10 @@ DRT::ParObject* DRT::ELEMENTS::Beam3iiType::Create( const std::vector<char> & da
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create( const string eletype,
-                                                            const string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create(const std::string eletype,
+                                                              const std::string eledistype,
+                                                              const int         id,
+                                                              const int         owner )
 {
   if ( eletype=="BEAM3II" )
   {

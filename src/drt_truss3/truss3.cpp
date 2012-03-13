@@ -13,10 +13,10 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "truss3.H"
-#include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+//#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
@@ -30,11 +30,11 @@ DRT::ParObject* DRT::ELEMENTS::Truss3Type::Create( const std::vector<char> & dat
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const string eletype,
-                                                            const string eledistype,
-                                                            const int id,
-                                                            const int owner )
-{
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const std::string eletype,
+                                                              const std::string eledistype,
+                                                              const int         id,
+                                                              const int         owner )
+  {
   if ( eletype=="TRUSS3" )
   {
     Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));

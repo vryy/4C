@@ -13,21 +13,16 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "torsion3.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
-    vector<int>& lm,
+    std::vector<int>& lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -83,7 +78,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       t3_energy(params,mydisp,&elevec1);
@@ -102,12 +97,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       // get element displcements
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
@@ -230,10 +225,10 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Torsion3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Torsion3::EvaluateNeumann(Teuchos::ParameterList& params,
                                             DRT::Discretization&      discretization,
                                             DRT::Condition&           condition,
-                                            vector<int>&              lm,
+                                            std::vector<int>&              lm,
                                             Epetra_SerialDenseVector& elevec1,
                                             Epetra_SerialDenseMatrix* elemat1)
 {
@@ -246,8 +241,8 @@ int DRT::ELEMENTS::Torsion3::EvaluateNeumann(ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_energy(ParameterList& params,
-                                        vector<double>& disp,
+void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
+                                        std::vector<double>& disp,
                                         Epetra_SerialDenseVector* intenergy)
 {
   //current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for third node)
@@ -295,7 +290,7 @@ void DRT::ELEMENTS::Torsion3::t3_energy(ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
+void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>&           disp,
                                               Epetra_SerialDenseMatrix* stiffmatrix,
                                               Epetra_SerialDenseMatrix* massmatrix,
                                               Epetra_SerialDenseVector* force)
@@ -496,8 +491,8 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
  |                                                                                       (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<parameter list
-                                            vector<double>& disp) //!<element disp vector
+inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+                                            std::vector<double>& disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/

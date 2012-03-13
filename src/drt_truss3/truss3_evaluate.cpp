@@ -11,31 +11,27 @@ Maintainer: Christian Cyron
 
  *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
+// random number library of blitz for statistical forces
+#include <random/normal.h>
 
 #include "truss3.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-//including random number library of blitz for statistical forces
-#include <random/normal.h>
 #include "../drt_mat/stvenantkirchhoff.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
-    DRT::Discretization& discretization,
-    vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
+                                    DRT::Discretization&      discretization,
+                                    std::vector<int>&         lm,
+                                    Epetra_SerialDenseMatrix& elemat1,
+                                    Epetra_SerialDenseMatrix& elemat2,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseVector& elevec2,
+                                    Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Truss3::ActionType act = Truss3::calc_none;
   // get the action required
@@ -85,7 +81,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       t3_energy(params,mydisp,&elevec1);
@@ -104,12 +100,12 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       // get element displcements
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
@@ -117,7 +113,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       NodeShift<2,3>(params,mydisp);
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
-      vector<double> myvel(lm.size());
+      std::vector<double> myvel(lm.size());
       if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
         RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
@@ -248,17 +244,17 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
-    DRT::Discretization& discretization,
-    DRT::Condition& condition,
-    vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix* elemat1)
+int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
+                                           DRT::Discretization&     discretization,
+                                           DRT::Condition&          condition,
+                                           std::vector<int>&        lm,
+                                           Epetra_SerialDenseVector& elevec1,
+                                           Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 
@@ -268,7 +264,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   // number of the load curve related with a specific line Neumann condition called
   if (curve) curvenum = (*curve)[0];
@@ -292,10 +288,10 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
 
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const vector<int>* onoff = condition.Get<vector<int> >("onoff");
+  const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const vector<double>* val = condition.Get<vector<double> >("val");
+  const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
   //integration loops
   for (int ip=0; ip<intpoints.nquad; ++ip)
@@ -337,8 +333,8 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
  | Evaluate PTC damping (public)                                                                  cyron 04/10|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
-                                      Epetra_SerialDenseMatrix& elemat1)
+int DRT::ELEMENTS::Truss3::EvaluatePTC(Teuchos::ParameterList&   params,
+                                       Epetra_SerialDenseMatrix& elemat1)
 {
 
   //factor to regulate artificial ptc stiffness;
@@ -384,8 +380,8 @@ int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_energy(ParameterList& params,
-                                      vector<double>& disp,
+void DRT::ELEMENTS::Truss3::t3_energy(Teuchos::ParameterList&   params,
+                                      std::vector<double>&      disp,
                                       Epetra_SerialDenseVector* intenergy)
 {
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
@@ -468,12 +464,12 @@ void DRT::ELEMENTS::Truss3::t3_energy(ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
-    vector<double>&           vel,
-    vector<double>&           disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
+                                            std::vector<double>&      vel,
+                                            std::vector<double>&      disp,
+                                            Epetra_SerialDenseMatrix* stiffmatrix,
+                                            Epetra_SerialDenseMatrix* massmatrix,
+                                            Epetra_SerialDenseVector* force)
 {
   switch(kintype_)
   {
@@ -501,10 +497,10 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(std::vector<double>&      disp,
+                                                   Epetra_SerialDenseMatrix* stiffmatrix,
+                                                   Epetra_SerialDenseMatrix* massmatrix,
+                                                   Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
@@ -627,10 +623,10 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
  | nonlinear stiffness and mass matrix (private)                                                      tk 10/08|
  | engineering strain measure, large displacements and rotations                                                |
   *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr( vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(std::vector<double>&      disp,
+                                                   Epetra_SerialDenseMatrix* stiffmatrix,
+                                                   Epetra_SerialDenseMatrix* massmatrix,
+                                                   Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
@@ -754,7 +750,7 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Truss3::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Truss3::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -786,10 +782,10 @@ int DRT::ELEMENTS::Truss3::HowManyRandomNumbersINeed()
  |the physical space                                                         (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(ParameterList& params,  //!<parameter list
-                                                const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                                                LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
-                                                LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
+void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
+                                                 const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                                                 LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
+                                                 LINALG::Matrix<ndim,ndim>&    velbackgroundgrad) //!<gradient of velocity of background fluid
 {
 
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
@@ -808,11 +804,11 @@ void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(ParameterList& params,  //!<par
  | computes translational damping forces and stiffness (public)                                 cyron   03/10|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                                                  const vector<double>&     vel,  //!< element velocity vector
-                                                  const vector<double>&     disp, //!<element disp vector
-                                                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector* force)//!< element internal force vector
+inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                                  const std::vector<double>&      vel,  //!< element velocity vector
+                                                  const std::vector<double>&      disp, //!<element disp vector
+                                                  Epetra_SerialDenseMatrix*       stiffmatrix,  //!< element stiffness matrix
+                                                  Epetra_SerialDenseVector*       force)//!< element internal force vector
 {
   //get time step size
   double dt = params.get<double>("delta time",0.0);
@@ -832,7 +828,7 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(ParameterList& params,
   MyDampingConstants(params,gamma,frictionmodel);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -915,11 +911,11 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(ParameterList& params,
  | computes stochastic forces and resulting stiffness (public)                                  cyron   03/10|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Truss3::MyStochasticForces(ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
-                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&    params,  //!<parameter list
+                                                      const std::vector<double>& vel,  //!< element velocity vector
+                                                      const std::vector<double>& disp, //!<element disp vector
+                                                      Epetra_SerialDenseMatrix*   stiffmatrix,  //!< element stiffness matrix
+                                                      Epetra_SerialDenseVector*   force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -930,7 +926,7 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(ParameterList& params,  //
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -997,11 +993,11 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(ParameterList& params,  //
  | theorem                                                                               (public) cyron 03/10|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Truss3::CalcBrownian(ParameterList& params,
-                                              const vector<double>&           vel,  //!< element velocity vector
-                                              const vector<double>&           disp, //!< element displacement vector
-                                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector* force) //!< element internal force vector
+inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList&    params,
+                                                const std::vector<double>& vel,  //!< element velocity vector
+                                                const std::vector<double>& disp, //!< element displacement vector
+                                                Epetra_SerialDenseMatrix*   stiffmatrix,  //!< element stiffness matrix
+                                                Epetra_SerialDenseVector*   force) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
@@ -1025,8 +1021,8 @@ return;
  |                                                                                       (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<parameter list
-                                            vector<double>& disp) //!<element disp vector
+inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+                                             std::vector<double>&    disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/

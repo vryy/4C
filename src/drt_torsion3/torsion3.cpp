@@ -13,10 +13,8 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "torsion3.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
@@ -31,9 +29,9 @@ DRT::ParObject* DRT::ELEMENTS::Torsion3Type::Create( const std::vector<char> & d
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const string eletype,
-                                                            const string eledistype,
-                                                            const int id,
-                                                            const int owner )
+                                                                const string eledistype,
+                                                                const int    id,
+                                                                const int    owner )
 {
   if ( eletype=="TORSION3" )
   {
@@ -163,19 +161,19 @@ void DRT::ELEMENTS::Torsion3::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   ExtractfromPack(position,data,springconstant_);
   bendingpotential_ = static_cast<BendingPotential>( ExtractInt(position,data) );
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -187,9 +185,9 @@ void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
+std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
 }

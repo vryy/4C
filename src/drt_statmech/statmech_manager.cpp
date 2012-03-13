@@ -1461,7 +1461,7 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
     newcrosslinker->BuildNodalPointers(&nodes[0]);
 
     //setting up crosslinker element parameters
-    newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+    newcrosslinker ->SetCrossSec(statmechparams_.get<double>("ALINK",0.0));
     newcrosslinker->SetMaterial(2);
 
     //correct reference configuration data is computed for the new crosslinker element;

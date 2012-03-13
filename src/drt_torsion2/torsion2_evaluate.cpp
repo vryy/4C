@@ -13,20 +13,15 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include "torsion2.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Torsion2::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
-    vector<int>& lm,
+    std::vector<int>& lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -85,12 +80,12 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       // get element displacements
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       
       // for engineering strains instead of total lagrange use t2_nlnstiffmass2
@@ -217,10 +212,10 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Torsion2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Torsion2::EvaluateNeumann(Teuchos::ParameterList&           params,
                                             DRT::Discretization&      discretization,
                                             DRT::Condition&           condition,
-                                            vector<int>&              lm,
+                                            std::vector<int>&         lm,
                                             Epetra_SerialDenseVector& elevec1,
                                             Epetra_SerialDenseMatrix* elemat1)
 {
@@ -234,8 +229,8 @@ int DRT::ELEMENTS::Torsion2::EvaluateNeumann(ParameterList& params,
  | Evaluate PTC damping (public)                                                                  cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Torsion2::EvaluatePTC(ParameterList& params,
-                                      Epetra_SerialDenseMatrix& elemat1)
+int DRT::ELEMENTS::Torsion2::EvaluatePTC(Teuchos::ParameterList&            params,
+                                         Epetra_SerialDenseMatrix& elemat1)
 {
   std::cout<<"\nno PTC implemented for torsion2 element\n";
 
@@ -245,10 +240,10 @@ int DRT::ELEMENTS::Torsion2::EvaluatePTC(ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 02/10|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass( vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
+                                              Epetra_SerialDenseMatrix* stiffmatrix,
+                                              Epetra_SerialDenseMatrix* massmatrix,
+                                              Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0 .. 1 for first node, 2 ..3 for second node , 4 .. 5 for third node)
   LINALG::Matrix<6,1> xcurr;
