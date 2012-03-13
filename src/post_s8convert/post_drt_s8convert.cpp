@@ -239,7 +239,6 @@ void Converter::write_element_result(string result_name,
 }
 
 #endif
-#endif
 
 
 int main(int argc,  char** argv)
@@ -263,7 +262,6 @@ int main(int argc,  char** argv)
   default:
     dserror("problem type %d not yet supported", problem.Problemtype());
   }
-#endif
 #endif
 
   return 0;
