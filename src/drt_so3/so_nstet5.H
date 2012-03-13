@@ -9,47 +9,34 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-
-#ifdef D_SOLID3
-#ifdef CCADISCRET
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H
 
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
 #include "Sacado.hpp"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_mat/material.H"
-
-#include "so_surface.H"
-#include "so_line.H"
-
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "Epetra_Time.h"
-
-//#define PRINT_NSTET5            ///< printout of setup
 #define ALPHA_NSTET5       0.1    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
-// this can go away
-#define BETA_NSTET5       0.0
 
+
+
+// forward declarations
+
+namespace LINALG
+{
+class SerialDenseVector;
+class SerialDenseMatrix;
+}
 namespace DRT
 {
-// forward declarations
 class Discretization;
 
 namespace ELEMENTS
 {
+class StructuralLine;
+class StructuralSurface;
 class StructuralVolume;
 class NStet5;
 
@@ -538,9 +525,9 @@ protected:
   virtual void nstet5nlnstiffmass(vector<int>&                    lm,
                                 vector<double>&                  disp,
                                 vector<double>&                  residual,
-                                LINALG::Matrix<12,12>*           stiffmatrix,
-                                LINALG::Matrix<12,12>*           massmatrix,
-                                LINALG::Matrix<12,1>*            force,
+                                LINALG::Matrix<15,15>*           stiffmatrix,
+                                LINALG::Matrix<15,15>*           massmatrix,
+                                LINALG::Matrix<15,1>*            force,
                                 LINALG::Matrix<1,6>*             elestress,
                                 LINALG::Matrix<1,6>*             elestrain,
                                 const INPAR::STR::StressType     iostress,
@@ -548,7 +535,7 @@ protected:
 
 
   //! lump mass matrix (bborn 07/08)
-  void nstet5lumpmass(LINALG::Matrix<12,12>* emass);
+  void nstet5lumpmass(LINALG::Matrix<15,15>* emass);
 
 
   void so_nstet5_expol(LINALG::Matrix<1,6>& stresses,
@@ -586,7 +573,5 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SO_NSTET5_H_
-#endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  D_SOLID3
 
 

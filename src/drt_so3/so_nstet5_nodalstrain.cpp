@@ -22,6 +22,9 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
 #include "Sacado.hpp"
+#include "../linalg/linalg_serialdensevector.H"
+//#include "../linalg/linalg_fixedsizematrix.H"
+
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -86,9 +89,6 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
   return;
 }
 
-
-void AutoDiffDemo();
-void AutoDiffDemo(DRT::Discretization& dis);
 
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 03/12|
@@ -268,9 +268,9 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
             for (int j=0; j<ndofperpatch; ++j)
             {
               int* loc = std::lower_bound(indices,indices+length,lclm[j]);
-#ifdef DEBUG
+//#ifdef DEBUG
               if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
-#endif
+//#endif
               int pos = loc-indices;
 
               // test physical continuity of nodal values inside the Epetra_CrsMatrix
@@ -390,7 +390,6 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     }
   }
 
-  exit(0);
   return;
 }
 
@@ -443,7 +442,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
 
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
-  {
   double VnodeL = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   vector<vector<vector<int> > > lmlm(neleinpatch);
@@ -452,7 +450,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     DRT::ELEMENTS::NStet5* ele = adjele[i];
     vector<int>& subele = adjsubele[ele->Id()];
     
-    printf("ele %d subele %d %d %d\n",ele->Id(),subele[0],subele[1],subele[2]);
+    //printf("ele %d subele %d %d %d\n",ele->Id(),subele[0],subele[1],subele[2]);
     
     lmlm[i].resize((int)subele.size());
     for (unsigned j=0; j<subele.size(); ++j)
@@ -474,7 +472,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
         }
       }
       if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
-      printf("dofs "); for (int k=0; k<12; ++k) printf("%d ",elelm[k]); printf("\n");
+      //printf("dofs "); for (int k=0; k<12; ++k) printf("%d ",elelm[k]); printf("\n");
 
       // find position of elelm[k] in lm
       // lmlm[i][j][k] : element i subelement j degree of freedom k, lmlm[i][j][k] position in patchdisp[0..ndofinpatch]
@@ -515,57 +513,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
       FnodeL(j,k) = fad_FnodeL(j,k).val();
-  }
-  exit(0);
-  //-----------------------------------------------------------------------
-  // build averaged F and volume of node (using sacado)
-  double VnodeL = 0.0;
-  LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
-  vector<vector<int> > lmlm(neleinpatch);
-  for (int i=0; i<neleinpatch; ++i)
-  {
-    const double V = adjele[i]->Vol()/4;
-    VnodeL += V;
-
-    // get the element's displacements out of the patch' displacements
-    vector<int> elelm;
-    vector<int> lmowner;
-    vector<int> lmstride;
-    adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
-
-    // have to find position of elelm[i] in lm
-    // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
-    lmlm[i].resize(12);
-    for (int j=0; j<12; ++j)
-    {
-      vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
-      lmlm[i][j] = k-lm.begin(); // the position of elelm[j] in lm
-    }
-
-    // copy element disp to 4x3 format
-    LINALG::TMatrix<FAD,4,3> eledispmat(false);
-    for (int j=0; j<4; ++j)
-      for (int k=0; k<3; ++k)
-        eledispmat(j,k) = patchdisp[lmlm[i][j*3+k]];
-
-    // build F of this element
-    LINALG::TMatrix<FAD,3,3> Fele(true);
-    Fele = adjele[i]->TBuildF<FAD>(eledispmat,adjele[i]->Nxyz());
-
-    // add up to nodal deformation gradient
-    Fele.Scale(V);
-    fad_FnodeL += Fele;
-
-  } // for (int i=0; i<neleinpatch; ++i)
-
-  // do averaging
-  fad_FnodeL.Scale(1.0/VnodeL);
-
-  // copy values of fad to 'normal' values
-  LINALG::Matrix<3,3> FnodeL(false);
-  for (int j=0; j<3; ++j)
-    for (int k=0; k<3; ++k)
-      FnodeL(j,k) = fad_FnodeL(j,k).val();
 
   //-----------------------------------------------------------------------
   // build B operator
@@ -575,47 +522,56 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   {
     // current element
     DRT::ELEMENTS::NStet5* actele = adjele[ele];
-
-    // volume of that element assigned to node L
-    double V = actele->Vol()/4;
-
-    // volume ratio of volume per node of this element to
-    // whole volume of node L
-    const double ratio = V/VnodeL;
-
-    // get derivatives with respect to X
-    LINALG::Matrix<4,3>& nxyz = actele->Nxyz();
-
-    // get defgrd
-    LINALG::Matrix<3,3>& F = actele->F();
-
-    LINALG::Matrix<6,12> bele(false);
-    for (int i=0; i<4; ++i)
+    vector<int>& subele = adjsubele[actele->Id()];
+    
+    // loop subelements in this element
+    for (unsigned j=0; j<subele.size(); ++j)
     {
-      bele(0,3*i+0) = F(0,0)*nxyz(i,0);
-      bele(0,3*i+1) = F(1,0)*nxyz(i,0);
-      bele(0,3*i+2) = F(2,0)*nxyz(i,0);
-      bele(1,3*i+0) = F(0,1)*nxyz(i,1);
-      bele(1,3*i+1) = F(1,1)*nxyz(i,1);
-      bele(1,3*i+2) = F(2,1)*nxyz(i,1);
-      bele(2,3*i+0) = F(0,2)*nxyz(i,2);
-      bele(2,3*i+1) = F(1,2)*nxyz(i,2);
-      bele(2,3*i+2) = F(2,2)*nxyz(i,2);
+      const int   subeleid = subele[j];
 
-      bele(3,3*i+0) = F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0);
-      bele(3,3*i+1) = F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0);
-      bele(3,3*i+2) = F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0);
-      bele(4,3*i+0) = F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1);
-      bele(4,3*i+1) = F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1);
-      bele(4,3*i+2) = F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1);
-      bele(5,3*i+0) = F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2);
-      bele(5,3*i+1) = F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2);
-      bele(5,3*i+2) = F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2);
-    }
+      // volume of that subelement assigned to node L
+      double V = actele->SubV(subeleid)/3;
 
-    for (int k=0; k<6; ++k)
-      for (int j=0; j<12; ++j)
-        bop(k,lmlm[ele][j]) += ratio * bele(k,j);
+      // volume ratio of volume per node of this element to
+      // whole volume of node L
+      const double ratio = V/VnodeL;
+      
+      // get derivatives with respect to X
+      const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
+      
+      // get defgrd
+      LINALG::Matrix<3,3>& F = actele->SubF(subeleid);
+      
+      LINALG::Matrix<6,12> bele(false);
+      
+      for (int i=0; i<4; ++i)
+      {
+        bele(0,3*i+0) = F(0,0)*nxyz(i,0);
+        bele(0,3*i+1) = F(1,0)*nxyz(i,0);
+        bele(0,3*i+2) = F(2,0)*nxyz(i,0);
+        bele(1,3*i+0) = F(0,1)*nxyz(i,1);
+        bele(1,3*i+1) = F(1,1)*nxyz(i,1);
+        bele(1,3*i+2) = F(2,1)*nxyz(i,1);
+        bele(2,3*i+0) = F(0,2)*nxyz(i,2);
+        bele(2,3*i+1) = F(1,2)*nxyz(i,2);
+        bele(2,3*i+2) = F(2,2)*nxyz(i,2);
+
+        bele(3,3*i+0) = F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0);
+        bele(3,3*i+1) = F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0);
+        bele(3,3*i+2) = F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0);
+        bele(4,3*i+0) = F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1);
+        bele(4,3*i+1) = F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1);
+        bele(4,3*i+2) = F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1);
+        bele(5,3*i+0) = F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2);
+        bele(5,3*i+1) = F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2);
+        bele(5,3*i+2) = F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2);
+      }
+
+      for (int k=0; k<6; ++k)
+        for (int i=0; i<12; ++i)
+          bop(k,lmlm[ele][j][i]) += ratio * bele(k,i);
+
+    } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int ele=0; ele<neleinpatch; ++ele)
 
   //-------------------------------------------------------------- averaged strain
@@ -657,77 +613,6 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     for (int k=0; k<6; ++k)
       bopbar(k,i) = Ebar[k].fastAccessDx(i);
 
-#if 0 // don't touch this
-  Epetra_SerialDenseMatrix bopbar2(6,ndofinpatch);
-  {
-
-    Epetra_SerialDenseMatrix Graddm(9,ndofinpatch);
-    for (int ele=0; ele<neleinpatch; ++ele)
-    {
-      LINALG::Matrix<4,3>& nxyz = adjele[ele]->Nxyz();
-      const double V = (adjele[ele]->Vol()/4.);
-      LINALG::Matrix<9,12> Gradde(true);
-      for (int i=0; i<4; ++i) // FIXME: do += ratio * directly into Graddm for efficiency
-      {
-        Gradde(0,3*i+0) = nxyz(i,0);
-        //Gradde(0,3*i+1) = 0.0;
-        //Gradde(0,3*i+2) = 0.0;
-
-        //Gradde(1,3*i+0) = 0.0;
-        Gradde(1,3*i+1) = nxyz(i,1);
-        //Gradde(1,3*i+2) = 0.0;
-
-        //Gradde(2,3*i+0) = 0.0;
-        //Gradde(2,3*i+1) = 0.0;
-        Gradde(2,3*i+2) = nxyz(i,2);
-
-        Gradde(3,3*i+0) = nxyz(i,1);
-        //Gradde(3,3*i+1) = 0.0;
-        //Gradde(3,3*i+2) = 0.0;
-        Gradde(4,3*i+0) = nxyz(i,2);
-        //Gradde(4,3*i+1) = 0.0;
-        //Gradde(4,3*i+2) = 0.0;
-
-        //Gradde(5,3*i+0) = 0.0;
-        Gradde(5,3*i+1) = nxyz(i,0);
-        //Gradde(5,3*i+2) = 0.0;
-        //Gradde(6,3*i+0) = 0.0;
-        Gradde(6,3*i+1) = nxyz(i,2);
-        //Gradde(6,3*i+2) = 0.0;
-
-        //Gradde(7,3*i+0) = 0.0;
-        //Gradde(7,3*i+1) = 0.0;
-        Gradde(7,3*i+2) = nxyz(i,0);
-        //Gradde(8,3*i+0) = 0.0;
-        //Gradde(8,3*i+1) = 0.0;
-        Gradde(8,3*i+2) = nxyz(i,1);
-      } // for (int i=0; i<4; ++i)
-      for (int i=0; i<9; ++i)
-        for (int j=0; j<12; ++j)
-          Graddm(i,lmlm[ele][j]) += V * Gradde(i,j);
-    } // for (int ele=0; ele<neleinpatch; ++ele)
-    Graddm.Scale(1./VnodeL);
-    for (int j=0; j<ndofinpatch; ++j)
-    {
-      bopbar2(0,j) = FnodeL(0,0)*Graddm(0,j) + FnodeL(1,0)*Graddm(5,j) + FnodeL(2,0)*Graddm(7,j);
-      bopbar2(1,j) = FnodeL(0,1)*Graddm(3,j) + FnodeL(1,1)*Graddm(1,j) + FnodeL(2,1)*Graddm(8,j);
-      bopbar2(2,j) = FnodeL(0,2)*Graddm(4,j) + FnodeL(1,2)*Graddm(6,j) + FnodeL(2,2)*Graddm(2,j);
-
-      bopbar2(3,j) = FnodeL(0,1)*Graddm(0,j) + FnodeL(1,1)*Graddm(5,j) + FnodeL(2,1)*Graddm(7,j) +
-                     FnodeL(0,0)*Graddm(3,j) + FnodeL(1,0)*Graddm(1,j) + FnodeL(2,0)*Graddm(8,j);
-
-      bopbar2(4,j) = FnodeL(0,2)*Graddm(3,j) + FnodeL(1,2)*Graddm(1,j) + FnodeL(2,2)*Graddm(8,j) +
-                     FnodeL(0,1)*Graddm(4,j) + FnodeL(1,1)*Graddm(6,j) + FnodeL(2,1)*Graddm(2,j);
-
-      bopbar2(5,j) = FnodeL(0,0)*Graddm(4,j) + FnodeL(1,0)*Graddm(6,j) + FnodeL(2,0)*Graddm(2,j) +
-                     FnodeL(0,2)*Graddm(0,j) + FnodeL(1,2)*Graddm(5,j) + FnodeL(2,2)*Graddm(7,j);
-    }
-
-  //bopbar = bopbar2;
-
-  }
-#endif
-
   //----------------------------------------- averaged material and stresses
   LINALG::Matrix<6,6> cmat(true);
   LINALG::Matrix<6,1> stress(true);
@@ -752,8 +637,10 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
       // current element
       DRT::ELEMENTS::NStet5* actele = adjele[ele];
       // volume of that element assigned to node L
-      const double V = actele->Vol()/4;
-      // def-gradient of the element
+      double V = 0.0;
+      for (unsigned j=0; j<adjsubele[actele->Id()].size(); ++j)
+        V += (actele->SubV(adjsubele[actele->Id()][j])/3.0);
+      // material of the element
       RCP<MAT::Material> mat = actele->Material();
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
       cmat.Update(V,cmatele,1.0);
@@ -765,8 +652,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
 
   //-----------------------------------------------------------------------
   // stress is split as follows:
-  // stress = beta * vol_misnode + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
-#ifndef PUSOSOLBERG
+  // stress = vol_node + (1-alpha) * dev_node + alpha * dev_ele
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
@@ -781,15 +667,9 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     cmatvol.Update(-1.0,cmatdev,1.0,cmat,0.0);
 
     // compute nodal stress
-    stress.Update(1.0-BETA_NSTET5,stressvol,1-ALPHA_NSTET5,stressdev,0.0);
-    cmat.Update(1.0-BETA_NSTET5,cmatvol,1-ALPHA_NSTET5,cmatdev,0.0);
+    stress.Update(1.0,stressvol,1-ALPHA_NSTET5,stressdev,0.0);
+    cmat.Update(1.0,cmatvol,1-ALPHA_NSTET5,cmatdev,0.0);
   }
-#else
-  {
-    stress.Scale(1.-ALPHA_NSTET5);
-    cmat.Scale(1.-ALPHA_NSTET5);
-  }
-#endif
 
   //-----------------------------------------------------------------------
   // stress output
@@ -802,7 +682,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
-    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);// bop
+    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -815,34 +695,45 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   }
 
   //----------------------------------------------------- geom. stiffness
-  // do not use sacado for second derivative of E as it is way too expensive!
+  // do not use sacado for second derivative of E as it is too expensive!
   // As long as the 2nd deriv is as easy as this, do it by hand
   if (stiff)
   {
     // loop elements in patch
     for (int ele=0; ele<neleinpatch; ++ele)
     {
-      // material deriv of element
-      LINALG::Matrix<4,3>& nxyz = adjele[ele]->Nxyz();
-      // volume of element assigned to node L
-      const double V = adjele[ele]->Vol()/4;
-
-      // loop nodes of that element
-      double SmBL[3];
-      for (int i=0; i<4; ++i)
+      // current element
+      DRT::ELEMENTS::NStet5* actele = adjele[ele];
+      vector<int>& subele = adjsubele[actele->Id()];
+      
+      // loop subelements in this element
+      for (unsigned sub=0; sub<subele.size(); ++sub)
       {
-        SmBL[0] = V*(stress(0)*nxyz(i,0) + stress(3)*nxyz(i,1) + stress(5)*nxyz(i,2));
-        SmBL[1] = V*(stress(3)*nxyz(i,0) + stress(1)*nxyz(i,1) + stress(4)*nxyz(i,2));
-        SmBL[2] = V*(stress(5)*nxyz(i,0) + stress(4)*nxyz(i,1) + stress(2)*nxyz(i,2));
-        for (int j=0; j<4; ++j)
+        const int   subeleid = subele[sub];
+      
+        // material deriv of element
+        const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
+      
+        // volume of element assigned to node L
+        const double V = actele->SubV(subeleid)/3;
+
+        // loop nodes of that element
+        double SmBL[3];
+        for (int i=0; i<4; ++i)
         {
-          double bopstrbop = 0.0;
-          for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
-          (*stiff)(lmlm[ele][i*3+0],lmlm[ele][j*3+0]) += bopstrbop;
-          (*stiff)(lmlm[ele][i*3+1],lmlm[ele][j*3+1]) += bopstrbop;
-          (*stiff)(lmlm[ele][i*3+2],lmlm[ele][j*3+2]) += bopstrbop;
-        } // for (int j=0; j<4; ++j)
-      } // for (int i=0; i<4; ++i)
+          SmBL[0] = V*(stress(0)*nxyz(i,0) + stress(3)*nxyz(i,1) + stress(5)*nxyz(i,2));
+          SmBL[1] = V*(stress(3)*nxyz(i,0) + stress(1)*nxyz(i,1) + stress(4)*nxyz(i,2));
+          SmBL[2] = V*(stress(5)*nxyz(i,0) + stress(4)*nxyz(i,1) + stress(2)*nxyz(i,2));
+          for (int j=0; j<4; ++j)
+          {
+            double bopstrbop = 0.0;
+            for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
+            (*stiff)(lmlm[ele][sub][i*3+0],lmlm[ele][sub][j*3+0]) += bopstrbop;
+            (*stiff)(lmlm[ele][sub][i*3+1],lmlm[ele][sub][j*3+1]) += bopstrbop;
+            (*stiff)(lmlm[ele][sub][i*3+2],lmlm[ele][sub][j*3+2]) += bopstrbop;
+          } // for (int j=0; j<4; ++j)
+        } // for (int i=0; i<4; ++i)
+      } // for (unsigned sub=0; sub<subele.size(); ++sub)
     } // for (int ele=0; ele<neleinpatch; ++ele)
   } // if (stiff)
 

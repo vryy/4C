@@ -181,12 +181,12 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
   for (int j=0; j<discretization.NumDof(this); ++j)
     printf("%d ",discretization.Dof(this)[j]);
   printf("\n");
-#endif  
-  
-  LINALG::Matrix<12,12> elemat1(elemat1_epetra.A(),true);
-  LINALG::Matrix<12,12> elemat2(elemat2_epetra.A(),true);
-  LINALG::Matrix<12, 1> elevec1(elevec1_epetra.A(),true);
-  LINALG::Matrix<12, 1> elevec2(elevec2_epetra.A(),true);
+#endif
+
+  LINALG::Matrix<15,15> elemat1(elemat1_epetra.A(),true);
+  LINALG::Matrix<15,15> elemat2(elemat2_epetra.A(),true);
+  LINALG::Matrix<15, 1> elevec1(elevec1_epetra.A(),true);
+
   // start with "none"
   DRT::ELEMENTS::NStet5::ActionType act = NStet5::none;
 
@@ -229,20 +229,21 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
     }
+    exit(0);
     break;
 
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::Matrix<12,12>* elemat1ptr = NULL;
+      LINALG::Matrix<15,15>* elemat1ptr = NULL;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
       nstet5nlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -418,7 +419,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<12,12> myemat(true);
+      LINALG::Matrix<15,15> myemat(true);
       nstet5nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
@@ -460,9 +461,9 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       vector<int>&                     lm,             // location matrix
       vector<double>&                  disp,           // current displacements
       vector<double>&                  residual,       // current residuum
-      LINALG::Matrix<12,12>*           stiffmatrix,    // element stiffness matrix
-      LINALG::Matrix<12,12>*           massmatrix,     // element mass matrix
-      LINALG::Matrix<12, 1>*           force,          // stress output options
+      LINALG::Matrix<15,15>*           stiffmatrix,    // element stiffness matrix
+      LINALG::Matrix<15,15>*           massmatrix,     // element mass matrix
+      LINALG::Matrix<15, 1>*           force,          // stress output options
       LINALG::Matrix<1,6>*             elestress,      // stress output
       LINALG::Matrix<1,6>*             elestrain,      // strain output
       const INPAR::STR::StressType     iostress,       // type of stress
@@ -506,8 +507,8 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
   **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
   */
 
-  // 6x12 n_stresses * number degrees of freedom per element
-  LINALG::Matrix<6,12> bop;
+  // 6x15 n_stresses * number degrees of freedom per element
+  LINALG::Matrix<6,15> bop;
   for (int i=0; i<4; i++)
   {
     bop(0,3*i+0) = defgrd(0,0)*nxyz_(i,0);
@@ -700,7 +701,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
   {
     // integrate elastic stiffness matrix
     // keu = keu + (B^T . C . B) * V_
-    LINALG::Matrix<6,12> cb;
+    LINALG::Matrix<6,15> cb;
     cb.Multiply(cmat,bop);
     stiffmatrix->MultiplyTN(V_,bop,cb,1.0);
     // integrate `geometric' stiffness matrix and add to keu
@@ -761,7 +762,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                           gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::nstet5lumpmass(LINALG::Matrix<12,12>* emass)
+void DRT::ELEMENTS::NStet5::nstet5lumpmass(LINALG::Matrix<15,15>* emass)
 {
   // lump mass matrix
   if (emass != NULL)

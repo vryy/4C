@@ -15,6 +15,7 @@ Maintainer: Lena Yoshihara
 #include "so_nstet5.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 extern struct _GENPROB     genprob;
 

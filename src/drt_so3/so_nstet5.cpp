@@ -19,6 +19,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_linedefinition.H"
 
 #include "so_nstet5.H"
+#include "so_surface.H"
+#include "so_line.H"
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
@@ -377,7 +379,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
         lm[count++]        = dofs[j];
     }
     
-#if 1
+#if 0
     printf("node %d nodal dofs: ",nodeidL);
     for (int i=0; i<count; ++i) printf("%d ",lm[i]);
     printf("\n");
@@ -392,7 +394,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
         lm[count++]        = dofs[j];
     }
     
-#if 1
+#if 0
     printf("node %d ele   dofs: ",nodeidL);
     for (int i=start; i<count; ++i) printf("%d ",lm[i]);
     printf("\n\n");
@@ -427,7 +429,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
               }
           }
           if ((int)subele.size()!=3) dserror("Node not attached to exactly 3 subelements");
-#if 1
+#if 0
           printf("node %d ele %d subele.size %d :",nodeidL,ele->Id(),(int)subele.size());
           for (int l=0; l<(int)subele.size(); ++l) printf("%d ",subele[l]);
           printf("\n");
@@ -445,7 +447,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     adjsubele_[nodeidL] = masterele;
 
-#if 1
+#if 0
     printf("\n");
 #endif
   } // for (node=noderids.begin(); node != noderids.end(); ++node)
