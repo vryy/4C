@@ -11,7 +11,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
 #include "scatra_utils.H"
@@ -2564,5 +2563,3 @@ Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
   return Teuchos::rcp(dofrowmap, false);
 }
 
-
-#endif /* CCADISCRET       */

@@ -9,7 +9,7 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef SCATRA_ELE_IMPL_UTILS_H
 #define SCATRA_ELE_IMPL_UTILS_H
 
@@ -221,4 +221,3 @@ namespace SCATRA
 } // namespace SCATRA
 
 #endif
-#endif  // #ifdef CCADISCRET

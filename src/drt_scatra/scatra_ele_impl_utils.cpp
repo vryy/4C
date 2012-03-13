@@ -9,11 +9,9 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "scatra_ele_impl_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
-//#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 namespace SCATRA
@@ -109,4 +107,3 @@ bool InflowElement(DRT::Element* ele)
 
 } // namespace SCATRA
 
-#endif  // #ifdef CCADISCRET

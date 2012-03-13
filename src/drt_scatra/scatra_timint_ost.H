@@ -11,7 +11,6 @@ Maintainer: Georg Bauer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef SCATRA_TIMINT_OST_H
 #define SCATRA_TIMINT_OST_H
 
@@ -176,4 +175,3 @@ private:
 } // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_OST_H
-#endif  // #ifdef CCADISCRET

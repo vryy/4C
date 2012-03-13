@@ -14,8 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifndef PASSIVE_SCATRA_ALGORITHM_H
 #define PASSIVE_SCATRA_ALGORITHM_H
 
@@ -74,4 +72,3 @@ namespace SCATRA{
 } // namespace SCATRA
 
 #endif // PASSIVE_SCATRA_ALGORITHM_H
-#endif // CCADISCRET

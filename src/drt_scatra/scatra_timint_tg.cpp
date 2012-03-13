@@ -13,8 +13,6 @@ Maintainer: Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_timint_tg.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -376,5 +374,3 @@ void SCATRA::TimIntTaylorGalerkin::CalcPhidtReinit()
   return;
 }
 
-
-#endif /* CCADISCRET */

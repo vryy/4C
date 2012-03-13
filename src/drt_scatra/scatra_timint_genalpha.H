@@ -11,7 +11,6 @@ Maintainer: Volker Gravemeier
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef SCATRA_TIMINT_GENALPHA_H
 #define SCATRA_TIMINT_GENALPHA_H
 
@@ -185,4 +184,3 @@ private:
 } // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_GENALPHA_H
-#endif  // #ifdef CCADISCRET

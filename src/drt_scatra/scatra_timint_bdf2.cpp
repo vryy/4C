@@ -12,8 +12,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_timint_bdf2.H"
 #include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -679,4 +677,3 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
   return;
 }
 
-#endif /* CCADISCRET */

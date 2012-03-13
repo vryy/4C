@@ -6,7 +6,6 @@
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
-
 <pre>
 Maintainer: Georg Bauer
             bauer@lnm.mw.tum.de
@@ -14,11 +13,8 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 */
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
 #ifndef DRT_SCATRA_ELEMENT_H
 #define DRT_SCATRA_ELEMENT_H
-
 
 
 #include "../drt_lib/drt_element.H"
@@ -35,6 +31,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class TransportBoundary;
+
 
 class TransportType : public DRT::ElementType
 {
@@ -67,7 +64,7 @@ private:
 /*!
 \brief The Transport element
 
-\author g.bau (bauer@lnm.mw.tum.de)
+\author Georg Bauer (bauer@lnm.mw.tum.de)
 */
 class Transport : public DRT::Element
 {
@@ -80,7 +77,7 @@ public:
   \brief Standard Constructor
   */
   Transport(
-    int id,    ///< A unique global id
+    int id,    ///< A unique global id of this element
     int owner  ///< processor id who owns a certain instance of this class
     );
 
@@ -134,7 +131,6 @@ public:
   \brief Return number of lines of this element
   */
   virtual int NumLine() const;
-
 
   /*!
   \brief Return number of surfaces of this element
@@ -192,7 +188,7 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
 
   /*!
@@ -200,7 +196,7 @@ public:
          (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
+  As this may vary along a simulation, the element can re-decide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
@@ -226,36 +222,39 @@ public:
     // number of dofs for fluid (based on similar discretization)
     if (nds==1)
     {
-    switch(distype_)
-    {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-    case DRT::Element::pyramid5:
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
-      return 4;
-      break;
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-      return 3;
-      break;
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-      dserror("1D Fluid elements are not supported");
-    default:
-      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
+      switch(distype_)
+      {
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      case DRT::Element::pyramid5:
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
+        return 4;
+        break;
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+        return 3;
+        break;
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+        dserror("1D Fluid elements are not supported");
+      default:
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
+      }
     }
-    }
+    if(nds > 1)
+      dserror("Case nsd > 1 not implemented.");
+
     return NumDofPerNode(node);
   }
 
@@ -264,7 +263,7 @@ public:
          (implements pure virtual DRT::Element)
 
   The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
+  It can re-decide along the way of a simulation.
 
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
@@ -277,6 +276,9 @@ public:
   */
   void Print(ostream& os) const;
 
+  /*!
+  \brief Return ElementType
+  */
   virtual DRT::ElementType & ElementType() const
   { return TransportType::Instance(); }
 
@@ -419,10 +421,14 @@ private:
 
   //! container containing all kind of element thisandthat
   DRT::Container            data_;
-  //! number of dofs per node (for systems of transport equations)
-  //! (storage neccessary because we dont know the material in the post filters anymore)
+
+  /*!
+   * \brief number of dofs per node (for systems of transport equations)
+   * (storage neccessary because we dont know the material in the post filters anymore)
+   */
   int                       numdofpernode_;
-  //! the element discretization type
+
+  //! the element discretization type (shape)
   DRT::Element::DiscretizationType distype_;
 
 
@@ -465,7 +471,7 @@ private:
       purpose is to evaluate certain boundary conditions that might be
       adjacent to a parent Transport element.
 
-\author g.bauer (bauer@lnm.mw.tum.de)
+\author Georg Bauer (bauer@lnm.mw.tum.de)
 */
 class TransportBoundary : public DRT::Element
 {
@@ -484,8 +490,15 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  TransportBoundary(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface);
+  TransportBoundary(
+      int id,
+      int owner,
+      int nnode,
+      const int* nodeids,
+      DRT::Node** nodes,
+      DRT::ELEMENTS::Transport* parent,
+      const int lsurface
+    );
 
   /*!
   \brief Copy Constructor
@@ -570,7 +583,7 @@ public:
          (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
+  As this may vary along a simulation, the element can re-decide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
@@ -593,7 +606,7 @@ public:
          (implements pure virtual DRT::Element)
 
   The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
+  It can re-decide along the way of a simulation.
 
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
@@ -606,6 +619,9 @@ public:
   */
   void Print(ostream& os) const;
 
+  /*!
+  \brief Return ElementType
+  */
   virtual DRT::ElementType & ElementType() const
   { return TransportBoundaryType::Instance(); }
 
@@ -682,6 +698,7 @@ private:
 
   //! The parent element of this boundary element
   DRT::ELEMENTS::Transport* parent_;
+
   //! The local boundary element number of this surface w.r.t to the parent_ element
   int                       lbeleid_;
 
@@ -693,5 +710,3 @@ private:
 
 
 #endif  // #ifndef DRT_SCATRA_ELEMENT_H
-#endif  // #ifdef CCADISCRET
-#endif  // defined(D_FLUID3)

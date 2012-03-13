@@ -13,16 +13,10 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_timint_implicit.H"
 #include "scatra_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -104,5 +98,3 @@ bool SCATRA::ScaTraResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("SCATRA");
 }
 
-
-#endif /* CCADISCRET       */

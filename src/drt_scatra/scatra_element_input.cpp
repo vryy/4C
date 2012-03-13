@@ -12,9 +12,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
-
 #include "scatra_element.H"
 #include "../drt_lib/drt_linedefinition.H"
 
@@ -36,6 +33,3 @@ bool DRT::ELEMENTS::Transport::ReadElement(const std::string& eletype,
   return true;
 }
 
-
-#endif  // #ifdef CCADISCRET
-#endif  // defined(D_FLUID3)

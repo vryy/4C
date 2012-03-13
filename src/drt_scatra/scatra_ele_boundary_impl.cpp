@@ -13,9 +13,6 @@ Maintainer: Georg Bauer
  */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
-
 // general Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is off
 // the shifted version of Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is on
 // define-flag PERCENT: how much is the curve shifted
@@ -3708,7 +3705,3 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   return;
 }
 
-
-
-#endif // CCADISCRET
-#endif // D_FLUID3

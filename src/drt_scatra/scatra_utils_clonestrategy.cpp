@@ -13,8 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "scatra_utils_clonestrategy.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -130,4 +128,3 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
   return true; // yes, we copy EVERY element (no submeshes)
 }
 
-#endif  // CCADISCRET

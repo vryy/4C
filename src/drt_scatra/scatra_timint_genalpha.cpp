@@ -12,8 +12,6 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_timint_genalpha.H"
 #include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -807,4 +805,3 @@ void SCATRA::TimIntGenAlpha::CalcPhidtReinit()
   return;
 }
 
-#endif /* CCADISCRET */

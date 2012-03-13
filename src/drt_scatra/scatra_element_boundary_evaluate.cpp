@@ -11,8 +11,6 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
  *----------------------------------------------------------------------*/
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
 
 #include "scatra_element.H"
 #include "scatra_ele_boundary_impl.H"
@@ -87,6 +85,3 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
       );
 }
 
-
-#endif  // #ifdef CCADISCRET
-#endif  // defined(D_FLUID3)

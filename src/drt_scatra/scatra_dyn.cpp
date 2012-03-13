@@ -11,7 +11,6 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "scatra_dyn.H"
 #include "passive_scatra_algorithm.H"
@@ -148,4 +147,3 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
 
 } // end of scatra_dyn()
 
-#endif  // #ifdef CCADISCRET

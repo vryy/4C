@@ -13,8 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_utils.H"
 
 /*----------------------------------------------------------------------*/
@@ -29,4 +27,3 @@ bool SCATRA::IsElch(const enum INPAR::SCATRA::ScaTraType scatratype)
       or (scatratype==INPAR::SCATRA::scatratype_elch_laplace));
 };
 
-#endif  // CCADISCRET

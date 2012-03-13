@@ -12,8 +12,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "scatra_timint_ost.H"
 #include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -812,4 +810,3 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
   return;
 }
 
-#endif /* CCADISCRET */

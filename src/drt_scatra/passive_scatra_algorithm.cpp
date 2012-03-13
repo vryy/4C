@@ -13,8 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "passive_scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*/
@@ -198,5 +196,3 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
   return;
 }
 
-
-#endif // CCADISCRET

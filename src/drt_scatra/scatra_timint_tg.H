@@ -12,7 +12,6 @@ Maintainer: Benedikt Schott
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef SCATRA_TIMINT_TG_H
 #define SCATRA_TIMINT_TG_H
 
@@ -178,4 +177,3 @@ private:
 } // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_TG_H
-#endif  // #ifdef CCADISCRET

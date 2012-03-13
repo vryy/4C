@@ -10,13 +10,9 @@ Maintainer: Georg Bauer
 </pre>
 
 */
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
-
 
 #include "scatra_element.H"
 #include "../drt_scatra/scatra_ele_impl.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -76,5 +72,3 @@ int DRT::ELEMENTS::Transport::EvaluateNeumann(ParameterList& params,
 }
 
 
-#endif  // #ifdef CCADISCRET
-#endif  // defined(D_FLUID3)

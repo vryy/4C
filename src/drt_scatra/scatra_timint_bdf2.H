@@ -11,7 +11,6 @@ Maintainer: Georg Bauer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef SCATRA_TIMINT_BDF2_H
 #define SCATRA_TIMINT_BDF2_H
 
@@ -168,4 +167,3 @@ private:
 
 
 #endif  // #ifndef SCATRA_TIMINT_BDF2_H
-#endif  // #ifdef CCADISCRET

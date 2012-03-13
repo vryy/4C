@@ -10,11 +10,9 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef SCATRA_DYN_H
 #define SCATRA_DYN_H
-
 
 /*! entry point for the solution of scalar transport problems */
 void scatra_dyn(
@@ -24,4 +22,3 @@ void scatra_dyn(
     );
 
 #endif  /* #ifndef SCATRA_DYN_H */
-#endif  /* #ifdef CCADISCRET */

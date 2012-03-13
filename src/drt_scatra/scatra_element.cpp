@@ -1,6 +1,6 @@
 /*!
 \file scatra_element.cpp
-\brief
+\brief A finite element for simulation transport phenomena
 
 <pre>
 Maintainer: Georg Bauer
@@ -10,8 +10,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#if defined(D_FLUID3)
-#ifdef CCADISCRET
 
 #include "scatra_element.H"
 #include "../drt_lib/drt_discret.H"
@@ -683,6 +681,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
   return surfaces;
 }
 
-
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3

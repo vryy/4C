@@ -16,8 +16,6 @@ Maintainer: Georg Bauer
 #ifndef SCATRA_RESULTTEST_H
 #define SCATRA_RESULTTEST_H
 
-#ifdef CCADISCRET
-
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
@@ -70,7 +68,5 @@ private:
 };
 
 } // namespace SCATRA
-
-#endif /* CCADISCRET       */
 
 #endif

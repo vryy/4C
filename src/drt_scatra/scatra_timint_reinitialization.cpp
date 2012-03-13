@@ -12,7 +12,6 @@ Maintainer: Benedikt Schott
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
 
@@ -507,6 +506,3 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmshReinit(
   if (screen_out) std::cout << " done" << endl;
 }
 
-
-
-#endif /* CCADISCRET       */

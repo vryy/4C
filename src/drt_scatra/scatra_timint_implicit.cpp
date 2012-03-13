@@ -25,7 +25,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
 #include "../linalg/linalg_solver.H"
@@ -2909,4 +2908,3 @@ Teuchos::RCP<Epetra_Vector> SCATRA::ScaTraTimIntImpl::Residual()
   return residual_;
 }
 
-#endif /* CCADISCRET       */
