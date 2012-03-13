@@ -9,7 +9,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_TET10_H
 #define SO_TET10_H
@@ -462,4 +461,3 @@ protected:
 
 #endif  // #ifndef SO_TET10_H_
 #endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  D_SOLID3

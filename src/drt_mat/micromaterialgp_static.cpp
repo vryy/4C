@@ -10,7 +10,6 @@ Maintainer: Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef D_SOLID3
 
 #include "micromaterialgp_static.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -331,5 +330,5 @@ void MAT::MicroMaterialGP::Output()
   plstrain_ = Teuchos::null;
 }
 
-#endif //#ifdef D_SOLID3
+
 #endif

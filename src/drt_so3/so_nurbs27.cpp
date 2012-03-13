@@ -10,7 +10,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_line.H"
@@ -263,4 +262,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

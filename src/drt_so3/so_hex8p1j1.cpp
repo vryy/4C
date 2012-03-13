@@ -1,4 +1,3 @@
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_hex8p1j1.H"
@@ -198,4 +197,3 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(ostream& os) const
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

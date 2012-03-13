@@ -11,7 +11,6 @@ Maintainer: Lena Wiechert
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_HEX8P1J1_H
 #define SO_HEX8P1J1_H
@@ -341,5 +340,4 @@ private:
 
 #endif  // #ifndef SO_HEX8P1J1_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
 

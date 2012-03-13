@@ -144,7 +144,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::Bele3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Bele3_4Type::Instance().Name() << " "
     << DRT::ELEMENTS::Vele3Type::Instance().Name() << " "
-#ifdef D_SOLID3
+
     << DRT::ELEMENTS::NStetType::Instance().Name() << " "
     << DRT::ELEMENTS::NStet5Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance().Name() << " "
@@ -161,7 +161,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_tet10Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_weg6Type::Instance().Name() << " "
-#endif
+
 #ifdef D_ARTNET //_1D_ARTERY_
     << DRT::ELEMENTS::ArteryType::Instance().Name() << " "
     << MAT::Cnst_1d_artType::Instance().Name() << " "

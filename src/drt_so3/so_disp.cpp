@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_disp.H"
@@ -344,4 +343,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Volumes()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

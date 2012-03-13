@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_NSTET4_H
 #define SO_NSTET4_H
@@ -679,6 +678,5 @@ protected:
 
 #endif  // #ifndef SO_NSTET_H_
 #endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  D_SOLID3
 
 

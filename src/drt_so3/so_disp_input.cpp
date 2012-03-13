@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 
@@ -306,4 +305,3 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SONURBS27_H
 #define SONURBS27_H
@@ -425,4 +424,3 @@ protected:
 
 #endif  // #ifndef SONURBS27_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

@@ -13,7 +13,7 @@ Maintainer: Lena Yoshihara
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef D_SOLID3
+
 #include <Epetra_LinearProblem.h>
 
 #ifndef HAVENOT_UMFPACK
@@ -1175,5 +1175,4 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
   return;
 }
 
-#endif //#ifdef D_SOLID3
 #endif

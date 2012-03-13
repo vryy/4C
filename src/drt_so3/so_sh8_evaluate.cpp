@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_sh8.H"
@@ -1841,4 +1840,3 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

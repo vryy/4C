@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_nurbs27.H"
@@ -109,4 +108,3 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

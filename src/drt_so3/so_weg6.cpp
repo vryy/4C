@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_weg6.H"
@@ -800,4 +799,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

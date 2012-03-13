@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 using namespace std;
@@ -292,5 +291,4 @@ private:
 } // namespace DRT
 
 
-#endif /*SO_WEG6_H_*/
 #endif

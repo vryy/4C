@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_TET4_H
 #define SO_TET4_H
@@ -520,6 +519,5 @@ protected:
 
 #endif  // #ifndef SO_TET4_H_
 #endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  D_SOLID3
 
 

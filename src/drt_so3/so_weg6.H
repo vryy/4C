@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_WEG6_H_
 #define SO_WEG6_H_
@@ -501,4 +500,4 @@ protected:
 
 #endif /*SO_WEG6_H_*/
 #endif
-#endif
+

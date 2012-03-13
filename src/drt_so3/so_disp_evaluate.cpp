@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
+
 #ifdef CCADISCRET
 
 #include "so_disp.H"
@@ -625,4 +625,4 @@ void DRT::ELEMENTS::SoDisp::sodisp_shapederiv(
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef
+

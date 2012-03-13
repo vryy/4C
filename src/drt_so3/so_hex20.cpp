@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_hex20.H"
@@ -590,4 +589,3 @@ bool DRT::ELEMENTS::So_hex20::VisData(const string& name, vector<double>& data)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

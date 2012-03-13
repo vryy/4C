@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
@@ -38,4 +37,3 @@ void DRT::ELEMENTS::So_sh8p8::EasInit()
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

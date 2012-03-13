@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_discret.H"
@@ -842,4 +841,3 @@ int DRT::ELEMENTS::NStet::EvaluateNeumann(ParameterList& params,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

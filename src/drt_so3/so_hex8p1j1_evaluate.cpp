@@ -10,7 +10,6 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_hex8p1j1.H"
@@ -1306,6 +1305,5 @@ int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
 
 

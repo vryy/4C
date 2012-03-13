@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_shw6.H"
@@ -196,4 +195,3 @@ void DRT::ELEMENTS::So_shw6::Print(ostream& os) const
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

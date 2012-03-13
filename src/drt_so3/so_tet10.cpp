@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_tet10.H"
@@ -471,4 +470,3 @@ bool DRT::ELEMENTS::So_tet10::VisData(const string& name, vector<double>& data)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

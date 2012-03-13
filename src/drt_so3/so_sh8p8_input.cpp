@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
@@ -423,4 +422,3 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

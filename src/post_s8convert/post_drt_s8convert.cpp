@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 #ifdef D_SHELL8
-#ifdef D_SOLID3
+
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_s8/shell8.H"
@@ -245,7 +245,7 @@ void Converter::write_element_result(string result_name,
 int main(int argc,  char** argv)
 {
 #ifdef D_SHELL8
-#ifdef D_SOLID3
+
   Teuchos::CommandLineProcessor My_CLP;
   My_CLP.setDocString("Post DRT shell8 conversion Filter\n");
 

@@ -10,7 +10,6 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 
@@ -56,5 +55,4 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
 

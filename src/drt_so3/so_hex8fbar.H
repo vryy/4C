@@ -9,7 +9,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SOH8FBAR_H
 #define SOH8FBAR_H
@@ -257,4 +256,3 @@ protected:
 
 #endif  // #ifndef SOH8FBAR_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

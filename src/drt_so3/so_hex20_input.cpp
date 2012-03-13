@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_hex20.H"
@@ -111,4 +110,3 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

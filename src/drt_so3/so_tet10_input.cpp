@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_tet10.H"
@@ -57,4 +56,3 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

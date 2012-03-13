@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_shw6.H"
@@ -1218,4 +1217,4 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WEG6
+

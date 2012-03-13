@@ -10,7 +10,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_nurbs27.H"
@@ -1182,5 +1181,4 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
 

@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_LINE_H
 #define SO_LINE_H
@@ -238,4 +237,3 @@ private:
 
 #endif  // #ifndef SO_LINE_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

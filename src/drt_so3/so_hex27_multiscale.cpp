@@ -10,7 +10,7 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
+
 #ifdef CCADISCRET
 #include "so_hex27.H"
 #include "../drt_mat/micromaterial.H"
@@ -65,4 +65,4 @@ void DRT::ELEMENTS::So_hex27::soh27_read_restart_multi()
 
 
 #endif
-#endif
+

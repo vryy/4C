@@ -283,10 +283,10 @@ STR::TimInt::TimInt
     for (int i=0; i<discret_->NumMyColElements(); ++i)
     {
       // get the actual element
-#ifdef D_SOLID3
+
       if (discret_->lColElement(i)->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
         locnumsosh8p8 += 1;
-#endif
+
     }
     // Was at least one SoSh8P8 found on one processor?
     int glonumsosh8p8 = 0;

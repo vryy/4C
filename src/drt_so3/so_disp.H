@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
+
 #ifdef CCADISCRET
 #ifndef SO_DISP_H
 #define SO_DISP_H
@@ -390,4 +390,4 @@ protected:
 
 #endif /*SO_DISP_H*/
 #endif
-#endif
+

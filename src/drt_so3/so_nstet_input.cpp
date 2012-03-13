@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_nstet.H"
@@ -46,4 +45,3 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

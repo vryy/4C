@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -1074,4 +1073,3 @@ int DRT::ELEMENTS::So_tet10Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

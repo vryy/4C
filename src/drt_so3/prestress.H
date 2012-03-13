@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef PRESTRESS_H
 #define PRESTRESS_H
@@ -170,4 +169,3 @@ private:
 
 #endif  // #ifndef PreStress
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_surface.H"
@@ -151,4 +150,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines()
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOLID3

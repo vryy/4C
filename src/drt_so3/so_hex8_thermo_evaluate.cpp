@@ -10,7 +10,6 @@ Maintainer: Caroline Danowski
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_hex8.H"
@@ -2837,5 +2836,4 @@ void DRT::ELEMENTS::So_hex8::soh8_coupling_poroelast(vector<int>& lm, // locatio
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
 

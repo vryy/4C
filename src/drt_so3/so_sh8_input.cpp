@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 
@@ -165,4 +164,3 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_surface.H"
@@ -1617,4 +1616,3 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 }
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOLID3

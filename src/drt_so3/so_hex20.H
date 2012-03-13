@@ -9,7 +9,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SOH20_H
 #define SOH20_H
@@ -525,4 +524,3 @@ protected:
 
 #endif  // #ifndef SOH20_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

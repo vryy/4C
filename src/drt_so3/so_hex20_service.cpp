@@ -11,7 +11,7 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef D_SOLID3
+
 #include "so_hex20.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 using namespace std; // cout etc.
@@ -46,4 +46,4 @@ const vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
 }
 
 #endif
-#endif
+

@@ -12,7 +12,6 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_tet4.H"
@@ -1708,4 +1707,3 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

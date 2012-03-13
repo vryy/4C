@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 
@@ -189,4 +188,3 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
 #endif
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

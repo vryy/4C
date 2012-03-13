@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_nurbs27.H"
@@ -1571,4 +1570,3 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

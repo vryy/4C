@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef D_SOLID3
 #include "so_hex8.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 using namespace std; // cout etc.
@@ -45,5 +44,4 @@ const vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
   return centercoords;
 }
 
-#endif
 #endif

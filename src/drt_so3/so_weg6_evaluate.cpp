@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_weg6.H"
@@ -1290,4 +1289,3 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WEG6

@@ -12,7 +12,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #ifndef SO_SH8P8_H
@@ -936,4 +935,3 @@ private:
 
 #endif  // #ifndef SO_SH8P8_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

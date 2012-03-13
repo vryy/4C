@@ -9,7 +9,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #ifndef SO_SH8_H
@@ -334,4 +333,3 @@ protected:
 
 #endif  // #ifndef SO_SH8_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

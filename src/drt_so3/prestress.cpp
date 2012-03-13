@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "prestress.H"
@@ -121,4 +120,3 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

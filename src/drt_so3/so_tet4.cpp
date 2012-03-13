@@ -12,7 +12,6 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_tet4.H"
@@ -578,4 +577,3 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3

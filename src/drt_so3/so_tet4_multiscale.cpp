@@ -10,7 +10,6 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #include "so_tet4.H"
 #include "../drt_mat/micromaterial.H"
@@ -64,5 +63,4 @@ void DRT::ELEMENTS::So_tet4::sotet4_read_restart_multi()
 }
 
 
-#endif
 #endif

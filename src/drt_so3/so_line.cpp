@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_line.H"
@@ -126,4 +125,3 @@ void DRT::ELEMENTS::StructuralLine::Print(ostream& os) const
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOLID3

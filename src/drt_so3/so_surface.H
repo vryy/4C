@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
@@ -378,4 +377,3 @@ protected:
 
 #endif // #ifndef SO_SURFACE_H
 #endif // #ifdef CCADISCRET
-#endif // #ifdef D_SOLID3

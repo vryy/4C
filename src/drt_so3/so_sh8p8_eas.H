@@ -12,7 +12,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #ifndef SO_SH8P8_EAS_H
@@ -344,4 +343,3 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef SO_SH8P8_EAS_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOLID3
