@@ -1275,9 +1275,6 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   case INPAR::XFEM::BoundaryTypeSigma:
     if(myrank_ == 0) std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
     break;
-  case INPAR::XFEM::BoundaryTypeTauPressure:
-    dserror ("XFEM interface method: BoundaryTypeTauPressure not available");
-    break;
   case INPAR::XFEM::BoundaryTypeNitsche:
     if(myrank_ == 0) std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
     break;

@@ -99,8 +99,6 @@ INTERFACE_VEL         interface_vel_by_disp
 INTERFACE_DISP        interface_disp_by_fsi
 Nitsche_stab          10
 Nitsche_stab_conv     10
-CONDEST               Yes  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT_SCREEN Yes
 GMSH_DEBUG_OUT        No
 GMSH_SOL_OUT          Yes

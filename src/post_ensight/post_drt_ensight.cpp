@@ -265,30 +265,6 @@ int main(
 //        ifacewriter.WriteFiles();
         break;
     }
-    case prb_fluid_xfem:
-    {
-        cout << "Output Fluid XFEM Problem" << endl;
-
-        string basename = problem.outname();
-//        cout << "  Structural Field" << endl;
-//        PostField* structfield = problem.get_discretization(0);
-//        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-//        structwriter.WriteFiles();
-
-        cout << "  Fluid Field" << endl;
-        PostField* fluidfield = problem.get_discretization(0);
-        XFluidEnsightWriter xfluidwriter(fluidfield, basename);
-        xfluidwriter.WriteFiles();
-
-        // in the future, we might also write the interface
-        // but at the moment, some procs might have no row elements
-        // and the HDF5 writing process can not handle this
-//        cout << "  Interface Field" << endl;
-//        PostField* ifacefield = problem.get_discretization(2);
-//        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
-//        ifacewriter.WriteFiles();
-        break;
-    }
     case prb_fluid_xfem2:
     {
         cout << "Output XFluid2 Problem" << endl;

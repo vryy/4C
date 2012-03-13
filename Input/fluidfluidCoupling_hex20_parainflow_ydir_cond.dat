@@ -141,8 +141,6 @@ PARTITION            Cut_Elements // The solver to attack the system of linear e
 SOLVER         UMFPACK  // The solver to attack the system of linear equations 
 PARTITION                       Cut_Elements
 -------------------------------------------------------XFEM GENERAL
-CONDEST            No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT                  Yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

@@ -79,8 +79,6 @@ EMBEDDED_BOUNDARY     BoundaryTypeSigma //  "BoundaryTypeTauPressure"  "Boundary
 XFLUID_BOUNDARY       xfluid_stationary_boundary // moving_boundary
 INTERFACE_VEL_INITIAL interface_vel_init_by_funct
 VEL_INIT_FUNCT_NO     2
-CONDEST               Yes  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT        No
 GMSH_SOL_OUT          Yes
 GMSH_DISCRET_OUT      Yes

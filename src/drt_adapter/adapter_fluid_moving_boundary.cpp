@@ -45,7 +45,6 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     }
-    case prb_fluid_xfem:
     case prb_fluid_xfem2:
     case prb_fsi_xfem:
     {

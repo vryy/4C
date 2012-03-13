@@ -101,8 +101,6 @@ PARTITION            Cut_Elements // The solver to attack the system of linear e
 --------------------------------------------------------ALE SOLVER
 ------------------------------------------------------STRUCT SOLVER
 -------------------------------------------------------XFEM GENERAL
-CONDEST            No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT                  Yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0

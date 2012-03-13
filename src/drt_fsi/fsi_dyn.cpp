@@ -128,35 +128,6 @@ void fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on XFEM in DRT
 /*----------------------------------------------------------------------*/
-void fluid_xfem_drt()
-{
-#ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
-
-
-  // make sure the solid dis is filled
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
-  problem->Dis(genprob.numsf,0)->FillComplete();
-
-
-  Teuchos::RCP<FSI::FluidXFEMAlgorithm> xfluid = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
-  if (genprob.restart)
-  {
-    // read the restart information, set vectors and variables
-    xfluid->ReadRestart(genprob.restart);
-  }
-  xfluid->Timeloop();
-
-  DRT::Problem::Instance()->AddFieldTest(xfluid->MBFluidField().CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
-}
-
-/*----------------------------------------------------------------------*/
-// entry point for Fluid on XFEM in DRT
-/*----------------------------------------------------------------------*/
 void fluid_xfem2_drt()
 {
 #ifdef PARALLEL
@@ -184,55 +155,44 @@ void fluid_xfem2_drt()
 
   actdis->GetDofSetProxy()->PrintAllDofsets(actdis->Comm());
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-//  Teuchos::RCP<LINALG::Solver> solver =
-//    Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
-//                                    actdis->Comm(),
-//                                    problem->ErrorFile()->Handle()));
-//  //actdis->ComputeNullSpaceIfNecessary(solver->Params());
-//
-//  FLD::XFluid fluid( actdis,soliddis,*solver,problem->FluidDynamicParams(), xdyn);
-//  fluid.Integrate();
 
-   INPAR::XFEM::MovingBoundary moving_boundary = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xdyn,"XFLUID_BOUNDARY");
+  INPAR::XFEM::MovingBoundary moving_boundary = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xdyn,"XFLUID_BOUNDARY");
 
 
-   if(moving_boundary == INPAR::XFEM::XFluidStationaryBoundary)
-   {
-     // no restart required, no moving interface
+  if(moving_boundary == INPAR::XFEM::XFluidStationaryBoundary)
+  {
+    // no restart required, no moving interface
 
-     // create instance of fluid basis algorithm
-     const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+    // create instance of fluid basis algorithm
+    const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
-     // run the simulation (timeloop() calls the xfluid-"integrate()" routine)
-     fluidalgo->FluidField().TimeLoop();
+    // run the simulation (timeloop() calls the xfluid-"integrate()" routine)
+    fluidalgo->FluidField().TimeLoop();
 
-     // perform result tests if required
-     problem->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
-     problem->TestAll(comm);
-   }
-   else if(moving_boundary == INPAR::XFEM::XFluidMovingBoundary)
-   {
-     // create instance of fluid xfem algorithm, for moving interfaces
-     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
-     if (genprob.restart)
-     {
-       // read the restart information, set vectors and variables
-       fluidalgo->ReadRestart(genprob.restart);
-     }
+    // perform result tests if required
+    problem->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
+    problem->TestAll(comm);
+  }
+  else if(moving_boundary == INPAR::XFEM::XFluidMovingBoundary)
+  {
+    // create instance of fluid xfem algorithm, for moving interfaces
+    Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fluidalgo->ReadRestart(genprob.restart);
+    }
 
-     // run the simulation
-     fluidalgo->Timeloop();
+    // run the simulation
+    fluidalgo->Timeloop();
 
-     // perform result tests if required
-     problem->AddFieldTest(fluidalgo->MBFluidField().CreateFieldTest());
-     problem->TestAll(comm);
-   }
-   else if(moving_boundary == INPAR::XFEM::XFSIMovingBoundary) dserror("do not use XFSIMovingBoundary with prb fluid_xfem2");
-   else dserror("not a valid XFLUID_BOUNDARY value");
+    // perform result tests if required
+    problem->AddFieldTest(fluidalgo->MBFluidField().CreateFieldTest());
+    problem->TestAll(comm);
+  }
+  else if(moving_boundary == INPAR::XFEM::XFSIMovingBoundary) dserror("do not use XFSIMovingBoundary with prb fluid_xfem2");
+  else dserror("not a valid XFLUID_BOUNDARY value");
 
 
 }
@@ -1085,22 +1045,6 @@ void xfsi_drt()
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-#if 0
-
-  // create ale elements if the ale discretization is empty
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
-  if (aledis->NumGlobalNodes()==0)
-  {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,1);
-
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
-
-    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
-  }
-
-#endif
-
   RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
   soliddis->FillComplete();
 
@@ -1111,7 +1055,6 @@ void xfsi_drt()
 
   // now we can reserve dofs for background fluid
   int numglobalnodes = actdis->NumGlobalNodes();
-  cout << "numglobalnodes" << numglobalnodes << endl;
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
   actdis->ReplaceDofSet(maxdofset,true);
@@ -1124,29 +1067,29 @@ void xfsi_drt()
   {
   case fsi_iter_monolithicxfem:
   {
-    dserror("fsi_iter_monolithicxfem not implemented yet");
-
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-
-    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
-      dserror("Only Newton-Krylov scheme with XFEM fluid");
-
-    Teuchos::RCP<FSI::MonolithicXFEM> fsi;
-    fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm));
-
-    // read the restart information, set vectors and variables ---
-    // be careful, dofmaps might be changed here in a Redistribute call
-    if (genprob.restart)
-    {
-      fsi->ReadRestart(genprob.restart);
-    }
-
-    // here we go...
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
+//    dserror("fsi_iter_monolithicxfem not implemented yet");
+//
+//    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+//
+//    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
+//      dserror("Only Newton-Krylov scheme with XFEM fluid");
+//
+//    Teuchos::RCP<FSI::MonolithicXFEM> fsi;
+//    fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm));
+//
+//    // read the restart information, set vectors and variables ---
+//    // be careful, dofmaps might be changed here in a Redistribute call
+//    if (genprob.restart)
+//    {
+//      fsi->ReadRestart(genprob.restart);
+//    }
+//
+//    // here we go...
+//    fsi->Timeloop();
+//
+//    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+//    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   }
@@ -1187,119 +1130,6 @@ void xfsi_drt()
 
   Teuchos::TimeMonitor::summarize();
 }
-
-
-///*----------------------------------------------------------------------*/
-//// entry point for FSI using XFEM in DRT
-///*----------------------------------------------------------------------*/
-//void xfsi_drt()
-//{
-//#ifdef PARALLEL
-//  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numaf,0)->Comm();
-//#else
-//  Epetra_SerialComm comm;
-//#endif
-//
-//  if (comm.MyPID() == 0)
-//  {
-//    cout << endl;
-//    cout << YELLOW_LIGHT << "       @..@    " << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "      (----)      " << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "     ( >__< )   " << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "     ^^ ~~ ^^  " << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "     _     _ _______ _______ _____" << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "      \\\\__/  |______ |______   |  " << END_COLOR << endl;
-//    cout << YELLOW_LIGHT << "     _/  \\\\_ |       ______| __|__" << END_COLOR << endl;
-//    cout <<  endl << endl;
-//  }
-//
-//  RCP<DRT::Problem> problem = DRT::Problem::Instance();
-//  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
-//
-//#if 0
-//
-//  // create ale elements if the ale discretization is empty
-//  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
-//  if (aledis->NumGlobalNodes()==0)
-//  {
-//    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,1);
-//
-//    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-//      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
-//
-//    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
-//  }
-//
-//#endif
-//
-//  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-//  switch (coupling)
-//  {
-//  case fsi_iter_monolithicxfem:
-//  {
-//    dserror("fsi_iter_monolithicxfem not implemented yet");
-//
-//    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-//
-//    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
-//      dserror("Only Newton-Krylov scheme with XFEM fluid");
-//
-//    Teuchos::RCP<FSI::MonolithicXFEM> fsi;
-//    fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm));
-//
-//    // read the restart information, set vectors and variables ---
-//    // be careful, dofmaps might be changed here in a Redistribute call
-//    if (genprob.restart)
-//    {
-//      fsi->ReadRestart(genprob.restart);
-//    }
-//
-//    // here we go...
-//    fsi->Timeloop();
-//
-//    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
-//    DRT::Problem::Instance()->TestAll(comm);
-//
-//    break;
-//  }
-//  case fsi_pseudo_structureale:
-//  case fsi_iter_monolithicfluidsplit:
-//  case fsi_iter_monolithicstructuresplit:
-//  case fsi_iter_monolithiclagrange:
-//    dserror("Unreasonable choice");
-//  default:
-//  {
-//    // Any partitioned algorithm. Stable of working horses.
-//
-//    Teuchos::RCP<FSI::Partitioned> fsi;
-//
-//    INPAR::FSI::PartitionedCouplingMethod method =
-//      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-//
-//    if (method==INPAR::FSI::DirichletNeumann)
-//    {
-//      fsi = rcp(new FSI::DirichletNeumann(comm));
-//    }
-//    else
-//      dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
-//
-//    if (genprob.restart)
-//    {
-//      // read the restart information, set vectors and variables
-//      fsi->ReadRestart(genprob.restart);
-//    }
-//
-//    fsi->Timeloop(fsi);
-//
-//    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
-//    DRT::Problem::Instance()->TestAll(comm);
-//  }
-//  }
-//
-//  Teuchos::TimeMonitor::summarize();
-//}
 
 
 #endif

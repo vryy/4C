@@ -107,8 +107,6 @@ EMBEDDED_BOUNDARY     BoundaryTypeNitsche // BoundaryTypeNitsche // BoundaryType
 COUPLING_STRATEGY     embedded_sided_mortaring // xfluid_sided_mortaring // two_sided_mortaring
 Nitsche_stab          1.0
 Nitsche_stab_conv     0.0
-CONDEST               No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT        No
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

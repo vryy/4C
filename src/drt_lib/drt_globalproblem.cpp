@@ -203,7 +203,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);      // TODO: remove me. use CONSTRAINT SOLVER block instead
-  reader.ReadGidSection("--XFLUID PROJECTION SOLVER", *list);   // what about me? only used by Axel in xfluidimplicitintegration
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
@@ -300,7 +299,6 @@ void DRT::Problem::InputControl()
     break;
   }
   case prb_fsi_xfem:
-  case prb_fluid_xfem:
   case prb_fluid_xfem2:
   {
     genprob.numsf=0;
@@ -995,7 +993,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_fsi_xfem:
-  case prb_fluid_xfem:
   case prb_fluid_xfem2:
   {
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));

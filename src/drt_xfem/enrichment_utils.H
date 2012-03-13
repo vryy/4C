@@ -1380,18 +1380,6 @@ void computeVectorCellNodeValues(
   LINALG::SerialDenseMatrix&     cellvalues
   );
 
-//! for output, compute values on the integration cells
-void computeVectorCellNodeValues(
-  const DRT::Element&  ele,
-  XFEM::InterfaceHandle*  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::BoundaryIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const int label,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&     cellvalues
-  );
-
 
 //! return assembly type depending on the DOF information
 XFEM::AssemblyType ComputeAssemblyType(

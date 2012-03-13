@@ -38,6 +38,10 @@ namespace ADAPTER
     Fluid& FluidField() { return fluid_.FluidField(); }
     const Fluid& FluidField() const { return fluid_.FluidField(); }
 
+//    XFluid& XFluidField() { return Teuchos::dyn_cast<XFluid>(fluid_.FluidField()); }
+//    const XFluid& XFluidField() const { return Teuchos::dyn_cast<const XFluid>(fluid_.FluidField()); }
+
+
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const FLD::UTILS::MapExtractor& Interface() const;
 

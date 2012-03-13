@@ -395,10 +395,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
     // Axel's unused input parameters
     fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
-    fluidtimeparams->sublist("XFEM").set<bool>("INCOMP_PROJECTION", DRT::INPUT::IntegralValue<int>(xdyn,"INCOMP_PROJECTION")==1 );
-    fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", DRT::INPUT::IntegralValue<int>(xdyn,"CONDEST")==1 );
-    fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
-    fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
+
     // interface coupling method
     fluidtimeparams->sublist("XFEM").set<int>("EMBEDDED_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
 

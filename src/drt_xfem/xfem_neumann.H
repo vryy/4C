@@ -3,13 +3,11 @@
 
 \brief base XFEM Neumann boundary conditions
 
-
-
 <pre>
 Maintainer: Dipl.-Math. Benedikt Schott
-			schott@lnm.mw.tum.de
-			http://www.lnm.mw.tum.de
-			089 - 289-15241
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -21,14 +19,13 @@ namespace GEO
 {
   namespace CUT
   {
-//    class VolumeCell;
     class ElementHandle;
   }
 }
 
 namespace XFEM
 {
-	class FluidWizard;
+  class FluidWizard;
 }
 
 namespace XFEM

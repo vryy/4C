@@ -49,9 +49,6 @@ void ntacal()
     case prb_scatra:
       scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);
       break;
-    case prb_fluid_xfem:
-      fluid_xfem_drt();
-      break;
     case prb_fluid_xfem2:
       fluid_xfem2_drt();
       break;

@@ -633,7 +633,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Structure");                                   label.push_back(prb_structure);
     name.push_back("Structure_Ale");                               label.push_back(prb_struct_ale);
     name.push_back("Fluid");                                       label.push_back(prb_fluid);
-    name.push_back("Fluid_XFEM");                                  label.push_back(prb_fluid_xfem);
     name.push_back("Fluid_XFEM2");                                 label.push_back(prb_fluid_xfem2);
     name.push_back("Fluid_Fluid_Ale");                             label.push_back(prb_fluid_fluid_ale);
     name.push_back("Fluid_Fluid");                                 label.push_back(prb_fluid_fluid);
@@ -4300,10 +4299,9 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
 
   // Boundary-Coupling options
   setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","method how to enforce embedded boundary/coupling conditions at the interface",
-                               tuple<std::string>("BoundaryTypeSigma","BoundaryTypeTauPressure", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
+                               tuple<std::string>("BoundaryTypeSigma", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
                                tuple<int>(
                                    INPAR::XFEM::BoundaryTypeSigma,       // stress/hybrid formulation
-                                   INPAR::XFEM::BoundaryTypeTauPressure, // not used in Xfluid
                                    INPAR::XFEM::BoundaryTypeNitsche,     // Nitsche's formulation
                                    INPAR::XFEM::BoundaryTypeNeumann      // interior Neumann condition
                                    ),
@@ -4392,17 +4390,9 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
 
   setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("INCOMP_PROJECTION","No","Do you want to project the old velocity to an incompressible velocity field?",
-                               yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
-                               yesnotuple,yesnovalue,&xfem_general);
 
   IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
 
-
-  // CUT options
-  DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
-  DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
@@ -4423,10 +4413,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidpsolver = list->sublist("FLUID PRESSURE SOLVER",false,"pressure solver parameters for SIMPLE preconditioning");
   SetValidSolverParameters(fluidpsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& xfluidprojsolver = list->sublist("XFLUID PROJECTION SOLVER",false,"");
-  SetValidSolverParameters(xfluidprojsolver);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");

@@ -85,8 +85,6 @@ VEL_FUNCT_NO          2
 INTERFACE_DISP        interface_disp_by_funct
 DISP_FUNCT_NO         3
 DISP_CURVE_NO         1
-CONDEST               Yes  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      Yes  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT_SCREEN Yes
 GMSH_DEBUG_OUT        No
 GMSH_SOL_OUT          Yes

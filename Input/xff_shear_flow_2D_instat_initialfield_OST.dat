@@ -121,11 +121,7 @@ PARTITION      Cut_Elements
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
 -------------------------------------------------------XFEM GENERAL
-CONDEST            No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION     No//Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT                  Yes
-volumeRatioLimit        1.0e-8
-boundaryRatioLimit	1.0e-8
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0

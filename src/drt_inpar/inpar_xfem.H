@@ -3,8 +3,8 @@
 \file inpar_xfem.H
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */
@@ -28,7 +28,6 @@ namespace INPAR
     enum BoundaryIntegralType
     {
       BoundaryTypeSigma,
-      BoundaryTypeTauPressure,
       BoundaryTypeNitsche,
       BoundaryTypeNeumann
     };

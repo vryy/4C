@@ -34,9 +34,6 @@ Maintainer: Dipl.-Math. Benedikt Schott
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
-//#include "../drt_cut/cut_integrationcell.H"
-//#include "../drt_cut/cut_point.H"
-//#include "../drt_cut/cut_meshintersection.H"
 
 #include "../drt_f3/fluid3.H"
 
@@ -66,14 +63,13 @@ void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>  
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                                            ParameterList&          params,
-                                            DRT::Discretization &   discret,
-                                            DRT::Discretization &   cutdiscret,
-                                            Epetra_Vector&          systemvector,
-                                            LINALG::SparseOperator* systemmatrix)
+void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
+                             ParameterList&          params,
+                             DRT::Discretization &   discret,
+                             DRT::Discretization &   cutdiscret,
+                             Epetra_Vector&          systemvector,
+                             LINALG::SparseOperator* systemmatrix)
 {
-#ifdef D_FLUID3
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumann" );
 
@@ -106,7 +102,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   // copy conditions to a condition multimap
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("PointNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("PointNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -114,7 +110,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("LineNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("LineNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("LineNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -122,7 +118,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("SurfaceNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("SurfaceNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("SurfaceNeumann"),condition_vec[i]));
   }
 
   // get XFEM Point Neumann conditions
@@ -130,7 +126,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("PointXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("PointXFEMNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("PointXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Line Neumann conditions
@@ -138,7 +134,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("LineXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("LineXFEMNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("LineXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -146,7 +142,7 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("SurfaceXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("SurfaceXFEMNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("SurfaceXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -154,38 +150,33 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
   discret.GetCondition("VolXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-	  condition.insert( pair<string,DRT::Condition* >(string("VolXFEMNeumann"),condition_vec[i]));
+    condition.insert( pair<string,DRT::Condition* >(string("VolXFEMNeumann"),condition_vec[i]));
   }
 
   // evaluate standard Neumann conditions
   EvaluateNeumannStandard(condition,
-                         usetime,
-                         time,
-                         assemblemat,
-                         params,
-                         discret,
-                         systemvector,
-                         systemmatrix);
+      usetime,
+      time,
+      assemblemat,
+      params,
+      discret,
+      systemvector,
+      systemmatrix);
 
   // evaluate XFEM Neumann conditions
   EvaluateNeumannXFEM(   wizard,
-                         condition,
-                         usetime,
-                         time,
-                         assemblemat,
-                         params,
-                         discret,
-                         cutdiscret,
-                         systemvector,
-                         systemmatrix);
+      condition,
+      usetime,
+      time,
+      assemblemat,
+      params,
+      discret,
+      cutdiscret,
+      systemvector,
+      systemmatrix);
 
 
   return;
-
-#else
-  dserror("D_FLUID3 required");
-#endif
-
 
 }
 
@@ -194,14 +185,14 @@ void XFEM::EvaluateNeumann(                 Teuchos::RCP<XFEM::FluidWizard>     
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannStandard(                   multimap<string,DRT::Condition* > &   condition,
-                                                      bool                                  usetime,
-                                                      const double                          time,
-                                                      bool                                  assemblemat,
-                                                      ParameterList&                        params,
-                                                      DRT::Discretization &                 discret,
-                                                      Epetra_Vector&                        systemvector,
-                                                      LINALG::SparseOperator*               systemmatrix)
+void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condition,
+                                    bool                                  usetime,
+                                    const double                          time,
+                                    bool                                  assemblemat,
+                                    ParameterList&                        params,
+                                    DRT::Discretization &                 discret,
+                                    Epetra_Vector&                        systemvector,
+                                    LINALG::SparseOperator*               systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
@@ -212,42 +203,42 @@ void XFEM::EvaluateNeumannStandard(                   multimap<string,DRT::Condi
   //--------------------------------------------------------
   for (fool=condition.begin(); fool!=condition.end(); ++fool)
   {
-	if (fool->first != (string)"PointNeumann") continue;
-	if (assemblemat && !systemvector.Comm().MyPID())
-	  cout << "WARNING: No linearization of PointNeumann conditions" << endl;
-	DRT::Condition& cond = *(fool->second);
-	const vector<int>* nodeids = cond.Nodes();
-	if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
-	const int nnode = (*nodeids).size();
-	const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-	const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-	const vector<double>* val    = cond.Get<vector<double> >("val");
-	// Neumann BCs for some historic reason only have one curve
-	int curvenum = -1;
-	if (curve) curvenum = (*curve)[0];
-	double curvefac = 1.0;
-	if (curvenum>=0 && usetime)
-	  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-	for (int i=0; i<nnode; ++i)
-	{
-	  // do only nodes in my row map
-	  if (!discret.NodeRowMap()->MyGID((*nodeids)[i])) continue;
-	  DRT::Node* actnode = discret.gNode((*nodeids)[i]);
-	  if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-	  // call explicitly the main dofset, i.e. the first column
-	  vector<int> dofs = discret.Dof(0,actnode);
-	  const unsigned numdf = dofs.size();
-	  for (unsigned j=0; j<numdf; ++j)
-	  {
-		if ((*onoff)[j]==0) continue;
-		const int gid = dofs[j];
-		double value  = (*val)[j];
-		value *= curvefac;
-		const int lid = systemvector.Map().LID(gid);
-		if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-		systemvector[lid] += value;
-	  }
-	}
+    if (fool->first != (string)"PointNeumann") continue;
+    if (assemblemat && !systemvector.Comm().MyPID())
+      cout << "WARNING: No linearization of PointNeumann conditions" << endl;
+    DRT::Condition& cond = *(fool->second);
+    const vector<int>* nodeids = cond.Nodes();
+    if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
+    const int nnode = (*nodeids).size();
+    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+    const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+    const vector<double>* val    = cond.Get<vector<double> >("val");
+    // Neumann BCs for some historic reason only have one curve
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    for (int i=0; i<nnode; ++i)
+    {
+      // do only nodes in my row map
+      if (!discret.NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = discret.gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+      // call explicitly the main dofset, i.e. the first column
+      vector<int> dofs = discret.Dof(0,actnode);
+      const unsigned numdf = dofs.size();
+      for (unsigned j=0; j<numdf; ++j)
+      {
+        if ((*onoff)[j]==0) continue;
+        const int gid = dofs[j];
+        double value  = (*val)[j];
+        value *= curvefac;
+        const int lid = systemvector.Map().LID(gid);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+        systemvector[lid] += value;
+      }
+    }
   }
 
   //--------------------------------------------------------
@@ -255,39 +246,39 @@ void XFEM::EvaluateNeumannStandard(                   multimap<string,DRT::Condi
   // ATTENTION: VolumeNeumann conditions (bodyforces) are evaluated in Evaluate
   //--------------------------------------------------------
   for (fool=condition.begin(); fool!=condition.end(); ++fool)
-	if (fool->first == (string)"LineNeumann" ||
-		fool->first == (string)"SurfaceNeumann"
-	   )
-	{
-	  DRT::Condition& cond = *(fool->second);
-	  map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-	  map<int,RCP<DRT::Element> >::iterator curr;
-	  Epetra_SerialDenseVector elevector;
-	  Epetra_SerialDenseMatrix elematrix;
-	  for (curr=geom.begin(); curr!=geom.end(); ++curr)
-	  {
-		  // get element location vector, dirichlet flags and ownerships
-		  vector<int> lm;
-		  vector<int> lmowner;
-		  vector<int> lmstride;
-		  curr->second->LocationVector(discret,lm,lmowner,lmstride);
-		  elevector.Size((int)lm.size());
-		  if (!assemblemat)
-		  {
-			curr->second->EvaluateNeumann(params,discret,cond,lm,elevector);
-			LINALG::Assemble(systemvector,elevector,lm,lmowner);
-		  }
-		  else
-		  {
-			const int size = (int)lm.size();
-			if (elematrix.M() != size) elematrix.Shape(size,size);
-			else memset(elematrix.A(),0,size*size*sizeof(double));
-			curr->second->EvaluateNeumann(params,discret,cond,lm,elevector,&elematrix);
-			LINALG::Assemble(systemvector,elevector,lm,lmowner);
-			systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
-		  }
-	  }
-	}
+    if (fool->first == (string)"LineNeumann" ||
+        fool->first == (string)"SurfaceNeumann"
+    )
+    {
+      DRT::Condition& cond = *(fool->second);
+      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      map<int,RCP<DRT::Element> >::iterator curr;
+      Epetra_SerialDenseVector elevector;
+      Epetra_SerialDenseMatrix elematrix;
+      for (curr=geom.begin(); curr!=geom.end(); ++curr)
+      {
+        // get element location vector, dirichlet flags and ownerships
+        vector<int> lm;
+        vector<int> lmowner;
+        vector<int> lmstride;
+        curr->second->LocationVector(discret,lm,lmowner,lmstride);
+        elevector.Size((int)lm.size());
+        if (!assemblemat)
+        {
+          curr->second->EvaluateNeumann(params,discret,cond,lm,elevector);
+          LINALG::Assemble(systemvector,elevector,lm,lmowner);
+        }
+        else
+        {
+          const int size = (int)lm.size();
+          if (elematrix.M() != size) elematrix.Shape(size,size);
+          else memset(elematrix.A(),0,size*size*sizeof(double));
+          curr->second->EvaluateNeumann(params,discret,cond,lm,elevector,&elematrix);
+          LINALG::Assemble(systemvector,elevector,lm,lmowner);
+          systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
+        }
+      }
+    }
 
   return;
 }
@@ -296,16 +287,16 @@ void XFEM::EvaluateNeumannStandard(                   multimap<string,DRT::Condi
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for XFEM conditions (public)           schott 09/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannXFEM(                      Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                                                     multimap<string,DRT::Condition* > &  condition,
-                                                     bool                                 usetime,
-                                                     const double                         time,
-                                                     bool                                 assemblemat,
-                                                     ParameterList&                       params,
-                                                     DRT::Discretization &                discret,
-                                                     DRT::Discretization &                cutdiscret,
-                                                     Epetra_Vector&                       systemvector,
-                                                     LINALG::SparseOperator*              systemmatrix)
+void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
+                                multimap<string,DRT::Condition* > &  condition,
+                                bool                                 usetime,
+                                const double                         time,
+                                bool                                 assemblemat,
+                                ParameterList&                       params,
+                                DRT::Discretization &                discret,
+                                DRT::Discretization &                cutdiscret,
+                                Epetra_Vector&                       systemvector,
+                                LINALG::SparseOperator*              systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannXFEM" );
 
@@ -350,10 +341,8 @@ void XFEM::EvaluateNeumannXFEM(                      Teuchos::RCP<XFEM::FluidWiz
           // get the element
           DRT::Element* parent_ele = discret.gElement(ele_id);
 
-#ifdef D_FLUID3
           DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( parent_ele );
           if ( ele==NULL ) dserror( "expect fluid element" );
-#endif
 
           // ask wizard for this parent element
           GEO::CUT::ElementHandle * e = wizard->GetElement( parent_ele );
@@ -459,54 +448,54 @@ void XFEM::EvaluateNeumannXFEM(                      Teuchos::RCP<XFEM::FluidWiz
 
 int XFEM::getParentElementId(DRT::Discretization& discret, RCP<DRT::Element> surf_ele)
 {
-	int parent_ele_id = -1;
+  int parent_ele_id = -1;
 
-    // get the nodeIds of this surface element
-    const int numnode = surf_ele->NumNode();
-  	  const int* nodeids= surf_ele->NodeIds();
+  // get the nodeIds of this surface element
+  const int numnode = surf_ele->NumNode();
+  const int* nodeids= surf_ele->NodeIds();
 
-  	  //std::map(eid,#adjacent to nodes)
-  	  std::map<int,int> ele_map;
-  	  std::map<int,int>::iterator ele_map_it;
+  //std::map(eid,#adjacent to nodes)
+  std::map<int,int> ele_map;
+  std::map<int,int>::iterator ele_map_it;
 
-  	  // prepare finding the adjacent element for the current Neumann condition
-  	  for(int node_it=0; node_it<numnode; node_it++)
-  	  {
-  		  // get element Ids of current node
-  		  {
-  			  DRT::Node* node = discret.gNode(nodeids[node_it]);
+  // prepare finding the adjacent element for the current Neumann condition
+  for(int node_it=0; node_it<numnode; node_it++)
+  {
+    // get element Ids of current node
+    {
+      DRT::Node* node = discret.gNode(nodeids[node_it]);
 
-  			  const int numele = node->NumElement();
-  			  DRT::Element* * elements = node->Elements();
+      const int numele = node->NumElement();
+      DRT::Element* * elements = node->Elements();
 
 
-  			  // find the element which is shared by all nodes
-  			  for(int ele_it=0; ele_it<numele; ele_it++)
-  			  {
-					      DRT::Element* actele = elements[ele_it];
-					      int act_eid = actele->Id();
-					      ele_map_it = ele_map.find(act_eid);
-					      if(ele_map_it!=ele_map.end()) ele_map_it->second++;
-					      else ele_map.insert(pair<int,int>(act_eid,1));
-  			  }
+      // find the element which is shared by all nodes
+      for(int ele_it=0; ele_it<numele; ele_it++)
+      {
+        DRT::Element* actele = elements[ele_it];
+        int act_eid = actele->Id();
+        ele_map_it = ele_map.find(act_eid);
+        if(ele_map_it!=ele_map.end()) ele_map_it->second++;
+        else ele_map.insert(pair<int,int>(act_eid,1));
+      }
 
-  		  }
-  	  }
+    }
+  }
 
-  	  // find the adjacent element for the current Neumann condition
-  	  int tmp = -1;
-		  for(ele_map_it=ele_map.begin(); ele_map_it!=ele_map.end(); ele_map_it++)
-		  {
-			  if(ele_map_it->second > tmp)
-			  {
-				  tmp = ele_map_it->second;
-				  parent_ele_id= ele_map_it->first;
-			  }
-		  }
+  // find the adjacent element for the current Neumann condition
+  int tmp = -1;
+  for(ele_map_it=ele_map.begin(); ele_map_it!=ele_map.end(); ele_map_it++)
+  {
+    if(ele_map_it->second > tmp)
+    {
+      tmp = ele_map_it->second;
+      parent_ele_id= ele_map_it->first;
+    }
+  }
 
-	if(parent_ele_id == -1) dserror("the ele-Id of the parent volume element could not be found!");
+  if(parent_ele_id == -1) dserror("the ele-Id of the parent volume element could not be found!");
 
-	return parent_ele_id;
+  return parent_ele_id;
 }
 
 /*------------------------------------------------------------------------------*
@@ -531,35 +520,35 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
   const int  numnode_Neum = neumann_surface->NumNode();
   const int* nodes_Neum   = neumann_surface->NodeIds();
 
-//  // find local surface id of parent element
-//  int psurf_id = -1;
-//  for(size_t id=0; id<surfaces.size(); id++)
-//  {
-//    const int  numnode_act_surf = surfaces[id]->NumNode();
-//    const int* nodes_act_surf   = surfaces[id]->NodeIds();
-//
-//    if(numnode_act_surf == numnode_Neum)
-//    {
-//      bool psurf_found =  false;
-//      for(int j_node=0; j_node< numnode_Neum; j_node++)
-//      {
-//        // compare the nodeids
-//        if(nodes_act_surf[j_node] == nodes_Neum[j_node]) psurf_found= true;
-//        else
-//        {
-//          // at least one node not identical
-//          psurf_found = false;
-//          continue;
-//        }
-//      }
-//      if(psurf_found) psurf_id = id;
-//    }
-//  }
-//
-//  if(psurf_id == -1) dserror("Neumann surface in element surfaces not found!");
-//
-//  // get the surface of the element identical to the Neumann surface
-//  RCP<DRT::Element> parent_surf = surfaces[psurf_id];
+  //  // find local surface id of parent element
+  //  int psurf_id = -1;
+  //  for(size_t id=0; id<surfaces.size(); id++)
+  //  {
+  //    const int  numnode_act_surf = surfaces[id]->NumNode();
+  //    const int* nodes_act_surf   = surfaces[id]->NodeIds();
+  //
+  //    if(numnode_act_surf == numnode_Neum)
+  //    {
+  //      bool psurf_found =  false;
+  //      for(int j_node=0; j_node< numnode_Neum; j_node++)
+  //      {
+  //        // compare the nodeids
+  //        if(nodes_act_surf[j_node] == nodes_Neum[j_node]) psurf_found= true;
+  //        else
+  //        {
+  //          // at least one node not identical
+  //          psurf_found = false;
+  //          continue;
+  //        }
+  //      }
+  //      if(psurf_found) psurf_id = id;
+  //    }
+  //  }
+  //
+  //  if(psurf_id == -1) dserror("Neumann surface in element surfaces not found!");
+  //
+  //  // get the surface of the element identical to the Neumann surface
+  //  RCP<DRT::Element> parent_surf = surfaces[psurf_id];
 
 
   // find the cut_side, there must be one cut side identical to the Neumann boundary side
@@ -621,110 +610,110 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
     // decide betwenn assembly strategies
     if(sides[side_id]->IsCut()) // b) -> yes: xfem assembly, getrennt für jede vc
     {
-       eval_Neumann = true;
-       xfem_eval_Neumann = true;
+      eval_Neumann = true;
+      xfem_eval_Neumann = true;
     }
     if(!(sides[side_id]->IsCut()))
     {
-       // all facets outside: standard assembly
-       // all facets inside:  no assembly
+      // all facets outside: standard assembly
+      // all facets inside:  no assembly
 
-       const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
+      const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
 
-       int outside_facets = 0;
-       int inside_facets = 0;
+      int outside_facets = 0;
+      int inside_facets = 0;
 
-       for(int f_index=0; f_index< (int)facets.size(); f_index++)
-       {
-          GEO::CUT::Facet* f = facets[f_index];
+      for(int f_index=0; f_index< (int)facets.size(); f_index++)
+      {
+        GEO::CUT::Facet* f = facets[f_index];
 
-          if(f->Position()==GEO::CUT::Point::outside) outside_facets++;
-          if(f->Position()!=GEO::CUT::Point::outside) inside_facets++;
-       }
+        if(f->Position()==GEO::CUT::Point::outside) outside_facets++;
+        if(f->Position()!=GEO::CUT::Point::outside) inside_facets++;
+      }
 
-       if(outside_facets>0 && inside_facets<=0)
-       {
-          // standard assembly
-          eval_Neumann = true;
-          xfem_eval_Neumann = false;
-       }
-       else if(outside_facets<=0 && inside_facets>0)
-       {
-          // no Neumann evaluate
-          eval_Neumann = false;
-          xfem_eval_Neumann = false;
-       }
-       else dserror("this can not happen!");
+      if(outside_facets>0 && inside_facets<=0)
+      {
+        // standard assembly
+        eval_Neumann = true;
+        xfem_eval_Neumann = false;
+      }
+      else if(outside_facets<=0 && inside_facets>0)
+      {
+        // no Neumann evaluate
+        eval_Neumann = false;
+        xfem_eval_Neumann = false;
+      }
+      else dserror("this can not happen!");
 
     }
 
     count_collectElements++;
   }
 
-//			{
-//
-//				  GEO::CUT::plain_volumecell_set cells;
-//				  parentele_handle->VolumeCells(cells);
-//
-//				  for(GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end();i++)
-//				  {
-//						GEO::CUT::VolumeCell * vc = *i;
-//						if(vc->Position() == GEO::CUT::Point::outside)
-//						{
-//							GEO::CUT::plain_integrationcell_set int_cells;
-//							  vc->GetIntegrationCells(int_cells);
-//
-//							for(GEO::CUT::plain_integrationcell_set::iterator j=int_cells.begin(); j!=int_cells.end(); j++)
-//							{
-//								GEO::CUT::IntegrationCell* intcell = *j;
-//
-//								if(intcell->Shape() == DRT::Element::tet4) cout << "tet4 integration cell" << endl;
-//
-//								if(intcell->Shape() == DRT::Element::hex8) cout << "hex8 integration cell" << endl;
-//
-//								std::vector<GEO::CUT::Point*> points = intcell->Points();
-////								for(int i=0; i<points.size(); i++)
-////								{
-////									GEO::CUT::Point* point = points[i];
-////
-////								}
-//								GEO::CUT::Facet* facet;
-//
-//								const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
-//
-//								for(int f_index=0; f_index< (int)facets.size(); f_index++)
-//								{
-//									GEO::CUT::Facet* f = facets[f_index];
-//
-//									if(f->Position()==GEO::CUT::Point::outside) facet = f;
-//								}
-//
-//								if(intcell->Shape() == DRT::Element::tet4)
-//								{
-////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tri3, facet, points );
-////												vc->NewTri3Cell(wizard_.CutWizard().Mesh().NormalMesh(), facet, points );
-//									cout << "new tri3 cell created" << endl;
-//									vc->NewIntegrationCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tet4, points );
-//
-//								}
-//								if(intcell->Shape() == DRT::Element::hex8)
-//								{
-////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::quad4, facet, points);
-//									cout << "new quad4 cell created" << endl;
-//								}
-//							}
-//
-//
-//
-//
-//						}
-//
-//				  }
-//
-//
-//			}
+  //			{
+  //
+  //				  GEO::CUT::plain_volumecell_set cells;
+  //				  parentele_handle->VolumeCells(cells);
+  //
+  //				  for(GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end();i++)
+  //				  {
+  //						GEO::CUT::VolumeCell * vc = *i;
+  //						if(vc->Position() == GEO::CUT::Point::outside)
+  //						{
+  //							GEO::CUT::plain_integrationcell_set int_cells;
+  //							  vc->GetIntegrationCells(int_cells);
+  //
+  //							for(GEO::CUT::plain_integrationcell_set::iterator j=int_cells.begin(); j!=int_cells.end(); j++)
+  //							{
+  //								GEO::CUT::IntegrationCell* intcell = *j;
+  //
+  //								if(intcell->Shape() == DRT::Element::tet4) cout << "tet4 integration cell" << endl;
+  //
+  //								if(intcell->Shape() == DRT::Element::hex8) cout << "hex8 integration cell" << endl;
+  //
+  //								std::vector<GEO::CUT::Point*> points = intcell->Points();
+  ////								for(int i=0; i<points.size(); i++)
+  ////								{
+  ////									GEO::CUT::Point* point = points[i];
+  ////
+  ////								}
+  //								GEO::CUT::Facet* facet;
+  //
+  //								const std::vector<GEO::CUT::Facet*> & facets = sides[side_id]->Facets();
+  //
+  //								for(int f_index=0; f_index< (int)facets.size(); f_index++)
+  //								{
+  //									GEO::CUT::Facet* f = facets[f_index];
+  //
+  //									if(f->Position()==GEO::CUT::Point::outside) facet = f;
+  //								}
+  //
+  //								if(intcell->Shape() == DRT::Element::tet4)
+  //								{
+  ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tri3, facet, points );
+  ////												vc->NewTri3Cell(wizard_.CutWizard().Mesh().NormalMesh(), facet, points );
+  //									cout << "new tri3 cell created" << endl;
+  //									vc->NewIntegrationCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tet4, points );
+  //
+  //								}
+  //								if(intcell->Shape() == DRT::Element::hex8)
+  //								{
+  ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::quad4, facet, points);
+  //									cout << "new quad4 cell created" << endl;
+  //								}
+  //							}
+  //
+  //
+  //
+  //
+  //						}
+  //
+  //				  }
+  //
+  //
+  //			}
 
-	return;
+  return;
 }
 
 

@@ -1471,9 +1471,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   case INPAR::XFEM::BoundaryTypeNeumann:
     dserror ("XFEM interface method: BoundaryTypeNeumann not available for Xfluidfluid");
     break;
-  case INPAR::XFEM::BoundaryTypeTauPressure:
-    dserror ("XFEM interface method: BoundaryTypeTauPressure not available");
-    break;
   default:
     dserror("BoundaryType unknown!!!");
   }
