@@ -486,8 +486,8 @@ protected:
 
 
   template<typename T>
-  static LINALG::TMatrix<T,3,3> TBuildF(LINALG::TMatrix<T,4,3>& xdisp,
-                                        LINALG::Matrix<4,3>& nxyz)
+  static LINALG::TMatrix<T,3,3> TBuildF(const LINALG::TMatrix<T,4,3>& xdisp,
+                                        const LINALG::Matrix<4,3>& nxyz)
   {
     LINALG::TMatrix<T,3,3> F(true);
     for (int i=0; i<3; ++i)

@@ -415,8 +415,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
 
   //-------------------------------------------------- standard quantities
-  const int nnodeinpatch = (int)adjnode.size();
-  const int ndofinpatch  = nnodeinpatch * 3;
+  const int ndofinpatch  = (int)lm.size();
   const int neleinpatch  = (int)adjele.size();
 
   //------------------------------ see whether materials in patch are equal
@@ -445,7 +444,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
   {
-  //double VnodeL = 0.0;
+  double VnodeL = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   vector<vector<vector<int> > > lmlm(neleinpatch);
   for (int i=0; i<neleinpatch; ++i)
@@ -485,14 +484,39 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
         vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[k]);
         lmlm[i][j][k] = fool-lm.begin();
       }
+      
+      // copy subelement displacements to 4x3 format
+     LINALG::TMatrix<FAD,4,3> eledispmat(false);
+     for (int k=0; k<4; ++k)
+       for (int l=0; l<3; ++l)
+         eledispmat(k,l) = patchdisp[lmlm[i][j][k*3+l]];
+    
+     // add 1/3 of subelement volume to this node
+     const double V = ele->SubV(subeleid)/3.0;
+     VnodeL += V;
 
+     // build F from this subelement
+     LINALG::TMatrix<FAD,3,3> Fele(true);
+     Fele = ele->TBuildF<FAD>(eledispmat,ele->SubNxyz(subeleid));
+     
+     // add to nodal deformation gradient
+     Fele.Scale(V);
+     fad_FnodeL += Fele;
+     
 
     } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int i=0; i<neleinpatch; ++i)
-
-
+  
+  // do the actual averaging
+  fad_FnodeL.Scale(1.0/VnodeL);
+  
+  // copy fad F to double F
+  LINALG::Matrix<3,3> FnodeL(false);
+  for (int j=0; j<3; ++j)
+    for (int k=0; k<3; ++k)
+      FnodeL(j,k) = fad_FnodeL(j,k).val();
   }
-
+  exit(0);
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
