@@ -44,7 +44,7 @@ FILESTEPS              1000
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 63 POSITION dispx NAME ux VALUE  2.9268964885580624e-02 TOLERANCE 1e-5
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Statics // Gen_Alfa Static
+DYNAMICTYP   Statics
 PRESTRESS                       id                // mulf id none
 PRESTRESSTIME                   0.1001
 EIGEN        0

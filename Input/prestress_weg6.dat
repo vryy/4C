@@ -41,7 +41,7 @@ FILESTEPS                       1000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE -1.5531158172916930e+01 TOLERANCE 1e-5
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP 	  	Statics // Gen_Alfa Static
+DYNAMICTYP 	  	Statics
 PRESTRESS               mulf                // mulf id none
 PRESTRESSTIME     	0.02
 EIGEN      		0

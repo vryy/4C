@@ -72,7 +72,7 @@ BETA                            0.25
 //     RelRes_And_RelDis
 CONV_CHECK                      AbsRes_Or_AbsDis
 DAMPING                         No  // must be off
-DYNAMICTYP                      Static //Gen_Alfa
+DYNAMICTYP                      Statics 
 EIGEN                           0
 GAMMA                           0.5
 ITERATION                       full

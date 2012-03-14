@@ -45,7 +45,7 @@ FILESTEPS                       1000
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Static                          // Gen_Alfa Static
+DYNAMICTYP                      Statics
 PRESTRESS                       mulf                // mulf id none
 PRESTRESSTIME                   0.05
 EIGEN                           0

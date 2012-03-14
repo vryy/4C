@@ -37,7 +37,7 @@ TIMESTEP     1.0e-4
 RESTARTEVRY  20
 UPRES        20
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Static  // Gen_Alfa Static
+DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     10
