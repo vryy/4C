@@ -1,0 +1,159 @@
+//
+// Maintainer: Hamman de Vaal
+//             devaal@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de/Members/devaal
+//             089 - 289-15251
+//
+// necessary defines: CCADISCRET D_WALL1 BINIO
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        5
+NODES                           20
+DIM                             2
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+NUMFIELD                        1
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+NUMALEDIS                       1
+NUMTHERMDIS                     1
+--------------------------------------------------------------------------IO
+OUTPUT_OUT                      No
+OUTPUT_GID                      No
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   GL
+STRUCT_SM_DISP                  No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+ALE_DISP                        No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      Statics
+EIGEN                           0
+RESULTSEVRY                     1
+RESTARTEVRY                     20
+NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+TIMESTEP                        1.0
+NUMSTEP                         1
+MAXTIME                         100.0
+DAMPING                         No
+M_DAMP                          0.00001
+K_DAMP                          0.00001
+CONV_CHECK                      None
+TOLRES                          1.0E-7
+TOLDISP                         1.0E-7
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              Or
+MAXITER                         10
+---------------------------------------------------------------STRUCT SOLVER
+SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                               // output every so often, 0 no output
+AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0                               // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-8                          // tolerance in unscaled residual
+AZCONV                          AZ_noscaled                     // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                            // max iterations
+AZSUB                           25                              // size of krylov space for gmres
+AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                               // unused
+AZPOLY                          5                               // polynomial order for Neumann
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          infnorm                         // none sym infnorm scaling of the system
+AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT                        0                               // ML print-out level (0-10)
+ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                               // ML max number of levels
+ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 Chebychev                       // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Chebychev                       // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES 3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                             // damping fine grid
+ML_DAMPMED                      1.0                             // damping med grids
+ML_DAMPCOARSE                   1.0                             // damping coarse grid
+PARTITION                       Cut_Elements
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0 DENS 1 THEXPANS 0.0
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT4
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  2
+NDSURF  0
+NDVOL   0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  1
+// NBC
+E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+// DBC
+E 2 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    2 DLINE 1
+NODE    3 DLINE 1
+NODE    6 DLINE 1
+NODE    9 DLINE 2
+NODE    17 DLINE 2
+NODE    20 DLINE 2
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	5.9999999999999998e-01	5.9999999999999998e-01	0.0000000000000000e+00	
+NODE 2  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 3  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 4  	COORD	5.9999999999999998e-01	4.0000000000000002e-01	0.0000000000000000e+00	
+NODE 5  	COORD	7.9999999999999993e-01	8.0000000000000016e-01	0.0000000000000000e+00	
+NODE 6  	COORD	1.0000000000000000e+00	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 7  	COORD	7.9999999999999993e-01	2.0000000000000001e-01	0.0000000000000000e+00	
+NODE 8  	COORD	5.9999999999999998e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 9  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 10  	COORD	4.0000000000000002e-01	4.0000000000000002e-01	0.0000000000000000e+00	
+NODE 11  	COORD	1.9999999999999996e-01	2.0000000000000007e-01	0.0000000000000000e+00	
+NODE 12  	COORD	5.0000000000000000e-01	4.0000000000000002e-01	0.0000000000000000e+00	
+NODE 13  	COORD	5.0000000000000000e-01	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 14  	COORD	4.0000000000000002e-01	5.9999999999999998e-01	0.0000000000000000e+00	
+NODE 15  	COORD	4.0000000000000002e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 16  	COORD	5.0000000000000000e-01	5.9999999999999998e-01	0.0000000000000000e+00	
+NODE 17  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 18  	COORD	1.9999999999999984e-01	8.0000000000000004e-01	0.0000000000000000e+00	
+NODE 19  	COORD	5.0000000000000000e-01	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 20  	COORD	0.0000000000000000e+00	5.0000000000000000e-01	0.0000000000000000e+00	
+------------------------------------------------STRUCTURE ELEMENTS
+   1 WALL QUAD8  3 2 1 4 6 5 8 7    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
+   2 WALL QUAD8  4 10 9 3 12 11 13 7    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
+   3 WALL QUAD8  14 10 4 1 15 12 8 16    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
+   4 WALL QUAD8  14 1 2 17 16 5 19 18    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
+   5 WALL QUAD8  17 9 10 14 20 11 15 18    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 2 POSITION dispx NAME dispx VALUE 9.8538733696824019e-03 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 2 POSITION dispy NAME dispy VALUE -7.5152954887286774e-17 TOLERANCE 1e-9
+---------------------------------------------------------------END
+// END
