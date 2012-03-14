@@ -1,11 +1,3 @@
-//
-// Maintainer: Ulrich Kuettler
-//             kuettler@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089 - 289-15238
-//
-// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE D_WALL1
-//
 -----------------------------------------------------------------------TITLE
 freeosz_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -38,6 +30,7 @@ ITERATION                       full
 TOLDISP                         1.0E-08
 MAXITER                         50
 ---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1
@@ -55,17 +48,17 @@ NUMSTASTEPS                     0
 START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE              residual_based  // no_stabilization residual_based inconsistent
-TDS                   quasistatic     // quasistatic time_dependent
-DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall
-TRANSIENT             no_transient    // no_transient yes_transient
-SUPG                  yes_supg        // no_supg yes_supg
-PSPG                  yes_pspg        // no_pspg yes_pspg
-VSTAB                 no_vstab        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-CSTAB                 cstab_qs        // no_cstab cstab_qs cstab_td
-CROSS-STRESS          no_cross        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS       no_reynolds     // no_reynolds reynolds_rhs
+-------------------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
+TDS                             quasistatic                     // quasistatic time_dependent
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+TRANSIENT                       no_transient                    // no_transient yes_transient
+SUPG                            yes_supg                        // no_supg yes_supg
+PSPG                            yes_pspg                        // no_pspg yes_pspg
+VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
+CSTAB                           cstab_qs                        // no_cstab cstab_qs cstab_td
+CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
+REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.00025
@@ -86,7 +79,8 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
-----------------------------------------------------------------FLUID SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Freesurface_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 ---------------------------------------------------------------STRUCT SOLVER
@@ -95,8 +89,8 @@ AZSOLVE                         CG
 AZPREC                          ILU
 AZREUSE                         0
 AZDROP                          0.0
-IFPACKFILL                          2.0
-IFPACKGFILL                         0
+IFPACKFILL                      2.0
+IFPACKGFILL                     0
 AZTOL                           1.0E-08
 AZITER                          2500
 AZSUB                           50
