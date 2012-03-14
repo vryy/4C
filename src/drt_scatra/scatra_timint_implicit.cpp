@@ -81,47 +81,59 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     RCP<ParameterList>            extraparams,
     RCP<IO::DiscretizationWriter> output) :
   // call constructor for "nontrivial" objects
-  discret_(actdis),
   solver_ (solver),
   params_ (params),
   extraparams_(extraparams),
-  output_ (output),
   myrank_ (discret_->Comm().MyPID()),
-  time_   (0.0),
-  step_   (0),
+  // splitter, // not initialized
+  errfile_  (extraparams_->get<FILE*>("err file")),
   prbtype_  (extraparams_->get<string>("problem type")),
-  solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
-  isale_    (extraparams_->get<bool>("isale")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
-  stepmax_  (params_->get<int>("NUMSTEP")),
-  maxtime_  (params_->get<double>("MAXTIME")),
-  timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
-  upres_    (params_->get<int>("UPRES")),
-  uprestart_(params_->get<int>("RESTARTEVRY")),
+  isale_    (extraparams_->get<bool>("isale")),
+  solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
+  // incremental_, // not initialized
+  project_(false),
+  initialvelset_(false),
+  fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
+  // turbmodel_, // not initialized
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
+  // writefluxids_, // not initialized
   outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
+  time_   (0.0),
+  maxtime_  (params_->get<double>("MAXTIME")),
+  step_   (0),
+  stepmax_  (params_->get<int>("NUMSTEP")),
+  // itemax_, // not initialized
   dta_      (params_->get<double>("TIMESTEP")),
-  dtp_      (params_->get<double>("TIMESTEP")),
+  // dtele_, // not initialized
+  // dtsolve_, // not initialized
+  timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
+  // numscal_, not initialized
+  // phixx, // all not initialized
+  // vel_, // not initialized
+  // many many not initialized
   cdvel_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  discret_(actdis),
+  output_ (output),
   convform_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
-  neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
-  convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
-  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
-  fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
-  frt_      (0.0),
-  errfile_  (extraparams_->get<FILE*>("err file")),
-  initialvelset_(false),
+  // many many not initialized
   lastfluxoutputstep_(-1),
+  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING")),
   gstatnumite_(0),
   gstatincrement_(0.0),
-  project_(false),
+  frt_      (0.0),
+  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false)),
   w_(Teuchos::null),
   c_(Teuchos::null),
-  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING")),
+  upres_    (params_->get<int>("UPRES")),
+  uprestart_(params_->get<int>("RESTARTEVRY")),
+  dtp_      (params_->get<double>("TIMESTEP")),
+  neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
-  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
-  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false))
+  convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
+  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER"))
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -1841,7 +1853,8 @@ void SCATRA::ScaTraTimIntImpl::Output()
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
       // for flux output of initial field (before first solve) do:
-      if (step_==0) flux_=CalcFlux(true);
+      if (step_==0)
+        flux_=CalcFlux(true);
 
       OutputFlux(flux_);
     }
@@ -1954,8 +1967,8 @@ Teuchos::RCP<DRT::Discretization> dis)
 //#ifdef DEBUG   // is this costly, when we do this test always?
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid or
-  // structure mesh, respectively, at the beginning, the nodal distribution may 
-  // have changed meanwhile (e.g., due to periodic boundary conditions applied only 
+  // structure mesh, respectively, at the beginning, the nodal distribution may
+  // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
   if (not dis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
@@ -2878,6 +2891,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix           gjb 02/11 |
+ | implemented here to be able to use forward declaration in .H         |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
 {
@@ -2886,6 +2900,7 @@ Teuchos::RCP<LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
 
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as block sparse matrix     gjb 06/10 |
+ | implemented here to be able to use forward declaration in .H         |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSystemMatrix()
 {
@@ -2899,12 +2914,3 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 {
   return;
 }
-
-/*----------------------------------------------------------------------*
- | return residual vector                                               |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::ScaTraTimIntImpl::Residual()
-{
-  return residual_;
-}
-
