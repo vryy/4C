@@ -1093,6 +1093,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_noxlinsys.cpp
   src/drt_structure/strtimint_ost.cpp
   src/drt_structure/strtimint_statics.cpp
+  src/drt_structure/strtimint_prestress.cpp
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp

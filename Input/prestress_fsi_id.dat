@@ -39,7 +39,9 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Static
+DYNAMICTYP                      Statics
+PRESTRESS                       id                // mulf id none
+PRESTRESSTIME                   0.00101
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
@@ -84,10 +86,6 @@ FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 6.241645479e+00 TOLERANCE 1e
 FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -7.135300732e-04 TOLERANCE 1e-6
 FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -1.569423501e-03 TOLERANCE 1e-7
 FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.673499982e+04 TOLERANCE 1e-3
-------------------------------------------------------------PATIENT SPECIFIC
-PATSPEC                         no
-PRESTRESS                       id                // mulf id none
-PRESTRESSTIME                   0.00101
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.0001

@@ -1056,10 +1056,11 @@ void STR::MLMC::WriteStatOutput()
 void STR::MLMC::ResetPrestress()
 {
   // Reset Presstress possibly still present in Discretization
+
   // Get prestress parameter
-    const Teuchos::ParameterList& patspecp = DRT::Problem::Instance()->PatSpecParams();
-    // get prestress type
-    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(patspecp,"PRESTRESS");
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // get prestress type
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     switch(pstype)
     {
     case INPAR::STR::prestress_none:

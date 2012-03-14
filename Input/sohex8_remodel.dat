@@ -46,8 +46,6 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 ---------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         No
-PRESTRESS                       none
-PRESTRESSTIME                   0
 REMODEL                         Yes
 --------------------------------------------------------PROBLEM TYP
 NUMFIELD                        1

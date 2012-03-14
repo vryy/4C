@@ -43,12 +43,10 @@ THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -7.6564475997798223e+00  TOLERANCE 1e-5
---------------------------------------------------PATIENT SPECIFIC
-PATSPEC                         no
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Statics // Gen_Alfa Static
 PRESTRESS                       id                // mulf id none
 PRESTRESSTIME                   0.0501
-------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Static // Gen_Alfa Static
 EIGEN        0
 RESULTSEVRY  1
 RESTARTEVRY  1

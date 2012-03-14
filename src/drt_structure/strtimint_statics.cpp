@@ -12,10 +12,6 @@ Maintainer: Thomas Klöppel
 */
 
 /*----------------------------------------------------------------------*/
-/* macros */
-#ifdef CCADISCRET
-
-/*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_statics.H"
 #include "stru_aux.H"
@@ -50,10 +46,16 @@ STR::TimIntStatics::TimIntStatics
   fextn_(Teuchos::null),
   frobin_(Teuchos::null)
 {
+
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
+
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with statics" << std::endl;
+    // check if we are in prestressin mode
+    if (pstype == INPAR::STR::prestress_mulf) std::cout << "with static MULF prestress" << std::endl;
+    else if (pstype == INPAR::STR::prestress_id) std::cout << "with static INVERSE DESIGN prestress" << std::endl;
+    else std::cout << "with statics" << std::endl;
   }
 
   // check if predictor is admissible for statics
@@ -314,4 +316,4 @@ void STR::TimIntStatics::ReadRestartForce()
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET
+

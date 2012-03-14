@@ -44,10 +44,10 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         yes
-PRESTRESS                       mulf                // mulf id none
-PRESTRESSTIME                   0.05
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static                          // Gen_Alfa Static
+PRESTRESS                       mulf                // mulf id none
+PRESTRESSTIME                   0.05
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     5

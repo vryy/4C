@@ -12,7 +12,6 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"
@@ -107,9 +106,9 @@ time_(0.0)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params!=Teuchos::null)
   {
-    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-    pstime_ = pslist.get<double>("PRESTRESSTIME");
+    const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
@@ -576,4 +575,3 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

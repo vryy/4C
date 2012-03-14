@@ -29,6 +29,7 @@ Maintainer: Thomas Klöppel
 
 #include "strtimint_create.H"
 #include "strtimint_statics.H"
+#include "strtimint_prestress.H"
 #include "strtimint_genalpha.H"
 #include "strtimint_ost.H"
 #include "strtimint_gemm.H"
@@ -104,6 +105,15 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
 
   // TODO: add contact solver...
 
+  // check if we have a problem that needs to be prestressed
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  if (pstype==INPAR::STR::prestress_mulf || pstype==INPAR::STR::prestress_id)
+  {
+    sti = Teuchos::rcp(new STR::TimIntPrestress(ioflags, sdyn, xparams, actdis,
+						solver, contactsolver, output));
+    return sti;
+  }
+  
   // create specific time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {

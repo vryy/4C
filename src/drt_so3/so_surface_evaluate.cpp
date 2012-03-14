@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_surface.H"
 #include "../linalg/linalg_utils.H"
@@ -42,9 +41,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
                                                       Epetra_SerialDenseVector& elevec1,
                                                       Epetra_SerialDenseMatrix* elemat1)
 {
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-  double pstime = pslist.get<double>("PRESTRESSTIME");
+
+  const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  double pstime = sdyn.get<double>("PRESTRESSTIME");
 
   // get type of condition
   enum LoadType
@@ -1615,4 +1615,3 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
   return;
 }
 
-#endif  // #ifdef CCADISCRET

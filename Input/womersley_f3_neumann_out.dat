@@ -32,12 +32,10 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       50
-------------------------------------------------------------PATIENT SPECIFIC
-PATSPEC                         no
+----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      GenAlpha                      // Gen_Alfa Static
 PRESTRESS                       mulf                            // mulf id none
 PRESTRESSTIME                   2.1395 
-----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa                      // Gen_Alfa Static
 RESULTSEVRY                     5
 RESTARTEVRY                     10
 NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg

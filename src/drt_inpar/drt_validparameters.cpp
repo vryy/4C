@@ -680,17 +680,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Triggers application of patient specific tools in discretization construction",
                                     yesnotuple,yesnovalue,&ps);
 
-  setStringToIntegralParameter<int>("PRESTRESS","none","prestressing takes values none mulf id",
-                               tuple<std::string>("none","None","NONE",
-                                                  "mulf","Mulf","MULF",
-                                                  "id","Id","ID"),
-                               tuple<int>(INPAR::STR::prestress_none,INPAR::STR::prestress_none,INPAR::STR::prestress_none,
-                                                            INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,
-                                                            INPAR::STR::prestress_id,INPAR::STR::prestress_id,INPAR::STR::prestress_id),
-                               &ps);
-
-  DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&ps);
-
   BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
 
   IntParameter("MAXHULUMEN",0,"max HU value within the blood lumen",&ps);
@@ -839,6 +828,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_euma,
                                  INPAR::STR::dyna_euimsto),
                                &sdyn);
+
+  setStringToIntegralParameter<int>("PRESTRESS","none","prestressing takes values none mulf id",
+                               tuple<std::string>("none","None","NONE",
+                                                  "mulf","Mulf","MULF",
+                                                  "id","Id","ID"),
+                               tuple<int>(INPAR::STR::prestress_none,INPAR::STR::prestress_none,INPAR::STR::prestress_none,
+                                                            INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,
+                                                            INPAR::STR::prestress_id,INPAR::STR::prestress_id,INPAR::STR::prestress_id),
+                               &sdyn);
+
+  DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&sdyn);
+
   // a temporary flag
   setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
                                     "TEMPORARY FLAG: Switch on time integration driver based on ADAPTER::Structure rather than independent implementation",

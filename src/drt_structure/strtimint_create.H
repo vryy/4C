@@ -13,7 +13,6 @@ Maintainer: Thomas Klöppel
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 #ifndef STRTIMINT_CREATE_H
 #define STRTIMINT_CREATE_H
@@ -104,4 +103,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRTIMINT_CREATE_H */
-#endif  /* #ifdef CCADISCRET */

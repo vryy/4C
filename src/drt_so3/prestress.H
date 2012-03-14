@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef PRESTRESS_H
 #define PRESTRESS_H
 
@@ -158,14 +157,4 @@ private:
 } // namespace DRT
 
 
-
-
-
-
-
-
-
-
-
 #endif  // #ifndef PreStress
-#endif  // #ifdef CCADISCRET

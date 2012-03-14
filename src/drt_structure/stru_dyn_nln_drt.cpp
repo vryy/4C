@@ -104,6 +104,7 @@ void caldyn_drt()
       dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     }
   }
+  return;
 }
 
 
