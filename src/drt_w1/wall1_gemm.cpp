@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* macros */
 #ifdef CCADISCRET
-#ifdef D_WALL1
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -629,5 +628,4 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // D_WALL1
 #endif  // CCADISCRET

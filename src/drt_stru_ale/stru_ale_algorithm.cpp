@@ -296,7 +296,7 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
     RefCountPtr<const Epetra_Vector> disp = (StructureField().Discretization())->GetState("displacement");
     RefCountPtr<const Epetra_Vector> dispmat = (StructureField().Discretization())->GetState("material displacement");
 
-#ifdef D_WALL1
+//#ifdef D_WALL1
     // structure with ale only for wall element so far
     if (actele->ElementType() != DRT::ELEMENTS::Wall1Type::Instance())
       dserror ("Construction of advection map only for wall element so far.");
@@ -307,7 +307,7 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
     // checks if the spatial coordinate lies within this element
     // if yes, returns the material displacements
     w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat,la,found);
-#endif
+//#endif
     // leave when element is found
     if (found == true)
       return;

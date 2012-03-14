@@ -124,10 +124,10 @@ std::string DRT::ParObjectList()
 #ifdef D_SHELL8
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
 #endif
-#ifdef D_WALL1
+    
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance().Name() << " "
-#endif
+    
 #ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Fluid3Type::Instance().Name() << " "

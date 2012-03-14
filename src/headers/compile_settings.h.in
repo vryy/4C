@@ -38,10 +38,6 @@
 #cmakedefine D_SHELL8
 #endif
 
-#ifndef D_WALL1
-#cmakedefine D_WALL1
-#endif
-
 #ifndef D_THERMO
 #cmakedefine D_THERMO
 #endif

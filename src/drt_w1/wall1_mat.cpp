@@ -13,7 +13,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 // macros
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 
@@ -684,5 +683,4 @@ double DRT::ELEMENTS::Wall1:: EnergyKinetic(
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1
 

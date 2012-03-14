@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 #include "wall1.H"
@@ -345,4 +344,3 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1

@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 #include "wall1.H"
@@ -518,4 +517,3 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(Epetra_SerialDenseMatrix x
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_WALL1

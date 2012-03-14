@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 #include "wall1.H"
@@ -479,4 +478,3 @@ void DRT::ELEMENTS::Wall1::w1_expol
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1

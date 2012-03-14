@@ -12,7 +12,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef D_WALL1
 #ifdef CCADISCRET
 #ifndef WALL1_H
 #define WALL1_H
@@ -1028,4 +1027,3 @@ private:
 
 #endif  // #ifndef WALL1_H
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1

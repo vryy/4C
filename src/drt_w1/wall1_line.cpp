@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 #include "wall1.H"
@@ -119,4 +118,3 @@ void DRT::ELEMENTS::Wall1Line::Print(ostream& os) const
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_WALL1

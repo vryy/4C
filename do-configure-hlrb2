@@ -43,7 +43,6 @@ cmake \
     -D D_SOLID3:BOOL=ON \
     -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=OFF \
-    -D D_WALL1:BOOL=ON \
     -D D_ALE_BFLOW:BOOL=OFF \
     -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
     -D BOOST_INCLUDEDIR:FILEPATH=$BOOST_INCDIR \

@@ -50,7 +50,6 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/kaiser/openmpi-gcc/trilinos/kaiser-ompi-1.2.9/
     -D D_SOLID3:BOOL=ON \
     -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=ON \
-    -D D_WALL1:BOOL=ON \
     -D D_ALE_BFLOW:BOOL=ON \
     -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \

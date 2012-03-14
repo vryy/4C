@@ -1386,11 +1386,6 @@ if (D_SHELL8)
   add_definitions("-DD_SHELL8")
 endif(D_SHELL8)
 
-option (D_WALL1       "wall1" ON)
-if (D_WALL1)
-  add_definitions("-DD_WALL1")
-endif(D_WALL1)
-
 option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)
   add_definitions("-DD_THERMO")

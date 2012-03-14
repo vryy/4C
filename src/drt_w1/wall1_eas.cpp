@@ -13,7 +13,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 // macros
-#ifdef D_WALL1
 #ifdef CCADISCRET
 
 
@@ -557,4 +556,3 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const Epetra_SerialDenseMatrix& W0,
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1
