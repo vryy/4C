@@ -3014,10 +3014,6 @@ void StruGenAlpha::Update()
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
 
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-  double pstime = pslist.get<double>("PRESTRESSTIME");
-
   //----------------------------------------------- update time and step
   params_.set<double>("total time", timen);
   params_.set<int>("step", istep);
@@ -3056,56 +3052,6 @@ void StruGenAlpha::Update()
   //    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0,*fintn_,0.0);
 #endif
-
-  if (pstype==INPAR::STR::prestress_mulf && timen <= pstime)
-  {
-    if (!discret_.Comm().MyPID()) cout << "====== Entering PRESTRESS update\n"; fflush(stdout);
-    //----------- save the current green-lagrange strains in the material
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_prestress_update");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen);
-      p.set("delta time",dt);
-      p.set("alpha f",alphaf);
-      discret_.SetState("displacement",dis_);
-      discret_.SetState("velocity",vel_);
-      discret_.SetState("residual displacement",zeros_);
-      discret_.Evaluate(p,null,null,null,null,null);
-    }
-
-    //----------------------------- reset the current disp/vel/acc to zero
-    // (the structure does not move while prestraining it )
-    // (prestraining with DBCs != 0 not allowed!)
-    //dis_->Update(1.0,disold,0.0);
-    //vel_->Update(1.0,velold,0.0);
-    //acc_->Update(1.0,accold,0.0);
-    dis_->Scale(0.0);
-    vel_->Scale(0.0);
-    acc_->Scale(0.0);
-    dism_->Scale(0.0); // just to be safe, adapters from outside take it to update
-  }
-
-
-  if (pstype==INPAR::STR::prestress_id && timen <= pstime)
-  {
-    if (!discret_.Comm().MyPID()) cout << "====== Entering INVERSEDESIGN update\n"; fflush(stdout);
-    //----------- save the current material configuration at the element level
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_inversedesign_update");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen);
-      p.set("delta time",dt);
-      p.set("alpha f",alphaf);
-      discret_.SetState("displacement",dis_);
-      discret_.Evaluate(p,null,null,null,null,null);
-    }
-  }
 
   //----------------- update surface stress history variables if present
   if (surf_stress_man_->HaveSurfStress())
@@ -3162,33 +3108,6 @@ void StruGenAlpha::UpdateElement()
     discret_.ClearState();
   }
 #endif
-
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-  double pstime = pslist.get<double>("PRESTRESSTIME");
-
-  // if this is the first step of poststress using id tell the elements
-  // to switch to poststress mode. To do so, we'll lie to the elements
-  // that the time is actually dt later than it currently is :-)
-  // This transforms them to poststress mode.
-  if (pstype==INPAR::STR::prestress_id && timen <= pstime && timen+dt > pstime)
-  {
-    if (!discret_.Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);
-    //--------------------------init the element to new material configuration
-    dis_->PutScalar(0.0);
-    vel_->PutScalar(0.0);
-    acc_->PutScalar(0.0);
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_inversedesign_switch");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen+dt);
-      discret_.Evaluate(p,null,null,null,null,null);
-    }
-  }
-
   return;
 }
 
@@ -3293,12 +3212,6 @@ void StruGenAlpha::Output()
   bool control = false;
   INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
-
-/*
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-  double pstime = pslist.get<double>("PRESTRESSTIME");
-*/
 
   bool isdatawritten = false;
 
@@ -3790,10 +3703,6 @@ void StruGenAlpha::ReadRestart(int step)
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
 
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
-  double pstime = pslist.get<double>("PRESTRESSTIME");
-
   bool control = false;
   INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
@@ -3803,28 +3712,6 @@ void StruGenAlpha::ReadRestart(int step)
   reader.ReadVector(acc_, "acceleration");
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
-
-  // if this is the first step of poststress using id tell the elements
-  // to switch to poststress mode. To do so, we'll lie to the elements
-  // that the time is actually dt later than it currently is :-)
-  // This transforms them to poststress mode.
-  if (pstype==INPAR::STR::prestress_id && time <= pstime && time+dt > pstime)
-  {
-    if (!discret_.Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);
-    //--------------------------init the element to new material configuration
-    dis_->PutScalar(0.0);
-    vel_->PutScalar(0.0);
-    acc_->PutScalar(0.0);
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_inversedesign_switch");
-      // other parameters that might be needed by the elements
-      p.set("total time",time+dt);
-      discret_.Evaluate(p,null,null,null,null,null);
-    }
-  }
 
   if (control) // disp or arclength control together with dynkindstat
   {
