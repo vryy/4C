@@ -1306,6 +1306,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
+  // linear solver id used for contact/meshtying problems (both for fluid and structure meshtying as well as structural contact)
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
+
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
        tuple<std::string>("None","none",
                           "MortarContact","mortarcontact",
@@ -1904,7 +1907,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& tsidyn = list->sublist(
    "TSI DYNAMIC",false,
    "Thermo Structure Interaction\n"
-   "Partitioned TSI solver with various coupling methods"
+   "Dynamic section for TSI solver with various coupling methods"
    );
 
   // Coupling strategy for (partitioned and monolithic) TSI solvers
@@ -1977,6 +1980,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::TSI::bop_and
                                  ),
                                &tsidyn);
+
+  // number of linear solver used for monolithic TSI
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI",&tsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastdyn = list->sublist(
@@ -2082,6 +2088,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::boussinesq),
                                &fdyn);
 
+  // TODO: is this outdated?
   setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
                                     "Solving strategy for fluid",
                                     tuple<std::string>("Implicit",
@@ -2093,6 +2100,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                fluid_solver_pressurecorrection_semiimplicit,
                                                fluid_solver_fluid_xfluid),
                                     &fdyn);
+
+  // number of linear solver used for fluid problem
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for fluid dynamics",&fdyn);
+
+  // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER preconditioning with fluid)
+  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (fluid pressure solver within SIMPLER preconditioner)",&fdyn);
 
   setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
       "Time Integration Scheme",
@@ -2345,6 +2358,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
   IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+
+  // number of linear solver used for arterial dynamics
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);
+
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
 
@@ -2378,6 +2395,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
   DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
+
+  // number of linear solver used for reduced dimensional airways dynamic
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynami",&redawdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
@@ -4442,19 +4462,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   Teuchos::ParameterList& coupscatrasolver = list->sublist("COUPLED FLUID AND SCALAR TRANSPORT SOLVER",false,"solver parameters for block-preconditioning");
   SetValidSolverParameters(coupscatrasolver);
 
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& artnetsolver = list->sublist("ARTERY NETWORK SOLVER",false,"");
-  SetValidSolverParameters(artnetsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& redairwaysolver = list->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER",false,"");
-  SetValidSolverParameters(redairwaysolver);
-
-  // TSI monolithic solver section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& tsimonsolver = list->sublist("TSI MONOLITHIC SOLVER",false,"solver parameters for monoltihic tsi");
-  SetValidSolverParameters(tsimonsolver);
-
   // MESHTYING solver section
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& meshtyingsolver = list->sublist("MESHTYING SOLVER",false,"solver parameters for fluid or structure meshtying problem");
@@ -4474,6 +4481,58 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastmonsolver = list->sublist("POROELASTICITY MONOLITHIC SOLVER",false,"solver parameters for monoltihic poroelasticity");
   SetValidSolverParameters(poroelastmonsolver);
+
+  // solver 1 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver1 = list->sublist("SOLVER 1",false,"solver parameters for solver 1");
+  SetValidSolverParameters(solver1);
+
+  // solver 2 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver2 = list->sublist("SOLVER 2",false,"solver parameters for solver 2");
+  SetValidSolverParameters(solver2);
+
+  // solver 3 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver3 = list->sublist("SOLVER 3",false,"solver parameters for solver 3");
+  SetValidSolverParameters(solver3);
+
+  // solver 4 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver4 = list->sublist("SOLVER 4",false,"solver parameters for solver 4");
+  SetValidSolverParameters(solver4);
+
+  // solver 5 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver5 = list->sublist("SOLVER 5",false,"solver parameters for solver 5");
+  SetValidSolverParameters(solver5);
+
+  // solver 6 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver6 = list->sublist("SOLVER 6",false,"solver parameters for solver 6");
+  SetValidSolverParameters(solver6);
+
+  // solver 7 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver7 = list->sublist("SOLVER 7",false,"solver parameters for solver 7");
+  SetValidSolverParameters(solver7);
+
+  // solver 8 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver8 = list->sublist("SOLVER 8",false,"solver parameters for solver 8");
+  SetValidSolverParameters(solver8);
+
+  // solver 9 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver9 = list->sublist("SOLVER 9",false,"solver parameters for solver 9");
+  SetValidSolverParameters(solver9);
+
+  // solver 10 section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& solver10 = list->sublist("SOLVER 10",false,"solver parameters for solver 10");
+  SetValidSolverParameters(solver10);
+
+
 
   return list;
 }
@@ -4787,6 +4846,11 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   // the only one stratimikos specific parameter
   setNumericStringParameter("STRATIMIKOS_XMLFILE","",
                               "xml file for stratimikos parameters",
+                              &list);
+
+  // user-given name of solver block (just for beauty)
+  setNumericStringParameter("NAME","No_name",
+                              "User specified name for solver block",
                               &list);
 
   // damping parameter for SIMPLE

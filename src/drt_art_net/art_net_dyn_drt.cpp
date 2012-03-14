@@ -121,7 +121,12 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->ArteryNetworkSolverParams(),
+  // get the solver number
+  const int linsolvernumber = artdyn.get<int>("LINEAR_SOLVER");
+  // check if the solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined. Please set LINEAR_SOLVER in ARTERIAL DYNAMIC to a valid number!");
+  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                        actdis->Comm(),
                                                        DRT::Problem::Instance()->ErrorFile()->Handle()),false );
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

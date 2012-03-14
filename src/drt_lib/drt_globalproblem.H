@@ -306,15 +306,14 @@ public:
   const Teuchos::ParameterList& ScalarTransportStructureSolverParams() const { return getParameterList()->sublist("STRUCTURE SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }  // for SIMPLE
   const Teuchos::ParameterList& CoupledFluidAndScalarTransportSolverParams() const { return getParameterList()->sublist("COUPLED FLUID AND SCALAR TRANSPORT SOLVER"); }  // "monolithic" solver block for two coupled scatra problems or a coupled fluid-scatra problem, respectively
-  const Teuchos::ParameterList& ArteryNetworkSolverParams() const { return getParameterList()->sublist("ARTERY NETWORK SOLVER"); }
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
-  const Teuchos::ParameterList& ReducedDAirwaySolverParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER"); }
-  const Teuchos::ParameterList& TSIMonolithicSolverParams() const { return getParameterList()->sublist("TSI MONOLITHIC SOLVER"); }
   const Teuchos::ParameterList& PoroelastMonolithicSolverParams() const { return getParameterList()->sublist("POROELASTICITY MONOLITHIC SOLVER"); }
   const Teuchos::ParameterList& MeshtyingSolverParams() const { return getParameterList()->sublist("MESHTYING SOLVER"); }
   const Teuchos::ParameterList& ContactSolverParams() const { return getParameterList()->sublist("CONTACT SOLVER"); }
   const Teuchos::ParameterList& ContactConstraintSolverParams() const { return getParameterList()->sublist("CONTACT CONSTRAINT SOLVER"); }
+
+  const Teuchos::ParameterList& SolverParams(int solverNr) const;
 
   //@}
 

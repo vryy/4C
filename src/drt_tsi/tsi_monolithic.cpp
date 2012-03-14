@@ -84,15 +84,13 @@ TSI::Monolithic::Monolithic(
   if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
     dserror("unexpected dof sets in structure field");
 
-  // access the problem-specific parameter lists
-  const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
+  // access the thermal parameter lists
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
 
   // check time integration algo -> currently only one-step-theta scheme supported
   INPAR::STR::DynamicType structtimealgo
-    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_,"DYNAMICTYP");
   INPAR::THR::DynamicType thermotimealgo
     = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
 
@@ -202,8 +200,18 @@ void TSI::Monolithic::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::CreateLinearSolver()
 {
+  // get dynamic section of TSI
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  // get the solver number used for linear TSI solver
+  const int linsolvernumber = tsidyn.get<int>("LINEAR_SOLVER");
+  // check if the TSI solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for monolithic TSI solver. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
+
+  // get solver parameter list of linear TSI solver
   const Teuchos::ParameterList& tsisolveparams
-    = DRT::Problem::Instance()->TSIMonolithicSolverParams();
+    = DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
   const int solvertype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
         tsisolveparams,
@@ -281,10 +289,6 @@ void TSI::Monolithic::CreateLinearSolver()
   ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
                                     solver_->Params().sublist("Inverse2")
                                     );
-
-  // HINT: change order of blocks in BGS2X2 via flag
-  //       BGS2X2_FLIPORDER = block1_block0_order in section TSI MONOLITHIC SOLVER
-
 }
 
 

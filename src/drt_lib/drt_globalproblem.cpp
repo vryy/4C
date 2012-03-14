@@ -210,13 +210,20 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCTURE SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
   reader.ReadGidSection("--COUPLED FLUID AND SCALAR TRANSPORT SOLVER", *list);
-  reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);
-  reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
-  reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--MESHTYING SOLVER", *list);             // MESHTYING SOLVER for structure/fluid meshtying
   reader.ReadGidSection("--POROELASTICITY MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)
   reader.ReadGidSection("--CONTACT CONSTRAINT SOLVER", *list);    // only used for constraint block in a saddle point problem (for contact/meshtying)
+
+  reader.ReadGidSection("--SOLVER 1", *list); // TODO replace me by something smarter
+  reader.ReadGidSection("--SOLVER 2", *list);
+  reader.ReadGidSection("--SOLVER 3", *list);
+  reader.ReadGidSection("--SOLVER 4", *list);
+  reader.ReadGidSection("--SOLVER 5", *list);
+  reader.ReadGidSection("--SOLVER 6", *list);
+  reader.ReadGidSection("--SOLVER 7", *list);
+  reader.ReadGidSection("--SOLVER 8", *list);
+  reader.ReadGidSection("--SOLVER 9", *list);
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
@@ -225,6 +232,14 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   setParameterList(list);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
+{
+  std::stringstream ss;
+  ss << "SOLVER " << solverNr;
+  return getParameterList()->sublist(ss.str());
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

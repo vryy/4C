@@ -238,13 +238,15 @@ void FSI::MonolithicNoNOX::LinearSolve()
     );
 
   // get UMFPACK...
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
+
+  // TAW: ???????????? This is nonsense ??????????????????
+  /*Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
 
   solver_ = rcp(new LINALG::Solver(solverparams, Comm(),
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // standard solver call
-  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
+  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);*/
 }
 
 /*----------------------------------------------------------------------*/

@@ -537,7 +537,8 @@ void FSI::MonolithicXFEM::LinearSolve()
   cout0_ << "  merged" << endl;
 
   // get UMFPACK...
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
+  // ????????????? this is nonsense ???????????????????
+  /*Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
 
   Teuchos::RCP<LINALG::Solver> solver =
       rcp(new LINALG::Solver(solverparams,
@@ -545,7 +546,7 @@ void FSI::MonolithicXFEM::LinearSolve()
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   solver->Solve(m->EpetraOperator(), iterinc_, rhs_, true, true);
-  cout0_ << "  solved" << endl;
+  cout0_ << "  solved" << endl;*/
 
   if (stepinc_ == Teuchos::null)
     dserror("schimpf!");

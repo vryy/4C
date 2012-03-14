@@ -120,7 +120,12 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->ReducedDAirwaySolverParams(),
+  // get the solver number
+  const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");
+  // check if the present solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC to a valid number!");
+  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                    actdis->Comm(),
                                                    DRT::Problem::Instance()->ErrorFile()->Handle()),
                                     false);

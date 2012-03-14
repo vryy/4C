@@ -135,7 +135,12 @@ LOMA::Algorithm::Algorithm(
     // use loma solver object
     lomasolver_ = rcp(new LINALG::Solver(lomasolverparams,FluidField().Discretization()->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-    lomasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->FluidSolverParams());
+    // todo extract ScalarTransportFluidSolver
+    const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
+    if (fluidsolver == (-1))
+      dserror("no linear solver defined for fluid LOMA (inflow) problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
+
+    lomasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->SolverParams(fluidsolver));
     lomasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
 
     FluidField().Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse1"));

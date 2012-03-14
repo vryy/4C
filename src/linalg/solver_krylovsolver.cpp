@@ -97,10 +97,10 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
 #endif
     }
-    else if ( Params().isSublist("AMGBS Parameters") ) // TODO remove me.
+    /*else if ( Params().isSublist("AMGBS Parameters") ) // TODO remove me.
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGBSPreconditioner( outfile_, Params() ) );
-    }
+    }*/
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::NonePreconditioner( outfile_, Params() ) );

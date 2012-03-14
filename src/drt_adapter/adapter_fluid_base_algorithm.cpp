@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
  */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "adapter_fluid_base_algorithm.H"
 
@@ -156,23 +156,72 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::condensed_bmat:
     case INPAR::FLUID::sps_pc:
     {
-      // meshtying fluid
+      // meshtying fluid (formulation as saddle point problem)
+
+      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
+      const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");             // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+      const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
+      const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver
+      if (mshsolver == (-1))
+        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+      if (fluidsolver == (-1))
+        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number! This solver is used within block preconditioner (e.g. BGS2x2) as \"Inverse 1\".");
+      if (fluidpressuresolver == (-1))
+        dserror("no linear solver defined for fluid meshtying problem. Please set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number! This solver is used within block preconditioner (e.g. BGS2x2) as \"Inverse 2\".");
+
+      // check, if meshtying solver is used with a valid block preconditioner
+      const int azprectype
+        = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+            DRT::Problem::Instance()->SolverParams(mshsolver),
+            "AZPREC"
+            );
+
+      // plausibility check
+      switch (azprectype)
+      {
+        case INPAR::SOLVER::azprec_BGS2x2:      // block preconditioners, that are implemented in BACI
+        case INPAR::SOLVER::azprec_CheapSIMPLE:
+          break;
+        case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
+        case INPAR::SOLVER::azprec_TekoSIMPLE:
+        {
+    #ifdef HAVE_TEKO
+          // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
+          int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->StructSolverParams(), "SOLVER");
+          if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
+              solvertype != INPAR::SOLVER::stratimikos_aztec  &&
+              solvertype != INPAR::SOLVER::stratimikos_belos)
+          dserror("Teko expects a STRATIMIKOS solver object in SOLVER %i", fluidsolver);
+
+          solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->ThermalSolverParams(), "SOLVER");
+          if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
+              solvertype != INPAR::SOLVER::stratimikos_aztec  &&
+              solvertype != INPAR::SOLVER::stratimikos_belos)
+            dserror("Teko expects a STRATIMIKOS solver object in SOLVER %i",fluidpressuresolver);
+    #else
+          dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
+    #endif
+        }
+        break;
+        default:
+              dserror("Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. Please set AZPREC to BGS2x2 in solver block %i",mshsolver);
+              break;
+      }
+
+      // create solver objects
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-      solver->Params().set<bool>("MESHTYING",true);
+      solver->Params().set<bool>("MESHTYING",true);   // mark it as meshtying problem
 
-      // TODO: check for block preconditioners
-
+      // set Inverse blocks for block preconditioner
       solver->PutSolverParamsToSubParams("Inverse1",
-          DRT::Problem::Instance()->FluidSolverParams());
+          DRT::Problem::Instance()->SolverParams(fluidsolver));
 
       solver->PutSolverParamsToSubParams("Inverse2",
-              DRT::Problem::Instance()->FluidPressureSolverParams());
-
-
+          DRT::Problem::Instance()->SolverParams(fluidpressuresolver));
     }
     break;
     case INPAR::FLUID::condensed_smat:
@@ -180,8 +229,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::sps_coupled:
     case INPAR::FLUID::coupling_iontransport_laplace:
     { // meshtying (no saddle point problem)
+      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
+      const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");             // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+      if (mshsolver == (-1))
+        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
     }
@@ -190,8 +244,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     default:
     {
       // default: create solver using the FluidSolverParams from FLUID SOLVER block
+
+      // get the solver number used for linear fluid solver
+      const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
@@ -238,8 +297,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     inv1 = solver->Params();
     inv1.remove("SIMPLER",false); // not necessary
     inv1.remove("Inverse1",false);
+
+    // get the solver number used for SIMPLER SOLVER
+    const int linsolvernumber_simpler = fdyn.get<int>("SIMPLER_SOLVER");
+    if (linsolvernumber_simpler == (-1))
+      dserror("no SIMPLER_SOLVER number set for fluid problem solved with SIMPLER. Please set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
     // add Inverse2 block for pressure dofs
-    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->FluidPressureSolverParams());
+    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
     // use CheapSIMPLE preconditioner (hardwired, change me for others)
     solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
     solver->Params().set("FLUID",true);
@@ -254,7 +318,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
-  fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
+  // fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC")); // probably can be removed
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -653,38 +717,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     else
     {
+      // what the hell is this???
       RCP<Fluid> tmpfluid;
-      int fluidsolver = DRT::INPUT::IntegralValue<int>(fdyn,"FLUID_SOLVER");
-      switch(fluidsolver)
-      {
-      case fluid_solver_implicit:
-        tmpfluid = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
-        break;
-      case fluid_solver_pressurecorrection:
-      case fluid_solver_pressurecorrection_semiimplicit:
-      {
-        // check if implicit or semi-implicit projection solver
-        fluidtimeparams->set<bool>("PROJ_IMPLICIT",fluidsolver==fluid_solver_pressurecorrection);
+      tmpfluid = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
 
-        // -------------------------------------------------------------------
-        // create a second solver for Projection Methods if chosen from input
-        // -------------------------------------------------------------------
-        RCP<LINALG::Solver> psolver = rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),actdis->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
-        psolver->PutSolverParamsToSubParams("FLUID PRESSURE SOLVER",
-                                            DRT::Problem::Instance()->FluidPressureSolverParams());
-
-        tmpfluid = rcp(new ADAPTER::FluidProjection(actdis, solver, psolver, fluidtimeparams, output, isale, dirichletcond));
-      }
-      break;
-      default:
-        dserror("fluid solving strategy unknown.");
-      }
       if (genprob.probtyp == prb_fsi_lung)
         fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
       else if (genprob.probtyp == prb_poroelast)
         fluid_ = rcp(new ADAPTER::FluidPoro(rcp(new FluidWrapper(tmpfluid))));
       else
-        fluid_ = tmpfluid;
+        fluid_ = tmpfluid;  // < default?? TODO improve me!
     }
   }
   else if (timeint == INPAR::FLUID::timeint_gen_alpha)
@@ -775,8 +817,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
+  // get the solver number used for linear fluid solver
+  const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            discret->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -788,8 +834,21 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
-    solver->PutSolverParamsToSubParams("SIMPLER",
-                                       DRT::Problem::Instance()->FluidPressureSolverParams());
+    // add Inverse1 block for velocity dofs
+    Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
+    inv1 = solver->Params();
+    inv1.remove("SIMPLER",false); // not necessary
+    inv1.remove("Inverse1",false);
+
+    // get the solver number used for SIMPLER SOLVER
+    const int linsolvernumber_simpler = fdyn.get<int>("SIMPLER_SOLVER");
+    if (linsolvernumber_simpler == (-1))
+      dserror("no SIMPLER_SOLVER number set for fluid problem solved with SIMPLER. Please set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
+    // add Inverse2 block for pressure dofs
+    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
+    // use CheapSIMPLE preconditioner (hardwired, change me for others)
+    solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+    solver->Params().set("FLUID",true);
   }
 
   // -------------------------------------------------------------------
@@ -801,7 +860,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
-  fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
+  // fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC")); // probably can be removed
 
   // -------------------------------------- number of degrees of freedom
   // number of space dimensions
@@ -947,36 +1006,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
+    fluid_ = rcp(new ADAPTER::FluidImpl(discret, solver, fluidtimeparams, output, false, dirichletcond));
 
-    {
-      RCP<Fluid> tmpfluid;
-      int fluidsolver = DRT::INPUT::IntegralValue<int>(fdyn,"FLUID_SOLVER");
-      switch(fluidsolver)
-      {
-      case fluid_solver_implicit:
-        tmpfluid = rcp(new ADAPTER::FluidImpl(discret, solver, fluidtimeparams, output, false, dirichletcond));
-        break;
-      case fluid_solver_pressurecorrection:
-      case fluid_solver_pressurecorrection_semiimplicit:
-      {
-        // check if implicit or semi-implicit projection solver
-        fluidtimeparams->set<bool>("PROJ_IMPLICIT",fluidsolver==fluid_solver_pressurecorrection);
-
-        // -------------------------------------------------------------------
-        // create a second solver for Projection Methods if chosen from input
-        // -------------------------------------------------------------------
-        RCP<LINALG::Solver> psolver = rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),discret->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
-        psolver->PutSolverParamsToSubParams("FLUID PRESSURE SOLVER",
-                                            DRT::Problem::Instance()->FluidPressureSolverParams());
-
-        tmpfluid = rcp(new ADAPTER::FluidProjection(discret, solver, psolver, fluidtimeparams, output, false, dirichletcond));
-      }
-      break;
-      default:
-        dserror("fluid solving strategy unknown.");
-      }
-        fluid_ = tmpfluid;
-    }
   }
   else if (timeint == INPAR::FLUID::timeint_gen_alpha)
   {
@@ -990,7 +1021,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
     //------------------------------------------------------------------
-    RCP<Fluid> tmpfluid;
+    RCP<Fluid> tmpfluid; // what the hell is this???
     tmpfluid = rcp(new ADAPTER::FluidGenAlpha(discret, solver, fluidtimeparams, output, false , pbcmapmastertoslave));
     fluid_ = tmpfluid;
   }
@@ -1015,5 +1046,3 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 
   return;
 }
-
-#endif  // #ifdef CCADISCRET
