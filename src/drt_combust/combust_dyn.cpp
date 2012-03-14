@@ -111,8 +111,7 @@ void combust_dyn()
     const bool restartscatrainput = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_SCATRA_INPUT");
 
     // read the restart information, set vectors and variables
-    combust_->RestartNew(genprob.restart, restartscatrainput, restartfromfluid);
-    //combust_->Restart(genprob.restart);
+    combust_->Restart(genprob.restart, restartscatrainput, restartfromfluid);
   }
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes

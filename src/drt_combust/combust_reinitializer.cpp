@@ -76,7 +76,7 @@ COMBUST::Reinitializer::Reinitializer(
     scatra_(scatra),
     flamefront_(boundaryintcells)
 {
-  // special action if reinitializer is called from Algorithm::RestartNew()
+  // special action if reinitializer is called from Algorithm::Restart()
   if(compdist)
     FastSignedDistanceFunction(phivector);
 

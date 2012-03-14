@@ -62,9 +62,7 @@ namespace COMBUST
     void SolveInitialStationaryProblem();
 
     /// restart combustion problem
-    void Restart(int step);
-    /// restart combustion problem
-    void RestartNew(int step,
+    void Restart(int step,
                     const bool restartscatrainput = false,
                     const bool restartturbinflow  = false);
 
