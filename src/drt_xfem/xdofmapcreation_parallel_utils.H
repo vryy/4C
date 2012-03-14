@@ -24,14 +24,14 @@ namespace XFEM
    * \brief create dofkeyset from nodal dofmap
    */
   void fillNodalDofKeySet(
-      const XFEM::InterfaceHandle& ih,
+      const COMBUST::InterfaceHandleCombust& ih,
       const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
       std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
   );
 
 
   void updateNodalDofMap(
-      const XFEM::InterfaceHandle& ih,
+      const COMBUST::InterfaceHandleCombust& ih,
       std::map<int, std::set<XFEM::FieldEnr> >&      nodalDofSet,
       const std::set<XFEM::DofKey<XFEM::onNode> >&   nodaldofkeyset
       );
@@ -59,7 +59,7 @@ namespace XFEM
    * \brief parallel syncronization
    */
   void syncNodalDofs(
-      const XFEM::InterfaceHandle& ih,
+      const COMBUST::InterfaceHandleCombust& ih,
       std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet
       );
 #endif

@@ -337,76 +337,6 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
 
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
-    const Epetra_Vector&                    original_vector,
-    const DRT::DofSet&                      dofset_out,
-    const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,
-    const std::set<XFEM::PHYSICS::Field>&   fields_out
-) const
-{
-  Teuchos::RCP<Epetra_Vector> outvec = LINALG::CreateVector(*dofset_out.DofRowMap(),true);
-
-  const std::size_t numdof = fields_out.size();
-
-  const Epetra_Map* dofrowmap = dofset_out.DofRowMap();
-  const Epetra_Map* xdofrowmap = ih_->xfemdis()->DofRowMap();
-
-  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
-  {
-    const DRT::Node* xfemnode = ih_->xfemdis()->lRowNode(i);
-    const int gid = xfemnode->Id();
-    const std::vector<int> gdofs(dofset_out.Dof(xfemnode));
-
-
-    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
-    if (entry == nodalDofSet_.end())
-    {
-      // no dofs for this node... must be a hole or somethin'
-      //cout << "hole" << endl;
-      for (std::size_t idof = 0; idof < numdof; ++idof)
-      {
-        //cout << dofrowmap->LID(gdofs[idof]) << endl;
-        (*outvec)[dofrowmap->LID(gdofs[idof])] = 0.0;
-      }
-    }
-    else
-    {
-      //cout << "some values available" << endl;
-
-      //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
-      const std::set<FieldEnr> dofset = entry->second;
-
-      const LINALG::Matrix<3,1> actpos(xfemnode->X());
-      int idof = 0;
-      for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
-      {
-        for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-        {
-          const XFEM::PHYSICS::Field fielditer = fieldenr->getField();
-          if (fielditer == *field_out)
-          {
-            const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
-            const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
-            const int origpos = nodalDofDistributionMap.find(dofkey)->second;
-            //cout << origpos << endl;
-            if (origpos < 0)
-              dserror("bug!");
-            if (gdofs[idof] < 0)
-              dserror("bug!");
-            (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
-          }
-        }
-        //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
-        idof++;
-      }
-    }
-  };
-  return outvec;
-}
-
-
-/*----------------------------------------------------------------------*
  | transform XFEM vector to (standard FEM) output vector     henke 07/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
@@ -731,37 +661,6 @@ void XFEM::DofManager::toGmsh(
           for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
           {
             if (f->getEnrichment().Type() == XFEM::Enrichment::typeVoid)
-            {
-              val += 1.0;
-            }
-          }
-          if (val > 0.5)
-          {
-            const LINALG::Matrix<3,1> pos(xfemnode->X());
-            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, val, pos, gmshfilecontent);
-          }
-        }
-      };
-      gmshfilecontent << "};\n";
-    }
-
-    {
-      gmshfilecontent << "View \" " << "NumDof" << " VoidFSI enriched nodes \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
-      {
-
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
-
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub =
-            nodalDofSet_.find(xfemnode->Id());
-        if (blub != nodalDofSet_.end())
-        {
-
-          double val = 0.0;
-          const std::set<XFEM::FieldEnr> fields = blub->second;
-          for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
-          {
-            if (f->getEnrichment().Type() == XFEM::Enrichment::typeVoidFSI)
             {
               val += 1.0;
             }

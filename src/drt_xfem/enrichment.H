@@ -26,11 +26,13 @@ namespace GEO
 }
 
 //! namespace for all XFEM related stuff
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+
 namespace XFEM
 {
-
-  class InterfaceHandle;
-
   /*!
    * \brief Corresponds to a specific enrichment with unique type and id
    *
@@ -48,7 +50,6 @@ namespace XFEM
         typeUndefined, ///< a default value, for which all functions should fail/crash
         typeStandard,  ///< standard enrichment  - corresponds to the standard finite element method
         typeJump,      ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
-        typeVoidFSI,   ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-), only distinguish between inside (==0) and outside (>0), not with respect to different labels normal
         typeVoid,      ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
         typeKink       ///< kink enrichment - TODO: discription missing
       };
@@ -158,7 +159,7 @@ namespace XFEM
       //! calculate enrichment value based on input \f$\psi(x)\f$
       double EnrValue(
           const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
+          const COMBUST::InterfaceHandleCombust&          ih,                ///< the ubiquitous interface handle with all geometry information
           const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
       ) const;
 
@@ -219,6 +220,57 @@ namespace XFEM
           return enrval;
       }
 
+
+      /*!
+       * \brief get enrichment value at node using the level set function
+       *
+       * \author henke 07/09
+       */
+      template<class V1>
+      double EnrValueNodeLevelSetStab(
+          const int  inode,
+          const V1&  phi,
+          const bool domainplus
+      ) const
+      {
+          //std::cout << "EnrValueNodeLevelSet()" << std::endl;
+          double enrval = 1.0;
+
+          switch (Type())
+          {
+          case XFEM::Enrichment::typeJump:
+          {
+            if (domainplus) // call for plus domain
+            {
+              if (phi(inode) < 0.0) { // ansatz function of node in minus domain is 2
+                  enrval = 2.0;
+              } else { // phi == 0 is enriched!
+                  enrval = 0.0; // ansatz function of node in plus domain is 0
+              }
+            }
+            else // call for minus domain
+            {
+              if (phi(inode) < 0.0) {
+                  enrval = 0.0; // ansatz function of node in minus domain is 0
+              } else { // phi == 0 is enriched!
+                  enrval = -2.0; // ansatz function of node in plus domain is -2
+              }
+            }
+            break;
+          }
+          case XFEM::Enrichment::typeStandard:
+          case XFEM::Enrichment::typeKink:
+          case XFEM::Enrichment::typeVoid:
+          {
+              enrval = 0.0;
+              dserror("dont't call this function for standard or kink enrichments!");
+              break;
+          }
+          default:
+              dserror("unsupported type of enrichment!");
+          }
+          return enrval;
+      }
 
       /*!
        * \brief get enrichment value at (Gauss) point using the level set function
@@ -435,10 +487,10 @@ namespace XFEM
 
       //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
       double ModifiedEnrValue(
-          const LINALG::Matrix<3,1>&            actpos,            ///< \f$x\f$
-          const LINALG::Matrix<3,1>&            nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
-          const XFEM::InterfaceHandle&          ih,                ///< the ubiquitous interface handle with all geometry information
-          const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
+          const LINALG::Matrix<3,1>&             actpos,            ///< \f$x\f$
+          const LINALG::Matrix<3,1>&             nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
+          const COMBUST::InterfaceHandleCombust& ih,                ///< the ubiquitous interface handle with all geometry information
+          const XFEM::Enrichment::ApproachFrom   approachdirection  ///< approach direction
       ) const;
 
     private:

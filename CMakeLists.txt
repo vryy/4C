@@ -569,7 +569,6 @@ set(OBJS_INTERSECTION
   src/drt_xfem/enrichment.cpp
   src/drt_xfem/enrichment_utils.cpp
   src/drt_xfem/field_enriched.cpp
-  src/drt_xfem/interface.cpp
   src/drt_xfem/physics.cpp
   src/drt_xfem/timeInt.cpp
   src/drt_xfem/timeInt_enr.cpp

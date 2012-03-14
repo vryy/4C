@@ -24,6 +24,11 @@ Maintainer: Axel Gerstenberger
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+
 namespace XFEM
 {
   /*!
@@ -42,7 +47,7 @@ namespace XFEM
     */
     explicit ElementEnrichmentValues(
         const DRT::Element&                   ele,
-        XFEM::InterfaceHandle*                ih,               ///< interface information
+        COMBUST::InterfaceHandleCombust*      ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const bool                            boundary_integral,
@@ -143,6 +148,73 @@ namespace XFEM
 
       return;
     }
+
+//    template<class V1>
+//    explicit ElementEnrichmentValues(
+//            const DRT::Element&             ele,    ///< pointer to element
+//            const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
+//            const V1&                       phi,    ///< vector of level set values
+//            const bool                      domainplus
+//     ) :
+//       ele_(ele),
+//       dofman_(dofman)
+//    {
+//      enrvals_.clear();
+//      enrvalnodes_.clear();
+//      enrvalderxy_.clear();  // not used for jump enrichment (Heaviside function)
+//      enrvalderxy2_.clear(); // not used for jump enrichment (Heaviside function)
+//
+//      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+//      const int numnode = ele_.NumNode();
+//
+//      //--------------------------------------------------
+//      // prepare temporary variables for enrichment values
+//      //--------------------------------------------------
+//      // enrichment values at nodes
+//      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+//      // first derivatives of enrichment function
+//      std::vector<double> enrvalderxy(3);
+//      enrvalderxy[0] = 0.0;
+//      enrvalderxy[1] = 0.0; // zero for Heaviside function
+//      enrvalderxy[2] = 0.0;
+//      // second derivatives of enrichment function
+//      std::vector<double> enrvalderxy2(6);
+//      for (int isd=0; isd<6; isd++)
+//      {
+//        enrvalderxy2[isd] = 0.0; // zero for Heaviside function
+//      }
+//
+//      //------------------------------------------------------
+//      // evaluate enrichment values for this integration cell
+//      //------------------------------------------------------
+//      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+//      {
+//        enrvals_[*enriter] = 0.0;
+//        enrvalderxy_[*enriter] = enrvalderxy;
+//        enrvalderxy2_[*enriter] = enrvalderxy2;
+//      }
+//
+//      //------------------------------------------------------------
+//      // loop over nodes to evaluate enrichment values at the nodes
+//      //------------------------------------------------------------
+//      for(int inode=0; inode < numnode; inode++)
+//      {
+//        std::map<XFEM::Enrichment, double> enrvalstmp;
+//        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+//        {
+//          double enrvalnode = 1.0;
+//          if (enriter->Type()==XFEM::Enrichment::typeJump)
+//          {
+//            enrvalnode = enriter->EnrValueNodeLevelSetStab(inode,phi,domainplus);
+//          }
+//          enrvalstmp[*enriter] = enrvalnode;
+//        }
+//        enrvalnodes_[inode] = enrvalstmp;
+//        enrvalstmp.clear();
+//      }
+//
+//      return;
+//    }
 
     /*!
      * \brief compute enrichment value at one side of an embedded interface based on level set function
@@ -1223,11 +1295,10 @@ namespace XFEM
     explicit ElementEnrichmentValues();
 
     const DRT::Element&                        ele_;
-    //  const RCP<XFEM::InterfaceHandle>           ih_;
     const XFEM::ElementDofManager&             dofman_;
 
     //! map holding values for enrichments
-    std::map<XFEM::Enrichment, double>        enrvals_;
+    std::map<XFEM::Enrichment, double> enrvals_;
     //! map holding values for enrichments for every node
     std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
 
@@ -1349,7 +1420,7 @@ void InterpolateCellValuesFromElementValuesLevelSetKinkJump(
 //! for output, compute values on the integration cells
 void computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&                   ele,
-  XFEM::InterfaceHandle*     ih,
+  COMBUST::InterfaceHandleCombust*      ih,
   const XFEM::ElementDofManager&        dofman,
   const GEO::DomainIntCell&             cell,
   const XFEM::PHYSICS::Field            field,
@@ -1360,32 +1431,21 @@ void computeScalarCellNodeValuesFromElementUnknowns(
 
 //! for output, compute values on the integration cells
 void computeTensorCellNodeValuesFromElementUnknowns(
-  const DRT::Element&  ele,
-  XFEM::InterfaceHandle*  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&     cellvalues
-  );
-
-//! for output, compute values on the integration cells
-void computeVectorCellNodeValues(
-  const DRT::Element&  ele,
-  XFEM::InterfaceHandle*  ih,
-  const XFEM::ElementDofManager& dofman,
-  const GEO::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const LINALG::SerialDenseMatrix& elementvalues,
-  LINALG::SerialDenseMatrix&     cellvalues
+  const DRT::Element&               ele,
+  COMBUST::InterfaceHandleCombust*  ih,
+  const XFEM::ElementDofManager&    dofman,
+  const GEO::DomainIntCell&         cell,
+  const XFEM::PHYSICS::Field        field,
+  const LINALG::SerialDenseMatrix&  elementvalues,
+  LINALG::SerialDenseMatrix&        cellvalues
   );
 
 
 //! return assembly type depending on the DOF information
 XFEM::AssemblyType ComputeAssemblyType(
-    const ElementDofManager&   eleDofManager,
-    const std::size_t          numnode,
-    const int*                 nodeids
+    const ElementDofManager&  eleDofManager,
+    const std::size_t         numnode,
+    const int*                nodeids
 );
 
 /*! get number of unknowns for this field
@@ -1394,8 +1454,8 @@ XFEM::AssemblyType ComputeAssemblyType(
  */
 template<XFEM::AssemblyType>
 inline std::size_t getNumParam(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
+        const XFEM::ElementDofManager&  dofman,
+        const XFEM::PHYSICS::Field      field,
         const std::size_t)
 {
     return dofman.NumDofPerField(field);

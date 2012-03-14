@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 #include "combust_interface.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/position_array.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 
@@ -27,7 +28,7 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
     const Teuchos::RCP<DRT::Discretization> fluiddis,
     const Teuchos::RCP<const DRT::Discretization> gfuncdis,
     const Teuchos::RCP<const COMBUST::FlameFront> flamefront
-    ) : InterfaceHandle(fluiddis),
+    ) : xfemdis_(fluiddis),
         gfuncdis_(gfuncdis),
         flamefront_(flamefront)
 {
@@ -223,6 +224,82 @@ void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * to string
+ *----------------------------------------------------------------------*/
+std::string COMBUST::InterfaceHandleCombust::toString() const
+{
+  std::stringstream s(" ");
+  return s.str();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+GEO::DomainIntCells COMBUST::InterfaceHandleCombust::GetDomainIntCells(
+    const DRT::Element* xfemElement) const
+{
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
+  if (tmp == elementalDomainIntCells_.end())
+  {
+    // create default set with one dummy DomainIntCell of proper size
+    GEO::DomainIntCells cells;
+    cells.push_back(GEO::DomainIntCell(xfemElement->Shape(), GEO::InitialPositionArray(xfemElement)));
+    return cells;
+  }
+  return tmp->second;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | return number of domain integration cells for a given element                      henke 07/09 |
+ *------------------------------------------------------------------------------------------------*/
+std::size_t COMBUST::InterfaceHandleCombust::GetNumDomainIntCells(
+    const DRT::Element* xfemElement) const
+{
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
+  if (tmp == elementalDomainIntCells_.end())
+  {
+    return 0;
+  }
+  return (tmp->second).size();
+}
+
+
+std::map<int, GEO::BoundaryIntCells> COMBUST::InterfaceHandleCombust::GetElementalBoundaryIntCells (
+) const
+{
+  return elementalBoundaryIntCells_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+GEO::BoundaryIntCells COMBUST::InterfaceHandleCombust::GetBoundaryIntCells(
+    const int gid) const
+{
+  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
+  if (tmp == elementalBoundaryIntCells_.end())
+  {
+    // return empty list
+    return GEO::BoundaryIntCells();
+  }
+  return tmp->second;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | return number of boundary integration cells for a given element                     henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
+std::size_t COMBUST::InterfaceHandleCombust::GetNumBoundaryIntCells(
+    const DRT::Element* xfemElement) const
+{
+  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(xfemElement->Id());
+  if (tmp == elementalBoundaryIntCells_.end())
+  {
+    return 0;
+  }
+  return (tmp->second).size();
+}
 /*------------------------------------------------------------------------------------------------*
  | compute the volume of the minus domain (mass conservation check)               rasthofer 06/09 |
  *------------------------------------------------------------------------------------------------*/
@@ -366,4 +443,129 @@ COMBUST::FlameFront::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus
     cutstat = iter->second;
 
   return cutstat;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is intersected (touched elements are intersected)                       |
+ *------------------------------------------------------------------------------------------------*/
+bool COMBUST::InterfaceHandleCombust::ElementIntersected(
+    const int element_gid) const
+{
+  if (elementalBoundaryIntCells_.find(element_gid) == elementalBoundaryIntCells_.end())
+    return false;
+  else
+    return true;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is split (= bi- or trisected or numerically bi- or trisected            |
+ *------------------------------------------------------------------------------------------------*/
+bool COMBUST::InterfaceHandleCombust::ElementSplit(
+    const DRT::Element* xfemElement) const
+{
+  bool bisected = false;
+
+  std::size_t numcells = this->GetNumDomainIntCells(xfemElement);
+
+  if (numcells > 1) // more than one domain integration cell -> element bisected or numerically touched
+    bisected = true;
+  else
+    bisected = false;
+
+  return bisected;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool COMBUST::InterfaceHandleCombust::ElementHasLabel(
+    const int element_gid,
+    const int label) const
+{
+  if(elementalBoundaryIntCells_.empty())
+    dserror("boundary intcells are empty");
+
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
+  bool has_label = false;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    const int surface_ele_gid = bcell->GetSurfaceEleGid();
+    const int label_for_current_bele = labelPerBoundaryElementId_.find(surface_ele_gid)->second;
+    if (label == label_for_current_bele)
+    {
+      has_label = true;
+      break;
+    }
+  }
+  return has_label;
+}
+
+/*----------------------------------------------------------------------*
+ * implement this member function in derived classes!
+ *----------------------------------------------------------------------*/
+int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
+{
+  dserror("not implemented for the InterfaceHandle base class");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::set<int> COMBUST::InterfaceHandleCombust::GetIntersectingBoundaryElementsGID(
+    const int element_gid
+    ) const
+{
+  std::set<int> begids;
+
+  if(elementalBoundaryIntCells_.empty())
+    dserror("boundary intcells are empty");
+
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    begids.insert(bcell->GetSurfaceEleGid());
+  }
+  return begids;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::set<int> COMBUST::InterfaceHandleCombust::LabelsPerElement(
+    const int element_gid) const
+{
+  std::set<int> labelset;
+  if(elementalBoundaryIntCells_.empty())
+    return labelset;
+
+  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
+  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+  {
+    labelset.insert(bcell->GetSurfaceEleGid());
+  }
+  return labelset;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void COMBUST::InterfaceHandleCombust::InvertElementsPerLabel()
+{
+  labelPerBoundaryElementId_.clear();
+  for(std::map<int,std::set<int> >::const_iterator conditer = boundaryElementsByLabel_.begin();
+      conditer!=boundaryElementsByLabel_.end();
+      ++conditer)
+  {
+    const int xfemlabel = conditer->first;
+    for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
+    {
+      const int eleid = *eleiditer;
+      if (labelPerBoundaryElementId_.count(eleid) == 1)
+        dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
+      labelPerBoundaryElementId_[eleid] = xfemlabel;
+    }
+  }
+  return;
 }

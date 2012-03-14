@@ -566,7 +566,6 @@ void XFEM::Extrapolation::interpolation(
       {
       case XFEM::Enrichment::typeStandard :
       case XFEM::Enrichment::typeJump :
-      case XFEM::Enrichment::typeVoidFSI :
       case XFEM::Enrichment::typeVoid :
       case XFEM::Enrichment::typeKink :
       {

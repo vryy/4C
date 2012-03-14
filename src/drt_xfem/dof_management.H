@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 
 #include "dofkey.H"
 #include "element_ansatz.H"
+#include "../drt_lib/drt_dofset.H"
 
 namespace COMBUST
 {
@@ -93,12 +94,6 @@ namespace XFEM
         return entry->second;
       };
 
-//      //! check whether given ElementDofManager fits the given element
-//      void checkForConsistency(
-//          const DRT::Element&            ele,        ///< element for which one wants to check the eledofmanager
-//          const XFEM::ElementDofManager& eledofman   ///< eledofmanager in question
-//      ) const;
-
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
       void fillDofRowDistributionMaps(
           map<DofKey<onNode>, DofGID>&  NodalDofDistributionMap,        ///< nodal dofs
@@ -108,14 +103,6 @@ namespace XFEM
       // fill column map with nodal dof positions in EpetraVectors for all DofKeys on this proc
       void fillNodalDofColDistributionMap(
           map<XFEM::DofKey<XFEM::onNode>, DofGID>&  NodalDofColDistributionMap
-      ) const;
-
-      //! for output XFEM is turned of and a uniform field is drawn. This method returns a vector with uniform number of unknowns per node
-      Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(
-          const Epetra_Vector&                    original_vector,
-          const DRT::DofSet&                      dofset_out,
-          const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,
-          const std::set<XFEM::PHYSICS::Field>&   fields_out
       ) const;
 
       /*!
@@ -155,7 +142,7 @@ namespace XFEM
       ) const;
 
       //! return pointer to interface handle
-      const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> getInterfaceHandle() const { return ih_; }
 
     private:
 
@@ -165,7 +152,7 @@ namespace XFEM
       void GatherUniqueEnrichments() const;
 
       //! pointer to the xfem discretization of which we hold the unknowns
-      const Teuchos::RCP<XFEM::InterfaceHandle>         ih_;
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;
 
       //! connection between master and slave row nodes
       const Teuchos::RCP<map<int,vector<int> > > pbcmap_;

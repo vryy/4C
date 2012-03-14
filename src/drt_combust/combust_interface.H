@@ -14,7 +14,6 @@ Maintainer: Florian Henke
 #ifndef COMBUST_INTERFACE_H
 #define COMBUST_INTERFACE_H
 
-#include "../drt_xfem/interface.H"
 #include "combust_flamefront.H"
 
 
@@ -30,7 +29,7 @@ namespace COMBUST
     \author henke
     \date 10/08
    */
-  class InterfaceHandleCombust : public XFEM::InterfaceHandle
+  class InterfaceHandleCombust
   {
   public:
     /// constructor
@@ -73,8 +72,75 @@ namespace COMBUST
     //! tell me, whether the element is trisected or not
     COMBUST::FlameFront::CutStatus ElementCutStatus(const int xfemeleid) const;
 
+    //! return string representation of the interface handle
+    std::string toString() const;
+
+    //! return pointer to the intersected discretization
+    Teuchos::RCP<DRT::Discretization> xfemdis() const {return xfemdis_;}
+
+    //! tell me, whether the element is intersected or not
+    bool ElementIntersected(const int element_gid) const;
+
+    //! tell me, whether the element is bisected or not
+    bool ElementSplit(const DRT::Element* xfemElement) const;
+
+    //! check, whether given element id has been intersected by the given interface (label)
+    bool ElementHasLabel(
+        const int element_gid,
+        const int label
+    ) const;
+
+    //! get labels for each element
+    std::set<int> LabelsPerElement( const int element_gid) const;
+
+    //! get set of boundary element GIDs that intersect an element
+    std::set<int> GetIntersectingBoundaryElementsGID(
+        const int element_gid  ///< element GID of intersected element
+        ) const;
+
+    //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
+    GEO::DomainIntCells GetDomainIntCells( const DRT::Element*  xfemElement) const;
+
+    //! return number of domain integration cells for a given element
+    std::size_t GetNumDomainIntCells( const DRT::Element*  xfemElement) const;
+
+    //! return map of elemental boundary integration cells
+    std::map<int, GEO::BoundaryIntCells> GetElementalBoundaryIntCells () const;
+
+    //! return number of boundary integration cells for a given element
+    std::size_t GetNumBoundaryIntCells( const DRT::Element*  xfemElement) const;
+
+    //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
+    GEO::BoundaryIntCells GetBoundaryIntCells(const int   gid) const;
+
+    //! get domain information at x_in at timestep n+1
+    int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
+
+  protected:
+
+    //! fill label per element list
+    void InvertElementsPerLabel();
+
+    //! intersected domain
+    const Teuchos::RCP<DRT::Discretization>   xfemdis_;
+
+    //! integration cells for domain (global id for element -> list of volume integration cells)
+    std::map<int,GEO::DomainIntCells >        elementalDomainIntCells_;
+
+    //! integration cells for boundary
+    std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells_;
+
+    //! for each xfem condition label there is a set of boundary elements
+    std::map<int,std::set<int> >              boundaryElementsByLabel_;
+
+    //! each boundary element belongs to one label (inverted information of elementsByLabel_)
+    //! i.e. its a map like (ElementGID,Label)
+    std::map<int,int>                         labelPerBoundaryElementId_;
 
   private:
+
+    //! disabled assignment operator
+    InterfaceHandleCombust operator = (const InterfaceHandleCombust& old);
 
     /// don't want default constructor, therefore declared private!
     explicit InterfaceHandleCombust();
@@ -90,6 +156,8 @@ namespace COMBUST
 
     /// map holding status of elements with respect to the interface
     std::map<int,COMBUST::FlameFront::CutStatus > elementcutstatus_;
+
+
 
   }; // class InterfaceHandleCombust
 } // namespace COMBUST

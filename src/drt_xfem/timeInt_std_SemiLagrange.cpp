@@ -771,7 +771,6 @@ void XFEM::SemiLagrange::backTracking(
         {
         case XFEM::Enrichment::typeStandard :
         case XFEM::Enrichment::typeJump :
-        case XFEM::Enrichment::typeVoidFSI :
         case XFEM::Enrichment::typeVoid :
         case XFEM::Enrichment::typeKink :
         {
@@ -1173,7 +1172,6 @@ void XFEM::SemiLagrange::reinitializeData()
             case XFEM::Enrichment::typeJump :
             case XFEM::Enrichment::typeKink : break; // just standard dofs
             case XFEM::Enrichment::typeStandard :
-            case XFEM::Enrichment::typeVoidFSI :
             case XFEM::Enrichment::typeVoid :
             {
               for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution

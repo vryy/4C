@@ -288,7 +288,6 @@ void XFEM::FluidWizard::CreateDofMap( std::map<int, const std::set<XFEM::FieldEn
   const XFEM::Enrichment enr_std(XFEM::Enrichment::typeStandard, 0);
 
   //XFEM::Enrichment::EnrType
-  //XFEM::Enrichment::typeVoidFSI;
   //XFEM::Enrichment::typeVoid;
 
   // XFEM::ElementEnrichmentValues neu machen, weil dort die Entscheidung �ber

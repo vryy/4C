@@ -58,7 +58,6 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
         case typeStandard:  typetext = "Stnd"; break;
         case typeJump:      typetext = "Jump"; break;
         case typeVoid:      typetext = "Void"; break;
-        case typeVoidFSI:   typetext = "VoidFSI"; break;
         case typeKink:      typetext = "Kink"; break;
         default: dserror("no string defined for EnrType");
     };
@@ -70,9 +69,9 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
  | get enrichment value                                        ag 11/07 |
  *----------------------------------------------------------------------*/
 double XFEM::Enrichment::EnrValue(
-        const LINALG::Matrix<3,1>&            actpos,
-        const XFEM::InterfaceHandle&          ih,
-        const XFEM::Enrichment::ApproachFrom  approachdirection
+        const LINALG::Matrix<3,1>&             actpos,
+        const COMBUST::InterfaceHandleCombust& ih,
+        const XFEM::Enrichment::ApproachFrom   approachdirection
         ) const
 {
     // return value
@@ -82,62 +81,6 @@ double XFEM::Enrichment::EnrValue(
     case XFEM::Enrichment::typeStandard:
     {
         enrval = 1.0;
-        break;
-    }
-    case XFEM::Enrichment::typeVoid:
-    {
-        // standard Heaviside function
-        switch (approachdirection)
-        {
-            case approachFromPlus:
-            {
-                enrval = 1.0;
-                break;
-            }
-            case approachFromMinus:
-            {
-                enrval = 0.0;
-                break;
-            }
-            case approachUnknown:
-            {
-                if (ih.PositionWithRespectToInterfaceNP(actpos, this->XFEMConditionLabel()) == 0) {
-                  enrval = 1.0;
-                } else {
-                  enrval = 0.0;
-                }
-                break;
-            }
-        }
-
-        break;
-    }
-    case XFEM::Enrichment::typeVoidFSI:
-    {
-        // standard Heaviside function ignoring the label and only looking for inside/outside
-        switch (approachdirection)
-        {
-            case approachFromPlus:
-            {
-                enrval = 1.0;
-                break;
-            }
-            case approachFromMinus:
-            {
-                enrval = 0.0;
-                break;
-            }
-            case approachUnknown:
-            {
-                if (ih.PositionWithinConditionNP(actpos) == 0) {
-                  enrval = 1.0;
-                } else {
-                  enrval = 0.0;
-                }
-                break;
-            }
-        }
-
         break;
     }
     case XFEM::Enrichment::typeJump:
@@ -288,8 +231,7 @@ double XFEM::Enrichment::EnrValueAtInterface(
     }
     case XFEM::Enrichment::typeKink:
     {
-        //dserror("do enrichment values really vary over the embedded interface for a kink enrichment?");
-        // otherwise we cannot evaluate jump enrichments in case of two-phase flow with surface tension
+        dserror("think before you use this for kink enrichments!");
         enrval = 1.0;
         break;
     }

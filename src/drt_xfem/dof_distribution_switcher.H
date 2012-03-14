@@ -18,10 +18,13 @@ Maintainer: Axel Gerstenberger
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_lib/drt_exporter.H"
 
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+
 namespace XFEM
 {
-  class InterfaceHandle;
-
   /*!
   \brief this class is used to switch from one distribution to a second
 
@@ -32,14 +35,14 @@ namespace XFEM
 
     //! constructor
     explicit DofDistributionSwitcher(
-        const Teuchos::RCP<InterfaceHandle>       ih,
-        const Teuchos::RCP<DofManager>            dofman,
-        const Epetra_Map&                         olddofrowmap,
-        const Epetra_Map&                         newdofrowmap,
-        const std::map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
-        const std::map<DofKey<onNode>, DofGID>&   newNodalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&   oldElementalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&   newElementalDofDistrib
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih,
+        const Teuchos::RCP<DofManager>             dofman,
+        const Epetra_Map&                          olddofrowmap,
+        const Epetra_Map&                          newdofrowmap,
+        const std::map<DofKey<onNode>, DofGID>&    oldNodalDofDistrib,
+        const std::map<DofKey<onNode>, DofGID>&    newNodalDofDistrib,
+        const std::map<DofKey<onElem>, DofGID>&    oldElementalDofDistrib,
+        const std::map<DofKey<onElem>, DofGID>&    newElementalDofDistrib
     ) :
       ih_(ih),
       dofman_(dofman),
@@ -58,48 +61,11 @@ namespace XFEM
       return;
     }
 
-    //! constructor for FluidXFluid. Here all the nodes which were located in
-    //xfem-fluid are unknown nodes.
-    explicit DofDistributionSwitcher(
-        const Teuchos::RCP<InterfaceHandle>       ih,
-        const Teuchos::RCP<DofManager>            dofman,
-        const Epetra_Map&                         olddofrowmap,
-        const Epetra_Map&                         newdofrowmap,
-        const std::map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
-        const std::map<DofKey<onNode>, DofGID>&   newNodalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&   oldElementalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&   newElementalDofDistrib,
-        const std::map<int,int>                   nodelabeln
-    ) :
-      ih_(ih),
-      dofman_(dofman),
-      olddofrowmap_(olddofrowmap),
-      newdofrowmap_(newdofrowmap),
-      oldNodalDofDistrib_(oldNodalDofDistrib),
-      newNodalDofDistrib_(newNodalDofDistrib),
-      oldElementalDofDistrib_(oldElementalDofDistrib),
-      newElementalDofDistrib_(newElementalDofDistrib)
-    {
-      extractDofKeysForInitializationFluidXFluid(unknownFieldEnr_,nodelabeln);
-#ifdef DEBUG
-      if (unknownFieldEnr_.size()>0)
-        cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
-#endif
-      return;
-    }
-
-
     //! destructor
     ~DofDistributionSwitcher()
     {
       return;
     }
-
-
-    //! switch from old to new dof distribution
-    void mapVectorToNewDofDistribution(
-        Teuchos::RCP<Epetra_Vector>&     vector
-    ) const;
 
     //! switch from old to new dof distribution for jump/kink enrichment problems
     void mapVectorToNewDofDistributionCombust(
@@ -107,24 +73,8 @@ namespace XFEM
         const bool                       quasi_static_enr
     ) const;
 
-    //! switch from old to new dof distribution for fluidxfluid Coupling
-    void mapVectorToNewDofDistributionFluidXFluid(
-      RCP<Epetra_Vector>&    vector,
-      std::map<int,int>      nodelabeln
-    ) const;
-
     void extractDofKeysForInitialization(
         std::map<int, std::set<FieldEnr> >& unknownFieldEnr
-    ) const;
-
-    void extractDofKeysForInitializationFluidXFluid(
-      std::map<int, std::set<FieldEnr> >& unknownFieldEnr,
-      std::map<int,int>      nodelabeln
-    ) const;
-
-    //! switch from old to new dof distribution
-    void generateTransferInformation(
-        const Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
 
     void GmshOutput(
@@ -144,14 +94,14 @@ namespace XFEM
     //! disabled default constructor
     explicit DofDistributionSwitcher();
 
-    const Teuchos::RCP<InterfaceHandle>       ih_;                      ///< interface information
-    const Teuchos::RCP<DofManager>            dofman_;                  ///< dofmanager for this proc
-    const Epetra_Map                          olddofrowmap_;            ///< dofrowmap of the old state vector
-    const Epetra_Map                          newdofrowmap_;            ///< dofrowmap of the new state vector
-    const std::map<DofKey<onNode>, DofGID>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
-    const std::map<DofKey<onNode>, DofGID>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
-    const std::map<DofKey<onElem>, DofGID>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
-    const std::map<DofKey<onElem>, DofGID>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;                      ///< interface information
+    const Teuchos::RCP<DofManager>                      dofman_;                  ///< dofmanager for this proc
+    const Epetra_Map                                    olddofrowmap_;            ///< dofrowmap of the old state vector
+    const Epetra_Map                                    newdofrowmap_;            ///< dofrowmap of the new state vector
+    const std::map<DofKey<onNode>, DofGID>              oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const std::map<DofKey<onNode>, DofGID>              newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
+    const std::map<DofKey<onElem>, DofGID>              oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
+    const std::map<DofKey<onElem>, DofGID>              newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
 
     std::map<int, std::set<FieldEnr> >  unknownFieldEnr_;
   };

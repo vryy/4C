@@ -30,7 +30,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::fillNodalDofKeySet(
-    const XFEM::InterfaceHandle& ih,
+    const COMBUST::InterfaceHandleCombust& ih,
     const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
     std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
 )
@@ -61,7 +61,7 @@ void XFEM::fillNodalDofKeySet(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::updateNodalDofMap(
-    const XFEM::InterfaceHandle& ih,
+    const COMBUST::InterfaceHandleCombust& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
     const std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
 )
@@ -115,7 +115,7 @@ void XFEM::unpackDofKeys(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::syncNodalDofs(
-    const XFEM::InterfaceHandle& ih,
+    const COMBUST::InterfaceHandleCombust& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet)
 {
   const Epetra_Comm& comm = ih.xfemdis()->Comm();

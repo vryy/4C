@@ -17,6 +17,8 @@ Maintainer: Axel Gerstenberger
 
 #include "enrichment_utils.H"
 #include "../drt_combust/combust_defines.H"
+#include "../drt_combust/combust_interface.H"
+#include "../drt_xfem/dof_management.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
@@ -29,7 +31,7 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const DRT::Element&                    ele,
-        XFEM::InterfaceHandle*      ih,                ///< interface information
+        COMBUST::InterfaceHandleCombust*       ih,                ///< interface information
         const XFEM::ElementDofManager&         dofman,
         const LINALG::Matrix<3,1>&             actpos,
         const bool                             boundary_integral,
@@ -57,7 +59,6 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
     }
     return;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -424,7 +425,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
  *----------------------------------------------------------------------*/
 void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   const DRT::Element&                 ele,
-  XFEM::InterfaceHandle*   ih,
+  COMBUST::InterfaceHandleCombust*    ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::DomainIntCell&           cell,
   const XFEM::PHYSICS::Field          field,
@@ -468,7 +469,6 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   }
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*
