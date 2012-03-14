@@ -34,6 +34,8 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_isocub.H"
 #include "../drt_matelast/elast_iso1pow.H"
 #include "../drt_matelast/elast_iso2pow.H"
+#include "../drt_matelast/elast_coup1pow.H"
+#include "../drt_matelast/elast_coup2pow.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
@@ -726,6 +728,24 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j]   = params2->c_;
                 break;
               }
+              case INPAR::MAT::mes_coup1pow:
+              {
+                filename_=filename_+"_coup1pow";
+                const MAT::ELASTIC::PAR::Coup1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coup2pow:
+              {
+                filename_=filename_+"_coup2pow";
+                const MAT::ELASTIC::PAR::Coup2Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
               case INPAR::MAT::mes_isoexpo:
               {
                 filename_=filename_+"_isoexpo";
@@ -812,6 +832,8 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_isocub:
         case INPAR::MAT::mes_iso1pow:
         case INPAR::MAT::mes_iso2pow:
+        case INPAR::MAT::mes_coup1pow:
+        case INPAR::MAT::mes_coup2pow:
         case INPAR::MAT::mes_isoexpo:
         case INPAR::MAT::mes_isomooneyrivlin:
         case INPAR::MAT::mes_volsussmanbathe:
@@ -961,6 +983,22 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               {
                 MAT::ELASTIC::PAR::Iso2Pow* params2 =
                   dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coup1pow:
+              {
+                MAT::ELASTIC::PAR::Coup1Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coup2pow:
+              {
+                MAT::ELASTIC::PAR::Coup2Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
                 params2->SetC(abs(p_cur(j)));
                 j = j+1;
                 break;

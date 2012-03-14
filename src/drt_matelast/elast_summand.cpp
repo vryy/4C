@@ -28,6 +28,8 @@ Maintainer: Burkhard Bornemann
 #include "elast_isocub.H"
 #include "elast_iso1pow.H"
 #include "elast_iso2pow.H"
+#include "elast_coup1pow.H"
+#include "elast_coup2pow.H"
 #include "elast_isoexpo.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
@@ -126,6 +128,20 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::Iso2Pow(curmat));
     MAT::ELASTIC::PAR::Iso2Pow* params = static_cast<MAT::ELASTIC::PAR::Iso2Pow*>(curmat->Parameter());
     return Teuchos::rcp(new Iso2Pow(params));
+  }
+  case INPAR::MAT::mes_coup1pow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Coup1Pow(curmat));
+    MAT::ELASTIC::PAR::Coup1Pow* params = static_cast<MAT::ELASTIC::PAR::Coup1Pow*>(curmat->Parameter());
+    return Teuchos::rcp(new Coup1Pow(params));
+  }
+  case INPAR::MAT::mes_coup2pow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Coup2Pow(curmat));
+    MAT::ELASTIC::PAR::Coup2Pow* params = static_cast<MAT::ELASTIC::PAR::Coup2Pow*>(curmat->Parameter());
+    return Teuchos::rcp(new Coup2Pow(params));
   }
   case INPAR::MAT::mes_isoexpo:
   {

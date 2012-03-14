@@ -109,8 +109,11 @@ namespace INPAR
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand
       mes_isoquad,  ///< isochoric quadratic hyperelastic potential summand
       mes_isocub,  ///< isochoric cubic hyperelastic potential summand
-      mes_iso1pow,  ///< isochoric general power hyperelastic potential summand
-      mes_iso2pow,  ///< isochoric general power hyperelastic potential summand
+      mes_iso1pow,  ///
+                    ///< isochoric general power hyperelastic potential summand for modinv I
+      mes_iso2pow,  ///< isochoric general power hyperelastic potential summand for modiinv II
+      mes_coup1pow,  ///< general power hyperelastic potential summand for invariant I
+      mes_coup2pow,  ///< general power hyperelastic potential summand for invariant II
       mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
       mes_volpenalty,  ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand

@@ -1317,6 +1317,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+    /*--------------------------------------------------------------------*/
+
+  // contribution of coup1pow
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Coup1Pow",
+                                            "part of general power material",
+                                            INPAR::MAT::mes_coup1pow));
+
+    AddNamedReal(m,"C","material parameter");
+    AddNamedInt(m,"D","exponent");
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // contribution of iso2pow
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Coup2Pow",
+                                            "part of general power material",
+                                            INPAR::MAT::mes_coup2pow));
+
+    AddNamedReal(m,"C","material parameter");
+    AddNamedInt(m,"D","exponent");
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*--------------------------------------------------------------------*/
 
 
