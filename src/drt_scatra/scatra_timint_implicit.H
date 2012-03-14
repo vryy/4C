@@ -400,6 +400,16 @@ public:
   /// routine to set phi vectors due to reinitialization
   void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
 
+  /// routine to check for steady state due to reinitialization
+  void CheckSteadyState(
+                         double&    Gradient_Error_old, ///< gradient error at old time step
+                         bool&      STOP                ///< has the reinit procedure to be stopped
+                         );
+
+  /// evaluate integrated error norm for reinitialization stop criterion
+  double EvaluateGradientNormError();
+
+
   //@}
 
 
@@ -598,16 +608,6 @@ protected:
 
   /// calculate phidt after reinitialization for OST scheme
   virtual void CalcPhidtReinit() = 0;
-
-  /// routine to check for steady state due to reinitialization
-  void CheckSteadyState(
-                         double&    Gradient_Error_old, ///< gradient error at old time step
-                         bool&      STOP                ///< has the reinit procedure to be stopped
-                         );
-
-  /// evaluate integrated error norm for reinitialization stop criterion
-  double EvaluateGradientNormError();
-
 
   /// output reinitialization steps
   void OutputReinitializationSteps();

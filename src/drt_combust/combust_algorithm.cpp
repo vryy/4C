@@ -26,6 +26,8 @@ Maintainer: Florian Henke
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"
 
+#include "combust_reinitialization_pde.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |
@@ -435,6 +437,11 @@ void COMBUST::Algorithm::DoReinitialization()
   {
     case INPAR::COMBUST::reinitaction_sussman:
       if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based method" << std::endl;
+
+      // ToDo
+      //T euchos::RCP<COMBUST::ReinitializationPDE> reinit_pde = Teuchos::rcp(new COMBUST::ReinitializationPDE::ReinitializationPDE());
+      // bool accepted = reinit_pde->CallReinitialization();
+
       PrepareReinitialization();
       reinitialization_accepted_ = ScaTraReinitField().CallReinitialization();
       if(reinitialization_accepted_ == true) ScaTraField().SetPhinp(ScaTraReinitField().Phinp());

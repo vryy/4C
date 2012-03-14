@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
@@ -43,7 +42,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     bool isale,
     const int disnum,
-    const Teuchos::ParameterList& solverparams
+    const Teuchos::ParameterList& solverparams,
+    const bool reinitswitch
 )
 {
   // setup scalar transport algorithm (overriding some dynamic parameters
@@ -163,6 +163,12 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   if (genprob.probtyp == prb_combust)
   {
     extraparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
+
+    if(reinitswitch==true)
+    {
+      extraparams->sublist("COMBUSTION PDE REINITIALIZATION")=prbdyn.sublist("COMBUSTION PDE REINITIALIZATION");
+      extraparams->set<bool>("REINITSWITCH", true);
+    }
   }
 
   // -------------------sublist for electrochemistry-specific parameters
@@ -220,86 +226,51 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
    INPAR::SCATRA::TimeIntegrationScheme timintscheme =
      DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-   switch(timintscheme)
+   if (reinitswitch==false)
    {
-   case INPAR::SCATRA::timeint_stationary:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
-     break;
+     switch(timintscheme)
+     {
+     case INPAR::SCATRA::timeint_stationary:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_one_step_theta:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_bdf2:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_gen_alpha:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_tg2:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_tg3:
+     {
+       // create instance of time integration class (call the constructor)
+       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+       break;
+     }
+     default:
+       dserror("Unknown time-integration scheme for scalar transport problem");
+     }// switch(timintscheme)
    }
-   case INPAR::SCATRA::timeint_one_step_theta:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_bdf2:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_gen_alpha:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_tg2:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   case INPAR::SCATRA::timeint_tg3:
-   {
-     // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
-     break;
-   }
-   default:
-     dserror("Unknown time-integration scheme for scalar transport problem");
-   }// switch(timintscheme)
-
-
-   if (genprob.probtyp == prb_combust)
-   {
-
-	   // -------------------------------------------------------------------
-	   // create a solver
-	   // -------------------------------------------------------------------
-	   RCP<LINALG::Solver> solver_reinit =
-	     rcp(new LINALG::Solver(solverparams,
-	                            actdis->Comm(),
-	                            DRT::Problem::Instance()->ErrorFile()->Handle()));
-	   actdis->ComputeNullSpaceIfNecessary(solver_reinit->Params());
-
-
-     extraparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
-     extraparams->sublist("COMBUSTION PDE REINITIALIZATION")=prbdyn.sublist("COMBUSTION PDE REINITIALIZATION");
-     extraparams->set<bool>("REINITSWITCH", true);
-     // -------------------------------------------------------------------
-     // set parameters in list required for all schemes
-     // -------------------------------------------------------------------
-     // make a copy (inside an rcp) containing also all sublists
-     RCP<ParameterList> reinittimeparams= rcp(new ParameterList(scatradyn));
-
-     // -------------------------------------------------------------------
-     // overrule certain parameters for coupled problems
-     // -------------------------------------------------------------------
-     reinittimeparams->set<double>   ("TIMESTEP"    ,prbdyn.sublist("COMBUSTION PDE REINITIALIZATION").get<double>("PSEUDOTIMESTEP_FACTOR"));
-     // maximum simulation time
-     reinittimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
-     // maximum number of timesteps
-     reinittimeparams->set<int>      ("NUMSTEP"     ,prbdyn.sublist("COMBUSTION PDE REINITIALIZATION").get<int>("NUMPSEUDOSTEPS"));
-     // restart
-     reinittimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
-     // solution output
-     reinittimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
-
-
-
+   else{
      // -------------------------------------------------------------------
      // algorithm construction depending on
      // respective time-integration (or stationary) scheme
@@ -311,23 +282,29 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      case INPAR::SCATRA::timeint_one_step_theta:
      {
        // create instance of time integration class (call the constructor)
-       reinit_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver_reinit, reinittimeparams, extraparams,output));
+       scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
        break;
      }
      case INPAR::SCATRA::timeint_tg2:
      {
        // create instance of time integration class (call the constructor)
-       reinit_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver_reinit, reinittimeparams,extraparams, output));
+       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      default:
        dserror("Unknown time-integration scheme for reinitialization problem");
      }// switch(timintscheme_reinitialization)
 
-   }
+   } // switch(reinitswitch)
 
   return;
 
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ADAPTER::ScaTraBaseAlgorithm::~ScaTraBaseAlgorithm()
+{
 }
 
 /*----------------------------------------------------------------------*/
@@ -339,24 +316,12 @@ SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraReinitField()
-{
-  return *reinit_;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ScaTraResultTest(*scatra_));
 }
 
+// to be removed
+SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraReinitField()
+{dserror("Dont use this anymore"); return *scatra_;};
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::ScaTraBaseAlgorithm::~ScaTraBaseAlgorithm()
-{
-}
-
-
-#endif  // #ifdef CCADISCRET
