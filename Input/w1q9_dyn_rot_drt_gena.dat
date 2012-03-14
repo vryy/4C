@@ -42,7 +42,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     10
