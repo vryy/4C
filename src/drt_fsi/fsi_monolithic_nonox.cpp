@@ -240,14 +240,12 @@ void FSI::MonolithicNoNOX::LinearSolve()
 
   // get UMFPACK...
 
-  // TAW: ???????????? This is nonsense ??????????????????
-  /*Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
+  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->StructSolverParams();
 
-  solver_ = rcp(new LINALG::Solver(solverparams, Comm(),
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = rcp(new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // standard solver call
-  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);*/
+  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
 }
 
 /*----------------------------------------------------------------------*/
