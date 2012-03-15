@@ -84,12 +84,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   solver_ (solver),
   params_ (params),
   extraparams_(extraparams),
-  myrank_ (discret_->Comm().MyPID()),
+  myrank_ (actdis->Comm().MyPID()),
   // splitter, // not initialized
-  errfile_  (extraparams_->get<FILE*>("err file")),
-  prbtype_  (extraparams_->get<string>("problem type")),
+  errfile_  (extraparams->get<FILE*>("err file")),
+  prbtype_  (extraparams->get<string>("problem type")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
-  isale_    (extraparams_->get<bool>("isale")),
+  isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   // incremental_, // not initialized
   project_(false),
@@ -101,11 +101,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   time_   (0.0),
-  maxtime_  (params_->get<double>("MAXTIME")),
+  maxtime_  (params->get<double>("MAXTIME")),
   step_   (0),
-  stepmax_  (params_->get<int>("NUMSTEP")),
+  stepmax_  (params->get<int>("NUMSTEP")),
   // itemax_, // not initialized
-  dta_      (params_->get<double>("TIMESTEP")),
+  dta_      (params->get<double>("TIMESTEP")),
   // dtele_, // not initialized
   // dtsolve_, // not initialized
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
@@ -123,15 +123,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatnumite_(0),
   gstatincrement_(0.0),
   frt_      (0.0),
-  numinflowsteps_(extraparams_->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
-  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false)),
+  numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
   w_(Teuchos::null),
   c_(Teuchos::null),
-  upres_    (params_->get<int>("UPRES")),
-  uprestart_(params_->get<int>("RESTARTEVRY")),
-  dtp_      (params_->get<double>("TIMESTEP")),
+  upres_    (params->get<int>("UPRES")),
+  uprestart_(params->get<int>("RESTARTEVRY")),
+  dtp_      (params->get<double>("TIMESTEP")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
-  turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER"))
 {
