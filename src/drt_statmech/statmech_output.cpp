@@ -3,10 +3,10 @@
 \brief output methods for statistical mechanics
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15234
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -36,9 +36,6 @@ Maintainer: Christian Cyron
 #include <iomanip>
 #include <cstdio>
 #include <math.h>
-
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
 //#define MEASURETIME
@@ -1572,7 +1569,7 @@ void StatMechManager::GmshWedge(const int& n,
       theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matirx R from rotation angle theta
-    angletotriad(theta,R);
+    LARGEROTATIONS::angletotriad(theta,R);
 
     // Now the first prism will be computed via two radiusvectors, that point from each of
     // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -1737,7 +1734,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                     theta(l) = axis(l) * 2 * M_PI / n;
 
                   // Compute rotation matrix R from rotation angle theta
-                  angletotriad(theta,R);
+                  LARGEROTATIONS::angletotriad(theta,R);
 
                   // compute radius vector for first surface node of first edges
                   auxvec.Clear();
@@ -1845,7 +1842,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
           theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
 
         // Compute rotation matrix R from rotation angle theta
-        angletotriad(theta,R);
+        LARGEROTATIONS::angletotriad(theta,R);
 
         // compute radius vector for first surface node of first edges
         for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
@@ -2131,7 +2128,7 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::InitOutput(const int ndim, const double& dt)
+void StatMechManager::InitOutput(const double& ndim, const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
 

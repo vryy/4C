@@ -2,10 +2,10 @@
 \file statmech_time.H
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15234
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/

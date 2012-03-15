@@ -3,10 +3,10 @@
 \brief management and auxiliary functions for statistical mechanics
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15234
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -40,9 +40,6 @@ Maintainer: Christian Cyron
 #include <iomanip>
 #include <cstdio>
 #include <math.h>
-
-//namespace with utility functions for operations with large rotations used
-using namespace LARGEROTATIONS;
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
 //#define MEASURETIME

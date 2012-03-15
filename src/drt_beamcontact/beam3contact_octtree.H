@@ -2,10 +2,10 @@
 \file beam3contact_octtree.H
 
 <pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15262
+            089 - 289-15276
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
@@ -48,20 +48,26 @@ class Beam3ContactOctTree
     //!\brief Destructor
     virtual ~Beam3ContactOctTree() {};
 
-    //!\brief call octtree search routine
+    /*!\brief call octtree search routine
+     * \param currentposition (in) node positions in column map format (fully overlapping)
+     * \param step            (in) time step (needed for output)*/
     vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
 
     //!\brief checks in which octant a given bounding box lies
     std::vector<int> InWhichOctantLies(const int& thisBBoxID);
 
-    //!\brief intersection test of all elements in the octant in which a given bounding box lies
+    /*!\brief intersection test of all elements in the octant in which a given bounding box lies
+     * \param nodecoords  (in) nodal coordinates
+     * \param nodeLID     (in) local Ids of the nodes */
     bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID);
 
-    //!\brief output of octree discretization, bounding boxes and contact pairs
+    /*!\brief output of octree discretization, bounding boxes and contact pairs
+     * \param cpairs (in) vector with contact pairs
+     * \param step   (in) time step */
     void OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, int step);
 
   private:
-    // Bounding Box Types
+    // ! \brief Bounding Box Types available for this search routine
     enum BboxType
     {
     	none,
@@ -72,41 +78,74 @@ class Beam3ContactOctTree
 
     //!\brief Initialize class vectors for new Octree search
     void InitializeOctreeSearch();
-    //!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
+    /*!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
+     * \param currentpositions (in) map holding node positions
+     */
     void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
     //!\brief get the dimensions of the root octant
     LINALG::Matrix<6,1> GetRootBox();
-    //!\brief create axis aligned bounding boxes
+    /*!\brief create axis aligned bounding boxes
+     * \param coord      (in)  coordinates of the element's nodes
+     * \param elecolid   (in)  element column map Id
+     * \param bboxlimits (out) limits of the bounding box*/
     void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    //!\brief create coylindrical oriented bounding boxes
+    /*!\brief create coylindrical oriented bounding boxes
+     * \param coord      (in)  coordinates of the element's nodes
+     * \param elecolid   (in)  element column map Id
+     * \param bboxlimits (out) limits of the bounding box*/
     void CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    // create spherical bounding boxes for crosslinker
+    /*! \brief create spherical bounding boxes for crosslinker
+     * \param coord      (in)  coordinates of the element's nodes
+     * \param elecolid   (in)  element column map Id
+     * \param bboxlimits (out) limits of the bounding box*/
     void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
 
-    //!\brief spatial division of 3-dimensional volume. Returns false if no bounding boxes were found in any octant
+    //!\brief base call for octree build. Returns false if no bounding boxes exist
     bool locateAll();
 
-    //!\brief primitive for locateAll
+    /*!\brief recursively locates bounding boxes and maps them to the octant(s) they lie in
+     * \param allbboxesstdvec   (in)     std::vector holding all bounding box limits
+     * \param lim               (in)     limits of the root octant
+     * \param OctreeLimits      (in/out) vector holding the limits of all octants
+     * \param bboxesinoctants   (in/out) vector mapping bounding boxes to octants
+     * \param treedepth         (in) current tree depth*/
     void locateBox(std::vector<std::vector<double> >& allbboxesstdvec,
-                   LINALG::Matrix<6,1>& lim,
+                   LINALG::Matrix<6,1>&               lim,
                    std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
-                   std::vector<std::vector<int> >& bboxesinoctants,
-                   int& treedepth);
+                   std::vector<std::vector<int> >&    bboxesinoctants,
+                   int&                               treedepth);
 
-    //!\brief build list
+    /*!\brief Manages the intersection of bounding boxes of an octant
+     * \param currentpositions  (in)  node positions in column map format (fully overlapping)
+     * \param contactpaits      (out) vector holding all contact pairs considered after octree evaluation
+     */
     void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, vector<RCP<Beam3contact> >* contactpairs);
 
-    //!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
+    /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
+     * \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
+     * \param bboxlimits (in) limits of the bounding box */
     bool IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    //!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
+    /*!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
+     * \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
+     * \param bboxlimits (in) limits of the bounding box */
     bool IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
-    // intersection method applying spherical bounding boxes for crosslinker when both boxes belong to existing elements
+    /* !\brief intersection method applying spherical bounding boxes for crosslinker when both boxes belong to existing elements
+     *  \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
+     *  \param bboxlimits (in) limits of the bounding box */
     bool IntersectionSPBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
     
-    //! \brief comunicate Vector to all participating processors
+    /*! \brief comunicate Vector to all participating processors
+     *  \param InVec    (in) Source/Input vector
+     *  \param OutVec   (in) Target/Output vector
+     *  \param doexport (in) export flag
+     *  \param doimport (in) import flag */
     void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
-    //! \brief comunicate MultiVector to all participating processors
+    /*! \brief comunicate MultiVector to all participating processors
+     *  \param InVec    (in) Source/Input vector
+     *  \param OutVec   (in) Target/Output vector
+     *  \param doexport (in) export flag
+     *  \param doimport (in) import flag */
     void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
 
     //!\brief flag indicating the use of periodic boundary conditions

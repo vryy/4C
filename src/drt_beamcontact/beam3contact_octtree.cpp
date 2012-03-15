@@ -3,10 +3,10 @@
 \brief Octtree for beam contact search
 
 <pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15262
+            089 - 289-15276
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
@@ -1512,7 +1512,7 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                                           vector<RCP<Beam3contact> >* contactpairs)
+                                                  vector<RCP<Beam3contact> >* contactpairs)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();

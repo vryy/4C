@@ -2,10 +2,10 @@
 \file statmech_manager.H
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15234
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -68,7 +68,16 @@ public:
   //! \brief Destructor
   virtual ~StatMechManager() {};
 
-  //! \brief write special output for statistical mechanics into files
+  /*! \brief write special output for statistical mechanics into files
+   *  \param params         (in) input parameter list
+   *  \param ndim           (in) spatial dimensions
+   *  \param time           (in) total physical time
+   *  \param istep          (in) time step
+   *  \param dt             (in) stime step size
+   *  \param dis            (in) displacement vector
+   *  \param fint           (in) internal force vector
+   *  \param beamcmanager   (in) beam contact manager
+   */
   void Output(Teuchos::ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief saving all necessary class variables for restart
@@ -98,7 +107,7 @@ public:
   void Update(const int& istep, const double dt, Epetra_Vector& disrow, Teuchos::RCP<LINALG::SparseOperator>& stiff, int ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null, bool rebuildoctree=false);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void InitOutput(const int ndim, const double& dt);
+  void InitOutput(const double& ndim, const double& dt);
 
   //! \brief Get current binding spot positions
   void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
@@ -113,11 +122,11 @@ public:
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   /*! \brief gmsh output in case of periodic boundary conditions
-     *  \param coord            (in)
-     *  \param color            (in)
-     *  \param gmshfilecontent  (in)
-     *  \param eleid            (in)
-     *  \param crosslinkdiff    (in) determines the visualization mode (actual elements vs. crosslink molecule representations)
+     *  \param coord            (in) coordinates of element's nodes
+     *  \param color            (in) as is
+     *  \param gmshfilecontent  (in) stream to be written in output file
+     *  \param eleid            (in) element gid
+     *  \param ignoreeleid      (in) signals whether or not we have an element to visualize
      */
   void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
 
@@ -152,15 +161,22 @@ public:
   void RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements);
 
   /*! \brief adjusted DBC evaluation for periodic case
-   *  \param params         a parameter list*/
+   *  \param params       (in)     a parameter list
+   *  \param disn         (in)     displacement vector
+   *  \param dirichtoggle (in)     vector marking the Dirichlet DOFs
+   *  \param invtoggle    (in)     the inverse vector of dirichtoggle*/
   void EvaluateDirichletPeriodic(Teuchos::ParameterList&     params,
                                  Teuchos::RCP<Epetra_Vector> disn,
                                  Teuchos::RCP<Epetra_Vector> dirichtoggle,
                                  Teuchos::RCP<Epetra_Vector> invtoggle);
 
   /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
-   *  \param nodeids        vector containing DBC Node IDs
-   *  \param onoff          vector containing onoff values for DOFs*/
+   *  \param nodeids      (in)  vector containing DBC Node IDs
+   *  \param onoff        (in)  vector containing onoff values for DOFs
+   *  \param disn         (in)  displacement vector
+   *  \param dirichtoggle (in)  vector marking the Dirichlet DOFs
+   *  \param invtoggle    (in)  the inverse vector of dirichtoggle
+   *  \param deltadbc     (in)  vector holding the increment in Dirichlet values*/
   void DoDirichletConditionPeriodic(std::vector<int>*           nodeids,
                                     std::vector<int>*           onoff,
                                     Teuchos::RCP<Epetra_Vector> disn,
@@ -193,7 +209,15 @@ protected:
   //! \brief Initialize periodlength_ vector and search resolution
   void InitializePLengthAndSearchRes();
 
-  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
+  /*! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
+   *  \param istep            (in) time step
+   *  \param dt               (in) step size
+   *  \param noderowmap       (in) Row Map
+   *  \param nodecolmap       (in) Column Map
+   *  \param currentpositions (in) positions of the nodes in column map format (fully overlapping)
+   *  \param currentrotations (in) rotations of the nodes in column map format (fully overlapping)
+   *  \param beamcmanager     (in) beam contact manager
+   */
   void SearchAndSetCrosslinkers(const int&                                istep,
                                 const double&                             dt,
                                 const Epetra_Map&                         noderowmap,
@@ -202,7 +226,14 @@ protected:
                                 const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
                                 Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
 
-  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+  /*! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+   *  \param dt               (in) step size
+   *  \param noderowmap       (in) Row Map
+   *  \param nodecolmap       (in) Column Map
+   *  \param currentpositions (in) positions of the nodes in column map format (fully overlapping)
+   *  \param discol           (in) node discplacement in column map format (fully overlapping)
+   *  \param beamcmanager     (in) beam contact manager
+   */
   void SearchAndDeleteCrosslinkers(const double&                             dt,
                                    const Epetra_Map&                         noderowmap,
                                    const Epetra_Map&                         nodecolmap,
@@ -210,7 +241,11 @@ protected:
                                    Epetra_Vector&                            discol,
                                    Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
 
-  //! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
+  /*! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
+   *  \param LID              (in) local Ids of nodes
+   *  \param currentpositions (in) node positions in column map format (fully overlapping)
+   *  \param bspottriadscol   (in) nodal triads as quaternions in column map format (fully overlapping)
+   */
   bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol);
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
@@ -221,7 +256,7 @@ protected:
 
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
-     \param dis     (in)      current displacement vector
+     \param dis     (in)      current displacement vector (row map)
      \param coord   (in/out)  current node coordinates of element
      \param lids    (in/out)  nodal DOF LIDs of the element*/
   void GetElementNodeCoords(DRT::Element* element, Teuchos::RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, std::vector<int>* lids=NULL);
@@ -241,12 +276,14 @@ protected:
   void ReduceNumOfCrosslinkersBy(const int numtoreduce);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
-   *  \param currentpositions     (in) column map node positions
+   *  \param currentpositions     (in) column map node positions (fully overlapping)
    *  \param nodeinpartition      (in) vector indicating the partition of the nodes
    *  \param numbond              (in) vector holding the number of established bonds for each crosslink molecule
    *  \param crosslinkerpositions (in) vector holding the positions of the crosslink molecules
    *  \param crosslinkpartitions  (in) vector holding the information to which partial volume the crosslink molecules belong
-   *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules*/
+   *  \param bspottriadscol       (in) nodal triads as quaternions in column map format (fully overlapping)
+   *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules
+   *  */
   void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
                             std::vector<std::vector<std::vector<int> > >* nodeinpartition,
                             Epetra_Vector&                                numbond,
@@ -365,7 +402,7 @@ protected:
                             const double&        dt);
 
   /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
-   *  \param currentpositions     (in) column map node positions
+   *  \param currentpositions     (in) column map node positions (fully overlapping)
    *  \param LID                  (in) column map node LIDs
    *  \param crosslinkernumber    (in) position in crosslink molecule vector*/
   void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
@@ -375,14 +412,25 @@ protected:
                                      bool                                      coupledmovement=true);
 
   /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
-   *  \param currentpositions     (in)      column map node positions
+   *  \param currentpositions     (in)      column map node positions (fully overlapping)
+   *  \params bspottriadscol      (in)      nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
   void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
 
-  //! \brief comunicate Vector to all participating processors
+  /*! \brief comunicate Vector to all participating processors
+   *  \param InVec    (in) Source/Input vector
+   *  \param OutVec   (in) Target/Output vector
+   *  \param doexport (in) export flag
+   *  \param doimport (in) import flag
+   */
   void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport=true, bool doimport=true);
 
-  //! \brief comunicate MultiVector to all participating processors
+  /*! \brief comunicate MultiVector to all participating processors
+   *  \param InVec    (in) Source/Input vector
+   *  \param OutVec   (in) Target/Output vector
+   *  \param doexport (in) export flag
+   *  \param doimport (in) import flag
+   */
   void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport=true, bool doimport=true);
 
   //! \brief point of time at which writing special statistical output is started
@@ -443,85 +491,115 @@ protected:
   //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
 
-  //! brief rotation matrix for transformation from global to local coordinates
+  //! \brief rotation matrix for transformation from global to local coordinates
   Teuchos::RCP<LINALG::SerialDenseMatrix> trafo_;
 
-  // \brief column Epetra_Map handling crosslink molecules
+  //! \brief column Epetra_Map handling crosslink molecules
   Teuchos::RCP<Epetra_Map> crosslinkermap_;
-  // \brief row Epetra_Map handling crosslink molecules
+
+  //! \brief row Epetra_Map handling crosslink molecules
   Teuchos::RCP<Epetra_Map> transfermap_;
-  // \brief an Epetra_Map handling processor-specific data of the density-density-correlation-function
+
+  //! \brief an Epetra_Map handling processor-specific data of the density-density-correlation-function
   Teuchos::RCP<Epetra_Map> ddcorrrowmap_;
-  // \brief an Epetra_Map handling cumulated data of the density-density-correlation-function from all processors
+
+  //! \brief an Epetra_Map handling cumulated data of the density-density-correlation-function from all processors
   Teuchos::RCP<Epetra_Map> ddcorrcolmap_;
+
   // note: the following two maps will be of importance later on. For now, we use noderowmap_ and nodecolmap_
-  // \brief an Epetra_Map handling processor-specific data of the binding spot geometry
+  //! \brief an Epetra_Map handling processor-specific data of the binding spot geometry
   Teuchos::RCP<Epetra_Map> bspotrowmap_;
-  // \brief an Epetra_Map handling cumulated data of the binding spot geometry from all processors
+
+  //! \brief an Epetra_Map handling cumulated data of the binding spot geometry from all processors
   Teuchos::RCP<Epetra_Map> bspotcolmap_;
-  // \brief a vector memorizing the bonding status of the crosslink molecules
+
+  //! \brief a vector memorizing the bonding status of the crosslink molecules
   Teuchos::RCP<Epetra_MultiVector>		crosslinkerbond_;
-  // \brief a vector containing the current postion of the crosslink molecules
+
+  //! \brief a vector containing the current postion of the crosslink molecules
   Teuchos::RCP<Epetra_MultiVector>		crosslinkerpositions_;
-  // \brief a vector indicating the number of attached nodes to a crosslinker
+
+  //! \brief a vector indicating the number of attached nodes to a crosslinker
   Teuchos::RCP<Epetra_Vector>	numbond_;
-  // \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
+
+  //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;
-  // \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
+
+  //! \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
   Teuchos::RCP<Epetra_Vector> crosslink2element_;
-  // \brief a vector mapping crosslinker element IDs to crosslink molecule IDs
+
+  //! \brief a vector mapping crosslinker element IDs to crosslink molecule IDs
   Teuchos::RCP<Epetra_Vector> element2crosslink_;
-  // \brief a vector indicating whether a binding spot is occupied or not
+
+  //! \brief a vector indicating whether a binding spot is occupied or not
   Teuchos::RCP<Epetra_Vector> bspotstatus_;
-  // \brief a vector managing the binding spot geometry (Column Map)
+
+  //! \brief a vector managing the binding spot geometry (Column Map)
   Teuchos::RCP<Epetra_Vector> bspotorientations_;
-  // \brief a vector storing the curve parameters xi of the respective binding spots (Column Map)
+
+  //! \brief a vector storing the curve parameters xi of the respective binding spots (Column Map)
   Teuchos::RCP<Epetra_Vector> bspotxi_;
-  // \brief a vector managing binding spots to their respective element (Row Map)
+
+  //! \brief a vector managing binding spots to their respective element (Row Map)
   Teuchos::RCP<Epetra_Vector> bspot2element_;
-  // \brief a vector just for the sake of visual quality
+
+  //! \brief a vector just for the sake of visual quality
   Teuchos::RCP<Epetra_MultiVector> visualizepositions_;
-  // \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
+
+  //! \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
   Teuchos::RCP<Epetra_Vector> searchforneighbours_;
-  // \brief a vector holding indices used in DensityDensityCorrOutput()
+
+  //! \brief a vector holding indices used in DensityDensityCorrOutput()
   Teuchos::RCP<std::vector<double> > startindex_;
 
   //the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
 
-  // \brief elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
+  //! \brief elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
   std::vector<std::vector<char> > deletedelements_;
-  // \brief contact elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
+
+  //! \brief contact elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
   std::vector<std::vector<char> > deletedcelements_;
 
-  // \brief GIDs of elements added at the beginning when this time step was conducted the last time
+  //! \brief GIDs of elements added at the beginning when this time step was conducted the last time
   std::vector<int> addedelements_;
-  // \brief GIDs of elements added at the beginning when this time step was conducted the last time
+
+  //! \brief GIDs of elements added at the beginning when this time step was conducted the last time
   std::vector<int> addedcelements_;
 
   //variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
+  //! \brief vector holding converged state of crosslinkerbond_// \brief vector holding converged state of crosslinkerbond_
   Teuchos::RCP<Epetra_MultiVector> crosslinkerbondconv_;
+  //! \brief vector holding converged state of crosslinkerpositions_
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
+  //! \brief vector holding converged state of bspotstatus_
   Teuchos::RCP<Epetra_Vector> bspotstatusconv_;
+  //! \brief vector holding converged state of numbond_
   Teuchos::RCP<Epetra_Vector> numbondconv_;
+  //! \brief vector holding converged state of crosslinkonsamefilament_
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
+  //! \brief vector holding converged state of crosslink2element_
   Teuchos::RCP<Epetra_Vector> crosslink2elementconv_;
+  //! \brief vector holding converged state of searchforneighbour_
   Teuchos::RCP<Epetra_Vector> searchforneighboursconv_;
 
-  // column map displacement of the previous time step (needed to calculate off-rate in case of force dependency)
+  //! \brief column map displacement of the previous time step (needed to calculate off-rate in case of force dependency)
   Teuchos::RCP<Epetra_Vector> disprev_;
 
-  // \brief structure type
+  //! \brief structure type
   int structuretype_;
-  // \brief store test volume visualization data for Gmsh Output
+  //! \brief store test volume visualization data for Gmsh Output
   std::vector<LINALG::Matrix<3,1> > testvolumepos_;
-  // \brief characteristic length (radii, thickness) of the detected structure
+  //! \brief characteristic length (radii, thickness) of the detected structure
   double characlength_;
-  // \brief center of gravity of the detected structure
+  //! \brief center of gravity of the detected structure
   LINALG::Matrix<3,1> cog_;
 
   // glue initial set of broken elements at the beginning of oscillation to the upper and lower plate
+  //! \brief vector with oscillating Dirichlet nodes
   std::vector<int> oscillnodes_;
+  //! \brief vector with fixed Dirichlet nodes
   std::vector<int> fixednodes_;
+  //! \brief vector with free nodes
   std::vector<int> freenodes_;
   bool initialset_;
 }; // class StatMechManager

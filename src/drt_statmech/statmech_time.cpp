@@ -3,10 +3,10 @@
 \brief time integration for structural problems with statistical mechanics
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Kei Müller
+            mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15234
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -1611,7 +1611,7 @@ void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, 
       }
 
       // Initial Output
-      statmechmanager_->InitOutput(ndim,dt);
+      statmechmanager_->InitOutput(ndim, dt);
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
       {
         std::ostringstream filename;
