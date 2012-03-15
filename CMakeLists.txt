@@ -1270,6 +1270,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_coloredgraph.cpp
   src/drt_cut/cut_creator.cpp
   src/drt_cut/cut_cycle.cpp
+  src/drt_cut/direct_divergence.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
   src/drt_cut/cut_elementhandle.cpp
