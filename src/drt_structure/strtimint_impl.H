@@ -758,12 +758,6 @@ namespace STR
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
 
-    //! convert old-style convergence check
-    void ConvertConvCheck
-    (
-      const INPAR::STR::ConvCheck convcheck  //!< integrated (and deprecated) convergence type flag
-    );
-
     //! @name General purpose algorithm parameters
     //@{
     enum INPAR::STR::PredEnum pred_;  //!< predictor

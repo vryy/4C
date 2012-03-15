@@ -51,7 +51,6 @@ MAXTIME                         100.0
 DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
-CONV_CHECK                      None
 TOLRES                          1.0E-7
 TOLDISP                         1.0E-7
 NORM_RESF                       Abs

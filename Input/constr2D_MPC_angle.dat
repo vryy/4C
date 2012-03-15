@@ -93,7 +93,9 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
-CONV_CHECK                      AbsRes_And_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DELTA                           0.25
 DYNAMICTYP                      Gen_Alfa

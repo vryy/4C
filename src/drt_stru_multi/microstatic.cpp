@@ -34,7 +34,7 @@ Maintainer: Lena Yoshihara
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
-
+#include "../drt_structure/strtimint_impl.H"
 
 /*----------------------------------------------------------------------*
  | general problem data                                                 |
@@ -95,22 +95,14 @@ V0_(V0)
     alpham_ = genalpha.get<double>("ALPHA_M");
     alphaf_ = genalpha.get<double>("ALPHA_F");
   }
-  // old time integration implementation
-  else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_gen_alfa)
-  {
-    beta_ = sdyn_macro.get<double>("BETA");
-    gamma_ = sdyn_macro.get<double>("GAMMA");
-    alpham_ = sdyn_macro.get<double>("ALPHA_M");
-    alphaf_ = sdyn_macro.get<double>("ALPHA_F");
-  }
   else
     dserror("multi-scale problems are only implemented for imr-like generalized alpha time integration schemes");
 
   INPAR::STR::PredEnum pred = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
-
-  INPAR::STR::ConvCheck convcheck = DRT::INPUT::IntegralValue<INPAR::STR::ConvCheck>(sdyn_micro, "CONV_CHECK");
-  convcheck_ = convcheck;
+  combdisifres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdyn_macro,"NORMCOMBI_RESFDISP");
+  normtypedisi_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_macro,"NORM_DISP");
+  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_macro,"NORM_RESF");
   INPAR::STR::VectorNorm iternorm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
   iternorm_ = iternorm;
 
@@ -123,8 +115,8 @@ V0_(V0)
   maxiter_ = sdyn_micro.get<int>("MAXITER");
   numiter_ = -1;
 
-  tolres_ = sdyn_micro.get<double>("TOLRES");
-  toldis_ = sdyn_micro.get<double>("TOLDISP");
+  tolfres_ = sdyn_micro.get<double>("TOLRES");
+  toldisi_ = sdyn_micro.get<double>("TOLDISP");
   printscreen_=(ioflags.get<int>("STDOUTEVRY"));
 
 
@@ -351,7 +343,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     stiff_->Complete();
 
     // set norm of displacement increments
-    disinorm_ = 1.0e6;
+    normdisi_ = 1.0e6;
   }
 
   //-------------------------------------------- compute residual forces
@@ -368,7 +360,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
   fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
   // store norm of residual
-  resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   return;
 } // STRUMULTI::MicroStatic::Predictor()
@@ -471,7 +463,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   solver_->Reset();
 
   // store norm of displacement increments
-  disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -544,7 +536,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
   // store norm of residual
-  resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   return;
 }
@@ -584,8 +576,8 @@ void STRUMULTI::MicroStatic::FullNewton()
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol_ && numiter_)
     {
-      double worst = resnorm_;
-      double wanted = tolres_;
+      double worst = normfres_;
+      double wanted = tolfres_;
       solver_->AdaptTolerance(wanted,worst,adaptolbetter_);
     }
     solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter_==0);
@@ -648,9 +640,9 @@ void STRUMULTI::MicroStatic::FullNewton()
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
 
     //---------------------------------------------- build residual norm
-    disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
-    resnorm_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
 
   //--------------------------------- increment equilibrium loop index
     ++numiter_;

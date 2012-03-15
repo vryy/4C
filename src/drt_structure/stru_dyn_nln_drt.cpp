@@ -87,8 +87,6 @@ void caldyn_drt()
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
-    case INPAR::STR::dyna_gen_alfa:
-    case INPAR::STR::dyna_gen_alfa_statics:
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
     case INPAR::STR::dyna_onesteptheta:

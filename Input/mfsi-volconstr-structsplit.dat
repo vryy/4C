@@ -1,146 +1,148 @@
 //
 // Maintainer: Lena Wiechert
-//             wiechert@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089 - 289-15303
+// wiechert@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15303
 //
 // necessary defines: D_FLUID3 CCADISCRET BINIO D_ALE D_SOLID3
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI with special coupling of fluid and solid volumes
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS 512
-NODES 850
-DIM 3
-MATERIALS 3
-NUMDF 6
+ELEMENTS                        512
+NODES                           850
+DIM                             3
+MATERIALS                       3
+NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE classic_lin
-MAXTIME 4
-NUMSTEP 41
-RESULTSEVRY 1
-TIMESTEP 0.1
+ALE_TYPE                        classic_lin
+MAXTIME                         4
+NUMSTEP                         41
+RESULTSEVRY                     1
+TIMESTEP                        0.1
 ------------------------------------------------------------------ALE SOLVER
-SOLVER UMFPACK
-PARTITION Cut_Elements
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 -------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
-NUMALEDIS 1
-NUMFLUIDDIS 1
-NUMSTRUCDIS 1
+NUMALEDIS                       1
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV yes
-ADAPTCONV_BETTER 0.1
-ALPHA_F 1
-ALPHA_M 1
-CONVCHECK L_2_norm
-CONVTOL 1e-06
-GAMMA 1
-GRIDVEL 1
-INITIALFIELD zero_field
-ITEMAX 10
-LIFTDRAG No
-MAXTIME 1000
-NONLINITER fixed_point_like
-NUMSTASTEPS 0
-NUMSTEP 1
-RESTARTEVRY 20
-SIMPLER no
-STARTFUNCNO -1
-STARTINGALGO One_Step_Theta
-START_THETA 1
-THETA 0.66
-TIMEINTEGR One_Step_Theta
-TIMESTEP 0.01
-UPRES 1
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         1
+ALPHA_M                         1
+CONVCHECK                       L_2_norm
+CONVTOL                         1e-06
+GAMMA                           1
+GRIDVEL                         1
+INITIALFIELD                    zero_field
+ITEMAX                          10
+LIFTDRAG                        No
+MAXTIME                         1000
+NONLINITER                      fixed_point_like
+NUMSTASTEPS                     0
+NUMSTEP                         1
+RESTARTEVRY                     20
+SIMPLER                         no
+STARTFUNCNO                     -1
+STARTINGALGO                    One_Step_Theta
+START_THETA                     1
+THETA                           0.66
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.01
+UPRES                           1
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
-CROSS-STRESS no_cross
-CSTAB cstab_qs
-DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall
-PSPG yes_pspg
-REYNOLDS-STRESS no_reynolds
-STABTYPE residual_based
-SUPG yes_supg
-TDS quasistatic
-TRANSIENT no_transient
-VSTAB no_vstab
+CROSS-STRESS                    no_cross
+CSTAB                           cstab_qs
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+PSPG                            yes_pspg
+REYNOLDS-STRESS                 no_reynolds
+STABTYPE                        residual_based
+SUPG                            yes_supg
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
 -------------------------------------------------------FLUID PRESSURE SOLVER
-SOLVER UMFPACK
-PARTITION Cut_Elements
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 ----------------------------------------------------------------FLUID SOLVER
-SOLVER UMFPACK
-PARTITION Cut_Elements
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL 1e-8
-CONVTOL 1e-8
-COUPALGO iter_lung_monolithicstructuresplit
-ENERGYCHECK No
-ITEMAX 100
-MAXTIME 1000
-NUMSTEP 10
-PREDICTOR d(n)
-RELAX 1
-RESTARTEVRY 1
-TIMESTEP 0.05
-UPRES 1
-SHAPEDERIVATIVES Yes
-SECONDORDER No
+BASETOL                         1e-8
+CONVTOL                         1e-8
+COUPALGO                        iter_lung_monolithicstructuresplit
+ENERGYCHECK                     No
+ITEMAX                          100
+MAXTIME                         1000
+NUMSTEP                         10
+PREDICTOR                       d(n)
+RELAX                           1
+RESTARTEVRY                     1
+TIMESTEP                        0.05
+UPRES                           1
+SHAPEDERIVATIVES                Yes
+SECONDORDER                     No
 ------------------------------------------------------FSI DYNAMIC/CONSTRAINT
 ALPHA                           0.8
 SIMPLEITER                      2
 --------------------------------------------------------------------------IO
-ALE_DISP No
-FILESTEPS 1000
-FLUID_SOL No
-FLUID_STRESS No
-FLUID_VIS No
-OUTPUT_BIN No
-OUTPUT_GID No
-OUTPUT_OUT No
-STRUCT_DISP No
-STRUCT_STRAIN No
-STRUCT_STRESS No
+ALE_DISP                        No
+FILESTEPS                       1000
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+OUTPUT_BIN                      No
+OUTPUT_GID                      No
+OUTPUT_OUT                      No
+STRUCT_DISP                     No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP Fluid_Structure_Interaction_Lung
-RESTART 0
-NUMFIELD 3
-SHAPEFCT Polynomial
+PROBLEMTYP                      Fluid_Structure_Interaction_Lung
+RESTART                         0
+NUMFIELD                        3
+SHAPEFCT                        Polynomial
 ---------------------------------------------------------------STRUCT SOLVER
-SOLVER UMFPACK
-PARTITION Cut_Elements
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV yes
-ADAPTCONV_BETTER 0.1
-ALPHA_F 0.5
-ALPHA_M 0.5
-BETA 0.25
-CONV_CHECK AbsRes_Or_AbsDis
-DAMPING No
-DELTA 0.25
-DYNAMICTYP GenAlpha
-GAMMA 0.5
-ITERATION full
-ITWANT 0
-K_DAMP 0.5
-MAXDT 0
-MAXITER 50
-MAXTIME 5
-M_DAMP 0.5
-NLNSOL fullnewton
-NUMSTEP 200
-PREDICT ConstDisVelAcc
-RESULTSEVRY 1
-RESTARTEVRY 1
-RESULTDT 0
-TIMESTEP 0.05
-TOLDISP 1e-08
-TOLRES 1e-06
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
+DAMPING                         No
+DELTA                           0.25
+DYNAMICTYP                      GenAlpha
+GAMMA                           0.5
+ITERATION                       full
+ITWANT                          0
+K_DAMP                          0.5
+MAXDT                           0
+MAXITER                         50
+MAXTIME                         5
+M_DAMP                          0.5
+NLNSOL                          fullnewton
+NUMSTEP                         200
+PREDICT                         ConstDisVelAcc
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+RESULTDT                        0
+TIMESTEP                        0.05
+TOLDISP                         1e-08
+TOLRES                          1e-06
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG ImrLike
-BETA 0.5
-GAMMA 1.0
-ALPHA_M 0.0
-ALPHA_F 0.0
+GENAVG                          ImrLike
+BETA                            0.5
+GAMMA                           1.0
+ALPHA_M                         0.0
+ALPHA_F                         0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e3 NUE 0.3 DENS 1.2
@@ -159,184 +161,184 @@ STRUCTURE DIS 1 NODE 237 POSITION dispx NAME dispx VALUE 9.004108385e-04 TOLERAN
 STRUCTURE DIS 1 NODE 237 POSITION dispy NAME dispy VALUE 1.438538726e-03 TOLERANCE 1e-10
 STRUCTURE DIS 1 NODE 237 POSITION dispz NAME dispz VALUE -6.858572604e-04 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 2
-NDSURF 11
-NDVOL 1
+NDPOINT                         0
+NDLINE                          2
+NDSURF                          11
+NDVOL                           1
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
+DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
+DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF 0
+DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL 0
+DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
+DPOINT                          0
 ------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF 0
+DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
+DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 2
+DLINE                           2
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 2
+DSURF                           2
 E 1 - 1 1 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 none none 1 none none none 0 0 1 0 0 0
 E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL 0
+DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
+DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE 1
+DLINE                           1
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF 1
+DSURF                           1
 E 9 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL 0
+DVOL                            0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT 0
+DPOINT                          0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE 0
+DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF 0
+DSURF                           0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
-DLINE 0
+DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
-DSURF 0
+DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT 0
+DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE 0
+DLINE                           0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL 0
+DVOL                            0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF 0
+DSURF                           0
 ---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF 0
+DSURF                           0
 -----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF 0
+DSURF                           0
 ----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE 0
+DLINE                           0
 ----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF 0
+DSURF                           0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE 0
+DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF 2
+DSURF                           2
 E 2 - 1 fluid conforming fsi_real
 E 5 - 1 structure conforming fsi_real
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE 0
+DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF 0
+DSURF                           0
 -------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF 2
+DSURF                           2
 E 3 - 1 fluid
 E 6 - 1 structure
 ----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF 3
+DSURF                           3
 E 4 - 1 fluid
 E 10 - 1 structure inflow
 E 11 - 1 structure other
 -----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL 1
+DVOL                            1
 E 1 - 1
 ----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE 0
+DLINE                           0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF 0
+DSURF                           0
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL 0
+DVOL                            0
 --------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF 0
+DSURF                           0
 -------------------------------------------------------SURFACTANT CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
-DVOL 0
+DVOL                            0
 -----------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF 0
+DSURF                           0
 -----------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE 0
+DLINE                           0
 -------------------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
-DVOL 0
+DVOL                            0
 ------------------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
-DLINE 0
+DLINE                           0
 --------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------------------------------FILAMENT NUMBERS
-DLINE 0
+DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
-DPOINT 0
+DPOINT                          0
 -------------------------------------------------------MICROSCALE CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF 0
+DSURF                           0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE 0
+DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF 0
+DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF 0
+DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF 0
+DSURF                           0
 --------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF 0
+DSURF                           0
 ----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF 0
+DSURF                           0
 ----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE 0
+DLINE                           0
 -------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE 0
+DLINE                           0
 --------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF 0
+DSURF                           0
 --------------------------------DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS
-DSURF 0
+DSURF                           0
 ---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF 0
+DSURF                           0
 -----------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF 0
+DSURF                           0
 ------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE 0
+DLINE                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE 0
+DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF 0
+DSURF                           0
 --------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF 0
+DSURF                           0
 ------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF 0
+DSURF                           0
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF 0
+DSURF                           0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL 0
+DVOL                            0
 -------------------------------------------------DESIGN SURFACE INV ANALYSIS
-DSURF 0
+DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 183 DLINE 1
@@ -3336,4 +3338,4 @@ NODE 850 COORD -4.00000000e+00 4.00000000e+00 -4.00000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-// END
+//                              END

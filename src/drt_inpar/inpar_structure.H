@@ -11,7 +11,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 #ifndef INPAR_STRUCTURE_H
 #define INPAR_STRUCTURE_H
 
@@ -37,10 +36,6 @@ namespace INPAR
     /// Type of time integrator including statics
     enum DynamicType
     {
-      dyna_gen_alfa,                   ///< generalised-alpha time integrator
-                                       ///< (old style)
-      dyna_gen_alfa_statics,           ///< static analysis with gen_alfa
-                                       ///< (old style)
       dyna_statics,                    ///< static analysis
       dyna_genalpha,                   ///< generalised-alpha time integrator (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
@@ -60,12 +55,6 @@ namespace INPAR
     {
       switch (name)
       {
-      case dyna_gen_alfa :
-        return "Gen_Alfa";
-        break;
-      case dyna_gen_alfa_statics :
-        return "Static";
-        break;
       case dyna_statics :
         return "Statics";
         break;
@@ -274,69 +263,6 @@ namespace INPAR
       }
     }
 
-    /// kind of iteration convergence checks
-    /// \author lw \date 12/07
-    enum ConvCheck
-    {
-      convcheck_absres_or_absdis,  ///< absolute norms of residual forces
-                                   ///< OR iterative displacement increments
-      convcheck_absres_and_absdis,  ///< absolute norms of residual forces
-                                    ///< AND iterative displacement increments
-      convcheck_relres_or_absdis,  ///< relative norm of residual forces
-                                   ///< OR absolute norm if iterative
-                                   ///< displacement increments
-      convcheck_relres_and_absdis,  ///< relative norm of residual forces
-                                    ///< AND absolute norm if iterative
-                                    ///< displacement increments
-      convcheck_relres_or_reldis,  ///< relative norms of residual forces
-                                   ///< OR iterative displacement increments
-      convcheck_relres_and_reldis,  ///< relative norms of residual forces
-                                    ///< AND iterative displacement increments
-      convcheck_mixres_or_mixdis,  ///< mixed absolute-relative norms of residual forces
-                                    ///< OR mixed absolute-relative norm of residual displacements
-      convcheck_mixres_and_mixdis,  ///< mixed absolute-relative norms of residual forces
-                                    ///< AND mixed absolute-relative norm of residual displacements
-      convcheck_vague  ///< undetermined
-    };
-
-    /// map convergence check to enum term
-    static inline const std::string ConvCheckString
-    (
-      const enum ConvCheck name  ///< enum term
-    )
-    {
-      switch (name)
-      {
-      case convcheck_absres_or_absdis :
-        return "AbsRes_Or_AbsDis";
-        break;
-      case convcheck_absres_and_absdis :
-        return "AbsRes_And_AbsDis";
-        break;
-      case convcheck_relres_or_absdis :
-        return "RelRes_Or_AbsDis";
-        break;
-      case convcheck_relres_and_absdis :
-        return "RelRes_And_AbsDis";
-        break;
-      case convcheck_relres_or_reldis :
-        return "RelRes_Or_RelDis";
-        break;
-      case convcheck_relres_and_reldis :
-        return "RelRes_And_RelDis";
-        break;
-      case convcheck_mixres_or_mixdis :
-        return "MixRes_Or_MixDis";
-        break;
-      case convcheck_mixres_and_mixdis :
-        return "MixRes_And_MixDis";
-        break;
-      default :
-        dserror("Cannot make string for convergence check %d", name);
-        return "";
-      }
-    }
-
     /// type of norm to check for convergence
     enum ConvNorm
     {
@@ -493,4 +419,3 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef __cplusplus
 #endif  // #ifndef INPAR_STRUCTURE_H
-#endif  // #ifdef CCADISCRET

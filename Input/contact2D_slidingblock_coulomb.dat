@@ -59,7 +59,6 @@ DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
 PREDICT                         ConstDis
-CONV_CHECK                      None
 TOLRES                          1.0E-7
 TOLDISP                         1.0E-7
 NORM_RESF                       Abs

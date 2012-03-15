@@ -99,7 +99,9 @@ ALPHA_M                         0.5
 BETA                            0.25
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-CONV_CHECK                      AbsRes_Or_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DELTA                           0.25
 DIVERCONT                       No

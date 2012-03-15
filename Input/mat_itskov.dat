@@ -1,58 +1,60 @@
 //
 // Maintainer: Robert Metzke
-//             metzke@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de/Members/metzke
-//             089-289-15244
+// metzke@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/Members/metzke
+// 089-289-15244
 //
 // necessary defines: CCADISCRET UMFPACK D_SOLID3 BINIO
 //
 ==================================================================
-                        General Data File CCARAT
+General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE
+-----------------------------------------------------------------------TITLE
 testwuerfel
-------------------------------------------------------PROBLEM SIZE
-ELEMENTS           1
-NODES              8
-DIM                3
-MATERIALS          1
-NUMDF        3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
-NUMFIELD     1
-RESTART      0
-----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS  1
-NUMSTRUCDIS  1
-NUMALEDIS    1
-NUMTHERMDIS  1
-----------------------------------------------------------------IO
-OUTPUT_OUT             No
-OUTPUT_GID             Yes
-OUTPUT_BIN             Yes
-STRUCT_DISP            Yes
-STRUCT_STRESS          2PK
-STRUCT_STRAIN          GL
-STRUCT_SURFACTANT      Yes
-STRUCT_SM_DISP         Yes
-FLUID_SOL              Yes
-FLUID_STRESS           No
-FLUID_VIS              No
-ALE_DISP               Yes
-THERM_TEMPERATURE      No
-THERM_HEATFLUX         No
-FILESTEPS              1000
-------------------------------------------------STRUCTURAL DYNAMIC
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        1
+NODES                           8
+DIM                             3
+MATERIALS                       1
+NUMDF                           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+NUMFIELD                        1
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+NUMALEDIS                       1
+NUMTHERMDIS                     1
+--------------------------------------------------------------------------IO
+OUTPUT_OUT                      No
+OUTPUT_GID                      Yes
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   2PK
+STRUCT_STRAIN                   GL
+STRUCT_SURFACTANT               Yes
+STRUCT_SM_DISP                  Yes
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+ALE_DISP                        Yes
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
 ALPHA_F                         0.5
 ALPHA_M                         0.5
-CONV_CHECK                      AbsRes_Or_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
 DYNAMICTYP                      GenAlpha
 MAXITER                         50
 MAXTIME                         1.05
 NLNSOL                          fullnewton
 NUMSTEP                         20
 TIMESTEP                        0.05
-PREDICT                         TangDis // ConstDis
+PREDICT                         TangDis                         // ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
@@ -63,250 +65,250 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG       ImrLike
-BETA         0.25
-GAMMA        0.5
-ALPHA_M      0.5
-ALPHA_F      0.0
------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
--------------------------------------------STRUCTURAL DYNAMIC/GEMM
----------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                None  // None ZienkiewiczXie AdamsBashforth2
----------------------------------------------MESHTYING AND CONTACT
-------------------------------------------------STATISTICAL MECHANICS
------------------------------------------------------FLUID DYNAMIC
----------------------------------------FLUID DYNAMIC/STABILIZATION
-------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-------------------------------------------SCALAR TRANSPORT DYNAMIC
--------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------ALE DYNAMIC
--------------------------------------------------------TSI DYNAMIC
-------------------------------------------------------FLUID SOLVER
----------------------------------------------FLUID PRESSURE SOLVER
------------------------------------------------------STRUCT SOLVER
-SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym
-PARTITION         Cut_Elements
---------------------------------------------------------ALE SOLVER
-----------------------------------------------------THERMAL SOLVER
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 8
-NDLINE  12
-NDSURF  6
-NDVOL   1
-------------------------------------DESIGN POINT DIRICH CONDITIONS
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+BETA                            0.25
+GAMMA                           0.5
+ALPHA_M                         0.5
+ALPHA_F                         0.0
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------------------------STRUCTURAL DYNAMIC/GEMM
+-------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
+KIND                            None                            // None ZienkiewiczXie AdamsBashforth2
+-------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------STATISTICAL MECHANICS
+---------------------------------------------------------------FLUID DYNAMIC
+-------------------------------------------------FLUID DYNAMIC/STABILIZATION
+----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+-----------------------------------------------------------------FSI DYNAMIC
+-----------------------------------------------------------------ALE DYNAMIC
+-----------------------------------------------------------------TSI DYNAMIC
+----------------------------------------------------------------FLUID SOLVER
+-------------------------------------------------------FLUID PRESSURE SOLVER
+---------------------------------------------------------------STRUCT SOLVER
+SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym
+PARTITION                       Cut_Elements
+------------------------------------------------------------------ALE SOLVER
+--------------------------------------------------------------THERMAL SOLVER
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         8
+NDLINE                          12
+NDSURF                          6
+NDVOL                           1
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF 2
+DSURF                           2
 E 1 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 3 - 1 0 0 0 0 0 0.5 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL 0
------------------------------------DESIGN POINT NEUMANN CONDITIONS
+DVOL                            0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
-DPOINT 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DLINE 0
-------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DLINE                           0
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF 0
--------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DSURF                           0
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
-DVOL 0
---------------------------------DESIGN POINT ALE DIRICH CONDITIONS
+DVOL                            0
+------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 0
----------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+DPOINT                          0
+-------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
----------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+DLINE                           0
+-------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF 0
---------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+DSURF                           0
+------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 0
----------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DPOINT                          0
+-------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
----------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+DLINE                           0
+-------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF 0
--------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+DSURF                           0
+-----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
-DLINE 0
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DLINE                           0
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
-DSURF 0
-------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
+DSURF                           0
+----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 // DOBJECT COUPLING BCFLUID
-DLINE 0
-------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+DLINE                           0
+----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
-DSURF 0
--------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-// DOBJECT
-DLINE 0
--------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-// DOBJECT
-DSURF 0
---------------------------------------------------FILAMENT NUMBERS
-DLINE 0
------------------------------------------------------FORCE SENSORS
-DPOINT 0
--------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF 0
----------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF 0
-------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE 0
-----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF 0
-------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF 0
----------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE 0
---------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-// DOBJECT
-DLINE 0
---------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-// DOBJECT
-DSURF 0
----------------------------------------DESIGN FLUID LINE LIFT&DRAG
+DSURF                           0
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
+DLINE                           0
+-----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
+DSURF                           0
+------------------------------------------------------------FILAMENT NUMBERS
+DLINE                           0
+---------------------------------------------------------------FORCE SENSORS
+DPOINT                          0
+-----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
+DSURF                           0
+-------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF                           0
+----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
+DLINE                           0
+--------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
+DSURF                           0
+----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
+DSURF                           0
+-------------------------------------------------DESIGN LINE AREA MONITOR 2D
+DLINE                           0
+------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
+//                              DOBJECT
+DLINE                           0
+------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+//                              DOBJECT
+DSURF                           0
+-------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE 0
----------------------------------------DESIGN FLUID SURF LIFT&DRAG
+DLINE                           0
+-------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF 0
------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
+DSURF                           0
+---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
 // DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
-DLINE 0
---------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
 // DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
-DSURF 0
--------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF 0
-------------------------------------DESIGN POINT LOCSYS CONDITIONS
+DSURF                           0
+-----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
+DSURF                           0
+----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DPOINT 0
--------------------------------------DESIGN LINE LOCSYS CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DLINE 0
--------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DSURF 0
---------------------------------------DESIGN VOL LOCSYS CONDITIONS
+DSURF                           0
+------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
 // DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
-DVOL 0
---------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+DVOL                            0
+------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
-DLINE 0
---------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
-DSURF 0
------------------------------------------------DNODE-NODE TOPOLOGY
-NODE       1 DNODE 1
-NODE       2 DNODE 2
-NODE       5 DNODE 3
-NODE       3 DNODE 4
-NODE       4 DNODE 5
-NODE       6 DNODE 6
-NODE       8 DNODE 7
-NODE       7 DNODE 8
------------------------------------------------DLINE-NODE TOPOLOGY
-NODE       1 DLINE 1
-NODE       2 DLINE 1
-NODE       2 DLINE 2
-NODE       5 DLINE 2
-NODE       5 DLINE 3
-NODE       3 DLINE 3
-NODE       3 DLINE 4
-NODE       1 DLINE 4
-NODE       7 DLINE 5
-NODE       8 DLINE 5
-NODE       8 DLINE 6
-NODE       6 DLINE 6
-NODE       6 DLINE 7
-NODE       4 DLINE 7
-NODE       4 DLINE 8
-NODE       7 DLINE 8
-NODE       3 DLINE 9
-NODE       7 DLINE 9
-NODE       1 DLINE 10
-NODE       4 DLINE 10
-NODE       5 DLINE 11
-NODE       8 DLINE 11
-NODE       2 DLINE 12
-NODE       6 DLINE 12
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE       1 DSURFACE 1
-NODE       3 DSURFACE 1
-NODE       4 DSURFACE 1
-NODE       7 DSURFACE 1
-NODE       4 DSURFACE 2
-NODE       6 DSURFACE 2
-NODE       8 DSURFACE 2
-NODE       7 DSURFACE 2
-NODE       2 DSURFACE 3
-NODE       5 DSURFACE 3
-NODE       6 DSURFACE 3
-NODE       8 DSURFACE 3
-NODE       1 DSURFACE 4
-NODE       2 DSURFACE 4
-NODE       4 DSURFACE 4
-NODE       6 DSURFACE 4
-NODE       1 DSURFACE 5
-NODE       2 DSURFACE 5
-NODE       5 DSURFACE 5
-NODE       3 DSURFACE 5
-NODE       5 DSURFACE 6
-NODE       3 DSURFACE 6
-NODE       8 DSURFACE 6
-NODE       7 DSURFACE 6
------------------------------------------------DVOL-NODE TOPOLOGY
-NODE       1 DVOLUME 1
-NODE       2 DVOLUME 1
-NODE       5 DVOLUME 1
-NODE       3 DVOLUME 1
-NODE       4 DVOLUME 1
-NODE       6 DVOLUME 1
-NODE       8 DVOLUME 1
-NODE       7 DVOLUME 1
--------------------------------------------------------NODE COORDS
-NODE            1     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
-NODE            2     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
-NODE            3     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
-NODE            4     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e+00
-NODE            5     COORD 1.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
-NODE            6     COORD 1.000000000000000e+00     0.000000000000000e+00     1.000000000000000e+00
-NODE            7     COORD 0.000000000000000e+00     1.000000000000000e+00     1.000000000000000e+00
-NODE            8     COORD 1.000000000000000e+00     1.000000000000000e+00     1.000000000000000e+00
-------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDH8 HEX8       6      2      1      4      8      5      3      7 MAT       1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------------MATERIALS
-MAT 	1 MAT_ITSKOV  ALPHA 20.0 BETA 20.0 MU_FIBERS 2.026255352 MU_GS 0.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
-------------------------------------------------------------CURVE1
+DSURF                           0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 2 DNODE 2
+NODE 5 DNODE 3
+NODE 3 DNODE 4
+NODE 4 DNODE 5
+NODE 6 DNODE 6
+NODE 8 DNODE 7
+NODE 7 DNODE 8
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 2 DLINE 2
+NODE 5 DLINE 2
+NODE 5 DLINE 3
+NODE 3 DLINE 3
+NODE 3 DLINE 4
+NODE 1 DLINE 4
+NODE 7 DLINE 5
+NODE 8 DLINE 5
+NODE 8 DLINE 6
+NODE 6 DLINE 6
+NODE 6 DLINE 7
+NODE 4 DLINE 7
+NODE 4 DLINE 8
+NODE 7 DLINE 8
+NODE 3 DLINE 9
+NODE 7 DLINE 9
+NODE 1 DLINE 10
+NODE 4 DLINE 10
+NODE 5 DLINE 11
+NODE 8 DLINE 11
+NODE 2 DLINE 12
+NODE 6 DLINE 12
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 4 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 8 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 2 DSURFACE 3
+NODE 5 DSURFACE 3
+NODE 6 DSURFACE 3
+NODE 8 DSURFACE 3
+NODE 1 DSURFACE 4
+NODE 2 DSURFACE 4
+NODE 4 DSURFACE 4
+NODE 6 DSURFACE 4
+NODE 1 DSURFACE 5
+NODE 2 DSURFACE 5
+NODE 5 DSURFACE 5
+NODE 3 DSURFACE 5
+NODE 5 DSURFACE 6
+NODE 3 DSURFACE 6
+NODE 8 DSURFACE 6
+NODE 7 DSURFACE 6
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOLUME 1
+NODE 2 DVOLUME 1
+NODE 5 DVOLUME 1
+NODE 3 DVOLUME 1
+NODE 4 DVOLUME 1
+NODE 6 DVOLUME 1
+NODE 8 DVOLUME 1
+NODE 7 DVOLUME 1
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 2 COORD 1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 3 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+NODE 4 COORD 0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+NODE 5 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+NODE 6 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+NODE 7 COORD 0.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+NODE 8 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 6 2 1 4 8 5 3 7 MAT 1 KINEM nonlinear EAS none
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ITSKOV ALPHA 20.0 BETA 20.0 MU_FIBERS 2.026255352 MU_GS 0.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
+----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------CURVE5
-------------------------------------------------------------FUNCT1
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
-------------------------------------------------------------FUNCT5
-------------------------------------------------------------FUNCT6
-------------------------------------------------RESULT DESCRIPTION
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
+----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 5 POSITION dispx NAME dispx VALUE 0.5 TOLERANCE 1e-9
 STRUCTURE DIS 1 NODE 5 POSITION dispy NAME dispy VALUE -9.175474616e-02 TOLERANCE 1e-9
 STRUCTURE DIS 1 NODE 5 POSITION dispz NAME dispz VALUE 9.175474660e-02 TOLERANCE 1e-9
@@ -314,5 +316,5 @@ STRUCTURE DIS 1 NODE 5 POSITION dispz NAME dispz VALUE 9.175474660e-02 TOLERANCE
 // FLUID 1 - 0 0 0 0 0 0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
----------------------------------------------------------------END
-// END
+-------------------------------------------------------------------------END
+//                              END

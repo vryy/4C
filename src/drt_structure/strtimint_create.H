@@ -11,9 +11,6 @@ Maintainer: Thomas Klöppel
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
-/* macros */
-
 #ifndef STRTIMINT_CREATE_H
 #define STRTIMINT_CREATE_H
 

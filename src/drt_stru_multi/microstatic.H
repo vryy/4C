@@ -307,15 +307,19 @@ protected:
   int                           restartevry_;
   int                           printscreen_;
 
-  INPAR::STR::ConvCheck         convcheck_;
   INPAR::STR::VectorNorm        iternorm_;
-  double                        tolres_;
-  double                        toldis_;
+  double                        tolfres_;
+  double                        toldisi_;
 
-  double                        ref_resnorm_;
-  double                        resnorm_;
-  double                        ref_disinorm_;
-  double                        disinorm_;
+
+  enum INPAR::STR::BinaryOp     combdisifres_; //!< binary operator to
+					     //combine displacement and forces
+  enum INPAR::STR::ConvNorm     normtypedisi_; //!< convergence check for residual displacements
+  enum INPAR::STR::ConvNorm     normtypefres_; //!< convergence check for residual forces
+  double                        normcharforce_;
+  double                        normfres_;
+  double                        normchardis_;
+  double                        normdisi_;
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_;
   Teuchos::RCP<LINALG::SparseMatrix> stiff_dirich_;

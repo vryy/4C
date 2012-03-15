@@ -12,10 +12,6 @@ Maintainer: Thomas Klöppel
 */
 
 /*----------------------------------------------------------------------*/
-/* macros */
-#ifdef CCADISCRET
-
-/*----------------------------------------------------------------------*/
 /* headers */
 #include <ctime>
 #include <cstdlib>
@@ -57,33 +53,17 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
+
   // set default output
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
-
-  // exclude old names
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  // try implicit integrators
+  sti = TimIntImplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
+  // if nothing found try explicit integrators
+  if (sti == Teuchos::null)
   {
-    // old style time integrators
-    case INPAR::STR::dyna_gen_alfa :
-    case INPAR::STR::dyna_gen_alfa_statics :
-    {
-      dserror("You should not turn up here.");
-      break;
-    }
-
-    // new style
-    default :
-    {
-      // try implicit integrators
-      sti = TimIntImplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
-      // if nothing found try explicit integrators
-      if (sti == Teuchos::null)
-      {
-        sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
-      }
-    }
+    sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   }
-
+  
   // deliver
   return sti;
 }
@@ -224,4 +204,3 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

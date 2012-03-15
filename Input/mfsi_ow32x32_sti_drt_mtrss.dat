@@ -39,7 +39,9 @@ MAXTIME                         5.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
-CONV_CHECK                      AbsRes_And_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-10
 TOLRES                          1.0E-10
 MAXITER                         50

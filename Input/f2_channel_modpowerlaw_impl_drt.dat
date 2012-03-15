@@ -255,7 +255,9 @@ ADAPTCONV_BETTER                0.1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
-CONV_CHECK                      AbsRes_Or_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DELTA                           0.25
 DYNAMICTYP                      Gen_Alfa
@@ -1375,4 +1377,4 @@ FLUID DIS 1 NODE 101 POSITION pressure NAME pressure VALUE 1.340960661e-02 TOLER
 FLUID DIS 1 NODE 21 POSITION tractionx NAME tractionx VALUE 4.684729787e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 21 POSITION tractiony NAME tractiony VALUE -4.792320526e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-// END
+//                              END

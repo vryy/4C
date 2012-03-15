@@ -63,7 +63,9 @@ DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
 PREDICT                         ConstDis
-CONV_CHECK                      AbsRes_Or_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
 ITERATION                       full
 TOLDISP                         1.0E-08
 MAXITER                         50

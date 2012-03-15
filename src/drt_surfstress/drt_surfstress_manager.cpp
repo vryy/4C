@@ -48,9 +48,6 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
   {
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP"))
     {
-    case INPAR::STR::dyna_gen_alfa:
-      alphaf_ = sdynparams.get<double>("ALPHA_F");
-      break;
     case INPAR::STR::dyna_genalpha:
       if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"), "GENAVG")
              != INPAR::STR::midavg_imrlike)

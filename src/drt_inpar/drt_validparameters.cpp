@@ -804,8 +804,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("DYNAMICTYP","GenAlpha",
                                "type of time integration control",
                                tuple<std::string>(
-                                 "Gen_Alfa",
-                                 "Static",
                                  "Statics",
                                  "GenAlpha",
                                  "OneStepTheta",
@@ -816,8 +814,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "EulerMaruyama",
                                  "EulerImpStoch"),
                                tuple<int>(
-                                 INPAR::STR::dyna_gen_alfa,
-                                 INPAR::STR::dyna_gen_alfa_statics,
                                  INPAR::STR::dyna_statics,
                                  INPAR::STR::dyna_genalpha,
                                  INPAR::STR::dyna_onesteptheta,
@@ -890,28 +886,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("ITERATION","full","unused",
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
-                               &sdyn);
-  setStringToIntegralParameter<int>("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
-                               tuple<std::string>(
-                                 "AbsRes_Or_AbsDis",
-                                 "AbsRes_And_AbsDis",
-                                 "RelRes_Or_AbsDis",
-                                 "RelRes_And_AbsDis",
-                                 "RelRes_Or_RelDis",
-                                 "RelRes_And_RelDis",
-                                 "MixRes_Or_MixDis",
-                                 "MixRes_And_MixDis",
-                                 "None"),
-                               tuple<int>(
-                                 INPAR::STR::convcheck_absres_or_absdis,
-                                 INPAR::STR::convcheck_absres_and_absdis,
-                                 INPAR::STR::convcheck_relres_or_absdis,
-                                 INPAR::STR::convcheck_relres_and_absdis,
-                                 INPAR::STR::convcheck_relres_or_reldis,
-                                 INPAR::STR::convcheck_relres_and_reldis,
-                                 INPAR::STR::convcheck_mixres_or_mixdis,
-                                 INPAR::STR::convcheck_mixres_and_mixdis,
-                                 INPAR::STR::convcheck_vague),
                                &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,

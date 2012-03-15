@@ -55,7 +55,9 @@ M_DAMP                          10.0
 K_DAMP                          0.0
 ITERATION                       full
 PREDICT                         ConstDis
-CONV_CHECK                      AbsRes_And_AbsDis
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-07
 TOLRES                          1.0E-07
 MAXITER                         20

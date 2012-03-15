@@ -1,228 +1,227 @@
 //
 // Maintainer: Moritz Frenzel
-//             frenzel@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089 - 289-15240
+// frenzel@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15240
 //
 // necessary defines: CCADISCRET D_SOLID3 D_SOTET BINIO
 //
 ==================================================================
-        General Data File CCARAT
+General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE
+-----------------------------------------------------------------------TITLE
 Linear Patchtest for tet4
-------------------------------------------------------PROBLEM SIZE
-ELEMENTS          38
-NODES             22
-DIM                3
-MATERIALS          1
-NUMDF              6
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
-NUMFIELD     1
-RESTART      0
-----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS  0
-NUMSTRUCDIS  1
-NUMALEDIS    0
-----------------------------------------------------------------IO
-STRUCT_DISP      No
-STRUCT_STRESS    No
--------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Statics
-EIGEN        0
-RESULTSEVRY  1
-RESTARTEVRY  20
-NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     1.0
-NUMSTEP      1
-MAXTIME      100.0
-DAMPING      No
-M_DAMP       0.00001
-K_DAMP       0.00001
-CONV_CHECK   None
-TOLRES       1.0E-7
-TOLDISP      1.0E-7
-NORM_RESF    Abs
-NORM_DISP    Abs
-NORMCOMBI_RESFDISP Or
-MAXITER      1
-DIVERCONT    Yes
------------------------------------------------------STRUCT SOLVER
-SOLVER         UMFPACK
-PARTITION      Cut_Elements
-------------------------------------------------------------CURVE1
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        38
+NODES                           22
+DIM                             3
+MATERIALS                       1
+NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+NUMFIELD                        1
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+--------------------------------------------------------------------------IO
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      Statics
+EIGEN                           0
+RESULTSEVRY                     1
+RESTARTEVRY                     20
+NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+TIMESTEP                        1.0
+NUMSTEP                         1
+MAXTIME                         100.0
+DAMPING                         No
+M_DAMP                          0.00001
+K_DAMP                          0.00001
+TOLRES                          1.0E-7
+TOLDISP                         1.0E-7
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              Or
+MAXITER                         1
+DIVERCONT                       Yes
+---------------------------------------------------------------STRUCT SOLVER
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
+----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
----------------------------------------------------------MATERIALS
-MAT       1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  2
-NDVOL   0
-------------------------------------DESIGN POINT DIRICH CONDITIONS
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          2
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF 1
+DSURF                           1
 //connect2
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL 0
------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
-DPOINT 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
-DLINE 0
-------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
-DSURF 1
+DVOL                            0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
+DLINE                           0
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
+DSURF                           1
 //connect3
 E 1 - 1 1 0 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 Live Mid
--------------------------------------DESIGN VOL NEUMANN CONDITIONS
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL 0
--------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+DVOL                            0
+-----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
-DLINE 0
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DLINE                           0
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
-DSURF 0
--------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-// DOBJECT
-DLINE 0
--------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-// DOBJECT
-DSURF 0
----------------------------------------DESIGN FLUID LINE LIFT&DRAG
+DSURF                           0
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
+DLINE                           0
+-----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
+DSURF                           0
+-------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE 0
----------------------------------------DESIGN FLUID SURF LIFT&DRAG
+DLINE                           0
+-------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF 0
-------------------------------------DESIGN POINT LOCSYS CONDITIONS
+DSURF                           0
+----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
-DPOINT 0
--------------------------------------DESIGN LINE LOCSYS CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id
-DLINE 0
--------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id
-DSURF 0
---------------------------------------DESIGN VOL LOCSYS CONDITIONS
+DSURF                           0
+------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
 // DOBJECT Id
-DVOL 0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE       3 DSURFACE 2
-NODE      16 DSURFACE 2
-NODE      15 DSURFACE 2
-NODE      15 DSURFACE 2
-NODE      17 DSURFACE 2
-NODE      12 DSURFACE 2
-NODE       3 DSURFACE 2
-NODE      15 DSURFACE 2
-NODE      13 DSURFACE 2
-NODE      15 DSURFACE 2
-NODE      12 DSURFACE 2
-NODE      13 DSURFACE 2
-NODE      13 DSURFACE 2
-NODE      20 DSURFACE 2
-NODE       3 DSURFACE 2
-NODE      12 DSURFACE 2
-NODE      14 DSURFACE 2
-NODE      13 DSURFACE 2
-NODE       7 DSURFACE 1
-NODE       9 DSURFACE 1
-NODE       6 DSURFACE 1
-NODE       7 DSURFACE 1
-NODE       6 DSURFACE 1
-NODE      18 DSURFACE 1
-NODE       4 DSURFACE 1
-NODE       7 DSURFACE 1
-NODE      18 DSURFACE 1
-NODE      18 DSURFACE 1
-NODE      19 DSURFACE 1
-NODE       4 DSURFACE 1
-NODE       4 DSURFACE 1
-NODE      21 DSURFACE 1
-NODE       7 DSURFACE 1
-NODE       6 DSURFACE 1
-NODE      22 DSURFACE 1
-NODE      18 DSURFACE 1
------------------------------------------------DVOL-NODE TOPOLOGY
--------------------------------------------------------NODE COORDS
-NODE            1     COORD 4.0887701325119e-03     1.0416659712791e-01     1.2227404117584e-01
-NODE            2     COORD 0.0000000000000e+00     5.0000000000000e-01     5.0000000000000e-01
-NODE            3     COORD -5.0000000000000e-01     0.0000000000000e+00     5.0000000000000e-01
-NODE            4     COORD 5.0000000000000e-01     0.0000000000000e+00     5.0000000000000e-01
-NODE            5     COORD -1.0121973231435e-02     -1.2765942513943e-01     -1.2168229371309e-01
-NODE            6     COORD 5.0000000000000e-01     0.0000000000000e+00     -5.0000000000000e-01
-NODE            7     COORD 5.0000000000000e-01     -5.0000000000000e-01     0.0000000000000e+00
-NODE            8     COORD 0.0000000000000e+00     -5.0000000000000e-01     -5.0000000000000e-01
-NODE            9     COORD 5.0000000000000e-01     -5.0000000000000e-01     -5.0000000000000e-01
-NODE           10     COORD 0.0000000000000e+00     -5.0000000000000e-01     5.0000000000000e-01
-NODE           11     COORD 0.0000000000000e+00     5.0000000000000e-01     -5.0000000000000e-01
-NODE           12     COORD -5.0000000000000e-01     0.0000000000000e+00     -5.0000000000000e-01
-NODE           13     COORD -5.0000000000000e-01     -5.0000000000000e-01     0.0000000000000e+00
-NODE           14     COORD -5.0000000000000e-01     -5.0000000000000e-01     -5.0000000000000e-01
-NODE           15     COORD -5.0000000000000e-01     5.0000000000000e-01     0.0000000000000e+00
-NODE           16     COORD -5.0000000000000e-01     5.0000000000000e-01     5.0000000000000e-01
-NODE           17     COORD -5.0000000000000e-01     5.0000000000000e-01     -5.0000000000000e-01
-NODE           18     COORD 5.0000000000000e-01     5.0000000000000e-01     0.0000000000000e+00
-NODE           19     COORD 5.0000000000000e-01     5.0000000000000e-01     5.0000000000000e-01
-NODE           20     COORD -5.0000000000000e-01     -5.0000000000000e-01     5.0000000000000e-01
-NODE           21     COORD 5.0000000000000e-01     -5.0000000000000e-01     5.0000000000000e-01
-NODE           22     COORD 5.0000000000000e-01     5.0000000000000e-01     -5.0000000000000e-01
-------------------------------------------------STRUCTURE ELEMENTS
-      1   SOLIDT4 TET4       1      2      3      4 MAT       1 KINEM nonlinear
-      2   SOLIDT4 TET4       1      5      6      7 MAT       1 KINEM nonlinear
-      3   SOLIDT4 TET4       5      7      8      9 MAT       1 KINEM nonlinear
-      4   SOLIDT4 TET4       5      6      7      9 MAT       1 KINEM nonlinear
-      5   SOLIDT4 TET4       1     10      5      7 MAT       1 KINEM nonlinear
-      6   SOLIDT4 TET4       1     11      5     12 MAT       1 KINEM nonlinear
-      7   SOLIDT4 TET4       1      6      5     11 MAT       1 KINEM nonlinear
-      8   SOLIDT4 TET4       5     13     14      8 MAT       1 KINEM nonlinear
-      9   SOLIDT4 TET4       5     13     12     14 MAT       1 KINEM nonlinear
-     10   SOLIDT4 TET4       1     12     15     11 MAT       1 KINEM nonlinear
-     11   SOLIDT4 TET4       1      7      4     10 MAT       1 KINEM nonlinear
-     12   SOLIDT4 TET4       5      7     10     13 MAT       1 KINEM nonlinear
-     13   SOLIDT4 TET4       1      5     13     12 MAT       1 KINEM nonlinear
-     14   SOLIDT4 TET4       1     16     15      3 MAT       1 KINEM nonlinear
-     15   SOLIDT4 TET4       1     15     16      2 MAT       1 KINEM nonlinear
-     16   SOLIDT4 TET4       5      8      7     13 MAT       1 KINEM nonlinear
-     17   SOLIDT4 TET4      17     12     11     15 MAT       1 KINEM nonlinear
-     18   SOLIDT4 TET4       1     18     19      4 MAT       1 KINEM nonlinear
-     19   SOLIDT4 TET4       5      9      8      6 MAT       1 KINEM nonlinear
-     20   SOLIDT4 TET4       1      4     19      2 MAT       1 KINEM nonlinear
-     21   SOLIDT4 TET4       1     13      3     15 MAT       1 KINEM nonlinear
-     22   SOLIDT4 TET4       1     12     13     15 MAT       1 KINEM nonlinear
-     23   SOLIDT4 TET4      13     20     10      3 MAT       1 KINEM nonlinear
-     24   SOLIDT4 TET4       1      5     10     13 MAT       1 KINEM nonlinear
-     25   SOLIDT4 TET4       1     11     18      6 MAT       1 KINEM nonlinear
-     26   SOLIDT4 TET4       1     18     15      2 MAT       1 KINEM nonlinear
-     27   SOLIDT4 TET4       1      3      2     16 MAT       1 KINEM nonlinear
-     28   SOLIDT4 TET4       1     18      2     19 MAT       1 KINEM nonlinear
-     29   SOLIDT4 TET4       1      7      6     18 MAT       1 KINEM nonlinear
-     30   SOLIDT4 TET4       7      4     10     21 MAT       1 KINEM nonlinear
-     31   SOLIDT4 TET4       5     12      6      8 MAT       1 KINEM nonlinear
-     32   SOLIDT4 TET4       1     13     10      3 MAT       1 KINEM nonlinear
-     33   SOLIDT4 TET4       5      8     14     12 MAT       1 KINEM nonlinear
-     34   SOLIDT4 TET4       1      3     10      4 MAT       1 KINEM nonlinear
-     35   SOLIDT4 TET4       1      7     18      4 MAT       1 KINEM nonlinear
-     36   SOLIDT4 TET4       5     11      6     12 MAT       1 KINEM nonlinear
-     37   SOLIDT4 TET4      18      6     11     22 MAT       1 KINEM nonlinear
-     38   SOLIDT4 TET4       1     15     18     11 MAT       1 KINEM nonlinear
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------RESULT DESCRIPTION
+DVOL                            0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 3 DSURFACE 2
+NODE 16 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 17 DSURFACE 2
+NODE 12 DSURFACE 2
+NODE 3 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 13 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 12 DSURFACE 2
+NODE 13 DSURFACE 2
+NODE 13 DSURFACE 2
+NODE 20 DSURFACE 2
+NODE 3 DSURFACE 2
+NODE 12 DSURFACE 2
+NODE 14 DSURFACE 2
+NODE 13 DSURFACE 2
+NODE 7 DSURFACE 1
+NODE 9 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 18 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 18 DSURFACE 1
+NODE 18 DSURFACE 1
+NODE 19 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 21 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 22 DSURFACE 1
+NODE 18 DSURFACE 1
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 4.0887701325119e-03 1.0416659712791e-01 1.2227404117584e-01
+NODE 2 COORD 0.0000000000000e+00 5.0000000000000e-01 5.0000000000000e-01
+NODE 3 COORD -5.0000000000000e-01 0.0000000000000e+00 5.0000000000000e-01
+NODE 4 COORD 5.0000000000000e-01 0.0000000000000e+00 5.0000000000000e-01
+NODE 5 COORD -1.0121973231435e-02 -1.2765942513943e-01 -1.2168229371309e-01
+NODE 6 COORD 5.0000000000000e-01 0.0000000000000e+00 -5.0000000000000e-01
+NODE 7 COORD 5.0000000000000e-01 -5.0000000000000e-01 0.0000000000000e+00
+NODE 8 COORD 0.0000000000000e+00 -5.0000000000000e-01 -5.0000000000000e-01
+NODE 9 COORD 5.0000000000000e-01 -5.0000000000000e-01 -5.0000000000000e-01
+NODE 10 COORD 0.0000000000000e+00 -5.0000000000000e-01 5.0000000000000e-01
+NODE 11 COORD 0.0000000000000e+00 5.0000000000000e-01 -5.0000000000000e-01
+NODE 12 COORD -5.0000000000000e-01 0.0000000000000e+00 -5.0000000000000e-01
+NODE 13 COORD -5.0000000000000e-01 -5.0000000000000e-01 0.0000000000000e+00
+NODE 14 COORD -5.0000000000000e-01 -5.0000000000000e-01 -5.0000000000000e-01
+NODE 15 COORD -5.0000000000000e-01 5.0000000000000e-01 0.0000000000000e+00
+NODE 16 COORD -5.0000000000000e-01 5.0000000000000e-01 5.0000000000000e-01
+NODE 17 COORD -5.0000000000000e-01 5.0000000000000e-01 -5.0000000000000e-01
+NODE 18 COORD 5.0000000000000e-01 5.0000000000000e-01 0.0000000000000e+00
+NODE 19 COORD 5.0000000000000e-01 5.0000000000000e-01 5.0000000000000e-01
+NODE 20 COORD -5.0000000000000e-01 -5.0000000000000e-01 5.0000000000000e-01
+NODE 21 COORD 5.0000000000000e-01 -5.0000000000000e-01 5.0000000000000e-01
+NODE 22 COORD 5.0000000000000e-01 5.0000000000000e-01 -5.0000000000000e-01
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDT4 TET4 1 2 3 4 MAT 1 KINEM nonlinear
+2 SOLIDT4 TET4 1 5 6 7 MAT 1 KINEM nonlinear
+3 SOLIDT4 TET4 5 7 8 9 MAT 1 KINEM nonlinear
+4 SOLIDT4 TET4 5 6 7 9 MAT 1 KINEM nonlinear
+5 SOLIDT4 TET4 1 10 5 7 MAT 1 KINEM nonlinear
+6 SOLIDT4 TET4 1 11 5 12 MAT 1 KINEM nonlinear
+7 SOLIDT4 TET4 1 6 5 11 MAT 1 KINEM nonlinear
+8 SOLIDT4 TET4 5 13 14 8 MAT 1 KINEM nonlinear
+9 SOLIDT4 TET4 5 13 12 14 MAT 1 KINEM nonlinear
+10 SOLIDT4 TET4 1 12 15 11 MAT 1 KINEM nonlinear
+11 SOLIDT4 TET4 1 7 4 10 MAT 1 KINEM nonlinear
+12 SOLIDT4 TET4 5 7 10 13 MAT 1 KINEM nonlinear
+13 SOLIDT4 TET4 1 5 13 12 MAT 1 KINEM nonlinear
+14 SOLIDT4 TET4 1 16 15 3 MAT 1 KINEM nonlinear
+15 SOLIDT4 TET4 1 15 16 2 MAT 1 KINEM nonlinear
+16 SOLIDT4 TET4 5 8 7 13 MAT 1 KINEM nonlinear
+17 SOLIDT4 TET4 17 12 11 15 MAT 1 KINEM nonlinear
+18 SOLIDT4 TET4 1 18 19 4 MAT 1 KINEM nonlinear
+19 SOLIDT4 TET4 5 9 8 6 MAT 1 KINEM nonlinear
+20 SOLIDT4 TET4 1 4 19 2 MAT 1 KINEM nonlinear
+21 SOLIDT4 TET4 1 13 3 15 MAT 1 KINEM nonlinear
+22 SOLIDT4 TET4 1 12 13 15 MAT 1 KINEM nonlinear
+23 SOLIDT4 TET4 13 20 10 3 MAT 1 KINEM nonlinear
+24 SOLIDT4 TET4 1 5 10 13 MAT 1 KINEM nonlinear
+25 SOLIDT4 TET4 1 11 18 6 MAT 1 KINEM nonlinear
+26 SOLIDT4 TET4 1 18 15 2 MAT 1 KINEM nonlinear
+27 SOLIDT4 TET4 1 3 2 16 MAT 1 KINEM nonlinear
+28 SOLIDT4 TET4 1 18 2 19 MAT 1 KINEM nonlinear
+29 SOLIDT4 TET4 1 7 6 18 MAT 1 KINEM nonlinear
+30 SOLIDT4 TET4 7 4 10 21 MAT 1 KINEM nonlinear
+31 SOLIDT4 TET4 5 12 6 8 MAT 1 KINEM nonlinear
+32 SOLIDT4 TET4 1 13 10 3 MAT 1 KINEM nonlinear
+33 SOLIDT4 TET4 5 8 14 12 MAT 1 KINEM nonlinear
+34 SOLIDT4 TET4 1 3 10 4 MAT 1 KINEM nonlinear
+35 SOLIDT4 TET4 1 7 18 4 MAT 1 KINEM nonlinear
+36 SOLIDT4 TET4 5 11 6 12 MAT 1 KINEM nonlinear
+37 SOLIDT4 TET4 18 6 11 22 MAT 1 KINEM nonlinear
+38 SOLIDT4 TET4 1 15 18 11 MAT 1 KINEM nonlinear
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------RESULT DESCRIPTION
 // input parameters
 // - discretization number
 // - node number
@@ -232,5 +231,5 @@ NODE           22     COORD 5.0000000000000e-01     5.0000000000000e-01     -5.0
 STRUCTURE DIS 1 NODE 22 POSITION dispx NAME dispx VALUE 1.0000000000000000 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 22 POSITION dispy NAME dispy VALUE 0.0000000000000000 TOLERANCE 1e-9
 STRUCTURE DIS 1 NODE 22 POSITION dispz NAME dispz VALUE 0.0000000000000000 TOLERANCE 1e-9
----------------------------------------------------------------END
-// END
+-------------------------------------------------------------------------END
+//                              END
