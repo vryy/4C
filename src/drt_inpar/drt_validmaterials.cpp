@@ -1178,6 +1178,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+    //Mooney Rivlin  material acc. to Holtzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupMooneyRivlin",
+                                            "Mooney - Rivlin material acc. to Holtzapfel",
+                                            INPAR::MAT::mes_coupmooneyrivlin));
+
+    AddNamedReal(m,"C1","material constant",true);
+    AddNamedReal(m,"C2","material constant",true);
+    AddNamedReal(m,"C3","material constant",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*--------------------------------------------------------------------*/
   // coupled Blatz and Ko material acc. to Holzapfel

@@ -101,6 +101,7 @@ namespace INPAR
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
+      mes_coupmooneyrivlin,  ///< Mooney-Rivlin  material as hyperelastic potential summand
       mes_holzapfel_cardiac, /// anisotropic cardiac material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material

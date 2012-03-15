@@ -1,0 +1,193 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file elast_coupmooneyrivlin.H
+\brief
+This file contains the routines required to calculate the isochoric contribution
+of a CoupMooneyRivlinan material material.
+
+<pre>
+Maintainer: Sophie Rausch
+            rausch@lnm.mw.tum.de
+            089/289 15255
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef ELAST_COUPMOONEYRIVLIN_H_
+#define ELAST_COUPMOONEYRIVLIN_H_
+#ifdef CCADISCRET
+
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "elast_summand.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+namespace MAT
+{
+namespace ELASTIC
+{
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for isochoric contribution of a CoupMooneyRivlinan material
+    ///
+    /// <h3>Input line</h3>
+    /// MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
+    class CoupMooneyRivlin : public MAT::PAR::Parameter
+    {
+    public:
+
+      /// standard constructor
+      CoupMooneyRivlin(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~CoupMooneyRivlin() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// material parameters
+
+
+      double c1_;
+      double c2_;
+      double c3_;
+
+
+      //@}
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// @name Write methods
+      //@{
+      void SetC1(const double c1) { c1_ = c1; }
+      void SetC2(const double c2) { c2_ = c2; }
+      void SetC3(const double c3) { c3_ = c3; }
+      //@}
+
+    };  // class CoupMooneyRivlin
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
+  /// CoupMooneyRivlinan material
+  ///
+  ///
+  ///
+  ///
+  /// Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
+  ///
+  /// The underlying strain-energy function is (expressed in invariants I1 and I2):
+  ///
+  /// \f[
+  ///     \Psi= c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + c_3 * (J - 1)^2
+  ///\f]
+  ///
+  /// For references see Holzapfel p. 245,
+  ///
+  /// Parameters are \f$ c_1, c_2\f$ and \f$c_3\f$ as penalty factor to effectuate incompressibility
+  /// (shear modulus \f$\mu = (c_1 + c_2) / 2)\f$
+  ///
+  ///
+  ///
+  /// \author rausch
+  /// \date 03/12
+
+
+  class CoupMooneyRivlin : public Summand
+  {
+
+  public:
+
+    /// empty constructor
+    CoupMooneyRivlin();
+
+    /// constructor with given material parameters
+    CoupMooneyRivlin(MAT::ELASTIC::PAR::CoupMooneyRivlin* params);
+
+
+    /// @name Access material constants
+    //@{
+
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupmooneyrivlin; }
+
+    //@}
+
+    /// Add principal coeffiencts.
+    /// Nothing to do for this (decoupled) material!
+    void AddCoefficientsPrincipal(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+    );
+
+    /// Add modified coeffiencts.
+    void AddCoefficientsModified(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+      return;
+    };
+
+    /// Add anisotropic principal coeffiencts.
+    /// Nothing to do for this (isotropic) material!
+    void AddCoefficientsPrincipalAniso(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };
+
+    /// Add anisotropic modified coeffiencts.
+    /// Nothing to do for this (isotropic) material!
+    void AddCoefficientsModifiedAniso(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
+        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
+        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+    )
+    {
+      havecoefficients = havecoefficients or false;
+    };
+
+    /// @name Access methods
+    //@{
+    double C1() const { return params_->c1_; }
+    double C2() const { return params_->c2_; }
+    double C3() const { return params_->c3_; }
+
+    //@}
+
+    /// Indicator for anisotropic summand
+    virtual void IsAnisotropic(
+      bool& isaniso ///< global indicator for anisotropy
+      )
+    {
+      return;
+    };
+
+  private:
+
+    /// my material parameters
+    MAT::ELASTIC::PAR::CoupMooneyRivlin* params_;
+
+  };
+
+}  // namespace ELAST
+}  // namespace MAT
+
+#endif  // CCADISCRET
+#endif  // COUPMOONEYRIVLIN_H_

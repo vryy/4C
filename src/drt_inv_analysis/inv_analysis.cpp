@@ -28,6 +28,7 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_couplogneohooke.H"
 #include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_matelast/elast_isoexpo.H"
+#include "../drt_matelast/elast_coupmooneyrivlin.H"
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoyeoh.H"
@@ -757,6 +758,17 @@ void STR::InvAnalysis::ReadInParameters()
                 p_[j]   = params2->c_;
                 break;
               }
+              case INPAR::MAT::mes_coupmooneyrivlin:
+              {
+                filename_=filename_+"_coupmooneyrivlin";
+                const MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                p_[j+2] = params2->c3_;
+                break;
+              }
               case INPAR::MAT::mes_isoexpo:
               {
                 filename_=filename_+"_isoexpo";
@@ -848,6 +860,7 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_coup2pow:
         case INPAR::MAT::mes_isoexpo:
         case INPAR::MAT::mes_isomooneyrivlin:
+        case INPAR::MAT::mes_coupmooneyrivlin:
         case INPAR::MAT::mes_volsussmanbathe:
         case INPAR::MAT::mes_volpenalty:
         case INPAR::MAT::mes_vologden:
@@ -1022,6 +1035,16 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
                   dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
                 params2->SetC(abs(p_cur(j)));
                 j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coupmooneyrivlin:
+              {
+                MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                params2->SetC1(abs(p_cur(j)));
+                params2->SetC2(abs(p_cur(j+1)));
+                params2->SetC3(abs(p_cur(j+2)));
+                j = j+2;
                 break;
               }
               case INPAR::MAT::mes_isoexpo:

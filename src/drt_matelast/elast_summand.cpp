@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_couplogneohooke.H"
 #include "elast_coupneohooke.H"
 #include "elast_coupblatzko.H"
+#include "elast_coupmooneyrivlin.H"
 #include "elast_holzapfel_cardiac.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
@@ -87,6 +88,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupBlatzKo(curmat));
     MAT::ELASTIC::PAR::CoupBlatzKo* params = static_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupBlatzKo(params));
+  }
+  case INPAR::MAT::mes_coupmooneyrivlin:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupMooneyRivlin(curmat));
+    MAT::ELASTIC::PAR::CoupMooneyRivlin* params = static_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupMooneyRivlin(params));
   }
   case INPAR::MAT::mes_holzapfel_cardiac:
   {

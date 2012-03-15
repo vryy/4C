@@ -481,6 +481,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_holzapfel_cardiac.cpp
   src/drt_matelast/elast_isocub.cpp
   src/drt_matelast/elast_isoexpo.cpp
+  src/drt_matelast/elast_coupmooneyrivlin.cpp
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isoneohooke.cpp
   src/drt_matelast/elast_isoquad.cpp
