@@ -305,7 +305,6 @@ public:
   const Teuchos::ParameterList& ScalarTransportFluidSolverParams() const { return getParameterList()->sublist("FLUID SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportStructureSolverParams() const { return getParameterList()->sublist("STRUCTURE SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }  // for SIMPLE
-  const Teuchos::ParameterList& CoupledFluidAndScalarTransportSolverParams() const { return getParameterList()->sublist("COUPLED FLUID AND SCALAR TRANSPORT SOLVER"); }  // "monolithic" solver block for two coupled scatra problems or a coupled fluid-scatra problem, respectively
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& PoroelastMonolithicSolverParams() const { return getParameterList()->sublist("POROELASTICITY MONOLITHIC SOLVER"); }

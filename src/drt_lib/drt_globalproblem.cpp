@@ -209,7 +209,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--STRUCTURE SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
-  reader.ReadGidSection("--COUPLED FLUID AND SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--MESHTYING SOLVER", *list);             // MESHTYING SOLVER for structure/fluid meshtying
   reader.ReadGidSection("--POROELASTICITY MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)

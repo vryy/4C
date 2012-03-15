@@ -209,12 +209,12 @@ void TSI::Monolithic::CreateLinearSolver()
     dserror("no linear solver defined for monolithic TSI solver. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
 
   // get solver parameter list of linear TSI solver
-  const Teuchos::ParameterList& tsisolveparams
+  const Teuchos::ParameterList& tsisolverparams
     = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
   const int solvertype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-        tsisolveparams,
+        tsisolverparams,
         "SOLVER"
         );
 
@@ -232,7 +232,7 @@ void TSI::Monolithic::CreateLinearSolver()
   }
   const int azprectype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-        tsisolveparams,
+        tsisolverparams,
         "AZPREC"
         );
 
@@ -268,7 +268,7 @@ void TSI::Monolithic::CreateLinearSolver()
   }
 
   solver_ = rcp(new LINALG::Solver(
-                         tsisolveparams,
+                         tsisolverparams,
                          // ggfs. explizit Comm von STR wie lungscatra
                          Comm(),
                          DRT::Problem::Instance()->ErrorFile()->Handle()

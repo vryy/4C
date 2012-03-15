@@ -1983,7 +1983,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &tsidyn);
 
   // number of linear solver used for monolithic TSI
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI",&tsidyn);
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI problems",&tsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastdyn = list->sublist(
@@ -2398,7 +2398,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
 
   // number of linear solver used for reduced dimensional airways dynamic
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynami",&redawdyn);
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for reduced dim arterial dynamics",&redawdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
@@ -3519,6 +3519,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                tuple<int>(0,1,2),
                                &fs3idyn);
 
+  // number of linear solver used for fs3i problems
+  IntParameter("COUPLED_LINEAR_SOLVER",-1,"number of linear solver used for fs3i problem",&fs3idyn);
+  IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&fs3idyn);
+  IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for structural problem",&fs3idyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",
@@ -3543,6 +3548,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                tuple<int>(0,1,2),
                                &lomacontrol);
   BoolParameter("SGS_MATERIAL_UPDATE","no","update material by adding subgrid-scale scalar field",&lomacontrol);
+
+  // number of linear solver used for LOMA solver
+  IntParameter("COUPLED_LINEAR_SOLVER",-1,"number of linear solver used for LOMA problem",&lomacontrol);
+  IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&lomacontrol);
+  IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for scatra problem",&lomacontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
@@ -4458,10 +4468,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatrapotsolver = list->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",false,"solver parameters for block-preconditioning");
   SetValidSolverParameters(scatrapotsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& coupscatrasolver = list->sublist("COUPLED FLUID AND SCALAR TRANSPORT SOLVER",false,"solver parameters for block-preconditioning");
-  SetValidSolverParameters(coupscatrasolver);
 
   // MESHTYING solver section
   /*----------------------------------------------------------------------*/

@@ -103,12 +103,15 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  Teuchos::RCP<LINALG::Solver> solver =
-      rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
-          actdis->Comm(),
-          DRT::Problem::Instance()->ErrorFile()->Handle()));
+  // get the solver number used for linear fluid solver
+  const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
+  RCP<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                           actdis->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  // compute null space information, no block matrix
   actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
   // -------------------------------------------------------------------
@@ -116,14 +119,18 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
-    dserror("not handled for adjoints until now");
     // add Inverse1 block for velocity dofs
     Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
     inv1 = solver->Params();
     inv1.remove("SIMPLER",false); // not necessary
     inv1.remove("Inverse1",false);
+
+    // get the solver number used for SIMPLER SOLVER
+    const int linsolvernumber_simpler = fdyn.get<int>("SIMPLER_SOLVER");
+    if (linsolvernumber_simpler == (-1))
+      dserror("no SIMPLER_SOLVER number set for fluid problem solved with SIMPLER. Please set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
     // add Inverse2 block for pressure dofs
-    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->FluidPressureSolverParams());
+    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
     // use CheapSIMPLE preconditioner (hardwired, change me for others)
     solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
     solver->Params().set("FLUID",true);
@@ -241,21 +248,9 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
 
-    if (true)
+    if (true) // what is this???
     {
-      int fluidsolver = DRT::INPUT::IntegralValue<int>(fdyn,"FLUID_SOLVER");
-      switch(fluidsolver)
-      {
-      case fluid_solver_implicit:
-        adjoint_ = rcp(new ADAPTER::FluidAdjointImpl(actdis,solver,fluidadjointtimeparams,output));
-        break;
-      case fluid_solver_pressurecorrection:
-      case fluid_solver_pressurecorrection_semiimplicit:
-        dserror("not implemented for adjoint field");
-        break;
-      default:
-        dserror("fluid solving strategy unknown.");
-      }
+      adjoint_ = rcp(new ADAPTER::FluidAdjointImpl(actdis,solver,fluidadjointtimeparams,output));
     }
   }
   else

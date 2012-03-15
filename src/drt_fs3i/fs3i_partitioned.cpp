@@ -429,8 +429,15 @@ void FS3I::PartFS3I::SetupSystem()
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
+  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
+  // get solver number used for fs3i
+  const int linsolvernumber = fs3icontrol.get<int>("COUPLED_LINEAR_SOLVER");
+  // check if LOMA solvers has a valid number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I CONTROL to a valid number!");
+
   const Teuchos::ParameterList& coupledscatrasolvparams =
-    DRT::Problem::Instance()->CoupledFluidAndScalarTransportSolverParams();
+    DRT::Problem::Instance()->SolverParams(linsolvernumber);
   const int solvertype =
     DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams,"SOLVER");
   if (solvertype != INPAR::SOLVER::aztec_msr)

@@ -121,8 +121,15 @@ LOMA::Algorithm::Algorithm(
     // full loma block dofrowmap
     lomablockdofrowmap_.Setup(*fullmap,dofrowmaps);
 
+    // get solver number used for LOMA solver
+    const int linsolvernumber = prbdyn.get<int>("COUPLED_LINEAR_SOLVER");
+    // check if LOMA solvers has a valid number
+    if (linsolvernumber == (-1))
+      dserror("no linear solver defined for LOMA. Please set COUPLED_LINEAR_SOLVER in LOMA CONTROL to a valid number!");
+
     // create loma solver
-    const Teuchos::ParameterList& lomasolverparams = DRT::Problem::Instance()->CoupledFluidAndScalarTransportSolverParams();
+    // get solver parameter list of linear LOMA solver
+    const Teuchos::ParameterList& lomasolverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
     const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams,"SOLVER");
     if (solvertype != INPAR::SOLVER::aztec_msr)
