@@ -74,7 +74,6 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
         subdisp(i,j) = disp(i,j);
       subdisp(4,j) = mydisp[4*3+j];
     }
-
     for (int k=0; k<4; ++k) 
     {
       for (int i=0; i<4; ++i)
@@ -82,6 +81,8 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
           disp(i,j) = subdisp(e->SubLM(k)[i],j);
       
       e->SubF(k) = e->BuildF(disp,e->SubNxyz(k));
+      double J = e->SubF(k).Determinant();
+      if (J<=0.0) dserror("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n",e->Id(),k,J);
     } // for (int k=0; k<4; ++k) 
 
   } // ele
@@ -190,7 +191,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     if (action != "calc_struct_stress")
     {
       // do nodal integration of stiffness and internal force
-      stiff.LightShape(ndofperpatch,ndofperpatch);
+      stiff.LightShape(ndofperpatch,ndofperpatch); 
       force.LightSize(ndofperpatch);
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
       NodalIntegration(&stiff,&force,adjnode,adjele,adjsubele,lm,*disp,dis,
@@ -601,7 +602,11 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //-------------------------------------------------------- output of strain
   if (iostrain != INPAR::STR::strain_none)
   {
+#ifndef PUSO_NSTET5
+    StrainOutput(iostrain,*nodalstrain,FnodeL,FnodeL.Determinant(),1.0,1.0-ALPHA_NSTET5);
+#else
     StrainOutput(iostrain,*nodalstrain,FnodeL,glstrain,1.0-ALPHA_NSTET5);
+#endif
   }
 
   //-------------------------------------------------------------------------
@@ -652,6 +657,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //-----------------------------------------------------------------------
   // stress is split as follows:
   // stress = vol_node + (1-alpha) * dev_node + alpha * dev_ele
+#ifndef PUSO_NSTET5
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
@@ -669,7 +675,12 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
     stress.Update(1.0,stressvol,1-ALPHA_NSTET5,stressdev,0.0);
     cmat.Update(1.0,cmatvol,1-ALPHA_NSTET5,cmatdev,0.0);
   }
-
+#else
+  {
+    stress.Scale(1.-ALPHA_NSTET5);
+    cmat.Scale(1.-ALPHA_NSTET5);
+  }
+#endif
   //-----------------------------------------------------------------------
   // stress output
   if (iostress != INPAR::STR::stress_none)
@@ -734,6 +745,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
         } // for (int i=0; i<4; ++i)
       } // for (unsigned sub=0; sub<subele.size(); ++sub)
     } // for (int ele=0; ele<neleinpatch; ++ele)
+
   } // if (stiff)
 
   return;

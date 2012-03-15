@@ -212,44 +212,60 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
   // what should the element do
   switch(act)
   {
+    //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
     {
+      //printf("IN calc_struct_nlnstiffmass\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      nstet5nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,
+      nstet5nlnstiffmass(lm,mydisp,&elemat1,&elemat2,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      if (act==calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
+      if (act==calc_struct_nlnstifflmass) 
+        nstet5lumpmass(&elemat2);
     }
-    exit(0);
     break;
 
+    //==================================================================================
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
+      //printf("IN calc_struct_nlnstiff\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<15,15>* elemat1ptr = NULL;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
-      nstet5nlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1,
+      nstet5nlnstiffmass(lm,mydisp,elemat1ptr,NULL,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
-    // evaluate stresses and strains at gauss points
+    //==================================================================================
+    // internal force vector only
+    case calc_struct_internalforce:
+    {
+      // need current displacement and residual forces
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      //LINALG::Matrix<15,15> myemat(true);
+      //nstet5nlnstiffmass(lm,mydisp,&myemat,NULL,&elevec1,
+      //                  NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nstet5nlnstiffmass(lm,mydisp,NULL,NULL,&elevec1,
+                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+    }
+    break;
+
+    //==================================================================================
+    // evaluate stresses and strains at gauss point
     case calc_struct_stress:
     {
       // nothing to do for ghost elements
@@ -263,17 +279,14 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress",INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain",INPAR::STR::strain_none);
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<1,6> stress(true);
         LINALG::Matrix<1,6> strain(true);
         LINALG::Matrix<1,6> elestress(true);
         LINALG::Matrix<1,6> elestrain(true);
-        nstet5nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&elestress,&elestrain,iostress,iostrain);
+        nstet5nlnstiffmass(lm,mydisp,NULL,NULL,NULL,&elestress,&elestrain,iostress,iostrain);
 
         //--------------------------------- interpolate nodal stress from every node
         Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
@@ -322,8 +335,8 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     // postprocess stresses/strains at gauss points
-
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
@@ -370,14 +383,17 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_eleload:
       dserror("this class is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
 
+    //==================================================================================
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
     break;
 
+    //==================================================================================
     case calc_struct_update_istep:
     {
       RCP<MAT::Material> mat = Material();
@@ -389,6 +405,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_update_imrlike:
     {
       RCP<MAT::Material> mat = Material();
@@ -400,52 +417,40 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    // internal force vector only
-    case calc_struct_internalforce:
-    {
-      // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<15,15> myemat(true);
-      nstet5nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,
-                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
-    }
-    break;
-
+    //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
       dserror("Case 'calc_struct_linstiffmass' not implemented");
     break;
 
+    //==================================================================================
     // linear stiffness
     case calc_struct_linstiff:
       dserror("action calc_struct_linstiff currently not supported");
     break;
 
+    //==================================================================================
     case multi_calc_dens:
     {
       nstet5_homog(params);
     }
     break;
 
+    //==================================================================================
     case multi_readrestart:
     {
       nstet5_read_restart_multi();
     }
     break;
 
+    //==================================================================================
     default:
       dserror("Unknown type of action for NStet5");
   }
@@ -459,7 +464,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
 void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       vector<int>&                     lm,             // location matrix
       vector<double>&                  disp,           // current displacements
-      vector<double>&                  residual,       // current residuum
       LINALG::Matrix<15,15>*           stiffmatrix,    // element stiffness matrix
       LINALG::Matrix<15,15>*           massmatrix,     // element mass matrix
       LINALG::Matrix<15, 1>*           force,          // stress output options
@@ -468,291 +472,338 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       const INPAR::STR::StressType     iostress,       // type of stress
       const INPAR::STR::StrainType     iostrain)       // type of strain
 {
-  //--------------------------------------------------- geometry update
-  LINALG::Matrix<3,3>& defgrd = F();
-
-  //--------------------------- Right Cauchy-Green tensor C = = F^T * F
-  LINALG::Matrix<3,3> cauchygreen;
-  cauchygreen.MultiplyTN(defgrd,defgrd);
-
-  // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-  // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  LINALG::Matrix<6,1> glstrain;
-  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-  glstrain(3) = cauchygreen(0,1);
-  glstrain(4) = cauchygreen(1,2);
-  glstrain(5) = cauchygreen(2,0);
-
-  //------------------------------------ B=operator ( same as in hex8 !)
-  /*
-  ** B = F : N,xyz
-  **
-  **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-  **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-  **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-  ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-  **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-  **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-  **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-  **      [                                                         ]
-  **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-  **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-  **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-  **      [                                                         ]
-  **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-  **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-  **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-  */
-
-  // 6x15 n_stresses * number degrees of freedom per element
-  LINALG::Matrix<6,15> bop;
-  for (int i=0; i<4; i++)
+  if (elestrain) (*elestrain) = 0.0;
+  if (elestress) (*elestress) = 0.0;
+  double SumV = 0; // do averaging of strain/stress weighted by subelement volume
+  if (elestrain || elestress)
   {
-    bop(0,3*i+0) = defgrd(0,0)*nxyz_(i,0);
-    bop(0,3*i+1) = defgrd(1,0)*nxyz_(i,0);
-    bop(0,3*i+2) = defgrd(2,0)*nxyz_(i,0);
-    bop(1,3*i+0) = defgrd(0,1)*nxyz_(i,1);
-    bop(1,3*i+1) = defgrd(1,1)*nxyz_(i,1);
-    bop(1,3*i+2) = defgrd(2,1)*nxyz_(i,1);
-    bop(2,3*i+0) = defgrd(0,2)*nxyz_(i,2);
-    bop(2,3*i+1) = defgrd(1,2)*nxyz_(i,2);
-    bop(2,3*i+2) = defgrd(2,2)*nxyz_(i,2);
-    /* ~~~ */
-    bop(3,3*i+0) = defgrd(0,0)*nxyz_(i,1) + defgrd(0,1)*nxyz_(i,0);
-    bop(3,3*i+1) = defgrd(1,0)*nxyz_(i,1) + defgrd(1,1)*nxyz_(i,0);
-    bop(3,3*i+2) = defgrd(2,0)*nxyz_(i,1) + defgrd(2,1)*nxyz_(i,0);
-    bop(4,3*i+0) = defgrd(0,1)*nxyz_(i,2) + defgrd(0,2)*nxyz_(i,1);
-    bop(4,3*i+1) = defgrd(1,1)*nxyz_(i,2) + defgrd(1,2)*nxyz_(i,1);
-    bop(4,3*i+2) = defgrd(2,1)*nxyz_(i,2) + defgrd(2,2)*nxyz_(i,1);
-    bop(5,3*i+0) = defgrd(0,2)*nxyz_(i,0) + defgrd(0,0)*nxyz_(i,2);
-    bop(5,3*i+1) = defgrd(1,2)*nxyz_(i,0) + defgrd(1,0)*nxyz_(i,2);
-    bop(5,3*i+2) = defgrd(2,2)*nxyz_(i,0) + defgrd(2,0)*nxyz_(i,2);
+    for (int i=0; i<4; ++i) SumV += SubV(i);
   }
+      
 
-  //------------------------------------------------- call material law
-  LINALG::Matrix<6,6> cmat(true);
-  LINALG::Matrix<6,1> stress(true);
-  LINALG::Matrix<6,1> glstrainbar(false);
-  double density = -999.99;
-#ifndef PUSOSOLBERG // dev stab on cauchy stresses
+  for (int sub=0; sub<4; ++sub) // loop subelements
   {
-    // do deviatoric F, C, E
-    const double J = defgrd.Determinant();
-    LINALG::Matrix<3,3> Cbar(cauchygreen);
-    Cbar.Scale(pow(J,-2./3.));
-    glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
-    glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
-    glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
-    glstrainbar(3) = Cbar(0,1);
-    glstrainbar(4) = Cbar(1,2);
-    glstrainbar(5) = Cbar(2,0);
-    LINALG::Matrix<3,3> Fbar(false);
-    Fbar.SetCopy(defgrd.A());
-    Fbar.Scale(pow(J,-1./3.));
+    // subelement deformation gradient previously computed in PreEvaluate
+    LINALG::Matrix<3,3>& defgrd = SubF(sub);
 
-    SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
+    //--------------------------- Right Cauchy-Green tensor C = = F^T * F
+    LINALG::Matrix<3,3> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
 
-    // define stuff we need to do the split
-    LINALG::Matrix<6,6> cmatdev; // set to zero?
-    LINALG::Matrix<6,1> stressdev;
+    // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<6,1> glstrain;
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
 
-    // do just the deviatoric components
-    NStet5Type::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
-    stress = stressdev;
-    cmat = cmatdev;
-    stress.Scale(ALPHA_NSTET5);
-    cmat.Scale(ALPHA_NSTET5);
-  }
-#else
-  {
-    SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
-    stress.Scale(ALPHA_NSTET5);
-    cmat.Scale(ALPHA_NSTET5);
-    glstrainbar = glstrain;
-  }
-#endif
+    //------------------------------------ B=operator ( same as in hex8 !)
+    /*
+    ** B = F : N,xyz
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
 
-  //---------------------------------------------- output of stress and strain
-  {
-    switch (iostrain)
+    // 6x15 n_stresses * number degrees of freedom per element
+    LINALG::Matrix<6,12> bop;
+    const LINALG::Matrix<4,3>& nxyz = SubNxyz(sub);
+
+    for (int i=0; i<4; i++)
     {
-    case INPAR::STR::strain_gl:
-    {
-      if (elestrain == NULL) dserror("no strain data available");
-      for (int i = 0; i < 3; ++i)
-        (*elestrain)(0,i) = ALPHA_NSTET5 * glstrainbar(i);
-      for (int i = 0; i < 3; ++i)
-        (*elestrain)(0,i) = ALPHA_NSTET5 * 0.5 * glstrainbar(i);
+      bop(0,3*i+0) = defgrd(0,0)*nxyz(i,0);
+      bop(0,3*i+1) = defgrd(1,0)*nxyz(i,0);
+      bop(0,3*i+2) = defgrd(2,0)*nxyz(i,0);
+      bop(1,3*i+0) = defgrd(0,1)*nxyz(i,1);
+      bop(1,3*i+1) = defgrd(1,1)*nxyz(i,1);
+      bop(1,3*i+2) = defgrd(2,1)*nxyz(i,1);
+      bop(2,3*i+0) = defgrd(0,2)*nxyz(i,2);
+      bop(2,3*i+1) = defgrd(1,2)*nxyz(i,2);
+      bop(2,3*i+2) = defgrd(2,2)*nxyz(i,2);
+      /* ~~~ */
+      bop(3,3*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
+      bop(3,3*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
+      bop(3,3*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
+      bop(4,3*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
+      bop(4,3*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
+      bop(4,3*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
+      bop(5,3*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
+      bop(5,3*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
+      bop(5,3*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
     }
-    break;
-    case INPAR::STR::strain_ea:
-    {
-      if (elestrain == NULL) dserror("no strain data available");
-      LINALG::Matrix<3,3> gl;
-      gl(0,0) = glstrainbar(0);      // divide off-diagonals by 2
-      gl(0,1) = 0.5*glstrainbar(3);
-      gl(0,2) = 0.5*glstrainbar(5);
-      gl(1,0) = gl(0,1);
-      gl(1,1) = glstrainbar(1);
-      gl(1,2) = 0.5*glstrainbar(4);
-      gl(2,0) = gl(0,2);
-      gl(2,1) = gl(1,2);
-      gl(2,2) = glstrainbar(2);
 
-#ifndef PUSOSOLBERG
+    //------------------------------------------------- call material law
+    LINALG::Matrix<6,6> cmat(true);
+    LINALG::Matrix<6,1> stress(true);
+    LINALG::Matrix<6,1> glstrainbar(false);
+    double density = -999.99;
+#ifndef PUSO_NSTET5
+    {
+      // do deviatoric F, C, E
+      const double J = defgrd.Determinant();
+      LINALG::Matrix<3,3> Cbar(cauchygreen);
+      Cbar.Scale(pow(J,-2./3.));
+      glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
+      glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
+      glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
+      glstrainbar(3) = Cbar(0,1);
+      glstrainbar(4) = Cbar(1,2);
+      glstrainbar(5) = Cbar(2,0);
       LINALG::Matrix<3,3> Fbar(false);
       Fbar.SetCopy(defgrd.A());
-      Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
-      LINALG::Matrix<3,3> invdefgrd;
-      invdefgrd.Invert(Fbar);
+      Fbar.Scale(pow(J,-1./3.));
+
+      SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
+
+      // define stuff we need to do the split
+      LINALG::Matrix<6,6> cmatdev; 
+      LINALG::Matrix<6,1> stressdev;
+
+      // do just the deviatoric components
+      NStet5Type::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
+      stress = stressdev;
+      cmat = cmatdev;
+
+      stress.Scale(ALPHA_NSTET5);
+      cmat.Scale(ALPHA_NSTET5);
+    }
 #else
-      LINALG::Matrix<3,3> invdefgrd;
-      invdefgrd.Invert(defgrd);
-#endif
-
-      LINALG::Matrix<3,3> temp;
-      LINALG::Matrix<3,3> euler_almansi;
-      temp.Multiply(gl,invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd,temp);
-
-
-      (*elestrain)(0,0) = ALPHA_NSTET5 * euler_almansi(0,0);
-      (*elestrain)(0,1) = ALPHA_NSTET5 * euler_almansi(1,1);
-      (*elestrain)(0,2) = ALPHA_NSTET5 * euler_almansi(2,2);
-      (*elestrain)(0,3) = ALPHA_NSTET5 * euler_almansi(0,1);
-      (*elestrain)(0,4) = ALPHA_NSTET5 * euler_almansi(1,2);
-      (*elestrain)(0,5) = ALPHA_NSTET5 * euler_almansi(0,2);
-    }
-    break;
-    case INPAR::STR::strain_none:
-    break;
-    default:
-      dserror("requested strain option not available");
-    }
-
-
-    switch (iostress)
     {
-    case INPAR::STR::stress_2pk:
-    {
-      if (elestress == NULL) dserror("no stress data available");
-      for (int i = 0; i<6; ++i)
-        (*elestress)(0,i) = stress(i); // ALPHA_NSTET scaling is already in stress
+      SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
+      stress.Scale(ALPHA_NSTET5);
+      cmat.Scale(ALPHA_NSTET5);
+      glstrainbar = glstrain;
     }
-    break;
-    case INPAR::STR::stress_cauchy:
+#endif    
+
+    //---------------------------------------------- output of stress and strain
     {
-      if (elestress == NULL) dserror("no stress data available");
-
-      LINALG::Matrix<3,3> pkstress;
-      pkstress(0,0) = stress(0);        // ALPHA_NSTET scaling is already in stress
-      pkstress(0,1) = stress(3);
-      pkstress(0,2) = stress(5);
-      pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = stress(1);
-      pkstress(1,2) = stress(4);
-      pkstress(2,0) = pkstress(0,2);
-      pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = stress(2);
-
-      LINALG::Matrix<3,3> temp;
-      LINALG::Matrix<3,3> cauchystress;
-
-#ifndef PUSOSOLBERG
-      LINALG::Matrix<3,3> Fbar(false);
-      Fbar.SetCopy(defgrd.A());
-      Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
-      temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
-      cauchystress.MultiplyNT(temp,Fbar);
-#else
-      temp.Multiply(1.0/defgrd.Determinant(),defgrd,pkstress,0.);
-      cauchystress.MultiplyNT(temp,defgrd);
-#endif
-
-      (*elestress)(0,0) = cauchystress(0,0);
-      (*elestress)(0,1) = cauchystress(1,1);
-      (*elestress)(0,2) = cauchystress(2,2);
-      (*elestress)(0,3) = cauchystress(0,1);
-      (*elestress)(0,4) = cauchystress(1,2);
-      (*elestress)(0,5) = cauchystress(0,2);
-    }
-    break;
-    case INPAR::STR::stress_none:
-      break;
-    default:
-      dserror("requested stress type not available");
-    }
-  }
-
-
-  //----------------------------------------------- internal force and tangent
-  // update internal force vector
-  if (force)
-  {
-    // integrate internal force vector f = f + (B^T . sigma) * V_
-    force->MultiplyTN(V_,bop,stress,1.0);
-  }  // if (force && stiffmatrix)
-
-  // update stiffness matrix
-  if (stiffmatrix)
-  {
-    // integrate elastic stiffness matrix
-    // keu = keu + (B^T . C . B) * V_
-    LINALG::Matrix<6,15> cb;
-    cb.Multiply(cmat,bop);
-    stiffmatrix->MultiplyTN(V_,bop,cb,1.0);
-    // integrate `geometric' stiffness matrix and add to keu
-    double sBL[3];
-    const double V = Vol();
-    for (int i=0; i<4; ++i)
-    {
-      sBL[0] = V*(stress(0) * nxyz_(i,0) + stress(3) * nxyz_(i,1) + stress(5) * nxyz_(i,2));
-      sBL[1] = V*(stress(3) * nxyz_(i,0) + stress(1) * nxyz_(i,1) + stress(4) * nxyz_(i,2));
-      sBL[2] = V*(stress(5) * nxyz_(i,0) + stress(4) * nxyz_(i,1) + stress(2) * nxyz_(i,2));
-      for (int j=0; j<4; ++j)
+      //-----------------------------------------------------------------strain
+      switch (iostrain)
       {
-        double BsB = 0.0;
-        for (int dim=0; dim<3; ++dim)
-          BsB += nxyz_(j,dim) * sBL[dim];
-        (*stiffmatrix)(3*i+0,3*j+0) += BsB;
-        (*stiffmatrix)(3*i+1,3*j+1) += BsB;
-        (*stiffmatrix)(3*i+2,3*j+2) += BsB;
+      case INPAR::STR::strain_gl:
+      {
+        if (elestrain == NULL) dserror("no strain data available");
+        for (int i = 0; i < 3; ++i)
+          (*elestrain)(0,i) += (SubV(sub)/SumV * ALPHA_NSTET5 * glstrainbar(i));
+        for (int i = 0; i < 3; ++i)
+          (*elestrain)(0,i) += (SubV(sub)/SumV * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
+      }
+      break;
+      case INPAR::STR::strain_ea:
+      {
+        if (elestrain == NULL) dserror("no strain data available");
+        LINALG::Matrix<3,3> gl;
+        gl(0,0) = glstrainbar(0);      // divide off-diagonals by 2
+        gl(0,1) = 0.5*glstrainbar(3);
+        gl(0,2) = 0.5*glstrainbar(5);
+        gl(1,0) = gl(0,1);
+        gl(1,1) = glstrainbar(1);
+        gl(1,2) = 0.5*glstrainbar(4);
+        gl(2,0) = gl(0,2);
+        gl(2,1) = gl(1,2);
+        gl(2,2) = glstrainbar(2);
+
+        LINALG::Matrix<3,3> Fbar(false);
+        Fbar.SetCopy(defgrd.A());
+#ifndef PUSO_NSTET5
+        Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+#endif
+        LINALG::Matrix<3,3> invdefgrd;
+        invdefgrd.Invert(Fbar);
+
+        LINALG::Matrix<3,3> temp;
+        LINALG::Matrix<3,3> euler_almansi;
+        temp.Multiply(gl,invdefgrd);
+        euler_almansi.MultiplyTN(invdefgrd,temp);
+
+
+        (*elestrain)(0,0) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,0));
+        (*elestrain)(0,1) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(1,1));
+        (*elestrain)(0,2) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(2,2));
+        (*elestrain)(0,3) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,1));
+        (*elestrain)(0,4) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(1,2));
+        (*elestrain)(0,5) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,2));
+      }
+      break;
+      case INPAR::STR::strain_none:
+      break;
+      default:
+        dserror("requested strain option not available");
+      }
+      //-----------------------------------------------------------------stress
+      switch (iostress)
+      {
+      case INPAR::STR::stress_2pk:
+      {
+        if (elestress == NULL) dserror("no stress data available");
+        for (int i = 0; i<6; ++i)
+          (*elestress)(0,i) += (SubV(sub)/SumV * stress(i)); // ALPHA_NSTET already in stress
+      }
+      break;
+      case INPAR::STR::stress_cauchy:
+      {
+        if (elestress == NULL) dserror("no stress data available");
+
+        LINALG::Matrix<3,3> pkstress;
+        pkstress(0,0) = stress(0);        // ALPHA_NSTET already in stress
+        pkstress(0,1) = stress(3);
+        pkstress(0,2) = stress(5);
+        pkstress(1,0) = pkstress(0,1);
+        pkstress(1,1) = stress(1);
+        pkstress(1,2) = stress(4);
+        pkstress(2,0) = pkstress(0,2);
+        pkstress(2,1) = pkstress(1,2);
+        pkstress(2,2) = stress(2);
+
+        LINALG::Matrix<3,3> temp;
+        LINALG::Matrix<3,3> cauchystress;
+
+        LINALG::Matrix<3,3> Fbar(false);
+        Fbar.SetCopy(defgrd.A());
+#ifndef PUSO_NSTET5
+        Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+#endif
+        temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
+        cauchystress.MultiplyNT(temp,Fbar);
+
+        (*elestress)(0,0) += (SubV(sub)/SumV * cauchystress(0,0));
+        (*elestress)(0,1) += (SubV(sub)/SumV * cauchystress(1,1));
+        (*elestress)(0,2) += (SubV(sub)/SumV * cauchystress(2,2));
+        (*elestress)(0,3) += (SubV(sub)/SumV * cauchystress(0,1));
+        (*elestress)(0,4) += (SubV(sub)/SumV * cauchystress(1,2));
+        (*elestress)(0,5) += (SubV(sub)/SumV * cauchystress(0,2));
+      }
+      break;
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("requested stress type not available");
       }
     }
-
-  } // if (stiffmatrix)
-
-  //------------------------------------------ do mass matrix if desired
-  if (massmatrix)
-  {
-    // for mass matrix use a 4 gauss points integration:
-    // ( 1 gauss point is not enough!)
-    const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
-    const double beta   = (5.0 - sqrt(5.0))/20.0;
-    const double weight = 0.25;
-    const double V = Vol();
-    double xsi[4][4];
-    xsi[0][0] = alpha;   xsi[0][1] = beta ;   xsi[0][2] = beta ;   xsi[0][3] = beta ;
-    xsi[1][0] = beta ;   xsi[1][1] = alpha;   xsi[1][2] = beta ;   xsi[1][3] = beta ;
-    xsi[2][0] = beta ;   xsi[2][1] = beta ;   xsi[2][2] = alpha;   xsi[2][3] = beta ;
-    xsi[3][0] = beta ;   xsi[3][1] = beta ;   xsi[3][2] = beta ;   xsi[3][3] = alpha;
-    for (int gp=0; gp<4; ++gp)
+    
+    //----------------------------------------------- internal force and tangent
+    // update internal force vector
+    if (force)
     {
-      LINALG::Matrix<4,1> funct;
-      ShapeFunction(funct,xsi[gp][0],xsi[gp][1],xsi[gp][2],xsi[gp][3]);
-      const double f = density * V * weight;
+      LINALG::Matrix<12,1> subforce; subforce = 0.0;
+      // integrate internal force vector f = f + (B^T . sigma) * V
+      subforce.MultiplyTN(SubV(sub),bop,stress,1.0);
+      for (int i=0; i<4; ++i) // loop 4 nodes of subelement
+      {
+        (*force)(SubLM(sub)[i]*3+0) += subforce(i*3+0);
+        (*force)(SubLM(sub)[i]*3+1) += subforce(i*3+1);
+        (*force)(SubLM(sub)[i]*3+2) += subforce(i*3+2);
+      }
+    } // if (force)
+  
+    // update stiffness matrix
+    if (stiffmatrix)
+    {
+      const double V = SubV(sub);
+      LINALG::Matrix<12,12> substiffmatrix; substiffmatrix = 0.0;
+      // integrate elastic stiffness matrix
+      // keu = keu + (B^T . C . B) * V
+      LINALG::Matrix<6,12> cb;
+      cb.Multiply(cmat,bop);
+      substiffmatrix.MultiplyTN(V,bop,cb,1.0);
+      // integrate `geometric' stiffness matrix and add to keu
+      double sBL[3];
+      for (int i=0; i<4; ++i)
+      {
+        sBL[0] = V*(stress(0) * nxyz(i,0) + stress(3) * nxyz(i,1) + stress(5) * nxyz(i,2));
+        sBL[1] = V*(stress(3) * nxyz(i,0) + stress(1) * nxyz(i,1) + stress(4) * nxyz(i,2));
+        sBL[2] = V*(stress(5) * nxyz(i,0) + stress(4) * nxyz(i,1) + stress(2) * nxyz(i,2));
+        for (int j=0; j<4; ++j)
+        {
+          double BsB = 0.0;
+          for (int dim=0; dim<3; ++dim)
+            BsB += nxyz_(j,dim) * sBL[dim];
+          substiffmatrix(3*i+0,3*j+0) += BsB;
+          substiffmatrix(3*i+1,3*j+1) += BsB;
+          substiffmatrix(3*i+2,3*j+2) += BsB;
+        }
+      }
       for (int i=0; i<4; ++i)
         for (int j=0; j<4; ++j)
         {
-          const double fac = funct(i) * funct(j) * f;
-          (*massmatrix)(3*i+0,3*j+0) += fac;
-          (*massmatrix)(3*i+1,3*j+1) += fac;
-          (*massmatrix)(3*i+2,3*j+2) += fac;
+          (*stiffmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+0) += substiffmatrix(i*3+0,j*3+0);
+          (*stiffmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+1) += substiffmatrix(i*3+0,j*3+1);
+          (*stiffmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+2) += substiffmatrix(i*3+0,j*3+2);
+
+          (*stiffmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+0) += substiffmatrix(i*3+1,j*3+0);
+          (*stiffmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+1) += substiffmatrix(i*3+1,j*3+1);
+          (*stiffmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+2) += substiffmatrix(i*3+1,j*3+2);
+
+          (*stiffmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+0) += substiffmatrix(i*3+2,j*3+0);
+          (*stiffmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+1) += substiffmatrix(i*3+2,j*3+1);
+          (*stiffmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+2) += substiffmatrix(i*3+2,j*3+2);
         }
-    }
-  } // if (massmatrix)
+    } // if (stiffmatrix)
+    
+    if (massmatrix)
+    {
+      LINALG::Matrix<12,12> submassmatrix; submassmatrix = 0.0;
+      
+      // for mass matrix use a 4 gauss points integration:
+      // ( 1 gauss point is not enough!)
+      const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
+      const double beta   = (5.0 - sqrt(5.0))/20.0;
+      const double weight = 0.25;
+      const double V = SubV(sub);
+      double xsi[4][4];
+      xsi[0][0] = alpha;   xsi[0][1] = beta ;   xsi[0][2] = beta ;   xsi[0][3] = beta ;
+      xsi[1][0] = beta ;   xsi[1][1] = alpha;   xsi[1][2] = beta ;   xsi[1][3] = beta ;
+      xsi[2][0] = beta ;   xsi[2][1] = beta ;   xsi[2][2] = alpha;   xsi[2][3] = beta ;
+      xsi[3][0] = beta ;   xsi[3][1] = beta ;   xsi[3][2] = beta ;   xsi[3][3] = alpha;
+      for (int gp=0; gp<4; ++gp)
+      {
+        LINALG::Matrix<4,1> funct;
+        ShapeFunction(funct,xsi[gp][0],xsi[gp][1],xsi[gp][2],xsi[gp][3]);
+        const double f = density * V * weight;
+        for (int i=0; i<4; ++i)
+          for (int j=0; j<4; ++j)
+          {
+            const double fac = funct(i) * funct(j) * f;
+            submassmatrix(3*i+0,3*j+0) += fac;
+            submassmatrix(3*i+1,3*j+1) += fac;
+            submassmatrix(3*i+2,3*j+2) += fac;
+          }
+      } // for (int gp=0; gp<4; ++gp)
+      for (int i=0; i<4; ++i)
+        for (int j=0; j<4; ++j)
+        {
+          (*massmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+0) += submassmatrix(i*3+0,j*3+0);
+          (*massmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+1) += submassmatrix(i*3+0,j*3+1);
+          (*massmatrix)(SubLM(sub)[i]*3+0,SubLM(sub)[j]*3+2) += submassmatrix(i*3+0,j*3+2);
+
+          (*massmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+0) += submassmatrix(i*3+1,j*3+0);
+          (*massmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+1) += submassmatrix(i*3+1,j*3+1);
+          (*massmatrix)(SubLM(sub)[i]*3+1,SubLM(sub)[j]*3+2) += submassmatrix(i*3+1,j*3+2);
+
+          (*massmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+0) += submassmatrix(i*3+2,j*3+0);
+          (*massmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+1) += submassmatrix(i*3+2,j*3+1);
+          (*massmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+2) += submassmatrix(i*3+2,j*3+2);
+        }
+    } // if (massmatrix)
+  } // for (int sub=0; sub<4; ++sub) loop subelements
+  
 
   return;
 } // DRT::ELEMENTS::NStet5::nstet5nlnstiffmass

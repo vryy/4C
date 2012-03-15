@@ -18,7 +18,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#define ALPHA_NSTET5       0.1    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+//#define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
+#define ALPHA_NSTET5       0.02    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
 
 
@@ -174,6 +175,30 @@ private:
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF);
 
+
+  /*!
+  \brief Explicit determinant of a nonsymmetric 3x3 matrix
+
+  \return the determinant of the matrix A
+  */
+  template<typename T> 
+  T Determinant3x3(LINALG::TMatrix<T,3,3>& A)
+  {
+    T b00 = A(0,0);
+    T b01 = A(0,1);
+    T b02 = A(0,2);
+    T b10 = A(1,0);
+    T b11 = A(1,1);
+    T b12 = A(1,2);
+    T b20 = A(2,0);
+    T b21 = A(2,1);
+    T b22 = A(2,2);
+    T a =   b11*b22 - b21*b12;
+    T b = - b10*b22 + b20*b12;
+    T c =   b10*b21 - b20*b11;
+    T det = b00 * a + b01 * b + b02 * c;
+    return det;
+  }
 
 };
 
@@ -524,7 +549,6 @@ protected:
   //! standards displ. tet4 calc routine
   virtual void nstet5nlnstiffmass(vector<int>&                    lm,
                                 vector<double>&                  disp,
-                                vector<double>&                  residual,
                                 LINALG::Matrix<15,15>*           stiffmatrix,
                                 LINALG::Matrix<15,15>*           massmatrix,
                                 LINALG::Matrix<15,1>*            force,
