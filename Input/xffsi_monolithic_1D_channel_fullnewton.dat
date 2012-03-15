@@ -62,6 +62,7 @@ THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 NEUMANNINFLOW    		no
+LINEAR_SOLVER 			1
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -111,7 +112,7 @@ PRECONDREUSE                    0
 SECONDORDER                     No
 NORM_RESF                       Abs
 NORM_INC                        Abs
--------------------------------------------------------FLUID SOLVER
+-------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK//Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
