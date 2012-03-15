@@ -88,6 +88,7 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
+LINEAR_SOLVER                   2
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -101,7 +102,7 @@ SUPG                            yes_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
----------------------------------------------------------------FLUID SOLVER
+---------------------------------------------------------------SOLVER 2
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -197,6 +198,9 @@ RESTARTEVRY                     10
 UPRES                           1
 INF_PERM                        No 
 SCATRA_SOLVERTYPE               linear
+COUPLED_LINEAR_SOLVER           1  // FS3I problem
+LINEAR_SOLVER1                  2  // FLUID solver
+LINEAR_SOLVER2                  3  // STRUCT solver
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 BLOCKPRECOND                    NO
 CALCERROR                       No
@@ -238,7 +242,7 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
-------------------------------------COUPLED FLUID AND SCALAR TRANSPORT SOLVER
+----------------------------------------------------------SOLVER 1
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       1                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

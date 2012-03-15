@@ -40,6 +40,9 @@ UPRES            1
 RESTARTEVRY      10    // 2000
 CONSTHERMPRESS   Yes
 SGS_MATERIAL_UPDATE  Yes
+COUPLED_LINEAR_SOLVER 1
+LINEAR_SOLVER1        2
+LINEAR_SOLVER2        3
 -----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE 	 Loma
 INITIALFIELD     field_by_function
@@ -66,6 +69,7 @@ CONVFORM         convective
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
+LINEAR_SOLVER    2
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE         inconsistent
 DEFINITION_TAU   Taylor_Hughes_Zarins_Whiting_Jansen
@@ -118,7 +122,7 @@ SUGRVEL          yes
 DEFINITION_TAU   Taylor_Hughes_Zarins
 EVALUATION_TAU   integration_point
 EVALUATION_MAT   integration_point
-------------------------------------------------------FLUID SOLVER
+------------------------------------------------------SOLVER 2
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
 AZSOLVE        GMRES           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -152,6 +156,7 @@ ML_DAMPMED        0.67      // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION      Cut_Elements
 -------------------------------------FLUID SCALAR TRANSPORT SOLVER
+//----------------------------------------------------------SOLVER 3
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
 AZSOLVE        GMRES           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -184,7 +189,7 @@ ML_DAMPFINE       0.67       // damping fine grid
 ML_DAMPMED        0.67       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION      Cut_Elements
--------------------------COUPLED FLUID AND SCALAR TRANSPORT SOLVER
+------------------------------------------------------------SOLVER 1
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

@@ -37,6 +37,7 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
+SIMPLER_SOLVER                  2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
@@ -91,6 +92,9 @@ UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Meshtying_Solver
+SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fluid_Pressure_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
