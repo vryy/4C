@@ -23,6 +23,8 @@ Maintainer: Florian Henke
 namespace COMBUST
 {
 
+  class ReinitializationPDE;
+
   /*!
 
     \brief combustion algorithm class
@@ -72,13 +74,10 @@ namespace COMBUST
     void ReinitializeGfunc();
 
     /// call reinitialization
-    void PrepareReinitialization(); // schott
-
-    /// call reinitialization
-    void DoReinitialization(); // schott
+    void DoReinitialization();
 
     /// call reinitialization (old signed distance method)
-    void ReinitializeGfuncSignedDistance(); // schott
+    void ReinitializeGfuncSignedDistance();
 
     /// overwrite Navier-Stokes velocity field (used for test cases)
     const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();
@@ -163,6 +162,8 @@ namespace COMBUST
     INPAR::COMBUST::CombustionType combusttype_;
     /// options for reinitialization of G-function;
     INPAR::COMBUST::ReInitialActionGfunc reinitaction_;
+    /// initial reinitialization step
+    bool reinitinitial_;
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
     /// switch for reinitialization only within a band around the interface
@@ -198,6 +199,15 @@ namespace COMBUST
 
     /// pointer to flame front holding information about interface (2D surface)
     Teuchos::RCP<COMBUST::FlameFront> flamefront_;
+
+    /// pointer to PDE based reinitializer object
+    Teuchos::RCP<COMBUST::ReinitializationPDE> reinit_pde_;
+
+    /// type how the interface is transported
+    INPAR::COMBUST::TransportVel transport_vel_;
+
+    /// func no for interface transport
+    int transport_vel_no_;
 
   };
 

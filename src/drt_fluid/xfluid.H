@@ -192,7 +192,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    hist_;
 
       //! Extractor used for convergence check
-      LINALG::MapExtractor      velpressplitter_;
+      Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
 
       /// row dof map extractor
       const UTILS::MapExtractor* surfacesplitter_;
@@ -379,9 +379,9 @@ namespace FLD
     // @}
 
 
-    LINALG::MapExtractor& VelPresSplitter() { return state_->velpressplitter_; }
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return state_->velpressplitter_.OtherMap(); }
-    Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return state_->velpressplitter_.CondMap(); }
+    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return state_->velpressplitter_->OtherMap(); }
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return state_->velpressplitter_->CondMap(); }
 
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }

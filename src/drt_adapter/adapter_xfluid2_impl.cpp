@@ -1028,7 +1028,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::XFluid2Impl::CreateFieldTest()
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluid2Impl::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
   dserror("not implemented!");
-  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
+  return (fluid_.VelPresSplitter())->ExtractOtherVector(velpres);
 }
 
 

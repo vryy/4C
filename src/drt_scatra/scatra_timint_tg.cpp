@@ -73,7 +73,6 @@ void SCATRA::TimIntTaylorGalerkin::ExplicitPredictor()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::PredictThermPressure()
 {
-  dserror("not available for TaylorGalerkin time integration");
   return;
 }
 

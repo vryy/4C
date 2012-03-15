@@ -359,44 +359,45 @@ void FSI::MonolithicXFEM::Evaluate()
 void FSI::MonolithicXFEM::SetupRHS()
 {
   cout0_ << "FSI::MonolithicXFEM::SetupRHS" << endl;
+  dserror("this has to be checked!"); // Benedikt
 
-  // get rhs from fields
-  const Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
-  DRT::DEBUGGING::NaNChecker(*srhs);
-  const Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
-  DRT::DEBUGGING::NaNChecker(*frhs);
-
-  const Teuchos::RCP<const Epetra_Vector> srhsinterior = StructureField().Interface().ExtractOtherVector(srhs);
-  const Teuchos::RCP<const Epetra_Vector> srhsboundary = StructureField().Interface().ExtractFSICondVector(srhs);
-
-//  cout << "srhsinterior" << endl;
-//  cout << *srhsinterior << endl;
-//  cout << "srhsboundary" << endl;
-//  cout << *srhsboundary << endl;
-//  cout << "frhs" << endl;
-//  cout << *frhs << endl;
-
-  // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*Extractor().FullMap(), true));
-
-  Extractor().InsertStructureInteriorVector(srhsinterior, rhs_);  // structure interior
-  Extractor().InsertStructureBoundaryVector(srhsboundary, rhs_);  // structure boundary
-  Extractor().InsertFluidVector(frhs, rhs_);                      // fluid all
-
-  // add condensed contribution from stress Lagrange multiplier
-  const Teuchos::RCP<const Epetra_Vector> rhsd = FluidField().CouplingVectors().find("rhsd")->second;
-  const Teuchos::RCP<const Epetra_Vector> structboundarycoupleforce = FluidToStruct(rhsd);
-
-//  cout << "rhsd^sigma + rhs_condense" << endl;
-//  cout << *structboundarycoupleforce << endl;
-  Extractor().AddStructureBoundaryVector(structboundarycoupleforce,rhs_);
-
-  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
-  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
-
-  LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *CombinedDBCMap());
-
-  DRT::DEBUGGING::NaNChecker(*rhs_);
+//  // get rhs from fields
+//  const Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
+//  DRT::DEBUGGING::NaNChecker(*srhs);
+//  const Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
+//  DRT::DEBUGGING::NaNChecker(*frhs);
+//
+//  const Teuchos::RCP<const Epetra_Vector> srhsinterior = StructureField().Interface().ExtractOtherVector(srhs);
+//  const Teuchos::RCP<const Epetra_Vector> srhsboundary = StructureField().Interface().ExtractFSICondVector(srhs);
+//
+////  cout << "srhsinterior" << endl;
+////  cout << *srhsinterior << endl;
+////  cout << "srhsboundary" << endl;
+////  cout << *srhsboundary << endl;
+////  cout << "frhs" << endl;
+////  cout << *frhs << endl;
+//
+//  // create full monolithic rhs vector
+//  rhs_ = rcp(new Epetra_Vector(*Extractor().FullMap(), true));
+//
+//  Extractor().InsertStructureInteriorVector(srhsinterior, rhs_);  // structure interior
+//  Extractor().InsertStructureBoundaryVector(srhsboundary, rhs_);  // structure boundary
+//  Extractor().InsertFluidVector(frhs, rhs_);                      // fluid all
+//
+//  // add condensed contribution from stress Lagrange multiplier
+//  const Teuchos::RCP<const Epetra_Vector> rhsd = FluidField().CouplingVectors().find("rhsd")->second;
+//  const Teuchos::RCP<const Epetra_Vector> structboundarycoupleforce = FluidToStruct(rhsd);
+//
+////  cout << "rhsd^sigma + rhs_condense" << endl;
+////  cout << *structboundarycoupleforce << endl;
+//  Extractor().AddStructureBoundaryVector(structboundarycoupleforce,rhs_);
+//
+//  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
+//  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
+//
+//  LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *CombinedDBCMap());
+//
+//  DRT::DEBUGGING::NaNChecker(*rhs_);
 
 }
 
@@ -441,70 +442,75 @@ bool FSI::MonolithicXFEM::Converged()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
-  cout0_ << "FSI::MonolithicXFEM::SetupSystemMatrix()" << endl;
-  // build global block matrix
+  dserror("this has to be checked!"); // Benedikt
 
-  // extract Jacobian matrices and put them into composite system
-  // matrix W
-
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
-  const Teuchos::RCP<LINALG::SparseMatrix>          f = FluidField().SystemMatrix();
-
-  // direct access to coupling matrices
-  const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
-
-  // Cuu schon erledigt im Fluid
-  const Teuchos::RCP<LINALG::SparseMatrix> Cud = cmats.find("Cud")->second;
-  const Teuchos::RCP<LINALG::SparseMatrix> Cdu = cmats.find("Cdu")->second;
-  const Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
-
-
-  /*----------------------------------------------------------------------*/
-  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor(),81,false));
-
-  s->Matrix(1,1).UnComplete(); // da kommt noch ein coupling block dazu
-
-  systemmatrix_->Assign(0,0,View,s->Matrix(0,0)); // interior
-  systemmatrix_->Assign(1,0,View,s->Matrix(1,0));
-  systemmatrix_->Assign(0,1,View,s->Matrix(0,1));
-  systemmatrix_->Assign(1,1,View,s->Matrix(1,1)); // fsi boundary
-  systemmatrix_->Assign(2,2,View,*f);
-
-//  LINALG::PrintMatrixInMatlabFormat("S00",*s->Matrix(0,0).EpetraMatrix(),true);
-//  LINALG::PrintMatrixInMatlabFormat("S10",*s->Matrix(1,0).EpetraMatrix(),true);
-//  LINALG::PrintMatrixInMatlabFormat("S01",*s->Matrix(0,1).EpetraMatrix(),true);
-//  LINALG::PrintMatrixInMatlabFormat("S11",*s->Matrix(1,1).EpetraMatrix(),true);
-
-  (*sigtransform_)(Cud->RowMap(),
-                   Cud->ColMap(),
-                   *Cud,
-                   1.0,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   systemmatrix_->Matrix(2,1),
-                   false,
-                   false);
-
-  (*sgitransform_)(*Cdu,
-                   1.0,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   systemmatrix_->Matrix(1,2),
-                   true);
-
-  //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
-  (*sggtransform_)(*Cdd,
-                   1.0,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   systemmatrix_->Matrix(1,1),
-                   false,
-                   true);
-
-  // done. make sure all blocks are filled.
-  systemmatrix_->Complete();
-  // if DBC are on the interface, the DBC have to be applied again
-  systemmatrix_->ApplyDirichlet(*CombinedDBCMap(), true);
+  //TODO: this has to be checked Benedikt
+//  cout0_ << "FSI::MonolithicXFEM::SetupSystemMatrix()" << endl;
+//  // build global block matrix
+//
+//  // extract Jacobian matrices and put them into composite system
+//  // matrix W
+//
+//  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+//
+//  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
+//  const Teuchos::RCP<LINALG::SparseMatrix>          f = FluidField().SystemMatrix();
+//
+//  // direct access to coupling matrices
+//
+//  const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
+//
+//
+//  // Cuu schon erledigt im Fluid
+//  const Teuchos::RCP<LINALG::SparseMatrix> Cud = cmats.find("Cud")->second;
+//  const Teuchos::RCP<LINALG::SparseMatrix> Cdu = cmats.find("Cdu")->second;
+//  const Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
+//
+//
+//  /*----------------------------------------------------------------------*/
+//  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor(),81,false));
+//
+//  s->Matrix(1,1).UnComplete(); // da kommt noch ein coupling block dazu
+//
+//  systemmatrix_->Assign(0,0,View,s->Matrix(0,0)); // interior
+//  systemmatrix_->Assign(1,0,View,s->Matrix(1,0));
+//  systemmatrix_->Assign(0,1,View,s->Matrix(0,1));
+//  systemmatrix_->Assign(1,1,View,s->Matrix(1,1)); // fsi boundary
+//  systemmatrix_->Assign(2,2,View,*f);
+//
+////  LINALG::PrintMatrixInMatlabFormat("S00",*s->Matrix(0,0).EpetraMatrix(),true);
+////  LINALG::PrintMatrixInMatlabFormat("S10",*s->Matrix(1,0).EpetraMatrix(),true);
+////  LINALG::PrintMatrixInMatlabFormat("S01",*s->Matrix(0,1).EpetraMatrix(),true);
+////  LINALG::PrintMatrixInMatlabFormat("S11",*s->Matrix(1,1).EpetraMatrix(),true);
+//
+//  (*sigtransform_)(Cud->RowMap(),
+//                   Cud->ColMap(),
+//                   *Cud,
+//                   1.0,
+//                   ADAPTER::CouplingSlaveConverter(coupsf),
+//                   systemmatrix_->Matrix(2,1),
+//                   false,
+//                   false);
+//
+//  (*sgitransform_)(*Cdu,
+//                   1.0,
+//                   ADAPTER::CouplingSlaveConverter(coupsf),
+//                   systemmatrix_->Matrix(1,2),
+//                   true);
+//
+//  //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
+//  (*sggtransform_)(*Cdd,
+//                   1.0,
+//                   ADAPTER::CouplingSlaveConverter(coupsf),
+//                   ADAPTER::CouplingSlaveConverter(coupsf),
+//                   systemmatrix_->Matrix(1,1),
+//                   false,
+//                   true);
+//
+//  // done. make sure all blocks are filled.
+//  systemmatrix_->Complete();
+//  // if DBC are on the interface, the DBC have to be applied again
+//  systemmatrix_->ApplyDirichlet(*CombinedDBCMap(), true);
 }
 
 

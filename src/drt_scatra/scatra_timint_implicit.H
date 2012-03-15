@@ -474,11 +474,26 @@ public:
   //! update the solution after reinitialization
   virtual void UpdateReinit() = 0;
 
-  //! check for steady state due to reinitialization
-  void CheckSteadyState(
-    double&    Gradient_Error_old, //!< gradient error at old time step
-    bool&      STOP                //!< has the reinit procedure to be stopped
-  );
+  /// routine to return scalar field phi at time step n
+  Teuchos::RCP<Epetra_Vector> PhiReinitStart() { return phistart_; }
+
+//<<<<<<< .mine
+////  /// routine to set phi vectors due to reinitialization
+////  void SetPhinp(Teuchos::RCP<Epetra_Vector> phinp);
+//
+//  /// routine to set phi vectors due to reinitialization
+//  void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
+//
+
+//
+//  /// routine to check for steady state due to reinitialization
+//=======
+//  //! check for steady state due to reinitialization
+//>>>>>>> .r15878
+//  void CheckSteadyState(
+//    double&    Gradient_Error_old, //!< gradient error at old time step
+//    bool&      STOP                //!< has the reinit procedure to be stopped
+//  );
 
   //! evaluate integrated error norm for reinitialization stop criterion
   double EvaluateGradientNormError();
@@ -758,13 +773,12 @@ protected:
   //! @name functions used for reinitialization of level sets
   /*========================================================================*/
 
-  /*--- set, prepare, and predict ------------------------------------------*/
 
   /*--- calculate and update -----------------------------------------------*/
 
   //! add reinitialization specific parameters
   void AddReinitializationParameters(
-    Teuchos::ParameterList& params //!< ?
+    Teuchos::ParameterList& params //!< parameter list
   );
 
   //! call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
@@ -772,31 +786,6 @@ protected:
 
   //! calculate phidt after reinitialization for OST scheme
   virtual void CalcPhidtReinit() = 0;
-
-  /*--- query and output ---------------------------------------------------*/
-
-  //! output of all reinitialization information to screen and/or file
-  void ReinitializeInfo(
-    bool printtoscreen = true, //!< ?
-    bool printtofile = true    //!< ?
-  );
-
-  //! output reinitialization steps
-  void OutputReinitializationSteps();
-
-  //! write state vectors to Gmsh postprocessing files
-  void OutputToGmshReinitializationSteps(
-    const int reinit_step,          //!< ?
-    const double reinit_pseudo_time //!< ?
-  ) const;
-
-  //! write state vectors (phinp) to Gmsh postprocessing files
-  void OutputToGmshReinit(
-    const int globalstep,    //!< ?
-    const double globaltime, //!< ?
-    const int step,          //!< ?
-    const double time        //!< ?
-  ) const;
 
   //! print information about current pseudo time step to screen
   virtual void PrintPseudoTimeStepInfoReinit()
@@ -808,10 +797,6 @@ protected:
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
-  /*========================================================================*/
-
-  /*========================================================================*/
-  //! @name  obsolete or unused methods - to be deleted soon (at noon)!!!
   /*========================================================================*/
 
   //! scale lines of linear system prior to solver call (ELCH)

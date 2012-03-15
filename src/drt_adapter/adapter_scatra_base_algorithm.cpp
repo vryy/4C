@@ -65,7 +65,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
+  if(!reinitswitch) output->WriteMesh(0,0.0); // don't write mesh for level set reinitialization time loops
 
   // -------------------------------------------------------------------
   // set some pointers and variables

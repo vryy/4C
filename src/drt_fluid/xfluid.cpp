@@ -81,7 +81,9 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
   if(xfluid_.myrank_ == 0) cout << "\n" << endl;
 
-  FLD::UTILS::SetupFluidSplit(*xfluid.discret_, xfluid.numdim_, 1,velpressplitter_);
+  velpressplitter_ = rcp( new LINALG::MapExtractor());
+
+  FLD::UTILS::SetupFluidSplit(*xfluid.discret_, xfluid.numdim_, 1, *velpressplitter_);
 
   const Epetra_Map* dofrowmap = xfluid.discret_->DofRowMap();
 
@@ -2099,22 +2101,22 @@ void FLD::XFluid::NonlinearSolve()
     double vresnorm;
     double presnorm;
 
-    Teuchos::RCP<Epetra_Vector> onlyvel = state_->velpressplitter_.ExtractOtherVector(state_->residual_);
+    Teuchos::RCP<Epetra_Vector> onlyvel = state_->velpressplitter_->ExtractOtherVector(state_->residual_);
     onlyvel->Norm2(&vresnorm);
 
-    state_->velpressplitter_.ExtractOtherVector(state_->incvel_,onlyvel);
+    state_->velpressplitter_->ExtractOtherVector(state_->incvel_,onlyvel);
     onlyvel->Norm2(&incvelnorm_L2);
 
-    state_->velpressplitter_.ExtractOtherVector(state_->velnp_,onlyvel);
+    state_->velpressplitter_->ExtractOtherVector(state_->velnp_,onlyvel);
     onlyvel->Norm2(&velnorm_L2);
 
-    Teuchos::RCP<Epetra_Vector> onlypre = state_->velpressplitter_.ExtractCondVector(state_->residual_);
+    Teuchos::RCP<Epetra_Vector> onlypre = state_->velpressplitter_->ExtractCondVector(state_->residual_);
     onlypre->Norm2(&presnorm);
 
-    state_->velpressplitter_.ExtractCondVector(state_->incvel_,onlypre);
+    state_->velpressplitter_->ExtractCondVector(state_->incvel_,onlypre);
     onlypre->Norm2(&incprenorm_L2);
 
-    state_->velpressplitter_.ExtractCondVector(state_->velnp_,onlypre);
+    state_->velpressplitter_->ExtractCondVector(state_->velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
     // care for the case that nothing really happens in the velocity
@@ -2374,11 +2376,11 @@ void FLD::XFluid::TimeUpdate()
 
   // Compute accelerations
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = state_->velpressplitter_.ExtractOtherVector(state_->accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = state_->velpressplitter_.ExtractOtherVector(state_->accnp_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnm = state_->velpressplitter_.ExtractOtherVector(state_->velnm_);
-    Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_.ExtractOtherVector(state_->veln_ );
-    Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_.ExtractOtherVector(state_->velnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = state_->velpressplitter_->ExtractOtherVector(state_->accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = state_->velpressplitter_->ExtractOtherVector(state_->accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyvelnm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
 
     TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
@@ -3506,8 +3508,8 @@ void FLD::XFluid::XFluidState::GenAlphaIntermediateValues()
     // only these are allowed to be updated, otherwise you will
     // run into trouble in loma, where the 'pressure' component
     // is used to store the acceleration of the temperature
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
 
@@ -3547,9 +3549,9 @@ void FLD::XFluid::XFluidState::GenAlphaUpdateAcceleration()
   // only these are allowed to be updated, otherwise you will
   // run into trouble in loma, where the 'pressure' component
   // is used to store the acceleration of the temperature
-  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
-  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
+  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(veln_ );
+  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
 
   Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
 

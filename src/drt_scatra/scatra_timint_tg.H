@@ -122,7 +122,7 @@ protected:
     void PrepareFirstTimeStep();
 
     /// Set the part of the righthandside belonging to the last timestep.
-    void SetOldPartOfRighthandside(){ dserror("not available for TaylorGalerkin time integration"); }
+    void SetOldPartOfRighthandside(){;}
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
     void ExplicitPredictor();

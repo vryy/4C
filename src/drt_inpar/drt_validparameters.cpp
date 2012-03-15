@@ -3894,6 +3894,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  INPAR::COMBUST::reinitaction_sussman),
                                &combustcontrolgfunc);
 
+  BoolParameter("REINIT_INITIAL","Yes","Has to level set field to be reinitialized before first time step?",&combustcontrolgfunc);
 
   BoolParameter("REINIT_OUTPUT","No","gmsh output for reinitialized pseudo timesteps?",&combustcontrolgfunc);
   IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
@@ -3901,6 +3902,20 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&combustcontrolgfunc);
   DoubleParameter("REINITBANDWIDTH",1.0,"G-function value defining band width for reinitialization",&combustcontrolgfunc);
   BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&combustcontrolgfunc);
+
+  setStringToIntegralParameter<int>("TRANSPORT_VEL","Compute_flame_vel",
+                               "Type of reinitialization strategy for level set function",
+                               tuple<std::string>(
+                                 "Compute_flame_vel",
+                                 "Convective_vel",
+                                 "Vel_by_funct"),
+                               tuple<int>(
+                                 INPAR::COMBUST::transport_vel_flamevel,
+                                 INPAR::COMBUST::transport_vel_convvel,
+                                 INPAR::COMBUST::transport_vel_byfunct),
+                               &combustcontrolgfunc);
+
+  IntParameter("TRANSPORT_VEL_FUNC",-1,"number of function to overwrite the transport velocity",&combustcontrolgfunc);
 
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);

@@ -51,8 +51,8 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> RHS();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
-    std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
-    std::map<std::string,Teuchos::RCP<Epetra_Vector> > CouplingVectors();
+//    std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
+//    std::map<std::string,Teuchos::RCP<Epetra_Vector> > CouplingVectors();
     virtual void Update();
     virtual void Output();
     virtual double ReadRestart(int step);

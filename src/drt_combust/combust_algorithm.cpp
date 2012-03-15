@@ -57,6 +57,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(combustdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
 //  reinitaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
+  reinitinitial_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINIT_INITIAL")),
   reinitinterval_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("REINITINTERVAL")),
   reinitband_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
@@ -69,7 +70,10 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   combustdyn_(combustdyn),
   interfacehandle_(Teuchos::null),
   interfacehandle_old_(Teuchos::null),
-  flamefront_(Teuchos::null)
+  flamefront_(Teuchos::null),
+  reinit_pde_(Teuchos::null),
+  transport_vel_(DRT::INPUT::IntegralValue<INPAR::COMBUST::TransportVel>(combustdyn.sublist("COMBUSTION GFUNCTION"),"TRANSPORT_VEL")),
+  transport_vel_no_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("TRANSPORT_VEL_FUNC"))
   {
 
   if (Comm().MyPID()==0)
@@ -157,41 +161,49 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
   volume_start_ = ComputeVolume();
 
-  //--------------------------------------------------------------
-  // initial reinitialization by geometric distance computation
-  // remark: guarantee (periodic) initial signed distance property
-  //--------------------------------------------------------------
-  if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
+  if(reinitinitial_)
   {
-    //cou t<< "reinitialization at timestep 0 switched off!" << endl;
-
-    // get my flame front (boundary integration cells)
-    std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
-#ifdef PARALLEL
-    // export flame front (boundary integration cells) to all processors
-    flamefront_->ExportFlameFront(myflamefront);
-#endif
-    // reinitialize initial level set field by geometric distance computation
-    COMBUST::Reinitializer reinitializer(
-        combustdyn_,
-        ScaTraField(),
-        myflamefront,
-        ScaTraField().Phinp(),
-        true);
-
-    if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    //--------------------------------------------------------------
+    // initial reinitialization by geometric distance computation
+    // remark: guarantee (periodic) initial signed distance property
+    //--------------------------------------------------------------
+    if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
     {
-      // reset phin vector in ScaTra time integration scheme to phinp vector
-      *ScaTraField().Phin() = *ScaTraField().Phinp();
+      //cou t<< "reinitialization at timestep 0 switched off!" << endl;
+
+      // get my flame front (boundary integration cells)
+      std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+#ifdef PARALLEL
+      // export flame front (boundary integration cells) to all processors
+      flamefront_->ExportFlameFront(myflamefront);
+#endif
+      // reinitialize initial level set field by geometric distance computation
+      COMBUST::Reinitializer reinitializer(
+          combustdyn_,
+          ScaTraField(),
+          myflamefront,
+          ScaTraField().Phinp(),
+          true);
+
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+      {
+        // reset phin vector in ScaTra time integration scheme to phinp vector
+        *ScaTraField().Phin() = *ScaTraField().Phinp();
+      }
+
+      // update flame front according to reinitialized G-function field
+      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+      // update interfacehandle (get integration cells) according to updated flame front
+      interfacehandle_->UpdateInterfaceHandle();
+
+      // pointer not needed any more
+      stepreinit_ = false;
     }
+  }
 
-    // update flame front according to reinitialized G-function field
-    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-    // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
-
-    // pointer not needed any more
-    stepreinit_ = false;
+  if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
+  {
+    reinit_pde_ = rcp(new COMBUST::ReinitializationPDE());
   }
 
   //------------------------
@@ -224,16 +236,26 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
                                                ?(FluidField().StdVelaf())
                                                :(FluidField().StdVelnp());
-    ScaTraField().SetVelocityField(
-//        OverwriteFluidVel(),
-        //FluidField().ExtractInterfaceVeln(),
-        ComputeFlameVel(convel,FluidField().DofSet()),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().DofSet(),
-        FluidField().Discretization()
-    );
+
+    if(transport_vel_ == INPAR::COMBUST::transport_vel_flamevel)
+    {
+      ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
+    }
+    else if(transport_vel_ == INPAR::COMBUST::transport_vel_byfunct)
+    {
+      ScaTraField().SetVelocityField(OverwriteFluidVel(),
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
+    }
+    else dserror("no valid transport velocity for combust problems!");
   }
 
   // output G-function initial state
@@ -401,51 +423,27 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   return;
 }
 
-/*------------------------------------------------------------------------------------------------*
- | protected: reinitialize G-function                                                schott 04/11 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::PrepareReinitialization()
-{
-  // reset the ScatraFieldReinit
-  ScaTraReinitField().SetTimeStep(0.0, 0);
-
-  // set the start phinp and phin field and phistart field
-  ScaTraReinitField().SetPhiReinit(ScaTraField().Phinp());
-
-  // set params
-  // set velocity field for reinitialization -> implement this in Scatra-part
-
-  return;
-}
 
 /*------------------------------------------------------------------------------------------------*
  | protected: reinitialize G-function                                                schott 05/11 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::DoReinitialization()
 {
-//  if(reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_characteristic_galerkin)
-//	  {cout << "Reinitialization Characteristic "
-//	 reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_stabilized_convection)
 
   // compute current volume of minus domain
   const double volume_current_before = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_before);
 
+
   // reinitialize Gfunc
   switch(reinitaction_)
   {
     case INPAR::COMBUST::reinitaction_sussman:
-      if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based method" << std::endl;
-
-      // ToDo
-      //T euchos::RCP<COMBUST::ReinitializationPDE> reinit_pde = Teuchos::rcp(new COMBUST::ReinitializationPDE::ReinitializationPDE());
-      // bool accepted = reinit_pde->CallReinitialization();
-
-      PrepareReinitialization();
-      reinitialization_accepted_ = ScaTraReinitField().CallReinitialization();
-      if(reinitialization_accepted_ == true) ScaTraField().SetPhinp(ScaTraReinitField().Phinp());
+    {
+      reinitialization_accepted_ = reinit_pde_->CallReinitialization(ScaTraField().Phinp());
       break;
+    }
     case INPAR::COMBUST::reinitaction_signeddistancefunction:
     case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
       if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via calculating signed distance functions" << std::endl;
@@ -487,7 +485,7 @@ void COMBUST::Algorithm::DoReinitialization()
   // TODO: the step used for output is switched for one
   if(reinit_output_ and reinitialization_accepted_ and !(reinitaction_ == INPAR::COMBUST::reinitaction_signeddistancefunction or reinitaction_ == INPAR::COMBUST::reinitaction_fastsigneddistancefunction))
   {
-    ScaTraReinitField().OutputReinit(ScaTraField().Step(), ScaTraField().Time());
+    reinit_pde_->OutputReinit(ScaTraField().Step(), ScaTraField().Time());
   }
 
   // compute current volume of minus domain
@@ -659,10 +657,12 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
   if (Comm().MyPID()==0)
     std::cout << "\n--- overwriting Navier-Stokes solution with field defined by FUNCT1... " << std::flush;
 
+  if(transport_vel_no_ == -1) dserror("please set a function number for interface transport velocity!");
+
   // get fluid (Navier-Stokes) velocity vector in standard FEM configuration (no XFEM dofs)
   const Teuchos::RCP<Epetra_Vector> convel = FluidField().StdVelnp();
   // velocity function number = 1 (FUNCT1)
-  const int velfuncno = 1;
+  const int velfuncno = transport_vel_no_;
 
   // loop all nodes on the processor
   for(int lnodeid=0; lnodeid < FluidField().Discretization()->NumMyRowNodes(); ++lnodeid)
@@ -1554,12 +1554,25 @@ void COMBUST::Algorithm::DoGfuncField()
     cout << "number of identical velocity components: " << counter << endl;
 #endif
 
-    ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   FluidField().DofSet(),
-                                   FluidField().Discretization());
+    if(transport_vel_ == INPAR::COMBUST::transport_vel_flamevel)
+    {
+      ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
+    }
+    else if(transport_vel_ == INPAR::COMBUST::transport_vel_byfunct)
+    {
+      ScaTraField().SetVelocityField(OverwriteFluidVel(),
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     Teuchos::null,
+                                     FluidField().DofSet(),
+                                     FluidField().Discretization());
+    }
+    else dserror("no valid transport velocity for combust problems!");
     break;
   }
   default:
