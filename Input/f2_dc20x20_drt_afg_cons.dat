@@ -12,7 +12,7 @@ NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     10
 RESTARTEVRY                     20
@@ -1598,4 +1598,4 @@ FLUID DIS 1 NODE 173 POSITION velx NAME velx VALUE -1.139979279e-02 TOLERANCE 1e
 FLUID DIS 1 NODE 173 POSITION vely NAME vely VALUE 1.026982163e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 173 POSITION pressure NAME pressure VALUE 1.862001047e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-// END
+//                              END

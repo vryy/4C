@@ -44,7 +44,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     2

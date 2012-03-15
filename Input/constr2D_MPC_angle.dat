@@ -98,7 +98,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DELTA                           0.25
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 GAMMA                           0.5
 ITERATION                       full

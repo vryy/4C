@@ -24,7 +24,7 @@ RESTART                         0
 //!RESTART                      1
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20

@@ -52,7 +52,7 @@ NORM_RESF                       Rel
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DELTA                           0.25
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 K_DAMP                          0.00001
 MAXITER                         100

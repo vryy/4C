@@ -46,7 +46,7 @@ STRUCT_STRESS                   No
 //ALE_DISP_FILE                 No
 //ALE_DISP_GID                  No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
