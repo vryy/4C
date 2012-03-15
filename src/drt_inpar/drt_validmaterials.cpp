@@ -1164,6 +1164,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+    /*--------------------------------------------------------------------*/
+
+    //compressible neo-Hooke material acc. to Holtzapfel
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupNeoHooke",
+                                            "compressible neo-Hooke material acc. to Holtzapfel",
+                                            INPAR::MAT::mes_coupneohooke));
+
+    AddNamedReal(m,"YOUNG","Young's modulus",true);
+    AddNamedReal(m,"NUE","Poisson's ratio",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*--------------------------------------------------------------------*/
   // coupled Blatz and Ko material acc. to Holzapfel
   {

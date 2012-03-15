@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coup1pow.H
+\file elast_coupneohooke.H
 \brief
 This file contains the routines required to calculate the isochoric contribution
-of a general power-type material.
+of a CoupNeoHookean material material.
 
 <pre>
 Maintainer: Sophie Rausch
@@ -12,8 +12,8 @@ Maintainer: Sophie Rausch
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_COUP1POW_H_
-#define ELAST_COUP1POW_H_
+#ifndef ELAST_COUPNEOHOOKE_H_
+#define ELAST_COUPNEOHOOKE_H_
 #ifdef CCADISCRET
 
 #include "../drt_inpar/inpar_material.H"
@@ -30,28 +30,38 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a general power material
+    /// material parameters for isochoric contribution of a CoupNeoHookean material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_Coup1Pow C 1 D 1
-    class Coup1Pow : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_CoupNeoHooke C 1 BETA 1
+    class CoupNeoHooke : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      Coup1Pow(
+      CoupNeoHooke(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~Coup1Pow() { ; }
+      virtual ~CoupNeoHooke() { ; }
 
       /// @name material parameters
       //@{
 
       /// material parameters
+
+
+      /// Young's modulus
+      double youngs_;
+      /// Possion's ratio
+      double nue_;
+
+      /// nue \(1-2 nue)
+      double beta_;
+      /// Shear modulus / 2
       double c_;
-      int d_;
+
 
       //@}
 
@@ -61,43 +71,68 @@ namespace ELASTIC
       /// @name Write methods
       //@{
       void SetC(const double c) { c_ = c; }
-      void SetD(const int d) { d_ = d; }
+      void SetBeta(const double beta) { beta_ = beta; }
+      void SetYoungs(const double c) { c_ = c; }
+      void SetNue(const double beta) { beta_ = beta; }
       //@}
 
-    };  // class Coup1Pow
+    };  // class CoupNeoHooke
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric general power material
+  /// CoupNeoHookean material
   ///
-  /// This is a summand of a variable order hyperelastic, isotropic
-  /// material depending on the modified trace of the right Cauchy-Green tensor.
+  /// This is the summand of a hyperelastic, isotropic CoupNeoHookean material
+  /// depending on the first and the third invariant of the right Cauchy-Green tensor.
+  /// The formulation is based on [1] p. 247,248 and 263
+  ///
+  /// The implemented material is the coupled form of the compressible NeoHook
+  /// model. The Parameters read in are the Young's modulus and the Possion's
+  /// ratio.
+  ///
+  ///
+  ///
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = C (I_{\boldsymbol{C}}-3)^D.
+  ///   \Psi = C(I_{\boldsymbol{C}}-3)+\frac c {\beta} (J^{-2\beta}-1)
+  ///\f]
+  ///
+  /// with
+  ///\f[
+  ///   \beta = \frac {\nu}{1-2\nu}
   ///\f]
   ///
   ///
+  /// \f$ c=\frac {\mu} 2 = \frac {\text{Young's modulus}}{4(1-\nu)} \f$
+  /// and \f$\mu\f$ and \f$\nu\f$ beeing the shear modulus
+  /// and the Poisson's ratio, respectivly.
+  ///
+  ///
+  ///
+  ///
+  /// [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
+  ///
   /// \author rausch
   /// \date 03/11
-  class Coup1Pow : public Summand
+  class CoupNeoHooke : public Summand
   {
 
   public:
 
     /// empty constructor
-    Coup1Pow();
+    CoupNeoHooke();
 
     /// constructor with given material parameters
-    Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params);
+    CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params);
+
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coup1pow; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupneohooke; }
 
     //@}
 
@@ -149,7 +184,7 @@ namespace ELASTIC
     /// @name Access methods
     //@{
     double C() const { return params_->c_; }
-    int D() const { return params_->d_; }
+    double BETA() const { return params_->beta_; }
 
     //@}
 
@@ -164,7 +199,7 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::Coup1Pow* params_;
+    MAT::ELASTIC::PAR::CoupNeoHooke* params_;
 
   };
 
@@ -172,4 +207,4 @@ namespace ELASTIC
 }  // namespace MAT
 
 #endif  // CCADISCRET
-#endif  // COUP1POW_H_
+#endif  // COUPNEOHOOKE_H_

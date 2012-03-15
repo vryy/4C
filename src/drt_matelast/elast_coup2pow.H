@@ -71,7 +71,7 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Isochoric general power material
   ///
-  /// This is the isochoric part of a variable order hyperelastic, isotropic
+  /// This is a summand of variable order hyperelastic, isotropic
   /// material depending on the seccond invariant of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by

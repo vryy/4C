@@ -21,7 +21,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/neohooke.H"
 #include "../drt_mat/compogden.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -83,16 +82,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     actmat->m.stvenant->youngs = mat->Youngs();
     actmat->m.stvenant->possionratio = mat->PoissonRatio();
     actmat->m.stvenant->density = mat->Density();
-    break;
-  }
-  case INPAR::MAT::m_neohooke:
-  {
-    const MAT::NeoHooke* mat = static_cast<const MAT::NeoHooke*>(material.get());
-    actmat->mattyp = m_neohooke;
-    actmat->m.neohooke = new NEO_HOOKE();
-    actmat->m.neohooke->youngs = mat->Youngs();
-    actmat->m.neohooke->possionratio = mat->PoissonRatio();
-    actmat->m.neohooke->density = mat->Density();
     break;
   }
   case INPAR::MAT::m_compogden:
@@ -251,11 +240,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
   case INPAR::MAT::m_stvenant:
   {
     delete actmat->m.stvenant;
-    break;
-  }
-  case INPAR::MAT::m_neohooke:
-  {
-    delete actmat->m.neohooke;
     break;
   }
   case INPAR::MAT::m_compogden:
@@ -1774,23 +1758,6 @@ void DRT::ELEMENTS::Shell8::s8tmat(
       s8_mat_linel(material->m.stvenant,gmkonrtmp,C);
       s8_mat_stress1(stress,strain,C);
       amdel(&tmp);
-    }
-    break;
-    case m_neohooke:/*------------------------------ kompressible neo-hooke */
-    {
-      ARRAY tmp1;
-      ARRAY tmp2;
-      double** gmkonrtmp = (double**)amdef("tmp",&tmp1,3,3,"DA");
-      double** gmkonctmp = (double**)amdef("tmp",&tmp2,3,3,"DA");
-      for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j)
-      {
-        gmkonrtmp[i][j] = gmkonr[i][j];
-        gmkonctmp[i][j] = gmkonc[i][j];
-      }
-      s8_mat_neohooke(material->m.neohooke,stress,C,gmkonrtmp,gmkonctmp,detr,detc);
-      amdel(&tmp1);
-      amdel(&tmp2);
     }
     break;
     case m_compogden:/*--------------------------------- kompressible ogden */

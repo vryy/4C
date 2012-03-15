@@ -410,6 +410,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return params->CreateMaterial();
   }
   case INPAR::MAT::mes_couplogneohooke:
+  case INPAR::MAT::mes_coupneohooke:
   case INPAR::MAT::mes_coupblatzko:
   case INPAR::MAT::mes_holzapfel_cardiac:
   case INPAR::MAT::mes_isoneohooke:

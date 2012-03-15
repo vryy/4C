@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 //#include "../drt_mat/elasthyper.H"
 //#include "../drt_mat/material.H"
 #include "elast_couplogneohooke.H"
+#include "elast_coupneohooke.H"
 #include "elast_coupblatzko.H"
 #include "elast_holzapfel_cardiac.H"
 #include "elast_isoneohooke.H"
@@ -72,6 +73,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupLogNeoHooke(curmat));
     MAT::ELASTIC::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupLogNeoHooke(params));
+  }
+  case INPAR::MAT::mes_coupneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupNeoHooke(curmat));
+    MAT::ELASTIC::PAR::CoupNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupNeoHooke(params));
   }
   case INPAR::MAT::mes_coupblatzko:
   {

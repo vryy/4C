@@ -99,6 +99,7 @@ namespace INPAR
       m_protein,        ///< CHARMm API to compute proteins
       m_elasthyper,    ///< collection of hyperelastic materials
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
+      mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
       mes_holzapfel_cardiac, /// anisotropic cardiac material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
@@ -109,8 +110,7 @@ namespace INPAR
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand
       mes_isoquad,  ///< isochoric quadratic hyperelastic potential summand
       mes_isocub,  ///< isochoric cubic hyperelastic potential summand
-      mes_iso1pow,  ///
-                    ///< isochoric general power hyperelastic potential summand for modinv I
+      mes_iso1pow,  ///< isochoric general power hyperelastic potential summand for modinv I
       mes_iso2pow,  ///< isochoric general power hyperelastic potential summand for modiinv II
       mes_coup1pow,  ///< general power hyperelastic potential summand for invariant I
       mes_coup2pow,  ///< general power hyperelastic potential summand for invariant II

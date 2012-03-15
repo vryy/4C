@@ -476,6 +476,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupanisoneohooketwo.cpp
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
+  src/drt_matelast/elast_coupneohooke.cpp
   src/drt_matelast/elast_coupvarga.cpp
   src/drt_matelast/elast_holzapfel_cardiac.cpp
   src/drt_matelast/elast_isocub.cpp
