@@ -24,11 +24,55 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_structure/strtimint.H"
-#include "../drt_structure/stru_resulttest.H"
+#include "../drt_inpar/inpar_structure.H"
+
+
+// TODO: to be moved into new FSI adapter 13.03. 2012 Georg Hammerl and instead forward declaration or moving out totally
 #include "../drt_structure/stru_aux.H"
 
+
+
+// forward delcarations:
+namespace DRT
+{
+  class Discretization;
+  class ResultTest;
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+}
+
+namespace MORTAR
+{
+  class ManagerBase;
+}
+
+namespace UTILS
+{
+  class ConstrManager;
+}
+
+//namespace STR
+//{
+//  namespace AUX
+//  {
+//    class MapExtractor;
+//  }
+//}
 
 namespace ADAPTER {
 
@@ -134,14 +178,14 @@ namespace ADAPTER {
     virtual bool HaveConstraint() = 0;
 
     /// get constraint manager defined in the structure
-    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// structure part of the rhs to enforce coupling condition at the interface
     /*!
@@ -188,10 +232,10 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
 
     /// set time step size
-    virtual void SetTimeStepSize(double timestepsize){dserror("not yet implemented");}
+    virtual void SetTimeStepSize(double timestepsize) = 0;
 
     /// set time step size and time
-    virtual void SetInitialTimeStepAndTime(double timestepsize){dserror("not yet implemented");}
+    virtual void SetInitialTimeStepAndTime(double timestepsize) = 0;
 
     /// update displacement and evaluate elements
     ///
@@ -277,10 +321,6 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
-    /// apply robin enhanced interface forces to structural solver
-    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
-                                          Teuchos::RCP<Epetra_Vector> ifluidvel) = 0;
-
     //@}
 
     //! @name Extract methods
@@ -345,6 +385,19 @@ namespace ADAPTER {
 
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+
+    /// poroelasticity specific method
+    virtual void PoroInitForceStiffResidual() = 0;
+
+    // to be removed by Anh-Tu
+    virtual void UpdateIterIncrementally
+    (
+      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+    ) = 0;
+    virtual void PrepareSystemForNewtonSolve() = 0;
+    virtual void PoroEvaluateForceStiffResidual(bool predict = false) = 0;
+    // to be removed by Anh-Tu ; END
+
   };
 
 

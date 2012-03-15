@@ -176,10 +176,20 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
 {
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;
 
+  if (genprob.probtyp == prb_fsi or
+      genprob.probtyp == prb_fsi_lung or
+      genprob.probtyp == prb_gas_fsi or
+      genprob.probtyp == prb_biofilm_fsi or
+      genprob.probtyp == prb_thermo_fsi or
+      genprob.probtyp == prb_fluid_fluid_fsi)
+  {
+    dserror("no explicit time integration with fsi");
+  }
+
   // create specific time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-      // forward Euler time integration
+    // forward Euler time integration
     case INPAR::STR::dyna_expleuler :
     {
       sti = Teuchos::rcp(new STR::TimIntExplEuler(ioflags, sdyn, xparams,

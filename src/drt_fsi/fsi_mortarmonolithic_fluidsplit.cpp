@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_constraint/constraint_manager.H"

@@ -207,7 +207,6 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
   };  // class TimIntStatics

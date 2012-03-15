@@ -49,7 +49,6 @@ STR::TimIntExpl::TimIntExpl
     contactsolver,
     output
   ),
-  fsisurface_(NULL),
   fifc_(Teuchos::null)
 {
   // explicit time integrators cannot handle constraints
@@ -74,17 +73,6 @@ STR::TimIntExpl::TimIntExpl
 
   // get away
   return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/* introduce (robin) fsi surface extractor object */
-void STR::TimIntExpl::SetSurfaceFSI
-(
-  const STR::AUX::MapExtractor* fsisurface  //!< the FSI surface
-)
-{
-  fsisurface_ = fsisurface;
 }
 
 

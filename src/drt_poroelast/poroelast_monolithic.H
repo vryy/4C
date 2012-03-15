@@ -19,6 +19,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
+#include <Epetra_Time.h>
+
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"

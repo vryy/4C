@@ -168,15 +168,6 @@ RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureConstrMerged::BlockSystemMa
 
 
 /*----------------------------------------------------------------------*/
-/* */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::FRobin()
-{
-  //return structure_->GetForceRobinFSI();
-  return LINALG::CreateVector(*dofrowmap_, true);
-}
-
-
-/*----------------------------------------------------------------------*/
 /* build linear system stiffness matrix and rhs/force residual
  *
  * Monolithic FSI accesses the linearised structure problem. */
@@ -209,17 +200,6 @@ const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap()
   return *(LINALG::MergeMap(structure_->DomainMap(),
                             *(structure_->GetConstraintManager()->GetConstraintMap()),
                             false));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureConstrMerged::ApplyInterfaceRobinValue(
-  RCP<Epetra_Vector> iforce,
-  RCP<Epetra_Vector> ifluidvel
-)
-{
-  dserror("Not implemented!");
 }
 
 

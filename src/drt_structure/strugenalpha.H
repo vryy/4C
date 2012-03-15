@@ -447,8 +447,11 @@ public:
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
   virtual Teuchos::RCP<Epetra_Vector> Velaf() { return velm_; }
-  Teuchos::RCP<Epetra_Vector> FRobin() { return frobin_; }
-  Teuchos::RCP<Epetra_Vector> FExtn() { return fextn_; }
+
+  // the next two methods can be removed because they are no longer in use
+//  Teuchos::RCP<Epetra_Vector> FRobin() { return frobin_; }
+//  Teuchos::RCP<Epetra_Vector> FExtn() { return fextn_; }
+
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_); }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }

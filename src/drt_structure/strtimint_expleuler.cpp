@@ -115,7 +115,7 @@ void STR::TimIntExplEuler::IntegrateStep()
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // interface forces to external forces
-  if (fsisurface_)
+  if (!is_null(interface_))
   {
     fextn_->Update(1.0, *fifc_, 1.0);
   }

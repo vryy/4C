@@ -84,10 +84,7 @@ namespace ADAPTER {
     RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// External force at t_{n+1}
-    RCP<const Epetra_Vector> FExtn();
-
-    /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
-    RCP<const Epetra_Vector> FRobin();
+//    RCP<const Epetra_Vector> FExtn();
 
     /// update displacement and evaluate elements
     void Evaluate(
@@ -141,11 +138,6 @@ namespace ADAPTER {
     }
 
     /// @name Apply interface forces
-
-    virtual void ApplyInterfaceRobinValue(
-      RCP<Epetra_Vector> iforce,
-      RCP<Epetra_Vector> ifluidvel
-    );
 
     //@}
 

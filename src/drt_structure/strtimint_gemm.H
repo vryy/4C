@@ -292,7 +292,6 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertial force
     Teuchos::RCP<Epetra_Vector> fviscm_;  //!< viscous force
 
-    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
   };  // class TimIntGEMM

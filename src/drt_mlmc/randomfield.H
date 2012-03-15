@@ -57,10 +57,10 @@ private:
   int N_;
   double dkappa_;
   unsigned int  seed_;
-  vector<double>  Phi_0_ ;
-  vector<double>  Phi_1_ ;
-  vector<double>  Phi_2_ ;
-  vector<double>  Phi_3_ ;
+  std::vector<double>  Phi_0_ ;
+  std::vector<double>  Phi_1_ ;
+  std::vector<double>  Phi_2_ ;
+  std::vector<double>  Phi_3_ ;
 
   //double Phi_Array_0_ [80][80][80];
   //double Phi_Array_1_ [80][80][80];

@@ -22,6 +22,7 @@
 #include "../drt_constraint/constraint_manager.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_structure/stru_aux.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

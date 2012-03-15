@@ -7,6 +7,7 @@
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"

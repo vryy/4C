@@ -114,7 +114,8 @@ FSI::Robin::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
     Teuchos::RCP<Epetra_Vector> fluidvel = FluidToStruct(MBFluidField().ExtractInterfaceFluidVelocity());
 
     // call special function to apply the robin coupling values
-    StructureField().ApplyInterfaceRobinValue(iforce,fluidvel);
+    dserror("robin boundary conditiones are not implemented for the structure");
+//    StructureField().ApplyInterfaceRobinValue(iforce,fluidvel);
     StructureField().Solve();
     return StructureField().ExtractInterfaceDispnp();
   }

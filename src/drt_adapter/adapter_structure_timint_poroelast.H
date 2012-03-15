@@ -23,35 +23,25 @@
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Vector.h>
 
-#include "../drt_adapter/adapter_algorithmbase.H"
-#include "adapter_structure_timint.H"
-#include "../linalg/linalg_utils.H"
+#include "adapter_structure_wrapper.H"
 
 /*----------------------------------------------------------------------*/
 namespace ADAPTER
 {
 
-  class StructureTimIntImplPoro: public StructureTimIntImpl
+  class StructureTimIntImplPoro : public StructureWrapper
   {
     public:
 
-      /// Constructor
-      StructureTimIntImplPoro(Teuchos::RCP<STR::TimIntImpl> stii, ///< time integrator
-          Teuchos::RCP<Teuchos::ParameterList> ioparams, ///< I/O flags
-          Teuchos::RCP<Teuchos::ParameterList> sdynparams, ///< input parameters
-          Teuchos::RCP<Teuchos::ParameterList> xparams, ///< extra flags
-          Teuchos::RCP<DRT::Discretization> discret, ///< current discretisation
-          Teuchos::RCP<LINALG::Solver> solver, ///< the solver
-          Teuchos::RCP<LINALG::Solver> contactsolver, ///< the contact solver
-          Teuchos::RCP<IO::DiscretizationWriter> output ///< the output
-          );
+    explicit StructureTimIntImplPoro(Teuchos::RCP<Structure> structure)
+      : StructureWrapper(structure)
+    {
+      structure_->PoroInitForceStiffResidual();
+    }
 
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
-    private:
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
-      /// the actual structure algorithm
-      Teuchos::RCP<STR::TimIntImpl> structure_;
 
   };//class StructureTimIntImplPoro
 

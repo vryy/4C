@@ -149,15 +149,6 @@ namespace STR
     //! @name Fluid-structure-interaction specific methods
     //@{
 
-    //! introduce (robin) fsi surface extractor object
-    //!
-    //! Introduce the FSI surface to the fluid algorithm. This way special case
-    //! algorithms (robin coupling) can work on the surface.
-    void SetSurfaceFSI
-    (
-      const AUX::MapExtractor* fsisurface  //!< the FSI surface
-    );
-
     //! Set forces due to interface with fluid
     void SetForceInterface
     (
@@ -189,16 +180,115 @@ namespace STR
       return Teuchos::null;
     }
 
+    //! InitialGuess is not available for explicit time integrators
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
+    {
+      dserror("InitialGuess() is not available for explicit time integrators");
+      return Teuchos::null;
+    }
+
+    //! RHS() is not available for explicit time integrators
+    virtual Teuchos::RCP<const Epetra_Vector> RHS()
+    {
+      dserror("RHS() is not available for explicit time integrators");
+      return Teuchos::null;
+    }
+
+    /// recalculate structural matrices for tsi simulations
+    virtual void TSIMatrix()
+    {
+      dserror("TSIMatrix() is not needed for explicit time integrators");
+      return;
+    }
+
+    //! FORMERLY: Called from the previous adapters
+    /* prepare time step */
+    virtual void PrepareTimeStep()
+    {
+      dserror("PrepareTimeStep() is not needed for explicit time integrators");
+    }
+
+    /// has to be renamed either here or IntegrateStep()
+    virtual void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> disiterinc
+    )
+    {
+      dserror("just here for overloading reasons, should go as soon as possible");
+    }
+
+    /// has to be renamed either here or PrintStep()
+    virtual void Output()
+    {
+      dserror("just here for overloading reasons, should go as soon as possible");
+    }
+
+    /// has to be renamed either here or UpdateStepState() /UpdateStepStateElement()
+    virtual void Update()
+    {
+      dserror("just here for overloading reasons, should go as soon as possible");
+    }
+
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+      Teuchos::RCP<Epetra_Vector> iforce
+    )
+    {
+      dserror("RelaxationSolve() is not needed for explicit time integrators");
+      return Teuchos::null;
+    }
+
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint()
+    {
+      dserror("HaveConstraint() has not been tested for explicit time integrators");
+      return false;
+    };
+
+    //! Return rcp to ConstraintManager conman_
+    virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
+    {
+      dserror("GetConstraintManager() has not been tested for explicit time integrators");
+      return Teuchos::null;
+    };
+
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    {
+      dserror("GetSTCAlgo() has not been tested for explicit time integrators");
+      return INPAR::STR::stc_none;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    {
+      dserror("GetSTCMat() has not been tested for explicit time integrators");
+      return Teuchos::null;
+    };
+
+    virtual void UpdateIterIncrConstr
+    (
+      Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    )
+    {
+      dserror("UpdateIterIncrConstr() has not been tested for explicit time integrators");
+      return;
+    }
+
+    ///  Do the nonlinear solve for the time step. All boundary conditions have
+    ///  been set.
+    /// eventually renamed here or IntegrateStep()
+    virtual void Solve()
+    {
+      dserror("Solve() is not needed for explicit time integrators or rename it correctly");
+      return;
+    }
+
+    //! prepare partiton step
+    virtual void PreparePartitionStep()
+    {
+      dserror("PreparePartitionStep() is not needed for explicit time integrators");
+      return;
+    }
     //@}
 
   protected:
-
-    //! @name FSI stuff
-    //@{
-    const AUX::MapExtractor* fsisurface_;  //!< surface of structural
-                                             //!< which is in contact
-                                             //!< with fluid
-    //@}
 
     //! @name Interface stuff
     //@{

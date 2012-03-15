@@ -157,7 +157,8 @@ namespace STR
 
     virtual void PoroEvaluateForceStiffResidual(bool predict = false) = 0;
 
-    virtual void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams) = 0;
+    virtual void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams) { dserror("just for testing, will be removed"); }
+    virtual void PoroInitForceStiffResidual() { dserror("just for testing, will be adapted in all time integrators"); }
 
     //! Evaluate forces due to constraints
     void ApplyForceStiffConstraint
@@ -420,7 +421,18 @@ namespace STR
     //! Do non-linear solve with NOX
     void NoxSolve();
 
+    //! moved from the ADAPTER to here, to be checked carefully
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+      Teuchos::RCP<Epetra_Vector> iforce
+    )
+    {
+      Teuchos::RCP<Epetra_Vector> relax = interface_->InsertFSICondVector(iforce);
+      SetForceInterface(relax);
+      Teuchos::RCP<Epetra_Vector> idisi = SolveRelaxationLinear();
 
+      // we are just interested in the incremental interface displacements
+      return interface_->ExtractFSICondVector(idisi);
+    }
 
     //@}
 
@@ -582,18 +594,29 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+    virtual void UseBlockMatrix(){UseBlockMatrix(Interface(),Interface()); return;}
+
+    //! switch structure field to block matrix in fsi simulations
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                         const LINALG::MultiMapExtractor& rangemaps);
 
 
-    //! introduce (robin) fsi surface extractor object
-    //!
-    //! Introduce the FSI surface to the fluid algorithm. This way special case
-    //! algorithms (robin coupling) can work on the surface.
-    void SetSurfaceFSI
-    (
-      const AUX::MapExtractor* fsisurface  //!< the FSI surface
-    );
+    /// @name Apply interface forces
+
+    /// apply interface forces to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyInterfaceForces(
+      Teuchos::RCP<Epetra_Vector> iforce
+    )
+    {
+      SetForceInterface(*interface_, iforce);
+      PreparePartitionStep();
+    }
+
 
     //! Set forces due to interface with fluid
     void SetForceInterface
@@ -616,7 +639,7 @@ namespace STR
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
-    //! Prepare system for solving with Newton's method
+        //! Prepare system for solving with Newton's method
     //!
     //! - negative residual
     //! - blank residual on Dirichlet DOFs
@@ -655,8 +678,59 @@ namespace STR
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
-    //! Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    Teuchos::RCP<const Epetra_Vector> DisRes() const { return disi_; }
+    //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
+    //! Called from the previous adapters as InitialGuess()
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
+
+
+
+    //! FORMERLY: Called from the previous adapters
+    /* prepare time step */
+    virtual void PrepareTimeStep()
+    {
+      // prepare contact for new time step
+      PrepareStepContact();
+
+      // Note: MFSI requires a constant predictor. Otherwise the fields will get
+      // out of sync.
+
+      // predict
+      Predict();
+    }
+
+    //! FORMERLY: Called from the previous adapters
+    /* build linear system stiffness matrix and rhs/force residual
+     * Monolithic FSI accesses the linearised structure problem. */
+    virtual void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> disiterinc
+    )
+    {
+      UpdateIterIncrementally(disiterinc);
+
+      // builds tangent, residual and applies DBC
+      EvaluateForceStiffResidual();
+      PrepareSystemForNewtonSolve();
+      return;
+    }
+
+
+    //! FORMERLY: Called from the previous adapters
+    /* update time step */
+    virtual void Update()
+    {
+      UpdateStepState();
+      UpdateStepTime();
+      UpdateStepElement();
+      return;
+    }
+
+    //! FORMERLY: Called from the previous adapters
+    /* output */
+    virtual void Output()
+    {
+      OutputStep();
+    }
+
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual
@@ -667,8 +741,9 @@ namespace STR
       if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
     }
 
-    //! Return effective residual force \f$R_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> ForceRes() const { return fres_; }
+    //! FORMERLY: Return effective residual force \f$R_{n+1}\f$
+    //! Called from the previous adapters as ForceRes()
+    Teuchos::RCP<const Epetra_Vector> RHS() { return fres_; }
 
     virtual Teuchos::RCP<Epetra_Vector> Velaf()
     {
@@ -688,13 +763,6 @@ namespace STR
     (
       const INPAR::STR::ConvCheck convcheck  //!< integrated (and deprecated) convergence type flag
     );
-
-    //! @name FSI stuff
-    //@{
-    const AUX::MapExtractor* fsisurface_;  //!< surface of structural
-                                             //!< which is in contact
-                                             //!< with fluid
-    //@}
 
     //! @name General purpose algorithm parameters
     //@{

@@ -43,8 +43,7 @@ STR::TimIntStatics::TimIntStatics
   fint_(Teuchos::null),
   fintn_(Teuchos::null),
   fext_(Teuchos::null),
-  fextn_(Teuchos::null),
-  frobin_(Teuchos::null)
+  fextn_(Teuchos::null)
 {
 
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
@@ -79,9 +78,6 @@ STR::TimIntStatics::TimIntStatics
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext_);
 
-  // external pseudo force due to RobinBC
-  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
-
   // have a nice day
   return;
 }
@@ -114,7 +110,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // interface forces to external forces
-  if (fsisurface_)
+  if (!is_null(interface_))
   {
     fextn_->Update(1.0, *fifc_, 1.0);
   }

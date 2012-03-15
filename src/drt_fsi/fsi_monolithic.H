@@ -3,6 +3,8 @@
 #ifndef FSI_MONOLITHIC_H
 #define FSI_MONOLITHIC_H
 
+#include <NOX.H>
+#include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 
 #include "../drt_adapter/adapter_structure.H"

@@ -18,8 +18,8 @@ Maintainer: Mirella Coroneo
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_stru_ale/stru_ale_utils.H"
 #include "../drt_lib/drt_utils.H"
-
 #include "../drt_fsi/fsi_utils.H"
+#include "../drt_structure/stru_aux.H"
 
 //#include "../drt_lib/drt_node.H"
 //#include "../drt_adapter/adapter_structure.H"

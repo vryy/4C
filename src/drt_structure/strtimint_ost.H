@@ -231,7 +231,8 @@ namespace STR
 
     void PoroEvaluateForceStiffResidual(bool predict = false);
 
-    void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams);
+//    void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams);
+    void PoroInitForceStiffResidual();
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
@@ -339,7 +340,6 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> finertt_;  //!< intertial force
     Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
 
-    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
     //@}
 
   };  // class TimIntOneStepTheta

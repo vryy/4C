@@ -172,19 +172,11 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimIntAda::Discretization()
 
 
 /*----------------------------------------------------------------------*/
-/* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntAda::FRobin()
-{
-  //return structure_->GetForceRobinFSI();
-  return LINALG::CreateVector(*discret_->DofRowMap(), true);
-}
-
-/*----------------------------------------------------------------------*/
 /* External force F_{ext,n+1} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntAda::FExtn()
-{
-  dserror("not implemented"); return Teuchos::null;
-}
+//Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntAda::FExtn()
+//{
+//  dserror("not implemented"); return Teuchos::null;
+//}
 
 
 /*----------------------------------------------------------------------*/
@@ -339,17 +331,6 @@ void ADAPTER::StructureTimIntAda::ApplyInterfaceForces(
 )
 {
   dserror("not implemented");
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::ApplyInterfaceRobinValue(
-  Teuchos::RCP<Epetra_Vector> iforce,
-  Teuchos::RCP<Epetra_Vector> ifluidvel
-)
-{
-  dserror("Not impl.");
 }
 
 

@@ -58,8 +58,7 @@ STR::TimIntGEMM::TimIntGEMM
   fextm_(Teuchos::null),
   fextn_(Teuchos::null),
   finertm_(Teuchos::null),
-  fviscm_(Teuchos::null),
-  frobin_(Teuchos::null)
+  fviscm_(Teuchos::null)
 {
   // info to user : OST --- your oriental scheme
   if (myrank_ == 0)
@@ -103,9 +102,6 @@ STR::TimIntGEMM::TimIntGEMM
   finertm_ = LINALG::CreateVector(*dofrowmap_, true);
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // external pseudo force due to RobinBC
-  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // have a nice day
   return;
@@ -195,7 +191,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // interface forces to external forces
-  if (fsisurface_)
+  if (!is_null(interface_))
   {
     fextn_->Update(1.0, *fifc_, 1.0);
   }

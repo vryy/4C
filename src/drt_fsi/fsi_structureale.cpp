@@ -24,6 +24,7 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_structure/stru_aux.H"
 
 #include "../drt_lib/drt_colors.H"
 

@@ -41,6 +41,13 @@ Maintainer: Thomas Klöppel
 #include "strtimint_mstep.H"
 #include "../drt_inpar/inpar_structure.H"
 
+
+//new headers
+#include "../drt_adapter/adapter_structure.H"
+// TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
+#include "../drt_structure/stru_aux.H"
+
+
 // forward declarations
 namespace DRT
 {
@@ -122,7 +129,7 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class TimInt
+  class TimInt : public ::ADAPTER::Structure
   {
 
     //! Structural time adaptivity is friend
@@ -486,8 +493,14 @@ namespace STR
       return discret_;
     }
 
-    //! Access solver
+    //! Access solver, one of these have to be removed (see below)
     Teuchos::RCP<LINALG::Solver> Solver()
+    {
+      return solver_;
+    }
+
+    //! Access solver, one of these have to be removed (see above)
+    Teuchos::RCP<LINALG::Solver> LinearSolver()
     {
       return solver_;
     }
@@ -592,7 +605,7 @@ namespace STR
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return dbcmaps_;
     }
@@ -661,6 +674,11 @@ namespace STR
     //@}
 
   protected:
+
+    /// the interface map setup for interface <-> full translation
+    Teuchos::RCP<STR::AUX::MapExtractor> interface_; // TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
+
+
 
     //! @name General purpose algorithm members
     //@{
@@ -821,6 +839,199 @@ namespace STR
     double initporosity_;
 
     //@}
+
+
+
+
+    //----------------------------------------------------------------
+    // the following methods are imported from the adapter_structure_timint and need a
+    // merge with the already existing ones above
+    //----------------------------------------------------------------
+  public:
+
+    /// initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+
+    /// right-hand-side of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+
+    /// unknown displacements at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> Dispnp(){ return DisNew(); }
+
+    /// unknown displacements at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Dispn(){ return Dis(); }
+
+    /// dof map of vector of unknowns
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    /// dof map of vector of unknowns
+    // new method for multiple dofsets
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
+
+    /// recalculate structural matrices for tsi simulations
+    virtual void TSIMatrix() = 0;
+
+    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual int GetTimeStep() const { return GetStep(); }
+
+    /// start new time step
+    virtual void PrepareTimeStep() = 0;
+
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
+
+    /// update at time step end
+    virtual void Update() = 0;
+
+    /// Update iteration
+    /// Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+    ) = 0;
+
+
+    /// output results
+    virtual void Output() = 0;
+
+    /// domain map of system matrix (do we really need this?)
+    virtual const Epetra_Map& DomainMap(){ return GetDomainMap(); }
+
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint() = 0;
+
+    /// get constraint manager defined in the structure
+    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+
+    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
+
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
+
+
+    /// @name Solver calls
+    //@{
+
+    /// non-linear solve
+    ///
+    /// Do the nonlinear solve for the time step. All boundary conditions have
+    /// been set.
+    virtual void Solve() = 0;
+
+    /// linear structure solve with just a interface load
+    ///
+    /// The very special solve done in steepest descent relaxation
+    /// calculation (and matrix free Newton Krylov).
+    ///
+    /// \note Can only be called after a valid structural solve.
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+      Teuchos::RCP<Epetra_Vector> iforce
+    ) = 0;
+
+    //@}
+
+    //! @name Extract methods
+    //@{
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp(){ return DisNew(); }
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn(){ return Dis(); }
+
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln(){ return Vel(); }
+
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp(){ return VelNew(); }
+
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf(){ return Velaf(); }
+
+    //@}
+
+    //! specific method for iterative staggered partitioned TSI
+
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep() = 0;
+
+    /// create result test for encapsulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+    /// poroelasticity specific method
+    virtual void PoroInitForceStiffResidual() {dserror("not available for explicit time integrators"); }
+
+    // to be removed by Anh-Tu
+    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
+    {dserror("not available for explicit time integrators"); }
+    virtual void PrepareSystemForNewtonSolve()
+    {dserror("not available for explicit time integrators"); }
+    virtual void PoroEvaluateForceStiffResidual(bool predict = false)
+    {dserror("not available for explicit time integrators"); }
+    // to be removed by Anh-Tu ; END
+
+
+
+
+
+
+    //----------------------------------------------------------------
+    // TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
+    //----------------------------------------------------------------
+
+    /// communication object at the interface
+    virtual const STR::AUX::MapExtractor& Interface() const
+    {
+      return *interface_;
+    }
+
+    virtual void UseBlockMatrix()
+    { dserror("currently not available for explicit time integrator"); }
+
+    /// @name Extract interface values
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn()
+    {
+      return interface_->ExtractFSICondVector(Dis());
+    }
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp()
+    {
+      return interface_->ExtractFSICondVector(DisNew());
+    }
+
+    /// extract interface forces (necessary for robin-BC)
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+    {
+      return interface_->ExtractFSICondVector(FextNew());
+    }
+
+    /// Predictor for interface displacements
+    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
+
+    /// @name Apply interface forces
+
+    /// apply interface forces to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyInterfaceForces(
+      Teuchos::RCP<Epetra_Vector> iforce
+    ){ dserror("currently not available for explicit time integrator"); }
+
+        //@}
+
+
+
 
   };
 

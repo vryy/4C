@@ -16,6 +16,8 @@
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 
+#include <NOX.H>
+#include <NOX_Epetra.H>
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>

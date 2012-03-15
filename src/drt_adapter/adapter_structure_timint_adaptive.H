@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_timint.H
+\file adapter_structure_timint_adaptive.H
 
 \brief Structural time integration field adapter
 
@@ -105,10 +105,7 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
 
     /// External force at t_{n+1}
-    Teuchos::RCP<const Epetra_Vector> FExtn();
-
-    /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
-    Teuchos::RCP<const Epetra_Vector> FRobin();
+//    Teuchos::RCP<const Epetra_Vector> FExtn();
 
     /// @name Time step helpers
     //@{
@@ -274,11 +271,6 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(
       Teuchos::RCP<Epetra_Vector> iforce
-    );
-
-    virtual void ApplyInterfaceRobinValue(
-      Teuchos::RCP<Epetra_Vector> iforce,
-      Teuchos::RCP<Epetra_Vector> ifluidvel
     );
 
     //@}

@@ -28,7 +28,7 @@ namespace ADAPTER
     /// dof map of vector of unknowns for multiple dofsets
     // new method
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
-    { return Teuchos::rcp(new Epetra_Map(*Discretization()->DofRowMap(nds))); }
+    { return structure_->DofRowMap(nds); }
     virtual const Epetra_Map& DomainMap()
     { return structure_->DomainMap(); }
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
@@ -47,13 +47,13 @@ namespace ADAPTER
     { return structure_->Discretization(); }
     virtual bool HaveConstraint()
     { return structure_->HaveConstraint(); }
-    virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
+    virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
     virtual INPAR::STR::STC_Scale GetSTCAlgo()
     { return structure_->GetSTCAlgo();};
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     { return structure_->GetSTCMat();};
-    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
     virtual const STR::AUX::MapExtractor& Interface() const
@@ -68,6 +68,10 @@ namespace ADAPTER
     { return structure_->GetTimeStep(); }
     virtual int GetTimeNumStep() const
     { return structure_->GetTimeNumStep(); }
+    virtual void SetTimeStepSize(double timestepsize)
+    { return structure_->SetTimeStepSize(timestepsize); }
+    virtual void SetInitialTimeStepAndTime(double timestepsize)
+    { return structure_->SetInitialTimeStepAndTime(timestepsize); }
 
     virtual void PrepareTimeStep()
     { structure_->PrepareTimeStep(); }
@@ -105,9 +109,6 @@ namespace ADAPTER
 
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
     { structure_->ApplyInterfaceForces(iforce); }
-    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
-                                          Teuchos::RCP<Epetra_Vector> ifluidvel)
-    {  structure_->ApplyInterfaceRobinValue(iforce,ifluidvel); }
 
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp)
     { structure_->ApplyTemperatures(temp); }
@@ -132,6 +133,22 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }
+
+    /// poroelasticity specific method
+    virtual void PoroInitForceStiffResidual()
+    { return structure_->PoroInitForceStiffResidual(); }
+
+
+    // to be removed by Anh-Tu
+    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
+    { return structure_->UpdateIterIncrementally(disi); }
+    virtual void PrepareSystemForNewtonSolve()
+    { return structure_->PrepareSystemForNewtonSolve(); }
+    virtual void PoroEvaluateForceStiffResidual(bool predict = false)
+    { return structure_->PoroEvaluateForceStiffResidual(predict); }
+    // to be removed by Anh-Tu ; END
+
+
 
     /// Integrate from t1 to t2
     virtual void Integrate() { structure_->Integrate(); }

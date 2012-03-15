@@ -12,6 +12,7 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_structure/stru_aux.H"
 
 #include "fsi_debugwriter.H"
 

@@ -10,6 +10,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

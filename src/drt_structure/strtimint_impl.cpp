@@ -63,7 +63,6 @@ STR::TimIntImpl::TimIntImpl
     contactsolver,
     output
   ),
-  fsisurface_(NULL),
   pred_(DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
   itertype_(DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
   normtypedisi_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),
@@ -2178,16 +2177,6 @@ void STR::TimIntImpl::PrintStepText
 
   // fall asleep
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/* introduce (robin) fsi surface extractor object */
-void STR::TimIntImpl::SetSurfaceFSI
-(
-  const STR::AUX::MapExtractor* fsisurface  //!< the FSI surface
-)
-{
-  fsisurface_ = fsisurface;
 }
 
 /*----------------------------------------------------------------------*/

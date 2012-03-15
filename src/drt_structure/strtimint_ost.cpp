@@ -21,6 +21,7 @@ Maintainer: Thomas Klöppel
 #include "stru_aux.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
@@ -64,8 +65,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   fext_(Teuchos::null),
   fextn_(Teuchos::null),
   finertt_(Teuchos::null),
-  fvisct_(Teuchos::null),
-  frobin_(Teuchos::null)
+  fvisct_(Teuchos::null)
 {
   // info to user
   if (myrank_ == 0)
@@ -109,9 +109,6 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   finertt_ = LINALG::CreateVector(*dofrowmap_, true);
   // viscous mid-point force vector F_visc
   fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // external pseudo force due to RobinBC
-  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // have a nice day
   return;
@@ -222,7 +219,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // interface forces to external forces
-  if (fsisurface_)
+  if (!is_null(interface_))
   {
     fextn_->Update(1.0, *fifc_, 1.0);
   }
@@ -533,7 +530,7 @@ void STR::TimIntOneStepTheta::PoroEvaluateForceStiffResidual(bool predict)
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
   // interface forces to external forces
-  if (fsisurface_)
+  if (!is_null(interface_))
   {
     fextn_->Update(1.0, *fifc_, 1.0);
   }
@@ -615,12 +612,13 @@ void STR::TimIntOneStepTheta::PoroEvaluateForceStiffResidual(bool predict)
   return;
 }
 
-void STR::TimIntOneStepTheta::PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams)
+//void STR::TimIntOneStepTheta::PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams)
+void STR::TimIntOneStepTheta::PoroInitForceStiffResidual()
 {
-  //const Teuchos::ParameterList& porodynparams = DRT::Problem::Instance()->PoroelastDynamicParams();
-  //initporosity_ =porodynparams.get<double>("INITPOROSITY");
+  const Teuchos::ParameterList& porodynparams = DRT::Problem::Instance()->PoroelastDynamicParams();
+  initporosity_ = porodynparams.get<double>("INITPOROSITY");
 
-  initporosity_ =sdynparams->get<double>("INITPOROSITY");
+//  initporosity_ =sdynparams->get<double>("INITPOROSITY");
 
   // initialize stiffness matrix to zero
   stiff_->Zero();
@@ -669,9 +667,6 @@ void STR::TimIntOneStepTheta::PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::P
   finertt_ = LINALG::CreateVector(*dofrowmap_, true);
   // viscous mid-point force vector F_visc
   fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // external pseudo force due to RobinBC
-  frobin_ = LINALG::CreateVector(*dofrowmap_, true);
 
 	return;
 }
