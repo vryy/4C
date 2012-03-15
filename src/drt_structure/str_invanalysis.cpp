@@ -39,7 +39,6 @@ Maintainer: Sophie Rausch
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-//#include "../drt_adapter/adapter_structure_timint.H"
 
 #include "strtimint.H"
 #include "strtimint_impl.H"

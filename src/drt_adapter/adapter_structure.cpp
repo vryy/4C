@@ -15,9 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "adapter_structure.H"
-//#include "adapter_structure_timint.H" // will be removed
 #include "adapter_structure_timint_adaptive.H"
-//#include "adapter_structure_timint_expl.H"  // will be removed
 #include "adapter_structure_constr_merged.H"
 #include "adapter_structure_wrapper.H"
 #include "adapter_structure_lung.H"

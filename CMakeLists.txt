@@ -526,10 +526,8 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_structure_bio.cpp
   src/drt_adapter/adapter_structure_constr_merged.cpp
   src/drt_adapter/adapter_structure_lung.cpp
-  src/drt_adapter/adapter_structure_timint.cpp
   src/drt_adapter/adapter_structure_timint_poroelast.cpp
   src/drt_adapter/adapter_structure_timint_adaptive.cpp
-  src/drt_adapter/adapter_structure_timint_expl.cpp
   src/drt_adapter/adapter_structure_wrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
