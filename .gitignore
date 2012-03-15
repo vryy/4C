@@ -7,6 +7,7 @@
 # C++ build
 *.o
 *.a
+src/headers/compile_settings.h
 
 # Other build
 DartConfiguration.tcl
@@ -20,11 +21,15 @@ post_drt_gid
 post_drt_monitor
 post_drt_s8convert
 pre_curve
+!pre_curve/
 pre_exodus
+!pre_exodus/
 
 # Eclipse
 .cproject
 .project
+.settings
+.log
 
 # CMake
 CMakeCache.txt
