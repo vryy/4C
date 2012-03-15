@@ -128,6 +128,22 @@ namespace ADAPTER {
     /// Get number of time steps
     virtual int GetTimeNumStep() const { dserror("not implemented"); return 0; }
 
+    /// set time step size
+    virtual void SetTimeStepSize(double timestepsize){ dserror("not implemented"); return; }
+
+    /// set time step size and time
+    virtual void SetInitialTimeStepAndTime(double timestepsize){ dserror("not implemented"); return; }
+
+    /// poroelasticity specific method
+    virtual void PoroInitForceStiffResidual(){ dserror("not implemented"); return; }
+
+    // to be removed by Anh-Tu
+    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
+    { dserror("not implemented"); return; }
+    virtual void PrepareSystemForNewtonSolve(){ dserror("not implemented"); return; }
+    virtual void PoroEvaluateForceStiffResidual(bool predict = false){ dserror("not implemented"); return; }
+    // to be removed by Anh-Tu ; END
+
     /// start new time step
     void PrepareTimeStep();
 

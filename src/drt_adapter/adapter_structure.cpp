@@ -344,34 +344,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
   // create marching time integrator
   Teuchos::RCP<Structure> tmpstr = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
-//  structure_ = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
 
 
-
-
-
-  // original version
-//  Teuchos::RCP<STR::TimInt> sti;
-//  Teuchos::RCP<STR::TimIntImpl> stii;
-//
-//  sti = stii = STR::TimIntImplCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
-//
-//  Teuchos::RCP<STR::TimIntExpl> stie;
-//  if (stii==Teuchos::null)
-//  {
-//    sti = stie = STR::TimIntExplCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
-//  }
-
-
-
-
-
-
-//  /* TODO: the following methods are still needed and will be reactivated as soon as possible!!! 13.03.2012 Georg Hammerl
+//  /* TODO: the following method is still needed and will be reactivated as soon as possible!!! 13.03.2012 Georg Hammerl
 
   // still needed
-//  // create auxiliar time integrator
-//  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, sti);
+  // create auxiliar time integrator
+//  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, tmpstr);
 //
 //  if (sta!=Teuchos::null)
 //  {
@@ -384,43 +363,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 //    {
 //      dserror("no adaptive time integration with fsi");
 //    }
-//    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, sti, ioflags, sdyn, xparams,
+//    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr, ioflags, sdyn, xparams,
 //                                                     actdis, solver, contactsolver, output));
 //  }
-
-
-
-
-
-
-  // no longer needed
-//  else if (stie!=Teuchos::null)
-//  {
-//    if (genprob.probtyp == prb_fsi or
-//        genprob.probtyp == prb_fsi_lung or
-//        genprob.probtyp == prb_gas_fsi or
-//        genprob.probtyp == prb_biofilm_fsi or
-//        genprob.probtyp == prb_thermo_fsi or
-//        genprob.probtyp == prb_fluid_fluid_fsi)
-//    {
-//      dserror("no explicit time integration with fsi");
-//    }
-//    structure_ = Teuchos::rcp(new StructureTimIntExpl(stie, ioflags, sdyn, xparams,
-//                                                      actdis, solver, contactsolver, output));
-//  }
-
-
-
-
-
 //  else if (structure_ != Teuchos::null)
+
   if (tmpstr != Teuchos::null)
   {
-    // no longer needed
-//    Teuchos::RCP<Structure> tmpstr
-//      = Teuchos::rcp(new StructureTimIntImpl(stii, ioflags, sdyn, xparams,
-//                                             actdis, solver, contactsolver, output));
-
     if (genprob.probtyp == prb_fsi or
         genprob.probtyp == prb_fsi_lung or
         genprob.probtyp == prb_gas_fsi or
@@ -471,10 +420,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   {
     dserror("no proper time integration found");
   }
-
-
-
-
 
   // see you
   return;
