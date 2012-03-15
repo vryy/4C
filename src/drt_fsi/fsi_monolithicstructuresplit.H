@@ -14,6 +14,14 @@ namespace ADAPTER
   class Fluid;
 }
 
+namespace NOX
+{
+  namespace FSI
+  {
+    class AdaptiveNewtonNormF;
+    class Group;
+  }
+}
 
 namespace FSI
 {
@@ -67,6 +75,10 @@ namespace FSI
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
     //@}
+
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp);
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
@@ -149,6 +161,44 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> scolsum_;
     Teuchos::RCP<Epetra_Vector> arowsum_;
     Teuchos::RCP<Epetra_Vector> acolsum_;
+
+    //@}
+
+    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
+    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> lambdag_;
+
+    //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> fgscur_;
+
+    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous NOX iteration \f$i\f$
+    Teuchos::RCP<Epetra_Vector> fgspre_;
+
+    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddiinc_;
+
+    //! inner displacement solution of the structure at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> soxpre_;
+
+    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddginc_;
+
+    //! interface displacement solution of the structure at previous NOX iteration
+    Teuchos::RCP<Epetra_Vector> scxpre_;
+
+    //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<LINALG::SparseMatrix> sgicur_;
+
+    //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<LINALG::SparseMatrix> sgipre_;
+
+    //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<LINALG::SparseMatrix> sggcur_;
+
+    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<LINALG::SparseMatrix> sggpre_;
 
     //@}
 

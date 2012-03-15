@@ -13,6 +13,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
+//#include "fsi_nox_group.H"
 
 namespace LINALG
 {
@@ -30,6 +31,7 @@ namespace NOX
   namespace FSI
   {
     class AdaptiveNewtonNormF;
+    class Group;
   }
 }
 
@@ -192,6 +194,10 @@ namespace UTILS
     /// do new time step
     virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){return;};
+
     //! @name NOX methods
 
     /// compute FSI residual
@@ -202,6 +208,9 @@ namespace UTILS
 
     /// preconditioner
     bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+
+    /// request NOX convergence from outside (needed for coupled problems)
+    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
 
     //@}
 
@@ -241,9 +250,6 @@ namespace UTILS
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
-
-    /// request NOX convergence from outside (needed for coupled problems)
-    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
 
   protected:
 
@@ -308,6 +314,8 @@ namespace UTILS
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
 
+    //! @name Some NOX related stuff
+
     /// output utilities
     Teuchos::RCP<NOX::Utils> utils_;
 
@@ -320,6 +328,8 @@ namespace UTILS
 
     /// status of NOX convergence check
     NOX::StatusTest::StatusType noxstatus_;
+
+    //@}
 
     /// output stream
     Teuchos::RCP<std::ofstream> log_;
@@ -377,6 +387,9 @@ namespace UTILS
 
     /// start a new time step
     virtual void PrepareTimeStep();
+
+    /// recover Lagrange multiplier at the interface which is needed for rhs in next time step
+//    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp);
 
   protected:
 

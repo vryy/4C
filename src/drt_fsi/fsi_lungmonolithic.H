@@ -101,6 +101,9 @@ namespace FSI
 
     virtual void ReadRestart(int step);
 
+    /// recover Lagrange multiplier at the interface needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){};
+
   protected:
 
     virtual void Output();

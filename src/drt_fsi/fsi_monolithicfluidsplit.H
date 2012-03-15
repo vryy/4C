@@ -97,6 +97,10 @@ namespace FSI
     /// start a new time step
     virtual void PrepareTimeStep();
 
+    /// recover Lagrange multiplier at the interface (i.e. condensed forces onto the fluid)
+    /// needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){};
+
   protected:
 
     /// setup solver for global block system

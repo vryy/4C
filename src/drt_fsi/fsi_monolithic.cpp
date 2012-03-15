@@ -234,7 +234,6 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::PrepareTimeloop()
@@ -301,13 +300,13 @@ void FSI::Monolithic::PrepareTimeloop()
     double time = 0.0;
     double dt = 0.0;
     double pstime = -1.0;
-    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
       time   = StructureField().GetTime();
       dt     = StructureField().GetTimeStepSize();
-      pstime = pslist.get<double>("PRESTRESSTIME");
+      pstime = sdyn.get<double>("PRESTRESSTIME");
       if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
   }
@@ -380,6 +379,10 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   if (noxstatus_ != NOX::StatusTest::Converged)
     if (Comm().MyPID()==0)
       utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+
+  // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
+  // (i.e. condensed forces onto the structure) needed for rhs in next time step
+  RecoverLagrangeMultiplier(grp);
 
   // cleanup
   //mat_->Zero();
@@ -682,7 +685,6 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
   return true;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
@@ -743,6 +745,5 @@ void FSI::BlockMonolithic::PrepareTimeStep()
   // new time step, rebuild preconditioner
   precondreusecount_ = 0;
 }
-
 
 #endif

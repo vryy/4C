@@ -67,6 +67,9 @@ namespace FSI
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
+    /// recover Lagrange multiplier at the interface needed for rhs in next time step
+    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){};
+
   protected:
 
     /// setup solver for global block system
