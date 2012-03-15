@@ -1,7 +1,6 @@
 
 #include "cut_element.H"
 #include "cut_volumecell.H"
-#include "cut_node.H"
 
 
 void GEO::CUT::Node::RegisterCuts()

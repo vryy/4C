@@ -1,0 +1,53 @@
+#ifndef DIRECT_DIVERGENCE_H
+#define DIRECT_DIVERGENCE_H
+
+#include "cut_element.H"
+#include "cut_volumecell.H"
+
+namespace GEO
+{
+  namespace CUT
+  {
+    class Element;
+    class Facet;
+    class VolumeCell;
+    class Mesh;
+
+    /*!
+    \brief A class to construct Gaussian rule for volumecell by direct application of divergence theorem.
+    This generate only the integration points on the facets.
+    */
+    class DirectDivergence
+    {
+      public:
+        DirectDivergence(VolumeCell* volcell, Element* elem, const GEO::CUT::Point::PointPosition posi, Mesh &mesh)
+        :volcell_(volcell),
+         elem1_(elem),
+         position_(posi),
+         mesh_(mesh)
+        {
+        }
+
+        ~DirectDivergence(){};
+
+        /*!
+        \brief Generate integration points on the facets of the volumecell
+        */
+        Teuchos::RCP<DRT::UTILS::GaussPoints> VCIntegrationRule(std::vector<double> &RefPlaneEqn);
+
+      private:
+
+        /*!
+        \brief Identify the list of facets which need to be triangulated, and also get the reference facet that will be used in xfluid part
+         */
+        void ListFacets( std::vector<plain_facet_set::const_iterator>& facetIterator,std::vector<double>& RefPlaneEqn );
+
+        VolumeCell* volcell_;
+        Element* elem1_;
+        const GEO::CUT::Point::PointPosition position_;
+        Mesh& mesh_;
+    };
+  }
+}
+
+#endif

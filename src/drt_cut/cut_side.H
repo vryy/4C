@@ -4,7 +4,6 @@
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-#include "cut_node.H"
 #include "cut_edge.H"
 #include "cut_tolerance.H"
 
@@ -19,7 +18,9 @@ namespace CUT
   class Creator;
   class Cycle;
 
-/// base of all sides
+/*!
+\brief Base class for dealing sides in cut algorithm
+ */
 class Side
 {
 public:
@@ -40,29 +41,56 @@ public:
 
   virtual ~Side() {}
 
+  /*!
+  \brief Returns the ID of the side
+   */
   int Id() const { return sid_; }
 
+  /*!
+  \brief Set the side ID to the input value
+   */
   void SetId( int sid ) { sid_ = sid; }
 
+  /*!
+  \brief Returns true if this is a cut side
+   */
   bool IsCutSide() { return sid_ > -1; }
 
+  /*!
+  \brief Register this element in which the side is a part of
+   */
   void Register( Element * element ) { elements_.insert( element ); }
 
-  void CollectElements( plain_element_set & elements )
+  /*void CollectElements( plain_element_set & elements )
   {
     std::copy( elements_.begin(), elements_.end(), std::inserter( elements, elements.begin() ) );
-  }
+  }*/
 
+  /*!
+  \brief Returns the geometrical shape of this side
+   */
   virtual DRT::Element::DiscretizationType Shape() = 0;
 
+  /*!
+  \brief Returns the topology data for the side from Shards library
+   */
   virtual const CellTopologyData * Topology() = 0;
 
+  /*!
+  \brief Calculates the points at which the side is cut by this edge
+   */
   virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points ) = 0;
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges ) = 0;
 
+  /*!
+  \brief Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz)
+   */
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
+  /*!
+  \brief Returns the global coordinates of the nodes of this side
+   */
   void Coordinates( double * xyze )
   {
     double * x = xyze;
@@ -124,12 +152,24 @@ public:
 
   const std::vector<Node*> & Nodes() const { return nodes_; }
 
+  /*!
+  \brief Calculate the points at which the other side intersects with this considered side
+   */
   bool FindCutPoints( Mesh & mesh, Element * element, Side & other, int recursion );
 
+  /*!
+  \brief Draw cut lines between the cut points of this edge and "other"
+   */
   bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 
+  /*!
+  \brief Get (not calculate) all the cut points between this edge and "other"
+   */
   void GetCutPoints( Element * element, Side & other, PointSet & cuts );
 
+  /*!
+  \brief Get all the cut points that are produced by this edge
+   */
   const PointSet & CutPoints() const { return cut_points_; }
 
   const std::vector<Line*> & CutLines() const { return cut_lines_; }

@@ -1,12 +1,6 @@
-
-//#include "../drt_geometry/intersection_templates.H"
-
 #include "cut_intersection.H"
 #include "cut_position.H"
-#include "cut_facet.H"
-#include "cut_volumecell.H"
 #include "cut_tetmesh.H"
-#include "cut_element.H"
 #include "cut_options.H"
 #include "cut_integrationcellcreator.H"
 #include "cut_volumecellgenerator.H"
@@ -14,8 +8,8 @@
 
 #include <string>
 #include <stack>
-#include <iostream>
 
+//Cutting the considered element with the considered cut side
 bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
 {
   bool cut = false;
@@ -28,7 +22,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
     Node * n = *i;
     Point * p = n->point();
 
-    if ( not p->IsCut( this ) ) // point does not no if this element is a cut_element_
+    if ( not p->IsCut( this ) ) // point does not know if this element is a cut_element_
     {
       if ( PointInside( p ) ) // if point is inside the element
       {
@@ -103,8 +97,8 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
 
 bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion )
 {
-  bool cut = side.FindCutPoints( mesh, this, other, recursion );
-  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion );
+  bool cut = side.FindCutPoints( mesh, this, other, recursion ); //check whether the edges of "side" cuts the "other"
+  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion ); //check whether the edges of "other" cuts the "side"
   return cut or reverse_cut;
 }
 

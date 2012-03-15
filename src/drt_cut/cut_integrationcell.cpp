@@ -4,10 +4,7 @@
 #include "cut_facet.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
-#include "cut_element.H"
 #include "cut_volumecell.H"
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_geometry/element_volume.H"
 

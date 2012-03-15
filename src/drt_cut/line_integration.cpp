@@ -1,9 +1,12 @@
 #include "line_integration.H"
-#include<cmath>
-#include<iostream>
 #include "base.H"
 #include "base_boundarycell.H"
 
+#include<cmath>
+#include<iostream>
+
+
+//Compute normal vector for the line
 LINALG::Matrix<2,1> LineIntegration::compute_normal()
 {
   LINALG::Matrix<2,1> normal;
@@ -13,7 +16,7 @@ LINALG::Matrix<2,1> LineIntegration::compute_normal()
 
   normal(0,0) = dy/modd;
   normal(1,0) = dx/modd;
-//      std::cout<<normal[0]<<"\t"<<normal[1]<<std::endl;
+
   return normal;
 }
 
@@ -54,16 +57,15 @@ LINALG::Matrix<2,8> LineIntegration::find_line_integration_pts()
 {
   std::vector<double> line_tau = get_Gauss_line_pts();
 
-/*for(int i=0;i<3;i++)
-    std::cout<<line_tau[i]<<std::endl;*/
-
   LINALG::Matrix<2,8> line_int_pts;
   double xmid[2];
+
   //middle point in all 2 coordinates
   for(int i=0;i<2;i++)
   {
     xmid[i] = 0.5*(point_begin_[i]+point_end_[i]);
   }
+
   //Finding the 8 integration points used in Gaussian quadrature
   for(int i=0;i<8;i++)
   {
@@ -74,11 +76,6 @@ LINALG::Matrix<2,8> LineIntegration::find_line_integration_pts()
     }
   }
 
-/*for(int i=0;i<3;i++)
-  {
-    for(int j=0;j<2;j++)
-        std::cout<<line_int_pts[j][i]<<std::endl;
-  }*/
   return line_int_pts;
 }
 
@@ -101,7 +98,6 @@ double LineIntegration::integrate_line()
 {
   LINALG::Matrix<2,1> normal;
   normal = compute_normal();
-  //std::cout<<normal[0]<<"\t"<<normal[1]<<std::endl;
 
   if (fabs(normal(0,0))<0.000000001)
     return 0.0;
@@ -113,7 +109,6 @@ double LineIntegration::integrate_line()
 
   double half_len = half_length();
 
-  //std::cout<<half_len<<std::endl;
   double inte = 0.0;
 
   for (int i=0;i<8;i++)
@@ -138,10 +133,9 @@ double LineIntegration::integrate_line()
         linein = base_func_surfZ(pt,inte_num_,alpha_);
       inte = inte+line_wei[i]*linein;
     }
-    //std::cout<<linein<<"\t"<<"line = "<<inte<<"\n";
+
   }
   inte = inte*normal(0,0)*half_len;
- //std::cout<<"line_inte = "<<inte<<"normal = "<<normal(0,0)<<std::endl;//blockkk
 
   return inte;
 }

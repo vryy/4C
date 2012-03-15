@@ -1,28 +1,24 @@
-
-//#include "../drt_geometry/intersection_templates.H"
-
 #include "cut_position.H"
 #include "cut_intersection.H"
 #include "cut_facet.H"
 #include "cut_point_impl.H"
+#include "cut_levelsetside.H"
 
 #include <string>
 #include <stack>
 
-#include "cut_edge.H"
-#include "cut_levelsetside.H"
-
-
+//Computes the points at which both the sides intersect
 bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Element * element,
                                     Side & side,
-                                    Side & other, int recursion )
+                                    Side & other,
+                                    int recursion )
 {
   bool cut = false;
   for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
-    if ( p->IsCut( &other ) )
+    if ( p->IsCut( &other ) ) //cut points may already obtained when some other side was considered
     {
       cut = true;
       p->AddElement( element );
@@ -35,7 +31,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
   }
 #endif
 
-  // test for the cut of edge and side
+  // test for the cut of edge and side first time in this mesh
 
   PointSet cut_points;
   other.Cut( mesh, *this, cut_points );

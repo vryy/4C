@@ -8,9 +8,8 @@ namespace GEO
 namespace CUT
 {
 
-/// line between two points
 /*!
- * Lines result from cuts. There are no cut points on a line.
+\begin Line between two points. These lines result from cuts and there are no cut points on a line.
  */
 class Line
 {

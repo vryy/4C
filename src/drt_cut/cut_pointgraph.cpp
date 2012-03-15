@@ -5,23 +5,19 @@
 #include <cmath>
 
 #include "cut_pointgraph.H"
-#include "cut_point.H"
-#include "cut_line.H"
-#include "cut_side.H"
 #include "cut_element.H"
 #include "cut_mesh.H"
 #include "cut_find_cycles.H"
-#include "cut_cycle.H"
 
-#include <boost/graph/copy.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graph_utility.hpp>
-#include <boost/graph/planar_face_traversal.hpp>
+//#include <boost/graph/copy.hpp>
+//#include <boost/graph/adjacency_list.hpp>
+//#include <boost/graph/breadth_first_search.hpp>
+//#include <boost/graph/graph_utility.hpp>
+//#include <boost/graph/planar_face_traversal.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
-#include <boost/graph/connected_components.hpp>
+//#include <boost/graph/connected_components.hpp>
 //#include <boost/graph/subgraph.hpp>
-#include <boost/graph/filtered_graph.hpp>
+//#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 
 GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )

@@ -1,13 +1,6 @@
 #ifndef CUT_MESHHANDLE_H
 #define CUT_MESHHANDLE_H
 
-#include <list>
-#include <map>
-#include <set>
-#include <vector>
-
-#include <Teuchos_RCP.hpp>
-
 #include "cut_mesh.H"
 #include "cut_sidehandle.H"
 #include "cut_elementhandle.H"
@@ -30,7 +23,9 @@ namespace CUT
   class LinearElementHandle;
   class QuadraticElementHandle;
 
-/// mesh interface to the outside-world
+/*!
+ \brief Outside world interface to the mesh
+ */
 class MeshHandle
 {
 public:

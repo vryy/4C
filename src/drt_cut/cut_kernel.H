@@ -1,25 +1,20 @@
 #ifndef CUT_KERNEL_H
 #define CUT_KERNEL_H
 
-#include <iostream>
-#include <iterator>
-
 #include "cut_tolerance.H"
 #include "cut_utils.H"
 
-#include "../drt_lib/drt_element.H"
-
 #include "../linalg/linalg_gauss.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 namespace GEO
 {
   namespace CUT
   {
-
-    /// core geometric operations: intersection, distance calculation
+/*!
+\brief Core geometrical operations like finding the cut points, distance calculations takes place here
+ */
     namespace KERNEL
     {
 

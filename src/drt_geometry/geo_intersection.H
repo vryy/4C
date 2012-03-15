@@ -58,28 +58,54 @@ namespace GEO
   {
   public:
 
+    /*!
+    \brief Constructor
+    */
     CutWizard( DRT::Discretization & dis, bool include_inner, int numcutmesh=1 );
 
+    /*!
+    \brief Set the value of positions in the cut_option.H
+    */
     void SetFindPositions( bool positions );
 
+    /*!
+    \brief Add this cut element to the cut libraries
+    */
     void AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
 
+    /*!
+    \brief Add this background mesh element to the cut libraries
+    */
     void AddElement( DRT::Element * ele );
 
+    /*!
+    \brief Get this element from the cut libraries
+     */
     GEO::CUT::ElementHandle * GetElement( DRT::Element * ele );
 
+    /*!
+    \brief Get this node from the cut libraries
+     */
     GEO::CUT::Node * GetNode( int nid );
 
-    /// cut routine for parallel framework in XFSI and XFLUIDFLUID
+    /*!
+    \brief Cut routine for parallel framework in XFSI and XFLUIDFLUID
+    */
     void CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
 
-    /// routine for finding node positions and computing vc dofsets in a parallel way
+    /*!
+    \brief Routine for finding node positions and computing volumecell dofsets in a parallel way
+    */
     void CutParallel_FindPositionDofSets(bool include_inner, bool parallel);
 
-    /// cut routine for standard non-parallel framework (only for cut_test)
+    /*!
+    \brief Cut routine for standard non-parallel framework which is used only for cut_test
+    */
     void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
 
-    /// cut routine for standard combustion and two phase flow framework
+    /*!
+    \brief Cut routine for standard combustion and two phase flow framework
+    */
     void Cut( std::map< int, DomainIntCells >& domainintcells,
               std::map< int, BoundaryIntCells >& boundaryintcells,
               std::string VCellgausstype,
@@ -93,12 +119,24 @@ namespace GEO
 
     GEO::CUT::MeshIntersection & Mesh() { return *mesh_; }
 
+    /*!
+    \brief Print the number of volumecells and boundarycells generated over the whole mesh during the cut
+     */
     void PrintCellStats();
 
+    /*!
+    \brief Write the DOF details of the nodes
+     */
     void DumpGmshNumDOFSets( bool include_inner );
 
+    /*!
+    \brief Write volumecell output in GMSH format throughout the domain
+     */
     void DumpGmshVolumeCells( bool include_inner );
 
+    /*!
+    \brief Write the integrationcells and boundarycells in GMSH format throughout the domain
+     */
     void DumpGmshIntegrationCells();
 
   private:

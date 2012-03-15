@@ -17,6 +17,9 @@
 
 #include "../drt_io/io_control.H"
 
+/*-------------------------------------------------------------*
+* The new cut algorithm used in xfluid and xfluidfluid         *
+*--------------------------------------------------------------*/
 void XFEM::FluidWizard::Cut(  bool include_inner,
                               const Epetra_Vector & idispcol,
                               bool parallel,
@@ -139,6 +142,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,
 #endif
 }
 
+//The old cut algorithm used in Combustion and two-phase flows
 void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
                              std::map< int, GEO::DomainIntCells > & domainintcells,
                              std::map< int, GEO::BoundaryIntCells > & boundaryintcells,

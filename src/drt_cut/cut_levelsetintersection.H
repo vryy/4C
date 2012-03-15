@@ -19,7 +19,9 @@ namespace CUT
   class Side;
   class Element;
 
-/// interface class for levelset cuts
+  /*!
+  \brief Interface class for the levelset cut.
+  */
 class LevelSetIntersection
 {
 public:
@@ -37,6 +39,9 @@ public:
                    const double * lsv,
                    DRT::Element::DiscretizationType distype );
 
+  /*!
+  \brief Performs all the levelset cut operations.
+   */
   void Cut( bool include_inner=true );
 
   ElementHandle * GetElement( int eid );

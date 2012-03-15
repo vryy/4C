@@ -1,18 +1,10 @@
 #ifndef CUT_TETMESH_H
 #define CUT_TETMESH_H
 
-#include <algorithm>
-#include <map>
-#include <set>
-#include <vector>
-#include <iostream>
 #include <queue>
 
-#include "cut_point.H"
 #include "cut_facet.H"
 #include "cut_side.H"
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #ifdef DEBUGCUTLIBRARY
 #define TETMESH_GMSH_DEBUG_OUTPUT
@@ -26,8 +18,9 @@ namespace GEO
     class Facet;
     class VolumeCell;
 
-    /// Mesh of tet elements that is used to triangulate a VolumeCell
     /*!
+    \brief Mesh of tet elements that is used to triangulate a VolumeCell
+
       We use qhull for triangulation. qhull assumes convex volumes, thus it
       might create more tets than we need. Furthermore, it is not guaranteed
       to reconstruct the cut surface. We need to do post-processing of the

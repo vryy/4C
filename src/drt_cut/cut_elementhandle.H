@@ -1,13 +1,7 @@
 #ifndef CUT_ELEMENTHANDLE_H
 #define CUT_ELEMENTHANDLE_H
 
-#include <vector>
-#include <map>
-
-#include "../linalg/linalg_fixedsizematrix.H"
-
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_inpar/inpar_xfem.H" //blockk or remove
 
 #include "cut_element.H"
 
@@ -22,10 +16,10 @@ namespace CUT
   class MeshIntersection;
   class LevelSetIntersection;
 
-/// Outside-world interface to element.
-/*!
- * Converts quadratic to linear elements. Provides Gauss-point sets.
- */
+  /*!
+  \brief Outside world interface to element. Converts quadratic to linear element. This provides the
+  Gaussian rules generated from the cut
+   */
 class ElementHandle
 {
 public:
@@ -36,6 +30,9 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() = 0;
 
+  /*!
+  \brief Collect the volumecells belong to this element
+   */
   virtual void GetVolumeCells( plain_volumecell_set & cells ) = 0;
 
   virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
@@ -92,34 +89,52 @@ public:
   void GetVolumeCellsDofSets( std::vector< plain_volumecell_set > & cellsets,
   		                              std::vector< std::vector< int > >   & nds_sets  );
 
+  /*!
+  \brief  Collect the Gauss points of all the volumecells belong to this element in such a way that gaussian rule for every vol.cell can be separated
+   */
   void VolumeCellGaussPoints( plain_volumecell_set & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints,
                               std::string gausstype);
-
+  /*!
+   \brief Collect the Gauss points of all the volumecells belong to this element. The integration rule over all the volumecells are connected.
+   */
   Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GaussPointsConnected( plain_volumecell_set & cells, std::string gausstype );
 
   void VolumeCellGaussPointsLin( plain_volumecell_set & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints );
 
+  /*!
+  \brief Unused
+   */
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
+  /*!
+  \brief Old implementation of boundaycell Gauss points collection
+   */
   void BoundaryCellGaussPoints( MeshIntersection & mesh,
                                 int mi,
                                 const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
+  /*!
+  \brief Collect the Gauss points of all the boundarycells belong to this element.
+  This is the method used now in the new implementation
+   */
   void BoundaryCellGaussPointsLin( MeshIntersection & mesh,
                                 int mi,
                                 const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
-  void BoundaryCellGaussPoints( LevelSetIntersection & mesh,
-                                const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
+  void BoundaryCellGaussPointsLevelset( LevelSetIntersection & mesh,
+                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                        std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
 private:
-
+  /*!
+   \brief Project the integration rule available in the local coordinates of the integationcells to the
+   local coordinates of volumecells
+   */
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );
 

@@ -1,6 +1,5 @@
 
 #include "cut_line.H"
-#include "cut_side.H"
 #include "cut_element.H"
 
 GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2, Element * cut_element )

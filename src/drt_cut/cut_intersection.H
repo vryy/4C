@@ -1,18 +1,6 @@
 #ifndef CUT_INTERSECTION_H
 #define CUT_INTERSECTION_H
 
-#include <iterator>
-
-#include "../linalg/linalg_gauss.H"
-
-#include "../drt_lib/drt_element.H"
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
-#include "cut_tolerance.H"
-#include "cut_point.H"
-#include "cut_edge.H"
 #include "cut_side.H"
 #include "cut_mesh.H"
 #include "cut_kernel.H"
@@ -22,7 +10,10 @@ namespace GEO
 namespace CUT
 {
 
-/// find a cut point between side and edge
+/*!
+\brief A class to calculate the intersection of an edge with a side. The core class where the all the
+cut points are actually calculated
+ */
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
@@ -63,6 +54,9 @@ public:
 #endif
   }
 
+  /*!
+  \brief Computes the intersection points of the edge with the specified side and store the points in cuts
+   */
   bool Intersect( PointSet & cuts );
 
   bool ComputeCurveSurfaceIntersection();

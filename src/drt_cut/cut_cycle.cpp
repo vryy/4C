@@ -1,6 +1,4 @@
-
 #include "cut_cycle.H"
-#include "cut_point.H"
 #include "cut_edge.H"
 
 

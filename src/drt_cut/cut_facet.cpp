@@ -1,9 +1,5 @@
-
-#include <iterator>
-
 #include "../linalg/linalg_gauss.H"
 
-#include "cut_facet.H"
 #include "cut_element.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
@@ -250,7 +246,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   return true;
 }
 
-//the triangulation works only when the facet is convex
+//The triangulation works only when the facet is convex
 //Find the middle point in the facet and connect the middle point with every line of the facet
 //to create triangles
 void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points )
@@ -1013,7 +1009,7 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
 }
 
 //return the local coordinates of corner points with respect to the given element
-const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Element *elem1, bool print)
+const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Element *elem1)
 {
         const std::vector<Point*> & corners = CornerPoints();
         int mm=0;
@@ -1036,11 +1032,6 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
             pt_local.push_back(loc(2,0));
 
             cornersLocal.push_back(pt_local);
-            if(print)
-            {
-//	    		std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";//blockkk or remove
-//	    		std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
-            }
             mm++;
         }
         return cornersLocal;

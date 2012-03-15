@@ -1,8 +1,6 @@
 #ifndef CUT_ELEMENT_H
 #define CUT_ELEMENT_H
 
-#include "cut_node.H"
-#include "cut_edge.H"
 #include "cut_side.H"
 
 namespace GEO
@@ -15,7 +13,9 @@ namespace CUT
   class BoundaryCell;
   class Creator;
 
-/// Base of all elements.
+/*!
+\brief Base class of all elements. Contains all the information about volumecells, facets, sides and nodes associated with this element
+ */
 class Element
 {
 public:
@@ -47,18 +47,36 @@ public:
 
   virtual ~Element() {}
 
+  /*!
+  \brief Returns the ID of the element
+   */
   int Id() const { return eid_; }
 
+  /*!
+  \brief Returns the shape of the element
+    */
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  /*!
+  \brief Returns true if the point lies inside the element
+   */
   virtual bool PointInside( Point* p ) = 0;
 
+  /*!
+  \brief Returns element local coordinates "rst" of a point from its global coordinates "xyz"
+   */
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
+  /*!
+  \brief Returns element global coordinates "xyz" of a point from its local coordinates "rst"
+   */
   virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz ) = 0;
 
-  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
+  //virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
 
+  /*!
+  \brief Cutting the element with the given cut side
+   */
   bool Cut( Mesh & mesh, Side & side, int recursion );
 
   void MakeCutLines( Mesh & mesh, Creator & creator );
@@ -67,13 +85,23 @@ public:
 
   void MakeVolumeCells( Mesh & mesh );
 
+  /*!
+  \brief Create integrationcells by performing tessellation over the volumecells of the element. This uses QHULL
+   */
   void CreateIntegrationCells( Mesh & mesh, int count, bool levelset );
 
+  /*!
+  \brief Construct quadrature rules for the volumecells by solving the moment fitting equations
+   */
   void MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
+
   /// After the integration and boundary cells have been created, there might
   /// still be some empty volume cells. Those are artificial cells with zero
   /// volume and need to be removed from their elements, before we count nodal
   /// dof sets.
+  /*!
+  \brief Artificial cells with zero volumes are removed
+   */
   void RemoveEmptyVolumeCells();
 
   void FindNodePositions();
@@ -84,17 +112,32 @@ public:
 
   bool OnSide( const std::vector<Point*> & facet_points );
 
+  /*!
+  \brief Get the integrationcells created from this element
+   */
   void GetIntegrationCells( plain_integrationcell_set & cells );
 
+  /*!
+  \brief Get the boundarycells created from cut facets of this element
+   */
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 
+  /*!
+  \brief Returns all the sides of this element
+   */
   const std::vector<Side*> & Sides() { return sides_; }
 
+  /*!
+  \brief Returns true if the side is one of the element sides
+   */
   bool OwnedSide( Side * side )
   {
     return std::find( sides_.begin(), sides_.end(), side )!=sides_.end();
   }
 
+  /*!
+  \brief Get the coordinates of all the nodes
+   */
   void Coordinates( double * xyze )
   {
     double * x = xyze;
@@ -106,16 +149,28 @@ public:
     }
   }
 
+  /*!
+  \brief Get all the nodes of this element
+   */
   const std::vector<Node*> & Nodes() { return nodes_; }
 
   const plain_side_set & CutSides() const { return cut_faces_; }
 
   void GetCutPoints( PointSet & cut_points );
 
+  /*!
+  \brief Get the volumecells of this element
+   */
   const plain_volumecell_set & VolumeCells() const { return cells_; }
 
+  /*!
+  \brief Get the facets of this element
+   */
   const plain_facet_set & Facets() const { return facets_; }
 
+  /*!
+  \brief Get total number of Gaussinan points generated over all the volumecells of this element
+   */
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
   void DebugDump();
@@ -124,6 +179,9 @@ public:
 
   void DumpFacets();
 
+  /*!
+  \brief Inset this volumecell to this element
+   */
   void AssignOtherVolumeCell( VolumeCell * vc ) { cells_.insert( vc ); }
 
 protected:
@@ -132,6 +190,9 @@ protected:
 
 private:
 
+  /*!
+  \brief Check whether side is cut by other, or other is cut by side
+   */
   bool FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion );
 
   bool FindCutLines( Mesh & mesh, Side & side, Side & other );

@@ -1,7 +1,6 @@
 #ifndef CUT_POINT_IMPL_H
 #define CUT_POINT_IMPL_H
 
-#include "cut_point.H"
 #include "cut_line.H"
 
 namespace GEO

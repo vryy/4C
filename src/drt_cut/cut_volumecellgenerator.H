@@ -1,12 +1,8 @@
 #ifndef CUT_VOLUMECELLGENERATOR_H
 #define CUT_VOLUMECELLGENERATOR_H
 
-#include <algorithm>
-#include <vector>
-#include <map>
 #include <list>
 
-#include "cut_utils.H"
 #include "cut_point.H"
 
 namespace GEO

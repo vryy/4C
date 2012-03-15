@@ -1,8 +1,3 @@
-
-#include <fstream>
-#include <iostream>
-#include <iterator>
-
 #include <boost/bind.hpp>
 
 #include "../drt_lib/drt_discret.H"
@@ -10,15 +5,7 @@
 #include "cut_mesh.H"
 
 #include "cut_creator.H"
-#include "cut_pointpool.H"
-#include "cut_point.H"
 #include "cut_point_impl.H"
-#include "cut_line.H"
-#include "cut_node.H"
-#include "cut_edge.H"
-#include "cut_side.H"
-#include "cut_element.H"
-#include "cut_facet.H"
 #include "cut_levelsetside.H"
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
@@ -1090,6 +1077,9 @@ void GEO::CUT::Mesh::SelfCut()
 }
 #endif
 
+/*-----------------------------------------------------------------*
+ * Cuts the background elements of the mesh with all the cut sides *
+ *-----------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
   if ( DetectSelfCut() )
@@ -1111,6 +1101,9 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int re
              std::inserter( elements_done, elements_done.begin() ) );
 }
 
+/*------------------------------------------------------------------------*
+ * Cuts the background elements of the mesh with this considered cut side *
+ *------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion )
 {
   BoundingBox sidebox( side ); // define a bounding box around the maybe twisted side to find involved elements

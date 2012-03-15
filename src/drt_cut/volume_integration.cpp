@@ -1,4 +1,3 @@
-#include<iostream>
 #include<fstream>
 #include <cmath>
 #include<algorithm>
@@ -11,8 +10,8 @@
 
 using namespace std;
 
-//compute the rhs of the moment fitting equations
-//Integration of base functions take place inside this
+/* compute the rhs of the moment fitting equations
+   Integration of base functions take place inside this */
 Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 {
    Epetra_SerialDenseVector rhs_mom(num_func_);
@@ -33,33 +32,27 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
       {
         std::vector<double> eqn = faee1.get_equation();
         eqn_facets_.push_back(eqn);
-//		std::cout<<"eqn_plane"<<eqn[0]<<"\t"<<eqn[1]<<"\t"<<eqn[2]<<"\t"<<eqn[3]<<"\n"; //blockkk or remove
       }
     }
     rhs_mom(fnc-1) = mome;
 
     if(fnc==1)
     {
-      /*if(rhs_mom(0)<0.0)
+      /*std::cout<<"volume = "<<rhs_mom(0)<<"\n";
+      if(rhs_mom.InfNorm()>1e-5 && rhs_mom(0)<0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");*/
     }
-//      std::cout<<mome<<std::endl;
-//
+
   }
-//    for(int i=0;i<num_func_;i++)
-  //  	std::cout<<rhs_mom(i)<<"\n";
 
     return rhs_mom;
 }
 
-//compute the gaussian points of the volumecell with "numeach" points in each 3-directions
-//numeach should be more than 1
-//uses ray tracing method
+/*  compute the gaussian points of the volumecell with "numeach" points in each 3-directions
+    numeach should be more than 1
+    uses ray tracing method   */
 bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 {
-
-//construct a bounding box within which the Gaussian points are distributed and checked whether
-//they are inside the volume cell or not
   BoundingBox box1(*volcell_,elem1_);
   double minn[3],maxx[3];
   minn[0] = box1.minx();
@@ -68,9 +61,6 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
   maxx[1] = box1.maxy();
   minn[2] = box1.minz();
   maxx[2] = box1.maxz();
-  /*std::cout<<minn[0]<<"\t"<<maxx[0]<<"\t";
-  std::cout<<minn[1]<<"\t"<<maxx[1]<<"\t";
-  std::cout<<minn[2]<<"\t"<<maxx[2]<<std::endl;*/
 
   vector<vector<double> > zcoord;
   vector<vector<double> > ycoord;
@@ -92,7 +82,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       if((zmax-zmin)<0.01*(maxx[2]-minn[2]))
         break;
   }
-//    std::cout<<"intermediate gauss points = "<<gaus_pts_.size()<<"\n";
+
 //max z plane which contains significant area
   while(1)
   {
@@ -143,16 +133,16 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
           break;
       }
 
-  //    cout<<"very small area"<<endl;
       if(gaus_pts_.size()==0)
         wei = false;
       else
         wei = true;
-/*        if(gaus_pts_.size()==0)
-              wei = false;*/
-      cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;//blockkk
+#ifdef DEBUGCUTLIBRARY
+      cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;
+#endif
       return wei;
     }
+
 //find z-planes in between zmin and zmax to generate Gauss points
     else
     {
@@ -174,6 +164,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
           previous = true;
           continue;
         }
+
 //if the considered z-plane does not contain significant area, the interval is subdivided to check whether
 //any plane lies in between
         else
@@ -198,12 +189,15 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         }
        }
     }
-    cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;//blockkk
+
+#ifdef DEBUGCUTLIBRARY
+    cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;
+#endif
     return wei;
 }
 
-//store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
-//point lies inside the volume or not
+/*  Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
+    point lies inside the volume or not   */
 void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoord,
                 vector<vector<double> >& ycoord)
 {
@@ -212,17 +206,18 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
       vector<double> thisplane1,thisplane2;
+
 //since the imaginary line never intersect this plane
       if(fabs(eqn_facets_[faceno][0])<0.00000001)
       {
-              thisplane1.push_back(0.0);
-              zcoord.push_back(thisplane1);
-              ycoord.push_back(thisplane1);
-              faceno++;
-              continue;
+        thisplane1.push_back(0.0);
+        zcoord.push_back(thisplane1);
+        ycoord.push_back(thisplane1);
+        faceno++;
+        continue;
       }
       Facet *face1 = *i;
-      const std::vector<vector<double> > corLocal = face1->CornerPointsLocal(elem1_,0);
+      const std::vector<vector<double> > corLocal = face1->CornerPointsLocal(elem1_);
       for(std::vector<std::vector<double> >::const_iterator k=corLocal.begin();k!=corLocal.end();k++)
       {
         std::vector<double> coords1 = *k;
@@ -234,31 +229,10 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
       zcoord.push_back(thisplane2);
       faceno++;
     }
-
-    /*std::cout<<"zcoord\n";
-    for(vector<vector<double> >::iterator i=zcoord.begin();i!=zcoord.end();i++)
-    {
-    	vector<double> zz=*i;
-    	for(vector<double>::iterator j=zz.begin();j!=zz.end();j++)
-    	{
-    		std::cout<<*j<<"\t";
-    	}
-    	std::cout<<"\n";
-    }
-    std::cout<<"ycoord\n";
-	for(vector<vector<double> >::iterator i=ycoord.begin();i!=ycoord.end();i++)
-	{
-		vector<double> zz=*i;
-		for(vector<double>::iterator j=zz.begin();j!=zz.end();j++)
-		{
-			std::cout<<*j<<"\t";
-		}
-		std::cout<<"\n";
-	}*/
 }
 
-//check whether the considered imaginary line intersect any of the facets
-//if so generate gauss points on that line
+//check whether the generated ray intersect any of the facets
+//if so generate gauss points along the ray
 bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
                 vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
 {
@@ -286,12 +260,12 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       InterFaces.push_back(faceno);
   }
 
-  //cout<<InterFaces.size()<<endl;
   if(InterFaces.size()<2)
   {
     intersect = false;
     return intersect;
   }
+
 //simple geometries result in two intersections
   if(InterFaces.size()==2)
   {
@@ -309,7 +283,6 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     else
       intersect = true;
 
-//               cout<<int1<<"\t"<<int2<<endl;
     vector<double> inter1,inter2;
     inter1.push_back(int1);
     inter1.push_back(pt[1]);
@@ -317,6 +290,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     inter2.push_back(int2);
     inter2.push_back(pt[1]);
     inter2.push_back(pt[2]);
+
 #if 0 //old way of point distribution method in intersection lines
     if(fabs(inter2[0]-inter1[0])<0.025*(maxi[0]-mini[0]))
     {
@@ -346,7 +320,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       OnLine(inter1,inter2,linePts,numeach);
 #endif
 #if 1 //scaled point distribution method in intersection lines
-    int numX = (fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1;
+    int numX = (int)(fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1;
     if(numX==1)
     {
       vector<double> middle(3);
@@ -367,7 +341,9 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
   else
   {
 //map is useful since we need to arrange the elements from minimum x-cut value
+#ifdef DEBUGCUTLIBRARY
     cout<<"in more than two cuts"<<endl;
+#endif
     map<vector<double>,int> interPoints;
     for(vector<int>::iterator i=InterFaces.begin();i!=InterFaces.end();i++)
     {
@@ -379,13 +355,6 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       inter1.push_back(pt[2]);
       interPoints[inter1] = fa1;
     }
-
-/*  for(map<vector<double>,int>::iterator i=interPoints.begin();i!=interPoints.end();i++)
-    {
-            vector<double> mmm = i->first;
-            int kkk = i->second;
-            cout<<mmm[0]<<"\t"<<mmm[1]<<"\t"<<mmm[2]<<"\t"<<kkk<<"\n";
-    }*/
 
     const plain_facet_set & facete = volcell_->Facets();
     plain_facet_set::const_iterator f=facete.begin();
@@ -402,23 +371,25 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       Facet *facet2 = *(f+face2);
       vector<double> inter2 = i->first;
       i--;
+
 //Among two consequetive facets which are cut by the line, one must be the cut surface
       if(facet1->OnCutSide())
       {
         if(eqn_facets_[face1][0]<0.0)
           ptsInside=true;
-//      cout<<"face1"<<endl;
-//      cout<<inter1[0]<<"\t"<<inter2[0]<<"\t"<<eqn_facets_[face1][0]<<endl;
       }
       else if(facet2->OnCutSide())
       {
         if(eqn_facets_[face2][0]>0.0)
           ptsInside=true;
-//      cout<<"face2"<<endl;
-//      cout<<inter1[0]<<"\t"<<inter2[0]<<"\t"<<eqn_facets_[face2][0]<<endl;
       }
       else
+      {
+#ifdef DEBUGCUTLIBRARY
         cout<<"The assumption that one must be a cut surface is false"<<endl;
+#endif
+      }
+
       if(ptsInside)
       {
         if(interPoints.size()==2)//if intersection is on the triangulated line, results only in two face intersections
@@ -438,7 +409,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
         }
         else if((inter2[0]-inter1[0])<0.05*(maxi[0]-mini[0]))
         {
-          OnLine(inter1,inter2,linePts,2/*numeach/3+1*/);//blockkk or remove
+          OnLine(inter1,inter2,linePts,2/*numeach/3+1*/);
           intersect = true;
         }
         else
@@ -455,7 +426,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
         return intersect;
 }
 
-//find whether the point is inside the polygon
+/* Check whether the intersection point, which is in the plane containing the facet, actually lies with in the facet area */
 int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y)
 {
   int i, j, c = 0;
@@ -468,8 +439,8 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<doubl
   return c;
 }
 
-//check whether at a particular z-plane significant area exists, and if so returns the Gauss points
-//in the particular plane
+//Check whether the particular z-plane of the volumecell contains significant area so as to distribute
+//the Gauss points in that plane
 bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
                 vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
 {
@@ -496,18 +467,17 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
      }
      if(intersec)
      {
-//                 cout<<ymin<<"\t"<<ymax<<endl;
         pts.insert(pts.end(),linePts.begin(),linePts.end());
         break;
      }
    }
-//   cout<<"line1"<<endl; 
+
 //check for the topmost line
    while(1)
    {
      vector<vector<double> > linePts;
      ymax -= toler*dx1[1];
-//               cout<<ymax<<endl;
+
      bool intersec = false;
      double a[] = {xmin,ymax,zmin};
      intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
@@ -522,7 +492,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
        break;
      }
    }
-//     cout<<"in this plane"<<ymin<<"\t"<<ymax<<endl;//blockkk or remove
+
 
 //generate points in between the topmost and lowest line
   int num = numeach;
@@ -570,7 +540,8 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
   return isArea;
 }
 
-//generates specified number of points (num) on the imaginary line
+/*  Generates equally spaced "num" number of points on the line whose end points are specified by
+        inter1 and inter2                                                                           */
 void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inter2,
                 vector<vector<double> >&linePts,int num)
 {
@@ -612,30 +583,16 @@ void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<
         k++;
       }
     }
-
-/*  std::ofstream myfile;
-      myfile.open ("example.txt");
-      for(int i=0;i<mom.size();i++)
-      {
-          for(int j=0;j<mom[0].size();j++)
-          {
-          myfile << mom[i][j]<<"\t";
-          }
-          myfile<<"\n";
-      }
-      myfile.close();*/
-
 }
 
-//compute the weights and returns the coordinates of Gauss points and their corresponding weights
+//Compute Gauss point weights by solving the moment fitting equations and returns the coordinates of Gauss points
+//and their corresponding weights
 Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 {
 
   Epetra_SerialDenseVector rhs_moment(num_func_);
   rhs_moment = compute_rhs_moment();
 
-/*  for(std::vector<double>::iterator i=rhs_moment.begin();i!=rhs_moment.end();i++)
-      std::cout<<*i<<std::endl;*/
   bool wei;
 //we should ask for more than 1 point in each direction
   int numeach=7;
@@ -667,6 +624,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 
 			//if all the elements in a row of the moment fitting matrix are zero, then the row has to be deleted
 			//this ensures non-zero diagonal elements in the matrix
+      // REquires further checking
 			/*vector<int> deleteRowNos;
 			for(unsigned row=0;row<moment_matrix.size();row++)
 			{
@@ -720,12 +678,15 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 				err(i) = (err(i)-rhs_moment(i))/rhs_moment(i);
 			else
 				err(i) = err(i)-rhs_moment(i);
-			//std::cout<<"error = "<<err(i)<<"\n";
 		}
-		//ErrorForSpecificFunction(rhs_moment,weights,numeach);//blockkk
+
+#if 0 //call the computation of error when integrating specific functions
+		ErrorForSpecificFunction(rhs_moment,weights,numeach);
+#endif
+
 		const double maxError = err.InfNorm();
 		std::cout<<"max error = "<<maxError<<"\n";
-		if(maxError<1e-10 || numeach==13)//blockkk
+		if(maxError<1e-10 || numeach==13)
 			break;
 		else
 			numeach++;
@@ -733,39 +694,9 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 
   }
 
+#ifdef DEBUGCUTLIBRARY
   std::cout<<"volume = "<<rhs_moment(0)<<"\t"<<rhs_moment(1)<<"\t"<<rhs_moment(4)<<std::endl;
-
-/*    for(int j=0;j<num_func_;j++)
-    {
-    double chek = 0.0;
-    for(int i=0;i<gaus_pts_.size();i++)
-    {
-        std::vector<double> coorrr;
-        coorrr.push_back(gaus_pts_[i][0]);
-        coorrr.push_back(gaus_pts_[i][1]);
-        coorrr.push_back(gaus_pts_[i][2]);
-        chek += weights(i)*base_function(coorrr,j+1);
-    }
-    std::cout<<"check"<<(rhs_moment(j)-chek)<<std::endl;
-//    std::cout<<"value"<<chek<<std::endl;
-    }*/
-
-/*    double chek=0.0;
-    for(unsigned i=0;i<weights.size();i++)
-    {
-         chek += weights(i)*(pow(gaus_pts_[i][0],4)+pow(gaus_pts_[i][1],4)+5.0);     
-    //  chek += weights(i)*(gaus_pts_[i][0]*gaus_pts_[i][0]*gaus_pts_[i][0]+gaus_pts_[i][1]*gaus_pts_[i][1]*gaus_pts_[i][1]+5.0);       
-//        chek += pow(gaus_pts_[i][0],4)*weights(i];
-    }
-    std::cout<<scientific<<"check"<<chek<<std::endl;
-    std::cout<<scientific<<"error"<<chek-(rhs_moment(20)+rhs_moment(30)+5*rhs_moment(0))<<std::endl;*/
-
-/*  for(int i=0;i<weights.size();i++)
-        std::cout<<"wei"<<weights(i)<<std::endl;*/
-
-
-
-
+#endif
 
 #ifdef DEBUGCUTLIBRARY
     GaussPointGmsh();
@@ -774,6 +705,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
   return weights;
 }
 
+//Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
 void GEO::CUT::VolumeIntegration::GaussPointGmsh()
 {
   volcell_->DumpGmshGaussPoints(gaus_pts_);
@@ -799,6 +731,7 @@ void GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(std::vector<std::vec
 	}
 }
 
+//integration of linear combination of second order terms like x^2+xy+y^2+yz
 void GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
 	unsigned int i = mat.size(),kk=mat[0].size();
@@ -817,6 +750,7 @@ void GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(std::vector<std::ve
 	}
 }
 
+//integration of linear combination of third order terms x^3+xyz
 void GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
 	unsigned int i = mat.size(),kk=mat[0].size();
@@ -889,7 +823,8 @@ void GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(std::vector<std::vec
 	}
 }
 
-//computes error for some specified functions (used only in postprocessing)
+/*  Computes the error introduced by the generated integration rule for integrating some specific functions
+    Used only in post-processing    */
 void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,
 		Epetra_SerialDenseVector weights,int numeach)
 {
@@ -967,9 +902,7 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
     out <<"funcOutput.dat";
     filename = out.str();
     file.open(filename.c_str());
-    /*for(unsigned i=0;i<gausSize.size();i++)
-      file<<gausSize[i]<<"\t";
-    file<<"\n";*/
+
     for(unsigned i=0;i<errAccu.size();i++)
     {
       file<<gausSize[i]<<"\t";
@@ -980,6 +913,4 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
     file.close();
 	}
 
-/*    for(unsigned i=0;i<7;i++)
-    	std::cout<<scientific<<error[i]<<"\n";*/
 }

@@ -26,14 +26,23 @@ public:
 
   OctTreeNode( double norm ) : norm_( norm ) {}
 
+  /*!
+  \brief If a point with the coordinates "x" does not exists, it creates a new point correspondingly
+   */
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
+  /*!
+  \brief Get the point with the specified coordinates "x" from the pointpool
+   */
   Point* GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
   unsigned size() const { return points_.size(); }
 
   bool IsLeaf() const { return nodes_[0]==Teuchos::null; }
 
+  /*!
+  \brief Simply insert p into the pointpool and correspondingly modify the boundingbox size
+   */
   void AddPoint( const double * x, Teuchos::RCP<Point> p );
 
   void CollectEdges( const BoundingBox & edgebox, plain_edge_set & edges );
@@ -48,6 +57,9 @@ public:
 
 private:
 
+  /*!
+  \brief Create a point with the specified ID
+   */
   Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side );
 
   OctTreeNode* Leaf( const double * x );
@@ -65,7 +77,9 @@ private:
   double norm_;
 };
 
-/// oct tree based point storage container
+/*!
+\brief Oct tree based storage container
+ */
 class PointPool
 {
 public:
@@ -80,12 +94,21 @@ public:
 
   unsigned size() const { return tree_.size(); }
 
+  /*!
+  \brief Collects the edges that are fully or partially contained in the edgebox
+   */
   void CollectEdges( const BoundingBox & edgebox, plain_edge_set & edges )
   { tree_.CollectEdges( edgebox, edges ); }
 
+  /*!
+  \brief Collects the sides that are fully or partially contained in the sidebox
+   */
   void CollectSides( const BoundingBox & sidebox, plain_side_set & sides )
   { tree_.CollectSides( sidebox, sides ); }
 
+  /*!
+  \brief Collects the elements that are fully or partially contained in the sidebox
+   */
   void CollectElements( const BoundingBox & sidebox, plain_element_set & elements )
   { tree_.CollectElements( sidebox, elements ); }
 

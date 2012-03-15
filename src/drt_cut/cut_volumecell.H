@@ -1,15 +1,8 @@
 #ifndef CUT_VOLUMECELL_H
 #define CUT_VOLUMECELL_H
 
-#include <map>
-#include <vector>
-#include <set>
-#include <iostream>
-
-#include "cut_point.H"
 #include "cut_facet.H"
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
 {
@@ -25,14 +18,15 @@ namespace CUT
 
 /// a partial volume of a cutted element of any shape
 /*!
-  A volume cell is a partial (or whole) element that is defined by its
-  facets. It knows
+  \brief Volume cell is a partial (or whole) element that is defined by its
+  facets.
+
+  It knows
 
   - any number of integration cells (that have simple shapes)
   - any number of boundary cells (at the cut facets with outward normals)
   - its position to the cut surface
   - the dof set number of all element nodes
-
  */
 class VolumeCell
 {
@@ -42,6 +36,9 @@ public:
               const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
               Element * element );
 
+  /*!
+  \brief Check whether the volumecell points point p
+  */
   bool Contains( Point * p );
 
   void Neighbors( Point * p,
@@ -55,6 +52,9 @@ public:
                   const plain_volumecell_set & done,
                   plain_volumecell_set & connected);
 
+  /*!
+  \brief Return the parent element from which this volumecell is generated
+   */
   Element * ParentElement() { return element_; }
 
   void GetAllPoints( Mesh & mesh, PointSet & cut_points );
@@ -63,24 +63,46 @@ public:
 
   void GetIntegrationCells( plain_integrationcell_set & cells );
 
-  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner,   std::string BCellgausstype );
+  /*!
+  \brief Construct the Gaussian quadrature rule by performing moment fitting over the volumecells
+   */
+  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner, std::string BCellgausstype );
 
+  /*!
+  \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by momentfitting and boundarycells
+  are by tessellation
+   */
   void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos, std::string BCellgausstype);
 
+  /*!
+  \brief Get the boundarycells generated from this volumecell
+   */
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
   void ConnectNodalDOFSets( bool include_inner );
 
+  /*!
+  \brief Return the position of volumecell whether they are in the fluid region in structure
+   */
   GEO::CUT::Point::PointPosition Position() const { return position_; }
 
+  /*!
+  \brief Identify the position of volumecell whether they are in the fluid region in structure
+   */
   void Position( GEO::CUT::Point::PointPosition position );
 
   void Print( std::ostream & stream );
 
   const plain_facet_set & Facets() const { return facets_; }
 
+  /*!
+  \brief Return the integrationcells generated from this volumecell
+   */
   const plain_integrationcell_set & IntegrationCells() const { return integrationcells_; }
 
+  /*!
+  \brief Return the boundarycells generated from this volumecell
+   */
   const plain_boundarycell_set & BoundaryCells() const { return bcells_; }
 
   bool Empty() const { return integrationcells_.size()==0 and bcells_.size()==0; }
@@ -93,7 +115,9 @@ public:
                                               std::copy( nds.begin(), nds.end(), std::inserter(nodaldofset_,nodaldofset_.end()) ); }
 
 
-  /// create integration cell of specified shape
+  /*!
+  \brief Create integration cell of specified shape
+   */
   void NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x );
 
   void NewHex8Cell( Mesh & mesh, const std::vector<Point*> & x );
@@ -104,34 +128,59 @@ public:
 
   void NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & x );
 
-  /// create boundary cell of specified shape
+  /*!
+  \brief Create boundarycells of specified shape
+  */
   void NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x );
 
+  /*!
+  \brief Create Tri3 boundarycell
+  */
   void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
+  /*!
+  \brief Create Quad4 boundarycell
+  */
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
+  /*!
+  \brief Create boundarycell which contains more than 4 corner points
+  */
   void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp,
       const LINALG::Matrix<3,1>& normal );
 
   void SimplifyIntegrationCells( Mesh & mesh );
 
-  /// calculate cell volume from integration cells
+  /*!
+  \brief Calculate the cell volume from integrationcells. Works only with tessellation
+   */
   double Volume();
 
   void TestSurface();
 
+  /*!
+  \brief Return the number of Gauss points generated over the volumecell when tessellation is used
+   */
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
   void DumpGmshGaussPoints( const std::vector<std::vector<double> >&gauspts);
 
   void DumpGmsh(std::ofstream& filename);
 
+  /*!
+  \brief Compute the way in which the nodes of the facets are numbered (clockwise or anticlockwise)
+   */
   void OrientationFacet(const std::vector<Point*>pts, double *coef);
 
+  /*!
+  \brief Check whether the numbering of points need to be reversed. This is to ensure outward pointing normal for the
+  boundarycells when triangulation is performed
+   */
   bool ToReverse(const GEO::CUT::Point::PointPosition posi,double* parOri,double* sideOri);
 
-  //return the Gauss points computed using moment fitting equations
+  /*!
+  \brief return the Gauss points computed using moment fitting equations
+  */
   Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();
  // void GaussPointsFitting();
 private:

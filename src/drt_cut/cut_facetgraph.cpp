@@ -1,9 +1,4 @@
-
-#include <iterator>
-
 #include "cut_facetgraph.H"
-#include "cut_facet.H"
-#include "cut_side.H"
 #include "cut_mesh.H"
 #include "cut_element.H"
 

@@ -127,7 +127,7 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
   // SECOND step: find node positions and create dofset in PARALLEL
   CutParallel_FindPositionDofSets( include_inner, parallel );
 
-  // THIRD step: perform tesselation or moment fitting on the mesh
+  // THIRD step: perform tessellation or moment fitting on the mesh
   mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
 
 

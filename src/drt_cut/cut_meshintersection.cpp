@@ -1,6 +1,5 @@
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
@@ -998,10 +997,6 @@ void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool i
 //        count++;
 //    }
 //    file << "};\n";
-
-
-
-
 
     // nodes used for CUT map<node->ID, Node>, shadow nodes have ID<0
     std::map<int, Node* > nodes;

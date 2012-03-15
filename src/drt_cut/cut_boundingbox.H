@@ -1,10 +1,6 @@
 #ifndef CUT_BOUNDINGBOX_H
 #define CUT_BOUNDINGBOX_H
 
-#include <vector>
-
-#include <Epetra_SerialDenseMatrix.h>
-
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "cut_tolerance.H"
 
@@ -19,7 +15,9 @@ namespace GEO
     class VolumeCell;
     class Element;
 
-/// simple bounding box for fast overlap detection
+/*!
+ \brief Construction of boundingbox over the considered geometrical element for fast overlap detection
+ */
 class BoundingBox
 {
 public:
@@ -36,31 +34,64 @@ public:
   
   explicit BoundingBox( Element & element );
 
+  /*!
+  \brief Make the boundingbox larger to include this edge within the box
+   */
   void Assign( Edge & edge );
 
+  /*!
+  \brief Make the boundingbox larger to include this side within the box
+   */
   void Assign( Side & side );
 
+  /*!
+  \brief Make the boundingbox larger to include this element within the box
+   */
   void Assign( Element & element );
 
   double operator()( int i, int j ) const { return box_( i, j ); }
 
+  /*!
+  \brief If necessary make the boundingbox larger to include this point as one of the corners of the box
+   */
   void AddPoint( const double * x );
 
+  /*!
+  \brief If necessary make the boundingbox larger to include this point as one of the corners of the box
+   */
   void AddPoint( const LINALG::Matrix<3, 1> & p )
   {
     AddPoint( p.A() );
   }
 
+  /*!
+  \brief If necessary make the boundingbox larger to include all these nodes as one of the corners of the box
+   */
   void AddPoints( const std::vector<Node*> & nodes );
 
+  /*!
+  \brief Check whether "b" is within this boundingbox
+   */
   bool Within( double norm, const BoundingBox & b ) const;
 
+  /*!
+  \brief Check the point is within this boundingbox
+   */
   bool Within( double norm, const double * x ) const;
 
+  /*!
+  \brief Check these points are within this boundingbox
+   */
   bool Within( double norm, const Epetra_SerialDenseMatrix & xyz ) const;
 
+  /*!
+  \brief Check the element is within this boundingbox
+   */
   bool Within( double norm, Element & element ) const;
 
+  /*!
+  \brief Print the corner points of boundingbox on the screen
+   */
   void Print();
 
   double minx() const { return box_( 0, 0 ); }
@@ -71,6 +102,9 @@ public:
   double maxy() const { return box_( 1, 1 ); }
   double maxz() const { return box_( 2, 1 ); }
 
+  /*!
+  \brief Get the outmost point of the boundingbox
+   */
   void CornerPoint( int i, double * x );
 
 private:

@@ -1,6 +1,5 @@
 
 #include "cut_pointpool.H"
-#include "cut_tolerance.H"
 
 GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {

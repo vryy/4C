@@ -25,17 +25,24 @@ class FluidWizard
 {
 public:
 
+  /*!
+  \brief The interface that bridges the cut libraries and fluid part of XFEM
+  */
   FluidWizard( DRT::Discretization & backdis, DRT::Discretization & cutterdis )
     : backdis_( backdis ),
       cutterdis_( cutterdis )
   {
   }
 
-  /// cut routine for new XFEM framework (XFSI and XFLUIDFLUID)
+  /*!
+  \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
+  */
   void Cut(  bool include_inner, const Epetra_Vector & idispcol, bool parallel, std::string VCellgausstype,
       std::string BCellgausstype, bool positions=true  );
 
-  /// cut routine for old XFEM framework (combustion, twophaseflow, old xfsi)
+  /*!
+  \brief Cut routine for the old XFEM framework (Combustion, Two-phase flows and old XFSI)
+  */
   void Cut( const Epetra_Vector & idispcol,
             std::map< int, GEO::DomainIntCells > & domainintcells,
             std::map< int, GEO::BoundaryIntCells > & boundaryintcells,
@@ -64,6 +71,9 @@ public:
 
 private:
 
+  /*!
+  \brief Writes GMSH output of integrationcells for old cut algorithm
+   */
   void DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
                                  std::map< int, GEO::BoundaryIntCells > & boundaryintcells );
 

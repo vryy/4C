@@ -7,7 +7,9 @@ namespace GEO
 {
   namespace CUT
   {
-    //returns function which is used to form the matrix of moment fitting equations
+  /*!
+  \brief Returns the actual base function to be integrated over the volume to form the moment fitting matrix
+  */
     double base_function(std::vector<double> coordi,int base_num);
   }
 }

@@ -2,12 +2,14 @@
 #include "least_squares.H"
 #include "base_vol.H"
 
-//Generate quadrature rule for boundarycells
-//Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
-//facet is projected into appropriate coordinate plane to obtain quadrature
+/*--------------------------------------------------------------------------------------------*
+  Generate quadrature rule for boundarycells
+  Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
+  facet is projected into appropriate coordinate plane to obtain quadrature
+*---------------------------------------------------------------------------------------------*/
 Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
 {
-  std::vector<std::vector<double> > corners1 = bcell_->CornerPointsLocal(elem1_,1);
+  std::vector<std::vector<double> > corners1 = bcell_->CornerPointsLocal(elem1_);
   Epetra_SerialDenseVector rhs_bcell_temp(num_func_);
   FacetIntegration faee1(bcell_,elem1_,position_,true,false);
   for(int fnc=1;fnc<=num_func_;fnc++)
@@ -25,7 +27,10 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 
   while(1)
   {
+#ifdef DEBUGCUTLIBRARY
     std::cout<<"pts on each line = "<<ptsEachLine<<"\n";
+#endif
+
     std::vector<double> eqn = faee1.get_equation();
     DistributeBoundaryCellGaussPoints(eqn,corners1,BcellgausPts_,ptsEachLine);
 
@@ -33,15 +38,10 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     std::vector<std::vector<double> > moment_matbc(num_func_,std::vector<double>(BcellgausPts_.size()));
     momentFittingMatrix(moment_matbc,BcellgausPts_);
 
-    /*for(unsigned m=0;m<moment_matbc.size();m++)
-    {
-      for(unsigned n=0;n<moment_matbc[0].size();n++)
-        std::cout<<moment_matbc[m][n]<<"\t";
-      std::cout<<"\n";
-    }*/
 
 //if all the elements in a row of the moment fitting matrix are zero, then the row has to be deleted
 //this ensures non-zero diagonal elements in the matrix
+//it always occurs when the boundarycell is oriented along any of the coordinate planes
     vector<int> deleteRowNos;
     for(unsigned row=0;row<moment_matbc.size();row++)
     {
@@ -63,21 +63,11 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
       for(unsigned row=0;row<deleteRowNos.size();row++)
       {
         int delno = deleteRowNos[row]-row;
-//        std::cout<<delno<<"\n";
+
         moment_matbc.erase(moment_matbc.begin()+delno);
       }
     }
 
-    /*for(unsigned m=0;m<moment_matbc.size();m++)
-    {
-      for(unsigned n=0;n<moment_matbc[0].size();n++)
-        std::cout<<moment_matbc[m][n]<<"\t";
-      std::cout<<"\n";
-    }*/
-
-    //std::cout<<"to delete no of rows = "<<deleteRowNos.size()<<"\n";
-
-    //rhs_bcell_temp.Print(std::cout);
     Epetra_SerialDenseVector rhs_bcell(num_func_-deleteRowNos.size());
     if(deleteRowNos.size()==0)
     {
@@ -103,15 +93,6 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
       }
     }
 
-    /*rhs_bcell.Print(std::cout);
-
-    for(unsigned m=0;m<moment_matbc.size();m++)
-    {
-      for(unsigned n=0;n<moment_matbc[0].size();n++)
-        std::cout<<moment_matbc[m][n]<<"\t";
-      std::cout<<"\n";
-    }*/
-
     LeastSquares least(moment_matbc,rhs_bcell);
     Bcellweights.Size(moment_matbc[0].size());
     Bcellweights = least.linear_least_square();
@@ -124,42 +105,39 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
       {
         err(i) += Bcellweights(j)*base_function(BcellgausPts_[j],i+1);
       }
-//      std::cout<<err(i)<<"\t"<<rhs_bcell_temp(i)<<"\n";//blockkk
+
       if(fabs(rhs_bcell_temp(i))>1e-8)
         err(i) = (err(i)-rhs_bcell_temp(i))/rhs_bcell_temp(i);
       else
         err(i) = err(i)-rhs_bcell_temp(i);
-      //std::cout<<"error = "<<err(i)<<"\n";
     }
-/*    for(int i=0;i<err.Length();i++)
-      std::cout<<err(i)<<"\n";*/
+
     double maxerr = err.InfNorm();
+#ifdef DEBUGCUTLIBRARY
     std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
+#endif
+
     if(maxerr<1e-10 || ptsEachLine>25)
       break;
     else
     {
       ptsEachLine++;
       BcellgausPts_.clear();
-      //bcweights
     }
-//      break;//blockkk
   }
-  //dserror("in boundary cell integration");
 
 #ifdef DEBUGCUTLIBRARY
     BcellGaussPointGmsh(BcellgausPts_,corners1);
 #endif
 
   return Bcellweights;
-
-
-//    break;//blockkk
 }
 
-//the arbitrarily oriented plane is first projected into one of the coordinate planes
-//the gauss points are generated in the coordinate plane - now it has only two coordinates
-//value of third coordinate can be calculated from the equation of arbitrary plane
+/*--------------------------------------------------------------------------------------------*
+   The arbitrarily oriented plane is first projected into one of the coordinate planes
+   the gauss points are generated in the coordinate plane - now it has only two coordinates
+   value of third coordinate can be calculated from the equation of arbitrary plane
+/*--------------------------------------------------------------------------------------------*/
 void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::vector<double> eqn, std::vector<std::vector<double> > corners,
                     std::vector<std::vector<double> >& bcGausspts,int ptNos)
 {
@@ -170,7 +148,9 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
   int dim1=0,dim2=1,dim3=2;
 
 //to reduce the truncation error introduced during the projection of plane,
-//the plane, along which the normal component is maximum, is chosen
+//the plane along which the normal component is maximum, is chosen
+
+//initial check whether the cell is already in the coordinate plane
   if(fabs(eqn[0])<1e-8)
   {
     if(fabs(eqn[1])<1e-8)
@@ -204,6 +184,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     else
       projType = "yz";
   }
+// if cell is not in the coordinate plane, project it along the plane of maximum normal
   else
   {
     if(fabs(eqn[0])>=fabs(eqn[1]) && fabs(eqn[0])>=fabs(eqn[2]))
@@ -214,8 +195,6 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
       projType = "xy";
   }
 
-//  std::cout<<"projection type = "<<projType<<"\n";
-
   if(projType=="xy"){
     dim1=0,dim2=1,dim3=2;}
   else if(projType=="yz"){
@@ -224,18 +203,14 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     dim1=2,dim2=0,dim3=1;}
   else
   {
-    dserror("the projection plane not set");
+    dserror("the projection plane is not set");
     exit(1);
   }
-
-//  std::cout<<eqn[0]<<"\t"<<eqn[1]<<"\t"<<eqn[2]<<"\n";
-//  std::cout<<"dimensions"<<dim1<<"\t"<<dim2<<"\t"<<dim3<<"\n";
 
   for(unsigned i=0;i<corners.size();i++)
   {
     co1[i] = corners[i][dim1];
     co2[i] = corners[i][dim2];
-//    std::cout<<co1[i]<<"\t"<<co2[i]<<"\n";
   }
 
   //store the equation of each line in the form of ax+by=c
@@ -268,15 +243,10 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     eqnLines[i] = line;
   }
 
-//  for(unsigned i=0;i<eqnLines.size();i++)
-//    std::cout<<eqnLines[i][0]<<"\t"<<eqnLines[i][1]<<"\t"<<eqnLines[i][2]<<"\n";
-
 //  double max1 = *(std::max_element(co1.begin(), co1.end()));
 //  double min1 = *(std::min_element(co1.begin(), co1.end()));
   double max2 = *(std::max_element(co2.begin(), co2.end()));
   double min2 = *(std::min_element(co2.begin(), co2.end()));
-
-//  std::cout<<max1<<"\t"<<min1<<"\t"<<max2<<"\t"<<min2<<"\n";
 
   int gausno=0;//number of gauss points in each line
   bcGausspts.resize(ptNos*ptNos,vector<double> (3));
@@ -285,7 +255,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
   for(int i=0;i<ptNos;i++)
   {
     double val2 = min2+(i+0.5)*interval;
-//    cout<<val2<<"\n";
+
     intersections.clear();
     for(unsigned j=0;j<co2.size();j++)
     {
@@ -295,10 +265,8 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
         continue;
       if((y1<=val2 && y2>=val2) || (y1>=val2 && y2<=val2))
       {
-//        std::cout<<"I am intersected";
         double val1 = (eqnLines[j][2]-eqnLines[j][1]*val2)/eqnLines[j][0];
         intersections[val1] = j;
-//        cout<<y1<<"\t"<<y2<<"\t"<<val1<<"\n";
       }
     }
     if(intersections.size()==2)
@@ -310,7 +278,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
         x1[count] = j->first;
         count++;
       }
-//      std::cout<<val2<<"\t"<<x1[0]<<"\t"<<x1[1]<<"\n";
+
       int actNo = ptNos;
       /*if(fabs(x1[1]-x1[0])<0.05*(max1-min1))
         actNo = 5;
@@ -367,11 +335,12 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
       dserror("projection type not assigned");
       exit(1);
     }
-//    std::cout<<bcGausspts[i][0]<<"\t"<<bcGausspts[i][1]<<"\t"<<bcGausspts[i][2]<<"\n";
   }
 }
 
-//form the moment fitting matrix
+/*--------------------------------------------------------------------------------------------*
+                                   form the moment fitting matrix
+*---------------------------------------------------------------------------------------------*/
 void GEO::CUT::BoundarycellIntegration::momentFittingMatrix(std::vector<std::vector<double> >&mom,std::vector<std::vector<double> >gauspts)
 {
     for(int i=0;i<num_func_;i++)
@@ -386,6 +355,10 @@ void GEO::CUT::BoundarycellIntegration::momentFittingMatrix(std::vector<std::vec
     }
 }
 
+/*--------------------------------------------------------------------------------------------*
+  The geometry of boundarycell and the location of Gaussian points are written in GMSH output
+  file for visualization and for debugging
+ *--------------------------------------------------------------------------------------------*/
 void GEO::CUT::BoundarycellIntegration::BcellGaussPointGmsh(const std::vector<std::vector<double> > bcGausspts,
     const std::vector<std::vector<double> > corners)
 {

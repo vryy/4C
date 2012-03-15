@@ -6,6 +6,7 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+
 void GEO::CUT::LevelSetSide::Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
 {
   edge.LevelSetCut( mesh, *this, cut_points );

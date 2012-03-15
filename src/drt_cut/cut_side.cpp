@@ -1,6 +1,4 @@
 
-//#include "../drt_geometry/intersection_templates.H"
-
 #include "cut_position.H"
 #include "cut_position2d.H"
 #include "cut_intersection.H"
@@ -8,12 +6,10 @@
 #include "cut_point_impl.H"
 #include "cut_pointgraph.H"
 #include "cut_creator.H"
-#include "cut_cycle.H"
 
 #include <string>
 #include <stack>
 
-#include "cut_side.H"
 
 GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
 {
@@ -28,6 +24,7 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   return NULL;
 }
 
+//Calculate the points at which the other side intersects with this considered side
 bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other, int recursion )
 {
   bool cut = false;

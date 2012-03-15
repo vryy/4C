@@ -1,22 +1,8 @@
 #ifndef CUT_FACET_H
 #define CUT_FACET_H
 
-#include <fstream>
-#include <iostream>
-
-#include <map>
-#include <set>
-#include <vector>
-#include <stdexcept>
-
-#include "../linalg/linalg_fixedsizematrix.H"
-
-#include "../drt_lib/drt_element.H"
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
-// #include "../drt_lib/drt_element.H"
-
-#include "cut_point.H"
 #include "cut_line.H"
 
 namespace GEO
@@ -32,7 +18,9 @@ class Facet;
 
 //typedef EntityIdLess<Facet> FacetPidLess;
 
-/// Surface of arbitrary shape, defined by its points.
+/*!
+\brief Class to handle surfaces of arbitrary shape, defined by its points corner points
+ */
 class Facet
 {
 public:
@@ -59,6 +47,9 @@ public:
 
   bool OnCutSide() { return SideId() > -1; }
 
+  /*!
+  \brief Returns the parent side Id from which the facet is created
+   */
   int SideId();
 
   int PositionSideId();
@@ -93,6 +84,9 @@ public:
 
   bool CornerEquals( const std::vector<Point*> & facet_points ) { return Equals( corner_points_, facet_points ); }
 
+  /*!
+  \brief Check whether the parent side is a cut side
+   */
   bool IsCutSide( Side * side );
 
   Point::PointPosition Position() const { return position_; }
@@ -126,12 +120,24 @@ public:
 
   const std::vector<Point*> & Points() const { return points_; }
 
+  /*!
+  \brief Get the corner points of the facet in global coordinates
+   */
   const std::vector<Point*> CornerPoints() const { return corner_points_; }
 
-  const std::vector<std::vector<double> > CornerPointsLocal(Element *elem1,bool print);
+  /*!
+  \brief Get the corner points of the facet in element local coordinates. Used in Moment fitting method
+   */
+  const std::vector<std::vector<double> > CornerPointsLocal(Element *elem1);
 
+  /*!
+  \brief Get the triangulated sides of this facet
+   */
   const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }
 
+  /*!
+  \brief Get all the triangulated points in the specified pointset
+   */
   void TriangulationPoints( PointSet & points );
 
   void AllPoints( PointSet & points )
@@ -146,12 +152,21 @@ public:
     }
   }
 
+  /*!
+  \brief Create new tri3 boundarycell associated with this facet
+   */
   void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
 //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
 
+  /*!
+  \brief Create new quad4 boundarycell associated with this facet
+   */
   void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
+  /*!
+  \brief Create new arbitrary boundarycell associated with this facet. These cells are to be dealt with when moment fitting is used for boun.cell integration
+   */
   void NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells,
       const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal );
 
@@ -161,8 +176,14 @@ public:
 
   bool IsTriangle( const std::vector<Point*> & tri ) const;
 
+  /*!
+  \brief Check whether the facet is already triangulated
+   */
   bool IsTriangulated() const { return triangulation_.size() > 0; }
 
+  /*!
+  \brief Check whether the given vector of points is a triangulation of this facet
+   */
   bool IsTriangulatedSide( const std::vector<Point*> & tri ) const;
 
   bool HasHoles() const { return holes_.size() > 0; }
@@ -175,6 +196,9 @@ public:
 
   Point * OtherPoint( Point * p1, Point * p2 );
 
+  /*!
+  \brief Triangulate the facet. This happens implicitly if Tessellation is used.
+   */
   void DoTriangulation(Mesh & mesh, const std::vector<Point*> & points ){CreateTriangulation(mesh,points );}
 
 private:

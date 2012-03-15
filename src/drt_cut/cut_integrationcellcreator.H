@@ -1,8 +1,6 @@
 #ifndef CUT_INTEGRATIONCELLCREATOR_H
 #define CUT_INTEGRATIONCELLCREATOR_H
 
-#include <map>
-
 #include "cut_volumecell.H"
 
 namespace GEO
@@ -11,10 +9,11 @@ namespace CUT
 {
   class Mesh;
 
-/// Special cases for integration cell creation: a library of cuts.
-/*!
- * Some cuts lead to known shapes those meshes are known. Here we collect
- * these cases. Feel free to add your own.
+  /*!
+  \brief Special cases for integration cell creation: a library of cuts.
+
+  Some cuts lead to known shapes those meshes are known. Here we collect
+  these cases. Feel free to add your own.
  */
 class IntegrationCellCreator
 {

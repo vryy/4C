@@ -4,8 +4,6 @@
 #include<vector>
 #include "facet_integration.H"
 #include "cut_volumecell.H"
-#include "cut_element.H"
-#include "cut_facet.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -20,6 +18,11 @@ namespace GEO
     class VolumeCell;
 //While performing the volume integration, the points of the facet should be arranged in anti-clockwise manner when looking the surface away from the body
 //this ensures outward normal vector
+    /*!
+    \brief Class to construct integration rule over the volumecell in element local coordinates.
+    It performs integration of base functions over the volume, distribution of Gauss points and solution of
+    moment fitting matrix to arrive at the Gauss weights
+     */
     class VolumeIntegration
     {
       public:
@@ -32,35 +35,110 @@ namespace GEO
         }
 
         ~VolumeIntegration(){};
+
+        /*!
+        \brief Compute Gauss point weights by solving the moment fitting equations and returns the coordinates of Gauss points
+        and their corresponding weights
+        */
         Epetra_SerialDenseVector compute_weights();
+
+        /*!
+        \brief Returns the location of Gauss points distributed over the volumecell
+        */
         std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;}
 
       private:
+        /*!
+        \brief Computes the RHS of the moment fitting matrix (performs integration of base functions over the volumecell)
+        */
+        Epetra_SerialDenseVector compute_rhs_moment();
+
+        /*!
+        \brief Distribute Gaussian points over the volumecell with "numeach" points in each direction
+        */
+        bool compute_Gaussian_points(int numeach);
+
+        /*!
+        \brief Computes the moment fitting matrix
+        */
+        void moment_fitting_matrix(std::vector<std::vector<double> >&mom,std::vector<std::vector<double> >gauspts);
+
+        /*!
+        \brief Check whether the generated ray intersect the facets of the volumecell, if so distribute Gauss points along this ray
+        */
+        bool IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
+                        vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
+
+        /*!
+        \brief Check whether the particular z-plane of the volumecell contains significant area so as to distribute
+        the Gauss points in that plane
+        */
+        bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
+                vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
+
+        /*!
+        \brief Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
+        */
+        void GaussPointGmsh();
+
+        /*!
+        \brief Generates equally spaced "num" number of points on the line whose end points are specified by
+        inter1 and inter2
+        */
+        void OnLine(vector<double>inter1,vector<double>inter2,vector<vector<double> >&linePts,int num);
+
+        /*!
+        \brief Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
+        point lies inside the volume or not
+        */
+        void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
+
+        /*
+        \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with in the facet area
+        */
+        int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
+
+        /*!
+        \brief Adds linear combination of first order base function to the moment fitting system of equations
+        */
+        void FirstOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Adds linear combination of second order base function to the moment fitting system of equations
+        */
+        void SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Adds linear combination of third order base function to the moment fitting system of equations
+        */
+        void ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Adds linear combination of fourth order base function to the moment fitting system of equations
+        */
+        void FourthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Adds linear combination of fifth order base function to the moment fitting system of equations
+        */
+        void FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Adds linear combination of sixth order base function to the moment fitting system of equations
+        */
+        void SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+
+        /*!
+        \brief Computes the error introduced by the generated integration rule for integrating some specific functions
+        */
+        void ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,Epetra_SerialDenseVector weights,int numeach);
+
         VolumeCell* volcell_;
         Element* elem1_;
         const GEO::CUT::Point::PointPosition position_;
         int num_func_;
-        Epetra_SerialDenseVector compute_rhs_moment();
         std::vector<std::vector<double> > gaus_pts_;
         std::vector<std::vector<double> > eqn_facets_;
-        bool compute_Gaussian_points(int numeach);
-        void moment_fitting_matrix(std::vector<std::vector<double> >&mom,std::vector<std::vector<double> >gauspts);
-        bool IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
-                        vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
-        bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
-                vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
-        void GaussPointGmsh();
-        void OnLine(vector<double>inter1,vector<double>inter2,vector<vector<double> >&linePts,int num);
-        void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
-        int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
-        bool traceVolume(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord,double*minn,double*maxx,double toler);
-        void FirstOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void FourthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
-        void ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,Epetra_SerialDenseVector weights,int numeach);
     };
   }
 }

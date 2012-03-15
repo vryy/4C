@@ -1,39 +1,103 @@
 #ifndef FACET_INTEGRATION_H
 #define FACET_INTEGRATION_H
 
-#include<vector>
 #include "cut_element.H"
-#include "cut_facet.H"
+#include "cut_mesh.H"
 
 namespace GEO
 {
-    namespace CUT
-    {
-        class Element;
-        class Facet;
+  namespace CUT
+  {
+    class Element;
+    class Facet;
 
-//While performing the facet integration, the points of the facet should be arranged in anti-clockwise manner when looking the surface away from the volume 
-//this ensures outward normal vector
-class FacetIntegration
-{
-    public:
+    /*!
+    \brief This class performs the integration of base functions over the facet. The points of the facet
+     should be arranged in anti-clockwise manner when looking the facet away from the volume
+    this ensures outward normal vector when divergence theorem is used
+    */
+    class FacetIntegration
+    {
+      public:
         FacetIntegration(Facet *face1,Element *element1,const GEO::CUT::Point::PointPosition posi,bool bcellInt,bool global)
-            :face1_(face1),               //facet under consideration
-             elem1_(element1),            //the element for which the facet is a part of
-             position_(posi),             //position
-             bcellInt_(bcellInt),         //"true" of it is boundarycell integration
-             global_(global)              //"true" for performing integration in global coordinates
+        :face1_(face1),               //facet under consideration
+         elem1_(element1),            //the element for which the facet is a part of
+         position_(posi),             //position
+         bcellInt_(bcellInt),         //"true" if it is boundarycell integration
+         global_(global)              //"true" for performing integration in global coordinates
         {
         }
 
         ~FacetIntegration(){};
-        void set_integ_number(int inte_num){inte_num_ = inte_num;}
-        double integrate_facet();
-        std::vector<double> get_equation() {return eqn_plane_;}
-        bool IsClockwiseOrdering(){return clockwise_;}
-//      std::vector<std::pair<int,int> > get_connectivity(){return connecti_;};
 
-    private:
+        /*!
+        \brief Select the base function to be integrated
+        */
+        void set_integ_number(int inte_num){inte_num_ = inte_num;}
+
+        /*!
+        \brief Performs the integration of a function over the facet
+        */
+        double integrate_facet();
+
+        /*!
+        \brief Computes the equation of the plane that contains this facet
+        */
+        std::vector<double> equation_plane(const std::vector<std::vector<double> > cornersLocal);
+
+        /*!
+        \brief Returns the equation of plane that contains this facet
+        */
+        std::vector<double> get_equation() {return eqn_plane_;}
+
+        /*!
+        \brief Return whether the vertices numbering of the facet is clockwise
+        */
+        bool IsClockwiseOrdering(){return clockwise_;}
+
+        /*!
+        \brief Generate Gaussian points over the considered facet by triangulating it. This is used when
+        DirectDivergence option is used for Gauss point generation
+        */
+        void DivergenceIntegrationRule(Mesh &mesh);
+
+      private:
+        /*!
+        \brief Check whether the vertices numbering of the facet is clockwise
+        */
+        void IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal);
+
+        /*
+        \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
+        */
+        std::vector<double> compute_alpha(std::vector<double> eqn_plane,std::string intType);
+
+        /*!
+        \brief Get normal of the considered facet in a particular coordinate direction defined by intType
+        */
+        double getNormal(std::string intType);
+
+        /*!
+        \brief Perform integration of base functions over boundarycells
+        */
+        void BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,double& facet_integ,
+                                      std::string intType);
+
+        /*!
+        \brief Generate integration rule over the considered facet by triangulating it
+        */
+        void GenerateIntegrationRuleDivergence(bool divergenceRule,Mesh &mesh,plain_boundarycell_set & divCells);
+
+        /*!
+        \brief Temporarily create Tri3 cell. This is not stored in Mesh
+        */
+        void TemporaryTri3(std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+
+        /*!
+        \brief Temporarily create Quad4 cell. This is not stored in Mesh
+        */
+        void TemporaryQuad4(std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+
         Facet *face1_;
         Element *elem1_;
         const GEO::CUT::Point::PointPosition position_;
@@ -42,14 +106,9 @@ class FacetIntegration
         int inte_num_;
         bool clockwise_;
         std::vector<double> eqn_plane_;
-        std::vector<double> equation_plane(const std::vector<std::vector<double> > cornersLocal);
-        void IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal);
-        std::vector<double> compute_alpha(std::vector<double> eqn_plane,std::string intType);
-        void BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,double& facet_integ,
-        		std::string intType);
-        
+
     };
-}
+  }
 }
 
 #endif

@@ -4,10 +4,8 @@
 #include <iterator>
 
 #include "../linalg/linalg_gauss.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 #include "cut_side.H"
-#include "cut_tolerance.H"
 #include "cut_kernel.H"
 
 namespace GEO

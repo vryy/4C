@@ -6,7 +6,9 @@ namespace GEO
 namespace CUT
 {
 
-/// Some options to configure the cutting behavior.
+/*!
+ \brief Options defined to configure the cutting behavior
+ */
 class Options
 {
 public:

@@ -5,7 +5,9 @@
 #include<cmath>
 #include<iostream>
 
-//this is when the facet is projected in y-z plane
+/*!
+\brief Returns the base function when the boundaycell is projected in y-z plane
+*/
 //pt[0] --> y
 //pt[1] --> z
 double base_func_surfX(std::vector<double> pt, int inte_num,std::vector<double> alfa)
@@ -485,7 +487,9 @@ double base_func_surfX(std::vector<double> pt, int inte_num,std::vector<double> 
 
 }
 
-//this is when the facet is projected in z-x plane
+/*!
+\brief Returns the base function when the boundaycell is projected in z-x plane
+*/
 //pt[0] --> z
 //pt[1] --> x
 double base_func_surfY(std::vector<double> pt, int inte_num,std::vector<double> alfa)
@@ -968,7 +972,9 @@ double base_func_surfY(std::vector<double> pt, int inte_num,std::vector<double> 
 
 }
 
-//this is when the facet is projected in x-y plane
+/*!
+\brief Returns the base function when the boundaycell is projected in x-y plane
+*/
 //pt[0] --> x
 //pt[1] --> y
 double base_func_surfZ(std::vector<double> pt, int inte_num,std::vector<double> alfa)

@@ -1,12 +1,8 @@
 
 #include <string>
 
-#include "cut_point.H"
 #include "cut_point_impl.H"
-#include "cut_edge.H"
 #include "cut_side.H"
-#include "cut_line.H"
-#include "cut_facet.H"
 #include "cut_mesh.H"
 
 GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side )
@@ -50,11 +46,12 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
   }
 }
 
+
 void GEO::CUT::Point::AddEdge( Edge* cut_edge )
 {
   cut_edges_.insert( cut_edge );
 
-  // revers add
+  // reverse add
   cut_edge->AddPoint( this );
 
   const plain_side_set & edge_sides = cut_edge->Sides();

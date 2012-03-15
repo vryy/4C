@@ -16,8 +16,6 @@ Maintainer: Benedikt Schott
 #ifndef CUT_PARALLEL_H_
 #define CUT_PARALLEL_H_
 
-#include <Teuchos_RCP.hpp>
-
 #include "cut_meshintersection.H"
 
 
@@ -50,17 +48,23 @@ class Parallel
 public:
 
 
-  //! basic CUT parallel constructor
+  /*!
+  \brief Basic CUT parallel constructor
+   */
   explicit Parallel(
       DRT::Discretization & discret,
       GEO::CUT::Mesh & mesh,
       GEO::CUT::MeshIntersection & meshintersection
   );
 
-  //! communicates the node positions
+  /*!
+  \brief Communicates the node positions
+   */
   void CommunicateNodePositions();
 
-  //! communicate the node dofset number for single volumecells
+  /*!
+  \brief Communicate the node dofset number for single volumecells
+   */
   void CommunicateNodeDofSetNumbers();
 
 
@@ -69,35 +73,51 @@ public:
 
   private:
 
-  //! export data whether proc has finished to set node positions
+  /*!
+  \brief Export data whether proc has finished to set node positions
+   */
   void exportCommunicationFinished(bool & procDone);
 
-  //! export position data to neighbor proc and receive data from previous proc
+  /*!
+  \brief Export position data to neighbor proc and receive data from previous proc
+   */
   void exportNodePositionData();
 
-  //! distribute received node positions on my processor
+  /*!
+  \brief Distribute received node positions on my processor
+   */
   void distributeMyReceivedNodePositionData();
 
-  //! export dofset data for volumecells to neighbor proc and receive data from previous proc
+  /*!
+  \brief Export dofset data for volumecells to neighbor proc and receive data from previous proc
+   */
   void exportDofSetData();
 
-  //! distribute received dofset data for volumecells my processor
+  /*!
+  \brief distribute received dofset data for volumecells my processor
+   */
   void distributeDofSetData();
 
-  //! pack the point coordinates
+  /*!
+  \brief Pack the point coordinates
+   */
   void packPoints(
       DRT::PackBuffer& dataSend,
       vector<LINALG::Matrix<3,1> >& points_coords
   ) const;
 
-  //! pack the point coordinates
+  /*!
+  \brief Unpack the point coordinates
+   */
   void unpackPoints(
       vector<char>::size_type& posinData,
       vector<char>& dataRecv,
       vector<LINALG::Matrix<3,1> > & points_coords
   ) const;
 
-  //! basic function sending data to dest and receiving data from source
+  /*!
+  \brief Basic function sending data to destination and receiving data from source
+   */
   void sendData(
       DRT::PackBuffer& dataSend,
       int& dest,
@@ -105,10 +125,14 @@ public:
       std::vector<char>& dataRecv
   ) const;
 
-  //! print current dofset data
+  /*!
+  \brief Print current dofset data
+   */
   void printDofSetData();
 
-  //! get the index of nid in the vector of elements (eid) node Ids
+  /*!
+  \brief Get the index of nid in the vector of elements (eid) node Ids
+   */
   void getDofSetVecIndex(int & index, int nid, int eid);
 
   //!

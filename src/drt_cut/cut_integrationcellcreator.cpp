@@ -2,10 +2,8 @@
 #include "cut_integrationcellcreator.H"
 #include "cut_position2d.H"
 #include "cut_integrationcell.H"
-#include "cut_facet.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
-#include "cut_element.H"
 
 
 bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element, const plain_volumecell_set & cells )
@@ -919,7 +917,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
                                                           int axis,
                                                           double r )
 {
-  Point::PointPosition position = cell->Position();
+//  Point::PointPosition position = cell->Position();
 
   PointSet cut_points;
   cell->GetAllPoints( mesh, cut_points );

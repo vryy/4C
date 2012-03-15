@@ -1,13 +1,7 @@
 #ifndef CUT_MESHINTERSECTION_H
 #define CUT_MESHINTERSECTION_H
 
-#include <Epetra_SerialDenseMatrix.h>
-
-#include <Teuchos_RCP.hpp>
-
 #include <vector>
-
-
 
 #include "cut_meshhandle.H"
 #include "cut_pointpool.H"
@@ -28,7 +22,9 @@ namespace CUT
   class Element;
   class ElementHandle;
 
-/// interface class for a surface mesh cut
+/*!
+\brief Interface class for the surface mesh cut. The surface mesh is in general triangulated.
+*/
 class MeshIntersection
 {
 public:
@@ -59,8 +55,9 @@ public:
         std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
       }
 
-
-      //! print the dofset data to screen
+      /*!
+      \brief print the dofset data to screen
+      */
       void print()
       {
         // print volumecell information
@@ -124,13 +121,20 @@ public:
   /// cut routine for parallel xfsi and xfluidfluid cuts
   void CutParallel( bool include_inner, DRT::Discretization& backdis, bool parallel, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation");
 
-  /// cut routine for cutting the mesh (cut the mesh and create lines, facets, volumecells)
+  /*!
+  \brief Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
+   */
   void Cut_Mesh( bool include_inner );
 
-  /// cut routine for cutting the mesh (create integration cells or perform moment fitting)
+  /*!
+  \brief The routine which splits the volumecell into integrationcells by tessellation, or create Gaussian
+  integration rules by moment fitting equations
+   */
   void Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype);
 
-  /// create nodal dofset sets within the parallel cut framework
+  /*!
+  \brief Create nodal dofset sets within the parallel cut framework
+   */
   void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
 
   /// fill parallel DofSetData with information that has to be communicated
@@ -139,7 +143,9 @@ public:
   /// create parallel DofSetData for a volumecell that has to be communicated
   void CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData , int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
 
-  /// find cell sets around each node (especially for quadratic elements)
+  /*!
+  \brief find cell sets around each node (especially for quadratic elements)
+  */
   void FindNodalCellSets( bool include_inner,
                           std::set<int> & eids,
                           std::map<int, ElementHandle*> & sourrounding_elements,

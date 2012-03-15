@@ -1,21 +1,8 @@
 #ifndef CUT_BOUNDARYCELL_H
 #define CUT_BOUNDARYCELL_H
 
-#include <fstream>
-#include <vector>
-#include <set>
-#include <map>
-#include <cmath>
-
-#include <Epetra_SerialDenseMatrix.h>
-
 #include "cut_cycle.H"
 
-#include "../drt_lib/drt_element.H"
-
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
@@ -27,10 +14,9 @@ namespace CUT
   class Mesh;
   class Point;
 
-/// Base of boundary cells.
-/*!
- * Boundary cells are used to represent the cut surface. Each volume cell has
- * its own boundary cells at any cut surface with outward normals.
+  /*!
+  \brief Base class for boundary cells. Boundary cells are used to represent the cut surface. Each volume cell has its own boundary cells
+   at any cut surface with outward normals.
  */
 class BoundaryCell
 {
@@ -45,33 +31,75 @@ public:
 
   virtual ~BoundaryCell() {}
 
+  /*!
+  \brief Returns the shape of the boundarycell
+   */
+
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  /*!
+  \brief Returns the cubature degree to generate quadrature rule for the cell
+   */
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
 
+  /*!
+  \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
+   */
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL ) = 0;
 
+  /*!
+  \brief Returns the area of tri3 and quad4 boundarycell
+   */
   virtual double Area() = 0;
 
+  /*!
+  \brief Get the outward normal vector for the tri3 and quad4 boundarycell
+   */
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const = 0;
 
+  /*!
+  \brief Get the corner points of the boundarycell in Cylce for geometrical operations
+   */
   const Cycle & PointCycle() const { return points_; }
 
+  /*!
+  \brief Get the corner points of the boundarycell as vector of Points
+   */
   const std::vector<Point*> & Points() const { return points_(); }
 
+  /*!
+  \brief Get the coodinates of the corner points of boundarycell
+   */
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
+  /*!
+  \brief Get the Facet which represent the boundarycell
+   */
   Facet * GetFacet() { return facet_; }
 
+  /*!
+  \brief Delete all the points of this boundarycell
+   */
   void Clear() { points_.clear(); }
 
   bool IsValid() const { return points_.size() > 0; }
 
+  /*!
+  \brief Get the Gaussian integration rule for the boundarycell
+   */
   virtual DRT::UTILS::GaussIntegration gaussRule()=0;
 
+  /*!
+  \brief Get the normal vector for the arbitrary boundarycell alone
+   */
   virtual LINALG::Matrix<3,1> GetNormalVector()=0;
 
 
+  /*!
+  \brief Computes the location of Gauss points on the boundarycell (x_gp_lin) from the standard Gauss point location (eta)
+  corresponding to the shape of the boundarycell. Also computes the factor to be multiplied with integration weight
+  and normal vector of the boundarycell
+   */
   template <DRT::Element::DiscretizationType celldistype>
   void Transform( const LINALG::Matrix<2,1> & eta,
                   LINALG::Matrix<3,1>       & x_gp_lin,

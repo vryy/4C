@@ -1,6 +1,3 @@
-
-#include <iostream>
-
 #include "cut_kernel.H"
 #include "cut_point.H"
 #include "cut_position2d.H"

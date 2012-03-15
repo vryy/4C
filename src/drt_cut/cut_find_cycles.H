@@ -2,10 +2,8 @@
 #define CUT_FIND_CYCLES_H
 
 #include <fstream>
-#include <iostream>
 
 #include <map>
-#include <set>
 #include <string>
 
 #include <boost/graph/adjacency_list.hpp>

@@ -1,17 +1,8 @@
 #ifndef CUT_INTEGRATIONCELL_H
 #define CUT_INTEGRATIONCELL_H
 
-#include <fstream>
-#include <vector>
-#include <set>
-
-#include <Epetra_SerialDenseMatrix.h>
-
-#include "cut_point.H"
 #include "cut_element.H"
 #include "cut_boundingbox.H"
-
-//#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
 {
@@ -21,7 +12,9 @@ namespace CUT
   class VolumeCell;
   class IntegrationCellCreator;
 
-/// Base of integration cells
+/*!
+\class Base class for integrationcells
+ */
 class IntegrationCell
 {
 public:

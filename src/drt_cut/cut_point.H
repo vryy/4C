@@ -2,12 +2,8 @@
 #define CUT_POINT_H
 
 #include <fstream>
-#include <iostream>
 
 #include <map>
-#include <set>
-#include <vector>
-#include <stdexcept>
 
 #include <Teuchos_RCP.hpp>
 
@@ -64,32 +60,56 @@ public:
 
   void Position( PointPosition p );
 
+  /*!
+  \brief Add this edge to the list of edges that are cut by this point
+   */
   void AddEdge( Edge* e );
 
+  /*!
+  \brief Add this side to the list of sides that are cut by this point
+   */
   void AddSide( Side* s );
 
+  /*!
+  \brief Add this element to the list of elements that are cut by this point
+   */
   void AddElement( Element* e ) { if ( e!=NULL ) { cut_elements_.insert( e ); } }
 
+  /*!
+  \brief Returns true if the edge is cut by this point
+   */
   bool IsCut( Edge* e )
   {
     return cut_edges_.count( e )>0;
   }
 
+  /*!
+   \brief Returns true if the facet is cut by this point
+    */
   bool IsCut( Facet* f )
   {
     return facets_.count( f )>0;
   }
 
+  /*!
+  \brief Returns true if the side is cut by this point
+   */
   bool IsCut( Side* s )
   {
     return cut_sides_.count( s )>0;
   }
 
+  /*!
+  \brief Returns true if this point cuts the element
+  */
   bool IsCut( Element* s )
   {
     return cut_elements_.count( s )>0;
   }
 
+  /*!
+  \brief Get the coordinates of this point
+   */
   void Coordinates( double * x )
   {
     std::copy( x_, x_+3, x );

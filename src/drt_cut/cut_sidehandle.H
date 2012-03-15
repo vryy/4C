@@ -1,14 +1,8 @@
 #ifndef CUT_SIDEHANDLE_H
 #define CUT_SIDEHANDLE_H
 
-#include <vector>
-
 #include "cut_side.H"
 #include "cut_boundarycell.H"
-//#include "cut_elementhandle.H"
-
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
 {
@@ -18,30 +12,44 @@ namespace CUT
   class Side;
   class Mesh;
 
-/// Outside-world interface to side.
-/*!
- * Converts quadratic to linear sides.
- */
+  /*!
+  \brief Outside world interface to the side. This breaks the quadratic side into linear sides
+   */
 class SideHandle
 {
 public:
 
   virtual ~SideHandle() {}
 
+  /*!
+  \brief Get the shape of this sides
+   */
   virtual DRT::Element::DiscretizationType Shape() = 0;
 
+  /*!
+  \brief Get the coordinates of the nodes of this side
+   */
   virtual void Coordinates( Epetra_SerialDenseMatrix & xyze ) = 0;
 
+  /*!
+  \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this side. Since side is 2D, the local
+  coordinates will have only two coordinates
+  */
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst ) = 0;
 
+  /*!
+  \brief For a quadratic side, get the resulting linear sides
+   */
   virtual void CollectSides( plain_side_set & sides ) = 0;
 
+  /*!
+  \brief Get the Gaussian rule projected on the side. Not used now
+   */
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( BoundaryCell * bc )
   {
     const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-//     LINALG::Matrix<3, nen> xyze;
     LINALG::Matrix<2, nen> xie;
 
     const std::vector<GEO::CUT::Point*> & cpoints = bc->Points();
@@ -53,8 +61,6 @@ public:
       GEO::CUT::Point * p = cpoints[i];
       const LINALG::Matrix<2,1> & xi = LocalCoordinates( p );
       std::copy( xi.A(), xi.A()+2, &xie( 0, i ) );
-//       const LINALG::Matrix<3,1> & eta = e->LocalCoordinates( p );
-//       std::copy( eta.A(), eta.A()+3, &xyze( 0, i ) );
     }
 
     Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
@@ -62,6 +68,10 @@ public:
     return gp;
   }
 
+  /*!
+  \brief Get the local coordinates of point p with respect to this side. Since side is 2D, the local
+  coordinates will have only two coordinates
+   */
   const LINALG::Matrix<2,1> & LocalCoordinates( Point * p )
   {
     std::map<Point*, LINALG::Matrix<2,1> >::iterator i = local_coordinates_.find( p );

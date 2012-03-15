@@ -1,7 +1,6 @@
 #ifndef CUT_EDGE_H
 #define CUT_EDGE_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "cut_node.H"
@@ -38,10 +37,8 @@ class ConcreteElement<DRT::Element::wedge6>;
 template <>
 class ConcreteElement<DRT::Element::pyramid5>;
 
-/// Linear edge between two nodes.
 /*!
- * The edge nodes are always cut points. There can be further cut points on
- * the edge.
+\brief Linear edge between two nodes. The edge nodes are always cut points. There can be further cut points on the edge.
  */
 class Edge
 {
@@ -61,6 +58,9 @@ public:
 
   virtual ~Edge() {}
 
+  /*!
+  \brief Add the side to the list of sides cut by this edge
+   */
   void Register( Side* side )
   {
     sides_.insert( side );
@@ -71,24 +71,48 @@ public:
     }
   }
 
+  /*!
+  \brief Check whether the edge is part of this side
+   */
   bool AtSide( Side* side ) { return sides_.count( side )>0; }
 
+  /*!
+  \brief Check whether the edges defined by these two points coincide with this edge
+   */
   bool Matches( Point * begin, Point * end )
   { return ( ( BeginNode()->point()==begin and EndNode()->point()==end ) or
              ( BeginNode()->point()==end   and EndNode()->point()==begin ) ); }
 
   //virtual bool HasPoint( Point * p ) = 0;
 
+  /*!
+  \bried Get all the sides on which this edge is a part of
+   */
   const plain_side_set & Sides() { return sides_; }
 
+  /*!
+  \brief Get the intersection points of this edge with the tri3 side and store the cut points in cuts
+   */
   void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, PointSet & cuts );
 
+  /*!
+  \brief Get the intersection points of this edge with the quad4 side and store the cut points in cuts
+   */
   void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, PointSet & cuts );
 
+  /*!
+  \brief Get the intersection points of this edge with the levelset side and store the cut points in cuts
+   */
   void LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & cuts );
 
+  /*!
+  \brief Add cut_point to the list of points at which this edge cuts some other elements
+   */
   void AddPoint( Point* cut_point );
 
+  /*!
+  \brief Get the coordinates of the nodes of the side
+   */
   void Coordinates( double * xyze )
   {
     double * x = xyze;
@@ -100,6 +124,9 @@ public:
     }
   }
 
+  /*!
+  \brief Print the coordinates of the nodes in screen
+   */
   void Print()
   {
     nodes_[0]->Print();
@@ -120,10 +147,19 @@ public:
     f << "\n\n";
   }
 
+  /*!
+  \brief Get the cut points on the edge defined by the edge_start and edge_end nodes
+   */
   void CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points );
 
+  /*!
+  \brief Unused
+   */
   void CutPoints( Side * side, PointSet & cut_points );
 
+  /*!
+  \brief Unused
+   */
   void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
   void CutPointsIncluding( Point* begin, Point* end, std::vector<Point*> & line );
@@ -152,6 +188,9 @@ public:
   void Coordinates( LINALG::Matrix<3, 2> & xyze_lineElement )
   { Edge::Coordinates( xyze_lineElement.A() ); }
 
+  /*!
+  \brief Computes the points at which both the sides intersect
+   */
   bool FindCutPoints( Mesh & mesh, Element * element, Side & side, Side & other, int recursion );
 
   void GetCutPoints( Element * element, Side & side, Side & other, PointSet & cuts );

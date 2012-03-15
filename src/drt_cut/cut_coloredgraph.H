@@ -2,10 +2,7 @@
 #define CUT_COLOREDGRAPH_H
 
 #include <map>
-#include <set>
-#include <vector>
 #include <list>
-#include <algorithm>
 
 #include "cut_utils.H"
 
@@ -14,7 +11,9 @@ namespace GEO
   namespace CUT
   {
 
-    /// graph to construct volume cells from facets and lines
+  /*!
+  \brief Graph to construct volume cells from facets and lines
+  */
     namespace COLOREDGRAPH
     {
 

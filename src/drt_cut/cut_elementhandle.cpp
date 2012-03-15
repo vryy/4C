@@ -1,23 +1,18 @@
 
-#include <Shards_BasicTopologies.hpp>
-#include <Shards_CellTopologyTraits.hpp>
-
-#include "cut_boundarycell.H"
-#include "cut_elementhandle.H"
 #include "cut_integrationcell.H"
-#include "cut_mesh.H"
 #include "cut_meshintersection.H"
-#include "cut_node.H"
 #include "cut_position.H"
 #include "cut_volumecell.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 #include<fstream>
 
 
+/*-------------------------------------------------------------------------------------------------*
+ *- Project the integration rule available in the local coordinates of the integationcells to the  *
+ *- local coordinates of volumecells                                                               *
+ *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
 {
@@ -41,6 +36,10 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
   return gp;
 }
 
+/*--------------------------------------------------------------------------*
+ *   Collect the Gauss points of all the volumecells belong to this element *
+ *   in such a way that gaussian rule for every vol.cell can be separated   *
+ *--------------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
                                                      std::vector<DRT::UTILS::GaussIntegration> & intpoints,
                                                      std::string gausstype )
@@ -205,11 +204,11 @@ void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumece
 {
 	bool include_inner = false;
 
-    const std::vector<plain_volumecell_set> & ele_vc_sets_inside = GetVcSetsInside();
-    const std::vector<plain_volumecell_set> & ele_vc_sets_outside = GetVcSetsOutside();
+  const std::vector<plain_volumecell_set> & ele_vc_sets_inside = GetVcSetsInside();
+  const std::vector<plain_volumecell_set> & ele_vc_sets_outside = GetVcSetsOutside();
 
-    std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
-    std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
+  std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
+  std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
 
 	if(include_inner)
 	{
@@ -223,8 +222,13 @@ void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumece
 
 }
 
-
-Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected( plain_volumecell_set & cells, std::string gausstype )
+/*--------------------------------------------------------------------------*
+ *   Collect the Gauss points of all the volumecells belong to this element *
+ *   The integration rule over all the volumecells are connected.           *
+ *   Cannot identify the integration rules separately for each cell         *
+ *--------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected( plain_volumecell_set & cells,
+                                                                                              std::string gausstype )
 {
 
     Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
@@ -642,9 +646,9 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mes
   }*/
 }
 
-void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( LevelSetIntersection & mesh,
-                                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersection & mesh,
+                                                               const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                                               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
 {
 #if 1
   dserror( "todo" );

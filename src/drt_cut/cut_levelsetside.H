@@ -7,8 +7,9 @@ namespace GEO
 {
   namespace CUT
   {
-
-/// special geometry-free levelset cut "side"
+  /*!
+  \brief Class to handle levelset cut side which does not have a regular geometrical shape
+   */
 class LevelSetSide : public Side
 {
 public:
@@ -28,6 +29,9 @@ public:
     throw std::runtime_error( "no topology" );
   }
 
+  /*!
+  \brief Get the cut points between the levelset side and the specified edge
+   */
   virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points );
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );

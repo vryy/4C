@@ -1,9 +1,6 @@
 #ifndef CUT_TETMESHINTERSECTION_H
 #define CUT_TETMESHINTERSECTION_H
 
-#include <vector>
-#include <set>
-
 #include "cut_mesh.H"
 
 namespace GEO

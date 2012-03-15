@@ -1,9 +1,5 @@
-
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
-#include "cut_facet.H"
-
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
 #if 0
@@ -217,7 +213,7 @@ void GEO::CUT::ArbitraryBoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, L
 {
 
 
-  dserror("Normal unavailable for this type of boundarycell");
+  dserror("Call GetNormalVector() to get normal for arbitrary boundarycells");
   exit(1);
   /*// cross product to get the normal at the point
   normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
@@ -247,15 +243,15 @@ DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule()
 
 LINALG::Matrix<3,1> GEO::CUT::Tri3BoundaryCell::GetNormalVector()
 {
-  LINALG::Matrix<3,1> normal;
   dserror("Call Transform function to get normal for Tri3 boundarycell");
+  LINALG::Matrix<3,1> normal;
   return normal;
 }
 
 LINALG::Matrix<3,1> GEO::CUT::Quad4BoundaryCell::GetNormalVector()
 {
-  LINALG::Matrix<3,1> normal;
   dserror("Call Transform function to get normal for Quad4 boundarycell");
+  LINALG::Matrix<3,1> normal;
   return normal;
 }
 

@@ -3,13 +3,10 @@
 #include <Shards_CellTopologyTraits.hpp>
 
 #include "cut_boundarycell.H"
-#include "cut_boundingbox.H"
-#include "cut_facet.H"
 #include "cut_integrationcell.H"
 #include "cut_node.H"
 #include "cut_options.H"
 #include "cut_pointpool.H"
-#include "cut_side.H"
 #include "cut_tetmeshintersection.H"
 #include "cut_volumecell.H"
 

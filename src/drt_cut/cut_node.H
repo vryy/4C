@@ -1,10 +1,6 @@
 #ifndef CUT_NODE_H
 #define CUT_NODE_H
 
-#include <map>
-#include <set>
-#include <vector>
-
 #include "cut_point.H"
 
 #include "../drt_fluid/xfluid_defines.H"
@@ -17,11 +13,11 @@ namespace CUT
 
 /// One node in a cut mesh
 /*!
- * Nodes have a mesh-unique id, a levelset-value and a point. The point
- * contains the major part of the information.
- *
- * Furthermore, nodes have some idea how many dofsets are required. This is
- * optional information than can be used by the xfem code.
+ \brief Class to deal with nodes in the cut mesh. Nodes have a mesh-unique id, a levelset-value and a point. The point
+ contains the major part of the information.
+
+  Furthermore, nodes have some idea how many dofsets are required. This is
+  optional information than can be used by the xfem code.
  */
 class Node
 {
@@ -41,9 +37,15 @@ public:
 
   const plain_edge_set & Edges() { return edges_; }
 
+  /*!
+  \brief Get the coordinates of the node from its point
+   */
   void Coordinates( double * x )
   { point_->Coordinates( x ); }
 
+  /*!
+  \brief Get the position of the node whether it is in fluid, structure or on the cut face
+   */
   Point::PointPosition Position() const { return point_->Position(); }
 
   void Print( std::ostream & f=std::cout )
@@ -56,8 +58,14 @@ public:
     point_->Plot( f );
   }
 
+  /*!
+  \brief Returns the point that defines the node
+  */
   Point * point() { return point_; }
 
+  /*!
+  \brief Returns the levelset value at this node
+   */
   double LSV() const { return lsv_; }
 
   const plain_element_set & Elements() const { return point_->Elements(); }
@@ -66,7 +74,9 @@ public:
   void AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
                                            std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets);
 
-  /// Find the number of dofsets required at this node.
+  /*!
+  \brief Find the number of dofsets required at this node.
+   */
   void FindDOFSets( bool include_inner );
 
   void FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets, std::vector<plain_volumecell_set> & cell_sets );
@@ -104,7 +114,7 @@ private:
 
   int nid_;
   Point* point_;
-  double lsv_;
+  double lsv_;  //levelset value
 
   plain_edge_set edges_;
 
