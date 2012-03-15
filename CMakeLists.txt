@@ -1393,11 +1393,6 @@ if (D_THERMO)
   add_definitions("-DD_THERMO")
 endif(D_THERMO)
 
-option (D_SOLID3      "spatial solid elements" ON)
-if (D_SOLID3)
-  add_definitions("-DD_SOLID3")
-endif(D_SOLID3)
-
 option (D_ARTNET      "1D Arterial network elements" OFF)
 if (D_ARTNET)
   add_definitions("-DD_ARTNET")

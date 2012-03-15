@@ -42,10 +42,6 @@
 #cmakedefine D_THERMO
 #endif
 
-#ifndef D_SOLID3
-#cmakedefine D_SOLID3
-#endif
-
 #ifndef D_ARTNET
 #cmakedefine D_ARTNET
 #endif

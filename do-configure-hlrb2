@@ -40,7 +40,6 @@ cmake \
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=OFF \
     -D D_SOH8:BOOL=ON \
-    -D D_SOLID3:BOOL=ON \
     -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=OFF \
     -D D_ALE_BFLOW:BOOL=OFF \

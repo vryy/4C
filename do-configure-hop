@@ -27,7 +27,6 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=ON \
     -D D_SOH8:BOOL=ON \
-    -D D_SOLID3:BOOL=ON \
     -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=ON \
     -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/include" \
