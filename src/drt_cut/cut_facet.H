@@ -197,7 +197,8 @@ public:
   Point * OtherPoint( Point * p1, Point * p2 );
 
   /*!
-  \brief Triangulate the facet. This happens implicitly if Tessellation is used.
+  \brief Triangulate the facet. This happens implicitly if Tessellation is used. This simply triangulates the facet any may not
+  give outward normal for the resulting cells
    */
   void DoTriangulation(Mesh & mesh, const std::vector<Point*> & points ){CreateTriangulation(mesh,points );}
 

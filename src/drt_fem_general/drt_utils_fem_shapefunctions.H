@@ -47,9 +47,7 @@ http://www.lnm.mw.tum.de
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
-
-#include "../drt_lib/drt_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT

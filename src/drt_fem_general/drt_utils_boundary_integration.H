@@ -21,11 +21,9 @@ Maintainer: Georg Bauer
 #ifndef UTILS_BOUNDARY_INTEGRATION_H
 #define UTILS_BOUNDARY_INTEGRATION_H
 
-#include <Epetra_SerialDenseMatrix.h>
-#include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
 
 
 namespace DRT

@@ -137,7 +137,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
    The arbitrarily oriented plane is first projected into one of the coordinate planes
    the gauss points are generated in the coordinate plane - now it has only two coordinates
    value of third coordinate can be calculated from the equation of arbitrary plane
-/*--------------------------------------------------------------------------------------------*/
+*---------------------------------------------------------------------------------------------*/
 void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::vector<double> eqn, std::vector<std::vector<double> > corners,
                     std::vector<std::vector<double> >& bcGausspts,int ptNos)
 {
