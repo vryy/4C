@@ -247,6 +247,7 @@ namespace INPUT
     virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
                                                  Teuchos::RCP<std::stringstream> condline,
                                                  Teuchos::RCP<DRT::Condition> condition);
+    virtual void SetLength(int newlength);
 
   private:
     int length_;
@@ -293,7 +294,7 @@ namespace INPUT
   {
   public:
 
-    /// constuct a condition component that reads a vector of double variables
+    /// construct a condition component that reads a vector of double variables
     /*!
       A number of double values are expected in the dat file.
 
@@ -306,11 +307,53 @@ namespace INPUT
     virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
                                                  Teuchos::RCP<std::stringstream> condline,
                                                  Teuchos::RCP<DRT::Condition> condition);
+    virtual void SetLength(int newlength);
 
   private:
     int length_;
   };
 
+  /// Dirichlet and Neumann boundary condition specific condition component
+  /*!
+    \see ConditionDefinition
+
+    \author AP and TK
+    \date 03/12
+   */
+  class DirichletNeumannBundle : public ConditionComponent
+  {
+  public:
+
+    /*! construct a condition component tailored for Dirichlet and Neumann with flexible
+     vector length for onoff, val, curve and funct
+    
+      The number of dofs and corresponding vectors are expected from the dat-file
+
+      \param name variable name in DRT::Condition
+      \param length number of double values expected
+     */
+    DirichletNeumannBundle
+    (
+      std::string name, 
+      Teuchos::RCP<IntConditionComponent> intcomp,
+      std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
+      std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
+    );
+    
+    virtual void DefaultLine(std::ostream& stream);
+    virtual void Print(std::ostream& stream, const DRT::Condition* cond);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
+
+  private:
+    int numintvectcomp_;
+    int numrealvectcomp_;
+    Teuchos::RCP<IntConditionComponent> intcomp_;
+    std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp_;
+    std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp_;
+  };
+  
 
   /// definition of a valid condition in baci input
   /*!
