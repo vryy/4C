@@ -20,6 +20,68 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 
 
+/*----------------------------------------------------------------------*
+ | set phi vector due to reinitialization                  schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetPhinp(Teuchos::RCP<Epetra_Vector> phinp)
+{
+  if (phinp != Teuchos::null)
+  {
+    phinp_->Update(1.0,*phinp,0.0);
+  }
+  else
+    dserror("vector phi does not exist");
+  return;
+} // ScaTraTimIntImpl::SetPhinp
+
+/*----------------------------------------------------------------------*
+ | set phi vector due to reinitialization                  schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi)
+{
+  if (phi != Teuchos::null)
+  {
+    phinp_->Update(1.0,*phi,0.0);
+    phin_->Update(1.0,*phi,0.0);
+    phistart_->Update(1.0,*phi,0.0);
+  }
+  else
+    dserror("vector phi does not exist");
+  return;
+} // ScaTraTimIntImpl::SetPhiReinit
+
+/*--------------------------------------------------------------------------------------------*
+ |  call different time discretizations for the sussman reinitialization equatio schott 04/11 |
+ *-------------------------------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::CallReinitialization()
+{
+
+  reinitialization_accepted_= false;
+
+  INPAR::SCATRA::ReinitializationStrategy reinitstrategy = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReinitializationStrategy>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_METHOD");
+  INPAR::SCATRA::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR");
+
+  // reinitialize Gfunc
+  switch(reinitstrategy)
+  {
+  case INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin:
+    if(myrank_==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based method" << std::endl;
+    if(timeintscheme != INPAR::SCATRA::timeint_tg2) dserror("characteristic galerkin strategy should be used only with tg2 time integration scheme");
+    break;
+  case INPAR::SCATRA::reinitstrategy_pdebased_linear_convection:
+    if(myrank_==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based linear transport equation" << std::endl;
+    if(timeintscheme != INPAR::SCATRA::timeint_one_step_theta) dserror("linear convection strategy should be used only with OST time integration scheme");
+    break;
+  case INPAR::SCATRA::reinitstrategy_none:
+    if(myrank_==0) std::cout << "No reinitialization chosen" << std::endl;
+    break;
+  default: dserror("unknown type of reinitialization technique");
+  }
+
+  TimeLoop_Reinit();
+
+  return reinitialization_accepted_;
+} // SCATRA::ScaTraTimIntImpl::CallReinitialization
 
 /*----------------------------------------------------------------------*
  | contains the time loop for level set reinitialization    schott 05/11|
@@ -71,7 +133,138 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop_Reinit()
 
 } // ScaTraTimIntImpl::TimeLoop_Reinit
 
+/*----------------------------------------------------------------------*
+ | contains the check for steady state                      schott 05/11|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CheckSteadyState(double&    Gradient_Error_old,
+		                                            bool&      STOP)
+{
+  double current_Gradient_Error = EvaluateGradientNormError();
 
+  INPAR::SCATRA::ReInitialStationaryCheck reinit_stationary_check = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialStationaryCheck>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"STATIONARY_CHECK");
+
+  if(reinit_stationary_check == INPAR::SCATRA::reinit_stationarycheck_L1normintegrated)
+  {
+    if(current_Gradient_Error < Gradient_Error_old)
+    {
+      Update(); // do a further reinitialization step
+      Gradient_Error_old = current_Gradient_Error;
+      reinitialization_accepted_ = true;
+
+      // -------------------------------------------------------------------
+      //                         output of solution
+      // -------------------------------------------------------------------
+      OutputReinitializationSteps();
+    }
+    else // the reinitialization step was not successful
+    {
+      // stop reinitialization
+      STOP= true;
+      if (myrank_ == 0)
+      {
+        cout << "reinitialization step not accepted" << endl;
+      }
+      // set last phi-field;
+      phinp_->Update(1.0,*phin_,0.0);
+    }
+  }
+  else
+  {
+    // check via numsteps
+    STOP=false;
+    Update();
+    reinitialization_accepted_ = true;
+    OutputReinitializationSteps();
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::CheckSteadyState
+
+/*----------------------------------------------------------------------*
+ |  calculate error in relative gradient norm               schott 12/10|
+ *----------------------------------------------------------------------*/
+double SCATRA::ScaTraTimIntImpl::EvaluateGradientNormError()
+{
+
+
+  // create the parameters for the discretization
+  ParameterList p;
+
+  // parameters for the elements
+  p.set("action","calc_error_reinit");
+
+  //    p.set("scatratype",scatratype_);
+  // set type of scalar transport problem
+  p.set<int>("scatratype",scatratype_);
+
+  //provide displacement field in case of ALE
+  p.set("isale",isale_);
+
+  p.set<double>("L1 integrated gradient error", 0.0);
+  p.set<double>("volume", 0.0);
+
+  if (isale_)
+    AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+
+  // get (squared) error values
+  discret_->Evaluate(p,null,null,null,null,null);
+  discret_->ClearState();
+
+
+  // get local errors
+  double locL1gradienterr   = p.get<double>("L1 integrated gradient error");
+  double locvolume          = p.get<double>("volume");
+
+  // initialize global errors
+  double L1gradient_err     = 0.0;
+  double volume             = 0.0;
+  double rel_gradient_err   = 0.0;
+
+  // sum over all processors
+  discret_->Comm().SumAll(&locL1gradienterr,&L1gradient_err,1);			// sum over processors, each list (list of a processor) has length 1
+  discret_->Comm().SumAll(&locvolume,&volume,1);
+
+
+  // relative gradient error
+  if(fabs(volume) > 1e-014) rel_gradient_err = L1gradient_err / volume;
+  else dserror("volume is smaller than 1e-14");
+
+
+  if (myrank_ == 0)
+  {
+    printf("\nConvergence check for reinitialization:\n");
+    printf("absolute gradient error || (||grad(phi)||-1.0) ||_L1(Omega) %15.8e\n"
+        "volume                                                      %15.8e\n"
+        "relative gradient error                                     %15.8e\n\n",
+        L1gradient_err,volume,rel_gradient_err);
+  }
+
+
+  return rel_gradient_err;
+} // SCATRA::ScaTraTimIntImpl::EvaluateGradientNormError
+
+/*----------------------------------------------------------------------*
+ | output of solution vector to BINIO                        schott 01/11|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputReinit(const int globalstep, const double globaltime)
+{
+  // time measurement: output of solution
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of reinitialized solution");
+
+  OutputToGmshReinit(globalstep, globaltime, step_, time_);
+
+  return;
+} // ScaTraTimIntImpl::OutputReinit
+
+/*==========================================================================*
+ |                                                                          |
+ | protected:                                                               |
+ |                                                                          |
+ *==========================================================================*/
 
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme     schott 05/11 |
@@ -126,7 +319,7 @@ void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
   discret_->SetState("phistart", phistart_);
 
   return;
-}
+} // ScaTraTimIntImpl::AddReinitializationParameters
 
 
 /*----------------------------------------------------------------------*
@@ -214,90 +407,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS_Boundary
 
-
-/*----------------------------------------------------------------------*
- | contains the check for steady state                      schott 05/11|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckSteadyState(double&    Gradient_Error_old,
-		                                            bool&      STOP)
-{
-  double current_Gradient_Error = EvaluateGradientNormError();
-
-  INPAR::SCATRA::ReInitialStationaryCheck reinit_stationary_check = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialStationaryCheck>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"STATIONARY_CHECK");
-
-  if(reinit_stationary_check == INPAR::SCATRA::reinit_stationarycheck_L1normintegrated)
-  {
-    if(current_Gradient_Error < Gradient_Error_old)
-    {
-      Update(); // do a further reinitialization step
-      Gradient_Error_old = current_Gradient_Error;
-      reinitialization_accepted_ = true;
-
-      // -------------------------------------------------------------------
-      //                         output of solution
-      // -------------------------------------------------------------------
-      OutputReinitializationSteps();
-    }
-    else // the reinitialization step was not successful
-    {
-      // stop reinitialization
-      STOP= true;
-      if (myrank_ == 0)
-      {
-        cout << "reinitialization step not accepted" << endl;
-      }
-      // set last phi-field;
-      phinp_->Update(1.0,*phin_,0.0);
-    }
-  }
-  else
-  {
-    // check via numsteps
-    STOP=false;
-    Update();
-    reinitialization_accepted_ = true;
-    OutputReinitializationSteps();
-  }
-
-  return;
-}
-
-
-
-/*--------------------------------------------------------------------------------------------*
- |  call different time discretizations for the sussman reinitialization equatio schott 04/11 |
- *-------------------------------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::CallReinitialization()
-{
-
-  reinitialization_accepted_= false;
-
-  INPAR::SCATRA::ReinitializationStrategy reinitstrategy = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReinitializationStrategy>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_METHOD");
-  INPAR::SCATRA::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR");
-
-  // reinitialize Gfunc
-  switch(reinitstrategy)
-  {
-  case INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin:
-    if(myrank_==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based method" << std::endl;
-    if(timeintscheme != INPAR::SCATRA::timeint_tg2) dserror("characteristic galerkin strategy should be used only with tg2 time integration scheme");
-    break;
-  case INPAR::SCATRA::reinitstrategy_pdebased_linear_convection:
-    if(myrank_==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based linear transport equation" << std::endl;
-    if(timeintscheme != INPAR::SCATRA::timeint_one_step_theta) dserror("linear convection strategy should be used only with OST time integration scheme");
-    break;
-  case INPAR::SCATRA::reinitstrategy_none:
-    if(myrank_==0) std::cout << "No reinitialization chosen" << std::endl;
-    break;
-  default: dserror("unknown type of reinitialization technique");
-  }
-
-  TimeLoop_Reinit();
-
-  return reinitialization_accepted_;
-}
-
-
 /*-----------------------------------------------------------------------------------*
  |  print reinitialization info                                         schott 04/11 |
  *----------------------------------------------------------------------------------*/
@@ -305,128 +414,11 @@ void SCATRA::ScaTraTimIntImpl::ReinitializeInfo(
     bool printtoscreen,
     bool printtofile)
 {
-  if (myrank_ == 0) {
-    cout << "\n---------------------------------------  REINITIALIZATION SOLVER  ----------------------------\n";
-  }
-
-
-  return;
-} // ScaTraImplicitTimeInt::ReinitializeInfo
-
-
-
-
-/*----------------------------------------------------------------------*
- |  calculate error in relative gradient norm               schott 12/10|
- *----------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntImpl::EvaluateGradientNormError()
-{
-
-
-  // create the parameters for the discretization
-  ParameterList p;
-
-  // parameters for the elements
-  p.set("action","calc_error_reinit");
-
-  //    p.set("scatratype",scatratype_);
-  // set type of scalar transport problem
-  p.set<int>("scatratype",scatratype_);
-
-  //provide displacement field in case of ALE
-  p.set("isale",isale_);
-
-  p.set<double>("L1 integrated gradient error", 0.0);
-  p.set<double>("volume", 0.0);
-
-  if (isale_)
-    AddMultiVectorToParameterList(p,"dispnp",dispnp_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-
-  // get (squared) error values
-  discret_->Evaluate(p,null,null,null,null,null);
-  discret_->ClearState();
-
-
-  // get local errors
-  double locL1gradienterr   = p.get<double>("L1 integrated gradient error");
-  double locvolume          = p.get<double>("volume");
-
-  // initialize global errors
-  double L1gradient_err     = 0.0;
-  double volume             = 0.0;
-  double rel_gradient_err   = 0.0;
-
-  // sum over all processors
-  discret_->Comm().SumAll(&locL1gradienterr,&L1gradient_err,1);			// sum over processors, each list (list of a processor) has length 1
-  discret_->Comm().SumAll(&locvolume,&volume,1);
-
-
-  // relative gradient error
-  if(fabs(volume) > 1e-014) rel_gradient_err = L1gradient_err / volume;
-  else dserror("volume is smaller than 1e-14");
-
-
   if (myrank_ == 0)
-  {
-    printf("\nConvergence check for reinitialization:\n");
-    printf("absolute gradient error || (||grad(phi)||-1.0) ||_L1(Omega) %15.8e\n"
-        "volume                                                      %15.8e\n"
-        "relative gradient error                                     %15.8e\n\n",
-        L1gradient_err,volume,rel_gradient_err);
-  }
-
-
-  return rel_gradient_err;
-}
-
-/*----------------------------------------------------------------------*
- | set phi vector due to reinitialization                  schott 05/11 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi)
-{
-  if (phi != Teuchos::null)
-  {
-    phinp_->Update(1.0,*phi,0.0);
-    phin_->Update(1.0,*phi,0.0);
-    phistart_->Update(1.0,*phi,0.0);
-  }
-  else
-    dserror("vector phi does not exist");
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | set phi vector due to reinitialization                  schott 05/11 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetPhinp(Teuchos::RCP<Epetra_Vector> phinp)
-{
-  if (phinp != Teuchos::null)
-  {
-    phinp_->Update(1.0,*phinp,0.0);
-  }
-  else
-    dserror("vector phi does not exist");
-  return;
-} // ScaTraTimIntImpl::SetPhinp
-
-/*----------------------------------------------------------------------*
- | output of solution vector to BINIO                        schott 01/11|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputReinit(const int globalstep, const double globaltime)
-{
-  // time measurement: output of solution
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of reinitialized solution");
-
-  OutputToGmshReinit(globalstep, globaltime, step_, time_);
+    cout << "\n---------------------------------------  REINITIALIZATION SOLVER  ----------------------------\n";
 
   return;
-} // ScaTraTimIntImpl::OutputReinit
-
-
+} // ScaTraTimIntImpl::ReinitializeInfo
 
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                        schott 01/11|
@@ -439,8 +431,7 @@ void SCATRA::ScaTraTimIntImpl::OutputReinitializationSteps()
   OutputToGmshReinitializationSteps(step_, time_);
 
   return;
-} // ScaTraTimIntImpl::Output
-
+} // ScaTraTimIntImpl::OutputReinitializationSteps
 
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files        schott  12/12|
@@ -466,10 +457,7 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmshReinitializationSteps(
 
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << endl;
-}
-
-
-
+} // ScaTraTimIntImpl::OutputToGmshReinitializationSteps
 
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files        schott  12/12|
@@ -504,5 +492,4 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmshReinit(
 
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << endl;
-}
-
+} // ScaTraTimIntImpl::OutputToGmshReinit

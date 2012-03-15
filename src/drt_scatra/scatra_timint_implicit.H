@@ -124,13 +124,15 @@ public:
 
   //! increment time and step value ? rename to SetTimeAndStep
   void SetTimeStep(
-    double time = 0.0,
-    int step = 0
-  )
+    double time = 0.0, //!< time in simulation
+    int step = 0       //!< iteration step
+    )
   {
     time_ = time;
     step_ = step;
-  }
+
+    return;
+  };
 
   //! do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
@@ -147,12 +149,6 @@ public:
     Teuchos::RCP<const Epetra_Vector> fsvel,   //!< fine-scale velocity vector
     Teuchos::RCP<const DRT::DofSet>   dofset,  //!< dofset pointer
     Teuchos::RCP<DRT::Discretization> dis);    //!< fluid/structure discretization
-
-  //! set the initial scalar field phi
-  void SetInitialField(
-    const INPAR::SCATRA::InitialField  init,       //!< type of initial field
-    const int                          startfuncno //!< number of spatial function
-  );
 
   //! redistribute the scatra discretization and vectors according to nodegraph
   virtual void Redistribute(
@@ -210,12 +206,7 @@ public:
   INPAR::SCATRA::ScaTraType ScaTraType() const { return scatratype_; };
 
   //! Print information about current time step to screen
-  virtual void PrintTimeStepInfo()
-  {
-    if (myrank_==0)
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
-  }
+  virtual void PrintTimeStepInfo();
 
   //! return system matrix down-casted as sparse matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -279,6 +270,12 @@ public:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! set the initial scalar field phi
+  void SetInitialField(
+    const INPAR::SCATRA::InitialField  init,       //!< type of initial field
+    const int                          startfuncno //!< number of spatial function
+  );
 
   //! reset phi vector due to reinitialization for OST scheme
   virtual void SetPhin(
@@ -471,12 +468,6 @@ public:
   //! call different reinitialization techniques based on solving the sussman equation
   bool CallReinitialization();
 
-  //! output to file for reinitialized scatra field
-  void OutputReinit(
-    const int    globalstep, //!< ?
-    const double globaltime  //!< ?
-  );
-
   //! do time integration for reinitialization (time loop)
   void TimeLoop_Reinit();
 
@@ -491,6 +482,12 @@ public:
 
   //! evaluate integrated error norm for reinitialization stop criterion
   double EvaluateGradientNormError();
+
+  //! output to file for reinitialized scatra field
+  void OutputReinit(
+    const int    globalstep, //!< ?
+    const double globaltime  //!< ?
+  );
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
@@ -635,14 +632,15 @@ protected:
 
   //! do we need a statistical sampling for boundary flux at the current time step?
   bool DoBoundaryFluxStatistics()
-    { return ((step_>=samstart_) and (step_<=samstop_)
-        and ((writeflux_==INPAR::SCATRA::flux_total_boundary)
-          or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)
-          or (writeflux_==INPAR::SCATRA::flux_convective_boundary)));};
+    { return( (step_>=samstart_) and (step_<=samstop_)
+              and
+              ( (writeflux_==INPAR::SCATRA::flux_total_boundary)
+                or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)
+                or (writeflux_==INPAR::SCATRA::flux_convective_boundary))); };
 
   //! is output needed for the current time step?
   bool DoOutput()
-    {return ((step_%upres_==0 )or (step_%uprestart_==0));};
+    { return ((step_%upres_==0 )or (step_%uprestart_==0)); };
 
   //! write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
@@ -668,11 +666,7 @@ protected:
   /*--- set, prepare, and predict ------------------------------------------*/
 
   //! increment time and step value
-  void IncrementTimeAndStep()
-  {
-    step_ += 1;
-    time_ += dta_;
-  }
+  void IncrementTimeAndStep();
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -781,6 +775,12 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
+  //! output of all reinitialization information to screen and/or file
+  void ReinitializeInfo(
+    bool printtoscreen = true, //!< ?
+    bool printtofile = true    //!< ?
+  );
+
   //! output reinitialization steps
   void OutputReinitializationSteps();
 
@@ -805,12 +805,6 @@ protected:
       printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
           dta_,MethodTitle().c_str(),step_,stepmax_);
   }
-
-  //! output of all reinitialization information to screen and/or file
-  void ReinitializeInfo(
-    bool printtoscreen = true, //!< ?
-    bool printtofile = true    //!< ?
-  );
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!

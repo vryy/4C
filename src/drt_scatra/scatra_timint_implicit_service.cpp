@@ -35,1410 +35,16 @@ Maintainer: Georg Bauer
 #include "../drt_mat/matlist.H"
 #include "../drt_inpar/inpar_elch.H"
 
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0           gjb 08/08|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
-{
-  // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
-  CalcInitialPhidtAssemble();
-  // solve for phidt_0
-  CalcInitialPhidtSolve();
-}
 
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0 (assembly)gjb 08/08|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
-{
-  // time measurement:
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial phidt");
-  if (myrank_ == 0)
-    std::cout<<"SCATRA: calculating initial time derivative of phi"<<endl;
-
-  // are we really at step 0?
-  dsassert(step_==0,"Step counter is not 0");
-
-  // evaluate Dirichlet boundary conditions at time t=0
-  // the values should match your initial field at the boundary!
-  //ApplyDirichletBC(time_,phin_,phidtn_);
-  ApplyDirichletBC(time_,phin_,Teuchos::null);
-
-  {
-    // evaluate Neumann boundary conditions at time t=0
-    neumann_loads_->PutScalar(0.0);
-    ParameterList p;
-    p.set("total time",time_);
-    p.set<int>("scatratype",scatratype_);
-    p.set("isale",isale_);
-    // provide displacement field in case of ALE
-    if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
-    discret_->ClearState();
-    discret_->EvaluateNeumann(p,*neumann_loads_);
-    discret_->ClearState();
-
-    // add potential Neumann boundary condition at time t=0
-    // and zero out the residual_ vector!
-    residual_->Update(1.0,*neumann_loads_,0.0);
-  }
-
-  // call elements to calculate matrix and right-hand-side
-  {
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_initial_time_deriv");
-
-    // set type of scalar transport problem
-    eleparams.set<int>("scatratype",scatratype_);
-
-    // add additional parameters (timefac_ remains unused at element level!!!!)
-    AddSpecificTimeIntegrationParameters(eleparams);
-
-    // other parameters that are needed by the elements
-    eleparams.set("incremental solver",incremental_);
-    eleparams.set<int>("form of convective term",convform_);
-    if (IsElch(scatratype_))
-      eleparams.set("frt",frt_); // factor F/RT
-    else if (scatratype_==INPAR::SCATRA::scatratype_loma)
-    {
-      eleparams.set("thermodynamic pressure",thermpressn_);
-      eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
-    }
-
-    // provide velocity field and potentially acceleration/pressure field
-    // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-    // parameters for stabilization (here required for material evaluation location)
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-    //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phi0",phin_);
-
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,residual_);
-    discret_->ClearState();
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-  }
-
-  // what's next?
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0 (solver) gjb 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
-{
-  // are we really at step 0?
-  dsassert(step_==0,"Step counter is not 0");
-
-  // We determine phidtn at every node (including boundaries)
-  // To be consistent with time integration scheme we do not prescribe
-  // any values at Dirichlet boundaries for phidtn !!!
-  // apply Dirichlet boundary conditions to system matrix
-  // LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
-
-  // solve for phidtn
-  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
-
-  // copy solution also to phidtnp
-  phidtnp_->Update(1.0,*phidtn_,0.0);
-
-  // reset the matrix (and its graph!) since we solved
-  // a very special problem here that has a different sparsity pattern
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-    BlockSystemMatrix()->Reset();
-  else
-    SystemMatrix()->Reset();
-  // reset the solver as well
-  solver_->Reset();
-
-  // that's it
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | calculate initial electric potential field at t=t_0         gjb 04/10|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
-{
-  if (IsElch(scatratype_))
-  {
-    if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC"))
-    {
-      // time measurement:
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
-      if (myrank_ == 0)
-        std::cout<<"SCATRA: calculating initial field for electric potential"<<endl;
-
-      // are we really at step 0?
-      dsassert(step_==0,"Step counter is not 0");
-
-      // construct intermediate vectors
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
-      RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
-
-      // zero out matrix entries
-      sysmat_->Zero();
-
-      // evaluate Dirichlet boundary conditions at time t=0
-      // the values should match your initial field at the boundary!
-      //ApplyDirichletBC(time_,phin_,phidtn_);
-      ApplyDirichletBC(time_,phin_,Teuchos::null);
-
-      // ToDo:
-      // contributions due to Neumann b.c. or ElectrodeKinetics b.c.
-      // have to be summed up here, and applied
-      // as a current flux condition at the potential field!
-
-      // evaluate Neumann boundary conditions at time t=0
-      /*{
-        neumann_loads_->PutScalar(0.0);
-        ParameterList p;
-        p.set("total time",time_);
-        p.set<int>("scatratype",scatratype_);
-        p.set("isale",isale_);
-        discret_->ClearState();
-        discret_->EvaluateNeumann(p,*neumann_loads_);
-        discret_->ClearState();
-
-        // add potential Neumann boundary condition at time t=0
-        // and zero out the residual_ vector!
-        // residual_->Update(1.0,*neumann_loads_,0.0);
-      }*/
-
-      // call elements to calculate matrix and right-hand-side
-      {
-
-        // create the parameters for the discretization
-        ParameterList eleparams;
-
-        // action for elements
-        eleparams.set("action","calc_initial_potential_field");
-
-        // set type of scalar transport problem
-        eleparams.set<int>("scatratype",scatratype_);
-
-        // factor F/RT
-        eleparams.set("frt",frt_);
-
-        // parameters for stabilization
-        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-        //provide displacement field in case of ALE
-        eleparams.set("isale",isale_);
-        if (isale_)
-          AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-        // set vector values needed by elements
-        discret_->ClearState();
-        discret_->SetState("phi0",phin_);
-
-        // call loop over elements
-        discret_->Evaluate(eleparams,sysmat_,rhs);
-        discret_->ClearState();
-
-        // finalize the complete matrix
-        sysmat_->Complete();
-      }
-
-      // apply Dirichlet boundary conditions to system matrix
-      LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
-
-      // solve
-      solver_->Solve(sysmat_->EpetraOperator(),phi0,rhs,true,true);
-
-      // copy solution of initial potential field to the solution vectors
-      Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phi0);
-      // insert values into the whole solution vectors
-      splitter_->InsertCondVector(onlypot,phinp_);
-      splitter_->InsertCondVector(onlypot,phin_);
-
-      // reset the matrix (and its graph!) since we solved
-      // a very special problem here that has a different sparsity pattern
-      if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-        BlockSystemMatrix()->Reset();
-      else
-        SystemMatrix()->Reset();
-    }
-  }
-  // go on!
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs
-)
-{
-  // time measurement: evaluate condition 'ElectrodeKinetics'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
-
-  discret_->ClearState();
-
-  // create an parameter list
-  ParameterList condparams;
-
-  // action for elements
-  condparams.set("action","calc_elch_electrode_kinetics");
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("frt",frt_); // factor F/RT
-  condparams.set("isale",isale_);
-  if (isale_)   //provide displacement field in case of ALE
-    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
-
-  // add element parameters and set state vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
-
-  std::string condstring("ElectrodeKinetics");
-  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
-  discret_->ClearState();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate Neumann inflow boundary condition                  vg 03/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
-{
-  // time measurement: evaluate condition 'Neumann inflow'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
-
-  // create parameter list
-  ParameterList condparams;
-
-  // action for elements
-  condparams.set("action","calc_Neumann_inflow");
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("incremental solver",incremental_);
-  condparams.set("isale",isale_);
-
-  // provide velocity field and potentially acceleration/pressure field
-  // as well as displacement field in case of ALE
-  // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(condparams,"velocity field",vel_);
-  AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
-  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
-
-  // clear state
-  discret_->ClearState();
-
-  // add element parameters and vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
-
-  std::string condstring("TransportNeumannInflow");
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
-  discret_->ClearState();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
-{
-  // time measurement: evaluate condition 'ThermoConvections'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
-
-  // create parameter list
-  ParameterList condparams;
-
-  // action for elements
-  condparams.set("action","calc_convective_heat_transfer");
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("incremental solver",incremental_);
-  condparams.set("isale",isale_);
-
-  // clear state
-  discret_->ClearState();
-
-  // add element parameters and vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
-
-  std::string condstring("ThermoConvections");
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
-  discret_->ClearState();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Evaluate surface/interface permeability                              |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
-{
-  // time measurement: evaluate condition 'SurfacePermeability'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
-
-  // create parameter list
-  ParameterList condparams;
-
-  // action for elements
-  condparams.set("action","calc_surface_permeability");
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("incremental solver",incremental_);
-
-  // provide displacement field in case of ALE
-  condparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-
-  // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
-
-  std::string condstring("ScaTraCoupling");
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
-  discret_->ClearState();
-
-  matrix->Complete();
-
-  double scaling = 1.0/ResidualScaling();
-
-  rhs->Scale(scaling);
-  matrix->Scale(scaling);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | construct toggle vector for Dirichlet dofs                  gjb 11/08|
- | assures backward compatibility for avm3 solver; should go away once  |
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
-{
-  if (dbcmaps_ == Teuchos::null)
-    dserror("Dirichlet map has not been allocated");
-  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
-  dirichones->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
-  return dirichtoggle;
-}
-
-
-/*----------------------------------------------------------------------*
- |  prepare AVM3-based scale separation                        vg 10/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
-{
-  // time measurement: avm3
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-  // create normalized all-scale subgrid-diffusivity matrix
-  sysmat_sd_->Zero();
-
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // action for elements, time factor and stationary flag
-  eleparams.set("action","calc_subgrid_diffusivity_matrix");
-
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_sd_,residual_);
-  discret_->ClearState();
-
-  // finalize the normalized all-scale subgrid-diffusivity matrix
-  sysmat_sd_->Complete();
-
-  // apply DBC to normalized all-scale subgrid-diffusivity matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
-
-  // get normalized fine-scale subgrid-diffusivity matrix
-  {
-    // this is important to have!!!
-    MLAPI::Init();
-
-    // extract the ML parameters
-    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
-
-    // get toggle vector for Dirchlet boundary conditions
-    const Epetra_Vector& dbct = *DirichletToggle();
-
-    // get nullspace parameters
-    double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
-    if (!nullspace) dserror("No nullspace supplied in parameter list");
-    int nsdim = mlparams.get("null space: dimension",1);
-
-    // modify nullspace to ensure that DBC are fully taken into account
-    if (nullspace)
-    {
-      const int length = sysmat_sd_->OperatorRangeMap().NumMyElements();
-      for (int i=0; i<nsdim; ++i)
-        for (int j=0; j<length; ++j)
-          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
-    }
-
-    // get plain aggregation Ptent
-    RCP<Epetra_CrsMatrix> crsPtent;
-    MLAPI::GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
-    LINALG::SparseMatrix Ptent(crsPtent);
-
-    // compute scale-separation matrix: S = I - Ptent*Ptent^T
-    Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
-    Sep_->Scale(-1.0);
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
-    tmp->PutScalar(1.0);
-    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
-    Sep_->ExtractDiagonalCopy(*diag);
-    diag->Update(1.0,*tmp,1.0);
-    Sep_->ReplaceDiagonalValues(*diag);
-
-    //complete scale-separation matrix and check maps
-    Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
-    if (!Sep_->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
-    if (!Sep_->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
-    if (!Sep_->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
-
-    // precomputation of unscaled diffusivity matrix:
-    // either two-sided S^T*M*S: multiply M by S from left- and right-hand side
-    // or one-sided M*S: only multiply M by S from left-hand side
-    if (not incremental_)
-    {
-      Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep_,false);
-      //Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
-    }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
-{
-  // time measurement: avm3
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
-
-  // some necessary definitions
-  int ierr;
-  double* sgvsqrt = 0;
-  int length = subgrdiff_->MyLength();
-
-  // square-root of subgrid-viscosity-scaling vector for left and right scaling
-  sgvsqrt = (double*)subgrdiff_->Values();
-  for (int i = 0; i < length; ++i)
-  {
-    sgvsqrt[i] = sqrt(sgvsqrt[i]);
-    subgrdiff_->ReplaceMyValues(1,&sgvsqrt[i],&i);
-  }
-
-  // get unscaled S^T*M*S from Sep
-  sysmat_sd_ = rcp(new LINALG::SparseMatrix(*Mnsv_));
-
-  // left and right scaling of normalized fine-scale subgrid-viscosity matrix
-  ierr = sysmat_sd_->LeftScale(*subgrdiff_);
-  if (ierr) dserror("Epetra_CrsMatrix::LeftScale returned err=%d",ierr);
-  ierr = sysmat_sd_->RightScale(*subgrdiff_);
-  if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d",ierr);
-
-  // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
-  sysmat->Add(*sysmat_sd_,false,1.0,1.0);
-
-  // set subgrid-diffusivity vector to zero after scaling procedure
-  subgrdiff_->PutScalar(0.0);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set initial thermodynamic pressure                          vg 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
-{
-  // get thermodynamic pressure and gas constant from material parameters
-  // (if no temperature equation, zero values are returned)
-  ParameterList eleparams;
-  eleparams.set("action","get_material_parameters");
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("isale",isale_);
-  // provide displacement field in case of ALE
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-  discret_->Evaluate(eleparams,null,null,null,null,null);
-  thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
-
-  // initialize also value at n+1
-  // (computed if not constant, otherwise prescribed value remaining)
-  thermpressnp_ = thermpressn_;
-
-  // initialize time derivative of thermodynamic pressure at n+1 and n
-  // (computed if not constant, otherwise remaining zero)
-  thermpressdtnp_ = 0.0;
-  thermpressdtn_  = 0.0;
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  // -> For constant thermodynamic pressure, this is done here once and
-  // for all simulation time.
-  ComputeThermPressureIntermediateValues();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute initial time derivative of thermodynamic pressure   vg 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
-{
-  // define element parameter list
-  ParameterList eleparams;
-
-  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
-  // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
-
-  // set scalar vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phin_);
-
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-  // provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // set parameters for element evaluation
-  eleparams.set("action","calc_domain_and_bodyforce");
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("total time",0.0);
-
-  // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-
-  // evaluate domain and bodyforce integral
-  discret_->EvaluateScalars(eleparams, scalars);
-
-  // get global integral values
-  double pardomint  = (*scalars)[0];
-  double parbofint  = (*scalars)[1];
-
-  // set action for elements
-  eleparams.set("action","calc_therm_press");
-
-  // variables for integrals of normal velocity and diffusive flux
-  double normvelint      = 0.0;
-  double normdifffluxint = 0.0;
-  eleparams.set("normal velocity integral",normvelint);
-  eleparams.set("normal diffusive flux integral",normdifffluxint);
-
-  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
-  // We may use the flux-calculation condition for calculation of fluxes for
-  // thermodynamic pressure, since it is usually at the same boundary.
-  vector<std::string> condnames;
-  condnames.push_back("ScaTraFluxCalc");
-  for (unsigned int i=0; i < condnames.size(); i++)
-  {
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
-  }
-
-  // get integral values on this proc
-  normvelint      = eleparams.get<double>("normal velocity integral");
-  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
-
-  // get integral values in parallel case
-  double parnormvelint      = 0.0;
-  double parnormdifffluxint = 0.0;
-  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
-  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
-
-  // clean up
-  discret_->ClearState();
-
-  // compute initial time derivative of thermodynamic pressure
-  // (with specific heat ratio fixed to be 1.4)
-  const double shr = 1.4;
-  thermpressdtn_ = (-shr*thermpressn_*parnormvelint
-                    + (shr-1.0)*(-parnormdifffluxint+parbofint))/pardomint;
-
-  // set time derivative of thermodynamic pressure at n+1 equal to the one at n
-  // for following evaluation of intermediate values
-  thermpressdtnp_ = thermpressdtn_;
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute initial total mass in domain                        vg 01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
-{
-  // set scalar values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phin_);
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_mean_scalars");
-  eleparams.set<int>("scatratype",scatratype_);
-  // inverted scalar values are required here
-  eleparams.set("inverting",true);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();   // clean up
-
-  // compute initial mass times gas constant: R*M_0 = int(1/T_0)*tp
-  initialmass_ = (*scalars)[0]*thermpressn_;
-
-  // print out initial total mass
-  if (myrank_ == 0)
-  {
-    cout << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Initial total mass in domain (times gas constant): " << initialmass_ << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute thermodynamic pressure from mass conservation       vg 01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
-{
-  // set scalar values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_mean_scalars");
-  eleparams.set<int>("scatratype",scatratype_);
-  // inverted scalar values are required here
-  eleparams.set("inverting",true);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();   // clean up
-
-  // compute thermodynamic pressure: tp = R*M_0/int(1/T)
-  thermpressnp_ = initialmass_/(*scalars)[0];
-
-  // print out thermodynamic pressure
-  if (myrank_ == 0)
-  {
-    cout << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-  }
-
-  // compute time derivative of thermodynamic pressure at time step n+1
-  ComputeThermPressureTimeDerivative();
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | perform setup of natural convection applications (ELCH)    gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
-{
-  // loads densification coefficients and the initial mean concentration
-
-  // only required for ELCH with natural convection
-  if (prbtype_ == "elch")
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
-    {
-      // allocate denselch_ with *dofrowmap and initialize it
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
-      elchdensnp_->PutScalar(1.0);
-
-      // Calculate the initial mean concentration value
-      if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
-      c0_.resize(numscal_);
-
-      discret_->ClearState();
-      discret_->SetState("phinp",phinp_);
-      // set action for elements
-      ParameterList eleparams;
-      eleparams.set("action","calc_mean_scalars");
-      eleparams.set<int>("scatratype",scatratype_);
-      eleparams.set("inverting",false);
-
-      //provide displacement field in case of ALE
-      eleparams.set("isale",isale_);
-      if (isale_)
-        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-      // evaluate integrals of concentrations and domain
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars
-      = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-      discret_->EvaluateScalars(eleparams, scalars);
-      discret_->ClearState();   // clean up
-
-      // calculate mean_concentration
-      const double domint  = (*scalars)[numscal_];
-      for(int k=0;k<numscal_;k++)
-      {
-        c0_[k] = (*scalars)[k]/domint;
-      }
-
-      //initialization of the densification coefficient vector
-      densific_.resize(numscal_);
-      DRT::Element*   element = discret_->lRowElement(0);
-      RefCountPtr<MAT::Material>  mat = element->Material();
-
-      if (mat->MaterialType() == INPAR::MAT::m_matlist)
-      {
-        const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
-
-        for (int k = 0;k<numscal_;++k)
-        {
-          const int matid = actmat->MatID(k);
-          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-          if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-          {
-            const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-            densific_[k] = actsinglemat->Densification();
-            if (densific_[k] < 0.0) dserror("received negative densification value");
-          }
-          else
-            dserror("material type is not allowed");
-        }
-      }
-      if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
-      {
-        const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
-        densific_[0] = actmat->Densification();
-        if (densific_[0] < 0.0) dserror("received negative densification value");
-        if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
-      }
-    }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute density from ion concentrations                    gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity()
-{
-  double newdensity(0.0);
-  int err(0);
-
-  // loop over all local nodes
-  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
-  {
-    // get the processor's local node
-    DRT::Node* lnode = discret_->lRowNode(lnodeid);
-
-    // get the degrees of freedom associated with this node
-    vector<int> nodedofs;
-    nodedofs = discret_->Dof(lnode);
-    int numdof = nodedofs.size();
-
-    newdensity= 1.0;
-    // loop over all ionic species
-    for(int k=0; k<numscal_; k++)
-    {
-      /*
-        //                  k=numscal_-1
-        //          /       ----                         \
-        //         |        \                            |
-        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
-        //         |        ----                         |
-        //          \       k=0                          /
-        //
-        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
-       */
-
-      // global and processor's local DOF ID
-      const int globaldofid = nodedofs[k];
-      const int localdofid = phinp_->Map().LID(globaldofid);
-      if (localdofid < 0)
-        dserror("localdofid not found in map for given globaldofid");
-
-      // compute contribution to density due to ionic species k
-      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
-    }
-
-    // insert the current density value for this node
-    // (has to be at position of el potential/ the position of the last dof!
-    const int globaldofid = nodedofs[numdof-1];
-    const int localdofid = phinp_->Map().LID(globaldofid);
-    if (localdofid < 0)
-      dserror("localdofid not found in map for given globaldofid");
-    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
-    if (err != 0) dserror("error while inserting a value into elchdensnp_");
-
-  } // loop over all local nodes
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | convergence check (only for low-Mach-number flow)           vg 09/11 |
- *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
-                                                int          itmax,
-                                                const double ittol)
-{
-  bool stopnonliniter = false;
-
-  // define L2-norm of residual, incremental scalar and scalar
-  double resnorm_L2(0.0);
-  double phiincnorm_L2(0.0);
-  double phinorm_L2(0.0);
-
-  // for the time being, only one scalar considered for low-Mach-number flow
-  /*if (numscal_>1)
-  {
-    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
-    onlyphi->Norm2(&phiincnorm_L2);
-
-    splitter_->ExtractCondVector(phinp_,onlyphi);
-    onlyphi->Norm2(&phinorm_L2);
-  }
-  else*/
-  residual_ ->Norm2(&resnorm_L2);
-  increment_->Norm2(&phiincnorm_L2);
-  phinp_    ->Norm2(&phinorm_L2);
-
-  // check for any INF's and NaN's
-  if (std::isnan(resnorm_L2) or
-      std::isnan(phiincnorm_L2) or
-      std::isnan(phinorm_L2))
-    dserror("At least one of the calculated vector norms is NaN.");
-
-  if (abs(std::isinf(resnorm_L2)) or
-      abs(std::isinf(phiincnorm_L2)) or
-      abs(std::isinf(phinorm_L2)))
-    dserror("At least one of the calculated vector norms is INF.");
-
-  // for scalar norm being (close to) zero, set to one
-  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
-
-  if (myrank_==0)
-  {
-    printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
-    printf("\n");
-    printf("+------------+-------------------+--------------+--------------+\n");
-  }
-
-  if ((resnorm_L2 <= ittol) and
-      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
-
-  // warn if itemax is reached without convergence, but proceed to next timestep
-  if ((itnum == itmax) and
-      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
-  {
-    stopnonliniter=true;
-    if (myrank_==0)
-    {
-      printf("|            >>>>>> not converged in itemax steps!             |\n");
-      printf("+--------------------------------------------------------------+\n");
-    }
-  }
-
-  return stopnonliniter;
-}
-
-
-/*----------------------------------------------------------------------*
- | write state vectors to Gmsh postprocessing files        henke   12/09|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
-    const int step,
-    const double time
-    ) const
-{
-  // turn on/off screen output for writing process of Gmsh postprocessing file
-  const bool screen_out = true;
-
-  // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 500, screen_out, discret_->Comm().MyPID());
-  std::ofstream gmshfilecontent(filename.c_str());
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phin \" {" << endl;
-//    // draw scalar field 'Phindtp' for every element
-//    IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
-//  }
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
-    // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
-//    // draw scalar field 'Phindtn' for every element
-//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
-//  }
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtnp \" {" << endl;
-//    // draw scalar field 'Phindtp' for every element
-//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
-//  }
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
-    // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,convel_,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-  gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
-}
-
-
-/*----------------------------------------------------------------------*
- |  output of some mean values                               gjb   01/09|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
-{
-  // set scalar values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_mean_scalars");
-  eleparams.set("inverting",false);
-  eleparams.set<int>("scatratype",scatratype_);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // evaluate integrals of scalar(s) and domain
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();   // clean up
-
-  const double domint = (*scalars)[numscal_];
-
-  // print out values
-  if (myrank_ == 0)
-  {
-    if (scatratype_==INPAR::SCATRA::scatratype_loma)
-      cout << "Mean scalar: " << setprecision (9) << (*scalars)[0]/domint << endl;
-    else
-    {
-      cout << "Domain integral:          " << setprecision (9) << domint << endl;
-      for (int k = 0; k < numscal_; k++)
-      {
-        cout << "Total concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k] << endl;
-        cout << "Mean concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k]/domint << endl;
-      }
-    }
-  }
-
-  // print out results to file as well
-  if (myrank_ == 0)
-  {
-    const std::string fname
-    = DRT::Problem::Instance()->OutputControlFile()->FileName()+".meanvalues.txt";
-
-    std::ofstream f;
-    if (Step() <= 1)
-    {
-      f.open(fname.c_str(),std::fstream::trunc);
-      if (scatratype_==INPAR::SCATRA::scatratype_loma)
-        f << "#| Step | Time | Mean scalar |\n";
-      else
-      {
-        f << "#| Step | Time | Domain integral ";
-        for (int k = 0; k < numscal_; k++)
-        {
-          f << "| Mean concentration (c_"<<k+1<<") ";
-        }
-        f << "\n";
-      }
-    }
-    else
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-    f << Step() << " " << Time() << " ";
-    if (scatratype_==INPAR::SCATRA::scatratype_loma)
-      f << (*scalars)[0]/domint << "\n";
-    else
-    {
-      f << domint << " ";
-      for (int k = 0; k < numscal_; k++)
-      {
-        f << (*scalars)[k]/domint << " ";
-      }
-      f << "\n";
-    }
-    f.flush();
-    f.close();
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  output of electrode status information to screen         gjb  01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
-    bool printtoscreen,
-    bool printtofile)
-{
-  // evaluate the following type of boundary conditions:
-  std::string condname("ElectrodeKinetics");
-  vector<DRT::Condition*> cond;
-  discret_->GetCondition(condname,cond);
-
-  // leave method, if there's nothing to do!
-  if (!cond.size()) return;
-
-  double sum(0.0);
-
-  if ((myrank_ == 0) and printtoscreen)
-  {
-    cout<<"Status of '"<<condname<<"':\n"
-    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
-    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
-  }
-
-  // first, add to all conditions of interest a ConditionID
-  for (int condid = 0; condid < (int) cond.size(); condid++)
-  {
-    // is there already a ConditionID?
-    const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
-    if (CondIDVec)
-    {
-      if ((*CondIDVec)[0] != condid)
-        dserror("Condition %s has non-matching ConditionID",condname.c_str());
-    }
-    else
-    {
-      // let's add a ConditionID
-      cond[condid]->Add("ConditionID",condid);
-    }
-  }
-  // now we evaluate the conditions and separate via ConditionID
-  for (int condid = 0; condid < (int) cond.size(); condid++)
-  {
-    double currtangent(0.0); // this value remains unused here!
-    double currresidual(0.0); // this value remains unused here!
-    double electrodesurface(0.0); // this value remains unused here!
-    double electrodepot(0.0); // this value remains unused here!
-    double meanoverpot(0.0); // this value remains unused here!
-
-    OutputSingleElectrodeInfo(
-        cond[condid],
-        condid,
-        printtoscreen,
-        printtofile,
-        sum,
-        currtangent,
-        currresidual,
-        electrodesurface,
-        electrodepot,
-        meanoverpot);
-  } // loop over condid
-
-  if ((myrank_==0) and printtoscreen)
-  {
-    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
-    // print out the net total current for all indicated boundaries
-    printf("Net total current over boundary: %10.3E\n\n",sum);
-  }
-
-  // clean up
-  discret_->ClearState();
-
-  return;
-} // ScaTraImplicitTimeInt::OutputElectrodeInfo
-
-
-/*----------------------------------------------------------------------*
- |  get electrode status for single boundary condition       gjb  11/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
-    DRT::Condition* condition,
-    const int condid,
-    const bool printtoscreen,
-    const bool printtofile,
-    double& currentsum,
-    double& currtangent,
-    double& currresidual,
-    double& electrodesurface,
-    double& electrodepot,
-    double& meanoverpot)
-{
-  // safety check: is there already a ConditionID?
-  const vector<int>* CondIDVec  = condition->Get<vector<int> >("ConditionID");
-  if (not CondIDVec) dserror("Condition has not yet a ConditionID");
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  discret_->SetState("timederivative",phidtnp_); // needed for double-layer capacity!
-
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_elch_electrode_kinetics");
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("calc_status",true); // just want to have a status ouput!
-  eleparams.set("frt",frt_);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // Since we just want to have the status ouput for t_{n+1},
-  // we have to take care for Gen.Alpha!
-  // AddSpecificTimeIntegrationParameters cannot be used since we do not want
-  // an evaluation for t_{n+\alpha_f} !!!
-
-  // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
-
-  // values to be computed
-  eleparams.set("currentintegral",0.0);
-  eleparams.set("boundaryintegral",0.0);
-  eleparams.set("overpotentialintegral",0.0);
-  eleparams.set("concentrationintegral",0.0);
-  eleparams.set("currentderiv",0.0);
-  eleparams.set("currentresidual",0.0);
-
-  // would be nice to have a EvaluateScalar for conditions!!!
-  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeKinetics",condid);
-
-  // get integral of current on this proc
-  double currentintegral = eleparams.get<double>("currentintegral");
-  // get area of the boundary on this proc
-  double boundaryint = eleparams.get<double>("boundaryintegral");
-  // get integral of overpotential on this proc
-  double overpotentialint = eleparams.get<double>("overpotentialintegral");
-  // get integral of reactant concentration on this proc
-  double cint = eleparams.get<double>("concentrationintegral");
-  // tangent of current w.r.t. electrode potential on this proc
-  double currderiv = eleparams.get<double>("currentderiv");
-  // get negative current residual (rhs of galvanostatic balance equation)
-  double currentresidual = eleparams.get<double>("currentresidual");
-
-  // care for the parallel case
-  double parcurrentintegral = 0.0;
-  discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
-  double parboundaryint = 0.0;
-  discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
-  double paroverpotentialint = 0.0;
-  discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
-  double parcint = 0.0;
-  discret_->Comm().SumAll(&cint,&parcint,1);
-  double parcurrderiv = 0.0;
-  discret_->Comm().SumAll(&currderiv,&parcurrderiv ,1);
-  double parcurrentresidual = 0.0;
-  discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
-
-  // access some parameters of the actual condition
-  double pot = condition->GetDouble("pot");
-  const int curvenum = condition->GetInt("curve");
-  if (curvenum>=0)
-  {
-    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
-    // adjust potential at metal side accordingly
-    pot *= curvefac;
-  }
-
-  // specify some return values
-  currentsum += parcurrentintegral; // sum of currents
-  currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
-  currresidual = parcurrentresidual;
-  electrodesurface = parboundaryint;
-  electrodepot = pot;
-  meanoverpot = paroverpotentialint/parboundaryint;
-
-  // clean up
-  discret_->ClearState();
-
-  // print out results to screen/file if desired
-  if (myrank_ == 0)
-  {
-    if (printtoscreen) // print out results to screen
-    {
-      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-          condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
-    }
-
-    if (printtofile)// write results to file
-    {
-      ostringstream temp;
-      temp << condid;
-      const std::string fname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
-
-      std::ofstream f;
-      if (Step() <= 1)
-      {
-        f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
-      }
-      else
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
-      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
-      << pot << " " << parcint/parboundaryint << " " <<"\n";
-      f.flush();
-      f.close();
-    }
-  } // if (myrank_ == 0)
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  write mass / heat flux vector to BINIO                   gjb   08/08|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
-{
-  //safety check
-  if (flux == Teuchos::null)
-    dserror("Null pointer for flux vector output. Output() called before Update() ??");
-
-  // WORK-AROUND FOR NURBS DISCRETIZATIONS
-  // using noderowmap is problematic. Thus, we do not add normal vectors
-  // to the scalar result field (scalar information is enough anyway)
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
-  if(nurbsdis!=NULL)
-  {
-    RCP<Epetra_Vector> normalflux = rcp(((*flux)(0)),false);
-    output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
-    return; // leave here
-  }
-
-  // post_drt_ensight does not support multivectors based on the dofmap
-  // for now, I create single vectors that can be handled by the filter
-
-  // get the noderowmap
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for (vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
-  {
-    int k=(*it);
-
-    ostringstream temp;
-    temp << k;
-    string name = "flux_phi_"+temp.str();
-    for (int i = 0;i<fluxk->MyLength();++i)
-    {
-      DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k-1);
-      // get value for each component of flux vector
-      double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
-      double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];
-      double zvalue = ((*flux)[2])[(flux->Map()).LID(dofgid)];
-      // care for the slave nodes of rotationally symm. periodic boundary conditions
-      double rotangle(0.0); //already converted to radians
-      bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
-      if (havetorotate)
-      {
-        double xvalue_rot = (xvalue*cos(rotangle)) - (yvalue*sin(rotangle));
-        double yvalue_rot = (xvalue*sin(rotangle)) + (yvalue*(cos(rotangle)));
-        xvalue = xvalue_rot;
-        yvalue = yvalue_rot;
-      }
-      // insert values
-      fluxk->ReplaceMyValue(i,0,xvalue);
-      fluxk->ReplaceMyValue(i,1,yvalue);
-      fluxk->ReplaceMyValue(i,2,zvalue);
-    }
-    if (numscal_==1)
-      output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
-    else
-      output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
-  }
-  // that's it
-  return;
-}
-
+/*==========================================================================*
+ |                                                                          |
+ | public:                                                                  |
+ |                                                                          |
+ *==========================================================================*/
+
+/*==========================================================================*/
+//! @name general framework
+/*==========================================================================*/
 
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
@@ -1470,7 +76,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 }
-
 
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector field in comp. domain    gjb 06/09|
@@ -1564,8 +169,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   discret_->ClearState();
 
   return flux;
-}
-
+} // SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
 /*----------------------------------------------------------------------*
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
@@ -1918,66 +522,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   discret_->ClearState();
 
   return flux;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
- *----------------------------------------------------------------------*/
-RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
-    const vector<string>& condnames
-)
-{
-  // create vectors for x,y and z component of average normal vector field
-  // get noderowmap of discretization
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  RCP<Epetra_MultiVector> normal = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-
-  discret_->ClearState();
-
-  // set action for elements
-  ParameterList eleparams;
-  eleparams.set("action","calc_normal_vectors");
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // loop over all intended types of conditions
-  for (unsigned int i=0; i < condnames.size(); i++)
-  {
-    discret_->EvaluateCondition(eleparams,condnames[i]);
-  }
-
-  // clean up
-  discret_->ClearState();
-
-  // the normal vector field is not properly scaled up to now. We do this here
-  int numrownodes = discret_->NumMyRowNodes();
-  Epetra_Vector* xcomp = (*normal)(0);
-  Epetra_Vector* ycomp = (*normal)(1);
-  Epetra_Vector* zcomp = (*normal)(2);
-  for (int i=0; i<numrownodes; ++i)
-  {
-    double x = (*xcomp)[i];
-    double y = (*ycomp)[i];
-    double z = (*zcomp)[i];
-    double norm = sqrt(x*x + y*y + z*z);
-    // form the unit normal vector
-    if (norm > EPS15)
-    {
-      normal->ReplaceMyValue(i,0,x/norm);
-      normal->ReplaceMyValue(i,1,y/norm);
-      normal->ReplaceMyValue(i,2,z/norm);
-    }
-  }
-
-  return normal;
-}
-
+} // SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary
 
 /*----------------------------------------------------------------------*
  |  calculate error compared to analytical solution            gjb 10/08|
@@ -2123,8 +668,1378 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     dserror("Cannot calculate error. Unknown type of analytical test problem");
   }
   return;
-}
+} // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0           gjb 08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
+{
+  // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
+  CalcInitialPhidtAssemble();
+  // solve for phidt_0
+  CalcInitialPhidtSolve();
+} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidt
+
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0 (assembly)gjb 08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
+{
+  // time measurement:
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial phidt");
+  if (myrank_ == 0)
+    std::cout<<"SCATRA: calculating initial time derivative of phi"<<endl;
+
+  // are we really at step 0?
+  dsassert(step_==0,"Step counter is not 0");
+
+  // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
+  //ApplyDirichletBC(time_,phin_,phidtn_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+
+  {
+    // evaluate Neumann boundary conditions at time t=0
+    neumann_loads_->PutScalar(0.0);
+    ParameterList p;
+    p.set("total time",time_);
+    p.set<int>("scatratype",scatratype_);
+    p.set("isale",isale_);
+    // provide displacement field in case of ALE
+    if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+    discret_->ClearState();
+    discret_->EvaluateNeumann(p,*neumann_loads_);
+    discret_->ClearState();
+
+    // add potential Neumann boundary condition at time t=0
+    // and zero out the residual_ vector!
+    residual_->Update(1.0,*neumann_loads_,0.0);
+  }
+
+  // call elements to calculate matrix and right-hand-side
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_initial_time_deriv");
+
+    // set type of scalar transport problem
+    eleparams.set<int>("scatratype",scatratype_);
+
+    // add additional parameters (timefac_ remains unused at element level!!!!)
+    AddSpecificTimeIntegrationParameters(eleparams);
+
+    // other parameters that are needed by the elements
+    eleparams.set("incremental solver",incremental_);
+    eleparams.set<int>("form of convective term",convform_);
+    if (IsElch(scatratype_))
+      eleparams.set("frt",frt_); // factor F/RT
+    else if (scatratype_==INPAR::SCATRA::scatratype_loma)
+    {
+      eleparams.set("thermodynamic pressure",thermpressn_);
+      eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
+    }
+
+    // provide velocity field and potentially acceleration/pressure field
+    // (export to column map necessary for parallel evaluation)
+    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+
+    // parameters for stabilization (here required for material evaluation location)
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phi0",phin_);
+
+    // call loop over elements
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    sysmat_->Complete();
+  }
+
+  // what's next?
+  return;
+} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble
+
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0 (solver) gjb 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
+{
+  // are we really at step 0?
+  dsassert(step_==0,"Step counter is not 0");
+
+  // We determine phidtn at every node (including boundaries)
+  // To be consistent with time integration scheme we do not prescribe
+  // any values at Dirichlet boundaries for phidtn !!!
+  // apply Dirichlet boundary conditions to system matrix
+  // LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+
+  // solve for phidtn
+  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
+
+  // copy solution also to phidtnp
+  phidtnp_->Update(1.0,*phidtn_,0.0);
+
+  // reset the matrix (and its graph!) since we solved
+  // a very special problem here that has a different sparsity pattern
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
+    BlockSystemMatrix()->Reset();
+  else
+    SystemMatrix()->Reset();
+  // reset the solver as well
+  solver_->Reset();
+
+  // that's it
+  return;
+} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve
+
+/*----------------------------------------------------------------------*
+ |  output of some mean values                               gjb   01/09|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
+{
+  // set scalar values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_mean_scalars");
+  eleparams.set("inverting",false);
+  eleparams.set<int>("scatratype",scatratype_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // evaluate integrals of scalar(s) and domain
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  const double domint = (*scalars)[numscal_];
+
+  // print out values
+  if (myrank_ == 0)
+  {
+    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+      cout << "Mean scalar: " << setprecision (9) << (*scalars)[0]/domint << endl;
+    else
+    {
+      cout << "Domain integral:          " << setprecision (9) << domint << endl;
+      for (int k = 0; k < numscal_; k++)
+      {
+        cout << "Total concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k] << endl;
+        cout << "Mean concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k]/domint << endl;
+      }
+    }
+  }
+
+  // print out results to file as well
+  if (myrank_ == 0)
+  {
+    const std::string fname
+    = DRT::Problem::Instance()->OutputControlFile()->FileName()+".meanvalues.txt";
+
+    std::ofstream f;
+    if (Step() <= 1)
+    {
+      f.open(fname.c_str(),std::fstream::trunc);
+      if (scatratype_==INPAR::SCATRA::scatratype_loma)
+        f << "#| Step | Time | Mean scalar |\n";
+      else
+      {
+        f << "#| Step | Time | Domain integral ";
+        for (int k = 0; k < numscal_; k++)
+        {
+          f << "| Mean concentration (c_"<<k+1<<") ";
+        }
+        f << "\n";
+      }
+    }
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+    f << Step() << " " << Time() << " ";
+    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+      f << (*scalars)[0]/domint << "\n";
+    else
+    {
+      f << domint << " ";
+      for (int k = 0; k < numscal_; k++)
+      {
+        f << (*scalars)[k]/domint << " ";
+      }
+      f << "\n";
+    }
+    f.flush();
+    f.close();
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputMeanScalars
+
+
+/*==========================================================================*/
+// ELCH
+/*==========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | compute density from ion concentrations                    gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeDensity()
+{
+  double newdensity(0.0);
+  int err(0);
+
+  // loop over all local nodes
+  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get the processor's local node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    // get the degrees of freedom associated with this node
+    vector<int> nodedofs;
+    nodedofs = discret_->Dof(lnode);
+    int numdof = nodedofs.size();
+
+    newdensity= 1.0;
+    // loop over all ionic species
+    for(int k=0; k<numscal_; k++)
+    {
+      /*
+        //                  k=numscal_-1
+        //          /       ----                         \
+        //         |        \                            |
+        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
+        //         |        ----                         |
+        //          \       k=0                          /
+        //
+        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
+       */
+
+      // global and processor's local DOF ID
+      const int globaldofid = nodedofs[k];
+      const int localdofid = phinp_->Map().LID(globaldofid);
+      if (localdofid < 0)
+        dserror("localdofid not found in map for given globaldofid");
+
+      // compute contribution to density due to ionic species k
+      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
+    }
+
+    // insert the current density value for this node
+    // (has to be at position of el potential/ the position of the last dof!
+    const int globaldofid = nodedofs[numdof-1];
+    const int localdofid = phinp_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
+    if (err != 0) dserror("error while inserting a value into elchdensnp_");
+
+  } // loop over all local nodes
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeDensity
+
+/*----------------------------------------------------------------------*
+ |  output of electrode status information to screen         gjb  01/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
+    bool printtoscreen,
+    bool printtofile)
+{
+  // evaluate the following type of boundary conditions:
+  std::string condname("ElectrodeKinetics");
+  vector<DRT::Condition*> cond;
+  discret_->GetCondition(condname,cond);
+
+  // leave method, if there's nothing to do!
+  if (!cond.size()) return;
+
+  double sum(0.0);
+
+  if ((myrank_ == 0) and printtoscreen)
+  {
+    cout<<"Status of '"<<condname<<"':\n"
+    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
+  }
+
+  // first, add to all conditions of interest a ConditionID
+  for (int condid = 0; condid < (int) cond.size(); condid++)
+  {
+    // is there already a ConditionID?
+    const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+    if (CondIDVec)
+    {
+      if ((*CondIDVec)[0] != condid)
+        dserror("Condition %s has non-matching ConditionID",condname.c_str());
+    }
+    else
+    {
+      // let's add a ConditionID
+      cond[condid]->Add("ConditionID",condid);
+    }
+  }
+  // now we evaluate the conditions and separate via ConditionID
+  for (int condid = 0; condid < (int) cond.size(); condid++)
+  {
+    double currtangent(0.0); // this value remains unused here!
+    double currresidual(0.0); // this value remains unused here!
+    double electrodesurface(0.0); // this value remains unused here!
+    double electrodepot(0.0); // this value remains unused here!
+    double meanoverpot(0.0); // this value remains unused here!
+
+    OutputSingleElectrodeInfo(
+        cond[condid],
+        condid,
+        printtoscreen,
+        printtofile,
+        sum,
+        currtangent,
+        currresidual,
+        electrodesurface,
+        electrodepot,
+        meanoverpot);
+  } // loop over condid
+
+  if ((myrank_==0) and printtoscreen)
+  {
+    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    // print out the net total current for all indicated boundaries
+    printf("Net total current over boundary: %10.3E\n\n",sum);
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  return;
+} // ScaTraImplicitTimeInt::OutputElectrodeInfo
+
+/*----------------------------------------------------------------------*
+ |  get electrode status for single boundary condition       gjb  11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
+    DRT::Condition* condition,
+    const int condid,
+    const bool printtoscreen,
+    const bool printtofile,
+    double& currentsum,
+    double& currtangent,
+    double& currresidual,
+    double& electrodesurface,
+    double& electrodepot,
+    double& meanoverpot)
+{
+  // safety check: is there already a ConditionID?
+  const vector<int>* CondIDVec  = condition->Get<vector<int> >("ConditionID");
+  if (not CondIDVec) dserror("Condition has not yet a ConditionID");
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("timederivative",phidtnp_); // needed for double-layer capacity!
+
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_elch_electrode_kinetics");
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set("calc_status",true); // just want to have a status ouput!
+  eleparams.set("frt",frt_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // Since we just want to have the status ouput for t_{n+1},
+  // we have to take care for Gen.Alpha!
+  // AddSpecificTimeIntegrationParameters cannot be used since we do not want
+  // an evaluation for t_{n+\alpha_f} !!!
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(eleparams);
+
+  // values to be computed
+  eleparams.set("currentintegral",0.0);
+  eleparams.set("boundaryintegral",0.0);
+  eleparams.set("overpotentialintegral",0.0);
+  eleparams.set("concentrationintegral",0.0);
+  eleparams.set("currentderiv",0.0);
+  eleparams.set("currentresidual",0.0);
+
+  // would be nice to have a EvaluateScalar for conditions!!!
+  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeKinetics",condid);
+
+  // get integral of current on this proc
+  double currentintegral = eleparams.get<double>("currentintegral");
+  // get area of the boundary on this proc
+  double boundaryint = eleparams.get<double>("boundaryintegral");
+  // get integral of overpotential on this proc
+  double overpotentialint = eleparams.get<double>("overpotentialintegral");
+  // get integral of reactant concentration on this proc
+  double cint = eleparams.get<double>("concentrationintegral");
+  // tangent of current w.r.t. electrode potential on this proc
+  double currderiv = eleparams.get<double>("currentderiv");
+  // get negative current residual (rhs of galvanostatic balance equation)
+  double currentresidual = eleparams.get<double>("currentresidual");
+
+  // care for the parallel case
+  double parcurrentintegral = 0.0;
+  discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
+  double parboundaryint = 0.0;
+  discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
+  double paroverpotentialint = 0.0;
+  discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
+  double parcint = 0.0;
+  discret_->Comm().SumAll(&cint,&parcint,1);
+  double parcurrderiv = 0.0;
+  discret_->Comm().SumAll(&currderiv,&parcurrderiv ,1);
+  double parcurrentresidual = 0.0;
+  discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
+
+  // access some parameters of the actual condition
+  double pot = condition->GetDouble("pot");
+  const int curvenum = condition->GetInt("curve");
+  if (curvenum>=0)
+  {
+    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
+    // adjust potential at metal side accordingly
+    pot *= curvefac;
+  }
+
+  // specify some return values
+  currentsum += parcurrentintegral; // sum of currents
+  currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
+  currresidual = parcurrentresidual;
+  electrodesurface = parboundaryint;
+  electrodepot = pot;
+  meanoverpot = paroverpotentialint/parboundaryint;
+
+  // clean up
+  discret_->ClearState();
+
+  // print out results to screen/file if desired
+  if (myrank_ == 0)
+  {
+    if (printtoscreen) // print out results to screen
+    {
+      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+          condid,parcurrentintegral,parboundaryint,parcurrentintegral/parboundaryint,paroverpotentialint/parboundaryint, pot, parcint/parboundaryint);
+    }
+
+    if (printtofile)// write results to file
+    {
+      ostringstream temp;
+      temp << condid;
+      const std::string fname
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
+
+      std::ofstream f;
+      if (Step() <= 1)
+      {
+        f.open(fname.c_str(),std::fstream::trunc);
+        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
+      }
+      else
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
+      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
+      << pot << " " << parcint/parboundaryint << " " <<"\n";
+      f.flush();
+      f.close();
+    }
+  } // if (myrank_ == 0)
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo
+
+
+/*==========================================================================*/
+// low-Mach-number flow
+/*==========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | set initial thermodynamic pressure                          vg 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
+{
+  // get thermodynamic pressure and gas constant from material parameters
+  // (if no temperature equation, zero values are returned)
+  ParameterList eleparams;
+  eleparams.set("action","get_material_parameters");
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set("isale",isale_);
+  // provide displacement field in case of ALE
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
+
+  // initialize also value at n+1
+  // (computed if not constant, otherwise prescribed value remaining)
+  thermpressnp_ = thermpressn_;
+
+  // initialize time derivative of thermodynamic pressure at n+1 and n
+  // (computed if not constant, otherwise remaining zero)
+  thermpressdtnp_ = 0.0;
+  thermpressdtn_  = 0.0;
+
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  // -> For constant thermodynamic pressure, this is done here once and
+  // for all simulation time.
+  ComputeThermPressureIntermediateValues();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::SetInitialThermPressure
+
+/*----------------------------------------------------------------------*
+ | compute initial time derivative of thermodynamic pressure   vg 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
+{
+  // define element parameter list
+  ParameterList eleparams;
+
+  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
+  // compute flux approximation and add it to the parameter list
+  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+
+  // set scalar vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phin_);
+
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+
+  // provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // set parameters for element evaluation
+  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set("total time",0.0);
+
+  // variables for integrals of domain and bodyforce
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+
+  // evaluate domain and bodyforce integral
+  discret_->EvaluateScalars(eleparams, scalars);
+
+  // get global integral values
+  double pardomint  = (*scalars)[0];
+  double parbofint  = (*scalars)[1];
+
+  // set action for elements
+  eleparams.set("action","calc_therm_press");
+
+  // variables for integrals of normal velocity and diffusive flux
+  double normvelint      = 0.0;
+  double normdifffluxint = 0.0;
+  eleparams.set("normal velocity integral",normvelint);
+  eleparams.set("normal diffusive flux integral",normdifffluxint);
+
+  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
+  // We may use the flux-calculation condition for calculation of fluxes for
+  // thermodynamic pressure, since it is usually at the same boundary.
+  vector<std::string> condnames;
+  condnames.push_back("ScaTraFluxCalc");
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
+  }
+
+  // get integral values on this proc
+  normvelint      = eleparams.get<double>("normal velocity integral");
+  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
+
+  // get integral values in parallel case
+  double parnormvelint      = 0.0;
+  double parnormdifffluxint = 0.0;
+  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
+  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
+
+  // clean up
+  discret_->ClearState();
+
+  // compute initial time derivative of thermodynamic pressure
+  // (with specific heat ratio fixed to be 1.4)
+  const double shr = 1.4;
+  thermpressdtn_ = (-shr*thermpressn_*parnormvelint
+                    + (shr-1.0)*(-parnormdifffluxint+parbofint))/pardomint;
+
+  // set time derivative of thermodynamic pressure at n+1 equal to the one at n
+  // for following evaluation of intermediate values
+  thermpressdtnp_ = thermpressdtn_;
+
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  ComputeThermPressureIntermediateValues();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv
+
+/*----------------------------------------------------------------------*
+ | compute initial total mass in domain                        vg 01/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
+{
+  // set scalar values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phin_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_mean_scalars");
+  eleparams.set<int>("scatratype",scatratype_);
+  // inverted scalar values are required here
+  eleparams.set("inverting",true);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // evaluate integral of inverse temperature
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  // compute initial mass times gas constant: R*M_0 = int(1/T_0)*tp
+  initialmass_ = (*scalars)[0]*thermpressn_;
+
+  // print out initial total mass
+  if (myrank_ == 0)
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Initial total mass in domain (times gas constant): " << initialmass_ << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeInitialMass
+
+/*----------------------------------------------------------------------*
+ | compute thermodynamic pressure from mass conservation       vg 01/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
+{
+  // set scalar values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_mean_scalars");
+  eleparams.set<int>("scatratype",scatratype_);
+  // inverted scalar values are required here
+  eleparams.set("inverting",true);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // evaluate integral of inverse temperature
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  discret_->EvaluateScalars(eleparams, scalars);
+  discret_->ClearState();   // clean up
+
+  // compute thermodynamic pressure: tp = R*M_0/int(1/T)
+  thermpressnp_ = initialmass_/(*scalars)[0];
+
+  // print out thermodynamic pressure
+  if (myrank_ == 0)
+  {
+    cout << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
+    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+  }
+
+  // compute time derivative of thermodynamic pressure at time step n+1
+  ComputeThermPressureTimeDerivative();
+
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  ComputeThermPressureIntermediateValues();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons
+
+/*----------------------------------------------------------------------*
+ | convergence check (only for low-Mach-number flow)           vg 09/11 |
+ *----------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
+                                                int          itmax,
+                                                const double ittol)
+{
+  bool stopnonliniter = false;
+
+  // define L2-norm of residual, incremental scalar and scalar
+  double resnorm_L2(0.0);
+  double phiincnorm_L2(0.0);
+  double phinorm_L2(0.0);
+
+  // for the time being, only one scalar considered for low-Mach-number flow
+  /*if (numscal_>1)
+  {
+    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
+    onlyphi->Norm2(&phiincnorm_L2);
+
+    splitter_->ExtractCondVector(phinp_,onlyphi);
+    onlyphi->Norm2(&phinorm_L2);
+  }
+  else*/
+  residual_ ->Norm2(&resnorm_L2);
+  increment_->Norm2(&phiincnorm_L2);
+  phinp_    ->Norm2(&phinorm_L2);
+
+  // check for any INF's and NaN's
+  if (std::isnan(resnorm_L2) or
+      std::isnan(phiincnorm_L2) or
+      std::isnan(phinorm_L2))
+    dserror("At least one of the calculated vector norms is NaN.");
+
+  if (abs(std::isinf(resnorm_L2)) or
+      abs(std::isinf(phiincnorm_L2)) or
+      abs(std::isinf(phinorm_L2)))
+    dserror("At least one of the calculated vector norms is INF.");
+
+  // for scalar norm being (close to) zero, set to one
+  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
+
+  if (myrank_==0)
+  {
+    printf("+------------+-------------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
+    printf("\n");
+    printf("+------------+-------------------+--------------+--------------+\n");
+  }
+
+  if ((resnorm_L2 <= ittol) and
+      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
+
+  // warn if itemax is reached without convergence, but proceed to next timestep
+  if ((itnum == itmax) and
+      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
+  {
+    stopnonliniter=true;
+    if (myrank_==0)
+    {
+      printf("|            >>>>>> not converged in itemax steps!             |\n");
+      printf("+--------------------------------------------------------------+\n");
+    }
+  }
+
+  return stopnonliniter;
+} // SCATRA::ScaTraTimIntImpl::ConvergenceCheck
+
+/*==========================================================================*/
+// functions used for reinitialization of level sets
+/*==========================================================================*/
+
+// all defined in scalar_timint_reinitialization.cpp
+
+/*----------------------------------------------------------------------*
+ | Evaluate surface/interface permeability                              |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'SurfacePermeability'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_surface_permeability");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("incremental solver",incremental_);
+
+  // provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("ScaTraCoupling");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  matrix->Complete();
+
+  double scaling = 1.0/ResidualScaling();
+
+  rhs->Scale(scaling);
+  matrix->Scale(scaling);
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::SurfacePermeability
+
+/*----------------------------------------------------------------------*
+ | return dof row map                                          vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap()
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  return Teuchos::rcp(dofrowmap, false);
+} // SCATRA::ScaTraTimIntImpl::DofRowMap
+
+/*----------------------------------------------------------------------*
+ | return dof row map for multiple discretizations             vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(dofrowmap, false);
+} // SCATRA::ScaTraTimIntImpl::DofRowMap
+
+
+/*==========================================================================*
+ |                                                                          |
+ | protected:                                                               |
+ |                                                                          |
+ *==========================================================================*/
+
+/*==========================================================================*/
+// general framework
+/*==========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | add approximation to flux vectors to a parameter list      gjb 05/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
+    Teuchos::ParameterList& p,
+    const enum INPAR::SCATRA::FluxType fluxtype
+)
+{
+  Teuchos::RCP<Epetra_MultiVector> flux
+    = CalcFluxInDomain(fluxtype);
+
+  // post_drt_ensight does not support multivectors based on the dofmap
+  // for now, I create single vectors that can be handled by the filters
+
+  // get the noderowmap
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  for(int k=0;k<numscal_;++k)
+  {
+    ostringstream temp;
+    temp << k;
+    string name = "flux_phi_"+temp.str();
+    for (int i = 0;i<fluxk->MyLength();++i)
+    {
+      DRT::Node* actnode = discret_->lRowNode(i);
+      int dofgid = discret_->Dof(actnode,k);
+      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+    }
+    AddMultiVectorToParameterList(p,name,fluxk);
+  }
+  return;
+} // SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList
+
+/*----------------------------------------------------------------------*
+ | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
+    const vector<string>& condnames
+)
+{
+  // create vectors for x,y and z component of average normal vector field
+  // get noderowmap of discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  RCP<Epetra_MultiVector> normal = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  discret_->ClearState();
+
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_normal_vectors");
+  eleparams.set<int>("scatratype",scatratype_);
+  eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // loop over all intended types of conditions
+  for (unsigned int i=0; i < condnames.size(); i++)
+  {
+    discret_->EvaluateCondition(eleparams,condnames[i]);
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  // the normal vector field is not properly scaled up to now. We do this here
+  int numrownodes = discret_->NumMyRowNodes();
+  Epetra_Vector* xcomp = (*normal)(0);
+  Epetra_Vector* ycomp = (*normal)(1);
+  Epetra_Vector* zcomp = (*normal)(2);
+  for (int i=0; i<numrownodes; ++i)
+  {
+    double x = (*xcomp)[i];
+    double y = (*ycomp)[i];
+    double z = (*zcomp)[i];
+    double norm = sqrt(x*x + y*y + z*z);
+    // form the unit normal vector
+    if (norm > EPS15)
+    {
+      normal->ReplaceMyValue(i,0,x/norm);
+      normal->ReplaceMyValue(i,1,y/norm);
+      normal->ReplaceMyValue(i,2,z/norm);
+    }
+  }
+
+  return normal;
+} // SCATRA:: ScaTraTimIntImpl::ComputeNormalVectors
+
+/*----------------------------------------------------------------------*
+ | evaluate Neumann inflow boundary condition                  vg 03/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'Neumann inflow'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_Neumann_inflow");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("incremental solver",incremental_);
+  condparams.set("isale",isale_);
+
+  // provide velocity field and potentially acceleration/pressure field
+  // as well as displacement field in case of ALE
+  // (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"velocity field",vel_);
+  AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // clear state
+  discret_->ClearState();
+
+  // add element parameters and vectors according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("TransportNeumannInflow");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow
+
+/*----------------------------------------------------------------------*
+ | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'ThermoConvections'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_convective_heat_transfer");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("incremental solver",incremental_);
+  condparams.set("isale",isale_);
+
+  // clear state
+  discret_->ClearState();
+
+  // add element parameters and vectors according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("ThermoConvections");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
+
+/*----------------------------------------------------------------------*
+ | write state vectors to Gmsh postprocessing files        henke   12/09|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
+    const int step,
+    const double time
+    ) const
+{
+  // turn on/off screen output for writing process of Gmsh postprocessing file
+  const bool screen_out = true;
+
+  // create Gmsh postprocessing file
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 500, screen_out, discret_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phin \" {" << endl;
+//    // draw scalar field 'Phindtp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+//    // draw scalar field 'Phindtn' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phidtnp \" {" << endl;
+//    // draw scalar field 'Phindtp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+    // draw vector field 'Convective Velocity' for every element
+    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,convel_,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  gmshfilecontent.close();
+  if (screen_out) std::cout << " done" << endl;
+} // ScaTraTimIntImpl::OutputToGmsh
+
+/*----------------------------------------------------------------------*
+ |  write mass / heat flux vector to BINIO                   gjb   08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
+{
+  //safety check
+  if (flux == Teuchos::null)
+    dserror("Null pointer for flux vector output. Output() called before Update() ??");
+
+  // WORK-AROUND FOR NURBS DISCRETIZATIONS
+  // using noderowmap is problematic. Thus, we do not add normal vectors
+  // to the scalar result field (scalar information is enough anyway)
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  if(nurbsdis!=NULL)
+  {
+    RCP<Epetra_Vector> normalflux = rcp(((*flux)(0)),false);
+    output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
+    return; // leave here
+  }
+
+  // post_drt_ensight does not support multivectors based on the dofmap
+  // for now, I create single vectors that can be handled by the filter
+
+  // get the noderowmap
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  for (vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
+  {
+    int k=(*it);
+
+    ostringstream temp;
+    temp << k;
+    string name = "flux_phi_"+temp.str();
+    for (int i = 0;i<fluxk->MyLength();++i)
+    {
+      DRT::Node* actnode = discret_->lRowNode(i);
+      int dofgid = discret_->Dof(actnode,k-1);
+      // get value for each component of flux vector
+      double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
+      double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];
+      double zvalue = ((*flux)[2])[(flux->Map()).LID(dofgid)];
+      // care for the slave nodes of rotationally symm. periodic boundary conditions
+      double rotangle(0.0); //already converted to radians
+      bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
+      if (havetorotate)
+      {
+        double xvalue_rot = (xvalue*cos(rotangle)) - (yvalue*sin(rotangle));
+        double yvalue_rot = (xvalue*sin(rotangle)) + (yvalue*(cos(rotangle)));
+        xvalue = xvalue_rot;
+        yvalue = yvalue_rot;
+      }
+      // insert values
+      fluxk->ReplaceMyValue(i,0,xvalue);
+      fluxk->ReplaceMyValue(i,1,yvalue);
+      fluxk->ReplaceMyValue(i,2,zvalue);
+    }
+    if (numscal_==1)
+      output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
+    else
+      output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
+  }
+  // that's it
+  return;
+} // ScaTraTimIntImpl::OutputFlux
+
+/*==========================================================================*/
+// ELCH
+/*==========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | perform setup of natural convection applications (ELCH)    gjb 07/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
+{
+  // loads densification coefficients and the initial mean concentration
+
+  // only required for ELCH with natural convection
+  if (prbtype_ == "elch")
+  {
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
+    {
+      // allocate denselch_ with *dofrowmap and initialize it
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
+      elchdensnp_->PutScalar(1.0);
+
+      // Calculate the initial mean concentration value
+      if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
+      c0_.resize(numscal_);
+
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+      // set action for elements
+      ParameterList eleparams;
+      eleparams.set("action","calc_mean_scalars");
+      eleparams.set<int>("scatratype",scatratype_);
+      eleparams.set("inverting",false);
+
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+      // evaluate integrals of concentrations and domain
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars
+      = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+      discret_->EvaluateScalars(eleparams, scalars);
+      discret_->ClearState();   // clean up
+
+      // calculate mean_concentration
+      const double domint  = (*scalars)[numscal_];
+      for(int k=0;k<numscal_;k++)
+      {
+        c0_[k] = (*scalars)[k]/domint;
+      }
+
+      //initialization of the densification coefficient vector
+      densific_.resize(numscal_);
+      DRT::Element*   element = discret_->lRowElement(0);
+      RefCountPtr<MAT::Material>  mat = element->Material();
+
+      if (mat->MaterialType() == INPAR::MAT::m_matlist)
+      {
+        const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
+
+        for (int k = 0;k<numscal_;++k)
+        {
+          const int matid = actmat->MatID(k);
+          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+          if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+          {
+            const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+            densific_[k] = actsinglemat->Densification();
+            if (densific_[k] < 0.0) dserror("received negative densification value");
+          }
+          else
+            dserror("material type is not allowed");
+        }
+      }
+      if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
+      {
+        const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
+        densific_[0] = actmat->Densification();
+        if (densific_[0] < 0.0) dserror("received negative densification value");
+        if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+      }
+    }
+  }
+
+  return;
+} // ScaTraTimIntImpl::SetupElchNatConv
+
+/*----------------------------------------------------------------------*
+ | define the magnetic field                                  gjb 05/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetMagneticField(const int funcno)
+{
+  if (funcno > 0)
+  {
+    int err(0);
+    const int numdim = 3; // the magnetic field is always 3D
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode = discret_->lRowNode(lnodeid);
+      for(int index=0;index<numdim;++index)
+      {
+        double value = DRT::Problem::Instance()->Funct(funcno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        // no time-dependency included, yet!
+        err = magneticfield_->ReplaceMyValue(lnodeid, index, value);
+        if (err!=0) dserror("error while inserting a value into magneticfield_");
+      }
+    }
+  }
+  return;
+
+} // ScaTraImplicitTimeInt::SetMagneticField
+
+/*----------------------------------------------------------------------*
+ | calculate initial electric potential field at t=t_0         gjb 04/10|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
+{
+  if (IsElch(scatratype_))
+  {
+    if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC"))
+    {
+      // time measurement:
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
+      if (myrank_ == 0)
+        std::cout<<"SCATRA: calculating initial field for electric potential"<<endl;
+
+      // are we really at step 0?
+      dsassert(step_==0,"Step counter is not 0");
+
+      // construct intermediate vectors
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+      RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
+
+      // zero out matrix entries
+      sysmat_->Zero();
+
+      // evaluate Dirichlet boundary conditions at time t=0
+      // the values should match your initial field at the boundary!
+      //ApplyDirichletBC(time_,phin_,phidtn_);
+      ApplyDirichletBC(time_,phin_,Teuchos::null);
+
+      // ToDo:
+      // contributions due to Neumann b.c. or ElectrodeKinetics b.c.
+      // have to be summed up here, and applied
+      // as a current flux condition at the potential field!
+
+      // evaluate Neumann boundary conditions at time t=0
+      /*{
+        neumann_loads_->PutScalar(0.0);
+        ParameterList p;
+        p.set("total time",time_);
+        p.set<int>("scatratype",scatratype_);
+        p.set("isale",isale_);
+        discret_->ClearState();
+        discret_->EvaluateNeumann(p,*neumann_loads_);
+        discret_->ClearState();
+
+        // add potential Neumann boundary condition at time t=0
+        // and zero out the residual_ vector!
+        // residual_->Update(1.0,*neumann_loads_,0.0);
+      }*/
+
+      // call elements to calculate matrix and right-hand-side
+      {
+
+        // create the parameters for the discretization
+        ParameterList eleparams;
+
+        // action for elements
+        eleparams.set("action","calc_initial_potential_field");
+
+        // set type of scalar transport problem
+        eleparams.set<int>("scatratype",scatratype_);
+
+        // factor F/RT
+        eleparams.set("frt",frt_);
+
+        // parameters for stabilization
+        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+        //provide displacement field in case of ALE
+        eleparams.set("isale",isale_);
+        if (isale_)
+          AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+        // set vector values needed by elements
+        discret_->ClearState();
+        discret_->SetState("phi0",phin_);
+
+        // call loop over elements
+        discret_->Evaluate(eleparams,sysmat_,rhs);
+        discret_->ClearState();
+
+        // finalize the complete matrix
+        sysmat_->Complete();
+      }
+
+      // apply Dirichlet boundary conditions to system matrix
+      LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
+
+      // solve
+      solver_->Solve(sysmat_->EpetraOperator(),phi0,rhs,true,true);
+
+      // copy solution of initial potential field to the solution vectors
+      Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phi0);
+      // insert values into the whole solution vectors
+      splitter_->InsertCondVector(onlypot,phinp_);
+      splitter_->InsertCondVector(onlypot,phin_);
+
+      // reset the matrix (and its graph!) since we solved
+      // a very special problem here that has a different sparsity pattern
+      if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
+        BlockSystemMatrix()->Reset();
+      else
+        SystemMatrix()->Reset();
+    }
+  }
+  // go on!
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  calculate conductivity of electrolyte solution             gjb 07/09|
@@ -2175,8 +2090,7 @@ Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   discret_->ClearState();
 
   return sigma;
-}
-
+} // ScaTraTimIntImpl::ComputeConductivity
 
 /*----------------------------------------------------------------------*
  | apply galvanostatic control                                gjb 11/09 |
@@ -2393,6 +2307,40 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
 } // end ApplyGalvanostaticControl()
 
+/*----------------------------------------------------------------------*
+ | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs
+)
+{
+  // time measurement: evaluate condition 'ElectrodeKinetics'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
+
+  discret_->ClearState();
+
+  // create an parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_elch_electrode_kinetics");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("frt",frt_); // factor F/RT
+  condparams.set("isale",isale_);
+  if (isale_)   //provide displacement field in case of ALE
+    AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // add element parameters and set state vectors according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("ElectrodeKinetics");
+  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+} // ScaTraTimIntImpl::EvaluateElectrodeKinetics
 
 /*----------------------------------------------------------------------*
  | check for zero/negative concentration values               gjb 01/10 |
@@ -2478,88 +2426,156 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
   }
   // so much code for a simple check!
   return;
-}
-
+} // ScaTraTimIntImpl::CheckConcentrationValues
 
 /*----------------------------------------------------------------------*
- | define the magnetic field                                  gjb 05/10 |
+ |  prepare AVM3-based scale separation                        vg 10/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetMagneticField(const int funcno)
+void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 {
-  if (funcno > 0)
-  {
-    int err(0);
-    const int numdim = 3; // the magnetic field is always 3D
+  // time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  // create normalized all-scale subgrid-diffusivity matrix
+  sysmat_sd_->Zero();
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements, time factor and stationary flag
+  eleparams.set("action","calc_subgrid_diffusivity_matrix");
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  //provide displacement field in case of ALE
+  eleparams.set("isale",isale_);
+  if (isale_)
+    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(eleparams);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,sysmat_sd_,residual_);
+  discret_->ClearState();
+
+  // finalize the normalized all-scale subgrid-diffusivity matrix
+  sysmat_sd_->Complete();
+
+  // apply DBC to normalized all-scale subgrid-diffusivity matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
+
+  // get normalized fine-scale subgrid-diffusivity matrix
+  {
+    // this is important to have!!!
+    MLAPI::Init();
+
+    // extract the ML parameters
+    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
+
+    // get toggle vector for Dirchlet boundary conditions
+    const Epetra_Vector& dbct = *DirichletToggle();
+
+    // get nullspace parameters
+    double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
+    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    int nsdim = mlparams.get("null space: dimension",1);
+
+    // modify nullspace to ensure that DBC are fully taken into account
+    if (nullspace)
     {
-      // get the processor local node
-      DRT::Node*  lnode = discret_->lRowNode(lnodeid);
-      for(int index=0;index<numdim;++index)
-      {
-        double value = DRT::Problem::Instance()->Funct(funcno-1).Evaluate(index,lnode->X(),0.0,NULL);
-        // no time-dependency included, yet!
-        err = magneticfield_->ReplaceMyValue(lnodeid, index, value);
-        if (err!=0) dserror("error while inserting a value into magneticfield_");
-      }
+      const int length = sysmat_sd_->OperatorRangeMap().NumMyElements();
+      for (int i=0; i<nsdim; ++i)
+        for (int j=0; j<length; ++j)
+          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+    }
+
+    // get plain aggregation Ptent
+    RCP<Epetra_CrsMatrix> crsPtent;
+    MLAPI::GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    LINALG::SparseMatrix Ptent(crsPtent);
+
+    // compute scale-separation matrix: S = I - Ptent*Ptent^T
+    Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
+    Sep_->Scale(-1.0);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
+    tmp->PutScalar(1.0);
+    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+    Sep_->ExtractDiagonalCopy(*diag);
+    diag->Update(1.0,*tmp,1.0);
+    Sep_->ReplaceDiagonalValues(*diag);
+
+    //complete scale-separation matrix and check maps
+    Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
+    if (!Sep_->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
+    if (!Sep_->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
+    if (!Sep_->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
+
+    // precomputation of unscaled diffusivity matrix:
+    // either two-sided S^T*M*S: multiply M by S from left- and right-hand side
+    // or one-sided M*S: only multiply M by S from left-hand side
+    if (not incremental_)
+    {
+      Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep_,false);
+      //Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }
+
   return;
-
-} // ScaTraImplicitTimeInt::SetMagneticField
-
+} // ScaTraTimIntImpl::AVM3Preparation
 
 /*----------------------------------------------------------------------*
- | add approximation to flux vectors to a parameter list      gjb 05/10 |
+ |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
-    Teuchos::ParameterList& p,
-    const enum INPAR::SCATRA::FluxType fluxtype
-)
+void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
 {
-Teuchos::RCP<Epetra_MultiVector> flux
- = CalcFluxInDomain(fluxtype);
+  // time measurement: avm3
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
-// post_drt_ensight does not support multivectors based on the dofmap
-// for now, I create single vectors that can be handled by the filter
+  // some necessary definitions
+  int ierr;
+  double* sgvsqrt = 0;
+  int length = subgrdiff_->MyLength();
 
-// get the noderowmap
-const Epetra_Map* noderowmap = discret_->NodeRowMap();
-Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-for(int k=0;k<numscal_;++k)
-{
-  ostringstream temp;
-  temp << k;
-  string name = "flux_phi_"+temp.str();
-  for (int i = 0;i<fluxk->MyLength();++i)
+  // square-root of subgrid-viscosity-scaling vector for left and right scaling
+  sgvsqrt = (double*)subgrdiff_->Values();
+  for (int i = 0; i < length; ++i)
   {
-    DRT::Node* actnode = discret_->lRowNode(i);
-    int dofgid = discret_->Dof(actnode,k);
-    fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
-    fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
-    fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+    sgvsqrt[i] = sqrt(sgvsqrt[i]);
+    subgrdiff_->ReplaceMyValues(1,&sgvsqrt[i],&i);
   }
-  AddMultiVectorToParameterList(p,name,fluxk);
-}
-return;
-}
+
+  // get unscaled S^T*M*S from Sep
+  sysmat_sd_ = rcp(new LINALG::SparseMatrix(*Mnsv_));
+
+  // left and right scaling of normalized fine-scale subgrid-viscosity matrix
+  ierr = sysmat_sd_->LeftScale(*subgrdiff_);
+  if (ierr) dserror("Epetra_CrsMatrix::LeftScale returned err=%d",ierr);
+  ierr = sysmat_sd_->RightScale(*subgrdiff_);
+  if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d",ierr);
+
+  // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
+  sysmat->Add(*sysmat_sd_,false,1.0,1.0);
+
+  // set subgrid-diffusivity vector to zero after scaling procedure
+  subgrdiff_->PutScalar(0.0);
+
+  return;
+} // ScaTraTimIntImpl::AVM3Scaling
 
 /*----------------------------------------------------------------------*
- | return dof row map                                          vg 09/11 |
+ | construct toggle vector for Dirichlet dofs                  gjb 11/08|
+ | assures backward compatibility for avm3 solver; should go away once  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap()
+const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  return Teuchos::rcp(dofrowmap, false);
-}
-
-/*----------------------------------------------------------------------*
- | return dof row map for multiple discretizations             vg 09/11 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
-{
-  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
-  return Teuchos::rcp(dofrowmap, false);
-}
-
+  if (dbcmaps_ == Teuchos::null)
+    dserror("Dirichlet map has not been allocated");
+  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
+  dirichones->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
+  return dirichtoggle;
+} // ScaTraTimIntImpl::DirichletToggle
