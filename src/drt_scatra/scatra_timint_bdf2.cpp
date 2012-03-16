@@ -13,6 +13,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_bdf2.H"
+#include "scatra_ele_action.H"
 #include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -256,7 +257,7 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
-  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("total time",time_);
 
@@ -272,7 +273,7 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   double parbofint  = (*scalars)[1];
 
   // set action for elements
-  eleparams.set("action","calc_therm_press");
+  eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint      = 0.0;

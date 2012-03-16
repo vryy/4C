@@ -14,6 +14,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_ele_impl.H"
+#include "scatra_ele_boundary_impl.H"
+#include "scatra_ele_action.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
@@ -365,8 +367,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     dserror("Set parameter SCATRATYPE in your input file!");
 
   // check for the action parameter
-  const string action = params.get<string>("action","none");
-  if (action=="calc_condif_systemmat_and_residual")
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  switch (action)
+  {
+  case SCATRA::calc_mat_and_rhs:
   {
     // set flag for including reactive terms to false initially
     // flag will be set to true below when reactive material is included
@@ -814,10 +818,404 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         scatratype);
     }
 #endif
+    break;
   }
-  else if (action == "reinitialize_levelset")
+  // calculate normalized subgrid-diffusivity matrix
+  case SCATRA::calc_subgrid_diffusivity_matrix:
   {
+    // get control parameter
+    is_genalpha_   = params.get<bool>("using generalized-alpha time integration");
+    is_stationary_ = params.get<bool>("using stationary formulation");
 
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (is_genalpha_)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // calculate mass matrix and rhs
+    CalcSubgrDiffMatrix(
+      ele,
+      elemat1_epetra,
+      timefac);
+    break;
+  }
+  case SCATRA::calc_domain_and_bodyforce:
+  {
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if (ele->Owner() == discretization.Comm().MyPID())
+    {
+      const double time = params.get<double>("total time");
+
+      // calculate domain and bodyforce integral
+      CalculateDomainAndBodyforce(elevec1_epetra,ele,time);
+    }
+
+    break;
+  }
+  case SCATRA::get_material_parameters:
+  {
+    // get the material
+    RefCountPtr<MAT::Material> material = ele->Material();
+
+    if (material->MaterialType() == INPAR::MAT::m_sutherland)
+    {
+      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+      params.set("thermodynamic pressure",actmat->ThermPress());
+    }
+    else params.set("thermodynamic pressure",0.0);
+
+    if (material->MaterialType() == INPAR::MAT::m_scatra)
+    {
+      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+      params.set("scnum",actmat->ScNum());
+    }
+    else params.set("scnum",-1.0);
+
+    break;
+  }
+  case SCATRA::integrate_shape_functions:
+  {
+    // calculate integral of shape functions
+    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
+    IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
+
+    break;
+  }
+  // calculate time derivative for time value t_0
+  case SCATRA::calc_initial_time_deriv:
+  {
+    // set flag for including reactive terms to false initially
+    // flag will be set to true below when reactive material is included
+    is_reactive_ = false;
+
+    // set flag for conservative form
+    const INPAR::SCATRA::ConvForm convform =
+      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
+    is_conservative_ = false;
+    if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
+
+    // get initial velocity values at the nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+
+    // need initial field -> extract local values from the global vector
+    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    if (phi0==null) dserror("Cannot get state vector 'phi0'");
+    vector<double> myphi0(lm.size());
+    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    // set time derivative of thermodynamic pressure if required
+    if (scatratype ==INPAR::SCATRA::scatratype_loma)
+    {
+      thermpressnp_ = params.get<double>("thermodynamic pressure");
+      thermpressam_ = thermpressnp_;
+      thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
+    }
+
+    // get stabilization parameter sublist
+    ParameterList& stablist = params.sublist("STABILIZATION");
+
+    // set flags for potential evaluation of material law at int. point
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+
+    double frt(0.0);
+    if(SCATRA::IsElchProblem(scatratype))
+    {
+      for (int i=0;i<nen_;++i)
+      {
+        // get values for el. potential at element nodes
+        epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
+      } // for i
+
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
+    else epotnp_.Clear();
+
+    // set control parameters to avoid that some actually unused variables are
+    // falsely set, on the one hand, and viscosity for unnecessary calculation
+    // of subgrid-scale velocity is computed, on the other hand, in
+    // GetMaterialParams
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+    sgvel_ = DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL");
+
+    // calculate matrix and rhs
+    InitialTimeDerivative(
+      ele,
+      elemat1_epetra,
+      elevec1_epetra,
+      frt,
+      scatratype);
+
+    break;
+  }
+  case SCATRA::calc_flux_domain:
+  {
+    // get velocity values at the nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+
+    // need current values of transported scalar
+    // -> extract local values from global vectors
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    // access control parameter for flux calculation
+    INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
+
+    // set flag for potential evaluation of material law at int. point
+    ParameterList& stablist = params.sublist("STABILIZATION");
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+
+    // initialize parameter F/RT for ELCH
+    double frt(0.0);
+
+    // set values for ELCH
+    if (SCATRA::IsElchProblem(scatratype))
+    {
+      // get values for el. potential at element nodes
+      for (int i=0;i<nen_;++i)
+      {
+        epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+      }
+
+      // get parameter F/RT
+      frt = params.get<double>("frt");
+    }
+
+    // set control parameters to avoid that some actually unused variables are
+    // falsely set, on the one hand, and viscosity for unnecessary calculation
+    // of subgrid-scale velocity is computed, on the other hand, in
+    // GetMaterialParams
+    is_genalpha_    = false;
+    is_incremental_ = true;
+    sgvel_          = false;
+
+    // we always get an 3D flux vector for each node
+    LINALG::Matrix<3,nen_> eflux(true);
+
+    // do a loop for systems of transported scalars
+    for (int idof = 0; idof<numscal_; ++idof)
+    {
+      // calculate flux vectors for actual scalar
+      eflux.Clear();
+      CalculateFlux(eflux,ele,frt,fluxtype,idof,scatratype);
+      // assembly
+      for (int inode=0;inode<nen_;inode++)
+      {
+        const int fvi = inode*numdofpernode_+idof;
+        elevec1_epetra[fvi]+=eflux(0,inode);
+        elevec2_epetra[fvi]+=eflux(1,inode);
+        elevec3_epetra[fvi]+=eflux(2,inode);
+      }
+    } // loop over numscal
+
+    break;
+  }
+  case SCATRA::calc_mean_scalars:
+  {
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if (ele->Owner() == discretization.Comm().MyPID())
+    {
+      // get flag for inverting
+      bool inverting = params.get<bool>("inverting");
+
+      // need current scalar vector
+      // -> extract local values from the global vectors
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+      vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+      // calculate scalars and domain integral
+      CalculateScalars(ele,myphinp,elevec1_epetra,inverting);
+    }
+    break;
+  }
+  case SCATRA::calc_error:
+  {
+    // check if length suffices
+    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+
+    // need current solution
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      // split for each transported scalar, insert into element arrays
+      for (int k = 0; k< numscal_; ++k)
+      {
+        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
+      }
+      // get values for el. potential at element nodes
+      epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+    } // for i
+
+    CalErrorComparedToAnalytSolution(
+      ele,
+      scatratype,
+      params,
+      elevec1_epetra);
+
+    break;
+  }
+  case SCATRA::calc_elch_conductivity:
+  {
+    if(is_elch_)
+    {
+      // calculate conductivity of electrolyte solution
+      const double frt = params.get<double>("frt");
+      // extract local values from the global vector
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+      // fill element arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        }
+      } // for i
+
+      CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
+    }
+    else // conductivity = diffusivity for a electric potential field
+    {
+      GetMaterialParams(ele,scatratype);
+      elevec1_epetra(0)=diffus_[0];
+      elevec1_epetra(1)=diffus_[0];
+    }
+
+    break;
+  }
+  // calculate initial electric potential field caused by initial ion concentrations
+  case SCATRA::calc_elch_initial_potential:
+  {
+    // need initial field -> extract local values from the global vector
+    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    if (phi0==null) dserror("Cannot get state vector 'phi0'");
+    vector<double> myphi0(lm.size());
+    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+      }
+    } // for i
+    const double frt = params.get<double>("frt");
+
+    CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
+
+    break;
+  }
+  case SCATRA::calc_TG_mat_and_rhs:
+  {
+    // get timealgo
+    const INPAR::SCATRA::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::SCATRA::TimeIntegrationScheme>(params, "timealgo");
+
+    // get current time-step length
+    const double dt   = params.get<double>("time-step length");
+
+    // get velocity at nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+
+    // extract local values from the global vectors
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RefCountPtr<const Epetra_Vector> phin  = discretization.GetState("phin");
+
+    if (phinp==null || phin==null)
+      dserror("Cannot get state vector 'phinp' or 'phin_'");
+    vector<double> myphinp(lm.size());
+    vector<double> myphin(lm.size());
+
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
+
+
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        ephin_[k](i,0) = myphin[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+
+    // calculate element coefficient matrix and rhs
+    if(scatratype==INPAR::SCATRA::scatratype_levelset)
+    {
+      Sysmat_Transport_TG(
+          ele,
+          elemat1_epetra,
+          elevec1_epetra,
+          dt,
+          timealgo);
+    }
+    else dserror("Sysmat_Taylor_Galerkin only for level set problems available");
+
+    break;
+  }
+  case SCATRA::reinitialize_levelset:
+  {
     bool reinitswitch = params.get<bool>("reinitswitch",false);
     if(reinitswitch == false) dserror("action reinitialize_levelset should be called only with reinitswitch=true");
 
@@ -1024,310 +1422,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
     else dserror("reinitstrategy not a known type");
 
-
+    break;
   }
-  // calculate time derivative for time value t_0
-  else if (action =="calc_initial_time_deriv")
-  {
-    // set flag for including reactive terms to false initially
-    // flag will be set to true below when reactive material is included
-    is_reactive_ = false;
-
-    // set flag for conservative form
-    const INPAR::SCATRA::ConvForm convform =
-      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
-    is_conservative_ = false;
-    if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
-
-    // get initial velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-
-    // need initial field -> extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
-    vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-    } // for i
-
-    // set time derivative of thermodynamic pressure if required
-    if (scatratype ==INPAR::SCATRA::scatratype_loma)
-    {
-      thermpressnp_ = params.get<double>("thermodynamic pressure");
-      thermpressam_ = thermpressnp_;
-      thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
-    }
-
-    // get stabilization parameter sublist
-    ParameterList& stablist = params.sublist("STABILIZATION");
-
-    // set flags for potential evaluation of material law at int. point
-    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
-    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
-
-    double frt(0.0);
-    if(SCATRA::IsElchProblem(scatratype))
-    {
-      for (int i=0;i<nen_;++i)
-      {
-        // get values for el. potential at element nodes
-        epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
-      } // for i
-
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
-    else epotnp_.Clear();
-
-    // set control parameters to avoid that some actually unused variables are
-    // falsely set, on the one hand, and viscosity for unnecessary calculation
-    // of subgrid-scale velocity is computed, on the other hand, in
-    // GetMaterialParams
-    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
-    is_incremental_ = params.get<bool>("incremental solver");
-    sgvel_ = DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL");
-
-    // calculate matrix and rhs
-    InitialTimeDerivative(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      frt,
-      scatratype);
-  }
-  else if (action =="calc_subgrid_diffusivity_matrix")
-    // calculate normalized subgrid-diffusivity matrix
-  {
-    // get control parameter
-    is_genalpha_   = params.get<bool>("using generalized-alpha time integration");
-    is_stationary_ = params.get<bool>("using stationary formulation");
-
-    // One-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
-    double timefac = 1.0;
-    double alphaF  = 1.0;
-    if (not is_stationary_)
-    {
-      timefac = params.get<double>("time factor");
-      if (is_genalpha_)
-      {
-        alphaF = params.get<double>("alpha_F");
-        timefac *= alphaF;
-      }
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
-
-    // calculate mass matrix and rhs
-    CalcSubgrDiffMatrix(
-      ele,
-      elemat1_epetra,
-      timefac);
-  }
-  else if (action=="calc_condif_flux")
-  {
-    // get velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-
-    // need current values of transported scalar
-    // -> extract local values from global vectors
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-    vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
-
-    // access control parameter for flux calculation
-    INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
-
-    // set flag for potential evaluation of material law at int. point
-    ParameterList& stablist = params.sublist("STABILIZATION");
-    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
-    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
-
-    // initialize parameter F/RT for ELCH
-    double frt(0.0);
-
-    // set values for ELCH
-    if (SCATRA::IsElchProblem(scatratype))
-    {
-      // get values for el. potential at element nodes
-      for (int i=0;i<nen_;++i)
-      {
-        epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
-      }
-
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
-
-    // set control parameters to avoid that some actually unused variables are
-    // falsely set, on the one hand, and viscosity for unnecessary calculation
-    // of subgrid-scale velocity is computed, on the other hand, in
-    // GetMaterialParams
-    is_genalpha_    = false;
-    is_incremental_ = true;
-    sgvel_          = false;
-
-    // we always get an 3D flux vector for each node
-    LINALG::Matrix<3,nen_> eflux(true);
-
-    // do a loop for systems of transported scalars
-    for (int idof = 0; idof<numscal_; ++idof)
-    {
-      // calculate flux vectors for actual scalar
-      eflux.Clear();
-      CalculateFlux(eflux,ele,frt,fluxtype,idof,scatratype);
-      // assembly
-      for (int inode=0;inode<nen_;inode++)
-      {
-        const int fvi = inode*numdofpernode_+idof;
-        elevec1_epetra[fvi]+=eflux(0,inode);
-        elevec2_epetra[fvi]+=eflux(1,inode);
-        elevec3_epetra[fvi]+=eflux(2,inode);
-      }
-    } // loop over numscal
-  }
-  else if (action=="calc_mean_scalars")
-  {
-    // NOTE: add integral values only for elements which are NOT ghosted!
-    if (ele->Owner() == discretization.Comm().MyPID())
-    {
-      // get flag for inverting
-      bool inverting = params.get<bool>("inverting");
-
-      // need current scalar vector
-      // -> extract local values from the global vectors
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
-      vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-      // calculate scalars and domain integral
-      CalculateScalars(ele,myphinp,elevec1_epetra,inverting);
-    }
-  }
-  else if (action=="calc_domain_and_bodyforce")
-  {
-    // NOTE: add integral values only for elements which are NOT ghosted!
-    if (ele->Owner() == discretization.Comm().MyPID())
-    {
-      const double time = params.get<double>("total time");
-
-      // calculate domain and bodyforce integral
-      CalculateDomainAndBodyforce(elevec1_epetra,ele,time);
-    }
-  }
-  else if (action=="calc_error")
-  {
-    // check if length suffices
-    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
-
-    // need current solution
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from the global vector
-    vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      // split for each transported scalar, insert into element arrays
-      for (int k = 0; k< numscal_; ++k)
-      {
-        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
-      }
-      // get values for el. potential at element nodes
-      epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
-    } // for i
-
-    CalErrorComparedToAnalytSolution(
-      ele,
-      scatratype,
-      params,
-      elevec1_epetra);
-  }
-  else if (action=="integrate_shape_functions")
-  {
-    // calculate integral of shape functions
-    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-    IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
-  }
-  else if (action=="calc_elch_conductivity")
-  {
-    if(is_elch_)
-    {
-      // calculate conductivity of electrolyte solution
-      const double frt = params.get<double>("frt");
-      // extract local values from the global vector
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-      // fill element arrays
-      for (int i=0;i<nen_;++i)
-      {
-        for (int k = 0; k< numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-        }
-      } // for i
-
-      CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
-    }
-    else // conductivity = diffusivity for a electric potential field
-    {
-      GetMaterialParams(ele,scatratype);
-      elevec1_epetra(0)=diffus_[0];
-      elevec1_epetra(1)=diffus_[0];
-    }
-  }
-  else if (action=="get_material_parameters")
-  {
-    // get the material
-    RefCountPtr<MAT::Material> material = ele->Material();
-
-    if (material->MaterialType() == INPAR::MAT::m_sutherland)
-    {
-      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-      params.set("thermodynamic pressure",actmat->ThermPress());
-    }
-    else params.set("thermodynamic pressure",0.0);
-
-    if (material->MaterialType() == INPAR::MAT::m_scatra)
-    {
-      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
-      params.set("scnum",actmat->ScNum());
-    }
-    else params.set("scnum",-1.0);
-  }
-  else if (action =="calc_time_deriv_reinit")
+  case SCATRA::calc_time_deriv_reinit:
   {
     // set flag for including reactive terms to false initially
     // flag will be set to true below when reactive material is included
@@ -1401,82 +1498,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       timefac,
       scatratype
       );
+
+    break;
   }
-  // calculate initial electric potential field caused by initial ion concentrations
-  else if (action =="calc_initial_potential_field")
-  {
-    // need initial field -> extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
-    vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-    } // for i
-    const double frt = params.get<double>("frt");
-
-    CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
-
-  }
-  else if (action == "levelset_TaylorGalerkin")
-  {
-    // get timealgo
-    const INPAR::SCATRA::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::SCATRA::TimeIntegrationScheme>(params, "timealgo");
-
-    // get current time-step length
-    const double dt   = params.get<double>("time-step length");
-
-    // get velocity at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-
-    // extract local values from the global vectors
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    RefCountPtr<const Epetra_Vector> phin  = discretization.GetState("phin");
-
-    if (phinp==null || phin==null)
-      dserror("Cannot get state vector 'phinp' or 'phin_'");
-    vector<double> myphinp(lm.size());
-    vector<double> myphin(lm.size());
-
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-    DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
-
-
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-        ephin_[k](i,0) = myphin[k+(i*numdofpernode_)];
-      }
-    } // for i
-
-
-    // calculate element coefficient matrix and rhs
-    if(scatratype==INPAR::SCATRA::scatratype_levelset)
-    {
-      Sysmat_Transport_TG(
-          ele,
-          elemat1_epetra,
-          elevec1_epetra,
-          dt,
-          timealgo);
-    }
-    else dserror("Sysmat_Taylor_Galerkin only for level set problems available");
-  }
-  else if (action=="calc_error_reinit")
+  case SCATRA::calc_error_reinit:
   {
     // add error only for elements which are not ghosted
     if(ele->Owner() == discretization.Comm().MyPID())
@@ -1505,9 +1530,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         ele,
         params);
     }
+
+    break;
   }
-  else
-    dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
+  default:
+  {
+    dserror("Not acting on this action. Forgot implementation?");
+  }
+  }
   // work is done
   return 0;
 }
@@ -3930,7 +3960,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   )
 {
   //at the moment, there is only one analytical test problem available!
-  if (params.get<string>("action") != "calc_error")
+  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------

@@ -23,8 +23,9 @@ Maintainer: Georg Bauer
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
-#include "scatra_element.H"
 #include "scatra_ele_impl_utils.H"
+#include "scatra_ele_action.H"
+#include "scatra_element.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
@@ -218,9 +219,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if(zero_size) return(0);
   } // Nurbs specific stuff
 
-  // Now, check for the action parameter
-  const string action = params.get<string>("action","none");
-  if (action == "calc_normal_vectors")
+  // check for the action parameter
+  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
+  switch (action)
+  {
+  case SCATRA::bd_calc_normal_vectors:
   {
     // access the global vector
     const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
@@ -247,8 +250,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       //else: the node belongs to another processor; the ghosted
       //      element will contribute the right value on that proc
     }
+
+    break;
   }
-  else if (action =="calc_elch_electrode_kinetics")
+  case SCATRA::bd_calc_elch_electrode_kinetics:
   {
     // get actual values of transported scalars
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -416,8 +421,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           if (discretization.Comm().MyPID() == 0)
             cout<<" Warning: ButlerVolmer is shifted to the right about " << PERCENT*100 <<"% !! " << endl;
     #endif
+
+    break;
   }
-  else if (action =="calc_therm_press")
+  case SCATRA::bd_calc_loma_therm_press:
   {
     // we dont know the parent element's lm vector; so we have to build it here
     const int nenparent = parentele->NumNode();
@@ -483,14 +490,18 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     {
       NormDiffFluxAndVelIntegral(ele,params,mynormdiffflux,mynormvel);
     }
+
+    break;
   }
-  else if (action =="integrate_shape_functions")
+  case SCATRA::bd_integrate_shape_functions:
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
+
+    break;
   }
-  else if (action =="calc_Neumann_inflow")
+  case SCATRA::bd_calc_Neumann_inflow:
   {
     // get control parameters
     is_stationary_  = params.get<bool>("using stationary formulation");
@@ -559,8 +570,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
                   elevec1_epetra,
                   timefac,
                   alphaF);
+
+    break;
   }
-  else if (action =="calc_convective_heat_transfer")
+  case SCATRA::bd_calc_convective_heat_transfer:
   {
     // get control parameters
     is_stationary_  = params.get<bool>("using stationary formulation");
@@ -610,8 +623,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
                            surtemp,
                            timefac,
                            alphaF);
+
+    break;
   }
-  else if (action =="WeakDirichlet")
+  case SCATRA::bd_calc_weak_Dirichlet:
   {
     switch (distype)
     {
@@ -657,9 +672,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       {
         dserror("not implemented yet\n");
       }
-      }
+    }
+
+    break;
   }
-  else if (action =="calc_surface_permeability")
+  case SCATRA::bd_calc_surface_permeability:
   {
     // get control parameters
     is_stationary_  = params.get<bool>("using stationary formulation");
@@ -697,8 +714,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       timefac,
       perm
       );
+
+    break;
   }
-  else if( action == "levelset_TaylorGalerkin_boundary")
+  case SCATRA::bd_calc_TG_outflow:
   {
     // implements the boundary terms for the Taylor Galerkin time integration
     // just available for the level set equation
@@ -752,8 +771,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       dserror("not implemented yet\n");
     }
     }
+
+    break;
   }
-  else if( action == "reinitialize_levelset_boundary")
+  case SCATRA::bd_reinitialize_levelset:
   {
     // implements the boundary terms for the implicit Characteristic Galerkin time integration
     // just available for the reinitialization equation
@@ -807,8 +828,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       dserror("not implemented yet\n");
     }
     }
+
+    break;
   }
-  else if (action =="add_convective_mass_flux")
+  case SCATRA::bd_add_convective_mass_flux:
   {
     //calculate integral of convective mass/heat flux
     // NOTE: since results are added to a global vector via normal assembly
@@ -841,9 +864,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // values only for boundary elements which are NOT ghosted should be summed up
     // and added to the parameter list for transport to the outside world
     //    if(ele->Owner() == discretization.Comm().MyPID())
+
+    break;
   }
-  else
-    dserror("Unknown type of action for Scatra boundary impl.: %s",action.c_str());
+  default:
+  {
+    dserror("Not acting on this boundary action. Forgot implementation?");
+  }
+  }
 
   return 0;
 }
@@ -3410,7 +3438,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
-DRT::Element::DiscretizationType pdistype>
+          DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBoundary(
     DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
     ParameterList&                     params,               //!< parameter list

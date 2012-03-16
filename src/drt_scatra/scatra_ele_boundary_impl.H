@@ -318,6 +318,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element.
 
     */
+
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void WeakDirichlet(DRT::ELEMENTS::TransportBoundary*  ele,
                        ParameterList&                     params,

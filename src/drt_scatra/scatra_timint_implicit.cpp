@@ -27,6 +27,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
+#include "scatra_ele_action.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -1991,7 +1992,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
           ParameterList mode_params;
 
           // set parameters for elements
-          mode_params.set("action","integrate_shape_functions");
+          mode_params.set<int>("action",SCATRA::integrate_shape_functions);
           mode_params.set<int>("scatratype",scatratype_);
           mode_params.set("dofids",dofids);
 
@@ -2240,18 +2241,18 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // action for elements
   if (reinitswitch_ == true)
   {
-    eleparams.set("action","reinitialize_levelset");
+    eleparams.set<int>("action",SCATRA::reinitialize_levelset);
   }
   else if(timealgo_ == INPAR::SCATRA::timeint_tg2
        or timealgo_ == INPAR::SCATRA::timeint_tg3)
   {
     // taylor galerkin transport of levelset
-    eleparams.set("action","levelset_TaylorGalerkin");
+    eleparams.set<int>("action",SCATRA::calc_TG_mat_and_rhs);
   }
   else
   {
     // standard case
-    eleparams.set("action","calc_condif_systemmat_and_residual");
+    eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
   }
 
   // DO THIS AT VERY FIRST!!!
@@ -2329,7 +2330,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     ParameterList mhdbcparams;
 
     // set action for elements
-    mhdbcparams.set("action","WeakDirichlet");
+    mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
     mhdbcparams.set("incremental solver",incremental_);
     mhdbcparams.set("isale",isale_);
 

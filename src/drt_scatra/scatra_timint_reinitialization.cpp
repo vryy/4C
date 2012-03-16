@@ -14,11 +14,11 @@ Maintainer: Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
+#include "scatra_ele_action.H"
 
 #include "../drt_io/io_gmsh.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
 
 
 /*==========================================================================*
@@ -35,7 +35,7 @@ void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
 {
 
   // action for elements
-  params.set("action","reinitialize_levelset");
+  params.set<int>("action",SCATRA::reinitialize_levelset);
 
   // set type of scalar transport problem
   params.set<int>("scatratype",scatratype_);
@@ -99,7 +99,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
     ParameterList TaylorGalerkinBoundaryParams;
 
     // set action for elements
-    TaylorGalerkinBoundaryParams.set("action", "levelset_TaylorGalerkin_boundary");
+    TaylorGalerkinBoundaryParams.set<int>("action", SCATRA::bd_calc_TG_outflow);
     TaylorGalerkinBoundaryParams.set("incremental solver",incremental_);
     TaylorGalerkinBoundaryParams.set("isale",isale_);
 
@@ -141,7 +141,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
       ParameterList reinitCharacteristicParams;
 
       // set action for elements
-      reinitCharacteristicParams.set("action", "reinitialize_levelset_boundary");
+      reinitCharacteristicParams.set<int>("action",SCATRA::bd_reinitialize_levelset);
       reinitCharacteristicParams.set("incremental solver",incremental_);
       reinitCharacteristicParams.set("isale",isale_);
 

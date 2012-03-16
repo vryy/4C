@@ -13,6 +13,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_ost.H"
+#include "scatra_ele_action.H"
 #include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -241,7 +242,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
-  eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
   eleparams.set("total time",time_);
   eleparams.set<int>("scatratype",scatratype_);
 
@@ -257,7 +258,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   double parbofint  = (*scalars)[1];
 
   // set action for elements
-  eleparams.set("action","calc_therm_press");
+  eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint      = 0.0;
@@ -751,7 +752,7 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
     ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","calc_time_deriv_reinit");
+    eleparams.set<int>("action",SCATRA::calc_time_deriv_reinit);
 
     // set type of scalar transport problem
     eleparams.set<int>("scatratype",scatratype_);
