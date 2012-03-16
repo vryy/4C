@@ -58,20 +58,15 @@ SOLVER                          UMFPACK
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-ALPHA_F                         0.0
-ALPHA_M                         0.0
-BETA                            0.25
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
-DELTA                           0.25
 DIVERCONT                       No
-DYNAMICTYP                      Static
+DYNAMICTYP                      Statics
 EIGEN                           0
-GAMMA                           0.5
 ITERATION                       full
 ITERNORM                        L2
 ITWANT                          0

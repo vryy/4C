@@ -42,7 +42,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Static
+DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     500000
@@ -50,10 +50,6 @@ NLNSOL                          fullnewton                      // fullnewton mo
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1
-BETA                            0.5
-GAMMA                           1
-ALPHA_M                         0
-ALPHA_F                         0
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
