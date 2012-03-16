@@ -148,6 +148,13 @@ public:
 
   /// Get shape type of element
   virtual DiscretizationType Shape() const;
+  
+  /// Set discretization type of element
+  virtual void SetDisType(DRT::Element::DiscretizationType shape)
+  {
+    distype_ = shape;
+    return;
+  };
 
 
   /// Return number of lines of this element
@@ -374,8 +381,11 @@ private:
   enum EasType eastype_;
   //! kinematics type
   enum KinematicType kintype_;
-  /// struct_ale
+  //! struct_ale
   bool structale_;
+  
+  //! the element discretization type (shape)
+  DRT::Element::DiscretizationType distype_;
 
   /// @name Internal calculation methods
   //@{

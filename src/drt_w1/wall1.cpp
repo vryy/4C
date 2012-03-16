@@ -161,7 +161,8 @@ wtype_(plane_none),
 stresstype_(w1_none),
 iseas_(false),
 eastype_(eas_vague),
-structale_(false)
+structale_(false),
+distype_(dis_none)
 {
   if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
     structale_ = true;
@@ -181,7 +182,8 @@ wtype_(old.wtype_),
 stresstype_(old.stresstype_),
 iseas_(old.iseas_),
 eastype_(old.eas_vague),
-structale_ (old.structale_)
+structale_ (old.structale_),
+distype_ (old.distype_)
 // tsi_couptyp_(old.tsi_couptyp_)
 
 {
@@ -204,18 +206,7 @@ DRT::Element* DRT::ELEMENTS::Wall1::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const
 {
-  switch (NumNode())
-  {
-  case 4: return quad4;
-  case 8: return quad8;
-  case 9: return quad9;
-  case 3: return tri3;
-  case 6: return tri6;
-
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
-  }
-  return dis_none;
+  return distype_;
 }
 
 
@@ -251,6 +242,8 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,kintype_);
   // structale
   AddtoPack(data,structale_);
+  // distype
+  AddtoPack(data,distype_);
   //data
   AddtoPack(data,data_);
 
@@ -293,6 +286,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // structale_
   structale_ = ExtractInt(position,data);
+  // distype_
+  distype_ = static_cast<DiscretizationType> ( ExtractInt(position,data) );
   //data
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

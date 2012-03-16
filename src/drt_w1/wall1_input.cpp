@@ -27,6 +27,9 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  // set discretization type
+  SetDisType(DRT::StringToDistype(distype));
+  
   linedef->ExtractDouble("THICK",thickness_);
   if  (thickness_<=0) dserror("WALL element thickness needs to be < 0");
 
