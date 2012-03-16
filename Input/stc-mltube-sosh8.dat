@@ -121,7 +121,6 @@ THETA                           1.0
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 -------------------------------------------------------------THERMAL DYNAMIC
 ----------------------------------------------------------------XFEM GENERAL
-----------------------------------------------------XFLUID PROJECTION SOLVER
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

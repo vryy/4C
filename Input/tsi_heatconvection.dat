@@ -21,7 +21,7 @@ coupled                         thermoelasticity
 Be careful if you want to compare these results with Tanaka: coupling term in
 thermal equation depends only on initial temperature T_0, whereas:
 in BACI the coupling term depends on current temperature T
-------------------> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
+-> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
 
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        192

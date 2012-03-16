@@ -110,7 +110,7 @@ CSTAB                           cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 SCATRATYPE Undefined //ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2//3
@@ -146,9 +146,9 @@ EVALUATION_TAU element_center //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 --------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
+NAME                            Fluid_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 1
+--------------------------------------------------------------------SOLVER 2
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

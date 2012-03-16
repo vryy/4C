@@ -38,6 +38,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
@@ -114,25 +115,8 @@ TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-7
-----------------------------------------------------------------FLUID SOLVER
-SOLVER                          UMFPACK
-AZSOLVE                         BiCGSTAB
-AZPREC                          ILU
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
-IFPACKGFILL                     1
-AZTOL                           1.0E-15
-AZITER                          2500
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
