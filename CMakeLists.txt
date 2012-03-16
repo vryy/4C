@@ -435,6 +435,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/contchainnetw.cpp
   src/drt_mat/elasthyper.cpp
+  src/drt_mat/viscogenmax.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
@@ -444,8 +445,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/ion.cpp
   src/drt_mat/itskov.cpp
   src/drt_mat/logneohooke.cpp
-  src/drt_mat/lung_ogden.cpp
-  src/drt_mat/lung_penalty.cpp
   src/drt_mat/material.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matpar_bundle.cpp
