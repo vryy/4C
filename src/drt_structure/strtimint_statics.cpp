@@ -47,6 +47,12 @@ STR::TimIntStatics::TimIntStatics
 {
 
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
+  INPAR::STR::DynamicType dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
+
+  if ( pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics ) 
+  {
+    dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
+  }
 
   // info to user
   if (myrank_ == 0)
@@ -56,6 +62,7 @@ STR::TimIntStatics::TimIntStatics
     else if (pstype == INPAR::STR::prestress_id) std::cout << "with static INVERSE DESIGN prestress" << std::endl;
     else std::cout << "with statics" << std::endl;
   }
+  
 
   // check if predictor is admissible for statics
   if ( (pred_ == INPAR::STR::pred_constvel) or (pred_ == INPAR::STR::pred_constacc))
