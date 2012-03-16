@@ -68,8 +68,9 @@ namespace PATSPEC
 		     Teuchos::RCP<Teuchos::ParameterList> params);
                       
   void CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
-                            Teuchos::RCP<LINALG::SparseOperator> stiff,
-                            Teuchos::RCP<Epetra_Vector> fint);
+                            Teuchos::RCP<LINALG::SparseOperator>& stiff,
+                            Teuchos::RCP<Epetra_Vector>& fint,
+                            Teuchos::RCP<Epetra_Vector>& disn);
 
 
 

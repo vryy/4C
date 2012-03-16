@@ -316,6 +316,8 @@ STR::TimInt::TimInt
   const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
+	pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
+	pslist_->set("haveembedtissue", false);
     // check if patspeccond are already initialized
     // this is of relevance for Montecarlo Simulation
     vector<DRT::Condition*> pscond;
@@ -323,7 +325,6 @@ STR::TimInt::TimInt
     if (!pscond.size())
     {
       //initialize patient specific parameters and conditions
-      pslist_ = Teuchos::rcp(new Teuchos::ParameterList(sdynparams));
       PATSPEC::PatientSpecificGeometry(discret_, pslist_);
 
       // fix pointer to dofrowmap_

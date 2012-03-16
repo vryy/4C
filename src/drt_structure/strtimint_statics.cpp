@@ -136,6 +136,9 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
   TestForceStiffPotential(timen_, disn_, step_);
 
+  // apply forces and stiffness due to embedding tissue condition
+  ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
+
   // build residual  Res = F_{int;n+1}
   //                     - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
