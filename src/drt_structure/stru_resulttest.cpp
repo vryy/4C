@@ -13,17 +13,15 @@ Maintainer: Alexander Popp
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
 #include <string>
 #include "stru_resulttest.H"
-#include "strugenalpha.H"
 #include "strtimint.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -37,16 +35,6 @@ StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
   dis_ = dis;
   vel_ = vel;
   acc_ = acc;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(StruGenAlpha& tintegrator)
-{
-  dis_ = tintegrator.Disp();
-  vel_ = tintegrator.Vel();
-  acc_ = tintegrator.Acc();
-  strudisc_ = tintegrator.Discretization();
 }
 
 /*----------------------------------------------------------------------*/
@@ -186,6 +174,3 @@ bool StruResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
   return res.HaveNamed("STRUCTURE");
 }
-
-
-#endif /* CCADISCRET */

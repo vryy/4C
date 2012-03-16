@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "adapter_structure.H"
 #include "adapter_structure_timint_adaptive.H"
@@ -35,12 +34,12 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include "../drt_io/io_control.H"
-#include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimada_create.H"
-#include "../drt_beamcontact/beam3contactstrugenalpha.H"
 #include "../drt_statmech/statmech_time.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -548,4 +547,3 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 }
 
 /*----------------------------------------------------------------------*/
-#endif

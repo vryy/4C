@@ -13,14 +13,16 @@ Maintainer: Kei Müller
 #ifndef STATMECH_TIME_H
 #define STATMECH_TIME_H
 
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_structure/strugenalpha.H"
+//#include "../drt_structure/strugenalpha.H"
 /*!
 \brief time integration for structural problems with statistical mechanics
 
 \author cyron (cyron@lnm.mw.tum.de)
 */
 
+/*
 // forward declarations
 class StatMechManager;
 
@@ -63,7 +65,8 @@ public:
 
   //!\brief read restart information
   virtual void ReadRestart(int step);
-
+*/
+  /*
 protected:
 
   // don't want = operator and cctor
@@ -134,6 +137,6 @@ protected:
   StatMechTime::beamcstrategy contactstrategy_;
 
 }; // class StatMechTime
-
+*/
 #endif  // #ifndef STATMECH_H
 #endif  // #ifdef CCADISCRET

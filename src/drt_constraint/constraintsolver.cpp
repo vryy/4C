@@ -73,42 +73,15 @@ void UTILS::ConstraintSolver::Setup
   ParameterList params
 )
 {
-  solver_ = rcp(&solver,false);
-  // this exception handler is not the nicest thing,
-  // but the original (and verified) input
-  // parameter list is copied to another parameter list in case of
-  // the StruGenAlpha time integrator object (and apparently other time
-  // integrators). This is actually done in dyn_nlnstructural_drt().
-  // The approach in StruTimIntImpl (and thus StruTimIntGenAlpha)
-  // is not to change the parameter list after input nor to copy
-  // them to new lists. This copy mechanism does not improve the
-  // data.
-  // Thus we need this exception handler to getting along.
 
-  try
-  {
-    // for StruGenAlpha
-    algochoice_ = static_cast<INPAR::STR::ConSolveAlgo>( params.get<int>("UZAWAALGO") );
-  }
-  catch (const Teuchos::Exceptions::InvalidParameterType)
-  {
-    // for STR::TimIntImpl
-    algochoice_ = DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
-  }
+  solver_ = rcp(&solver,false);
+
+  algochoice_ = DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
 
   // different setup for #adapttol_
-  try
-  {
-    // for StruGenAlpha
-    isadapttol_ = params.get<bool>("ADAPTCONV",true);
-  }
-  catch (const Teuchos::Exceptions::InvalidParameterType)
-  {
-    // for STR::TimIntImpl
-    isadapttol_ = true;
-    isadapttol_ = (DRT::INPUT::IntegralValue<int>(params,"ADAPTCONV") == 1);
-  }
-
+  isadapttol_ = true;
+  isadapttol_ = (DRT::INPUT::IntegralValue<int>(params,"ADAPTCONV") == 1);
+  
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
   iterationparam_ = params.get<double>("UZAWAPARAM", 1);

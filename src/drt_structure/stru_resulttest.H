@@ -16,8 +16,6 @@ Maintainer: Alexander Popp
 #ifndef STRURESULTTEST_H
 #define STRURESULTTEST_H
 
-#ifdef CCADISCRET
-
 #include <Epetra_Vector.h>
 #include "../drt_lib/drt_resulttest.H"
 
@@ -43,8 +41,6 @@ namespace STR
   class TimInt;
 }
 
-class StruGenAlpha;
-
 /*!
   \brief Structure specific result test class
 */
@@ -58,9 +54,6 @@ public:
     Teuchos::RCP<Epetra_Vector> vel,  //!< velocities to test
     Teuchos::RCP<Epetra_Vector> acc  //!< accelerations to test
   );
-
-  //! constructor to use when timeintegrator is generalized alpha!
-  StruResultTest(StruGenAlpha& tintegrator);
 
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
@@ -91,7 +84,5 @@ private:
    * as they are not part of the problem instance like in fluid3
    */
 };
-
-#endif /* #ifdef CCADISCRET        */
 
 #endif /* #ifndef STRURESULTTEST_H */

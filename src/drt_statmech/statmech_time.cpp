@@ -15,7 +15,7 @@ Maintainer: Kei Müller
 #include <Teuchos_Time.hpp>
 #include <iostream>
 #include <iomanip>
-#include "statmech_time.H"
+//#include "statmech_time.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -38,7 +38,7 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
-StatMechTime::StatMechTime(ParameterList& params,
+/*StatMechTime::StatMechTime(ParameterList& params,
                           DRT::Discretization& dis,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
@@ -51,11 +51,11 @@ isconverged_(0)
   //maximal number of random numbers to be generated per time step for any column map element of this processor
   int randomnumbersperlocalelement = 0;
 
-  /*check maximal number of nodes of an element with stochastic forces on this processor*/
+  /*check maximal number of nodes of an element with stochastic forces on this processor
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
     const DRT::ElementType & eot = dis.lColElement(i)->ElementType();
-    /*stochastic forces implemented so far only for the following elements:*/
+    /*stochastic forces implemented so far only for the following elements:
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
@@ -98,7 +98,7 @@ isconverged_(0)
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
-   *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
+   *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
@@ -126,11 +126,11 @@ isconverged_(0)
   return;
 } // StatMechTime::StatMechTime
 
-
+  */
 /*----------------------------------------------------------------------*
  |  integrate in time          (static/public)               cyron 08/08|
  *----------------------------------------------------------------------*/
-void StatMechTime::Integrate()
+/*void StatMechTime::Integrate()
 {
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
@@ -155,7 +155,7 @@ void StatMechTime::Integrate()
      * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
      * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
      * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
-     * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.*/
+     * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.
     // note on contactstrategy/soltype: enums cannot be forward declared in the header. Hence, we use an integer and translate it in order to avoid including unnecessary headers in statmech_time.H
     InitializeManagers(i, step, ndim, dt, buildoctree);
 
@@ -198,7 +198,7 @@ void StatMechTime::Integrate()
 
       /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
        *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
-       *for synchrinisation of these random numbers in parallel computing*/
+       *for synchrinisation of these random numbers in parallel computing
       randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
       //pay attention: for a constant predictor an incremental velocity update is necessary, which has
       //been deleted out of the code in oder to simplify it
@@ -222,7 +222,7 @@ void StatMechTime::Integrate()
       }
 
       /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
-       *and the state of the discretization to status at the beginning of this time step*/
+       *and the state of the discretization to status at the beginning of this time step
       if(isconverged_ == 0)
         RestoreOldConvergedState(buildoctree);
     }
@@ -252,11 +252,11 @@ void StatMechTime::Integrate()
   return;
 } // void StatMechTime::Integrate()
 
-
+    */
 /*----------------------------------------------------------------------*
  |do consistent predictor step for Brownian dynamics (public)cyron 10/09|
  *----------------------------------------------------------------------*/
-void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -283,7 +283,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
    * would set disn_ to NaN as even 0*NaN = NaN!; this would defeat the purpose of the repeated iterations with new
    * random numbers and has thus to be avoided; therefore we initialized disn_ and veln_ with zero which has no effect
    * in any other case*/
-  disn_->PutScalar(0.0);
+ /* disn_->PutScalar(0.0);
   veln_->PutScalar(0.0);
   dism_->PutScalar(0.0);
   velm_->PutScalar(0.0);
@@ -478,7 +478,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -490,7 +490,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
-  double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
+ /* double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
@@ -709,7 +709,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 /*----------------------------------------------------------------------*
  |  initialize Newton for 2nd, 3rd, ... Uzawa iteration      cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -735,7 +735,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
       // action for elements
       p.set("action","calc_struct_eleload");
       // other parameters needed by the elements
-      p.set("total time",timen);
+ /*     p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
       // set vector values needed by elements
@@ -818,7 +818,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
 /*----------------------------------------------------------------------*
  |  read restart (public)                                    cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechTime::ReadRestart(int step)
+/*void StatMechTime::ReadRestart(int step)
 {
   RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
   IO::DiscretizationReader reader(rcpdiscret,step);
@@ -851,7 +851,7 @@ void StatMechTime::ReadRestart(int step)
 #endif
 
   // override current time and step with values from file
-  params_.set<double>("total time",time);
+/*  params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
 
   if (surf_stress_man_->HaveSurfStress())
@@ -875,7 +875,7 @@ void StatMechTime::ReadRestart(int step)
 /*----------------------------------------------------------------------*
  |  do output including statistical mechanics data(public)    cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechTime::Output()
+/*void StatMechTime::Output()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -901,7 +901,7 @@ void StatMechTime::Output()
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
 
-  bool isdatawritten = false;
+/*  bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
   if ((writeresevry and istep%writeresevry==0) or istep==nstep)
@@ -926,11 +926,11 @@ void StatMechTime::Output()
 //note:the following block is the only difference to Output() in strugenalpha.cpp-----------------------------
 /* write restart information for statistical mechanics problems; all the information is saved as class variables
  * of StatMechManager*/
-    statmechmanager_->WriteRestart(output_);
+/*    statmechmanager_->WriteRestart(output_);
 //------------------------------------------------------------------------------------------------------------
 //____________________________________________________________________________________________________________
 
-    if (surf_stress_man_->HaveSurfStress())
+/*    if (surf_stress_man_->HaveSurfStress())
       surf_stress_man_->WriteRestart(istep, timen);
 
     if (constrMan_->HaveConstraint())
@@ -1047,7 +1047,7 @@ void StatMechTime::Output()
 /*----------------------------------------------------------------------*
  |  Pseudo Transient Continuation                 (public)   cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
+/*void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1075,7 +1075,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+/*  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
@@ -1326,8 +1326,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep)
 
 /*----------------------------------------------------------------------*
  |  evaluate outcome of PTC and chose action accordingly   mueller 02/12|
- *----------------------------------------------------------------------*/
-void StatMechTime::PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc)
+/* *----------------------------------------------------------------------*/
+/*void StatMechTime::PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc)
 {
   // create the parameters for the discretization
   ParameterList p;
@@ -1354,7 +1354,7 @@ void StatMechTime::PTCBrownianForcesAndDamping(double& dt, double& crotptc, doub
 /*----------------------------------------------------------------------*
  |  evaluate outcome of PTC and chose action accordingly   mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent)
+/*void StatMechTime::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent)
 {
   if(numiter>=maxiter || fresmnormdivergent)
   {
@@ -1393,7 +1393,7 @@ void StatMechTime::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmno
 /*----------------------------------------------------------------------*
  | set relevant variables signaling divergence of PTC      mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::ConvergenceStatusUpdate(bool converged, bool increasestepcount)
+/*void StatMechTime::ConvergenceStatusUpdate(bool converged, bool increasestepcount)
 {
   if(!converged)
   {
@@ -1414,7 +1414,7 @@ void StatMechTime::ConvergenceStatusUpdate(bool converged, bool increasestepcoun
  |  Evaluate beam contact according to solution strategy                |
  |                                            (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::BeamContactNonlinearSolve(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::BeamContactNonlinearSolve(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
 {
   switch (contactstrategy_)
   {
@@ -1437,7 +1437,7 @@ void StatMechTime::BeamContactNonlinearSolve(int& istep, int& ndim, Teuchos::RCP
 /*----------------------------------------------------------------------*
  |  Evaluate beam contact using Penalty appr. (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::SolveContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::SolveContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
 {
   ConsistentPredictor(randomnumbers);
 
@@ -1454,7 +1454,7 @@ void StatMechTime::SolveContactPenalty(int& istep, int& ndim, Teuchos::RCP<Epetr
  |  Evaluate beam contact using Augmented Lagrange                      |
  |                                            (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
+/*void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
 {
   // get tolerance and maximum number of Uzawa steps from input file
   double eps = beamcmanager_->InputParameters().get<double>("UZAWACONSTRTOL");
@@ -1497,7 +1497,7 @@ void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra
     }
 
     // update constraint norm and penalty parameter
-    beamcmanager_->UpdateConstrNorm();
+/*    beamcmanager_->UpdateConstrNorm();
     // update Uzawa Lagrange multipliers
     beamcmanager_->UpdateAlllmuzawa();
   } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
@@ -1511,7 +1511,7 @@ void StatMechTime::SolveContactAugLag(int& istep, int& ndim, Teuchos::RCP<Epetra
  |  Reset relevant values, vectors, discretization before repeating     |
  |  the time step                             (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::RestoreOldConvergedState(bool& buildoctree)
+/*void StatMechTime::RestoreOldConvergedState(bool& buildoctree)
 {
   ParameterList p;
   p.set("action","calc_struct_reset_istep");
@@ -1524,7 +1524,7 @@ void StatMechTime::RestoreOldConvergedState(bool& buildoctree)
 /*----------------------------------------------------------------------*
  |  Check Uzawa convergence                      (private) mueller 02/12|
  *----------------------------------------------------------------------*/
-bool StatMechTime::ExitUzawaUpon(int& maxuzawaiter)
+/*bool StatMechTime::ExitUzawaUpon(int& maxuzawaiter)
 {
   bool exituzawa = false;
 
@@ -1545,7 +1545,7 @@ bool StatMechTime::ExitUzawaUpon(int& maxuzawaiter)
 /*----------------------------------------------------------------------*
  |  Initialize Managers                       (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, double& dt, bool& buildoctree)
+/*void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, double& dt, bool& buildoctree)
 {
   // initialize beam contact solution strategy
   if(currstep==startstep)
@@ -1595,7 +1595,7 @@ void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, 
       }
       if(!discret_.Comm().MyPID())
         cout<<"===================================="<<endl;
-    }
+/*    }
     else
       contactstrategy_ = StatMechTime::contact_none;
 
@@ -1604,7 +1604,7 @@ void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, 
       /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
        * even before the first statmechmanager_->Update() call because the octree is needed to decide
        * whether links can be set...*/
-      if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+/*      if(statmechmanager_->statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
       {
         buildoctree = true;
         statmechmanager_->SetInitialCrosslinkers(beamcmanager_);
@@ -1626,8 +1626,8 @@ void StatMechTime::InitializeManagers(int& currstep, int& startstep, int& ndim, 
 /*----------------------------------------------------------------------*
  |  Switch time step size                     (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::StatMechManagerTimeUpdate(double& time, double& dt)
-{
+/*void StatMechTime::StatMechManagerTimeUpdate(double& time, double& dt)
+/*{
   if(time + statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt) > statmechmanager_->statmechparams_.get<double>("STARTTIMEACT", 0.0))
   {
     if(statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt)>0.0)
@@ -1644,7 +1644,7 @@ void StatMechTime::StatMechManagerTimeUpdate(double& time, double& dt)
  |  Call statmechmanager Update according to options chosen             |
  |                                            (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void StatMechTime::StatMechManagerUpdate(int& istep, int& ndim, double& dt, bool buildoctree)
+/*void StatMechTime::StatMechManagerUpdate(int& istep, int& ndim, double& dt, bool buildoctree)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
@@ -1661,8 +1661,8 @@ void StatMechTime::StatMechManagerUpdate(int& istep, int& ndim, double& dt, bool
 /*----------------------------------------------------------------------*
  |  Call statmechmanager Output according to options chosen             |
  |                                            (private)    mueller 02/12|
- *----------------------------------------------------------------------*/
-void StatMechTime::StatMechManagerOutput(int& istep, int& ndim, double& time, double& dt)
+/* *----------------------------------------------------------------------*/
+/*void StatMechTime::StatMechManagerOutput(int& istep, int& ndim, double& time, double& dt)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     statmechmanager_->Output(params_,ndim,time,istep ,dt,*dis_,*fint_,beamcmanager_);
@@ -1670,5 +1670,5 @@ void StatMechTime::StatMechManagerOutput(int& istep, int& ndim, double& time, do
     statmechmanager_->Output(params_,ndim,time,istep ,dt,*dis_,*fint_);
   return;
 }
-
+*/
 #endif  // #ifdef CCADISCRET

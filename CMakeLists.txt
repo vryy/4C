@@ -606,9 +606,6 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_reinitialization_pde.cpp
   src/drt_combust/combust_utils.cpp
 )
-set(OBJS_DRT_BEAMCONTACT
-  src/drt_beamcontact/beam3contactstrugenalpha.cpp
-)
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
 )
@@ -1096,8 +1093,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
-  src/drt_structure/strugenalpha.cpp
-  src/drt_structure/strugenalpha_lsnewton.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1495,7 +1490,7 @@ add_library(drt_adapter ${OBJS_DRT_ADAPT})
 add_library(alg_ale ${OBJS_DRT_ALEALG})
 add_library(alg_artnet ${OBJS_DRT_ARTNET})
 add_library(alg_combust ${OBJS_DRT_COMBUST})
-add_library(alg_contact ${OBJS_DRT_CONTACT} ${OBJS_DRT_BEAMCONTACT})
+add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})

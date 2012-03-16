@@ -13,7 +13,6 @@ Maintainer: Thomas Klöppel
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifdef CCADISCRET
 #ifndef STRTIMINT_H
 #define STRTIMINT_H
 
@@ -1047,4 +1046,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_H
-#endif  // #ifdef CCADISCRET

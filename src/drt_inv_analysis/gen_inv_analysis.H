@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef GEN_INV_ANALYSIS_H
 #define GEN_INV_ANALYSIS_H
 
@@ -36,7 +35,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -154,4 +152,3 @@ public:
 }  // namespace STR
 
 #endif /*INV_ANALYSIS_H_*/
-#endif  // #ifdef CCADISCRET
