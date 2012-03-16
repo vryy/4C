@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-
 class Epetra_Vector;
 
 namespace DRT
@@ -44,15 +43,17 @@ namespace IO
 namespace PATSPEC
 {
 
-  void PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::ParameterList& params);
+  void PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
+	                       Teuchos::RCP<Teuchos::ParameterList> params);
 
-  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teuchos::ParameterList& params);
+  void ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization> dis,
+	                                 Teuchos::RCP<Teuchos::ParameterList> params);
 
-  void ComputeEleLocalRadius(DRT::Discretization& dis);
+  void ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis);
 
   std::vector<double> GetCenterline(std::string filename);
 
-  void ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterList& params);
+  void ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
 
   void GetILTDistance(const int eleid, 
                       Teuchos::ParameterList& params, 
@@ -61,10 +62,15 @@ namespace PATSPEC
   void GetLocalRadius(const int eleid, 
                       Teuchos::ParameterList& params, 
                       DRT::Discretization& dis);
+
+  void PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
+		     Teuchos::RCP<DRT::Discretization> discret_,
+		     Teuchos::RCP<Teuchos::ParameterList> params);
                       
-  void CheckEmbeddingTissue(DRT::Discretization& discret,
+  void CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
                             Teuchos::RCP<LINALG::SparseOperator> stiff,
                             Teuchos::RCP<Epetra_Vector> fint);
+
 
 
 

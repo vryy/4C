@@ -49,6 +49,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_patspec/patspec.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -141,7 +142,8 @@ STR::TimInt::TimInt
   timer_(rcp(new Epetra_Time(actdis->Comm()))),
   dtsolve_(0.0),
   dtele_(0.0),
-  dtcmt_(0.0)
+  dtcmt_(0.0),
+  pslist_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -305,6 +307,26 @@ STR::TimInt::TimInt
   // check for structural problem with ale
   if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
+
+
+  // check for patient specific needs
+  const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
+  if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
+  {
+    // check if patspeccond are already initialized
+    // this is of relevance for Montecarlo Simulation
+    vector<DRT::Condition*> pscond;
+    discret_->GetCondition("PatientSpecificData", pscond);
+    if (!pscond.size())
+    {
+      //initialize patient specific parameters and conditions
+      pslist_ = Teuchos::rcp(new Teuchos::ParameterList(sdynparams));
+      PATSPEC::PatientSpecificGeometry(discret_, pslist_);
+
+      // fix pointer to dofrowmap_
+      dofrowmap_ = discret_->DofRowMap();
+    }
+  }
 
   // TODO: to be moved into new FSI adapter 13.03. 2012 Georg Hammerl
   // set-up FSI interface
@@ -961,6 +983,12 @@ void STR::TimInt::OutputStep()
   // write output on micro-scale (multi-scale analysis)
   OutputMicro();
 
+  // write patient specific output
+  if (writeresultsevery_ and (step_%writeresultsevery_ == 0))
+  {
+    OutputPatspec();
+  }
+
   // what's next?
   return;
 }
@@ -1591,6 +1619,19 @@ void STR::TimInt::OutputNodalPositions()
 
 #endif //PRINTSTRUCTDEFORMEDNODECOORDS
 
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output patient specific stuff */
+void STR::TimInt::OutputPatspec()
+{
+  // do the output for the patient specific conditions (if they exist)
+  const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
+  if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
+  {
+    PATSPEC::PatspecOutput(output_,discret_,pslist_);
+  }
   return;
 }
 

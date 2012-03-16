@@ -95,6 +95,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
+
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics
 namespace STR
@@ -335,6 +336,9 @@ namespace STR
 
     //! Output on the micro-scale (multi-scale analysis)
     void OutputMicro();
+
+    //! Patient Specific Output
+    void OutputPatspec();
 
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
@@ -840,6 +844,10 @@ namespace STR
 
     //@}
 
+    //! @name Patient specific stuff
+    //@{
+    Teuchos::RCP<Teuchos::ParameterList> pslist_;
+    //@}
 
 
 

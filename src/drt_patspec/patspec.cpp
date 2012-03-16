@@ -26,11 +26,12 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::ParameterList& params)
+void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
+	                              Teuchos::RCP<Teuchos::ParameterList> params)
 {
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
   {
-    cout << "____________________________________________________________\n";
+    cout << "------------------------------------------------------------\n";
     cout << "Entering patient specific structural preprocessing (PATSPEC)\n";
     cout << "\n";
   }
@@ -40,9 +41,9 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
 
   //------------- test discretization for presence of the Gasser ILT material
   int lfoundit = 0;
-  for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
+  for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
   {
-    INPAR::MAT::MaterialType type = dis.lRowElement(i)->Material()->MaterialType();
+    INPAR::MAT::MaterialType type = dis->lRowElement(i)->Material()->MaterialType();
     if (type == INPAR::MAT::m_aaagasser)
     {
       lfoundit = 1;
@@ -63,13 +64,13 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
   }
 
   int gfoundit = 0;
-  dis.Comm().SumAll(&lfoundit,&gfoundit,1);
+  dis->Comm().SumAll(&lfoundit,&gfoundit,1);
 
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
 
   int maxhulumen  = pslist.get<int>("MAXHULUMEN");
-  params.set("max hu lumen", maxhulumen);
-  if (!dis.Comm().MyPID()) 
+  params->set("max hu lumen", maxhulumen);
+  if (!dis->Comm().MyPID())
   {
     if (maxhulumen == 0) cout << "max HU in lumen not set \n";
     else printf("max HU in lumen %4i \n", maxhulumen);
@@ -79,7 +80,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
 
   if (gfoundit or calc_strength)
   {
-    if (!dis.Comm().MyPID())
+    if (!dis->Comm().MyPID())
       cout << "Computing distance functions...\n";
     PATSPEC::ComputeEleNormalizedLumenDistance(dis, params);
     PATSPEC::ComputeEleLocalRadius(dis);
@@ -88,91 +89,91 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
 
   if (calc_strength)
   {
-    if (!dis.Comm().MyPID())
+    if (!dis->Comm().MyPID())
       cout << "Computing strength model...\n";
     PATSPEC::ComputeEleStrength(dis, params);
   }
   //-------------------------------------------------------------------------
 
 
-
-  //------------test discretization of presence of embedding tissue condition
-  vector<DRT::Condition*> embedcond;
-  dis.GetCondition("EmbeddingTissue",embedcond);
-  if ((int)embedcond.size())
-  {
-    if (!dis.Comm().MyPID()) cout << "Computing area for embedding tissue...\n";
-
-    // loop all embedding tissue conditions
-    for (int cond=0; cond<(int)embedcond.size(); ++cond)
-    {
-      // a vector for all row nodes to hold element area contributions
-      Epetra_Vector nodalarea(*dis.NodeRowMap(),true);
-
-      //cout << *embedcond[cond];
-      map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
-      map<int,RCP<DRT::Element> >::iterator ele;
-      for (ele=geom.begin(); ele != geom.end(); ++ele)
-      {
-        DRT::Element* element = ele->second.get();
-        LINALG::SerialDenseMatrix x(element->NumNode(),3);
-        for (int i=0; i<element->NumNode(); ++i)
-        {
-          x(i,0) = element->Nodes()[i]->X()[0];
-          x(i,1) = element->Nodes()[i]->X()[1];
-          x(i,2) = element->Nodes()[i]->X()[2];
-        }
-        Teuchos::ParameterList params;
-        params.set("action","calc_struct_area");
-        params.set("area",0.0);
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
-        element->LocationVector(dis,lm,lmowner,lmstride);
-        Epetra_SerialDenseMatrix dummat(0,0);
-        Epetra_SerialDenseVector dumvec(0);
-        element->Evaluate(params,dis,lm,dummat,dummat,dumvec,dumvec,dumvec);
-        double a = params.get("area",-1.0);
-        //printf("Ele %d a %10.5e\n",element->Id(),a);
-
-        // loop over all nodes of the element an share the area
-        // do only contribute to my own row nodes
-        const double apernode = a / element->NumNode();
-        for (int i=0; i<element->NumNode(); ++i)
-        {
-          int gid = element->Nodes()[i]->Id();
-          if (!dis.NodeRowMap()->MyGID(gid)) continue;
-          nodalarea[dis.NodeRowMap()->LID(gid)] += apernode;
-        }
-      } // for (ele=geom.begin(); ele != geom.end(); ++ele)
-
-      // now we have the area per node, put it in a vector that is equal to the nodes vector
-      // consider only my row nodes
-      const vector<int>* nodes = embedcond[cond]->Nodes();
-      vector<double> apern(nodes->size(),0.0);
-      for (int i=0; i<(int)nodes->size(); ++i)
-      {
-        int gid = (*nodes)[i];
-        if (!nodalarea.Map().MyGID(gid)) continue;
-        apern[i] = nodalarea[nodalarea.Map().LID(gid)];
-      }
-      // set this vector to the condition
-      (*embedcond[cond]).Add("areapernode",apern);
-      //cout << *embedcond[cond];
-
-
-    } // for (int cond=0; cond<(int)embedcond.size(); ++cond)
-
-  } // if ((int)embedcond.size())
+// Embedding tissue still needs to be integrated into strtimint; kehl 15.03.2012
+//  //------------test discretization of presence of embedding tissue condition
+//  vector<DRT::Condition*> embedcond;
+//  dis->GetCondition("EmbeddingTissue",embedcond);
+//  if ((int)embedcond.size())
+//  {
+//    if (!dis->Comm().MyPID()) cout << "Computing area for embedding tissue...\n";
+//
+//    // loop all embedding tissue conditions
+//    for (int cond=0; cond<(int)embedcond.size(); ++cond)
+//    {
+//      // a vector for all row nodes to hold element area contributions
+//      Epetra_Vector nodalarea(*dis->NodeRowMap(),true);
+//
+//      //cout << *embedcond[cond];
+//      map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
+//      map<int,RCP<DRT::Element> >::iterator ele;
+//      for (ele=geom.begin(); ele != geom.end(); ++ele)
+//      {
+//        DRT::Element* element = ele->second.get();
+//        LINALG::SerialDenseMatrix x(element->NumNode(),3);
+//        for (int i=0; i<element->NumNode(); ++i)
+//        {
+//          x(i,0) = element->Nodes()[i]->X()[0];
+//          x(i,1) = element->Nodes()[i]->X()[1];
+//          x(i,2) = element->Nodes()[i]->X()[2];
+//        }
+//        Teuchos::ParameterList eparams;
+//        eparams.set("action","calc_struct_area");
+//        eparams.set("area",0.0);
+//        vector<int> lm;
+//        vector<int> lmowner;
+//        vector<int> lmstride;
+//        element->LocationVector(dis,lm,lmowner,lmstride);
+//        Epetra_SerialDenseMatrix dummat(0,0);
+//        Epetra_SerialDenseVector dumvec(0);
+//        element->Evaluate(eparams,dis,lm,dummat,dummat,dumvec,dumvec,dumvec);
+//        double a = params.get("area",-1.0);
+//        //printf("Ele %d a %10.5e\n",element->Id(),a);
+//
+//        // loop over all nodes of the element an share the area
+//        // do only contribute to my own row nodes
+//        const double apernode = a / element->NumNode();
+//        for (int i=0; i<element->NumNode(); ++i)
+//        {
+//          int gid = element->Nodes()[i]->Id();
+//          if (!dis->NodeRowMap()->MyGID(gid)) continue;
+//          nodalarea[dis->NodeRowMap()->LID(gid)] += apernode;
+//        }
+//      } // for (ele=geom.begin(); ele != geom.end(); ++ele)
+//
+//      // now we have the area per node, put it in a vector that is equal to the nodes vector
+//      // consider only my row nodes
+//      const vector<int>* nodes = embedcond[cond]->Nodes();
+//      vector<double> apern(nodes->size(),0.0);
+//      for (int i=0; i<(int)nodes->size(); ++i)
+//      {
+//        int gid = (*nodes)[i];
+//        if (!nodalarea.Map().MyGID(gid)) continue;
+//        apern[i] = nodalarea[nodalarea.Map().LID(gid)];
+//      }
+//      // set this vector to the condition
+//      (*embedcond[cond]).Add("areapernode",apern);
+//      //cout << *embedcond[cond];
+//
+//
+//    } // for (int cond=0; cond<(int)embedcond.size(); ++cond)
+//
+//  } // if ((int)embedcond.size())
   //-------------------------------------------------------------------------
 
 
 
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
   {
     cout << "\n";
     cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
-    cout << "____________________________________________________________\n";
+    cout << "-----------------------------------------------------------\n";
   }
 
 
@@ -183,7 +184,8 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::Paramet
 /*----------------------------------------------------------------------*
  |                                                          amaier 07/11|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterList& params)
+void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
+	                         Teuchos::RCP<Teuchos::ParameterList> params)
 {
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   double subrendia = pslist.get<double>("AAA_SUBRENDIA");
@@ -192,10 +194,10 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
   double spatialconst = 922000.0; //spatial constant strength contrib
 				 //acc. Vande Geest [Pa]
 
-  double maxiltthick = params.get<double>("max ilt thick");
+  double maxiltthick = params->get<double>("max ilt thick");
 
 
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
   {
     if (subrendia == 22.01) cout << "Subrenal diameter not specified, taking default value (22mm).\n";
     else printf("Subrenal diameter %4.2f mm \n", subrendia);
@@ -211,10 +213,10 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
   if (has_familyhist) spatialconst -= 213000;
   if (!is_male) spatialconst -= 193000;
 
-  RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+  RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis->ElementRowMap()),true);
 
   vector<DRT::Condition*> mypatspeccond;
-  dis.GetCondition("PatientSpecificData", mypatspeccond);
+  dis->GetCondition("PatientSpecificData", mypatspeccond);
 
   if (!mypatspeccond.size()) dserror("Cannot find the Patient Specific Data Conditions :-(");
 
@@ -230,7 +232,7 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
 	// upper bounds for the ilt thickness are 0 and 36
 	// Careful! ilt thickness is still normalized! Multiply with max
 	// ilt thickness.
-	(*elestrength)[j] = spatialconst - 379000 * (pow((max(0., min(36., (*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
+	(*elestrength)[j] = spatialconst - 379000 * (pow((max(0., min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
     
       }
     }
@@ -245,12 +247,12 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
       for (int j=0; j< elestrength->MyLength(); ++j)
       {
 	// contribution of local diameter to strength; lower and upper bounds for the normalized diameter are 1.0 and 3.9
-	(*elestrength)[j] -= 156000 * (   max(1., min(3.9, 2 * (*locrad)[locrad->Map().LID(dis.ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
+	(*elestrength)[j] -= 156000 * (   max(1., min(3.9, 2 * (*locrad)[locrad->Map().LID(dis->ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
       }
     }
   }
 
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
   LINALG::Export(*elestrength,*tmp);
   elestrength = tmp;
 
@@ -261,11 +263,11 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
   cond->Add("elestrength",*elestrength);
 
   // check whether discretization has been filled before putting ocndition to dis
-  bool filled = dis.Filled();
-  dis.SetCondition("PatientSpecificData",cond);
-  if (filled && !dis.Filled()) dis.FillComplete();
+  bool filled = dis->Filled();
+  dis->SetCondition("PatientSpecificData",cond);
+  if (filled && !dis->Filled()) dis->FillComplete();
 
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
     printf("Strength calculation completed.\n");
 
   return;
@@ -274,13 +276,14 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teuchos::ParameterList& params)
+void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization> dis,
+	                                        Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // find out whether we have a orthopressure or FSI condition
   vector<DRT::Condition*> conds;
   vector<DRT::Condition*> ortho(0);
   vector<DRT::Condition*> fsi(0);
-  dis.GetCondition("SurfaceNeumann",ortho);
+  dis->GetCondition("SurfaceNeumann",ortho);
   for (int i=0; i<(int)ortho.size(); ++i)
   {
     if (ortho[i]->GType() != DRT::Condition::Surface) continue;
@@ -289,7 +292,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
       conds.push_back(ortho[i]);
   }
 
-  dis.GetCondition("FSICoupling",fsi);
+  dis->GetCondition("FSICoupling",fsi);
   for (int i=0; i<(int)fsi.size(); ++i)
   {
     if (fsi[i]->GType() != DRT::Condition::Surface) continue;
@@ -300,7 +303,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
     dserror("There is no orthopressure nor FSI condition in this discretization");
 
   // measure time as there is a brute force search in here
-  Epetra_Time timer(dis.Comm());
+  Epetra_Time timer(dis->Comm());
   timer.ResetStartTime();
 
   // start building the distance function
@@ -321,29 +324,29 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
   int count=0;
   for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
   {
-    if (!dis.NodeRowMap()->MyGID(*fool))
+    if (!dis->NodeRowMap()->MyGID(*fool))
     {
       count++;
       continue;
     }
-    DRT::Node* node = dis.gNode(*fool);
+    DRT::Node* node = dis->gNode(*fool);
     lcoords[count*3]   = node->X()[0];
     lcoords[count*3+1] = node->X()[1];
     lcoords[count*3+2] = node->X()[2];
     count++;
   }
-  dis.Comm().SumAll(&lcoords[0],&gcoords[0],nnodes*3);
+  dis->Comm().SumAll(&lcoords[0],&gcoords[0],nnodes*3);
   lcoords.clear();
   allnodes.clear();
 
   // compute distance of all of my nodes to these nodes
   // create vector for nodal values of ilt thickness
   // WARNING: This is a brute force expensive minimum distance search!
-  const Epetra_Map* nrowmap = dis.NodeRowMap();
+  const Epetra_Map* nrowmap = dis->NodeRowMap();
   RCP<Epetra_Vector> iltthick = LINALG::CreateVector(*nrowmap,true);
   for (int i=0; i<nrowmap->NumMyElements(); ++i)
   {
-    const double* x = dis.gNode(nrowmap->GID(i))->X();
+    const double* x = dis->gNode(nrowmap->GID(i))->X();
     // loop nodes from the condition and find minimum distance
     double mindist = 1.0e12;
     for (int j=0; j<nnodes; ++j)
@@ -362,20 +365,20 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
   iltthick->MaxValue(&maxiltthick);
   maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
   iltthick->Scale(1.0/maxiltthick);
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
     printf("Max ILT thickness %10.5e\n",maxiltthick);
-  params.set("max ilt thick",maxiltthick);
+  params->set("max ilt thick",maxiltthick);
 
   // export nodal distances to column map
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.NodeColMap()),true);
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
   LINALG::Export(*iltthick,*tmp);
   iltthick = tmp;
 
   // compute element-wise mean distance from nodal distance
-  RCP<Epetra_Vector> iltele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
-  for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
+  RCP<Epetra_Vector> iltele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+  for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* actele = dis.gElement(dis.ElementRowMap()->GID(i));
+    DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(i));
     double mean = 0.0;
     for (int j=0; j<actele->NumNode(); ++j)
       mean += (*iltthick)[iltthick->Map().LID(actele->Nodes()[j]->Id())];
@@ -383,7 +386,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
     (*iltele)[i] = mean;
   }
 
-  tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+  tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
   LINALG::Export(*iltele,*tmp);
   iltele = tmp;
 
@@ -394,11 +397,11 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
   cond->Add("normalized ilt thickness",*iltele);
 
   // check whether discretization has been filled before putting ocndition to dis
-  bool filled = dis.Filled();
-  dis.SetCondition("PatientSpecificData",cond);
-  if (filled && !dis.Filled()) dis.FillComplete();
+  bool filled = dis->Filled();
+  dis->SetCondition("PatientSpecificData",cond);
+  if (filled && !dis->Filled()) dis->FillComplete();
 
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
     printf("Normalized ILT thickness computed in %10.5e sec\n",timer.ElapsedTime());
 
 
@@ -410,18 +413,18 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teucho
 /*----------------------------------------------------------------------*
  |                                                           maier 11/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
+void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
 {
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   string filename = pslist.get<string>("CENTERLINEFILE");
 
   if (filename=="name.txt")
   {
-    if (!dis.Comm().MyPID())
+    if (!dis->Comm().MyPID())
       cout << "No centerline file provided" << endl;
     // set element-wise mean distance to zero
-    RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+    RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
     LINALG::Export(*locradele,*tmp);
     locradele = tmp;
 
@@ -431,11 +434,11 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
     cond->Add("local radius",*locradele);
 
     // check whether discretization has been filled before putting ocndition to dis
-    bool filled = dis.Filled();
-    dis.SetCondition("PatientSpecificData",cond);
-    if (filled && !dis.Filled()) dis.FillComplete();
+    bool filled = dis->Filled();
+    dis->SetCondition("PatientSpecificData",cond);
+    if (filled && !dis->Filled()) dis->FillComplete();
 
-    if (!dis.Comm().MyPID())
+    if (!dis->Comm().MyPID())
       printf("No local radii computed\n");
 
     return;
@@ -446,11 +449,11 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   // compute distance of all of my nodes to the clpoints
   // create vector for nodal values of ilt thickness
   // WARNING: This is a brute force expensive minimum distance search!
-  const Epetra_Map* nrowmap = dis.NodeRowMap();
+  const Epetra_Map* nrowmap = dis->NodeRowMap();
   RCP<Epetra_Vector> localrad = LINALG::CreateVector(*nrowmap,true);
   for (int i=0; i<nrowmap->NumMyElements(); ++i)
   {
-    const double* x = dis.gNode(nrowmap->GID(i))->X();
+    const double* x = dis->gNode(nrowmap->GID(i))->X();
     // loop nodes from the condition and find minimum distance
     double mindist = 1.0e12;
     for (int j=0; j<(int)(clcoords.size()/3); ++j)
@@ -467,19 +470,19 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   // max local rad just for information purpose:
   double maxlocalrad;
   localrad->MaxValue(&maxlocalrad);
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
     printf("Max local radius %10.5e\n",maxlocalrad);
 
   // export nodal distances to column map
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.NodeColMap()),true);
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
   LINALG::Export(*localrad,*tmp);
   localrad = tmp;
 
   // compute element-wise mean distance from nodal distance
-  RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
-  for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
+  RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+  for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* actele = dis.gElement(dis.ElementRowMap()->GID(i));
+    DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(i));
     double mean = 0.0;
     for (int j=0; j<actele->NumNode(); ++j)
       mean += (*localrad)[localrad->Map().LID(actele->Nodes()[j]->Id())];
@@ -487,7 +490,7 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
     (*locradele)[i] = mean;
   }
 
-  tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+  tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
   LINALG::Export(*locradele,*tmp);
   locradele = tmp;
 
@@ -498,11 +501,11 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   cond->Add("local radius",*locradele);
 
   // check whether discretization has been filled before putting ocndition to dis
-  bool filled = dis.Filled();
-  dis.SetCondition("PatientSpecificData",cond);
-  if (filled && !dis.Filled()) dis.FillComplete();
+  bool filled = dis->Filled();
+  dis->SetCondition("PatientSpecificData",cond);
+  if (filled && !dis->Filled()) dis->FillComplete();
 
-  if (!dis.Comm().MyPID())
+  if (!dis->Comm().MyPID())
     printf("Local radii computed.\n");
 
   return;
@@ -597,87 +600,139 @@ void PATSPEC::GetLocalRadius(const int eleid,
 }
 
 /*----------------------------------------------------------------------*
- |                                                              gee 4/11|
+ |                                                           kehl 03/12|
  *----------------------------------------------------------------------*/
-void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
-                            Teuchos::RCP<LINALG::SparseOperator> stiff,
-                            Teuchos::RCP<Epetra_Vector> fint)
+void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
+	                    Teuchos::RCP<DRT::Discretization> discret_,
+	                    Teuchos::RCP<Teuchos::ParameterList> params)
 {
-  RCP<const Epetra_Vector> disp = discret.GetState("displacement");
-  if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
 
-  vector<DRT::Condition*> embedcond;
-  discret.GetCondition("EmbeddingTissue",embedcond);
+    vector<DRT::Condition*> mypatspeccond;
+    double maxiltthick = params->get<double>("max ilt thick");
+    discret_->GetCondition("PatientSpecificData", mypatspeccond);
+    IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
 
-  const Epetra_Map* nodemap = discret.NodeRowMap();
-  Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
-
-
-  int dnodecount = 0;
-  for (int i=0; i<(int)embedcond.size(); ++i)
-  {
-    const vector<int>* nodes = embedcond[i]->Nodes();
-    double springstiff = embedcond[i]->GetDouble("stiff");
-    //const string* model = embedcond[i]->Get<string>("model");
-    //double offset = embedcond[i]->GetDouble("offset");
-    const vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
-
-    //for (int i=0; i<areapernode->size(); i++)
-    //{
-    //  cout << (*areapernode)[i] << endl;
-    //}
-    //exit(0);
-
-    const vector<int>& nds = *nodes;
-    for (int j=0; j<(int)nds.size(); ++j)
+    if (mypatspeccond.size())
     {
 
-      if (nodemap->MyGID(nds[j]))
+      RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      for(unsigned int i=0; i<mypatspeccond.size(); ++i)
       {
-	int gid = nds[j];
-	double nodalarea = (*areapernode)[j];
-	//cout << nodalarea << endl;
-        DRT::Node* node = discret.gNode(gid);
-
-
-        if (!node) dserror("Cannot find global node %d",gid);
-
-        if (nodevec[nodemap->LID(gid)]==0)
+        const Epetra_Vector* actcond = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
+        if (actcond)
         {
-          nodevec[nodemap->LID(gid)] = 1;
-        }
-        else if (nodevec[nodemap->LID(gid)]==1)
-        {
-          dnodecount += 1;
-          continue;
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_->ElementRowMap()->GID(j))];
+          patspecstuff->Scale(maxiltthick);
+          output_->WriteVector("thrombus_thickness", patspecstuff, vt);
         }
 
-        int numdof = discret.NumDof(node);
-        vector<int> dofs = discret.Dof(node);
-
-        assert (numdof==3);
-
-        vector<double> u(numdof);
-        for (int k=0; k<numdof; ++k)
+        actcond = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
+        if (actcond)
         {
-          u[k] = (*disp)[disp->Map().LID(dofs[k])];
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_->ElementRowMap()->GID(j))];
+          output_->WriteVector("local_radius", patspecstuff, vt);
         }
 
-        for (int k=0; k<numdof; ++k)
+        actcond = mypatspeccond[i]->Get<Epetra_Vector>("elestrength");
+        if (actcond)
         {
-	     double val = nodalarea*springstiff*u[k];
-	     //double dval = nodalarea*springstiff;
-	     fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-	     stiff->Assemble(nodalarea*springstiff,dofs[k],dofs[k]);
-	} //loop of dofs
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_->ElementRowMap()->GID(j))];
+          output_->WriteVector("strength", patspecstuff, vt);
+        }
+      }
+      RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      for (int i=0; i<eleID->MyLength(); ++i)
+        (*eleID)[i] = (discret_->ElementRowMap()->GID(i))+1;
+      output_->WriteVector("eleID", eleID, vt);
+    }
+}
 
-      } //node owned by processor?
-
-    } //loop over nodes
-
-  } //loop over conditions
-
-  return;
+/*----------------------------------------------------------------------*
+ |                                                              gee 4/11|
+ *----------------------------------------------------------------------*/
+void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
+                                   Teuchos::RCP<LINALG::SparseOperator> stiff,
+                                   Teuchos::RCP<Epetra_Vector> fint)
+{
+    // embedding tissue still needs to be interated into strtimint; kehl 15.03.2012
+//  RCP<const Epetra_Vector> disp = discret.GetState("displacement");
+//  if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
+//
+//  vector<DRT::Condition*> embedcond;
+//  discret.GetCondition("EmbeddingTissue",embedcond);
+//
+//  const Epetra_Map* nodemap = discret.NodeRowMap();
+//  Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
+//
+//
+//  int dnodecount = 0;
+//  for (int i=0; i<(int)embedcond.size(); ++i)
+//  {
+//    const vector<int>* nodes = embedcond[i]->Nodes();
+//    double springstiff = embedcond[i]->GetDouble("stiff");
+//    //const string* model = embedcond[i]->Get<string>("model");
+//    //double offset = embedcond[i]->GetDouble("offset");
+//    const vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
+//
+//    //for (int i=0; i<areapernode->size(); i++)
+//    //{
+//    //  cout << (*areapernode)[i] << endl;
+//    //}
+//    //exit(0);
+//
+//    const vector<int>& nds = *nodes;
+//    for (int j=0; j<(int)nds.size(); ++j)
+//    {
+//
+//      if (nodemap->MyGID(nds[j]))
+//      {
+//	int gid = nds[j];
+//	double nodalarea = (*areapernode)[j];
+//	//cout << nodalarea << endl;
+//        DRT::Node* node = discret.gNode(gid);
+//
+//
+//        if (!node) dserror("Cannot find global node %d",gid);
+//
+//        if (nodevec[nodemap->LID(gid)]==0)
+//        {
+//          nodevec[nodemap->LID(gid)] = 1;
+//        }
+//        else if (nodevec[nodemap->LID(gid)]==1)
+//        {
+//          dnodecount += 1;
+//          continue;
+//        }
+//
+//        int numdof = discret.NumDof(node);
+//        vector<int> dofs = discret.Dof(node);
+//
+//        assert (numdof==3);
+//
+//        vector<double> u(numdof);
+//        for (int k=0; k<numdof; ++k)
+//        {
+//          u[k] = (*disp)[disp->Map().LID(dofs[k])];
+//        }
+//
+//        for (int k=0; k<numdof; ++k)
+//        {
+//	     double val = nodalarea*springstiff*u[k];
+//	     //double dval = nodalarea*springstiff;
+//	     fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+//	     stiff->Assemble(nodalarea*springstiff,dofs[k],dofs[k]);
+//	} //loop of dofs
+//
+//      } //node owned by processor?
+//
+//    } //loop over nodes
+//
+//  } //loop over conditions
+//
+//  return;
 }
 
 
