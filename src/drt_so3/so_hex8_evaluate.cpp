@@ -2036,7 +2036,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurro; // old  coord. of element
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
