@@ -886,6 +886,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra/scatra_ele_boundary_impl.cpp
   src/drt_scatra/scatra_ele_impl.cpp
   src/drt_scatra/scatra_ele_impl_utils.cpp
+  src/drt_scatra/scatra_ele_impl_reinit.cpp
   src/drt_scatra/scatra_element.cpp
   src/drt_scatra/scatra_element_boundary_evaluate.cpp
   src/drt_scatra/scatra_element_evaluate.cpp

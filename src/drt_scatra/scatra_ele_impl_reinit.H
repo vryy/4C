@@ -1,8 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_impl.H
+\file scatra_ele_impl_reinit.H
 
-\brief Internal implementation of scalar transport elements
+\brief Internal implementation of pde-based
+       reinitialization of level-set methods
 
 <pre>
 Maintainer: Georg Bauer
@@ -13,17 +14,15 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SCATRA_ELE_IMPL_H
-#define SCATRA_ELE_IMPL_H
+#ifndef SCATRA_ELE_IMPL_REINIT_H
+#define SCATRA_ELE_IMPL_REINIT_H
 
 #include "scatra_ele_impl_interface.H"
 #include "scatra_ele_impl_utils.H"
+#include "scatra_ele_impl_reinit_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_turbulence.H"
-#include <Epetra_IntSerialDenseVector.h>
-#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
@@ -65,14 +64,14 @@ namespace ELEMENTS
   \date 08/08
 */
 template<DRT::Element::DiscretizationType distype>
-class ScaTraImpl: public ScaTraImplInterface
+class ReInitImpl: public ScaTraImplInterface
 {
 public:
   //! Constructor
-  ScaTraImpl(const int numdofpernode, const int numscal);
+  ReInitImpl(const int numdofpernode, const int numscal);
 
   //! Singleton access method
-  static ScaTraImpl<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
+  static ReInitImpl<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
 
   //! called upon destruction
   virtual void Done();
@@ -80,7 +79,7 @@ public:
   //! Evaluate
   virtual int Evaluate(
     DRT::Element*              ele,            //!< the element we are dealing with
-    ParameterList&             params,         //!< the parameter list
+    ParameterList&             params,         //!< ?
     DRT::Discretization&       discretization, //!< the discretization the element is part of
     vector<int>&               lm,             //!< ?
     Epetra_SerialDenseMatrix&  elemat1_epetra, //!< ?
@@ -103,6 +102,9 @@ public:
   //! element-type specific flag if second derivatives are needed
   static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
 
+  //! element-type specific flag if second derivatives are needed
+  static const bool use2ndderivReinitialization_ = SCATRA::Use2ndDerivsReinitialization<distype>::use;
+
   //! number of components necessary to store second derivatives
   // 1 component  for nsd=1:  (N,xx)
   // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
@@ -116,66 +118,10 @@ private:
   //! @name general framework
   /*========================================================================*/
 
-  //! Calculate matrix and rhs. Here the whole thing is hidden.
-  virtual void Sysmat(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    Epetra_SerialDenseVector&             subgrdiff, //!< subgrid-diff.-scaling vector
-    const double                          time,      //!< current simulation time
-    const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const double                          alphaF,    //!< factor for generalized-alpha time integration
-    const enum INPAR::SCATRA::AssgdType   whichassgd,//!< all-scale subgrid-diffusivity definition
-    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,//!< fine-scale subgrid-diffusivity definition
-    const bool                            assgd,     //!< all-scale subgrid-diff. flag
-    const bool                            fssgd,     //!< fine-scale subgrid-diff. flag
-    const double                          Cs,        //!< Smagorinsky constant
-    const double                          tpn,       //!< turbulent Prandtl number
-    const double                          Csgs_sgvel,//!< parameter of multifractal subgrid-scales (velocity)
-    const double                          alpha,     //!< grid-filter to test-filter ratio
-    const bool                            calc_N,    //!< flag to activate calculation of N
-    const double                          N_vel,     //!< value for N if not calculated
-    const enum INPAR::FLUID::RefVelocity  refvel,    //!< reference velocity
-    const enum INPAR::FLUID::RefLength    reflength, //!< reference length
-    const double                          c_nu,      //!< scaling for Re
-    const bool                            nwl,       //!< flag to activate near-wall limit
-    const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
-    const double                          c_diff,    //!< scaling for Re*Pr
-    const bool                            BD_gp,     //!< evaluation of model coefficient at gp
-    const double                          frt,       //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-  );
-
-  //! get the body force
-  virtual void BodyForce(
-    const DRT::Element*  ele, //!< the element we are dealing with
-    const double         time //!< current simulation time
-  );
-
   //! get the material parameters
   virtual void GetMaterialParams(
     const DRT::Element*                   ele,       //!< the element we are dealing with
     const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-  );
-
-  //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
-  virtual void CalMatAndRHS(
-    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
-    const double               fac,      //!< integration factor
-    const bool                 fssgd,    //!< fine-scale subgrid-diff. flag
-    const double               timefac,  //!< time discretization factor
-    const double               dt,       //!< current time-step length
-    const double               alphaF,   //!< factor for generalized-alpha time integration
-    const int                  k         //!< index of current scalar
-  );
-
-  //! integral of shape functions over the element
-  void IntegrateShapeFunctions(
-    const DRT::Element*                ele,    //!< the current element
-    Epetra_SerialDenseVector&          elevec1,//!< result vector (to be assembled)
-    const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
   );
 
   //! evaluate shape functions and their derivatives at current integration point
@@ -214,122 +160,9 @@ private:
     const LINALG::Matrix<nsd_,nen_>& derxy
   );
 
-  //! calculate mass matrix and rhs for determining initial time derivative
-  virtual void InitialTimeDerivative(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const double                          frt,       //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-  );
-
-  //! calculate mass matrix and rhs for determining initial time derivative
-  virtual void CalcInitialTimeDerivative(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-//    const double                          frt      //!< factor F/RT needed for ELCH calculations
-  );
-
-  //! calculate error compared to analytical solutions
-  virtual void CalErrorComparedToAnalytSolution(
-    const DRT::Element*          ele,                 //!< the element
-    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-    ParameterList&               params,              //!< parameter list
-    Epetra_SerialDenseVector&    errors               //!< computed error contributions
-  );
-
-  //! calculate flux vector for actual solution
-  virtual void CalculateFlux(
-    LINALG::Matrix<3,nen_>&         flux,     //!< flux to calculate
-    const DRT::Element*             ele,      //!< the element we are dealing with
-    const double                    frt,      //!< factor F/RT needed for ELCH calculations
-    const INPAR::SCATRA::FluxType   fluxtype, //!< type of flux to calculate
-    const int                       k,        //!< index of current scalar
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-  );
-
-  //! calculate scalars and domain integral
-  virtual void CalculateScalars(
-    const DRT::Element*       ele,      //!< the element we are dealing with
-    const vector<double>&     ephinp,   //!< current scalar field
-    Epetra_SerialDenseVector& scalars,  //!< vector for computed integrals
-    const bool                inverting //!< flag for invertuing
-  );
-
-   //! calculate domain and bodyforce integral
-  virtual void CalculateDomainAndBodyforce(
-    Epetra_SerialDenseVector&  scalars, //!< vector for the computed integrals
-    const DRT::Element*        ele,     //!< pointer to the element
-    const double               time     //!< current simulation time
-  );
-
-  //! Finite difference check for debugging purposes
-  void FDcheck(
-    DRT::Element*                         ele,          //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,         //!< element rhs to calculate
-    Epetra_SerialDenseVector&             subgrdiff,    //!< subgrid-diff.-scaling vector
-    const double                          time,         //!< current simulation time
-    const double                          dt,           //!< current time-step length
-    const double                          timefac,      //!< time discretization factor
-    const double                          alphaF,       //!< factor for generalized-alpha time integration
-    const enum INPAR::SCATRA::AssgdType   whichassgd,   //!< all-scale subgrid-diffusivity definition
-    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,   //!< fine-scale subgrid-diffusivity definition
-    const bool                            assgd,        //!< all-scale subgrid-diff. flag
-    const bool                            fssgd,        //!< fine-scale subgrid-diff. flag
-    const enum INPAR::FLUID::TurbModelAction turbmodel, //!< turbulence model action
-    const double                          Cs,           //!< Smagorinsky constant
-    const double                          tpn,          //!< turbulent Prandtl number
-    const double                          frt,          //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType  scatratype    //!< type of scalar transport problem
-  );
-
-
   /*========================================================================*/
   //! @name stabilization
   /*========================================================================*/
-
-  //! calculate normalized subgrid-diffusivity matrix
-  virtual void CalcSubgrDiffMatrix(
-    const DRT::Element*        ele,    //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&  emat,   //!< element matrix to calculate
-    const double               timefac //!< time discretization factor
-  );
-
-  //! update material parameters based on inclusion of subgrid-scale part of
-  //! scalar (only for special materials)
-  virtual void UpdateMaterialParams(
-    const DRT::Element*  ele,   //!< the element we are dealing with
-    const double         sgphi, //!< approximation of subgrid scalar
-    const int            k      //!< index of current scalar
-  );
-
-  //! calculate all-scale subgrid diffusivity
-  virtual void CalcSubgrDiff(  // ? subgrid = subgr or subgrid?
-    const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const enum INPAR::SCATRA::AssgdType   whichassgd,//!< all-scale subgrid-diffusivity definition
-    const bool                            assgd,     //!< all-scale subgrid-diff. flag
-    const double                          Cs,        //!< Smagorinsky constant
-    const double                          tpn,       //!< turbulent Prandtl number
-    const double                          vol,       //!< element volume
-    const int                             k          //!< index of current scalar
-  );
-
-  //! calculate fine-scale subgrid diffusivity
-  virtual void CalcFineScaleSubgrDiff(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseVector&             subgrdiff, //!< subgrid-diff.-scaling vector ?
-    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,//!< all-scale subgrid-diffusivity definition
-    const double                          Cs,        //!< Smagorinsky constant
-    const double                          tpn,       //!< turbulent Prandtl number
-    const double                          vol,       //!< element volume
-    const int                             k          //!< index of current scalar
-  );
 
   //! calculate stabilization parameter
   virtual void CalTau(
@@ -349,78 +182,131 @@ private:
     const double  vel_norm //!?
   );
 
-  //! calculate coefficients of mutifractal subgrid-scale modeling
-  virtual void CalcBAndDForMultifracSubgridScales(
-    LINALG::Matrix<nsd_,1>&               B_mfs,     //!< coefficient for fine-scale velocity (will be filled)
-    double &                              D_mfs,     //!< coefficient for fine-scale scalar (will be filled)
-    const double                          Csgs_sgvel,//!< parameter of multifractal subgrid-scales (velocity)
-    const double                          alpha,     //!< grid-filter to test-filter ratio
-    const bool                            calc_N,    //!< flag to activate calculation of N
-    const double                          N_vel,     //!< value for N if not calculated
-    const enum INPAR::FLUID::RefVelocity  refvel,    //!< reference velocity
-    const enum INPAR::FLUID::RefLength    reflength, //!< reference length
-    const double                          c_nu,      //!< scaling for Re
-    const bool                            nwl,       //!< flag to activate near-wall limit
-    const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
-    const double                          c_diff,    //!< scaling for Re*Pr
-    const double                          vol,       //!< volume of element
-    const int                             k          //!< index of current scalar
-  );
 
-  //! calculate subgrid-scale velocity
-  virtual void CalcSubgrVelocity(
+
+  /*========================================================================*/
+  //! @name expl. Taylor-Galerkin and impl. Characteristic Galerkin time integration
+  /*========================================================================*/
+
+  //! Calculate matrix and rhs. Here the whole thing is hidden.
+  virtual void Sysmat_Transport_TG(
     DRT::Element*                         ele,       //!< the element we are dealing with
-    const double                          time,      //!< current simulation time
+    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
     const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const int                             k,         //!< index of current scalar
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
+    const enum INPAR::SCATRA::TimeIntegrationScheme timealgo //!< time algorithm
   );
 
-
-  //! calculate residual of scalar transport equation and subgrid-scale part of scalar
-  virtual void CalcResidualAndSubgrScalar(
-    const double  dt,       //!< current time-step length
-    const double  timefac,  //!< time discretization factor
-    const int     k         //!< index of current scalar
+  //! calculate element matrix and rhs vector (implicit characteristic Galerkin method 2nd order)
+  virtual void CalMatAndRHS_Transport_ICG2(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
   );
 
-  //! calculate rate of strain of (fine-scale) velocity
-  inline double GetStrainRate(
-    const LINALG::Matrix<nsd_,nen_>& evel
+  //! calculate element matrix and rhs vector (TaylorGalerkin3)
+  virtual void CalMatAndRHS_Transport_TG3(
+    Epetra_SerialDenseMatrix&  emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector&  erhs,     //!< element rhs to calculate
+    const double               fac,      //!< integration factor
+    const int                  k,        //!< index of current scalar
+    DRT::Element*              ele,      //!< the element we are dealing with
+    const double               dt        //!< current time-step length
   );
 
 
   /*========================================================================*/
-  //! @name ELCH ?
+  //! @name Reinitialization (integrate element matrices and rhs)
   /*========================================================================*/
 
-  //! calculate element matrix and rhs vector (Electrochemistry problems)
-  virtual void CalMatElch(
-    Epetra_SerialDenseMatrix&    emat,   //!< element matrix to calculate
-    Epetra_SerialDenseVector&    erhs,   //!< element rhs to calculate
-    const double                 frt,    //!< factor F/RT needed for ELCH calculations
-    const double                 timefac,//!< time discretization factor
-    const double                 alphaF, //!< factor for gen. alpha time integration
-    const double                 fac,    //!< integration factor
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
+  //! evaluate shape functions and their derivatives at current integration point with second order derivatives
+  virtual double EvalShapeFuncAndDerivsAtIntPointREINIT(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
+    const int                                    iquad,     //!< id of current Gauss point
+    const int                                    eleid      //!< the element id
   );
 
-  //! calculate conductivity of electrolyte solution
-  void CalculateConductivity(
-    const DRT::Element*                  ele,        //!< the current element
-    const double                         frt,        //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType scatratype, //!< type of scalar transport problem
-    Epetra_SerialDenseVector&            sigma       //!< values for different conductivity expressions
+  //! calculate error for steady state check
+  virtual void CalErrorsReinitialization(
+    const DRT::Element*          ele,   //!< the element
+    ParameterList&               params //!< parameter list
   );
 
-  //! calculate el. potential field based on ion concentrations
-  void CalculateElectricPotentialField(
-    const DRT::Element*         ele,  //!<the current element
-    const double                frt,  //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-    Epetra_SerialDenseMatrix&   emat, //!< matrix (to be assembled)
-    Epetra_SerialDenseVector&   erhs  //!< rhs-vector (to be assembled)
+  //! calculate element matrix and rhs vector (One-Step-Theta)
+  virtual void CalMatAndRHS_REINIT_ICG2(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const double                          fac,                      //!< integration factor
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    double                                pseudo_timestep_size,     //!< pseudo time step size
+    double                                mesh_size,                //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,           //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit, //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,        //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType          //!< type of smoothing the sign function
+  );
+
+  //! calculate element matrix and rhs vector for the reinitialization equation (One-Step-Theta)
+  virtual void CalMatAndRHS_REINIT_OST(
+    Epetra_SerialDenseMatrix&             emat,                        //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                        //!< element rhs to calculate
+    const double                          fac,                         //!< integration factor
+    const int                             k,                           //!< index of current scalar
+    DRT::Element*                         ele,                         //!< the element we are dealing with
+    double                                pseudo_timestep_size_factor, //!< pseudo time step factor
+    double                                meshsize,                    //!< meshsize
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,              //!< penalty method to keep the interface the interface position
+    const double                          penalty_interface_reinit,    //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,           //!< epsilon bandwith for the smoothed sign function
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,            //!< type of smoothing the sign function
+    const bool                            shock_capturing,             //!< shock capturing switched on/off
+    const double                          shock_capturing_diffusivity, //!< shock capturing diffusivity
+    double                                timefac                      //!< time discretization factor
+  );
+
+  //! calculate element matrix and rhs vector for the intersection penalty method
+  virtual void CalMatAndRHS_REINIT_Penalty(
+    Epetra_SerialDenseMatrix&             emat,                     //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,                     //!< element rhs to calculate
+    const int                             k,                        //!< index of current scalar
+    DRT::Element*                         ele,                      //!< the element we are dealing with
+    const double                          penalty_interface_reinit  //!< penalty parameter to keep the interface position
+  );
+
+  //! calculate system matrix and rhs for the first order reinitialization equation based on an implicit characteristic Galerkin scheme
+  virtual void Sysmat_Reinit_TG(
+      DRT::Element*                         ele,                               //!< the element those matrix is calculated
+      Epetra_SerialDenseMatrix&             emat,                              //!< element matrix to calculate
+      Epetra_SerialDenseVector&             erhs,                              //!< element rhs to calculate
+      const bool                            reinitswitch,                      //!< flag if scatra object is a reinitializer
+      const double                          reinit_pseudo_timestepsize_factor, //!< pseudo timestep factor
+      const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< type of smoothed sign function
+      const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+      const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+      const double                          penalty_interface_reinit           //!< penalty parameter to keep the interface position
+  );
+
+  //! Calculate matrix and rhs for the reinitializaton equation based on standard OST time discretization
+  virtual void Sysmat_Reinit_OST(
+    DRT::Element*                         ele,           //!< the element we are dealing with
+    Epetra_SerialDenseMatrix&             emat,          //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,          //!< element rhs to calculate
+    const double                          dt,            //!< current time-step length
+    const double                          timefac,       //!< time discretization factor
+    const double                          meshsize,      //!< meshsize
+    const bool                            reinitswitch,  //!< flag if scatra object is a reinitialization object
+    const double                          reinit_pseudo_timestepsize_factor, //!< pseudo time step factor
+    const INPAR::SCATRA::SmoothedSignType smoothedSignType,                  //!< type of smoothed sign function
+    const INPAR::SCATRA::PenaltyMethod    penalty_method,                    //!< penalty method to keep the interface position
+    const double                          penalty_interface_reinit,          //!< penalty parameter to keep the interface position
+    const double                          epsilon_bandwidth,                 //!< epsilon bandwith
+    const bool                            shock_capturing,                   //!< shockcapturing operator turned on/off
+    const double                          shock_capturing_diffusivity,       //!< shockcapturing diffusivity
+    const enum INPAR::SCATRA::ScaTraType  scatratype                         //!< type of scalar transport problem
   );
 
   /*========================================================================*/
@@ -519,21 +405,6 @@ private:
 
   //! gradient of phi at global time for reinitialization(initialization for pseudo time loop)
   LINALG::Matrix<nsd_,1> grad_phi_0;
-
-  /*========================================================================*/
-  //! @name potential (ELCH)
-  /*========================================================================*/
-
-  //! values of all transported scalars in gausspoint (ELCH)
-  vector<double> conint_;
-
-  //! electric potential
-  LINALG::Matrix<nen_,1> epotnp_;
-  //! magnetic field at t_(n+1)
-  LINALG::Matrix<nsd_,nen_> emagnetnp_;
-
-  //! (global) gradient of el. potential at integration point
-  LINALG::Matrix<nsd_,1> gradpot_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related
@@ -684,7 +555,7 @@ private:
 
 
 
-}; // end class DRT::ELEMENTS::ScaTraImpl
+}; // end class DRT::ELEMENTS::ReInitImpl
 
 } // end namespace ELEMENTS
 } // end namespace DRT

@@ -25,6 +25,7 @@ Maintainer: Benedikt Schott
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_scatra/scatra_ele_action.H"
 
 
 
@@ -198,7 +199,7 @@ double COMBUST::ReinitializationPDE::EvaluateGradientNormError()
   ParameterList p;
 
   // parameters for the elements
-  p.set("action","calc_error_reinit");
+  p.set<int>("action",SCATRA::calc_error_reinit);
 
   //    p.set("scatratype",scatratype_);
   // set type of scalar transport problem

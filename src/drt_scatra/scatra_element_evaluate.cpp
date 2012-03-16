@@ -13,6 +13,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_element.H"
 #include "../drt_scatra/scatra_ele_impl.H"
+#include "scatra_ele_action.H"
 
 
 /*----------------------------------------------------------------------*
@@ -33,13 +34,19 @@ int DRT::ELEMENTS::Transport::Evaluate(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 
-  // all physics-related stuff is included in the implementation class that can
-  // be used in principle inside any element (at the moment: only Transport element)
-  // If this element has special features/ methods that do not fit in the
-  // generalized implementation class, you have to do a switch here in order to
-  // call element-specific routines
+  // based on the following flag we decide which element implementation class
+  // we want to access below
+  bool tg_or_reinit(false);
+  // check for the action parameter
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  if ((action == SCATRA::calc_TG_mat_and_rhs)   or
+      (action == SCATRA::reinitialize_levelset) or
+      (action == SCATRA::calc_error_reinit))
+  {tg_or_reinit=true;}
 
-  return DRT::ELEMENTS::ScaTraImplInterface::Impl(this,scatratype)->Evaluate(
+  // all physics-related stuff is included in the implementation class(es) that can
+  // be used in principle inside any element (at the moment: only Transport element)
+  return DRT::ELEMENTS::ScaTraImplInterface::Impl(this,scatratype,tg_or_reinit)->Evaluate(
       this,
       params,
       discretization,
@@ -58,8 +65,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
  |  do nothing (public)                                        gjb 01/09|
  |                                                                      |
  |  The function is just a dummy. For the transport elements, the       |
- |  integration of the volume neumann (body forces) loads takes place   |
- |  in the element. We need it there for the stabilisation terms!       |
+ |  integration of the volume Neumann (body forces) loads takes place   |
+ |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::EvaluateNeumann(ParameterList& params,
     DRT::Discretization&      discretization,
