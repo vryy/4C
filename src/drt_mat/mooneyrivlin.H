@@ -140,7 +140,7 @@ private:
     Parameters are c_1, c_2 and kappa as penalty factor to effectuate incompressibility
     (shear modulus mu = (c1 + c2) / 2)
 
-    Note that this special form is stress-free in reference configuration iff lambda == 0.0
+    Note that this special form is stress-free in reference configuration if lambda == 0.0
     (See Holzapfel for discussion with d = 2 c_1 + 4 c_2)
     */
     void Evaluate(

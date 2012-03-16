@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupNeoHooke C 1 KAPPA 1
+  MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
 
 <pre>
 Maintainer: Sophie Rausch
@@ -31,7 +31,7 @@ MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(
   youngs_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE"))
 {
-  // Material Constants c1 and beta
+  // Material Constants c and beta
   c_ = youngs_/(4.0*(1.0+nue_));
   beta_ = nue_/(1.0-2.0*nue_);
 }
