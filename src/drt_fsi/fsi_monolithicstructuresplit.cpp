@@ -1060,20 +1060,23 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
   double cc = 0.0;
   double dd = 1.0;
 
-  // compute the product S_{\Gamma I} \Delta d_I
-  Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
+  // store the prodcut S_{\GammaI} \Delta d_I^{n+1} in here
+  Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true);
+  // compute the above mentioned product
   (sgipre_->EpetraMatrix())->Multiply(false, *ddiinc_, *sgiddi);
 
-  // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
-  Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true); // store the prodcut '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
+  // store the prodcut \Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
+  Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true);
+  // compute the above mentioned product
   (sggpre_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
 
   // Update the Lagrange multiplier:
   /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
    *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
    */
-  lambda_->Update(1.0, *fgpre_, -aa/bb);
+  lambda_->Update(1.0, *fgpre_, -aa);
   lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
+  lambda_->Scale(1/bb); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
 
   return;
 }
