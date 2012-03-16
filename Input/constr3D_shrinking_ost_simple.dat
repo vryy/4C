@@ -46,10 +46,6 @@ RESTARTEVRY                     2
 TIMESTEP                        0.005
 NUMSTEP                         20
 MAXTIME                         1000.0
-BETA                            0.44444444444//0.308641975
-GAMMA                           0.83333333333//0.611111111
-ALPHA_M                         0.//0.333333333
-ALPHA_F                         0.3333333333333//0.444444444
 DAMPING                         No
 M_DAMP                          100.0
 K_DAMP                          0.0
@@ -75,10 +71,10 @@ ALPHA_F 0.3333333333333 //0.444444444
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.7
 -------------------------------------------------------MESHTYING AND CONTACT
-LINEAR_SOLVER                   2      // constraint simpler primary solver block
-SIMPLER_SOLVER                  3      // constraint simpler secondary solver block 
---------------------------------------------------------------SOLVER 2
-NAME                            Contact LINEAR solver (used for constraint simpler)
+LINEAR_SOLVER                   2                               // constraint simpler primary solver block
+SIMPLER_SOLVER                  3                               // constraint simpler secondary solver block
+--------------------------------------------------------------------SOLVER 2
+NAME Contact LINEAR solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -113,8 +109,8 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          Aztec_MSR
----------------------------------------------------------------SOLVER 1
-NAME                            Struct Solver
+--------------------------------------------------------------------SOLVER 1
+NAME Struct Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -149,8 +145,8 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          Aztec_MSR
--------------------------------------------------------SOLVER 3
-NAME                            Contact SIMPLER solver (used for constraint simpler)
+--------------------------------------------------------------------SOLVER 3
+NAME Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
