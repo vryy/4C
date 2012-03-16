@@ -60,13 +60,11 @@ MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup1Pow::AddCoefficientsPrincipal(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   const double c = params_ -> c_;
   const    int d = params_ -> d_;

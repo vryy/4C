@@ -42,12 +42,11 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_mat/material.H"
-#include "../drt_mat/lung_ogden.H"
-#include "../drt_mat/lung_penalty.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/viscogenmax.H"
 #include "../linalg/linalg_utils.H"
 
 
@@ -603,24 +602,6 @@ void STR::InvAnalysis::ReadInParameters()
       {
         switch(material->Type())
         {
-        case INPAR::MAT::m_lung_penalty:
-        {
-          const MAT::PAR::LungPenalty* params = dynamic_cast<const MAT::PAR::LungPenalty*>(material->Parameter());
-          int j = p_.Length();
-          p_.Resize(j+3);
-          p_(j)   = params->c_;
-          p_(j+1) = params->k1_;
-          p_(j+2) = params->k2_;
-        }
-        case INPAR::MAT::m_lung_ogden:
-        {
-          const MAT::PAR::LungOgden* params = dynamic_cast<const MAT::PAR::LungOgden*>(material->Parameter());
-          int j = p_.Length();
-          p_.Resize(j+3);
-          p_(j)   = params->c_;
-          p_(j+1) = params->k1_;
-          p_(j+2) = params->k2_;
-        }
         case INPAR::MAT::m_elasthyper:
         {
           // Create a pointer on the Material
@@ -896,23 +877,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
       if (mymatset.size()==0 or mymatset.find(material->Id())!=mymatset.end())
       {
-        if (material->Type() == INPAR::MAT::m_lung_penalty)
-        {
-          MAT::PAR::LungPenalty* params = dynamic_cast<MAT::PAR::LungPenalty*>(material->Parameter());
-
-          params->SetC(abs(p_cur(0)));
-          params->SetK1(abs(p_cur(1)));
-          params->SetK2(abs(p_cur(2)));
-        }
-        else if (material->Type() == INPAR::MAT::m_lung_ogden)
-        {
-          MAT::PAR::LungOgden* params = dynamic_cast<MAT::PAR::LungOgden*>(material->Parameter());
-
-          params->SetC(abs(p_cur(0)));
-          params->SetK1(abs(p_cur(1)));
-          params->SetK2(abs(p_cur(2)));
-        }
-        else if (material->Type() == INPAR::MAT::m_elasthyper)
+        if (material->Type() == INPAR::MAT::m_elasthyper)
         {
           MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(material->Parameter());
           const int nummat               = params->nummat_;

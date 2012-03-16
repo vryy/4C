@@ -59,14 +59,11 @@ MAT::ELASTIC::IsoQuad::IsoQuad(MAT::ELASTIC::PAR::IsoQuad* params)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoQuad::AddCoefficientsModified(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
   const LINALG::Matrix<3,1>& modinv
   )
 {
-  havecoefficients = havecoefficients or true;
-
   const double c = params_ -> c_;
 
   //

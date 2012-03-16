@@ -16,6 +16,8 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
@@ -53,6 +55,12 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
   {
     MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     visco->Setup(NUMGPT_SOH20);
+    break;
+  }
+  case INPAR::MAT::m_viscogenmax:
+  {
+    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(Material().get());
+    viscogenmax->Setup(NUMGPT_SOH20,linedef);
     break;
   }
   case INPAR::MAT::m_charmm:

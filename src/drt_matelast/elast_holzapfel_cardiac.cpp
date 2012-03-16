@@ -68,13 +68,11 @@ MAT::ELASTIC::Holzapfel_Cardiac::Holzapfel_Cardiac(MAT::ELASTIC::PAR::Holzapfel_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Holzapfel_Cardiac::AddCoefficientsModified(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     )
 {
-  havecoefficients = havecoefficients or true;
 
   double A=params_->A_;
   double B=params_->B_;
@@ -88,13 +86,11 @@ void MAT::ELASTIC::Holzapfel_Cardiac::AddCoefficientsModified(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Holzapfel_Cardiac::AddCoefficientsPrincipalAniso(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<15,1>& delta,
   const LINALG::Matrix<6,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   double A4=params_->A4_;
   double B4=params_->B4_;

@@ -60,13 +60,11 @@ MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBath
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::VolSussmanBathe::AddCoefficientsModified(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
   const LINALG::Matrix<3,1>& modinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   const double kappa = params_ -> kappa_;
 

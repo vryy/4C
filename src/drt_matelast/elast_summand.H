@@ -142,7 +142,6 @@ namespace MAT
       /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
       ///\f]
       virtual void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<8,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
@@ -150,27 +149,25 @@ namespace MAT
 
       /// for special type of patient-specific AAA ilt material
       virtual void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<8,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-	double normdist  ///< AAA specific stuff from PATSPEC: normalized ILT thickness
+        double normdist  ///< AAA specific stuff from PATSPEC: normalized ILT thickness
         )
       {
-	havecoefficients = havecoefficients or false;
+        return ;
       };
 
       /// For HU dependent material (Hounsfield Units - form medical images)
       virtual void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-	double HU, ///< Hounsfield units (HU) of the respective element
-	int HUlumen, ///< maximum Hounsfield unit (HU) in the lumen
+        double HU, ///< Hounsfield units (HU) of the respective element
+        int HUlumen, ///< maximum Hounsfield unit (HU) in the lumen
         LINALG::Matrix<3,1>& gamma,  ///< same as for AddCoefficientsPrincipal()
         LINALG::Matrix<8,1>& delta,  ///< dito
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
         )
       {
-	havecoefficients = havecoefficients or false;
+        return ;
       };
 
 
@@ -238,7 +235,6 @@ namespace MAT
       /// \bar\delta_5 = \tilde{p} = J \frac{\partial^2 \Psi_{vol}}{\partial J^2} + p
       ///\f]
       virtual void AddCoefficientsModified(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<5,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
@@ -351,11 +347,10 @@ namespace MAT
       ///
       /// Due [2] the anisotropic part will \bold(not) be calculated via the decoupling
       virtual void AddCoefficientsPrincipalAniso(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-        LINALG::Matrix<3,1>& gamma,  ///< see above
-        LINALG::Matrix<15,1>& delta,  ///< see above
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-      ) = 0;
+          LINALG::Matrix<3,1>& gamma,  ///< see above
+          LINALG::Matrix<15,1>& delta,  ///< see above
+          const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
+          ) = 0;
 
       // Since in the paper of Sansour is deducted that the decoupling of the anisotropic part should be avoided the corresponding parts of the code are commented
       // virtual void AddCoefficientsModifiedAniso(
@@ -427,9 +422,12 @@ namespace MAT
         return;  // do nothing
       }
 
-      /// Indicator for anisotropic summand
-      virtual void IsAnisotropic(
-        bool& isaniso ///< global indicator for anisotropy
+      /// Indicator for the chosen formulations
+      virtual void SpecifyFormulation(
+          bool& isoprinc_, ///< global indicator for anisotropy
+          bool& isomod_, ///< global indicator for anisotropy
+          bool& anisoprinc_, ///< global indicator for anisotropy
+          bool& anisomod_ ///< global indicator for anisotropy
         ) = 0;
 
     private:

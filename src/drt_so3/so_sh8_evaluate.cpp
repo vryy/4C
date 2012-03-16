@@ -27,6 +27,8 @@ Maintainer: Moritz Frenzel
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_potential/drt_potential_manager.H"
@@ -314,6 +316,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
       {
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
@@ -351,6 +358,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
       {
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
@@ -383,6 +395,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Reset();
       }
       else if (mat->MaterialType()== INPAR::MAT::m_aaaraghavanvorp_damage)
       {

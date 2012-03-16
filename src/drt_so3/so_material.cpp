@@ -46,10 +46,10 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/yeoh.H"
-#include "../drt_mat/lung_penalty.H"
-#include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/viscogenmax.H"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/biocell.H"
@@ -57,7 +57,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/itskov.H"
 #include "../drt_mat/protein.H"
-#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
@@ -194,22 +193,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       *density = logneo->Density();
       break;
     }
-    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
-    {
-      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
-      lungog->Evaluate(glstrain,cmat,stress);
-      *density = lungog->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
-    {
-      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
-
-      lungpen->Evaluate(glstrain,cmat,stress);
-
-      *density = lungpen->Density();
-      break;
-    }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -226,6 +209,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       //visco->UpdateFiberDirs(gp,defgrd);
       *density = visco->Density();
+      break;
+    }
+    case INPAR::MAT::m_viscogenmax: /*------- Viscous Generalized Maxwell model compatible with hyperelastic toolbox  */
+    {
+      MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+      viscogenmax->Evaluate(*glstrain,*cmat,*stress,gp,params);
+      *density = viscogenmax->Density();
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -687,22 +677,6 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       *density = logneo->Density();
       break;
     }
-    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
-    {
-      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
-      lungog->Evaluate(glstrain,cmat,stress);
-      *density = lungog->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
-    {
-      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
-
-      lungpen->Evaluate(glstrain,cmat,stress);
-
-      *density = lungpen->Density();
-      break;
-    }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
     {
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
@@ -887,22 +861,6 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       *density = logneo->Density();
       break;
     }
-    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
-    {
-      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
-      lungog->Evaluate(glstrain,cmat,stress);
-      *density = lungog->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
-    {
-      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
-
-      lungpen->Evaluate(glstrain,cmat,stress);
-
-      *density = lungpen->Density();
-      break;
-    }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -915,6 +873,13 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
+      break;
+    }
+    case INPAR::MAT::m_viscogenmax: /*------- Viscous Generalized Maxwell model compatible with hyperelastic toolbox  */
+    {
+      MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+      viscogenmax->Evaluate(*glstrain,*cmat,*stress,gp,params);
+      *density = viscogenmax->Density();
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1088,22 +1053,6 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       *density = logneo->Density();
       break;
     }
-    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
-    {
-      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
-      lungog->Evaluate(glstrain,cmat,stress);
-      *density = lungog->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
-    {
-      MAT::LungPenalty* lungpen = static_cast <MAT::LungPenalty*>(mat.get());
-
-      lungpen->Evaluate(glstrain,cmat,stress);
-
-      *density = lungpen->Density();
-      break;
-    }
     case INPAR::MAT::m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -1116,6 +1065,13 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
+      break;
+    }
+    case INPAR::MAT::m_viscogenmax: /*------- Viscous Generalized Maxwell model compatible with hyperelastic toolbox  */
+    {
+      MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+      viscogenmax->Evaluate(*glstrain,*cmat,*stress,gp,params);
+      *density = viscogenmax->Density();
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
@@ -1278,22 +1234,6 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
       logneo->Evaluate(*glstrain,*cmat,*stress);
       *density = logneo->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_ogden: /* lung tissue material with Ogden for volumetric part */
-    {
-      MAT::LungOgden* lungog = static_cast <MAT::LungOgden*>(mat.get());
-      lungog->Evaluate(glstrain,cmat,stress);
-      *density = lungog->Density();
-      break;
-    }
-    case INPAR::MAT::m_lung_penalty: /* lung tissue material with penalty function for incompressibility constraint */
-    {
-      MAT::LungPenalty* lungpen= static_cast <MAT::LungPenalty*>(mat.get());
-
-      lungpen->Evaluate(glstrain,cmat,stress);
-
-      *density = lungpen->Density();
       break;
     }
     case INPAR::MAT::m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */

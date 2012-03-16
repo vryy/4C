@@ -22,6 +22,8 @@ Maintainer: Thomas Kloeppel
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -309,6 +311,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -331,6 +338,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -352,6 +364,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Reset();
       }
     }
     break;

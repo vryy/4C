@@ -52,8 +52,6 @@ Maintainer: Lena Wiechert
 #include "modpowerlaw.H"
 #include "yoghurt.H"
 #include "permeablefluid.H"
-#include "lung_penalty.H"
-#include "lung_ogden.H"
 #include "matlist.H"
 #include "biocell.H"
 #include "ion.H"
@@ -62,6 +60,7 @@ Maintainer: Lena Wiechert
 #include "itskov.H"
 #include "protein.H"
 #include "elasthyper.H"
+#include "viscogenmax.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
 #include "holzapfelcardiovascular.H"
@@ -148,20 +147,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::MicroMaterial(curmat));
     MAT::PAR::MicroMaterial* params = static_cast<MAT::PAR::MicroMaterial*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_lung_penalty:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::LungPenalty(curmat));
-    MAT::PAR::LungPenalty* params = static_cast<MAT::PAR::LungPenalty*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_lung_ogden:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::LungOgden(curmat));
-    MAT::PAR::LungOgden* params = static_cast<MAT::PAR::LungOgden*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_anisotropic_balzani:
@@ -400,6 +385,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ElastHyper(curmat));
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_viscogenmax:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ViscoGenMax(curmat));
+    MAT::PAR::ViscoGenMax* params = static_cast<MAT::PAR::ViscoGenMax*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_structporo:

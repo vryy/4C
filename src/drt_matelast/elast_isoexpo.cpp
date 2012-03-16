@@ -62,13 +62,11 @@ MAT::ELASTIC::IsoExpo::IsoExpo(MAT::ELASTIC::PAR::IsoExpo* params)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoExpo::AddCoefficientsModified(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
   const LINALG::Matrix<3,1>& modinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   const double k1 = params_ -> k1_;
   const double k2 = params_ -> k2_;

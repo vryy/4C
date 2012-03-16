@@ -66,13 +66,11 @@ MAT::ELASTIC::CoupAnisoExpoTwo::CoupAnisoExpoTwo(MAT::ELASTIC::PAR::CoupAnisoExp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwo::AddCoefficientsPrincipalAniso(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<15,1>& delta,
   const LINALG::Matrix<6,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   double k1=params_->k1_;
   double k2=params_->k2_;

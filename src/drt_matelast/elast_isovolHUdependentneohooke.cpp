@@ -65,7 +65,6 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
-  bool& havecoefficients,
   double HU,
   int HUlumen,
   LINALG::Matrix<3,1>& gamma,
@@ -73,8 +72,6 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
-
   double alpha = 0.;
   
   //if HU is smaller than the threshold for calcification or smaller than

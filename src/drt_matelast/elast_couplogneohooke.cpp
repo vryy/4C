@@ -93,13 +93,11 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = true;
 
    // determinant of deformation gradient
   const double logdetf = std::log(std::sqrt(prinv(2)));

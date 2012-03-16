@@ -61,13 +61,11 @@ MAT::ELASTIC::IsoYeoh::IsoYeoh(MAT::ELASTIC::PAR::IsoYeoh* params)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoYeoh::AddCoefficientsModified(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
   const LINALG::Matrix<3,1>& modinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;

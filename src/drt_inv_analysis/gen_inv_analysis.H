@@ -42,6 +42,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/viscogenmax.H"
 #include "../drt_matelast/elast_summand.H"
 
 

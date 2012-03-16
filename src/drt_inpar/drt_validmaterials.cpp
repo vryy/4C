@@ -930,42 +930,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // Lung Ogden
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_LungOgden",
-                                            "lung Ogden",
-                                            INPAR::MAT::m_lung_ogden));
-
-    AddNamedReal(m,"C","???");
-    AddNamedReal(m,"K1","???");
-    AddNamedReal(m,"K2","???");
-    AddNamedReal(m,"KAPPA","???");
-    AddNamedReal(m,"BETA","???");
-    AddNamedReal(m,"DENS","???");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // Lung penalty
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_LungPenalty",
-                                            "lung penalty",
-                                            INPAR::MAT::m_lung_penalty));
-
-    AddNamedReal(m,"C","???");
-    AddNamedReal(m,"K1","???");
-    AddNamedReal(m,"K2","???");
-    AddNamedReal(m,"EPSILON","???");
-    AddNamedReal(m,"GAMMA","???");
-    AddNamedReal(m,"DENS","???");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // Anisotropic Polyconvex Material Law based on Balzani et. al.
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -1142,6 +1106,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENS","material mass density");
     AddNamedReal(m,"GAMMA","fiber angle");
     // optional
+    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement", -1, true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Generalized Maxwell Model compatible with elasthyper
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ViscoGenMax",
+                                            "Generalized Maxwell model compatible with the collection of hyperelastic materials",
+                                            INPAR::MAT::m_viscogenmax));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+    AddNamedReal(m,"GAMMA","fiber angle");
+    AddNamedReal(m,"RELAX","relaxation time");
+    AddNamedReal(m,"BETA","ratio between the two brances of the generalized maxwell model");
+    // optional
+//    AddNamedReal(m,"THETA","time integration factor (theta=0.5 by default)", 0.5, true);
     AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement", -1, true);
 
     AppendMaterialDefinition(matlist,m);

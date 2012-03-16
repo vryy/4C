@@ -76,8 +76,6 @@ namespace INPAR
       m_interf_therm, ///< themodyn. based interface elasto-damage surface material
       m_dam_mp,       ///< isotropic damage model -> mazars/pijadier-cabot
       m_damage_ge,    ///< isotropic gradient enhanced damage model
-      m_lung_penalty, ///< lung tissue material with penalty function for incompressibility constraint
-      m_lung_ogden,   ///< lung tissue material with compressible Ogden for volumetric part
       m_itskov,       ///< hyperelastic polyconvex energy strain function following Itskov
       m_quadratic_aniso, ///< hyperelastic polyconvex energy strain function following Itskov
       m_anisotropic_balzani,  ///< anisotropic polyconvex material
@@ -98,6 +96,7 @@ namespace INPAR
       m_logneohooke,   ///< logarithmic Neo-Hooke material
       m_protein,        ///< CHARMm API to compute proteins
       m_elasthyper,    ///< collection of hyperelastic materials
+      m_viscogenmax,    ///< generalized Maxell model compatible with the collection of hyperelastic materials
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand

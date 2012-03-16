@@ -26,6 +26,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 using namespace std; // cout etc.
@@ -185,6 +187,11 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
     }
     break;
 
@@ -202,6 +209,11 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
     }
     break;
 
@@ -218,6 +230,11 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Reset();
       }
     }
     break;

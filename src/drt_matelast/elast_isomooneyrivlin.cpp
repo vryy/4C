@@ -62,13 +62,11 @@ MAT::ELASTIC::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELASTIC::PAR::IsoMooneyRivli
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoMooneyRivlin::AddCoefficientsModified(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<5,1>& delta,
   const LINALG::Matrix<3,1>& modinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;

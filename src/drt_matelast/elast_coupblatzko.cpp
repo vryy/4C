@@ -65,13 +65,11 @@ MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupBlatzKo::AddCoefficientsPrincipal(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   // material parameters for isochoric part
   const double mue  = params_->mue_;  // Shear modulus

@@ -119,7 +119,6 @@ namespace ELASTIC
     /// Add principal coeffiencts.
     /// Nothing to do for this (decoupled) material!
     void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
@@ -130,7 +129,6 @@ namespace ELASTIC
 
     /// Add modified coeffiencts.
     void AddCoefficientsModified(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
@@ -142,7 +140,6 @@ namespace ELASTIC
     /// Add anisotropic principal coeffiencts.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
@@ -157,12 +154,15 @@ namespace ELASTIC
 
     //@}
 
-    /// Indicator for anisotropic summand
-    virtual void IsAnisotropic(
-      bool& isaniso ///< global indicator for anisotropy
+    /// Indicator for formulation
+    virtual void SpecifyFormulation(
+        bool& isoprinc, ///< global indicator for isotropic principal formulation
+        bool& isomod, ///< global indicator for isotropic splitted formulation
+        bool& anisoprinc, ///< global indicator for anisotropic principal formulation
+        bool& anisomod ///< global indicator for anisotropic splitted formulation
       )
     {
-      isaniso = true;
+      anisoprinc = true;
       return;
     };
 

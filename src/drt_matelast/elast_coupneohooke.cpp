@@ -63,13 +63,11 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddCoefficientsPrincipal(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   gamma(0) += 2.*params_->c_;
   gamma(2) -= 2.*params_->c_*pow(prinv(2),-params_->beta_);

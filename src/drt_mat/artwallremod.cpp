@@ -69,6 +69,7 @@ DRT::ParObject* MAT::ArtWallRemodType::Create( const std::vector<char> & data )
 MAT::ArtWallRemod::ArtWallRemod()
   : params_(NULL)
 {
+  dserror("This material law - ARTWALLREMOD - is not maintained anymore.");
   isinit_=false;
   gamma_ = rcp(new vector<double>);
   lambda_ = rcp(new vector<vector<double> >);
@@ -86,6 +87,7 @@ MAT::ArtWallRemod::ArtWallRemod()
 MAT::ArtWallRemod::ArtWallRemod(MAT::PAR::ArtWallRemod* params)
   : params_(params)
 {
+  dserror("This material law - ARTWALLREMOD - is not maintained anymore.");
 }
 
 

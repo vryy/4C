@@ -37,6 +37,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/viscogenmax.H"
 #include "../drt_mat/yeoh.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/elasthyper.H"
@@ -409,6 +410,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast<MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
       {
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
@@ -455,6 +461,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast<MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
       {
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
@@ -495,6 +506,11 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       {
         MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(mat.get());
         visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
+      {
+        MAT::ViscoGenMax* viscogenmax = static_cast<MAT::ViscoGenMax*>(mat.get());
+        viscogenmax->Reset();
       }
       else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
       {
@@ -2314,6 +2330,12 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     MAT::ViscoNeoHooke* visconeo = static_cast <MAT::ViscoNeoHooke*>(Material().get());
     return visconeo->ShearMod();
+    break;
+  }
+  case INPAR::MAT::m_viscogenmax: /*-----------Viscous Generalized Maxwell model compatible with hyperelastic toolbox */
+  {
+    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(Material().get());
+    return viscogenmax->ShearMod();
     break;
   }
   case INPAR::MAT::m_logneohooke: /*-----------Logarithmus naturalis neo-Hookean Material */

@@ -199,82 +199,161 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElastHyper( *this ) ); }
 
     /// number of materials
-    int NumMat() const { return params_->nummat_; }
+    virtual int NumMat() const { return params_->nummat_; }
 
     /// deliver material ID of index i'th potential summand in collection
-    int MatID(
+    virtual int MatID(
       const unsigned index  ///< index i
       ) const;
 
     /// provide access to material by its ID
-    Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
+    virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
 
     /// material mass density
     virtual double Density() const { return params_->density_; }
 
     /// a shear modulus equivalent
-    double ShearMod() const;
+    virtual double ShearMod() const;
 
     /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(
+    virtual void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain
       LINALG::Matrix<6,6>& cmat,  ///< elasticity matrix
       LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
       );
 
-    /// hyperelastic stress response plus elasticity tensor (Epetra-type interface)
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                  Epetra_SerialDenseMatrix* cmat_e,
-                  Epetra_SerialDenseVector* stress_e);
+//    /// hyperelastic stress response plus elasticity tensor (Epetra-type interface)
+//    virtual void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+//                  Epetra_SerialDenseMatrix* cmat_e,
+//                  Epetra_SerialDenseVector* stress_e);
 
-    void Setup(DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
     /// setup patient-specific AAA stuff
-    void SetupAAA(Teuchos::ParameterList& params);
+    virtual void SetupAAA(Teuchos::ParameterList& params);
 
-    /// return if anisotropic
-    bool Anisotropic() const { return anisotropic_;}
+    /// return if isotropic not splitted formulation
+    virtual bool IsotropicPrincipal() const { return isoprinc_;}
+
+    /// return if isotropic and splitted formulation
+    virtual bool IsotropicModified() const { return isomod_;}
+
+    /// return if anisotropic not splitted formulation
+    virtual bool AnisotropicPrincipal() const { return anisoprinc_;}
+
+    /// return if anisotropic and splitted formulation
+    virtual bool AnisotropicModified() const { return anisomod_;}
 
     /// return a1s
-    LINALG::Matrix<3,1> Geta1() const {return a1_;}
+    virtual LINALG::Matrix<3,1> Geta1() const {return a1_;}
 
     /// return a2s
-    LINALG::Matrix<3,1> Geta2() const {return a2_;}
+    virtual LINALG::Matrix<3,1> Geta2() const {return a2_;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
+
+
+//  private:
+  protected:
+    /// calculates the kinematic quantities and tensors used afterwards
+    virtual void EvaluateKinQuant(
+      const LINALG::Matrix<6,1>& glstrain,
+      LINALG::Matrix<6,1>& id2,
+      LINALG::Matrix<6,1>& scg,
+      LINALG::Matrix<6,1>& rcg,
+      LINALG::Matrix<6,1>& icg,
+      LINALG::Matrix<6,6>& id4,
+      LINALG::Matrix<6,6>& id4sharp,
+      LINALG::Matrix<3,1>& prinv,
+      LINALG::Matrix<3,1>& modinv,
+      LINALG::Matrix<6,1>& pranisoinv);
+
+    /// calculates the factors associated to the hyperelastic laws
+    virtual void EvaluateGammaDelta(
+        const LINALG::Matrix<6,1> rcg,
+        LINALG::Matrix<3,1> prinv,
+        LINALG::Matrix<3,1> modinv,
+        LINALG::Matrix<6,1> pranisoinv,
+        LINALG::Matrix<3,1>& gamma,
+        LINALG::Matrix<8,1>& delta,
+        LINALG::Matrix<3,1>& modgamma,
+        LINALG::Matrix<5,1>& moddelta,
+        LINALG::Matrix<3,1>& anisogamma,
+        LINALG::Matrix<15,1>& anisodelta
+        );
+
+
+    /// calculates the isotropic stress and elasticity tensor for coupled configuration
+    virtual void EvaluateIsotropicPrinc(
+        LINALG::Matrix<6,1>& stressisoprinc,
+        LINALG::Matrix<6,6>& cmatisoprinc,
+        LINALG::Matrix<6,1> scg,
+        LINALG::Matrix<6,1> id2,
+        LINALG::Matrix<6,1> icg,
+        LINALG::Matrix<6,6> id4sharp,
+        LINALG::Matrix<3,1> gamma,
+        LINALG::Matrix<8,1> delta
+        );
+
+    /// calculates the isotropic stress and elasticity tensor for decoupled configuration
+    virtual void EvaluateIsotropicMod(
+        LINALG::Matrix<6,1>& stressisomodiso,
+        LINALG::Matrix<6,1>& stressisomodvol,
+        LINALG::Matrix<6,6>& cmatisomodiso,
+        LINALG::Matrix<6,6>& cmatisomodvol,
+        LINALG::Matrix<6,1> rcg,
+        LINALG::Matrix<6,1> id2,
+        LINALG::Matrix<6,1> icg,
+        LINALG::Matrix<6,6> id4,
+        LINALG::Matrix<6,6> id4sharp,
+        LINALG::Matrix<3,1> modinv,
+        LINALG::Matrix<3,1> prinv,
+        LINALG::Matrix<3,1> modgamma,
+        LINALG::Matrix<5,1> moddelta
+        );
+
+    /// calculates the anisotropic stress and elasticity tensor for coupled configuration
+    virtual void EvaluateAnisotropicPrinc(
+        LINALG::Matrix<6,1>& stressanisoprinc,
+        LINALG::Matrix<6,6>& cmatanisoprinc,
+        LINALG::Matrix<6,1> scg,
+        LINALG::Matrix<6,1> id2,
+        LINALG::Matrix<6,1> icg,
+        LINALG::Matrix<3,1> anisogamma,
+        LINALG::Matrix<15,1> anisodelta
+        );
 
     /// calculate principal invariants
-    void InvariantsPrincipal(
+    virtual void InvariantsPrincipal(
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
 
     /// calculate principal invariants
-    void InvariantsPrincipalAniso(
-      LINALG::Matrix<6,1>& prinv,  ///< principal invariants
-      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
+    virtual void InvariantsPrincipalAniso(
+        LINALG::Matrix<6,1>& pranisoinv, ///< principal invariants
+        const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+        );
 
     /// calculate modified invariants
-    void InvariantsModified(
+    virtual void InvariantsModified(
       LINALG::Matrix<3,1>& modinv,  ///< modified invariants
       const LINALG::Matrix<3,1>& prinv  ///< principal invariants
       );
 
     /// calculate principal stretches \f$\lambda_\alpha\f$ and material principal directions
     void StretchesPrincipal(
-      LINALG::Matrix<3,1>& prstr,  ///< principal stretches
-      LINALG::Matrix<3,3>& prdir,  ///< principal directions, stored col-by-col
-      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
+     LINALG::Matrix<3,1>& prstr,  ///< principal stretches
+     LINALG::Matrix<3,3>& prdir,  ///< principal directions, stored col-by-col
+     const LINALG::Matrix<6,1>& rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+
 
     /// calculate modified principal stretches \f$\bar{\lambda}_\alpha\f$
     void StretchesModified(
-      LINALG::Matrix<3,1>& modstr,  ///< modified principal stretches
-      const LINALG::Matrix<3,1>& prstr  ///< principal stretches
-      );
+     LINALG::Matrix<3,1>& modstr,  ///< modified principal stretches
+     const LINALG::Matrix<3,1>& prstr  ///< principal stretches
+     );
 
     /// determine if at least one summand uses principal stretches
     bool HaveCoefficientsStretchesPrincipal();
@@ -346,19 +425,23 @@ private:
     ///
     /// \author bborn
     /// \date 08/09
-    void ResponseStretches(
-      LINALG::Matrix<6,6>& cmat,  ///< material elasticity matrix
-      LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
-      const LINALG::Matrix<6,1>& rcg,  ///< right Cauchy-Green strain vector
-      const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
-      const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
-      );
+
+    virtual void ResponseStretches(
+    LINALG::Matrix<6,6>& cmat,  ///< material elasticity matrix
+    LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
+    const LINALG::Matrix<6,1> rcg,  ///< Right Cauchy-Green tensor
+    const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
+    const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
+    );
 
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
 
-    /// Am I anisotropic?
-    bool anisotropic_;
+    /// Flags to specify the formulations
+    bool isoprinc_;
+    bool isomod_;
+    bool anisoprinc_ ;
+    bool anisomod_ ;
 
     /// information about HU from medical image data?
     double HU_;
@@ -366,6 +449,40 @@ private:
 
     /// for Gasser AAA-ILT material
     double normdist_;
+
+    /// Kinematic and tensor quantities
+//    LINALG::Matrix<6,1> id2_;
+//    LINALG::Matrix<6,1> scg_;
+//    LINALG::Matrix<6,1> rcg_;
+//    LINALG::Matrix<6,1> icg_;
+//    LINALG::Matrix<6,6> id4_;
+//    LINALG::Matrix<6,6> id4sharp_;
+
+//    /// principal invariants
+//    LINALG::Matrix<3,1> prinv_;
+//
+//    /// modified invariants
+//    LINALG::Matrix<3,1> modinv_;
+//
+//    /// principal anisotropic invariants
+//    LINALG::Matrix<6,1> pranisoinv_;
+
+    /// principal coefficients
+    LINALG::Matrix<3,1> gamma_;
+    LINALG::Matrix<5,1> delta_;
+
+    /// modified coefficients
+    LINALG::Matrix<3,1> modgamma_;
+    LINALG::Matrix<5,1> moddelta_;
+
+    /// principal anisotropic coefficients
+    LINALG::Matrix<3,1> anisogamma_;
+    LINALG::Matrix<5,1> anisodelta_;
+
+    /// variable to decide which formulations are used
+//    bool havecoeffprinc_ ;
+//    bool havecoeffmodi_ ;
+//    bool havecoeffpraniso_ ;
 
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;

@@ -15,6 +15,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_lib/drt_linedefinition.H"

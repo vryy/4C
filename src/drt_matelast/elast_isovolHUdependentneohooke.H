@@ -112,20 +112,18 @@ namespace ELASTIC
     /// Add principal coefficients.
     /// Nothing to do for this material if no HUs!
     void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     )
     {
-      havecoefficients = havecoefficients or false;
+      return;
     };
 
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
     void AddCoefficientsPrincipal(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-	double HU,   ///< the element Hounsfield Unit
-	int HUlumen, ///< the maximum HU within the lumen
+        double HU,   ///< the element Hounsfield Unit
+        int HUlumen, ///< the maximum HU within the lumen
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
@@ -133,26 +131,24 @@ namespace ELASTIC
 
     /// Add modified coefficients.
     void AddCoefficientsModified(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     )
     {
-      havecoefficients = havecoefficients or false;
+      return;
     };
 
 
     /// Add anisotropic principal coefficients.
     /// Nothing to do for this (isotropic) material!
     void AddCoefficientsPrincipalAniso(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
     )
     {
-      havecoefficients = havecoefficients or false;
+      return;
     };
 
     /// @name Access methods
@@ -173,11 +169,15 @@ namespace ELASTIC
     void SetBETA(const double beta) { params_->beta_ = beta; }
     //@}
 
-    /// Indicator for anisotropic summand
-    virtual void IsAnisotropic(
-      bool& isaniso ///< global indicator for anisotropy
-      )
+    /// Indicator for formulation
+    virtual void SpecifyFormulation(
+        bool& isoprinc, ///< global indicator for isotropic principal formulation
+        bool& isomod, ///< global indicator for isotropic splitted formulation
+        bool& anisoprinc, ///< global indicator for anisotropic principal formulation
+        bool& anisomod ///< global indicator for anisotropic splitted formulation
+        )
     {
+      isoprinc = true;
       return;
     };
 

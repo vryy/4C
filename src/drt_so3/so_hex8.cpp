@@ -556,7 +556,7 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
   {
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    if (elahy->Anisotropic())
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
     {
       string fiber = "Fiber1";
       names[fiber] = 3; // 3-dim vector
@@ -853,7 +853,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
   {
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    if (elahy->Anisotropic())
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
     {
       if (name == "Fiber1")
       {

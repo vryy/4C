@@ -1,0 +1,191 @@
+/*!----------------------------------------------------------------------
+\file viscopolyC20compressible.H
+\brief
+
+<pre>
+Maintainer: Aline Brunon
+            brunon@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+*----------------------------------------------------------------------*/
+#ifndef VISCOPOLYC20COMPRESSIBLE_H_
+#define VISCOPOLYC20COMPRESSIBLE_H_
+#ifdef CCADISCRET
+
+#include "material.H"
+#include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+using namespace Teuchos;
+
+namespace MAT
+{
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ViscoPolyC20Compressible : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ViscoPolyC20Compressible(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ViscoPolyC20Compressible() { ; }
+
+      /// @name material parameters
+      //@{
+      const double youngs_slow_;
+      const double poisson_;
+      const double density_;
+      const double youngs_fast_;
+      const double relax_;
+      const double theta_;
+      //@}
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+    };  // class ViscoPolyC20Compressible
+
+  }  // namespace PAR
+
+class ViscoPolyC20CompressibleType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ViscoPolyC20CompressibleType"; }
+
+  static ViscoPolyC20CompressibleType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ViscoPolyC20CompressibleType instance_;
+};
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for Visco-NeoHooke Compressible material
+  class ViscoPolyC20Compressible : public Material
+  {
+  public:
+
+    /// construct empty material object
+    ViscoPolyC20Compressible();
+
+    /// construct the material object given material parameters
+    explicit ViscoPolyC20Compressible(MAT::PAR::ViscoPolyC20Compressible* params);
+
+    //! @name Packing and Unpacking
+
+    /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    virtual int UniqueParObjectId() const { return ViscoPolyC20CompressibleType::Instance().UniqueParObjectId(); }
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique parobject id delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+      This material contains history variables, which are packed for restart purposes.
+
+      \param data (in/out): char vector to store class information
+    */
+    virtual void Pack(DRT::PackBuffer& data) const;
+
+    /*!
+      \brief Unpack data from a char vector into this class
+
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+      History data is unpacked in restart.
+
+      \param data (in) : vector storing all data to be unpacked into this
+      instance.
+    */
+    virtual void Unpack(const vector<char>& data);
+
+    //@}
+
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscopolyC20compressible; }
+
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoPolyC20Compressible( *this ) ); }
+
+    /// Initialize internal stress variables
+    void Setup
+    (
+      const int numgp  ///< number of Gauss points
+    );
+
+    /// Update internal stress variables
+    void Update();
+
+    /// Reset internal stress variables
+    void Reset();
+
+    /// Evaluate material
+    void Evaluate
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,   ///< current Gauss point
+      Teuchos::ParameterList& params,  ///< parameter list for communication
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+    );
+
+    /// Return density
+    virtual double Density() const {return params_->density_;}
+
+    /// Return shear modulus
+    double ShearMod() const {return 0.5*params_->youngs_slow_/(1.0+params_->poisson_);};
+
+    /// Check if history variables are already initialized
+    bool Initialized() const
+      { return isinit_&&(histstresscurr_!=Teuchos::null);
+        return isinit_&&(histstressvolcurr_!=Teuchos::null);}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+  private:
+
+    /// my material parameters
+    MAT::PAR::ViscoPolyC20Compressible* params_;
+
+    /// visco history stresses
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressvolcurr_; ///< current stress
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressvollast_; ///< stress of last converged state
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressvolcurr_;  ///< current artificial stress
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressvollast_;  ///< artificial stress in last converged state
+
+    bool isinit_;  ///< indicates if #Initialized routine has been called
+
+  };
+}
+
+#endif /*CCADISCRET*/
+#endif /*VISCOPOLYC20COMPRESSIBLE_H_*/

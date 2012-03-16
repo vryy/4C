@@ -64,13 +64,11 @@ MAT::ELASTIC::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(MAT::ELASTIC::PAR::Coup
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHookeTwo::AddCoefficientsPrincipalAniso(
-  bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<15,1>& delta,
   const LINALG::Matrix<6,1>& prinv
   )
 {
-  havecoefficients = havecoefficients or true;
 
   double c1=params_->c1_;
   double c2=params_->c2_;

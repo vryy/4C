@@ -59,6 +59,7 @@ DRT::ParObject* MAT::MooneyRivlinType::Create( const std::vector<char> & data )
 MAT::MooneyRivlin::MooneyRivlin()
   : params_(NULL)
 {
+  dserror("This material law - MOONEY-RIVLIN - is a special form.\n If you want the regular form of the Mooney-Rivlin form, use the hyperelastic toolbox");
 }
 
 
@@ -68,6 +69,7 @@ MAT::MooneyRivlin::MooneyRivlin()
 MAT::MooneyRivlin::MooneyRivlin(MAT::PAR::MooneyRivlin* params)
   : params_(params)
 {
+  dserror("This material law - MOONEY-RIVLIN - is not maintained anymore.");
 }
 
 

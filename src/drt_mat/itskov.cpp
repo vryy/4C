@@ -72,6 +72,7 @@ DRT::ParObject* MAT::ItskovType::Create( const std::vector<char> & data )
 MAT::Itskov::Itskov()
   : params_(NULL)
 {
+  dserror("This material law - ITSKOV - is not maintained anymore.");
 }
 
 
@@ -79,6 +80,7 @@ MAT::Itskov::Itskov()
 MAT::Itskov::Itskov(MAT::PAR::Itskov* params)
   : params_(params)
 {
+  dserror("This material law - ITSKOV - is not maintained anymore.");
 }
 
 /*----------------------------------------------------------------------*/
