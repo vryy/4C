@@ -79,7 +79,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
   Analyse_SingleField("(a)",myrank,"ALE",anlevel,aparams,Aaa,Paa,Raa,abest);
 
 
-#if 1
   //---------------------------------------- run analysis of BGS(AMG)
   // which is called PreconditionedKrylov in our input file
   Analyse_BGSAMG(myrank,sbest,fbest,abest,
@@ -87,11 +86,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
                  Aff,Pff,Rff,
                  Aaa,Paa,Raa,
                  Asf,Afs,Afa,Aaf);
-#endif  
-  
 
-
-#if 1
   //---------------------------------------- run analysis of AMG(BGS)
   // which is called FSIAMG in our input file
   Analyse_AMGBGS(myrank,sbest,fbest,abest,
@@ -99,9 +94,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
                  Aff,Pff,Rff,
                  Aaa,Paa,Raa,
                  Asf,Afs,Afa,Aaf);
-#endif  
-
-
 
   exit(EXIT_SUCCESS);
   

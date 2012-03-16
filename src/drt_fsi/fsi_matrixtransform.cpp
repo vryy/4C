@@ -323,33 +323,6 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
 }
 
 
-#if 0
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool
-FSI::UTILS::MatrixColTransform::operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
-                                           const LINALG::SparseMatrix& src,
-                                           double scale,
-                                           const ADAPTER::CouplingConverter& converter,
-                                           LINALG::SparseMatrix& dst,
-                                           bool exactmatch,
-                                           bool addmatrix)
-{
-  SetupGidMap(fullsrc.FullRowMap(),fullsrc.FullColMap(),converter,src.Comm());
-
-  if (not addmatrix)
-    dst.Zero();
-
-  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
-  Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
-
-  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix,scale);
-
-  return true;
-}
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool

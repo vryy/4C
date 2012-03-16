@@ -550,7 +550,6 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
 
   }
 
-#if 1
   // very simple hack just to see the linear solution
 
   Epetra_Vector r(b.Map());
@@ -596,7 +595,6 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
                  << END_COLOR "\n";
 
   Utils()->out().flags(flags);
-#endif
 }
 
 

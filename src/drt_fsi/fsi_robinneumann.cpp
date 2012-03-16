@@ -96,19 +96,6 @@ Teuchos::RCP<Epetra_Vector> FSI::RobinNeumann::InitialGuess()
 }
 
 
-#if 0
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double FSI::RobinNeumann::InterfaceForceNormF::computeNorm(const NOX::Abstract::Group& grp)
-{
-  Teuchos::RCP<Epetra_Vector> iforce = algorithm_.StructureField().ExtractInterfaceForces();
-  iforce->Update(-1.,*algorithm_.iforcen_,1.);
-
-  return FSI::GenericNormF::computeNorm(*iforce);
-}
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void
@@ -117,14 +104,6 @@ FSI::RobinNeumann::CreateStatusTest(ParameterList& nlParams,
                                     Teuchos::RCP<NOX::StatusTest::Combo> converged)
 {
   FSI::Partitioned::CreateStatusTest(nlParams,grp,converged);
-
-#if 0
-  Teuchos::RCP<FSI::RobinNeumann::InterfaceForceNormF> absforce =
-    Teuchos::rcp(new FSI::RobinNeumann::InterfaceForceNormF(*this,
-                                                            "interface force",
-                                                            nlParams.get("Norm abs F", 1.0e-6)));
-  converged->addStatusTest(absforce);
-#endif
 }
 
 #endif

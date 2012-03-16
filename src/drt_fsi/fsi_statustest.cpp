@@ -93,27 +93,6 @@ double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
   return norm;
 }
 
-
-#if 0
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void NOX::FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
-{
-  NOX::Abstract::Group::ReturnType rtype;
-  rtype = initialGuess.computeF();
-  if (rtype != NOX::Abstract::Group::Ok)
-  {
-    utils.err() << "NOX::StatusTest::NormF::NormF - Unable to compute F"
-		<< endl;
-    throw "NOX Error";
-  }
-
-  initialTolerance_ = computeNorm(initialGuess);
-  trueTolerance_ = specifiedTolerance_ / initialTolerance_;
-}
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType

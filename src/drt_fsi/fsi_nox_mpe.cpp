@@ -17,16 +17,11 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Time.h>
 
-// debug output
-#if 1
-
 #include <Epetra_Vector.h>
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-
-#endif
 
 
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::Utils>& utils,
@@ -219,28 +214,6 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
 
   // set direction from original position
   dir.update(1., s, -1., x, 0.);
-
-#if 0
-  {
-    static int step;
-    ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_" << step << ".mpe";
-    cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
-    step += 1;
-
-    ofstream out(filename.str().c_str());
-    s.print(out);
-    dir.print(out);
-#if 0
-    for (int j=0; j<k; ++j)
-    {
-      q[j]->print(out);
-    }
-    out << r;
-#endif
-  }
-#endif
 
   return true;
 }

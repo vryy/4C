@@ -179,15 +179,6 @@ namespace FSI
                     bool exactmatch=true,
                     bool addmatrix=false);
 
-#if 0
-    bool operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
-                    const LINALG::SparseMatrix& src,
-                    double scale,
-                    const ::ADAPTER::CouplingConverter& converter,
-                    LINALG::SparseMatrix& dst,
-                    bool exactmatch=true,
-                    bool addmatrix=false);
-#endif
 
     /// setup column map matching between source and destination gids
     /*!

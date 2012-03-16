@@ -247,28 +247,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
                                                           linearsolverstrategy_,
                                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
-  break;
-#if 0 // no longer in use
-  case INPAR::FSI::PreconditionedKrylov:
-    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
-                                                          pcdbg_,
-                                                          Extractor(),
-                                                          StructureField(),
-                                                          FluidField(),
-                                                          AleField(),
-                                                          true,
-                                                          DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                                          pcomega[0],
-                                                          pciter[0],
-                                                          spcomega[0],
-                                                          spciter[0],
-                                                          fpcomega[0],
-                                                          fpciter[0],
-                                                          apcomega[0],
-                                                          apciter[0],
-                                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
-  break;
-#endif
+    break;
   default:
     dserror("Unsupported type of monolithic solver");
   break;
@@ -705,7 +684,6 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
 
   }
 
-#if 1
   // very simple hack just to see the linear solution
 
   Epetra_Vector r(b.Map());
@@ -746,7 +724,6 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
                  << END_COLOR "\n";
 
   Utils()->out().flags(flags);
-#endif
 }
 
 
@@ -823,12 +800,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
-#if 0
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(
-#else
-    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
-#endif
-                                                               printParams,
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
                                                                J,

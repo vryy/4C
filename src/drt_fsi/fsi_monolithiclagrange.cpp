@@ -312,8 +312,6 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
                    ::ADAPTER::CouplingSlaveConverter(*icoupfa_), // converter
                    mat.Matrix(2,1));  // dst
 
-#if 1
-
   // lagrangian coupling matrices
   mat.Matrix(3,0).Add(*coupsf.MasterToMasterMat(),false,1.0,0.0);
   mat.Matrix(3,1).Add(*coupsf.SlaveToMasterMat() ,false,-1./timescale,0.0);
@@ -322,16 +320,6 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   mat.Matrix(0,3).Add(*coupsf.MasterToMasterMatTrans(),false,1.0,0.0);
   mat.Matrix(1,3).Add(*coupsf.SlaveToMasterMatTrans(),false,-1./resscale,0.0);
   //mat.Matrix(1,3).Add(*coupsf.SlaveToMasterMatTrans() ,false,-1.,0.0);
-
-#else
-
-  Epetra_Vector v(*Extractor().Map(3));
-  v.PutScalar(1.);
-  LINALG::SparseMatrix d(v);
-  d.Complete();
-  mat.Matrix(3,3).Add(d,false,1.0,0.0);
-
-#endif
 
   // add optional fluid linearization with respect to mesh motion block
   if (mmm != Teuchos::null)

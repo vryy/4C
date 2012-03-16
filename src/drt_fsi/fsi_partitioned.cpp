@@ -88,23 +88,6 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
-
-#if 0
-  // create connection graph of interface elements
-  Teuchos::RCP<Epetra_Map> imap = StructureField().InterfaceMap();
-
-  vector<int> rredundant;
-  DRT::UTILS::AllreduceEMap(rredundant, *imap);
-
-  rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*imap,12));
-  for (int i=0; i<imap->NumMyElements(); ++i)
-  {
-    int err = rawGraph_->InsertGlobalIndices(imap->GID(i),rredundant.size(),&rredundant[0]);
-    if (err < 0)
-      dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
-  }
-  rawGraph_->FillComplete();
-#endif
 }
 
 
@@ -619,12 +602,9 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
     }
     else
     {
-      // there are different linear solvers available
-#if 0
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, iJac, J, noxSoln));
-#else
-      linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
-#endif
+
+    linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
+
     }
   }
 

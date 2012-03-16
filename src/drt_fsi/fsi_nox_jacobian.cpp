@@ -16,14 +16,6 @@
 #include <NOX_Utils.H>
 
 
-// debug output
-#if 0
-
-#include "../drt_lib/standardtypes_cpp.H"
-
-#include "../drt_io/io_control.H"
-#endif
-
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
                                        const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
                                        const NOX::Epetra::Vector& x) :
@@ -127,22 +119,6 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   // scale back
   //nevY.update(xscale, perturbY, 0.0);
   nevY.update(1., perturbY, 0.0);
-
-  // debug output
-#if 0
-  {
-    static int step;
-    ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_" << step << ".fsi";
-    cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
-    step += 1;
-
-    ofstream out(filename.str().c_str());
-    perturbX.print(out);
-    perturbY.print(out);
-  }
-#endif
 
   return 0;
 }

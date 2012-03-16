@@ -208,19 +208,6 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
-#if 0
-  // Dump solution of linear system
-#ifdef HAVE_NOX_DEBUG
-#ifdef HAVE_NOX_EPETRAEXT
-  if (p.get("Write Linear System", false)) {
-    std::string lhsFileName = prefixName + "_LHS_" + postfixName;
-    EpetraExt::MultiVectorToMatrixMarketFile(lhsFileName.c_str(),
-					   result.getEpetraVector());
-  }
-#endif
-#endif
-#endif
-
   double endTime = timer.WallTime();
   timeApplyJacbianInverse += (endTime - startTime);
 

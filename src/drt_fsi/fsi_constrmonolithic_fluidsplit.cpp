@@ -313,7 +313,6 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
 
-#if 1
     LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
@@ -335,7 +334,6 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                      mat.Matrix(0,0),
                      false,
                      true);
-#endif
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.

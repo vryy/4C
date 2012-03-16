@@ -16,9 +16,6 @@
 
 #include "../drt_lib/drt_colors.H"
 
-// debug output
-#if 1
-
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
@@ -26,8 +23,6 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-
-#endif
 
 
 NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils,
@@ -90,7 +85,6 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
   }
 
   // write omega
-#if 1
   double fnorm = oldgrp.getF().norm();
   if (dynamic_cast<const NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm().MyPID()==0)
   {
@@ -109,7 +103,6 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
     count += 1;
     out->flush();
   }
-#endif
 
   return true;
 }

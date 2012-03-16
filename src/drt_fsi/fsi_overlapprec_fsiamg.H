@@ -73,7 +73,6 @@ namespace FSI
                          const int level);
 
 
-#if 1 // no longer in use
     /// generic Vcycle that works on all fields
     virtual void Vcycle(const int level,
                      const int nlevel,
@@ -84,10 +83,8 @@ namespace FSI
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R,
                      const bool trigger = false) const;
-#endif
 
 
-#if 1 // no longer in use
     /// FSIAMG multigrid with explicit coarse off-diagonals
     virtual void ExplicitBlockVcycle(const int level,
                      const int nlevel,
@@ -97,9 +94,8 @@ namespace FSI
                      const MLAPI::MultiVector& mlsx,
                      const MLAPI::MultiVector& mlfx,
                      const MLAPI::MultiVector& mlax) const;
-#endif
 
-#if 1 // no longer in use
+
     /// block Gauss-Seidel smoother within one level (explicit off-diagonals)
     virtual void ExplicitBlockGaussSeidelSmoother(
                      const int level,
@@ -110,9 +106,8 @@ namespace FSI
                      const MLAPI::MultiVector& mlfx,
                      const MLAPI::MultiVector& mlax,
                      const bool amgsolve) const;
-#endif
 
-#if 1 // no longer in use
+
     /// iterate on the field individual blocks within the block Gauss Seidel smoother
     virtual void LocalBlockRichardson(
                      const int iterations,
@@ -127,7 +122,7 @@ namespace FSI
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R
                      ) const;
-#endif
+
 
     /// triple matrix product with fine level operator only
     void RAPfine(MLAPI::Operator& RAP,

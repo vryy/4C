@@ -831,28 +831,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPfine(
   // take ownership of coarse operator
   RAP.Reshape(P.GetDomainSpace(),R.GetRangeSpace(),mlRBP,true);
 
-#if 0 // compare explicit <-> implicit coarse operator on a vector
-  MLAPI::Space dspace(Btrans->DomainMap());
-  MLAPI::Space rspace(Btrans->RangeMap());
-  MLAPI::Operator mlapiBtrans;
-  mlapiBtrans.Reshape(dspace,rspace,Btrans,false);
-
-
-  MLAPI::MultiVector in(P.GetDomainSpace(),1,true);
-  in = 1.0;
-
-  MLAPI::MultiVector outRBP;
-  outRBP = RAP * in;
-  cout << outRBP;
-
-  MLAPI::MultiVector outR_B_P;
-  MLAPI::MultiVector tmp;
-  tmp = P * in;
-  tmp = mlapiBtrans * tmp;
-  outR_B_P = R * tmp;
-  cout << outR_B_P;
-#endif
-
   return;
 }
 
@@ -913,28 +891,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(
   tmp.Reshape(domain,range,mat,false);
   S.Reshape(prec,tmp,false);
 
-
-#if 0 // debug testing only
-  MLAPI::MultiVector invec(S.GetDomainSpace(),1,true);
-  MLAPI::MultiVector outvec(S.GetRangeSpace(),1,true);
-  invec = 1.0;
-  S.Apply(invec,outvec);
-  cout << outvec;
-  MLAPI::Space foolr(mat->OperatorRangeMap());
-  MLAPI::Space foold(mat->OperatorDomainMap());
-  MLAPI::Operator foolop;
-  foolop.Reshape(foold,foolr,mat,false);
-  MLAPI::InverseOperator foolinvop;
-  foolinvop.Reshape(prec,foolop,false);
-  MLAPI::MultiVector invec2(foolinvop.GetDomainSpace(),1,true);
-  MLAPI::MultiVector outvec2(foolinvop.GetRangeSpace(),1,true);
-  invec2 = 1.0;
-  foolinvop.Apply(invec,outvec2);
-  cout << outvec2;
-  exit(0);
-#endif
-
-
   return;
 }
 
@@ -981,7 +937,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type,
   return;
 }
 
-#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
@@ -1074,12 +1029,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
 
   return;
 }
-#endif
 
-
-
-
-#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
@@ -1149,9 +1099,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
 
   return;
 }
-#endif
 
-#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
@@ -1191,109 +1139,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
 
   return;
 }
-#endif
-
-#if 0 // no longer in use
-/*----------------------------------------------------------------------*
-strongly coupled AMG-Block-Gauss-Seidel
- *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::SGS(
-                 const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
-
-  // rewrap the matrix every time as Uli shoots them irrespective
-  // of whether the precond is reused or not.
-  {
-    MLAPI::Space dspace(Matrix(0,0).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(0,0).EpetraMatrix()->RangeMap());
-    Ass_[0].Reshape(dspace,rspace,Matrix(0,0).EpetraMatrix().get(),false);
-  }
-  {
-    MLAPI::Space dspace(Matrix(0,1).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(0,1).EpetraMatrix()->RangeMap());
-    Asf_.Reshape(dspace,rspace,Matrix(0,1).EpetraMatrix().get(),false);
-    ASF_[0] = Asf_;
-  }
-  {
-    MLAPI::Space dspace(Matrix(1,0).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(1,0).EpetraMatrix()->RangeMap());
-    Afs_.Reshape(dspace,rspace,Matrix(1,0).EpetraMatrix().get(),false);
-    AFS_[0] = Afs_;
-  }
-  {
-    MLAPI::Space dspace(Matrix(1,1).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(1,1).EpetraMatrix()->RangeMap());
-    Aff_[0].Reshape(dspace,rspace,Matrix(1,1).EpetraMatrix().get(),false);
-  }
-  {
-    MLAPI::Space dspace(Matrix(1,2).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(1,2).EpetraMatrix()->RangeMap());
-    Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
-    AFA_[0] = Afa_;
-  }
-  if (structuresplit_)
-  {
-    MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
-    Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
-    AAF_[0] = Aaf_;
-  }
-  else
-  {
-    MLAPI::Space dspace(Matrix(2,0).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(2,0).EpetraMatrix()->RangeMap());
-    Aaf_.Reshape(dspace,rspace,Matrix(2,0).EpetraMatrix().get(),false);
-    AAF_[0] = Aaf_;
-  }
-  {
-    MLAPI::Space dspace(Matrix(2,2).EpetraMatrix()->DomainMap());
-    MLAPI::Space rspace(Matrix(2,2).EpetraMatrix()->RangeMap());
-    Aaa_[0].Reshape(dspace,rspace,Matrix(2,2).EpetraMatrix().get(),false);
-  }
-
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-
-  // various range and domain spaces
-  MLAPI::Space rsspace(Matrix(0,0).RangeMap());
-  MLAPI::Space rfspace(Matrix(1,1).RangeMap());
-  MLAPI::Space raspace(Matrix(2,2).RangeMap());
-
-  MLAPI::Space dsspace(Matrix(0,0).DomainMap());
-  MLAPI::Space dfspace(Matrix(1,1).DomainMap());
-  MLAPI::Space daspace(Matrix(2,2).DomainMap());
-
-  // initial guess
-  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
-  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
-  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
-  MLAPI::MultiVector mlsy(rsspace,sy->Pointers());
-  MLAPI::MultiVector mlfy(rfspace,fy->Pointers());
-  MLAPI::MultiVector mlay(raspace,ay->Pointers());
-
-  // rhs
-  Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
-  Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
-  Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
-  MLAPI::MultiVector mlsx(dsspace,sx->Pointers());
-  MLAPI::MultiVector mlfx(dfspace,fx->Pointers());
-  MLAPI::MultiVector mlax(daspace,ax->Pointers());
-
-
-  // run FSIAMG
-  ExplicitBlockVcycle(0,minnlevel_,mlsy,mlfy,mlay,mlsx,mlfx,mlax);
-
-
-  // Note that mlsy, mlfy, mlay are views of sy, fy, ay, respectively.
-  RangeExtractor().InsertVector(*sy,0,y);
-  RangeExtractor().InsertVector(*fy,1,y);
-  RangeExtractor().InsertVector(*ay,2,y);
-}
-
-
-#else
-
 
 /*----------------------------------------------------------------------*
 strongly coupled AMG-Block-Gauss-Seidel
@@ -1526,15 +1371,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
   return;
 }
-#endif
 
-
-
-
-
-
-
-#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
@@ -1590,7 +1427,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
 
   return;
 }
-#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

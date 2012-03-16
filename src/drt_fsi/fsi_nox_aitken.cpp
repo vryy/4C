@@ -13,17 +13,12 @@
 
 #include "../drt_lib/drt_colors.H"
 
-// debug output
-#if 1
-
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-
-#endif
 
 NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                              Teuchos::ParameterList& params)
@@ -76,25 +71,11 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
                   << "-- Aitken Line Search -- \n";
   }
 
-  // debug output
-#if 0
-  {
-    static int step;
-    ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_" << step << ".aitken.QR";
-    step += 1;
-
-    ofstream out(filename.str().c_str());
-    ::FSI::UTILS::MGS(s.getPreviousSolutionGroup(), dir, 10, out);
-  }
-#endif
-
   const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   const NOX::Abstract::Vector& F = oldGrp.getF();
 
   // turn off switch
-#if 1
+
   if (is_null(del_))
   {
     del_  = F.clone(ShapeCopy);
@@ -111,9 +92,6 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   nu_ = nu_ + (nu_ - 1.)*top/den;
   step = 1. - nu_;
-#else
-  step = 1.;
-#endif
 
   utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
 
@@ -136,7 +114,6 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   }
 
   // write omega
-#if 1
   double fnorm = grp.getF().norm();
   if (dynamic_cast<const NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID()==0)
   {
@@ -155,23 +132,6 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     count += 1;
     out->flush();
   }
-#endif
-
-  // debug output
-#if 0
-  {
-    static int step;
-    ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_" << step << ".aitken.X";
-    step += 1;
-
-    ofstream out(filename.str().c_str());
-    dir.print(out);
-    //oldGrp.getX().print(out);
-    //grp.getX().print(out);
-  }
-#endif
 
   return true;
 }

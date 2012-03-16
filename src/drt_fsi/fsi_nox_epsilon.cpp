@@ -14,12 +14,6 @@
 
 #include <vector>
 
-// debug output
-#if 0
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#endif
-
 NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                                Teuchos::ParameterList& params)
   : utils_(utils)
@@ -144,28 +138,6 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
   {
     dir.update(1., *epslist[indm-1], -1., x, 0.);
   }
-
-#if 0
-  {
-    static int step;
-    ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename << filebase << "_" << step << ".epsilon";
-    cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
-    step += 1;
-
-    ofstream out(filename.str().c_str());
-    s.print(out);
-    dir.print(out);
-#if 0
-    for (int j=0; j<k; ++j)
-    {
-      q[j]->print(out);
-    }
-    out << r;
-#endif
-  }
-#endif
 
   return true;
 }
