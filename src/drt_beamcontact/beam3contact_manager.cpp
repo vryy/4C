@@ -285,7 +285,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // forces will be stored in 'fc_', the previous ones in 'fcold_'. An
   // update method at the end of each time step manages the data transfer
   // from 'fc_' to 'fcold_'. This update method is called by the time
-  // integration class 'beam3contactstrugenalpha'.
+  // integration class.
   //**********************************************************************
   
   // initialize global contact force vectors
