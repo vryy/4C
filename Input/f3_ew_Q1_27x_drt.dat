@@ -1,3 +1,15 @@
+
+//
+// Maintainer: Peter Gamnitzer
+// gamnitzer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/Members/gammi
+// 089 - 289 - 15235
+//
+// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 einheitswuerfel
 ----------------------------------------------------------------PROBLEM SIZE
@@ -46,6 +58,7 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
+//SOLVER                        UMFPACK
 SOLVER                          Aztec_MSR
 AZSOLVE                         GMRES
 AZPREC                          ILU
@@ -67,6 +80,7 @@ NDLINE                          12
 NDSURF                          6
 NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          8
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
@@ -77,6 +91,7 @@ E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           12
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
@@ -91,6 +106,7 @@ E 10 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 11 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 12 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           5
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
@@ -98,18 +114,25 @@ E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 5 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
 E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE TYPE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
 DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 28 DNODE 1
@@ -438,6 +461,7 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 0.0 100.
 FLUID DIS 1 NODE 24 POSITION velx NAME velx VALUE 1.388476136e-01 TOLERANCE 2e-6
 FLUID DIS 1 NODE 24 POSITION vely NAME vely VALUE -5.863184398e-03 TOLERANCE 2e-6
 FLUID DIS 1 NODE 24 POSITION velz NAME velz VALUE -5.863184398e-03 TOLERANCE 2e-6
+//FLUID DIS 1 NODE 24 POSITION pressure NAME pressure VALUE 0.6468909190327041 TOLERANCE 2e-6
 FLUID DIS 1 NODE 24 POSITION pressure NAME pressure VALUE 6.322274587e-01 TOLERANCE 2e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

@@ -45,6 +45,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -64,6 +65,7 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       Yes
 -------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
@@ -75,13 +77,12 @@ COUPLING_AUXPLANE               Yes
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------CONTACT SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
 SOLVER                          UMFPACK
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         40
 NDLINE                          76

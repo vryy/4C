@@ -18,7 +18,6 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------------------ALE SOLVER
 ----------------------------------------------------------COMBUSTION CONTROL
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -41,42 +40,8 @@ PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
----------------------------------------------------------------STRUCT SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
@@ -139,6 +104,42 @@ STEPSIZEMIN                     0
 TREE_TYPE                       octree3d
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      1
+IFPACKGFILL                     0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 0.5 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1

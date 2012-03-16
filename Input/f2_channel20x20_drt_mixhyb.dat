@@ -1,3 +1,15 @@
+//
+// Maintainer: Peter Gamnitzer
+// gamnitzer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 / 289 15235
+//
+// necessary defines: D_FLUID2 RESULTTEST DEBUG CCADISCRET BINIO
+//
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 dRIVEN_cAVITY_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -27,11 +39,11 @@ THETA                           0.66
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
+-------------------------------------------------FLUID DYNAMIC/STABILIZATION
+EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
-EVALUATION_TAU                  integration_point
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
@@ -39,10 +51,18 @@ NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
+//E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
+//E 4 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//E 1 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//E 3 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
 -------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
 DLINE                           4
+//E 1 - 1.0 0.0 0.0 1 none none 0 0 0
 E 1 - 1.0 0.0 0.0 1 none none 2 0 0
 E 4 - 0.0 0.0 0.0 none none none 0 0 0
 E 3 - 0.0 0.0 0.0 none none none 0 0 0
@@ -1441,4 +1461,4 @@ FUNCT2 EXPR 0 0 0 FUNCTION 1-4*(x-1/2)^2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------RESULT DESCRIPTION
 -------------------------------------------------------------------------END
-// END
+//                              END

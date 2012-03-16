@@ -1,3 +1,13 @@
+//
+// Maintainer: Peter Gamnitzer
+// gamnitzer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+// necessary defines: D_FLUID2 DEBUG CCADISCRET BINIO
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 dRIVEN_cAVITY_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -46,18 +56,21 @@ SOLVER                          UMFPACK
 NDPOINT                         4
 NDLINE                          4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
 E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
 -----------------------------------------------------------FLUID KNOTVECTORS
 BEGIN                           NURBSPATCH
@@ -407,9 +420,9 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
+//                              END
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 79 POSITION velx NAME velx VALUE -4.311414400e-03 TOLERANCE 1e-9
 FLUID DIS 1 NODE 79 POSITION vely NAME vely VALUE -6.008328664e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 79 POSITION pressure NAME pressure VALUE 8.452675158e-04 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-// END

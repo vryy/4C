@@ -29,6 +29,7 @@ NUMALEDIS                       0
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -47,7 +48,8 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         1
 DIVERCONT                       Yes
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS

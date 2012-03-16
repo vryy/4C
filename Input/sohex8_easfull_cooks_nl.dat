@@ -46,9 +46,8 @@ THERM_TEMPERATURE               No
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -68,7 +67,9 @@ NORMCOMBI_RESFDISP              Or
 MAXITER                         20
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
---------------------------------------------------------------THERMAL SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999 DENS 0.001
 ----------------------------------------------------------------------CURVE1

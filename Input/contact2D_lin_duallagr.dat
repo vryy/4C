@@ -43,6 +43,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
@@ -74,6 +75,7 @@ ALPHA_F                         0.5
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
@@ -84,9 +86,11 @@ SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------CONTACT SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         9

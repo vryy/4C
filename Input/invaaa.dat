@@ -50,6 +50,7 @@ INV_ANA_TOL                     0.0001                          // tolerance of 
 MONITORFILE                     Input/invaaa1.monitor           // file with monitored displacements
 INV_ANA_MAX_RUN                 10                              // max iterations
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -84,8 +85,8 @@ UZAWAPARAM                      1.0
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -118,8 +119,6 @@ ML_DAMPFINE                     0.69                            // damping fine 
 ML_DAMPMED                      0.89                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          20

@@ -103,6 +103,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ---------------------------------------------------------------SOLVER 2
+NAME                            FLUID_SOLVER
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -199,8 +200,8 @@ UPRES                           1
 INF_PERM                        Yes 
 SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1
-LINEAR_SOLVER1                  2
-LINEAR_SOLVER2                  -1
+LINEAR_SOLVER1                  4
+LINEAR_SOLVER2                  3
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 BLOCKPRECOND                    NO
 CALCERROR                       No
@@ -226,6 +227,7 @@ VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
+LINEAR_SOLVER                   6
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-06
 ADAPTCONV                       yes
@@ -242,7 +244,11 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
+----------------------------------------------------------SOLVER 6
+NAME           NURBS_SOLVER
+SOLVER         UMFPACK            // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym 
 ----------------------------------------------------------SOLVER 1
+NAME           COUPLED_FS3I_SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       1                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -262,7 +268,8 @@ IFPACKOVERLAP      0              // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         infnorm               // none sym infnorm scaling of the system
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 PARTITION         Cut_Elements
---------------------------------------------FLUID SCALAR TRANSPORT SOLVER
+----------------------------------------------------------SOLVER 4
+NAME           SCAT_FLUID
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                 // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -297,7 +304,8 @@ ML_DAMPFINE       0.67            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
---------------------------------------------STRUCTURE SCALAR TRANSPORT SOLVER
+--------------------------------------------------------------------SOLVER 3
+NAME           SCAT_STRUCT
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                 // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -332,7 +340,8 @@ ML_DAMPFINE       0.67            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
-------------------------------------------------------STRUCT SOLVER
+----------------------------------------------------------SOLVER 5
+NAME                            STRUCT
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -403,6 +412,7 @@ TIMESTEP                        1.0
 TOLCONSTR                       1e-05
 TOLDISP                         1e-05
 TOLRES                          1e-05
+LINEAR_SOLVER                   5
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 -----------------------------------------------CLONING MATERIAL MAP

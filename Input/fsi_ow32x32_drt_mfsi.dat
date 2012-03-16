@@ -27,6 +27,7 @@ NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
@@ -48,6 +49,7 @@ ALPHA_M                         0.0
 BETA                            0.5
 GAMMA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1
@@ -76,6 +78,7 @@ CSTAB                           cstab_qs                        // no_cstab csta
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 -----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         41
 MAXTIME                         4.0
@@ -100,7 +103,16 @@ TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-10
-----------------------------------------------------------------FLUID SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Ale_Solver
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
+--------------------------------------------------------------------SOLVER 2
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
+--------------------------------------------------------------------SOLVER 3
+NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 //SOLVER                        Aztec_MSR
 //SOLVER                        SPOOLES_nonsym
@@ -117,12 +129,6 @@ AZSUB                           500
 AZOMEGA                         1.0
 AZGRAPH                         1
 AZPOLY                          5
-PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
-SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         14

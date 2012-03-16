@@ -1,3 +1,11 @@
+//
+// Maintainer: Ulrich Kuettler
+// kuettler@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15238
+//
+// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE D_WALL1
+//
 -----------------------------------------------------------------------TITLE
 freeosz_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -83,24 +91,6 @@ ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
-SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          Aztec_MSR
-AZSOLVE                         CG
-AZPREC                          ILU
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      2.0
-IFPACKGFILL                     0
-AZTOL                           1.0E-08
-AZITER                          2500
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION

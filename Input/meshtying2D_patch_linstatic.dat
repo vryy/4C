@@ -65,6 +65,7 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       Yes
+LINEAR_SOLVER                   1
 -------------------------------------------------------MESHTYING AND CONTACT
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
@@ -75,17 +76,15 @@ FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              No
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
+LINEAR_SOLVER                   2
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-------------------------------------------------------------MESHTYING SOLVER
+--------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         23
 NDLINE                          30

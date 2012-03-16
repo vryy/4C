@@ -43,6 +43,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -62,12 +63,14 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       Yes
 -------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 LAGMULT_QUAD                    quad_quad
 ERROR_NORMS                     bending
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        10                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -101,7 +104,8 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
-------------------------------------------------------------MESHTYING SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        10                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR

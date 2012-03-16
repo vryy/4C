@@ -1,3 +1,15 @@
+//
+// Maintainer: Ursula Mayer
+// mayer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15257
+//
+// necessary defines: D_FLUID3 CCADISCRET BINIO
+//
+
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -12,41 +24,6 @@ MAXTIME                         4
 NUMSTEP                         41
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-------------------------------------------------------------------ALE SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 -------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -55,6 +32,7 @@ NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
+SIMPLER_SOLVER                  2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_M                         0.833333333333330
@@ -100,77 +78,6 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  1
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
--------------------------------------------------------FLUID PRESSURE SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 1
-NAME                            Fluid_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 -----------------------------------------------------------------FSI DYNAMIC
 ALPHA_F                         -1
 ALPHA_S                         -1
@@ -213,41 +120,6 @@ THERM_TEMPERATURE               No
 NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
----------------------------------------------------------------STRUCT SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 -------------------------------------------------------MESHTYING AND CONTACT
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
@@ -287,7 +159,10 @@ BETA                            0.25
 GAMMA                           0.5
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
---------------------------------------------------------------THERMAL SOLVER
+----------------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT                  No
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -322,8 +197,42 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fluid_Pressure_Solver
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                      1
+IFPACKGFILL                     0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                   0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_carreauyasuda NU_0 1.5238 NU_INF 0.03333 LAMBDA 8.2 APARAM 1.23 BPARAM 0.64 DENSITY 1.0
 ----------------------------------------------------------------------CURVE1
@@ -353,35 +262,61 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
+// fluid vertex left bottom back
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex left bottom front
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex left top back
 E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex left top front
 E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex right bottom back
 E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex right bottom front
 E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex right top back
 E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid vertex right top front
 E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
+// fluid edge left bottom
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge left top
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge left back
 E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+// fluid edge left front
 E 4 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+// fluid edge right bottom
 E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge right top
 E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge right back
 E 7 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge right front
 E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge bottom back
 E 9 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge bottom front
 E 10 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge top back
 E 11 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid edge top front
 E 12 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
+// fluid surface left
 E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+// fluid surface right
 E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid surface bottom
 E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid surface top
 E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid surface back
 E 5 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// fluid surface front
 E 6 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
@@ -427,6 +362,7 @@ DSURF                           0
 DLINE                           0
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF                           1
+// fluid surface bottom
 E 3 - standard
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 DLINE                           0

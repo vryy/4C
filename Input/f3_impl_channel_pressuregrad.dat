@@ -1,3 +1,12 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15236
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 channel flow with prescribed pressure gradient directly introduced (not via bodyforce)
 ----------------------------------------------------------------PROBLEM SIZE
@@ -105,6 +114,10 @@ FLUID DIS 1 NODE 231 POSITION velx NAME velx VALUE 9.60000000000000000e-01 TOLER
 FLUID DIS 1 NODE 231 POSITION vely NAME vely VALUE 0.00000000000000000 TOLERANCE 1e-8
 FLUID DIS 1 NODE 231 POSITION velz NAME velz VALUE 0.00000000000000000 TOLERANCE 1e-8
 FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE 0.00000000000000000 TOLERANCE 1e-8
+//FLUID DIS 1 NODE 8438 POSITION velx NAME velx VALUE 2.03439479983163913e+01 TOLERANCE 1e-8
+//FLUID DIS 1 NODE 8438 POSITION vely NAME vely VALUE 3.21982625803195338e-02 TOLERANCE 1e-8
+//FLUID DIS 1 NODE 8438 POSITION velz NAME velz VALUE -2.72393906505382678e-03 TOLERANCE 1e-8
+//FLUID DIS 1 NODE 8438 POSITION pressure NAME pressure VALUE 4.08574943101380761e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -112,19 +125,35 @@ NDSURF                          6
 NDVOL                           1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
+//                              volume
 E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 PressureGrad
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
+// wall top
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// wall bottom
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// surface left
+//E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+// surface right
+//E 4 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+// surface front
+//E 5 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+// surface back
+//E 6 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           4
+// master stream
 E 3 - 2 Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// slave stream
 E 4 - 2 Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// slave span
 E 5 - 1 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// master span
 E 6 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
+//                              volume
 E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 62 DNODE 1
@@ -1612,4 +1641,4 @@ NODE 396 COORD 2.00000000e+00 1.00000000e+00 -1.00000000e+00
 249 FLUID3 HEX8 352 353 359 358 388 389 395 394 MAT 1 NA Euler GP_TET 4 GP_ALT standard
 250 FLUID3 HEX8 353 354 360 359 389 390 396 395 MAT 1 NA Euler GP_TET 4 GP_ALT standard
 -------------------------------------------------------------------------END
-// END
+//                              END

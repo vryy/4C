@@ -1,3 +1,14 @@
+//
+// Maintainer: Georg Bauer
+// bauer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15252
+//
+// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 f3_beltrami_tet4_drt
 ----------------------------------------------------------------PROBLEM SIZE
@@ -69,15 +80,13 @@ AZOMEGA                         1.0
 AZGRAPH                         1
 AZPOLY                          5
 PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         125
 NDLINE                          540
 NDSURF                          736
 NDVOL                           320
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          98
 E 1 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 2 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
@@ -178,6 +187,7 @@ E 123 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 124 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 125 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           288
 E 3 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 4 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
@@ -468,6 +478,7 @@ E 538 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 539 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 540 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           192
 E 5 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 6 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
@@ -662,34 +673,49 @@ E 730 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 731 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 E 732 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
 DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
 DSURF                           0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id
 DLINE                           0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id
 DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 74 DNODE 1
@@ -5854,6 +5880,7 @@ FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
+//FLUID SPECIAL 1
 FLUID DIS 1 NODE 39 POSITION velx NAME velx VALUE -7.874015546e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 39 POSITION vely NAME vely VALUE -7.874015546e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 39 POSITION velz NAME velz VALUE -7.874015546e-01 TOLERANCE 1e-8
@@ -5863,4 +5890,4 @@ FLUID DIS 1 NODE 46 POSITION vely NAME vely VALUE -9.254538907e-02 TOLERANCE 1e-
 FLUID DIS 1 NODE 46 POSITION velz NAME velz VALUE -1.096304169e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 46 POSITION pressure NAME pressure VALUE -5.328946114e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
-// END
+//                              END

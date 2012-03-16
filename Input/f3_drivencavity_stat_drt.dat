@@ -1,3 +1,17 @@
+//
+// Maintainer: Georg Bauer
+// bauer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15252
+//
+// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO TRAP_FE
+//
+// helpful reference for validation of driven cavity flows:
+// U. Ghia, K.N. Ghia, C.T.Shin, Journal of Computational Physics 48, 387-411 (1982)
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 f3_drivencavity_Re1000_stat
 ----------------------------------------------------------------PROBLEM SIZE
@@ -96,15 +110,13 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          8
 E 1 - 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -115,6 +127,7 @@ E 6 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 
 E 7 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 8 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           12
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -129,6 +142,7 @@ E 10 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0
 E 11 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 12 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           6
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -137,34 +151,49 @@ E 4 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 
 E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 6 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
 DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
 DSURF                           0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id
 DLINE                           0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id
 DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id
 DVOL                            0
 ------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF                           1
@@ -8301,4 +8330,4 @@ FLUID DIS 1 NODE 1277 POSITION tractionx NAME tractionx VALUE -1.987759876e-02 T
 FLUID DIS 1 NODE 1277 POSITION tractiony NAME tractiony VALUE 9.513520826e-03 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1277 POSITION tractionz NAME tractionz VALUE 3.249899835e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

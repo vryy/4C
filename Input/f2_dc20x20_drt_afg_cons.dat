@@ -1,3 +1,14 @@
+//
+// Maintainer: Georg Bauer
+// bauer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15252
+//
+// necessary defines: D_FLUID2 DEBUG CCADISCRET BINIO
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 dRIVEN_cAVITY_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -10,6 +21,7 @@ NUMDF                           3
 PROBLEMTYP                      Fluid
 NUMFIELD                        1
 RESTART                         0
+//!RESTART                      5
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
@@ -33,6 +45,7 @@ BETA                            0.25
 GAMMA                           0.5
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
+SIMPLER_SOLVER                  2
 SIMPLER_SOLVER                  2
 TIMEINTEGR                      Af_Gen_Alpha
 UPRES                           1
@@ -146,68 +159,48 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          Aztec_MSR
-AZSOLVE                         CG
-AZPREC                          ILU
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      2.0
-IFPACKGFILL                     0
-AZTOL                           1.0E-12
-AZITER                          2500
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
-SOLVER                          Aztec_MSR
-AZSOLVE                         CG
-AZPREC                          ILU
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      2.0
-IFPACKGFILL                     0
-AZTOL                           1.0E-08
-AZITER                          2500
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 E 3 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
 E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
 DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
 DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 332 DNODE 1

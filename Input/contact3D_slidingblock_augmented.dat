@@ -39,6 +39,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
@@ -63,6 +64,7 @@ GAMMA                           0.5
 ALPHA_M                         0.0
 ALPHA_F                         0.0
 -------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Augmented
 SHAPEFCN                        Standard
@@ -84,8 +86,8 @@ PARALLEL_REDIST                 Dynamic
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -118,7 +120,8 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
---------------------------------------------------------------CONTACT SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -151,8 +154,6 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1

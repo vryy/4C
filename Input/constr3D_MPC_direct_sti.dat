@@ -35,7 +35,8 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+LINEAR_SOLVER                   1
+DYNAMICTYP GenAlpha //Gen_Alfa
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
@@ -68,11 +69,8 @@ ALPHA_F 0.3333333333333 //0.444444444
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
-------------------------------------------------------------------ALE SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS

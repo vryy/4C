@@ -1,3 +1,15 @@
+//
+// Maintainer: Peter Gamnitzer
+// gamnitzer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 / 289 15235
+//
+// necessary defines: D_FLUID2 RESULTTEST DEBUG CCADISCRET BINIO
+//
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 dRIVEN_cAVITY_iNPUT_tESTING
 ----------------------------------------------------------------PROBLEM SIZE
@@ -1435,4 +1447,4 @@ FLUID DIS 1 NODE 173 POSITION velx NAME velx VALUE 1.243484161e-01 TOLERANCE 1e-
 FLUID DIS 1 NODE 173 POSITION vely NAME vely VALUE 2.940824538e-17 TOLERANCE 1e-9
 FLUID DIS 1 NODE 173 POSITION pressure NAME pressure VALUE 6.521707621e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-// END
+//                              END

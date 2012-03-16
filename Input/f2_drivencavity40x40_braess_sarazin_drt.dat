@@ -1,3 +1,13 @@
+//
+// Maintainer: Tobias Wiesner
+// wiesner@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+// necessary defines: D_FLUID2 DEBUG CCADISCRET BINIO
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -66,6 +76,29 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  10000000
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
+--------------------------------------------------------------------------IO
+ALE_DISP                        No
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+OUTPUT_BIN                      No
+OUTPUT_GID                      No
+OUTPUT_OUT                      No
+STRUCT_DISP                     No
+STRUCT_SM_DISP                  No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  None
+THERM_TEMPERATURE               No
+THERM_TEMPGRAD                  None
+
+-----------------------------------------------------------------PROBLEM TYP
+NUMFIELD                        1
+PROBLEMTYP                      Fluid
+RESTART                         0
+SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 AZBDIAG                         0
@@ -112,65 +145,6 @@ AMGBS_BS_PCSWEEPS 10 5 1
 PARTITION                       Cut_Elements
 SOLVER                          Aztec_MSR
 
--------------------------------------------------------FLUID PRESSURE SOLVER
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          MLFLUID2
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     9
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
-SOLVER                          Aztec_MSR
---------------------------------------------------------------------------IO
-ALE_DISP                        No
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-OUTPUT_BIN                      No
-OUTPUT_GID                      No
-OUTPUT_OUT                      No
-STRUCT_DISP                     No
-STRUCT_SM_DISP                  No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
-
------------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
-PROBLEMTYP                      Fluid
-RESTART                         0
-SHAPEFCT                        Polynomial
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 ----------------------------------------------------------------------CURVE1
@@ -214,12 +188,17 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
+// fixed dirich points
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// dirich overflow points
 E 2 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
+// fixed dirich lines
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// curve inflow
 E 2 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+// curve overflow
 E 3 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
@@ -4172,4 +4151,4 @@ NODE 1845 COORD 7.25000024e-01 1.07500005e+00 0.00000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-// END
+//                              END

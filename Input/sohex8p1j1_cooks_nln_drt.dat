@@ -18,9 +18,7 @@ DIM                             3
 MATERIALS                       4
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------------------ALE SOLVER
 ------------------------------------------------------------ARTERIAL DYNAMIC
--------------------------------------------------------ARTERY NETWORK SOLVER
 ----------------------------------------------------------COMBUSTION CONTROL
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -34,8 +32,6 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
--------------------------------------------------------FLUID PRESSURE SOLVER
-----------------------------------------------------------------FLUID SOLVER
 -----------------------------------------------------------------FSI DYNAMIC
 ------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
@@ -63,7 +59,6 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-----------------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
 -------------------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------------------STRUCT NOX
 --------------------------------------------------------STRUCT NOX/Direction
@@ -76,10 +71,9 @@ SHAPEFCT                        Polynomial
 -------------------------------------------STRUCT NOX/Line Search/Polynomial
 ---------------------------------------------------------STRUCT NOX/Printing
 -----------------------------------------------------STRUCT NOX/Trust Region
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
 -------------------------------------------------------MESHTYING AND CONTACT
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
@@ -125,8 +119,10 @@ UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------------XFEM GENERAL
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0 GAMMA 0
 MAT 10 ELAST_CoupLogNeoHooke MUE 80.1938 LAMBDA 0.0

@@ -39,6 +39,7 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 ALE_DISP                        No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 RESULTSEVRY                     1
@@ -62,7 +63,8 @@ BETA                            0.3460207
 GAMMA                           0.6764705
 ALPHA_M                         0.2352941
 ALPHA_F                         0.4117647
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION

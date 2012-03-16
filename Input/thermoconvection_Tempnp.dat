@@ -1,42 +1,42 @@
 //
 // Maintainer: Caroline Danowski
-//             danowski@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089 - 289-15253
+// danowski@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15253
 //
-// necessary defines: CCADISCRET D_THERMO D_SOLID3 BINIO 
+// necessary defines: CCADISCRET D_THERMO D_SOLID3 BINIO
 //
 ==================================================================
-        General Data File CCARAT
+General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE
+-----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Mi 26. Jan 17:24:36 CET 2011
 
 - Analytical example for heat convection boundary condition
 - Use the new temperature T_n+1 for the temperature on the heat convection
-  boundary 
+boundary
 
 Begin:
 T=0 ------------- q_c=-1(T-5) with T=0, T_oo=5
-   |----- 4 -----|
+|----- 4 -----|
 
 End:
 T=0 ------------- T=4 --> q_c = -1(4-5) = 1
 
-------------------------------------------------------PROBLEM SIZE
-ELEMENTS 	40
-NODES    	99
-DIM      	3
-MATERIALS	1
-NUMDF    	6
------------------------------------------------------DISCRETISATION
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        40
+NODES                           99
+DIM                             3
+MATERIALS                       1
+NUMDF                           6
+--------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     1
------------------------------------------------------------------IO
+--------------------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -54,18 +54,19 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
---------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        1
 PROBLEMTYP                      Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------THERMAL DYNAMIC
+-------------------------------------------------------------THERMAL DYNAMIC
+LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No  // Yes,No,yes,no,YES,NO
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta
-INITFUNCNO                      1 // -1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+DIVERCONT                       No                              // Yes,No,yes,no,YES,NO
+DYNAMICTYP                      OneStepTheta                    // Statics,OneStepTheta
+INITFUNCNO                      1                               // -1
+INITIALFIELD                    field_by_function               // zero_field,field_by_function,field_by_condition
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         50
@@ -82,15 +83,30 @@ RESTARTEVRY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
----------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
+------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
------------------------------------------------------THERMAL SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3
+-----------------------------------------------------------------TSI DYNAMIC
+CONVTOL                         1e-06
+COUPALGO                        tsi_iterstagg
+COUPVARIABLE                    Displacement
+ITEMAX                          1
+ITEMIN                          1
+MAXTIME                         1000
+NORMCOMBI_RESFINC               And
+NORM_INC                        Abs
+NORM_RESF                       Abs
+NUMSTEP                         200
+RESTARTEVRY                     1
+TIMESTEP                        0.05
+UPRES                           1
+--------------------------------------------------------------------SOLVER 1
+NAME                            Thermal_Solver
+AMGBS_BS_DAMPING 1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_BS_PCSWEEPS 2 2 2
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
@@ -125,456 +141,442 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
+ML_SMOTIMES 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
---------------------------------------------------------TSI DYNAMIC
-CONVTOL                         1e-06
-COUPALGO                        tsi_iterstagg
-COUPVARIABLE                    Displacement
-ITEMAX                          1
-ITEMIN                          1
-MAXTIME                         1000
-NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
-RESTARTEVRY                     1
-TIMESTEP                        0.05
-UPRES                           1
-----------------------------------------------------------MATERIALS
-MAT 1   THERM_FourierIso   CAPA 1 CONDUCT 1 
-------------------------------------------------------------CURVE1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1
+-------------------------------------------------------------------MATERIALS
+MAT 1 THERM_FourierIso CAPA 1 CONDUCT 1
+----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   0
------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE  0
-------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF  0
-//DSURF  2
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          4
+NDVOL                           0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE                           0
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF                           0
+//DSURF                         2
 // left surf Neumann heatflux
-//E 2 - none 1 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0  
+//E 2 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 // right surf Neumann heatflux
-//E 4 - none 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0  
--------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL   0
--------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT 0
---------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE  0
---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF  0
-----------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT 0
------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE  0
------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF  0
-------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL   0
-------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  0
--------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  1
+//E 4 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            0
+-----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
+DPOINT                          0
+------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
+DSURF                           0
+--------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
+DPOINT                          0
+---------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
+DLINE                           0
+---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
+DSURF                           0
+----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
+DVOL                            0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
 // left surf Dirich
-E 1 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL   0
---------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT 0
----------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE  0
----------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF  0
-----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL   0
---------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT 0
----------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE  0
----------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF  0
------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
-DPOINT 0
-------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
-DLINE  0
-------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
-DSURF  0
--------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
-DVOL   0
----------------------------------DESIGN LINE CONTACT CONDITIONS 2D
-DLINE  0
----------------------------------DESIGN SURF CONTACT CONDITIONS 3D
-DSURF  0
-------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT 0
--------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE  0
--------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF  0
---------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL   0
---------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE  0
---------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF  0
------------------------------DESIGN SURF TURBULENT INFLOW TRANSFER
-DSURF  0
------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE  0
---------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF  0
----------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
-DLINE  0
-------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
-DSURF  0
--------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF  0
-------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE  0
-------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF  0
---------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE  0
---------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF  0
--------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE  0
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF  0
-----------------------DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS
-DLINE  0
-----------------------DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS
-DSURF  0
--------------------DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS
-DLINE  0
--------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
-DSURF  0
--------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE  0
--------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF  0
----------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF  0
-------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF  0
--------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL   0
-------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE  0
-------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF  0
------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF  0
---------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL   0
--------------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
-DSURF  0
-----------------------------------------SURFACE TENSION CONDITIONS
-DSURF  0
----------------------------------------------SURFACTANT CONDITIONS
-DSURF  0
---------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
-DVOL   0
--------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF  0
--------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE  0
----------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
-DVOL   0
---------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
-DSURF  0
---------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
-DLINE  0
---------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
-DSURF  0
---------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
-DLINE  0
-----------------------DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS
-DSURF  0
-----------------------DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS
-DLINE  0
-----------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF  0
---------------------------------------------------FILAMENT NUMBERS
-DLINE  0
------------------------------------------------------FORCE SENSORS
-DPOINT 0
----------------------------------------------MICROSCALE CONDITIONS
-DSURF  0
---------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE  0
---------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF  0
----------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE  0
----------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF  0
-----------------------------------------------DESIGN VOL STC LAYER
-DVOL   0
--------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF  0
----------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D PEN
-DSURF  0
----------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF  0
------------------------------DESIGN SURFACE AREA CONSTRAINT 3D PEN
-DSURF  0
-----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF  0
-------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF  0
-------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE  0
----------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE  0
-----------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF  0
-----------------------DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS
-DSURF  0
------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF  0
--------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF  0
----------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN
-DSURF  0
---------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE  0
---------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE  0
---------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF  0
-----------------------------------DESIGN FLOW RATE LINE CONDITIONS
-DLINE  0
-----------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF  0
---------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF  0
-----------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF  0
------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL   0
----------------------------------------DESIGN SURFACE INV ANALYSIS
-DSURF  0
-------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS
-DPOINT 0
-------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
-DSURF  0
---------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
-DSURF  0
-----------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
-DSURF  0
---------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
-DLINE  0
---------------------------DESIGN THERMO CONVECTION LINE CONDITIONS
-DLINE  0
---------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
-DSURF  1
+E 1 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL                            0
+------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
+DPOINT                          0
+-------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+DLINE                           0
+-------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+DSURF                           0
+--------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
+DVOL                            0
+------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+DPOINT                          0
+-------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DLINE                           0
+-------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+DSURF                           0
+---------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
+DPOINT                          0
+----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
+DLINE                           0
+----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
+DSURF                           0
+-----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
+DVOL                            0
+-------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+DLINE                           0
+-------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+DSURF                           0
+----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+DLINE                           0
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DSURF                           0
+------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
+DVOL                            0
+------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+DSURF                           0
+---------------------------------------DESIGN SURF TURBULENT INFLOW TRANSFER
+DSURF                           0
+---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
+DSURF                           0
+-------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
+DLINE                           0
+----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
+DSURF                           0
+-----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
+DSURF                           0
+----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
+DLINE                           0
+----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
+DSURF                           0
+------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
+DLINE                           0
+------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
+DSURF                           0
+-----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+DLINE                           0
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DSURF                           0
+--------------------------------DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS
+DLINE                           0
+--------------------------------DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS
+DSURF                           0
+-----------------------------DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS
+DLINE                           0
+-----------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
+DSURF                           0
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+DLINE                           0
+-----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+DSURF                           0
+-------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
+DSURF                           0
+----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
+DSURF                           0
+-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
+DVOL                            0
+----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
+DLINE                           0
+----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+DSURF                           0
+---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
+DSURF                           0
+------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+DVOL                            0
+-----------------------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
+DSURF                           0
+--------------------------------------------------SURFACE TENSION CONDITIONS
+DSURF                           0
+-------------------------------------------------------SURFACTANT CONDITIONS
+DSURF                           0
+------------------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
+DVOL                            0
+-----------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
+DSURF                           0
+-----------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
+DLINE                           0
+-------------------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
+DVOL                            0
+------------------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
+DSURF                           0
+------------------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
+DLINE                           0
+------------------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
+DSURF                           0
+------------------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
+DLINE                           0
+--------------------------------DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS
+DSURF                           0
+--------------------------------DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS
+DLINE                           0
+--------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
+DSURF                           0
+------------------------------------------------------------FILAMENT NUMBERS
+DLINE                           0
+---------------------------------------------------------------FORCE SENSORS
+DPOINT                          0
+-------------------------------------------------------MICROSCALE CONDITIONS
+DSURF                           0
+------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
+DLINE                           0
+------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+DSURF                           0
+-------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
+DLINE                           0
+-------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
+DSURF                           0
+--------------------------------------------------------DESIGN VOL STC LAYER
+DVOL                            0
+-----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
+DSURF                           0
+-------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D PEN
+DSURF                           0
+-------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF                           0
+---------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D PEN
+DSURF                           0
+--------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
+DSURF                           0
+----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
+DSURF                           0
+----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
+DLINE                           0
+-------------------------------------------------DESIGN LINE AREA MONITOR 2D
+DLINE                           0
+--------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
+DSURF                           0
+--------------------------------DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS
+DSURF                           0
+---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
+DSURF                           0
+-----------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
+DSURF                           0
+-------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN
+DSURF                           0
+------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
+DLINE                           0
+------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
+DLINE                           0
+------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
+DSURF                           0
+--------------------------------------------DESIGN FLOW RATE LINE CONDITIONS
+DLINE                           0
+--------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
+DSURF                           0
+------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
+DSURF                           0
+--------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
+DSURF                           0
+---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL                            0
+-------------------------------------------------DESIGN SURFACE INV ANALYSIS
+DSURF                           0
+----------------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS
+DPOINT                          0
+----------------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
+DSURF                           0
+------------------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
+DSURF                           0
+--------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
+DSURF                           0
+------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
+DLINE                           0
+------------------------------------DESIGN THERMO CONVECTION LINE CONDITIONS
+DLINE                           0
+------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
+DSURF                           1
 // right surf Neumann convection
 E 3 - Tempnp coeff -1.0 surtemp 5.0 surtempcurve none curve -1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE    1 DSURFACE 1
-NODE    4 DSURFACE 1
-NODE    5 DSURFACE 1
-NODE    8 DSURFACE 1
-NODE    46 DSURFACE 1
-NODE    48 DSURFACE 1
-NODE    67 DSURFACE 1
-NODE    70 DSURFACE 1
-NODE    90 DSURFACE 1
-NODE    1 DSURFACE 2
-NODE    4 DSURFACE 2
-NODE    5 DSURFACE 2
-NODE    8 DSURFACE 2
-NODE    46 DSURFACE 2
-NODE    48 DSURFACE 2
-NODE    67 DSURFACE 2
-NODE    70 DSURFACE 2
-NODE    90 DSURFACE 2
-NODE    41 DSURFACE 3
-NODE    42 DSURFACE 3
-NODE    43 DSURFACE 3
-NODE    44 DSURFACE 3
-NODE    65 DSURFACE 3
-NODE    66 DSURFACE 3
-NODE    87 DSURFACE 3
-NODE    88 DSURFACE 3
-NODE    99 DSURFACE 3
-NODE    41 DSURFACE 4
-NODE    42 DSURFACE 4
-NODE    43 DSURFACE 4
-NODE    44 DSURFACE 4
-NODE    65 DSURFACE 4
-NODE    66 DSURFACE 4
-NODE    87 DSURFACE 4
-NODE    88 DSURFACE 4
-NODE    99 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
--------------------------------------------------------NODE COORDS
-NODE 1  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 2  	COORD	4.0000000000000002e-01	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 3  	COORD	3.9999999999999997e-01	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 4  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 5  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 6  	COORD	3.9999999999999997e-01	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 7  	COORD	3.9999999999999991e-01	1.0000000000000000e+00	-6.9388939039072284e-18	
-NODE 8  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 9  	COORD	8.0000000000000004e-01	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 10  	COORD	7.9999999999999993e-01	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 11  	COORD	7.9999999999999993e-01	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 12  	COORD	7.9999999999999982e-01	1.0000000000000000e+00	-1.3877787807814457e-17	
-NODE 13  	COORD	1.2000000000000002e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 14  	COORD	1.2000000000000000e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 15  	COORD	1.2000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 16  	COORD	1.2000000000000000e+00	1.0000000000000000e+00	1.3877787807814457e-17	
-NODE 17  	COORD	1.6000000000000001e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 18  	COORD	1.5999999999999999e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 19  	COORD	1.5999999999999999e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 20  	COORD	1.5999999999999999e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 21  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 22  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 23  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 24  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 25  	COORD	2.4000000000000004e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 26  	COORD	2.4000000000000004e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 27  	COORD	2.4000000000000004e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 28  	COORD	2.4000000000000004e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 29  	COORD	2.8000000000000003e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 30  	COORD	2.7999999999999998e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 31  	COORD	2.7999999999999998e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 32  	COORD	2.7999999999999998e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 33  	COORD	3.2000000000000002e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 34  	COORD	3.2000000000000002e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 35  	COORD	3.2000000000000002e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 36  	COORD	3.2000000000000002e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 37  	COORD	3.6000000000000001e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 38  	COORD	3.6000000000000001e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 39  	COORD	3.6000000000000001e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 40  	COORD	3.6000000000000001e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 41  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 42  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 43  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 44  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
-NODE 45  	COORD	3.9999999999999991e-01	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 46  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 47  	COORD	3.9999999999999991e-01	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 48  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 49  	COORD	7.9999999999999982e-01	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 50  	COORD	7.9999999999999982e-01	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 51  	COORD	1.1999999999999997e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 52  	COORD	1.2000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 53  	COORD	1.5999999999999996e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 54  	COORD	1.5999999999999999e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 55  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 56  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 57  	COORD	2.3999999999999999e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 58  	COORD	2.4000000000000004e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 59  	COORD	2.7999999999999998e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 60  	COORD	2.7999999999999998e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 61  	COORD	3.2000000000000002e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 62  	COORD	3.2000000000000002e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 63  	COORD	3.6000000000000001e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 64  	COORD	3.6000000000000001e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 65  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	-1.0000000000000000e+00	
-NODE 66  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
-NODE 67  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 68  	COORD	3.9999999999999991e-01	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 69  	COORD	3.9999999999999991e-01	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 70  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 71  	COORD	7.9999999999999982e-01	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 72  	COORD	7.9999999999999982e-01	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 73  	COORD	1.1999999999999997e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 74  	COORD	1.2000000000000000e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 75  	COORD	1.5999999999999996e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 76  	COORD	1.5999999999999999e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 77  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 78  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 79  	COORD	2.3999999999999999e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 80  	COORD	2.4000000000000004e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 81  	COORD	2.7999999999999998e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 82  	COORD	2.7999999999999998e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 83  	COORD	3.2000000000000002e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 84  	COORD	3.2000000000000002e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 85  	COORD	3.6000000000000001e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 86  	COORD	3.6000000000000001e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 87  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000000e+00	
-NODE 88  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000000e+00	
-NODE 89  	COORD	3.9999999999999991e-01	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 90  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 91  	COORD	7.9999999999999982e-01	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 92  	COORD	1.2000000000000002e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 93  	COORD	1.6000000000000001e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 94  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 95  	COORD	2.4000000000000004e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 96  	COORD	2.8000000000000003e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 97  	COORD	3.2000000000000002e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 98  	COORD	3.6000000000000001e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-NODE 99  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000000e+00	
-------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
-   1 THERMO HEX8  1 2 3 4 5 6 7 8    MAT 1
-   2 THERMO HEX8  2 9 10 3 6 11 12 7    MAT 1
-   3 THERMO HEX8  9 13 14 10 11 15 16 12    MAT 1
-   4 THERMO HEX8  13 17 18 14 15 19 20 16    MAT 1
-   5 THERMO HEX8  17 21 22 18 19 23 24 20    MAT 1
-   6 THERMO HEX8  21 25 26 22 23 27 28 24    MAT 1
-   7 THERMO HEX8  25 29 30 26 27 31 32 28    MAT 1
-   8 THERMO HEX8  29 33 34 30 31 35 36 32    MAT 1
-   9 THERMO HEX8  33 37 38 34 35 39 40 36    MAT 1
-   10 THERMO HEX8  37 41 42 38 39 43 44 40    MAT 1
-   11 THERMO HEX8  4 3 45 46 8 7 47 48    MAT 1
-   12 THERMO HEX8  3 10 49 45 7 12 50 47    MAT 1
-   13 THERMO HEX8  10 14 51 49 12 16 52 50    MAT 1
-   14 THERMO HEX8  14 18 53 51 16 20 54 52    MAT 1
-   15 THERMO HEX8  18 22 55 53 20 24 56 54    MAT 1
-   16 THERMO HEX8  22 26 57 55 24 28 58 56    MAT 1
-   17 THERMO HEX8  26 30 59 57 28 32 60 58    MAT 1
-   18 THERMO HEX8  30 34 61 59 32 36 62 60    MAT 1
-   19 THERMO HEX8  34 38 63 61 36 40 64 62    MAT 1
-   20 THERMO HEX8  38 42 65 63 40 44 66 64    MAT 1
-   21 THERMO HEX8  5 6 7 8 67 68 69 70    MAT 1
-   22 THERMO HEX8  6 11 12 7 68 71 72 69    MAT 1
-   23 THERMO HEX8  11 15 16 12 71 73 74 72    MAT 1
-   24 THERMO HEX8  15 19 20 16 73 75 76 74    MAT 1
-   25 THERMO HEX8  19 23 24 20 75 77 78 76    MAT 1
-   26 THERMO HEX8  23 27 28 24 77 79 80 78    MAT 1
-   27 THERMO HEX8  27 31 32 28 79 81 82 80    MAT 1
-   28 THERMO HEX8  31 35 36 32 81 83 84 82    MAT 1
-   29 THERMO HEX8  35 39 40 36 83 85 86 84    MAT 1
-   30 THERMO HEX8  39 43 44 40 85 87 88 86    MAT 1
-   31 THERMO HEX8  8 7 47 48 70 69 89 90    MAT 1
-   32 THERMO HEX8  7 12 50 47 69 72 91 89    MAT 1
-   33 THERMO HEX8  12 16 52 50 72 74 92 91    MAT 1
-   34 THERMO HEX8  16 20 54 52 74 76 93 92    MAT 1
-   35 THERMO HEX8  20 24 56 54 76 78 94 93    MAT 1
-   36 THERMO HEX8  24 28 58 56 78 80 95 94    MAT 1
-   37 THERMO HEX8  28 32 60 58 80 82 96 95    MAT 1
-   38 THERMO HEX8  32 36 62 60 82 84 97 96    MAT 1
-   39 THERMO HEX8  36 40 64 62 84 86 98 97    MAT 1
-   40 THERMO HEX8  40 44 66 64 86 88 99 98    MAT 1
--------------------------------------------------RESULT DESCRIPTION
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 8 DSURFACE 1
+NODE 46 DSURFACE 1
+NODE 48 DSURFACE 1
+NODE 67 DSURFACE 1
+NODE 70 DSURFACE 1
+NODE 90 DSURFACE 1
+NODE 1 DSURFACE 2
+NODE 4 DSURFACE 2
+NODE 5 DSURFACE 2
+NODE 8 DSURFACE 2
+NODE 46 DSURFACE 2
+NODE 48 DSURFACE 2
+NODE 67 DSURFACE 2
+NODE 70 DSURFACE 2
+NODE 90 DSURFACE 2
+NODE 41 DSURFACE 3
+NODE 42 DSURFACE 3
+NODE 43 DSURFACE 3
+NODE 44 DSURFACE 3
+NODE 65 DSURFACE 3
+NODE 66 DSURFACE 3
+NODE 87 DSURFACE 3
+NODE 88 DSURFACE 3
+NODE 99 DSURFACE 3
+NODE 41 DSURFACE 4
+NODE 42 DSURFACE 4
+NODE 43 DSURFACE 4
+NODE 44 DSURFACE 4
+NODE 65 DSURFACE 4
+NODE 66 DSURFACE 4
+NODE 87 DSURFACE 4
+NODE 88 DSURFACE 4
+NODE 99 DSURFACE 4
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 2 COORD 4.0000000000000002e-01 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 3 COORD 3.9999999999999997e-01 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 4 COORD 0.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 5 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 6 COORD 3.9999999999999997e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 7 COORD 3.9999999999999991e-01 1.0000000000000000e+00 -6.9388939039072284e-18
+NODE 8 COORD 0.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 9 COORD 8.0000000000000004e-01 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 10 COORD 7.9999999999999993e-01 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 11 COORD 7.9999999999999993e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 12 COORD 7.9999999999999982e-01 1.0000000000000000e+00 -1.3877787807814457e-17
+NODE 13 COORD 1.2000000000000002e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 14 COORD 1.2000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 15 COORD 1.2000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 16 COORD 1.2000000000000000e+00 1.0000000000000000e+00 1.3877787807814457e-17
+NODE 17 COORD 1.6000000000000001e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 18 COORD 1.5999999999999999e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 19 COORD 1.5999999999999999e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 20 COORD 1.5999999999999999e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 21 COORD 2.0000000000000000e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 22 COORD 2.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 23 COORD 2.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 24 COORD 2.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 25 COORD 2.4000000000000004e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 26 COORD 2.4000000000000004e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 27 COORD 2.4000000000000004e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 28 COORD 2.4000000000000004e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 29 COORD 2.8000000000000003e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 30 COORD 2.7999999999999998e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 31 COORD 2.7999999999999998e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 32 COORD 2.7999999999999998e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 33 COORD 3.2000000000000002e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 34 COORD 3.2000000000000002e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 35 COORD 3.2000000000000002e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 36 COORD 3.2000000000000002e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 37 COORD 3.6000000000000001e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 38 COORD 3.6000000000000001e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 39 COORD 3.6000000000000001e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 40 COORD 3.6000000000000001e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 41 COORD 4.0000000000000000e+00 0.0000000000000000e+00 -1.0000000000000000e+00
+NODE 42 COORD 4.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000e+00
+NODE 43 COORD 4.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 44 COORD 4.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 45 COORD 3.9999999999999991e-01 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 46 COORD 0.0000000000000000e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 47 COORD 3.9999999999999991e-01 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 48 COORD 0.0000000000000000e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 49 COORD 7.9999999999999982e-01 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 50 COORD 7.9999999999999982e-01 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 51 COORD 1.1999999999999997e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 52 COORD 1.2000000000000000e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 53 COORD 1.5999999999999996e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 54 COORD 1.5999999999999999e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 55 COORD 2.0000000000000000e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 56 COORD 2.0000000000000000e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 57 COORD 2.3999999999999999e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 58 COORD 2.4000000000000004e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 59 COORD 2.7999999999999998e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 60 COORD 2.7999999999999998e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 61 COORD 3.2000000000000002e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 62 COORD 3.2000000000000002e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 63 COORD 3.6000000000000001e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 64 COORD 3.6000000000000001e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 65 COORD 4.0000000000000000e+00 2.0000000000000000e+00 -1.0000000000000000e+00
+NODE 66 COORD 4.0000000000000000e+00 2.0000000000000000e+00 0.0000000000000000e+00
+NODE 67 COORD 0.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 68 COORD 3.9999999999999991e-01 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 69 COORD 3.9999999999999991e-01 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 70 COORD 0.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 71 COORD 7.9999999999999982e-01 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 72 COORD 7.9999999999999982e-01 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 73 COORD 1.1999999999999997e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 74 COORD 1.2000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 75 COORD 1.5999999999999996e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 76 COORD 1.5999999999999999e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 77 COORD 2.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 78 COORD 2.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 79 COORD 2.3999999999999999e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 80 COORD 2.4000000000000004e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 81 COORD 2.7999999999999998e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 82 COORD 2.7999999999999998e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 83 COORD 3.2000000000000002e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 84 COORD 3.2000000000000002e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 85 COORD 3.6000000000000001e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 86 COORD 3.6000000000000001e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 87 COORD 4.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00
+NODE 88 COORD 4.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00
+NODE 89 COORD 3.9999999999999991e-01 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 90 COORD 0.0000000000000000e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 91 COORD 7.9999999999999982e-01 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 92 COORD 1.2000000000000002e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 93 COORD 1.6000000000000001e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 94 COORD 2.0000000000000000e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 95 COORD 2.4000000000000004e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 96 COORD 2.8000000000000003e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 97 COORD 3.2000000000000002e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 98 COORD 3.6000000000000001e+00 2.0000000000000000e+00 1.0000000000000000e+00
+NODE 99 COORD 4.0000000000000000e+00 2.0000000000000000e+00 1.0000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
+1 THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1
+2 THERMO HEX8 2 9 10 3 6 11 12 7 MAT 1
+3 THERMO HEX8 9 13 14 10 11 15 16 12 MAT 1
+4 THERMO HEX8 13 17 18 14 15 19 20 16 MAT 1
+5 THERMO HEX8 17 21 22 18 19 23 24 20 MAT 1
+6 THERMO HEX8 21 25 26 22 23 27 28 24 MAT 1
+7 THERMO HEX8 25 29 30 26 27 31 32 28 MAT 1
+8 THERMO HEX8 29 33 34 30 31 35 36 32 MAT 1
+9 THERMO HEX8 33 37 38 34 35 39 40 36 MAT 1
+10 THERMO HEX8 37 41 42 38 39 43 44 40 MAT 1
+11 THERMO HEX8 4 3 45 46 8 7 47 48 MAT 1
+12 THERMO HEX8 3 10 49 45 7 12 50 47 MAT 1
+13 THERMO HEX8 10 14 51 49 12 16 52 50 MAT 1
+14 THERMO HEX8 14 18 53 51 16 20 54 52 MAT 1
+15 THERMO HEX8 18 22 55 53 20 24 56 54 MAT 1
+16 THERMO HEX8 22 26 57 55 24 28 58 56 MAT 1
+17 THERMO HEX8 26 30 59 57 28 32 60 58 MAT 1
+18 THERMO HEX8 30 34 61 59 32 36 62 60 MAT 1
+19 THERMO HEX8 34 38 63 61 36 40 64 62 MAT 1
+20 THERMO HEX8 38 42 65 63 40 44 66 64 MAT 1
+21 THERMO HEX8 5 6 7 8 67 68 69 70 MAT 1
+22 THERMO HEX8 6 11 12 7 68 71 72 69 MAT 1
+23 THERMO HEX8 11 15 16 12 71 73 74 72 MAT 1
+24 THERMO HEX8 15 19 20 16 73 75 76 74 MAT 1
+25 THERMO HEX8 19 23 24 20 75 77 78 76 MAT 1
+26 THERMO HEX8 23 27 28 24 77 79 80 78 MAT 1
+27 THERMO HEX8 27 31 32 28 79 81 82 80 MAT 1
+28 THERMO HEX8 31 35 36 32 81 83 84 82 MAT 1
+29 THERMO HEX8 35 39 40 36 83 85 86 84 MAT 1
+30 THERMO HEX8 39 43 44 40 85 87 88 86 MAT 1
+31 THERMO HEX8 8 7 47 48 70 69 89 90 MAT 1
+32 THERMO HEX8 7 12 50 47 69 72 91 89 MAT 1
+33 THERMO HEX8 12 16 52 50 72 74 92 91 MAT 1
+34 THERMO HEX8 16 20 54 52 74 76 93 92 MAT 1
+35 THERMO HEX8 20 24 56 54 76 78 94 93 MAT 1
+36 THERMO HEX8 24 28 58 56 78 80 95 94 MAT 1
+37 THERMO HEX8 28 32 60 58 80 82 96 95 MAT 1
+38 THERMO HEX8 32 36 62 60 82 84 97 96 MAT 1
+39 THERMO HEX8 36 40 64 62 84 86 98 97 MAT 1
+40 THERMO HEX8 40 44 66 64 86 88 99 98 MAT 1
+----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS 1 NODE 1 POSITION temp NAME Temp_x0 VALUE 0.0 TOLERANCE 1.0e-8
 THERMAL DIS 1 NODE 21 POSITION temp NAME Temp_x2 VALUE 2.0 TOLERANCE 1.0e-8
 THERMAL DIS 1 NODE 41 POSITION temp NAME Temp_x4 VALUE 4.0 TOLERANCE 1.0e-8
----------------------------------------------------------------END
-// END
+-------------------------------------------------------------------------END
+//                              END

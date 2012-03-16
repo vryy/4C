@@ -42,6 +42,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESEVRYERGY                     1
@@ -63,8 +64,31 @@ MAXITER                         50
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
+-------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   2
+SIMPLER_SOLVER                  3
+APPLICATION                     MortarContact
+STRATEGY                        Lagrange
+SHAPEFCN                        Dual                            // Dual Standard
+PENALTYPARAM                    20000
+PENALTYPARAMTAN                 20000
+FRICTION                        Coulomb                         // Coulomb
+FRCOEFF                         0.3
+FULL_LINEARIZATION              Yes
+MAX_BALANCE                     0
+SEMI_SMOOTH_NEWTON              yes
+SEMI_SMOOTH_CN                  1000.0
+SEMI_SMOOTH_CT                  1000.0
+SEARCH_ALGORITHM                BinaryTree
+SEARCH_PARAM                    0.6
+SYSTEM                          SaddlePointSimpler
+PARALLEL_REDIST                 Static
+MAX_BALANCE                     1.5
+COUPLING_AUXPLANE               Yes
+INITCONTACTBYGAP                Yes
+INITCONTACTGAPVALUE             0.001
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        25                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -97,7 +121,8 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
---------------------------------------------------------------CONTACT SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        25                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -130,7 +155,8 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
----------------------------------------------------CONTACT CONSTRAINT SOLVER
+--------------------------------------------------------------------SOLVER 3
+NAME                            Contact_Simpler_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        25                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -163,27 +189,6 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
--------------------------------------------------------MESHTYING AND CONTACT
-APPLICATION                     MortarContact
-STRATEGY                        Lagrange
-SHAPEFCN                        Dual                            // Dual Standard
-PENALTYPARAM                    20000
-PENALTYPARAMTAN                 20000
-FRICTION                        Coulomb                         // Coulomb
-FRCOEFF                         0.3
-FULL_LINEARIZATION              Yes
-MAX_BALANCE                     0
-SEMI_SMOOTH_NEWTON              yes
-SEMI_SMOOTH_CN                  1000.0
-SEMI_SMOOTH_CT                  1000.0
-SEARCH_ALGORITHM                BinaryTree
-SEARCH_PARAM                    0.6
-SYSTEM                          SaddlePointSimpler
-PARALLEL_REDIST                 Static
-MAX_BALANCE                     1.5
-COUPLING_AUXPLANE               Yes
-INITCONTACTBYGAP                Yes
-INITCONTACTGAPVALUE             0.001
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.330000 DENS 1.000
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.330000 DENS 1.000

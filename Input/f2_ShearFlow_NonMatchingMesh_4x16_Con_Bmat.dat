@@ -1,3 +1,6 @@
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -89,8 +92,13 @@ SEARCH_PARAM                    0.3
 SHAPEFCN Dual //Standard, Dual
 STRATEGY LagrangianMultipliers //Penalty,..
 SYSTEM SaddlePointCoupled //SaddlePointCoupled, SaddlePointSimpler
+// Uzawa -> solution process
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   10
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -125,10 +133,6 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     0.45                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
---------------------------------------------------------------------SOLVER 1
-NAME                            Fluid_Solver
-SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Pressure_Solver
@@ -188,22 +192,36 @@ DPOINT                          1
 E 1 - 1 1 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
+//                              bottom
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//                              top
 E 2 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
+//                              inflow
+//E 3 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+//                              outflow
+//E 4 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//                              internalBoundaryLeft
+//E 5 - 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//                              internalBoundaryRight
+//E 6 - none 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
 DLINE                           2
 E 3 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 E 4 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           2
+// left internal boundary
 E 5 - 1 Master
+// right internal boundary
 E 6 - 1 Slave
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF                           0
+//E 1 - fluid 0.0 0.0 1.0 0.0 0.0 0.0 integration
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 5 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -597,4 +615,4 @@ NODE 114 COORD 5.0000000000000000e-01 2.5000000000000000e-01 0.0000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-// END
+//                              END

@@ -1,3 +1,14 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15236
+//
+// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO TRAP_FE
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 turbulent inflow generation algorithm:
 problem constists of two spatially separated domains
@@ -134,37 +145,56 @@ NDSURF                          14
 NDVOL                           3
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
+//                              inflow
 E 2 - none 1 0 0 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 Dead
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
+// turbulent inflow
 E 1 - 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
+// turbulent inflow
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// upper wall outflow
 E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// lower wall outflow
 E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// upper wall inflow
 E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// lower wall inflow
 E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           6
+// outflow periodic boundary
 E 5 - 3 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// outflow periodic boundary
 E 6 - 3 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// spanwise periodic boundary
 E 9 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// spanwise periodic boundary
 E 10 - 1 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// streamwise periodic boundary
 E 11 - 2 Master PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// streamwise periodic boundary
 E 12 - 2 Slave PLANE yz LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------------DESIGN SURF TURBULENT INFLOW TRANSFER
 DSURF                           2
+// turbulent inflow
 E 1 - ID 1 slave DIRECTION x none
+// streamwise periodic boundary
 E 12 - ID 1 master DIRECTION x none
 ----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF                           1
+//                              outflow
 E 2 -
 -----------------------------------------------FLUID TURBULENT INFLOW VOLUME
 DVOL                            1
+//                              inflow
 E 2 -
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            0
+//                              inflow
+//E 2 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 7242 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -31489,6 +31519,7 @@ NODE 9826 COORD -5.0000000000000000e-01 1.0000000000000000e+00 -1.04719755100000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
+// nodes of inflow channel
 FLUID DIS 1 NODE 5562 POSITION velx NAME velx VALUE 7.500000000000e-01 TOLERANCE 1e-10
 FLUID DIS 1 NODE 5924 POSITION velx NAME velx VALUE 1.000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 6881 POSITION velx NAME velx VALUE 6.093750000000e-01 TOLERANCE 1e-10
@@ -31501,6 +31532,8 @@ FLUID DIS 1 NODE 6881 POSITION velz NAME velz VALUE 0.0000000000000e+00 TOLERANC
 FLUID DIS 1 NODE 5562 POSITION pressure NAME pressure VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 5924 POSITION pressure NAME pressure VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 6881 POSITION pressure NAME pressure VALUE 0.0000000000000e+00 TOLERANCE 1e-10
+// nodes of main problem domain
+// flow not solved here
 FLUID DIS 1 NODE 166 POSITION velx NAME velx VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 166 POSITION vely NAME vely VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 166 POSITION velz NAME velz VALUE 0.0000000000000e+00 TOLERANCE 1e-10
@@ -31510,4 +31543,4 @@ FLUID DIS 1 NODE 2582 POSITION vely NAME vely VALUE 0.0000000000000e+00 TOLERANC
 FLUID DIS 1 NODE 2582 POSITION velz NAME velz VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS 1 NODE 2582 POSITION pressure NAME pressure VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
-// END
+//                              END

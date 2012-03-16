@@ -15,14 +15,12 @@ DIM                             3
 MATERIALS                       3
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   1
 ALE_TYPE                        springs
 MAXTIME                         4
 NUMSTEP                         41
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-------------------------------------------------------------------ALE SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 ----------------------------------------------------------COMBUSTION CONTROL
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -41,6 +39,7 @@ TEMPERATURE                     298
 TIMESTEP                        0.1
 UPRES                           1
 ---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   3
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
@@ -87,12 +86,6 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  1
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
--------------------------------------------------------FLUID PRESSURE SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
-----------------------------------------------------------------FLUID SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 -----------------------------------------------------------------FSI DYNAMIC
 ADAPTIVEDIST                    0
 ALPHA_F                         -1
@@ -178,17 +171,9 @@ ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     yes
 ITEMAX                          10
-----------------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
------------------------------------------------FLUID SCALAR TRANSPORT SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
----------------------------------------------------------------STRUCT SOLVER
-PARTITION                       Cut_Elements
-SOLVER                          UMFPACK
 -------------------------------------------------------MESHTYING AND CONTACT
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
@@ -248,10 +233,19 @@ SIZERATIOMIN                    0
 SIZERATIOSCALE                  0.9
 STEPSIZEMAX                     0
 STEPSIZEMIN                     0
---------------------------------------------------------------THERMAL SOLVER
+----------------------------------------------------------------XFEM GENERAL
+--------------------------------------------------------------------SOLVER 1
+NAME                            Ale_Solver
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
+--------------------------------------------------------------------SOLVER 2
+NAME                            Structure_Solver
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            Fluid_Solver
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 250.0 NUE 0.3 DENS 500
 MAT 2 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0

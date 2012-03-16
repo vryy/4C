@@ -1,3 +1,17 @@
+//
+// Maintainer: Georg Bauer
+// bauer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15252
+//
+// necessary defines: D_FLUID2 DEBUG CCADISCRET BINIO
+//
+// helpful reference for validation of driven cavity flows:
+// U. Ghia, K.N. Ghia, C.T.Shin, Journal of Computational Physics 48, 387-411 (1982)
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 f2_drivencavity32x32_Re1000_stat
 ----------------------------------------------------------------PROBLEM SIZE
@@ -81,6 +95,7 @@ AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
+//AZCONV                        AZ_r0
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     3                               // ML max number of levels
@@ -96,57 +111,72 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
-------------------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 2 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 3 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 4 - 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
 DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
 DSURF                           0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id
 DLINE                           0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id
 DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -3513,4 +3543,4 @@ FLUID DIS 1 NODE 27 POSITION vely NAME vely VALUE -6.555244537e-01 TOLERANCE 1e-
 FLUID DIS 1 NODE 27 POSITION velx NAME velx VALUE -2.375735443e-02 TOLERANCE 1e-8
 FLUID DIS 1 NODE 27 POSITION pressure NAME pressure VALUE 1.338292877e-02 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
-// END
+//                              END

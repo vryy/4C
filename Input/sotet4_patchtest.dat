@@ -29,6 +29,7 @@ NUMALEDIS                       0
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -47,11 +48,12 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         1
 DIVERCONT                       Yes
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION

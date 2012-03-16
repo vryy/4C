@@ -1,9 +1,18 @@
+//
+// Maintainer: Karl-Robert Wichmann
+// wichmann@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15237
+//
+==================================================================
+General Data File CCARAT
+==================================================================
 -----------------------------------------------------------------------TITLE
 f3_beltrami_8x8x8_afgenalpha_2iter
 
- Results must be identical with results from test case 'two_phase_beltrami_8x8x8_afgenalpha_2iter.dat'
+Results must be identical with results from test case 'two_phase_beltrami_8x8x8_afgenalpha_2iter.dat'
 and                             'combust_beltrami_8x8x8_afgenalpha_2iter.dat'
- Generalized alpha time integration scheme of combustion and standard fluid have to compute identical results
+Generalized alpha time integration scheme of combustion and standard fluid have to compute identical results
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -99,11 +108,17 @@ DPOINT                          0
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
+// surface top
 E 1 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+// surface front
 E 2 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+// surface back
 E 3 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+// surface unten
 E 4 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+// surface rechts
 E 5 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+// surface links
 E 6 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
@@ -2575,4 +2590,4 @@ NODE 729 COORD 1.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-// END
+//                              END

@@ -44,6 +44,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
@@ -62,30 +63,14 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------MESHTYING AND CONTACT
+LINEAR_SOLVER                   3
 APPLICATION                     MortarMeshtying
+SIMPLER_SOLVER                  2
 STRATEGY                        Lagrange
 SHAPEFCN                        Standard
 SYSTEM                          SaddlePointSimpler
-------------------------------------------------------------MESHTYING SOLVER
-SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        100                             // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          CheapSIMPLE
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      0.0                             // fill-in for ILUT
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-10                         // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           50                              // size of krylov space for gmres
-AZOMEGA                         0.67                            // unused
-AZGRAPH                         1                               // unused
-AZPOLY                          5                               // polynomial order for Neumann
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-PARTITION                       Cut_Elements
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        100                             // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -118,7 +103,8 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
----------------------------------------------------CONTACT CONSTRAINT SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Simpler_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -150,6 +136,26 @@ ML_SMOTIMES 0 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
+PARTITION                       Cut_Elements
+--------------------------------------------------------------------SOLVER 3
+NAME                            Meshtying_Solver
+SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        100                             // output every so often, 0 no output
+AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          CheapSIMPLE
+AZREUSE                         0                               // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      0.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-10                         // tolerance in (un)scaled residual
+AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                            // max iterations
+AZSUB                           50                              // size of krylov space for gmres
+AZOMEGA                         0.67                            // unused
+AZGRAPH                         1                               // unused
+AZPOLY                          5                               // polynomial order for Neumann
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                            // none sym infnorm scaling of the system
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 10 NUE 0.3 DENS 7.8e-6

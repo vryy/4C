@@ -147,7 +147,6 @@ SIZERATIOMIN                    0
 SIZERATIOSCALE                  0
 STEPSIZEMAX                     0
 STEPSIZEMIN                     0
---------------------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------------------XFEM GENERAL
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0E4 NUE 0.49 DENS 1.0

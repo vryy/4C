@@ -199,8 +199,8 @@ UPRES                           1
 INF_PERM                        No 
 SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1  // FS3I problem
-LINEAR_SOLVER1                  2  // FLUID solver
-LINEAR_SOLVER2                  3  // STRUCT solver
+LINEAR_SOLVER1                  2  // ScaTra FLUID solver
+LINEAR_SOLVER2                  3  // ScaTra STRUCT solver
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 BLOCKPRECOND                    NO
 CALCERROR                       No
@@ -297,7 +297,7 @@ ML_DAMPFINE       0.67            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
---------------------------------------------STRUCTURE SCALAR TRANSPORT SOLVER
+----------------------------------------------------------SOLVER 3
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                 // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
