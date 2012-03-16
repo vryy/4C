@@ -283,7 +283,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.5;//0.444444444444;
+  double aa = 0.0;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -464,7 +464,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.5;//0.444444444444;
+  double aa = 0.0;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -760,7 +760,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.5;//0.444444444444;
+  double aa = 0.0;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -1055,7 +1055,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.5;//0.444444444444;
+  double aa = 0.0;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -1071,8 +1071,8 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
   (sggpre_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
 
   // Update the Lagrange multiplier:
-  /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
-   *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
+  /* \lambda^{n+1} =  1/b * [ - a*\lambda^n - f_\Gamma^S
+   *                          - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma]
    */
   lambda_->Update(1.0, *fgpre_, -aa);
   lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
