@@ -72,9 +72,10 @@ namespace MAT
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-        const int id  ///< ID to look for in collection of summands
-        ) const;
+//      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
+//        const int id  ///< ID to look for in collection of summands
+//        ) const
+//        { return params_->MaterialById(id); }
 
       /// length of material list
 //      const int nummat_;
@@ -282,7 +283,7 @@ private:
   private:
 
     /// my material parameters
-    MAT::PAR::ViscoGenMax* params_;
+    MAT::PAR::ViscoGenMax* viscoparams_;
 
     /// visco history stresses
     Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisoprinccurr_; ///< current stress

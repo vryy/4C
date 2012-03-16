@@ -93,7 +93,7 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-   private:
+   protected:
 
       /// map to materials/potential summands
       std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
@@ -252,7 +252,8 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-
+    /// my material parameters
+    MAT::PAR::ElastHyper* params_;
 
 //  private:
   protected:
@@ -434,8 +435,7 @@ private:
     const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
     );
 
-    /// my material parameters
-    MAT::PAR::ElastHyper* params_;
+
 
     /// Flags to specify the formulations
     bool isoprinc_;
@@ -467,17 +467,17 @@ private:
 //    /// principal anisotropic invariants
 //    LINALG::Matrix<6,1> pranisoinv_;
 
-    /// principal coefficients
-    LINALG::Matrix<3,1> gamma_;
-    LINALG::Matrix<5,1> delta_;
-
-    /// modified coefficients
-    LINALG::Matrix<3,1> modgamma_;
-    LINALG::Matrix<5,1> moddelta_;
-
-    /// principal anisotropic coefficients
-    LINALG::Matrix<3,1> anisogamma_;
-    LINALG::Matrix<5,1> anisodelta_;
+//    /// principal coefficients
+//    LINALG::Matrix<3,1> gamma_;
+//    LINALG::Matrix<5,1> delta_;
+//
+//    /// modified coefficients
+//    LINALG::Matrix<3,1> modgamma_;
+//    LINALG::Matrix<5,1> moddelta_;
+//
+//    /// principal anisotropic coefficients
+//    LINALG::Matrix<3,1> anisogamma_;
+//    LINALG::Matrix<5,1> anisodelta_;
 
     /// variable to decide which formulations are used
 //    bool havecoeffprinc_ ;

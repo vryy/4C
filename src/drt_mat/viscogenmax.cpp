@@ -64,19 +64,19 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ViscoGenMax::CreateMaterial()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ViscoGenMax::MaterialById(const int id) const
-{
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::const_iterator m = potsum_.find(id);
-  if (m == potsum_.end())
-  {
-    dserror("Material %d could not be found", id);
-    return Teuchos::null;
-  }
-  else
-  {
-    return m->second;
-  }
-}
+//Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ViscoGenMax::MaterialById(const int id) const
+//{
+//  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::const_iterator m = potsum_.find(id);
+//  if (m == potsum_.end())
+//  {
+//    dserror("Material %d could not be found", id);
+//    return Teuchos::null;
+//  }
+//  else
+//  {
+//    return m->second;
+//  }
+//}
 
 
 MAT::ViscoGenMaxType MAT::ViscoGenMaxType::instance_;
@@ -106,7 +106,7 @@ DRT::ParObject* MAT::ViscoGenMaxType::Create( const std::vector<char> & data )
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ViscoGenMax::ViscoGenMax()
-  : params_(NULL)
+  : viscoparams_(NULL)
 {
   isinit_=false;
   histstressisoprinccurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -134,7 +134,8 @@ MAT::ViscoGenMax::ViscoGenMax()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ViscoGenMax::ViscoGenMax(MAT::PAR::ViscoGenMax* params)
-  : params_(params)
+  :   ElastHyper(params),
+      viscoparams_(params)
 {
 }
 
@@ -746,8 +747,8 @@ void MAT::ViscoGenMax::Evaluate(
   double scalarvisco;
 
   //  Get relaxation time and time integration constant
-  double tau  = params_->relax_;
-  double beta = params_->beta_;
+  double tau  = viscoparams_->relax_;
+  double beta = viscoparams_->beta_;
   const double theta= 0.5 ;//params_->theta_;
 
   // get time algorithmic parameters

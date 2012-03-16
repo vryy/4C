@@ -272,9 +272,12 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   isomod_ = false ;
   anisoprinc_ = false ;
   anisomod_ = false;
+  cout << "isomod" << isomod_ << endl ;
 
   // loop map of associated potential summands
   std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  cout << "nummat" << params_->nummat_ << endl ;
+
   std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
   for (p=pot.begin(); p!=pot.end(); ++p)
   {
