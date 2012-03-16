@@ -11,14 +11,10 @@
 
 #include "../drt_io/io_ostream0.H"
 
-#include "fsi_statustest.H"
-#include "fsi_debugwriter.H"
-
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Direction_UserDefinedFactory.H>
 
-//#include "fsi_monolithicinterface.H"
 
 namespace LINALG
 {

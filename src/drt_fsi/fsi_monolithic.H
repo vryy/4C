@@ -13,7 +13,6 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
-//#include "fsi_nox_group.H"
 
 namespace LINALG
 {

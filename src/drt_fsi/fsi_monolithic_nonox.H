@@ -3,13 +3,9 @@
 #ifndef FSI_MONOLITHIC_NONOX_H
 #define FSI_MONOLITHIC_NONOX_H
 
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_ale/ale.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
-
 #include "../drt_io/io_ostream0.H"
 
+#include <Epetra_Vector.h>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
@@ -18,12 +14,12 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
 }
-
 
 namespace FSI
 {

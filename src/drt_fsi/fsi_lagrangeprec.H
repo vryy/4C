@@ -3,10 +3,6 @@
 #ifndef FSI_LAGRANGEPREC_H
 #define FSI_LAGRANGEPREC_H
 
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
-
 #include "fsi_overlapprec.H"
 
 // forward declarations

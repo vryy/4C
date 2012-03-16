@@ -3,12 +3,8 @@
 #ifndef FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_H
 #define FSI_FLUIDFLUIDMONOLITHICSTRUCTURESPLIT_H
 
-#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "fsi_monolithic.H"
 #include "fsi_monolithic_nonox.H"
-#include "fsi_overlapprec.H"
-
 
 // forward declarations
 namespace ADAPTER

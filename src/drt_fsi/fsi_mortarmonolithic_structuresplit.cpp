@@ -12,6 +12,7 @@
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_matrixtransform.H"
+#include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"

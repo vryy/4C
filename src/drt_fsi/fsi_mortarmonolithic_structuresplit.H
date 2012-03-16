@@ -6,10 +6,8 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
-#include "fsi_utils.H"
 
 // forward declarations
-
 namespace ADAPTER
 {
   class Coupling;
@@ -21,6 +19,7 @@ namespace FSI
   namespace UTILS
   {
     class MatrixColTransform;
+    class SlideAleUtils;
   }
 }
 

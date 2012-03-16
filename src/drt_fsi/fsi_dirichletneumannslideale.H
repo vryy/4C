@@ -22,12 +22,6 @@ Maintainer: Thomas Kloeppel
 
 #include "fsi_dirichletneumann.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/adapter_fluid_ale.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
-
 namespace FSI {
 
 namespace UTILS

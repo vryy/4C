@@ -14,6 +14,7 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_matrixtransform.H"
+#include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"

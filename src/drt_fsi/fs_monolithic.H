@@ -3,18 +3,10 @@
 #ifndef FS_MONOLITHIC_H
 #define FS_MONOLITHIC_H
 
-#include "../drt_inpar/inpar_fsi.H"
-
 #include "fsi_overlapprec.H"
 
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid.H"
-#include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
 
 #include <NOX.H>
 #include <NOX_Epetra.H>

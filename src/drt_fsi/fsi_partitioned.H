@@ -17,8 +17,6 @@ Maintainer: Ulrich Kuettler
 #ifndef FSI_PARTITIONED_H
 #define FSI_PARTITIONED_H
 
-#include "../drt_lib/standardtypes_cpp.H"
-
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
