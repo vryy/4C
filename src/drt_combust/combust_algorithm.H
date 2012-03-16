@@ -49,7 +49,7 @@ namespace COMBUST
   public:
 
     /// constructor using a Epetra_Comm
-    explicit Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn);
+    explicit Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn, const Teuchos::ParameterList& solverparams);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();

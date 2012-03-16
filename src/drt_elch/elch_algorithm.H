@@ -47,7 +47,8 @@ namespace ELCH
     /// constructor
     explicit Algorithm(
         const Epetra_Comm& comm,                   ///< communicator
-        const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
+        const Teuchos::ParameterList& prbdyn, ///< problem-specific parameter list
+        const Teuchos::ParameterList& solverparams
         );
 
     /// virtual destructor to support polymorph destruction

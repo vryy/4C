@@ -428,7 +428,15 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+  // get parameter list of structural dynamics
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // get the solver number used for structural problems
+  const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                     actdis->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
@@ -449,49 +457,24 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
     case INPAR::CONTACT::system_spsimpler:
     {
       // meshtying/contact for structure
-      if(apptype == INPAR::CONTACT::app_mortarmeshtying)
-      {
-        // plausibility check
-        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->MeshtyingSolverParams(),"AZPREC");
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-            prec != INPAR::SOLVER::azprec_TekoSIMPLE)
-          dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the MESHTYING SOLVER block in your dat file.");
+      // get the solver number used for meshtying/contact problems
+      const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
+      // check if the meshtying/contact solver has a valid solver number
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
 
-        // build meshtying solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
-      else if(apptype == INPAR::CONTACT::app_mortarcontact)
-      {
-        // plausibility check
-        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->ContactSolverParams(),"AZPREC");
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-            prec != INPAR::SOLVER::azprec_TekoSIMPLE)
-          dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the CONTACT SOLVER block in your dat file.");
+      // plausibility check
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+          prec != INPAR::SOLVER::azprec_TekoSIMPLE)
+        dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
 
-        // build contact solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
-      else
-      {
-	// TODO: handle constraint solver case
-        // plausibility check
-        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->ContactSolverParams(),"AZPREC");
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-            prec != INPAR::SOLVER::azprec_TekoSIMPLE)
-          dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the CONTACT SOLVER block in your dat file.");
+      // build meshtying solver
+      solver =
+      rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                             actdis->Comm(),
+                             DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-        // build contact solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
       INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
@@ -503,8 +486,22 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(mcparams,"SYSTEM");
       if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
       {
-        solver->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->StructSolverParams());
-        solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ContactConstraintSolverParams());
+        // get parameter list of structural dynamics
+        const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+        // get the solver number used for structural problems
+        const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+        // check if the structural solver has a valid solver number
+        if (linsolvernumber == (-1))
+          dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+        // get the solver number used for meshtying/contact problems
+        const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
+        // check if the SIMPLER solver has a valid solver number
+        if (simplersolvernumber == (-1))
+          dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in MESHTYING AND CONTACT to a valid number!");
+
+        solver->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->SolverParams(linsolvernumber));
+        solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(simplersolvernumber));
 
         // note: the null space is definitely too long and wrong for the Lagrange multipliers
         // don't forget to call FixMLNullspace for "Inverse1"!
@@ -514,31 +511,18 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
     break;
     default:
     {
-      if(apptype == INPAR::CONTACT::app_mortarmeshtying)
-      {
-        // build meshtying solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
-      else if(apptype == INPAR::CONTACT::app_mortarcontact)
-      {
-        // build contact solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
-      else
-      {
-	// TODO: handle constraint solver case
-        // build contact solver
-        solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      }
+      // meshtying/contact for structure
+       // get the solver number used for meshtying/contact problems
+       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
+       // check if the meshtying/contact solver has a valid solver number
+       if (linsolvernumber == (-1))
+         dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+
+      // build meshtying solver
+      solver =
+      rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                             actdis->Comm(),
+                             DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
   }

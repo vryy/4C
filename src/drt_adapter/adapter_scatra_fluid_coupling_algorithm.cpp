@@ -26,11 +26,12 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     bool isale,
-    const int disnum
+    const int disnum,
+    const Teuchos::ParameterList& solverparams
     )
 :  AlgorithmBase(comm,prbdyn),
    FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
-   ScaTraBaseAlgorithm(prbdyn,isale,disnum), // false -> no ALE in scatra algorithm
+   ScaTraBaseAlgorithm(prbdyn,isale,disnum,solverparams), // false -> no ALE in scatra algorithm
    params_(prbdyn)
 {
   // transfer the initial convective velocity from initial fluid field to scalar transport field

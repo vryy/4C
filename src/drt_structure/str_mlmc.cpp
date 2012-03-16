@@ -63,8 +63,14 @@ void STR::mlmc()
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
 
   // create a solver
+  // get the solver number used for structural solver
+  const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
   Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

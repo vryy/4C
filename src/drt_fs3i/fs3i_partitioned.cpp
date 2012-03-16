@@ -208,10 +208,20 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // create instances for fluid- and structure-based scalar transport
   // solver and arrange them in combined vector
   //---------------------------------------------------------------------
+  // get the solver number used for structural ScalarTransport solver
+  const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
+  // get the solver number used for structural ScalarTransport solver
+    const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+  // check if the TSI solver has a valid solver number
+  if (linsolver1number == (-1))
+    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+  if (linsolver2number == (-1))
+    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,0,problem->ScalarTransportFluidSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,0,problem->SolverParams(linsolver1number)));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,1,problem->ScalarTransportStructureSolverParams()));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,1,DRT::Problem::Instance()->SolverParams(linsolver2number)));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -452,8 +462,18 @@ void FS3I::PartFS3I::SetupSystem()
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  scatrasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
-  scatrasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->ScalarTransportStructureSolverParams());
+  // get the solver number used for structural ScalarTransport solver
+  const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
+  // get the solver number used for structural ScalarTransport solver
+    const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+  // check if the TSI solver has a valid solver number
+  if (linsolver1number == (-1))
+    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+  if (linsolver2number == (-1))
+    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+
+  scatrasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->SolverParams(linsolver1number));
+  scatrasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->SolverParams(linsolver2number));
 
   (scatravec_[0])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse1"));
   (scatravec_[1])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse2"));

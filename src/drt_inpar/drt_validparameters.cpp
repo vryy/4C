@@ -656,7 +656,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
     name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
     name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
-    name.push_back("Poroelasticity");       		           				 label.push_back(prb_poroelast);
+    name.push_back("Poroelasticity");                              label.push_back(prb_poroelast);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",
@@ -1118,6 +1118,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Use the modified explicit Euler time integration scheme",
                                yesnotuple,yesnovalue,&sdyn);
 
+  // linear solver id used for structural problems
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&sdyn);
+
   /*--------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in structural dynamics */
   Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY",false,"");
@@ -1277,6 +1280,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // linear solver id used for contact/meshtying problems (both for fluid and structure meshtying as well as structural contact)
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
+
+  // linear solver id used for contact/meshtying problems in saddlepoint formulation used for solving LAGRANGE multipliers,
+  // used as SIMPLER preconditioner in FLUID DYNAMICS
+  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for meshtying and contact in saddlepoint formulation",&scontact);
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
        tuple<std::string>("None","none",
@@ -1846,6 +1853,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Lump the capacity matrix for explicit time integration",
                                yesnotuple,yesnovalue,&tdyn);
 
+  // number of linear solver used for thermal problems
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for thermal problems",&tdyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
@@ -2027,6 +2037,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &poroelastdyn);
   IntParameter("INITFUNCNO",-1,"function number for porosity initial field",&poroelastdyn);
+
+  // number of linear solver used for poroelasticity
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
@@ -3040,6 +3053,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESULTSEVRY",1,"",&adyn);
 
+  // linear solver id used for scalar ale problems
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for ale problems...",&adyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn = list->sublist(
       "SCALAR TRANSPORT DYNAMIC",
@@ -3059,7 +3075,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::solvertype_nonlinear),
                                &scatradyn);
 
-setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
+  setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
@@ -3084,7 +3100,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    INPAR::SCATRA::timeint_tg4_onestep
                                  ),
                                &scatradyn);
-
 
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&scatradyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&scatradyn);
@@ -3225,7 +3240,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                &scatradyn);
 
   BoolParameter("BLOCKPRECOND","NO",
-      "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",&scatradyn);
+      "Switch to block-preconditioned family of solvers, needs additional SIMPLER SOLVER block!",&scatradyn);
 
   setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
                                "Type of scalar transport problem",
@@ -3271,6 +3286,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                         INPAR::FLUID::sps_pc,
                                         INPAR::FLUID::coupling_iontransport_laplace),   //use the condensed_bmat_merged strategy
                                     &scatradyn);
+
+  // linear solver id used for scalar transport/elch problems
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
+  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
@@ -3518,9 +3538,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   BoolParameter("SGS_MATERIAL_UPDATE","no","update material by adding subgrid-scale scalar field",&lomacontrol);
 
   // number of linear solver used for LOMA solver
-  IntParameter("COUPLED_LINEAR_SOLVER",-1,"number of linear solver used for LOMA problem",&lomacontrol);
-  IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&lomacontrol);
-  IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for scatra problem",&lomacontrol);
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for LOMA problem",&lomacontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
@@ -4418,59 +4436,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  tuple<std::string>("Tessellation","MomentFitting"),
                                  tuple<int>(0,1),
                                  &xfem_general);
-
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
-  SetValidSolverParameters(fluidsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fluidpsolver = list->sublist("FLUID PRESSURE SOLVER",false,"pressure solver parameters for SIMPLE preconditioning");
-  SetValidSolverParameters(fluidpsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");
-  SetValidSolverParameters(structsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& alesolver = list->sublist("ALE SOLVER",false,"");
-  SetValidSolverParameters(alesolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"linear solver for thermal problems");
-  SetValidSolverParameters(thermalsolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fluidscatrasolver = list->sublist("FLUID SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
-  SetValidSolverParameters(fluidscatrasolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& structurescatrasolver = list->sublist("STRUCTURE SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
-  SetValidSolverParameters(structurescatrasolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scatrapotsolver = list->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",false,"solver parameters for block-preconditioning");
-  SetValidSolverParameters(scatrapotsolver);
-
-  // MESHTYING solver section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& meshtyingsolver = list->sublist("MESHTYING SOLVER",false,"solver parameters for fluid or structure meshtying problem");
-  SetValidSolverParameters(meshtyingsolver);
-
-  // CONTACT solver section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& contactsolver = list->sublist("CONTACT SOLVER",false,"solver parameters for contact problem");
-  SetValidSolverParameters(contactsolver);
-
-  // CONSTRAINT solver section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& cconstraintsolver = list->sublist("CONTACT CONSTRAINT SOLVER",false,"solver parameters for constraint block (Lagrange multipliers) within saddle point problem");
-  SetValidSolverParameters(cconstraintsolver);
-
-  // Poroelasticity monolithic solver section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& poroelastmonsolver = list->sublist("POROELASTICITY MONOLITHIC SOLVER",false,"solver parameters for monoltihic poroelasticity");
-  SetValidSolverParameters(poroelastmonsolver);
 
   // solver 1 section
   /*----------------------------------------------------------------------*/

@@ -78,8 +78,13 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     if (scatradis->NumGlobalNodes()==0)
       dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+    // get linear solver id from SCALAR TRANSPORT DYNAMIC
+    const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+    if (linsolvernumber == (-1))
+      dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
     // create instance of scalar transport basis algorithm (empty fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber),false));
 
     // read the restart information, set vectors and variables
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -158,9 +163,14 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
       // create an ELCH::MovingBoundaryAlgorithm instance
       Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
-        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn));
+        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -179,8 +189,13 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     }
     else
     {
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
       // create an ELCH::Algorithm instance
-      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn));
+      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);

@@ -294,25 +294,13 @@ public:
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
   const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
-
-  const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
-
-  const Teuchos::ParameterList& StructSolverParams() const { return getParameterList()->sublist("STRUCT SOLVER"); }
-  const Teuchos::ParameterList& FluidSolverParams() const { return getParameterList()->sublist("FLUID SOLVER"); }
-  const Teuchos::ParameterList& FluidPressureSolverParams() const { return getParameterList()->sublist("FLUID PRESSURE SOLVER"); }
-  const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
-  const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
-  const Teuchos::ParameterList& ScalarTransportFluidSolverParams() const { return getParameterList()->sublist("FLUID SCALAR TRANSPORT SOLVER"); }
-  const Teuchos::ParameterList& ScalarTransportStructureSolverParams() const { return getParameterList()->sublist("STRUCTURE SCALAR TRANSPORT SOLVER"); }
-  const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }  // for SIMPLE
-  const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
-  const Teuchos::ParameterList& PoroelastMonolithicSolverParams() const { return getParameterList()->sublist("POROELASTICITY MONOLITHIC SOLVER"); }
-  const Teuchos::ParameterList& MeshtyingSolverParams() const { return getParameterList()->sublist("MESHTYING SOLVER"); }
-  const Teuchos::ParameterList& ContactSolverParams() const { return getParameterList()->sublist("CONTACT SOLVER"); }
-  const Teuchos::ParameterList& ContactConstraintSolverParams() const { return getParameterList()->sublist("CONTACT CONSTRAINT SOLVER"); }
+  const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
+  const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
+
+  const Teuchos::ParameterList& UMFPACKSolverParams();
 
   //@}
 

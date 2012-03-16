@@ -126,7 +126,8 @@ public:
   by #TranslateSolverParameters.
 
   \param inparams (in): input parameter list as provided by DRT::Problem,
-                        e.g. DRT::Problem::StructSolverParams in case of solver for structures
+                        e.g. DRT::Problem::SolverParams(num) in case of solver for
+                        structures and num according to STRUCTURAL DYNAMIC
   \param comm     (in): a reference to a Epetra communicator object
   \param outfile  (in): pointer to an error file
 
@@ -287,8 +288,8 @@ public:
          internal solver parameters list style
 
   \param inparams (in): input parameter list as provided by DRT::Problem,
-                        e.g. DRT::Problem::StructSolverParams in case of
-                        solver for structures
+                        e.g. DRT::Problem::SolverParams(num) in case of solver for
+                        structures and num according to STRUCTURAL DYNAMIC
   \return             : internal parameter list ready to be associated
                         with #params_
   \date 02/07,11/08

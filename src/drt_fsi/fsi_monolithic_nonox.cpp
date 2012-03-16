@@ -241,7 +241,7 @@ void FSI::MonolithicNoNOX::LinearSolve()
 
   // get UMFPACK...
 
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->StructSolverParams();
+  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
 
   solver_ = rcp(new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 

@@ -77,7 +77,13 @@ V0_(V0)
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  solver_ = Teuchos::rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->StructSolverParams(),
+  // get the solver number used for structural solver
+  const int linsolvernumber = sdyn_micro.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+  solver_ = Teuchos::rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
                                     discret_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());

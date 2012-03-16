@@ -89,8 +89,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
+  // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter list? -> no default paramter possible any more
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solverparams,   //DRT::Problem::Instance()->ScalarTransportFluidSolverParams(),
+    rcp(new LINALG::Solver(solverparams,
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
@@ -189,7 +190,11 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       inv1.remove("SIMPLER",false);
       inv1.remove("Inverse1",false);
       // set Inverse2 block (for secondary variable), use ScalarTransportElectricPotential Solver
-      solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+      // get the solver number used for SIMPLER SOLVER
+      const int linsolvernumber_simpler = scatradyn.get<int>("SIMPLER_SOLVER");
+      if (linsolvernumber_simpler == (-1))
+        dserror("no SIMPLER_SOLVER number set for ELCH problem (solved with SIMPLER). Please set SIMPLER_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+      solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
       // use CheapSIMPLE preconditioner (hardwired; change me for others)
       solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
       solver->Params().set("ELCH",true); // internal CheapSIMPLE modus for ML null space computation
@@ -199,7 +204,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       if (actdis->Comm().MyPID()==0)
       {
         const Teuchos::ParameterList& solverparams2
-        = DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams();
+        = DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler);
         DRT::INPUT::PrintDefaultParameters(std::cout, solverparams2);
       }
       */

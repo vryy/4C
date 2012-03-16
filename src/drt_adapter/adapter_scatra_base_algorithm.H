@@ -49,8 +49,8 @@ namespace ADAPTER {
     explicit ScaTraBaseAlgorithm(
         const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
         const bool isale,                     ///< do we need the ALE formulation?
-        const int disnum=0,                   ///< scatra discretization number (default: 0)
-        const Teuchos::ParameterList& solverparams=DRT::Problem::Instance()->ScalarTransportFluidSolverParams(), ///< BACI solver block parameter list from dat file (default: FLUID SCALAR TRANSPORT SOLVER)
+        const int disnum,                     ///< scatra discretization number
+        const Teuchos::ParameterList& solverparams, ///< BACI solver block parameter list from dat file (default: fluid scatra solver)
         const bool reinitswitch=false         ///< is used for reinitialization of level-set?
     );
 

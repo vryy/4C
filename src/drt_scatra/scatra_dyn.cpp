@@ -65,8 +65,13 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       if (scatradis->NumGlobalNodes()==0)
         dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false));
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -117,8 +122,13 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
       prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
+      // get linear solver id from SCALAR TRANSPORT DYNAMIC
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      if (linsolvernumber == (-1))
+        dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
       // create an one-way coupling algorithm instance
-      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn));
+      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       if (restart)
       {

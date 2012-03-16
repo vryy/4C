@@ -47,8 +47,8 @@ Maintainer: Florian Henke
    *
    * scalar transport velocity field has been initialized in ScaTraFluidCouplingAlgorithm()
   */
-COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn)
-: ScaTraFluidCouplingAlgorithm(comm, combustdyn,false),
+COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& combustdyn, const Teuchos::ParameterList& solverparams)
+: ScaTraFluidCouplingAlgorithm(comm, combustdyn,false,0,solverparams),
 // initialize member variables
   fgiter_(0),
   fgitermax_(combustdyn.get<int>("ITEMAX")),

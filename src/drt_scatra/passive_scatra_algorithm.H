@@ -35,7 +35,8 @@ namespace SCATRA{
     explicit PassiveScaTraAlgorithm(
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameter list
-        const int disnum=0                    ///< scatra discretization number (default: 0)
+        const int disnum,                     ///< scatra discretization number (default: 0)
+        const Teuchos::ParameterList& solverparams
         );
 
     /// virtual destructor to support polymorph destruction

@@ -201,19 +201,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Trust Region", *list);
   reader.ReadSection("--STRUCT NOX/Printing", *list);
 
-  reader.ReadGidSection("--FLUID SOLVER", *list);
-  reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);      // TODO: remove me. use CONSTRAINT SOLVER block instead
-  reader.ReadGidSection("--STRUCT SOLVER", *list);
-  reader.ReadGidSection("--ALE SOLVER", *list);
-  reader.ReadGidSection("--THERMAL SOLVER", *list);
-  reader.ReadGidSection("--FLUID SCALAR TRANSPORT SOLVER", *list);
-  reader.ReadGidSection("--STRUCTURE SCALAR TRANSPORT SOLVER", *list);
-  reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
-  reader.ReadGidSection("--MESHTYING SOLVER", *list);             // MESHTYING SOLVER for structure/fluid meshtying
-  reader.ReadGidSection("--POROELASTICITY MONOLITHIC SOLVER", *list);
-  reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)
-  reader.ReadGidSection("--CONTACT CONSTRAINT SOLVER", *list);    // only used for constraint block in a saddle point problem (for contact/meshtying)
-
   reader.ReadGidSection("--SOLVER 1", *list); // TODO replace me by something smarter
   reader.ReadGidSection("--SOLVER 2", *list);
   reader.ReadGidSection("--SOLVER 3", *list);
@@ -238,6 +225,20 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
   std::stringstream ss;
   ss << "SOLVER " << solverNr;
   return getParameterList()->sublist(ss.str());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
+{
+  Teuchos::RCP<Teuchos::ParameterList> params = getNonconstParameterList();
+  if(params->isSublist("UMFPACK SOLVER") == false)
+  {
+    Teuchos::ParameterList& subParams = params->sublist("UMFPACK SOLVER");
+    subParams.set("SOLVER", "UMFPACK");
+    subParams.set("NAME"  , "temporary UMFPACK solver");
+  }
+  return getParameterList()->sublist("UMFPACK SOLVER");
 }
 
 /*----------------------------------------------------------------------*/

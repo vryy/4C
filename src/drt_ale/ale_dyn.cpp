@@ -82,8 +82,14 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
+  // get the solver number used for ALE problems
+  const int linsolvernumber = adyn.get<int>("LINEAR_SOLVER");
+  // check if the TSI solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
+
   RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->AleSolverParams(),
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

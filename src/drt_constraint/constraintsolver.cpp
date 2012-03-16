@@ -390,8 +390,16 @@ void UTILS::ConstraintSolver::SolveSimple
   RCP<Epetra_Vector> rhscopy=rcp(new Epetra_Vector(*rhsstand));
   
   //make solver CheapSIMPLE-ready
+  // meshtying/contact for structure
+  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // get the solver number used for meshtying/contact problems
+  const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
+  // check if the meshtying/contact solver has a valid solver number
+  if (linsolvernumber == (-1))
+   dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+
   Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
-  solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->ContactSolverParams());
+  solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
   if(!solver_->Params().isSublist("Aztec Parameters") &&
      !solver_->Params().isSublist("Belos Parameters"))
   {
@@ -405,8 +413,13 @@ void UTILS::ConstraintSolver::SolveSimple
   solver_->Params().set<bool>("CONSTRAINT",true);      // handling of constraint null space within Simple type preconditioners
   solver_->Params().sublist("CheapSIMPLE Parameters"); // this automatically sets preconditioner to CheapSIMPLE!
   solver_->Params().sublist("Inverse1") = sfparams;
+  // get the solver number used for meshtying/contact problems
+  const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
+  // check if the SIMPLER solver has a valid solver number
+  if (simplersolvernumber == (-1))
+    dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in MESHTYING AND CONTACT to a valid number!");
   solver_->PutSolverParamsToSubParams("Inverse2",
-      DRT::Problem::Instance()->FluidPressureSolverParams());
+      DRT::Problem::Instance()->SolverParams(simplersolvernumber));
 
   //build block matrix for SIMPLE
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=

@@ -50,7 +50,8 @@ namespace ADAPTER
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
         bool isale,  ///< do we need an ALE formulation of the fields?
-        const int disnum=0 ///< scatra discretization number (default: 0)
+        const int disnum, ///< scatra discretization number
+        const Teuchos::ParameterList& solverparams
         );
 
     /// virtual destructor to support polymorph destruction

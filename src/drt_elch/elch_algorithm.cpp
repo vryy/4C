@@ -30,9 +30,10 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn
+    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,0,solverparams),
    natconv_(DRT::INPUT::IntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
    itmax_ (prbdyn.get<int>("ITEMAX")),
    ittol_ (prbdyn.get<double>("CONVTOL")),

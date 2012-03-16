@@ -53,12 +53,17 @@ COMBUST::ReinitializationPDE::ReinitializationPDE()
   // solution output
   combustdynreinit_->set           ("UPRES"       ,combustdyn.get<int>("UPRES"));
 
+  // get linear solver id from SCALAR TRANSPORT DYNAMIC
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for COMBUST problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   reinit_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
       *combustdynreinit_,
       false, // is_ale
       0,     // use first scatra discretization
-      DRT::Problem::Instance()->ScalarTransportFluidSolverParams(),
+      DRT::Problem::Instance()->SolverParams(linsolvernumber),
       true   // reinitswitch
       )
   );

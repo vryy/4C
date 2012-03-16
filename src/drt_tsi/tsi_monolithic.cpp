@@ -206,7 +206,25 @@ void TSI::Monolithic::CreateLinearSolver()
   const int linsolvernumber = tsidyn.get<int>("LINEAR_SOLVER");
   // check if the TSI solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for monolithic TSI solver. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
+    dserror("no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
+
+  // get parameter list of structural dynamics
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // use solver blocks for structure
+  // get the solver number used for structural solver
+  const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (slinsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+  // get parameter list of thermal dynamics
+  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  // use solver blocks for temperature (thermal field)
+  // get the solver number used for thermal solver
+  const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
+  // check if the TSI solver has a valid solver number
+  if (tlinsolvernumber == (-1))
+    dserror("no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL DYNAMIC to a valid number!");
 
   // get solver parameter list of linear TSI solver
   const Teuchos::ParameterList& tsisolverparams
@@ -221,13 +239,13 @@ void TSI::Monolithic::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::aztec_msr &&
       solvertype != INPAR::SOLVER::belos)
   {
-    cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
-    cout << " Note: the BGS2x2 preconditioner now "              << endl;
-    cout << " uses the STRUCT SOLVER and THERMAL SOLVER blocks"  << endl;
-    cout << " for building the internal inverses"                << endl;
-    cout << " Remove the old BGS PRECONDITIONER BLOCK entries "  << endl;
-    cout << " in the dat files!"                                 << endl;
-    cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
+    cout << " Note: the BGS2x2 preconditioner now "                  << endl;
+    cout << " uses the structural solver and thermal solver blocks"  << endl;
+    cout << " for building the internal inverses"                    << endl;
+    cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << endl;
+    cout << " in the dat files!"                                     << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
     dserror("aztec solver expected");
   }
   const int azprectype
@@ -246,17 +264,17 @@ void TSI::Monolithic::CreateLinearSolver()
     {
 #ifdef HAVE_TEKO
       // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
-      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->StructSolverParams(), "SOLVER");
+      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(slinsolvernumber), "SOLVER");
       if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
           solvertype != INPAR::SOLVER::stratimikos_aztec  &&
           solvertype != INPAR::SOLVER::stratimikos_belos)
       dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
 
-      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->ThermalSolverParams(), "SOLVER");
+      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(tlinsolvernumber), "SOLVER");
       if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
           solvertype != INPAR::SOLVER::stratimikos_aztec  &&
           solvertype != INPAR::SOLVER::stratimikos_belos)
-        dserror("Teko expects a STRATIMIKOS solver object in THERMAL SOLVER");
+        dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d",tlinsolvernumber);
 #else
       dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
 #endif
@@ -276,8 +294,8 @@ void TSI::Monolithic::CreateLinearSolver()
                      );
 
   // use solver blocks for structure and temperature (thermal field)
-  const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->StructSolverParams();
-  const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->ThermalSolverParams();
+  const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+  const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
 
   solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
   solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);

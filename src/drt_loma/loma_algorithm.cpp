@@ -28,9 +28,10 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn
+    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,0,solverparams)
 {
   // flag for monolithic solver
   monolithic_ = (DRT::INPUT::IntegralValue<int>(prbdyn,"MONOLITHIC"));
@@ -122,10 +123,10 @@ LOMA::Algorithm::Algorithm(
     lomablockdofrowmap_.Setup(*fullmap,dofrowmaps);
 
     // get solver number used for LOMA solver
-    const int linsolvernumber = prbdyn.get<int>("COUPLED_LINEAR_SOLVER");
+    const int linsolvernumber = prbdyn.get<int>("LINEAR_SOLVER");
     // check if LOMA solvers has a valid number
     if (linsolvernumber == (-1))
-      dserror("no linear solver defined for LOMA. Please set COUPLED_LINEAR_SOLVER in LOMA CONTROL to a valid number!");
+      dserror("no linear solver defined for LOMA. Please set LINEAR_SOLVER in LOMA CONTROL to a valid number! This solver has to be an Aztec solver with BGS2x2 block preconditioner.");
 
     // create loma solver
     // get solver parameter list of linear LOMA solver
@@ -133,11 +134,11 @@ LOMA::Algorithm::Algorithm(
 
     const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams,"SOLVER");
     if (solvertype != INPAR::SOLVER::aztec_msr)
-      dserror("Aztec solver expected!");
+      dserror("SOLVER %i is not valid for LOMA. It has to be an Aztec Solver (with BGS2x2 block preconditioner)",linsolvernumber);
 
     const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(lomasolverparams,"AZPREC");
     if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
-      dserror("Block Gauss-Seidel preconditioner expected!");
+      dserror("SOLVER %i is not valid for LOMA. It has to be an Aztec Solver with BGS2x2 block preconditioner",linsolvernumber);
 
     // use loma solver object
     lomasolver_ = rcp(new LINALG::Solver(lomasolverparams,FluidField().Discretization()->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -145,10 +146,17 @@ LOMA::Algorithm::Algorithm(
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
     if (fluidsolver == (-1))
-      dserror("no linear solver defined for fluid LOMA (inflow) problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
+      dserror("no linear solver defined for fluid LOMA (inflow) problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number! This solver block is used for the primary variables (Inverse1 block) within BGS2x2 preconditioner.");
 
     lomasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->SolverParams(fluidsolver));
-    lomasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
+
+    // get linear solver id from SCALAR TRANSPORT DYNAMIC
+    const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    const int scalartransportsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+    if (scalartransportsolvernumber == (-1))
+      dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number! This solver block is used for the secondary variables (Inverse2 block) within BGS2x2 preconditioner.");
+
+    lomasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->SolverParams(scalartransportsolvernumber));
 
     FluidField().Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse1"));
     ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse2"));

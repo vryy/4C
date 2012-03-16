@@ -1495,10 +1495,16 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
+    const Teuchos::ParameterList& scatradyn =
+      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
+    if (lstsolver == (-1))
+      dserror("no linear solver defined for least square NURBS problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number! Note: this solver block is misused for the least square problem. Maybe one should add a separate parameter for this.");
+
     DRT::NURBS::apply_nurbs_initial_condition(
         *discret_  ,
         errfile_,
-        DRT::Problem::Instance()->ScalarTransportFluidSolverParams(),
+        DRT::Problem::Instance()->SolverParams(lstsolver),
         startfuncno,
         phin_     );
 

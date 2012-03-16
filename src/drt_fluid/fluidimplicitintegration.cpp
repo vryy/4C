@@ -4364,7 +4364,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       DRT::NURBS::apply_nurbs_initial_condition(
         *discret_  ,
         DRT::Problem::Instance()->ErrorFile()->Handle(),
-        DRT::Problem::Instance()->FluidSolverParams(),
+        DRT::Problem::Instance()->UMFPACKSolverParams(),
         startfuncno,
         velnp_     );
 

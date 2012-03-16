@@ -97,8 +97,15 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // get the combustion parameter list
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
+
+  // get linear solver id from SCALAR TRANSPORT DYNAMIC
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
   // create a COMBUST::Algorithm instance
-  Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
+  Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
   //------------------------------------------------------------------------------------------------
   // restart

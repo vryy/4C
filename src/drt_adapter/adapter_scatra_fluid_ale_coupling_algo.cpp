@@ -32,9 +32,10 @@ extern struct _GENPROB     genprob;
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
-    const std::string condname
+    const std::string condname,
+    const Teuchos::ParameterList& solverparams
 )
-:  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true), // yes, we need the ALE formulation
+:  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true, 0, solverparams), // yes, we need the ALE formulation
    AleBaseAlgorithm(prbdyn) // construct ale base algorithm as well
 {
    // set up couplings

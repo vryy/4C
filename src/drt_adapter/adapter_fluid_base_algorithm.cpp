@@ -187,13 +187,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         {
     #ifdef HAVE_TEKO
           // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
-          int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->StructSolverParams(), "SOLVER");
+          int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(fluidsolver), "SOLVER");
           if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
               solvertype != INPAR::SOLVER::stratimikos_aztec  &&
               solvertype != INPAR::SOLVER::stratimikos_belos)
           dserror("Teko expects a STRATIMIKOS solver object in SOLVER %i", fluidsolver);
 
-          solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->ThermalSolverParams(), "SOLVER");
+          solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(fluidpressuresolver), "SOLVER");
           if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
               solvertype != INPAR::SOLVER::stratimikos_aztec  &&
               solvertype != INPAR::SOLVER::stratimikos_belos)
@@ -243,7 +243,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::no_meshtying: // no meshtying -> use FLUID SOLVER
     default:
     {
-      // default: create solver using the FluidSolverParams from FLUID SOLVER block
+      // default: create solver using the fluid solver params from FLUID SOLVER block
 
       // get the solver number used for linear fluid solver
       const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");

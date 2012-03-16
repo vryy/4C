@@ -53,7 +53,8 @@ namespace ADAPTER
     explicit ScaTraFluidAleCouplingAlgorithm(
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
-        const std::string condname ///< name of condition that defines fluid-ale coupling
+        const std::string condname, ///< name of condition that defines fluid-ale coupling
+        const Teuchos::ParameterList& solverparams
         );
 
     /// virtual destructor to support polymorph destruction

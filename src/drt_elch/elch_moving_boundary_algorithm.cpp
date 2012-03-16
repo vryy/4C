@@ -25,9 +25,10 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn
+    const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),
+:  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling",solverparams),
    pseudotransient_(false),
    molarvolume_(prbdyn.get<double>("MOLARVOLUME")),
    idispn_(FluidField().ExtractInterfaceVeln()),

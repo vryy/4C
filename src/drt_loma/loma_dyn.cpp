@@ -85,8 +85,13 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     if (scatradis->NumGlobalNodes()==0)
       dserror("No elements in input section ---TRANSPORT ELEMENTS!");
 
+    // get linear solver id from SCALAR TRANSPORT DYNAMIC
+    const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+    if (linsolvernumber == (-1))
+      dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
     // create instance of scalar transport basis algorithm (no fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read restart information
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -135,8 +140,13 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     }
     else dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+    // get linear solver id from SCALAR TRANSPORT DYNAMIC
+    const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+    if (linsolvernumber == (-1))
+      dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
     // create a LOMA::Algorithm instance
-    Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol));
+    Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(comm,lomacontrol,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read restart information
     // in case a inflow generation in the inflow section has been performed, there are not any

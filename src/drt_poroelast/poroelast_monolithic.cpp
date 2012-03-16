@@ -263,10 +263,17 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
 #ifdef POROELASTBLOCKMATRIXMERGE
   // create a linear solver
   // get UMFPACK...
+  // get dynamic section of poroelasticity
+  const Teuchos::ParameterList& poroelastdyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  // get the solver number used for linear poroelasticity solver
+  const int linsolvernumber = poroelastdyn.get<int>("LINEAR_SOLVER");
+  // check if the poroelasticity solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for poroelasticity. Please set LINEAR_SOLVER in POROELASTICITY DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
-      DRT::Problem::Instance()->PoroelastMonolithicSolverParams();
+    DRT::Problem::Instance()->SolverParams(linsolvernumber);
   const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-      solverparams, "SOLVER");
+    solverparams, "SOLVER");
   if (solvertype != INPAR::SOLVER::umfpack)
     dserror("umfpack solver expected");
 
