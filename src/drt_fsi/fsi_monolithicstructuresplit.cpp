@@ -45,12 +45,13 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  lambdag_ = Teuchos::rcp(new Epetra_Vector(*StructureField().Interface().FSICondMap()));
+  // Recovering of Lagrange multiplier happens on structure field
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField().Interface().FSICondMap()));
   ddiinc_ = Teuchos::null;
-  soxpre_ = Teuchos::null;
+  solipre_ = Teuchos::null;
   ddginc_ = Teuchos::null;
-  scxpre_ = Teuchos::null;
-  fgspre_ = Teuchos::null;
+  solgpre_ = Teuchos::null;
+  fgpre_ = Teuchos::null;
   sgipre_ = Teuchos::null;
   sggpre_ = Teuchos::null;
 
@@ -282,7 +283,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
+  double aa = 0.5;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -338,7 +339,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     double scale     = FluidField().ResidualScaling();
 
-    veln->Scale(dd/bb/scale);
+    veln->Scale(dd/(bb*scale));
 
     Extractor().AddVector(*veln,1,f); // add fluid contribution to 'f'
 
@@ -403,10 +404,10 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     // Reset quantities for previous iteration step since they still store values from the last time step
     ddiinc_ = LINALG::CreateVector(*StructureField().Interface().OtherMap(),true);
-    soxpre_ = Teuchos::null;
-    ddginc_ = LINALG::CreateVector(*StructureField().Interface().OtherMap(),true);
-    scxpre_ = Teuchos::null;
-    fgscur_ = LINALG::CreateVector(*StructureField().Interface().OtherMap(),true);
+    solipre_ = Teuchos::null;
+    ddginc_ = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true);
+    solgpre_ = Teuchos::null;
+    fgcur_ = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true);
     sgicur_ = Teuchos::null;
     sggcur_ = Teuchos::null;
   }
@@ -416,8 +417,8 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
-  fgspre_ = fgscur_;
-  fgscur_ = StructureField().Interface().ExtractFSICondVector(StructureField().RHS());
+  fgpre_ = fgcur_;
+  fgcur_ = StructureField().Interface().ExtractFSICondVector(StructureField().RHS());
 }
 
 
@@ -463,7 +464,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
+  double aa = 0.5;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -759,7 +760,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
+  double aa = 0.5;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
@@ -774,11 +775,11 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
-    modfv->Update(1.0, *fv, dd/bb/fluidscale);
+    modfv->Update(1.0, *fv, dd/(bb*fluidscale));
 
     // add contribution of Lagrange multiplier from previous time step
-    if (lambdag_ != Teuchos::null)
-      modfv->Update(cc+aa*dd/bb, *lambdag_, 1.0);
+    if (lambda_ != Teuchos::null)
+      modfv->Update(-cc+aa*dd/bb, *StructToFluid(lambda_), 1.0);
 
     Extractor().InsertVector(*modfv,1,f);
   }
@@ -1032,20 +1033,19 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   ax = a;
 
   // Store field vectors to know them later on as previous quantities
-  if (soxpre_ != Teuchos::null)
-    ddiinc_->Update(1.0, *sox, -1.0, *soxpre_, 0.0);  // compute current iteration increment
+  if (solipre_ != Teuchos::null)
+    ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
   else
-    ddiinc_ = rcp(new Epetra_Vector(*sox));
+    ddiinc_ = rcp(new Epetra_Vector(*sox));           // first iteration increment
 
-  soxpre_ = sox;                  // store current step increment
+  solipre_ = sox;                                      // store current step increment
 
-  if (scxpre_ != Teuchos::null)
-    ddginc_->Update(1.0, *scx, -1.0, *scxpre_, 0.0);  // compute current iteration increment
+  if (solgpre_ != Teuchos::null)
+    ddginc_->Update(1.0, *scx, -1.0, *solgpre_, 0.0);  // compute current iteration increment
   else
-    ddginc_ = rcp(new Epetra_Vector(*scx));
+    ddginc_ = rcp(new Epetra_Vector(*scx));           // first iteration increment
 
-  scxpre_ = scx;                  // store current step increment
-
+  solgpre_ = scx;                                      // store current step increment
 }
 
 /*----------------------------------------------------------------------*/
@@ -1055,25 +1055,25 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
+  double aa = 0.5;//0.444444444444;
   double bb = 1.0-aa;
   double cc = 0.0;
   double dd = 1.0;
 
   // compute the product S_{\Gamma I} \Delta d_I
-  Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField().Interface().OtherMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
+  Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
   (sgipre_->EpetraMatrix())->Multiply(false, *ddiinc_, *sgiddi);
 
   // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
-  Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField().Interface().OtherMap(),true); // store the prodcut '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
+  Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField().Interface().FSICondMap(),true); // store the prodcut '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
   (sggpre_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
 
   // Update the Lagrange multiplier:
   /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
    *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
    */
-  lambdag_->Update(1.0, *fgspre_, -aa/bb);
-  lambdag_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
+  lambda_->Update(1.0, *fgpre_, -aa/bb);
+  lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
 
   return;
 }
