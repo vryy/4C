@@ -33,10 +33,6 @@ Maintainer: Markus Gitterle
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
-// forward declarations
-struct _W1_DATA;  ///< additional wall element data
-
-
 namespace DRT
 {
 // forward declarations
@@ -424,16 +420,6 @@ private:
     const INPAR::STR::StressType           iostress   , ///< stress output option
     const INPAR::STR::StrainType           iostrain     ///< strain output option
   );
-
- // void w1_integration_points(struct _W1_DATA& data);
-
- // void w1_gpdom(int& totngp,
- //               double** gpcr, double** gpcs,
- //               double** gpwr);
-
-//  void w1_shapefunctions(std::vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
-//                               const double r, const double s, const int numnode,
-//                               const int doderiv) const;
 
   /// Jacobian matrix for mapping from parameter space in physical material space
   /// at point parameter space
