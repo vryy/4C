@@ -52,8 +52,6 @@ SHAPEFCT                        Polynomial
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ALPHA_F                         0.0
-ALPHA_M                         0.0
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or

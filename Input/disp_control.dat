@@ -42,7 +42,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics                          // Gen_Alfa Static
+DYNAMICTYP                      Statics                         // Gen_Alfa Static
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -52,10 +52,6 @@ CONTROLNODE 802 1 1 // node dof curve
 TIMESTEP                        0.005
 NUMSTEP                         25
 MAXTIME                         0.1
-BETA                            0.25                            // 0.291
-GAMMA                           0.5                             // 0.581
-ALPHA_M                         0.0                             // 0.378
-ALPHA_F                         0.0                             // 0.459
 DAMPING                         No
 M_DAMP                          0.0
 K_DAMP                          0.0

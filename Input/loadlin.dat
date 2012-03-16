@@ -53,10 +53,6 @@ LOADLIN                         yes                             // use lineariza
 TIMESTEP                        0.01
 NUMSTEP                         10
 MAXTIME                         3.0
-BETA                            0.291
-GAMMA                           0.581
-ALPHA_M                         0.378
-ALPHA_F                         0.459
 DAMPING                         No
 M_DAMP                          0.0
 K_DAMP                          0.0
@@ -71,6 +67,12 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.459
+ALPHA_M                         0.378
+BETA                            0.291
+GAMMA                           0.581
 -------------------------------------------------------MESHTYING AND CONTACT
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field

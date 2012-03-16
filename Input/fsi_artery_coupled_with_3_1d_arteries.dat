@@ -51,10 +51,6 @@ MAXTIME                         5000
 //ALPHA_M                       0.0
 //ALPHA_F                       0.0
 //                              be
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 //                              gen_alfa
 //BETA                          0.291
 //GAMMA                         0.581

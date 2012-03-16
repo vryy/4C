@@ -60,9 +60,6 @@ RESTART                         0
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ALPHA_F                         0.0                             // must be zero
-ALPHA_M                         0.0                             // must be zero
-BETA                            0.25
 // type of convergence check
 NORM_DISP                       Abs
 NORM_RESF                       Abs
@@ -70,7 +67,6 @@ NORMCOMBI_RESFDISP              Or
 DAMPING                         No                              // must be off
 DYNAMICTYP                      Statics
 EIGEN                           0
-GAMMA                           0.5
 ITERATION                       full
 ITWANT                          0
 K_DAMP                          0.5

@@ -58,10 +58,6 @@ NLNSOL                          fullnewton                      // fullnewton ls
 TIMESTEP                        0.02
 NUMSTEP                         25
 MAXTIME                         0.5                             // prestress bis 0.3
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.001

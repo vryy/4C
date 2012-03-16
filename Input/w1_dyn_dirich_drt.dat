@@ -54,10 +54,6 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.05
 NUMSTEP                         3
 MAXTIME                         5.0
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
 //XSI                           0.0
 DAMPING                         No
 M_DAMP                          0.5
@@ -78,6 +74,12 @@ TIMEADAPT                       0
 ITWANT                          4
 MAXDT                           0.07
 RESULTDT                        0.05
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+GAMMA                           0.5
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements

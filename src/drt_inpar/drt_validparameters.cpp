@@ -850,12 +850,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
   IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
   DoubleParameter("MAXTIME",5.0,"maximum time",&sdyn);
-  // Generalised-alpha parameters
-  DoubleParameter("BETA",0.25,"generalized alpha factors, also used by explicit time integration",&sdyn);
-  DoubleParameter("DELTA",0.25,"generalized alpha factors",&sdyn);
-  DoubleParameter("GAMMA",0.5,"generalized alpha factors, also used by explicit time integration",&sdyn);
-  DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
-  DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
   // Damping
   setStringToIntegralParameter<int>("DAMPING","No",
                                "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements",

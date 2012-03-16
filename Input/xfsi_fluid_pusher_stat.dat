@@ -47,10 +47,6 @@ NLNSOL                          fullnewton                      // fullnewton mo
 TIMESTEP                        1.0
 NUMSTEP                         200
 MAXTIME                         5.0
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5

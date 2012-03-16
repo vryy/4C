@@ -48,10 +48,6 @@ NLNSOL                          fullnewton                      // fullnewton mo
 TIMESTEP                        0.0005
 NUMSTEP                         100000
 MAXTIME                         0.1
-BETA                            0.291
-GAMMA                           0.581
-ALPHA_M                         0.378
-ALPHA_F                         0.459
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
@@ -68,6 +64,12 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.459
+ALPHA_M                         0.378
+BETA                            0.291
+GAMMA                           0.581
 -------------------------------------------------------MESHTYING AND CONTACT
 ---------------------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION

@@ -46,10 +46,6 @@ RESTARTEVRY                     20
 TIMESTEP                        0.05
 NUMSTEP                         40
 MAXTIME                         2.0
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
 DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1
@@ -60,6 +56,12 @@ TIMEADAPT                       0
 ITWANT                          4
 MAXDT                           0.07
 RESULTDT                        0.05
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+GAMMA                           0.5
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

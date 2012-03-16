@@ -43,10 +43,6 @@ NLNSOL                          fullnewton                      // ptc fullnewto
 TIMESTEP                        0.05                            // time step size
 NUMSTEP                         20
 MAXTIME                         100000
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.0001

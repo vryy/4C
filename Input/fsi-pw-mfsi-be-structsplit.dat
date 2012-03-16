@@ -32,10 +32,6 @@ RESTARTEVRY                     1
 TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
-BETA                            0.5
-GAMMA                           1.0
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
@@ -44,6 +40,12 @@ TOLDISP                         1.0E-07
 MAXITER                         50
 TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          ImrLike
+ALPHA_F                         0.0
+ALPHA_M                         0.0
+BETA                            0.5
+GAMMA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2

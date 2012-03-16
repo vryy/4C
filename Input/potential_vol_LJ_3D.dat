@@ -79,17 +79,12 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
-DELTA                           0.25
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
-GAMMA                           0.5
 ITERATION                       full
 ITWANT                          0
 K_DAMP                          0.5

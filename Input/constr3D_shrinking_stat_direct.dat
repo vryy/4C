@@ -45,10 +45,6 @@ RESTARTEVRY                     2
 TIMESTEP                        0.005
 NUMSTEP                         20
 MAXTIME                         1000.0
-BETA                            0.44444444444//0.308641975
-GAMMA                           0.83333333333//0.611111111
-ALPHA_M                         0.//0.333333333
-ALPHA_F                         0.3333333333333//0.444444444
 DAMPING                         No
 M_DAMP                          100.0
 K_DAMP                          0.0
