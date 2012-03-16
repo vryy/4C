@@ -14,33 +14,18 @@ Maintainer: Florian Henke
 #define COMBUST_FLAMEFRONT_H
 
 
-#include "../drt_geometry/geo_utils.H"
-#include "../drt_inpar/inpar_combust.H"
+#include "combust_interface.H"
 #include "../drt_lib/drt_element.H"
-#include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
+#include "../drt_inpar/inpar_combust.H"
 
-
-namespace DRT
-{
-  class Discretization;
-  class PackBuffer;
-}
 
 namespace GEO
 {
-  class DomainIntCell;
-
   namespace CUT
   {
     class Element;
     class ElementHandle;
   }
-}
-
-namespace LINALG
-{
-  class SerialDenseMatrix;
 }
 
 namespace COMBUST
@@ -80,22 +65,13 @@ namespace COMBUST
   public:
     /// constructor
     explicit FlameFront(
-             const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
+             const Teuchos::RCP<DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
              Teuchos::RCP<DRT::Discretization>              gfuncdis, ///< G-function discretization (condif3 elements) describing the level set function
              const Teuchos::RCP<std::map<int,std::vector<int> > >     pbcmap    ///< map holding nodes with periodic boundary conditions
     );
 
     /// destructor
     ~FlameFront();
-
-    enum CutStatus
-    {
-      undefined, ///< element has no idea what happened to it
-      uncut,     ///< element is not intersected
-      touched,   ///< element in plus domain is touched by the interface on a 2D face (surface)
-      bisected,  ///< element is intersected (two subdomains)
-      trisected, ///< element is double intersected (three subdomains)
-    };
 
     /// remote access method to vector on fluid NodeColMap holding G-function values at n
     const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; };
@@ -108,16 +84,20 @@ namespace COMBUST
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
     const Teuchos::RCP<Epetra_Vector> Curvature() const { return curvature_; };
 
-    const std::map<int,GEO::DomainIntCells> DomainIntCells() const;
-    const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const;
-    const std::map<int,CutStatus> ElementCutStatus() const;
+    /// remote access method to combust interface handle at n+1
+    const Teuchos::RCP<InterfaceHandleCombust> InterfaceHandle() const { return interfacehandle_; };
+
+    /// remote access method to combust interface handle at n
+    const Teuchos::RCP<InterfaceHandleCombust> InterfaceHandleOld() const { return interfacehandle_old_; };
+
+    /// update old interface handle
+    void UpdateOldInterfaceHandle();
 
     /// update the flame front
     void UpdateFlameFront(
         const Teuchos::ParameterList& combustdyn,
         const Teuchos::RCP<const Epetra_Vector>& phin,
-        const Teuchos::RCP<const Epetra_Vector>& phinp,
-        bool ReinitModifyFlameFrontPhi = false
+        const Teuchos::RCP<const Epetra_Vector>& phinp
     );
 
     /// generate the interface geometry based on the G-function (level set field)
@@ -204,7 +184,11 @@ namespace COMBUST
     void FindIntersectionPoints(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
     /// generate flame front geometry
-    void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
+    void CaptureFlameFront(
+        const Teuchos::RCP<const COMBUST::RefinementCell>  cell,
+        std::map<int,GEO::DomainIntCells >&                elementDomainIntCells,
+        std::map<int,GEO::BoundaryIntCells >&              elementBoundaryIntCells,
+        std::map<int,InterfaceHandleCombust::CutStatus >&  elementcutstatus);
 
     /// identify status of a domain integration cell based on its cut data
     void IdentifyDomainIntegrationCellStatus(GEO::DomainIntCell& cell, const GEO::CUT::ElementHandle& e);
@@ -290,35 +274,6 @@ namespace COMBUST
         LINALG::SerialDenseMatrix& xyze
     );
 
-    /// store the cut status of an element
-    void StoreElementCutStatus(
-        const CutStatus cellstat,
-        CutStatus&      elestat
-    );
-
-#if 0
-    /// call external program TetGen to generate tetrahedral domain integration cells
-    void CallTetGen(
-            const std::vector<std::vector<double> >&  pointlist,
-            std::multimap<int,std::vector<int> >&     segmentlist,
-            const std::vector<std::vector<int> >&     XFEMsurfacelist,
-            const std::vector<std::vector<int> >&     trianglelist,
-            GEO::DomainIntCells&                      domainintcelllist,
-            const LINALG::SerialDenseMatrix           xyze,
-            const std::vector<double>&                gfuncvalue
-            );
-
-#ifdef QHULL
-    /// not documented yet
-    void TransformIntegrationCells(
-            tetgenio&                        out,
-            GEO::DomainIntCells&             domainintcelllist,
-            const LINALG::SerialDenseMatrix  xyze,
-            const std::vector<double>&       gfuncvalue
-            );
-#endif
-#endif
-
     /// decide which domain an integration cell belongs to (based on associated element)
     bool GetIntCellDomainInElement(
             const LINALG::SerialDenseMatrix         IntCellCoord,
@@ -365,7 +320,7 @@ namespace COMBUST
     const Teuchos::RCP<DRT::Discretization> gfuncdis_;
 
     ///  map holding pairs of nodes (master-slave) on periodic boundaries
-    const Teuchos::RCP<map<int,vector<int> > > pbcmap_;
+    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_;
 
     /// pointer to vector on fluid NodeColMap holding G-function values at n-1 originally stored in phinm
     Teuchos::RCP<Epetra_Vector> phinm_;
@@ -388,13 +343,9 @@ namespace COMBUST
     /// variable defining the type of the domain integration cells for intersected elements
     INPAR::COMBUST::XFEMIntegration xfeminttype_;
 
-    /// domain integration cells for each element
-    std::map<int,GEO::DomainIntCells> myelementintcells_;
-    /// boundary integration cells for each element
-    std::map<int,GEO::BoundaryIntCells> myboundaryintcells_;
-    /// status of each elements with respect to the interface
-    std::map<int,COMBUST::FlameFront::CutStatus > myelementcutstatus_;
-
+    Teuchos::RCP<InterfaceHandleCombust> interfacehandle_;
+    Teuchos::RCP<InterfaceHandleCombust> interfacehandle_old_
+    ;
   }; // class FlameFront
 } // namespace COMBUST
 

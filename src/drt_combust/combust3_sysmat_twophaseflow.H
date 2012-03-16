@@ -37,9 +37,6 @@ Maintainer: Ursula Rasthofer
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
-// for gmsh output of subgrid velocity
-// #include "../drt_io/io_gmsh.H"
-
 
 namespace COMBUST
 {
@@ -124,7 +121,7 @@ void SysmatTwoPhaseFlow(
   const double mk = FLD::UTILS::MK<DISTYPE>();
 
   // information about domain integration cells
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   //std::cout << "number of IntCells " <<  domainIntCells.size() << std::endl;
   // loop over integration cells

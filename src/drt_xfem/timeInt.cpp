@@ -16,6 +16,7 @@ Maintainer: Martin Winklmaier
 
 #include "timeInt.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_combust/combust_flamefront.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -27,8 +28,6 @@ XFEM::TIMEINT::TIMEINT(
     const RCP<DofManager> newdofman,
     vector<RCP<Epetra_Vector> > oldVectors,
     const RCP<COMBUST::FlameFront> flamefront,
-    const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle,
-    const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
     const Epetra_Map& olddofcolmap,
     const Epetra_Map& newdofrowmap,
     const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
@@ -44,8 +43,8 @@ oldNodalDofColDistrib_(oldNodalDofColDistrib),
 newNodalDofRowDistrib_(newNodalDofRowDistrib),
 phin_(flamefront->Phin()),
 phinp_(flamefront->Phinp()),
-oldinterfacehandle_(oldinterfacehandle),
-newinterfacehandle_(newinterfacehandle),
+oldinterfacehandle_(flamefront->InterfaceHandleOld()),
+newinterfacehandle_(flamefront->InterfaceHandle()),
 oldVectors_(oldVectors),
 pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
@@ -53,6 +52,8 @@ numproc_(discret_->Comm().NumProc()),
 newton_max_iter_(10),
 newton_tol_(1.0e-10)
 {
+  oldinterfacehandle_->toGmsh(11);
+  newinterfacehandle_->toGmsh(12);
   return;
 } // end constructor
 
@@ -186,7 +187,7 @@ int XFEM::TIMEINT::interfaceSide(
 
   // required interfacehandle
   RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   static LINALG::Matrix<nsd,1> eta(true); // local cell coordinates
   bool pointInCell = false; // boolean whether point is in current cell
@@ -609,7 +610,6 @@ void XFEM::STD::importNewFGIData(
     const RCP<DRT::Discretization> discret,
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
-    const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
     const Epetra_Map& newdofrowmap,
     const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib)
 {
@@ -618,7 +618,7 @@ void XFEM::STD::importNewFGIData(
   phinpi_ = phinp_;
   phinp_ = flamefront->Phinp();
   flamefront_ = flamefront;
-  newinterfacehandle_ = newinterfacehandle;
+  newinterfacehandle_ = flamefront->InterfaceHandle();
   newdofrowmap_ = newdofrowmap;
   newNodalDofRowDistrib_ = newNodalDofRowDistrib;
   return;
@@ -1156,7 +1156,6 @@ void XFEM::ENR::importNewFGIData(
     const RCP<DRT::Discretization> discret,
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
-    const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
     const Epetra_Map& newdofrowmap,
     const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
     const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib
@@ -1165,7 +1164,7 @@ void XFEM::ENR::importNewFGIData(
   discret_=discret;
   newdofman_=newdofman;
   phinp_=flamefront->Phinp();
-  newinterfacehandle_=newinterfacehandle;
+  newinterfacehandle_=flamefront->InterfaceHandle();
   newdofrowmap_=newdofrowmap;
   newNodalDofRowDistrib_=newNodalDofRowDistrib;
   nodalDofColDistrib_npi_=oldNodalDofColDistrib;
@@ -1336,7 +1335,7 @@ void XFEM::ENR::getCritCutElements(
       minusVol = 0.0;
 
       // get domain integration cells for this element
-      const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->GetDomainIntCells(currEle)); // domain integration cells of bisected element
+      const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->ElementDomainIntCells(currEle->Id())); // domain integration cells of bisected element
 
       // loop over domain integration cells
       for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
@@ -1413,7 +1412,7 @@ void XFEM::ENR::SignedDistance(
   double mindist = 5555.5; // default value
 
   // number of flamefront patches for this element
-  const std::vector<GEO::BoundaryIntCell> patches = ih->GetBoundaryIntCells(elegid);
+  const std::vector<GEO::BoundaryIntCell> patches = ih->ElementBoundaryIntCells(elegid);
   const int numpatch = patches.size();
 
   // loop flame front patches of this element

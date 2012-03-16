@@ -87,28 +87,28 @@ double XFEM::Enrichment::EnrValue(
     {
         dserror("Use enrichment functions based on level set function instead!");
         // Heaviside function (jump height is 2!)
-        switch (approachdirection)
-        {
-            case approachFromPlus:
-            {
-                enrval = 1.0;
-                break;
-            }
-            case approachFromMinus:
-            {
-                enrval = -1.0;
-                break;
-            }
-            case approachUnknown:
-            {
-                if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
-                  enrval = -1.0;
-                } else {
-                  enrval = 1.0;
-                }
-                break;
-            }
-        }
+//        switch (approachdirection)
+//        {
+//            case approachFromPlus:
+//            {
+//                enrval = 1.0;
+//                break;
+//            }
+//            case approachFromMinus:
+//            {
+//                enrval = -1.0;
+//                break;
+//            }
+//            case approachUnknown:
+//            {
+//                if (ih.PositionWithinConditionNP(actpos) == this->XFEMConditionLabel()) {
+//                  enrval = -1.0;
+//                } else {
+//                  enrval = 1.0;
+//                }
+//                break;
+//            }
+//        }
         break;
     }
     case XFEM::Enrichment::typeKink:

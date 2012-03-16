@@ -14,13 +14,19 @@ Maintainer: Florian Henke
 #ifndef COMBUST_INTERFACE_H
 #define COMBUST_INTERFACE_H
 
-#include "combust_flamefront.H"
 
+#include <Teuchos_RCP.hpp>
+#include "../drt_geometry/geo_utils.H"
+
+
+namespace DRT
+{
+  class Discretization;
+  class Element;
+}
 
 namespace COMBUST
 {
-  class FlameFront;
-
   /// COMBUST Interface class
   /*!
 
@@ -34,22 +40,34 @@ namespace COMBUST
   public:
     /// constructor
     explicit InterfaceHandleCombust(
-             const Teuchos::RCP<DRT::Discretization> fluiddis,  ///< discretization (combust3 elements) which will be intersected
-             const Teuchos::RCP<const DRT::Discretization> gfuncdis,  ///< discretization (condif3 elements) with level set function (G-function)
-             const Teuchos::RCP<const COMBUST::FlameFront> flamefront  ///< geometrical interface (flame front) information
+             const Teuchos::RCP<DRT::Discretization> fluiddis,      ///< discretization (combust3 elements) which will be intersected
+             const Teuchos::RCP<DRT::Discretization> gfuncdis ///< discretization (condif3 elements) with level set function (G-function)
              );
 
     /// destructor
     ~InterfaceHandleCombust();
 
+    enum CutStatus
+    {
+      undefined, ///< element has no idea what happened to it
+      uncut,     ///< element is not intersected
+      touched,   ///< element in plus domain is touched by the interface on a 2D face (surface)
+      bisected,  ///< element is intersected (two subdomains)
+      trisected, ///< element is double intersected (three subdomains)
+    };
+
     //! return pointer to the intersecting discretization (does anyone need this?)
     const Teuchos::RCP<const DRT::Discretization>& GfuncDis() const { return gfuncdis_; }
 
-    //! return pointer to flame front (does anyone need this?)
-    const Teuchos::RCP<const COMBUST::FlameFront>& FlameFront() const { return flamefront_; }
+    //! return pointer to the intersected discretization
+    Teuchos::RCP<DRT::Discretization> FluidDis() const {return fluiddis_;}
 
     //! update interfacehandle according to current flame front
-    void UpdateInterfaceHandle();
+    void UpdateInterfaceHandle(
+        std::map<int,GEO::DomainIntCells >&                         elementalDomainIntCells,
+        std::map<int,GEO::BoundaryIntCells >&                       elementalBoundaryIntCells,
+        std::map<int,COMBUST::InterfaceHandleCombust::CutStatus >&  elementcutstatus
+    );
 
     //! compute volume of domain minus
     const double ComputeVolumeMinus();
@@ -69,78 +87,43 @@ namespace COMBUST
     //! tell me, whether the element is trisected or not
     bool ElementTrisected(const int xfemeleid) const;
 
-    //! tell me, whether the element is trisected or not
-    COMBUST::FlameFront::CutStatus ElementCutStatus(const int xfemeleid) const;
-
     //! return string representation of the interface handle
     std::string toString() const;
-
-    //! return pointer to the intersected discretization
-    Teuchos::RCP<DRT::Discretization> xfemdis() const {return xfemdis_;}
 
     //! tell me, whether the element is intersected or not
     bool ElementIntersected(const int element_gid) const;
 
     //! tell me, whether the element is bisected or not
-    bool ElementSplit(const DRT::Element* xfemElement) const;
+    bool ElementSplit(const int gid) const;
 
-    //! check, whether given element id has been intersected by the given interface (label)
-    bool ElementHasLabel(
-        const int element_gid,
-        const int label
-    ) const;
 
-    //! get labels for each element
-    std::set<int> LabelsPerElement( const int element_gid) const;
-
-    //! get set of boundary element GIDs that intersect an element
-    std::set<int> GetIntersectingBoundaryElementsGID(
-        const int element_gid  ///< element GID of intersected element
-        ) const;
-
-    //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
-    GEO::DomainIntCells GetDomainIntCells( const DRT::Element*  xfemElement) const;
-
-    //! return number of domain integration cells for a given element
-    std::size_t GetNumDomainIntCells( const DRT::Element*  xfemElement) const;
+    //! return map of elemental domain integration cells
+    std::map<int, GEO::DomainIntCells> DomainIntCells () const;
 
     //! return map of elemental boundary integration cells
-    std::map<int, GEO::BoundaryIntCells> GetElementalBoundaryIntCells () const;
+    std::map<int, GEO::BoundaryIntCells> BoundaryIntCells () const;
 
-    //! return number of boundary integration cells for a given element
-    std::size_t GetNumBoundaryIntCells( const DRT::Element*  xfemElement) const;
+    //! return map of elemental cut status
+    std::map<int, CutStatus> CutState () const;
+
+
+    //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
+    GEO::DomainIntCells ElementDomainIntCells( const int gid) const;
 
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
-    GEO::BoundaryIntCells GetBoundaryIntCells(const int   gid) const;
+    GEO::BoundaryIntCells ElementBoundaryIntCells(const int   gid) const;
 
-    //! get domain information at x_in at timestep n+1
-    int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
+    //! tell me, whether the element is trisected or not
+    CutStatus ElementCutStatus(const int gid) const;
 
-  protected:
 
-    //! fill label per element list
-    void InvertElementsPerLabel();
+    //! return number of domain integration cells for a given element
+    std::size_t NumDomainIntCells( const int gid) const;
 
-    //! intersected domain
-    const Teuchos::RCP<DRT::Discretization>   xfemdis_;
-
-    //! integration cells for domain (global id for element -> list of volume integration cells)
-    std::map<int,GEO::DomainIntCells >        elementalDomainIntCells_;
-
-    //! integration cells for boundary
-    std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells_;
-
-    //! for each xfem condition label there is a set of boundary elements
-    std::map<int,std::set<int> >              boundaryElementsByLabel_;
-
-    //! each boundary element belongs to one label (inverted information of elementsByLabel_)
-    //! i.e. its a map like (ElementGID,Label)
-    std::map<int,int>                         labelPerBoundaryElementId_;
+    //! return number of boundary integration cells for a given element
+    std::size_t NumBoundaryIntCells( const int gid) const;
 
   private:
-
-    //! disabled assignment operator
-    InterfaceHandleCombust operator = (const InterfaceHandleCombust& old);
 
     /// don't want default constructor, therefore declared private!
     explicit InterfaceHandleCombust();
@@ -148,15 +131,20 @@ namespace COMBUST
     /// don't want copy constructor, therefore declared private!
     explicit InterfaceHandleCombust(const InterfaceHandleCombust&);
 
+    //! intersected domain
+    const Teuchos::RCP<DRT::Discretization>   fluiddis_;
+
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
     const Teuchos::RCP<const DRT::Discretization> gfuncdis_;
 
-    /// pointer to the flame front
-    const Teuchos::RCP<const COMBUST::FlameFront> flamefront_;
+    //! integration cells for domain (global id for element -> list of volume integration cells)
+    std::map<int,GEO::DomainIntCells >        elementalDomainIntCells_;
+
+    //! integration cells for boundary
+    std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells_;
 
     /// map holding status of elements with respect to the interface
-    std::map<int,COMBUST::FlameFront::CutStatus > elementcutstatus_;
-
+    std::map<int,CutStatus > elementcutstatus_;
 
 
   }; // class InterfaceHandleCombust

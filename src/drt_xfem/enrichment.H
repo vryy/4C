@@ -16,7 +16,7 @@
 
 
 #include "xfem_utils.H"
-#include "../drt_combust/combust_interface.H"
+#include "../drt_lib/drt_element.H"
 
 
 // forward declarations

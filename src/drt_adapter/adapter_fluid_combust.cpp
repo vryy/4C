@@ -24,9 +24,9 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "../drt_combust/combust_fluidresulttest.H"
 #include "../drt_combust/combust_interface.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
@@ -323,18 +323,12 @@ void ADAPTER::FluidCombust::ImportDiscretization(Teuchos::RCP<DRT::Discretizatio
 //  fluid_.IncorporateInterface(interfacehandle);
 }
 
-void ADAPTER::FluidCombust::ImportInterface(
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old)
-{
-  // pass geometrical information about flame front to fluid time integration scheme
-  fluid_.IncorporateInterface(interfacehandle,interfacehandle_old);
-}
-
-void ADAPTER::FluidCombust::ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)
+void ADAPTER::FluidCombust::ImportFlameFront(
+    const Teuchos::RCP<COMBUST::FlameFront>& flamefront,
+    bool UpdateDofSet)
 {
   // pass geometrical information aboout flame front to fluid time integration scheme
-  fluid_.StoreFlameFront(flamefront);
+  fluid_.StoreFlameFront(flamefront,UpdateDofSet);
 }
 
 #endif  // #ifdef CCADISCRET

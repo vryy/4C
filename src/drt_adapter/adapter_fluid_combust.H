@@ -275,7 +275,7 @@ namespace ADAPTER
 
     virtual const double EvalTime() const { return fluid_.EvalTime(); }
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { fluid_.Redistribute(nodegraph); return; }
-    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { fluid_.TransferVectorsToNewDistribution(interfacehandle); return; }
+    virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { fluid_.TransferVectorsToNewDistribution(flamefront); return; }
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
 
@@ -290,13 +290,8 @@ namespace ADAPTER
     /// combustion fluid imports level set discretization (that is, a ScaTra Discretization!)
     virtual void ImportDiscretization(Teuchos::RCP<DRT::Discretization> importdis);
 
-    /// combustion fluid imports geometrical interface information from combustion algorithm
-    virtual void ImportInterface(
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old);
-
     ///
-    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
+    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront,bool UpdateDofSet);
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 

@@ -46,6 +46,7 @@ namespace XFEM
   //! apply nodal enrichments to touched element: used for combustion and Nitsche problem
   bool ApplyJumpEnrichmentToTouched(
       const COMBUST::InterfaceHandleCombust&    ih,
+      const Epetra_Vector*                      phinp,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
@@ -70,6 +71,7 @@ namespace XFEM
   //! apply nodal enrichments to touched element: used for two phase problem with surface tension only
   bool ApplyKinkJumpEnrichmentToTouched(
       const COMBUST::InterfaceHandleCombust&    ih,
+      const Epetra_Vector*                      phinp,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
@@ -81,6 +83,7 @@ namespace XFEM
    */
   void createDofMapCombust(
       const COMBUST::InterfaceHandleCombust&    ih,            ///< interface information
+      const Epetra_Vector*                      phinp,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,    ///< enriched fields per node
       std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap, ///< enriched fields per element
       const std::set<XFEM::PHYSICS::Field>&     fieldset,      ///< physical fields to enrich

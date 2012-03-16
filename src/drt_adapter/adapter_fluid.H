@@ -322,7 +322,7 @@ namespace ADAPTER {
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) = 0;
 
     /// rewrite vectors to the new dofmaps after redistributing the discretization
-    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) = 0;
+    virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) = 0;
 
     //@}
 
@@ -399,16 +399,7 @@ namespace ADAPTER {
 
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to know the interface geometry
-    virtual void ImportInterface(
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
-
-    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
-    /// methods, might need to know the interface geometry
-    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& importflamefront)
+    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& importflamefront,bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

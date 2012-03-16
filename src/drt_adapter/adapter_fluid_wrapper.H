@@ -150,7 +150,7 @@ namespace ADAPTER
     { return fluid_->LiftDrag(); }
     virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
-    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { dserror("not implemented!"); return; }
+    virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("not implemented!"); return; }
     virtual void NonlinearSolve()
     { return fluid_->NonlinearSolve(); }
     virtual void Predictor()
@@ -184,13 +184,7 @@ namespace ADAPTER
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
-    virtual void ImportInterface(
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
-        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
-    virtual void ImportFlameFront(Teuchos::RCP<const COMBUST::FlameFront> importflamefront)
+    virtual void ImportFlameFront(Teuchos::RCP<const COMBUST::FlameFront> importflamefront,bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

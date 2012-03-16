@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 
 #include "combust_defines.H"
+#include "combust_flamefront.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
@@ -58,7 +59,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   xparams_(params.sublist("XFEM")),
   //output_(output),
   output_ (rcp(new IO::DiscretizationWriter(actdis))), // so ist es bei Axel
-  flamefront_(Teuchos::null),
+  interfacehandle_(Teuchos::null),
+  phinp_(Teuchos::null),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
@@ -216,15 +218,15 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   physprob_.elementAnsatz_ = rcp(new COMBUST::TauPressureAnsatz());
 #endif
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
 
   // pass dof information to elements (no enrichments yet, standard FEM!)
-  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+  TransferDofInformationToElements(Teuchos::null, dofmanagerdummy);
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
@@ -236,7 +238,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
   // split based on complete fluid field
-  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
+  velpressplitterForOutput_ = rcp(new LINALG::MapExtractor());
+  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
 
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
@@ -730,7 +733,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
  | hand over information about (XFEM) degrees of freedom to elements                     ag 04/09 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const Teuchos::RCP<XFEM::DofManager> dofmanager
     )
 {
@@ -738,7 +741,11 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("action","store_xfem_info");
   eleparams.set("dofmanager",dofmanager);
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
-  eleparams.set("interfacehandle",interfacehandle);
+  eleparams.set("flamefront",flamefront);
+//  eleparams.set("phinp",phinp);
+//  eleparams.set("gradphi",gradphi);
+//  eleparams.set("curvature",curvature);
+
   discret_->Evaluate(eleparams);
 }
 
@@ -749,19 +756,14 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
  | remark: Within this routine, no parallel re-distribution is allowed to take place. Before and  |
  | after this function, it's ok to do so.                                                    axel |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
-       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
-       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old)
+void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)
 {
-  // information about interface is imported via ADAPTER::FluidCombust::ImportInterface()
-  // remark: access to phi vectors required via flamefront
-  if (flamefront_ == Teuchos::null) dserror("combustion time integration scheme cannot see flame front");
-
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change in every time step/FG-iteration
   const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
-      interfacehandle,
+      interfacehandle_,
+      phinp_,
       physprob_.xfemfieldset_,
       *physprob_.elementAnsatz_,
       xparams_,
@@ -776,7 +778,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
   // print global and element dofmanager to Gmsh
   dofmanager->toGmsh(step_);
-  interfacehandle->toGmsh(step_);
+  interfacehandle_->toGmsh(step_);
 
   // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
@@ -788,7 +790,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(interfacehandle, dofmanager);
+  TransferDofInformationToElements(flamefront, dofmanager);
   // assign degrees of freedom
   // remark: - assign degrees of freedom (first slot)
   //         - build geometry for (Neumann) boundary conditions (third slot);
@@ -810,7 +812,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     // create switcher
     const XFEM::DofDistributionSwitcher dofswitch(
-        interfacehandle, dofmanager,
+        interfacehandle_, dofmanager,
         olddofrowmap, newdofrowmap,
         oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
         oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -902,9 +904,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
               olddofmanager,
               dofmanager,
               oldColStateVectors,
-              flamefront_,
-              interfacehandle_old,
-              interfacehandle,
+              flamefront,
               olddofcolmap,
               newdofrowmap,
               oldNodalDofColDistrib,
@@ -946,7 +946,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
                 veln,
                 dta_,
                 theta_,
-                flamefront_,
+                flamefront,
                 flamespeed_,
                 true));
             break;
@@ -959,7 +959,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
                 xfemtimeint_,
                 veln,
                 dta_,
-                flamefront_,
+                flamefront,
                 true));
             break;
           }
@@ -981,8 +981,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
           timeIntEnr_->importNewFGIData(
               discret_,
               dofmanager,
-              flamefront_,
-              interfacehandle,
+              flamefront,
               newdofrowmap,
               state_.nodalDofDistributionMap_,
               oldNodalDofColDistrib); // new data due to gamma^n+1,i+1
@@ -1001,8 +1000,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
           timeIntStd_->importNewFGIData(
               discret_,
               dofmanager,
-              flamefront_,
-              interfacehandle,
+              flamefront,
               newdofrowmap,
               state_.nodalDofDistributionMap_); // new data due to gamma^n+1,i+1
           break;
@@ -1068,9 +1066,25 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
  | remark: Within this routine, no parallel re-distribution is allowed to take place. Before and  |
  | after this function, it's ok to do so.                                                    axel |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)
+void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
+    bool UpdateDofSet)
 {
-  flamefront_ = flamefront;
+  if (flamefront!=Teuchos::null)
+  {
+    interfacehandle_ = flamefront->InterfaceHandle();
+    phinp_ = flamefront->Phinp();
+
+    if (UpdateDofSet)
+      IncorporateInterface(flamefront);
+  }
+  else
+  {
+    interfacehandle_ = Teuchos::null;
+    phinp_ = Teuchos::null;
+  }
+
+
   return;
 }
 
@@ -2708,7 +2722,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
           time_,
           velnp_out,
           trueresidual_out,
-          flamefront_->Phinp(),
+          phinp_,
           standarddofset_,
           state_.velnp_);
     }
@@ -2723,7 +2737,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         output_->WriteVector("velocity_smoothed", velnp_out);
 
         // output (hydrodynamic) pressure for visualization
-        Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
+        Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_->ExtractCondVector(velnp_out);
         output_->WriteVector("pressure_smoothed", pressure);
 
         //output_->WriteVector("residual", trueresidual_);
@@ -3146,23 +3160,21 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //---------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
         //---------------------------------------------------------------
-        // get pointer to vector holding G-function values at the fluid nodes
-        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
         // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
+        const Epetra_BlockMap& phimap = phinp_->Map();
         // check, whether this map is still identical with the current node map in the discretization
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
         size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
         //----------------------------------------
         // interpolate values from element to cell
         //----------------------------------------
-        const GEO::DomainIntCells& domainintcells = dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
+        const GEO::DomainIntCells& domainintcells = interfacehandle_->ElementDomainIntCells(ele->Id());
         for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           // pressure values for this integration cell
@@ -3222,23 +3234,21 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           const DRT::Element* ele = discret_->lRowElement(iele);
 
           // output only for bisected elements
-          if (dofmanagerForOutput_->getInterfaceHandle()->ElementSplit(ele))
+          if (interfacehandle_->ElementSplit(ele->Id()))
           {
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector
             //------------------------------------------------------------------------------------------
-            // get pointer to vector holding G-function values at the fluid nodes
-            const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
             // get map of this vector
-            const Epetra_BlockMap& phimap = phinp->Map();
+            const Epetra_BlockMap& phimap = phinp_->Map();
             // check, whether this map is still identical with the current node map in the discretization
             if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
             size_t numnode = ele->NumNode();
             vector<double> myphinp(numnode);
             // extract G-function values to element level
-            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 #ifdef DEBUG
 #ifndef COMBUST_HEX20
             if (numnode != 8) dserror("pressure jump output only available for hex8 elements!");
@@ -3283,7 +3293,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             //--------------------------------------------------------------------
             // interpolate values from element to Gaussian points of boundary cell
             //--------------------------------------------------------------------
-            const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
+            const GEO::BoundaryIntCells& boundaryintcells = interfacehandle_->ElementBoundaryIntCells(ele->Id());
             for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
             {
               // choose an (arbitrary) number of Gaussian points for the output
@@ -3476,11 +3486,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //------------------------------------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
         //------------------------------------------------------------------------------------------
-        // get pointer to vector holding G-function values at the fluid nodes
-        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
         // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
+        const Epetra_BlockMap& phimap = phinp_->Map();
         // check, whether this map is still identical with the current node map in the discretization
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
@@ -3488,7 +3496,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
         const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
@@ -3833,18 +3841,16 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         //------------------------------------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
         //------------------------------------------------------------------------------------------
-        // get pointer to vector holding G-function values at the fluid nodes
-        const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
         // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
+        const Epetra_BlockMap& phimap = phinp_->Map();
         // check, whether this map is still identical with the current node map in the discretization
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
         size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
 #ifdef COMBUST_NORMAL_ENRICHMENT
         // get pointer to vector holding smoothed  G-function gradient values at the fluid nodes
@@ -3865,7 +3871,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
 #endif
 
-        const GEO::DomainIntCells& domainintcells = dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
+        const GEO::DomainIntCells& domainintcells = interfacehandle_->ElementDomainIntCells(ele->Id());
         for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
@@ -3923,23 +3929,21 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           const DRT::Element* ele = discret_->lRowElement(iele);
 
           // output only for bisected elements
-          if (dofmanagerForOutput_->getInterfaceHandle()->ElementSplit(ele))
+          if (interfacehandle_->ElementSplit(ele->Id()))
           {
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector
             //------------------------------------------------------------------------------------------
-            // get pointer to vector holding G-function values at the fluid nodes
-            const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
             // get map of this vector
-            const Epetra_BlockMap& phimap = phinp->Map();
+            const Epetra_BlockMap& phimap = phinp_->Map();
             // check, whether this map is still identical with the current node map in the discretization
             if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
             size_t numnode = ele->NumNode();
             vector<double> myphinp(numnode);
             // extract G-function values to element level
-            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
 #ifdef DEBUG
 #ifndef COMBUST_HEX20
@@ -4019,7 +4023,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             //--------------------------------------------------------------------
             // interpolate values from element to Gaussian points of boundary cell
             //--------------------------------------------------------------------
-            const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
+            const GEO::BoundaryIntCells& boundaryintcells = interfacehandle_->ElementBoundaryIntCells(ele->Id());
             for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
             {
               // choose an (arbitrary) number of Gaussian points for the output
@@ -4510,9 +4514,6 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    // get G-function value vector on fluid NodeColMap
-    const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-
 //cout << *dofrowmap << endl;
 //cout << *(standarddofset_->DofRowMap()) << endl;
 //cout << (state_.velnp_->Map()) << endl;
@@ -4530,8 +4531,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         xyz(idim)=lnode->X()[idim];
 
       // get phi value for this node
-      const int lid = phinp->Map().LID(lnode->Id());
-      const double gfuncval = (*phinp)[lid];
+      const int lid = phinp_->Map().LID(lnode->Id());
+      const double gfuncval = (*phinp_)[lid];
 
       // compute preliminary values for both vortices
       double r_squared_left  = ((xyz(0)-xyz0_left(0))*(xyz(0)-xyz0_left(0))
@@ -4615,9 +4616,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifdef FLAME_VORTEX
   cout0_ << "---  set initial enrichment field for flame-vortex interaction example... " << std::flush;
 
-  // get G-function value vector on fluid NodeColMap
-  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
   {
@@ -4653,9 +4651,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifdef COLLAPSE_FLAME
   cout0_ << "---  set initial enrichment field for collapsing flame example... " << std::flush;
 
-  // get G-function value vector on fluid NodeColMap
-  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-
   // initial field modification for collapse_flame
   const int nsd = 3;
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4668,8 +4663,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #endif
     double coordsnorm = sqrt(coords(0)*coords(0)+coords(1)*coords(1)+coords(2)*coords(2));
 
-    const int lid = phinp->Map().LID(lnode->Id());
-    const double gfuncval = (*phinp)[lid];
+    const int lid = phinp_->Map().LID(lnode->Id());
+    const double gfuncval = (*phinp_)[lid];
 
     const double radius = 0.025;
     const double velrad = 1.0;
@@ -4781,9 +4776,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifdef COMBUST_TWO_FLAME_FRONTS
   cout0_ << "---  set initial enrichment field for two approaching flame fronts example... " << std::flush;
 
-  // get G-function value vector on fluid NodeColMap
-  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-
   // initial field modification for 2-flames example
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
   {
@@ -4791,8 +4783,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 
     LINALG::Matrix<3,1> coords(lnode->X());
 
-    const int lid = phinp->Map().LID(lnode->Id());
-    const double gfuncval = (*phinp)[lid];
+    const int lid = phinp_->Map().LID(lnode->Id());
+    const double gfuncval = (*phinp_)[lid];
 
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -5405,15 +5397,15 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
 
   // pass dof information to elements (no enrichments yet, standard FEM!)
-  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+  TransferDofInformationToElements(Teuchos::null, dofmanagerdummy);
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs()))
@@ -5425,19 +5417,21 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
   // split based on complete fluid field
-  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
+  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
 
   return;
 }
 
 
-void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle)
+void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
+    Teuchos::RCP<COMBUST::FlameFront> flamefront)
 {
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change in every time step/FG-iteration
   const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
-      interfacehandle,
+      flamefront->InterfaceHandle(),
+      flamefront->Phinp(),
       physprob_.xfemfieldset_,
       *physprob_.elementAnsatz_,
       xparams_,
@@ -5451,7 +5445,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(const Te
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(interfacehandle, dofmanager);
+  TransferDofInformationToElements(flamefront, dofmanager);
   // assign degrees of freedom
   // remark: - assign degrees of freedom (first slot)
   //         - build geometry for (Neumann) boundary conditions (third slot);

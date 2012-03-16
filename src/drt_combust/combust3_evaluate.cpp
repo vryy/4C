@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
 #include "combust_defines.H"
+#include "combust_flamefront.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -121,6 +122,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = NULL;
+      epetra_phinp_ = NULL;
+      gradphi_ = NULL;
+      curvature_ = NULL;
       DLM_info_ = Teuchos::null;
     }
     break;
@@ -131,6 +135,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = NULL;
+      epetra_phinp_ = NULL;
+      gradphi_ = NULL;
+      curvature_ = NULL;
     }
     break;
     case store_xfem_info:
@@ -140,8 +147,13 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // now the element can answer how many (XFEM) dofs it has
       standard_mode_ = false;
 
-      // store pointer to interface handle
-      ih_ = &*params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
+      Teuchos::RCP<COMBUST::FlameFront> flamefront = params.get< Teuchos::RCP< COMBUST::FlameFront > >("flamefront",Teuchos::null);
+
+//      // store pointer to interface handle
+//      ih_ = &*params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
+//      epetra_phinp_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("phinp",Teuchos::null);
+//      gradphi_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("gradphi",Teuchos::null);
+//      curvature_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("curvature",Teuchos::null);
 
       //--------------------------------------------------
       // find out whether an element is intersected or not
@@ -152,25 +164,39 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       this->trisected_     = false;
       this->touched_  = false;
 
-      if (ih_->FlameFront() != Teuchos::null) // not the initial call
+      if (flamefront != Teuchos::null) // not the initial call
       {
-        const COMBUST::FlameFront::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
+        // set element variables
+        ih_ = &*flamefront->InterfaceHandle();
+        epetra_phinp_ = &*flamefront->Phinp();
+        gradphi_ = &*flamefront->GradPhi();
+        curvature_ = &*flamefront->Curvature();
 
-        if (cutstat == COMBUST::FlameFront::uncut)
+        const COMBUST::InterfaceHandleCombust::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
+
+        if (cutstat == COMBUST::InterfaceHandleCombust::uncut)
         {// nothing to do
         }
-        else if (cutstat == COMBUST::FlameFront::bisected)
+        else if (cutstat == COMBUST::InterfaceHandleCombust::bisected)
         {
           this->bisected_ = true;
         }
-        else if (cutstat == COMBUST::FlameFront::trisected)
+        else if (cutstat == COMBUST::InterfaceHandleCombust::trisected)
           this->trisected_ = true;
-        else if (cutstat == COMBUST::FlameFront::touched)
+        else if (cutstat == COMBUST::InterfaceHandleCombust::touched)
         {
           this->touched_ = true;
         }
         else
           dserror("cut status not available for element % ",this->Id());
+      }
+      else
+      {
+        // set element variables
+        ih_ = NULL;
+        epetra_phinp_ = NULL;
+        gradphi_ = NULL;
+        curvature_ = NULL;
       }
 
       //----------------------------------
@@ -331,7 +357,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       }
 
       // extract local (element level) vectors from global state vectors
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, genalpha, gradphi, this, ih_);
+      DRT::ELEMENTS::Combust3::MyState mystate(
+          discretization,
+          lm,
+          instationary,
+          genalpha,
+          gradphi,
+          this,
+          epetra_phinp_,
+          gradphi_,
+          curvature_);
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
@@ -472,7 +507,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
-        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, false, false, gradphi, this, ih_);
+        DRT::ELEMENTS::Combust3::MyState mystate(
+            discretization,
+            lm,
+            false,
+            false,
+            gradphi,
+            this,
+            epetra_phinp_,
+            gradphi_,
+            curvature_);
 
         // get assembly type
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -491,7 +535,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // extract local (element level) vectors from global state vectors
       // we only need phi and therefore turn everything else off
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, false, true, false, this, ih_);
+      DRT::ELEMENTS::Combust3::MyState mystate(
+          discretization,
+          lm,
+          false,
+          true,
+          false,
+          this,
+          epetra_phinp_,
+          gradphi_,
+          curvature_);
 
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(*eleDofManager_, NumNode(), NodeIds());
 
@@ -866,7 +919,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
   //-------------------------------------------------
   // loop over all integration cells and evaluate on each cell
 
-  const GEO::DomainIntCells& domainintcells = ih_->GetDomainIntCells(this);
+  const GEO::DomainIntCells& domainintcells = ih_->ElementDomainIntCells(this->Id());
 
   for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
   {

@@ -23,6 +23,11 @@ Maintainer: Martin Winklmaier
 #include "../drt_cut/cut_position.H"
 
 
+namespace COMBUST
+{
+  class FlameFront;
+}
+
 namespace XFEM
 {
 /*!
@@ -40,8 +45,6 @@ public:
       const RCP<XFEM::DofManager> newdofman,
       vector<RCP<Epetra_Vector> > oldVectors,
       const RCP<COMBUST::FlameFront> flamefront,
-      const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle,
-      const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
       const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
@@ -753,7 +756,6 @@ public:
       const RCP<DRT::Discretization> discret,
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
-      const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
       const Epetra_Map& newdofrowmap,
       const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib
   );
@@ -1057,7 +1059,6 @@ public:
       const RCP<DRT::Discretization> discret,
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
-      const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
       const Epetra_Map& newdofrowmap,
       const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
       const map<DofKey<onNode>,XFEM::DofGID>& oldNodalDofColDistrib

@@ -42,6 +42,7 @@ namespace XFEM
       //! constructor (for combustion problems)
       explicit DofManager(
           const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle, ///< geometrical interface information
+          const Teuchos::RCP<Epetra_Vector>&                   phinp,
           const std::set<XFEM::PHYSICS::Field>&                fieldset,        ///< physical fields to be enriched
           const XFEM::ElementAnsatz&                           element_ansatz,  ///< element dofs
           const Teuchos::ParameterList&                        params,          ///< XFEM parameters
@@ -141,8 +142,8 @@ namespace XFEM
           const bool                             strict = false
       ) const;
 
-      //! return pointer to interface handle
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> getInterfaceHandle() const { return ih_; }
+//      //! return pointer to interface handle
+//      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> getInterfaceHandle() const { return ih_; }
 
     private:
 

@@ -14,6 +14,8 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
+
+#include "combust_interface.H"
 #include "combust3_sysmat_premixed_nitsche.H"
 #include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
@@ -1555,7 +1557,7 @@ void IntegrateShape(
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
 
   // information about domain integration cells
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   // loop over integration cells
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)

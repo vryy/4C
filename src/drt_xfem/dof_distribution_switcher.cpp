@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #include "dof_management.H"
 #include "dof_distribution_switcher.H"
 #include "dofkey.H"
+#include "../drt_combust/combust_interface.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -113,9 +114,9 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   gmshfilecontent << "View \" " << "xfem Node \" {\n";
 
 
-  for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+  for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
   {
-    const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+    const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
     map<int,set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int unknown = 0;
@@ -125,9 +126,9 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   gmshfilecontent << "};\n";
 
   gmshfilecontent << "View \" " << "xfem Node Id\" {\n";
-  for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+  for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
   {
-    const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+    const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
     map<int,set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int id = -1;

@@ -75,6 +75,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
       {
         //cout << "ich werte jetzt den Neumann inflow Term aus!" << endl;
         //this->Print(std::cout);
+        Teuchos::RCP<Epetra_Vector> phinp = params.get< Teuchos::RCP<Epetra_Vector> >("phinp",Teuchos::null);
 
         if (this->parent_->Shape() != DRT::Element::hex8)
           dserror("Neumann inflow term evaluation only implemented for hex8 elements");
@@ -88,8 +89,6 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         // list of boundary integration cells
         GEO::BoundaryIntCells surfaceintcelllist;
         {
-          // get pointer to vector holding G-function values at the fluid nodes
-          const Teuchos::RCP<Epetra_Vector> phinp = parent_->GetInterfaceHandle()->FlameFront()->Phinp();
           // vector holding G-function values for this surface element
           std::vector<double> gfuncvalues_surfcell;
           // extract local (element level) G-function values from global vector
@@ -740,7 +739,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
 
         // extract local (element level) vectors from global state vectors
         DRT::ELEMENTS::Combust3::MyStateSurface mystate(
-            discretization, (*plm), true, false, false, parent_, parent_->GetInterfaceHandle());
+            discretization, (*plm), true, false, false, parent_, phinp);
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager, parent_->NumNode(), parent_->NodeIds());

@@ -35,6 +35,7 @@ Maintainer: Axel Gerstenberger
  *------------------------------------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
+    const Teuchos::RCP<Epetra_Vector>&                   phinp,
     const std::set<XFEM::PHYSICS::Field>&                fieldset,
     const XFEM::ElementAnsatz&                           element_ansatz,
     const Teuchos::ParameterList&                        params,
@@ -43,14 +44,21 @@ XFEM::DofManager::DofManager(
   ih_(interfacehandle),
   pbcmap_(pbcmap)
 {
-  //if (ih_->xfemdis()->Comm().MyPID() == 0)
+  //if (ih_->FluidDis()->Comm().MyPID() == 0)
   //  std::cout << "Constructing DofManager for combustion problem" << std::endl;
 
   std::map<int, std::set<XFEM::FieldEnr> >    nodeDofMap;
   std::map<int, std::set<XFEM::FieldEnr> >    elementDofMap;
 
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
-  XFEM::createDofMapCombust(*interfacehandle, nodeDofMap, elementDofMap, fieldset, element_ansatz, params);
+  XFEM::createDofMapCombust(
+      *interfacehandle,
+      phinp.get(),
+      nodeDofMap,
+      elementDofMap,
+      fieldset,
+      element_ansatz,
+      params);
 
   //------------------------------------
   // connect dofs on periodic boundaries
@@ -73,7 +81,7 @@ XFEM::DofManager::DofManager(
       for (size_t islave = 0; islave < pbciter->second.size(); islave++)
       {
         const int slavegid  = pbciter->second[islave];
-        //cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
+        //cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
 
         std::set<FieldEnr> masterfieldenr = emptyset_;
         std::set<FieldEnr> slavefieldenr = emptyset_;
@@ -92,8 +100,8 @@ XFEM::DofManager::DofManager(
         //if (slaveentry->second != masterentry->second)
         //{
         //  cout << mastergid << " das passt nicht zusammen" << endl;
-        //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
-        //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
+        //  cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
+        //  cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
         //}
 
         // if slave is enriched, but master is not (slave has more dofs)
@@ -137,7 +145,7 @@ XFEM::DofManager::DofManager(
   // collect all unique enrichments and print them on the screen (only needed for verification)
   GatherUniqueEnrichments();
 
-  //if (ih_->xfemdis()->Comm().MyPID() == 0)
+  //if (ih_->FluidDis()->Comm().MyPID() == 0)
   //  std::cout << "Constructing DofManager for combustion problem done" << std::endl;
 }
 
@@ -220,7 +228,7 @@ int XFEM::DofManager::NumNodalDof() const
 
   // collect number of nodal dofs from all procs
   int numnodaldof = 0;
-  ih_->xfemdis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
+  ih_->FluidDis()->Comm().SumAll(&locnumnodaldof,&numnodaldof,1);
 
   return numnodaldof;
 }
@@ -235,9 +243,9 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
 {
   NodalDofDistributionMap.clear();
   // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
+  for (int i=0; i<ih_->FluidDis()->NumMyRowNodes(); ++i)
   {
-    const DRT::Node* actnode = ih_->xfemdis()->lRowNode(i);
+    const DRT::Node* actnode = ih_->FluidDis()->lRowNode(i);
     const int gid = actnode->Id();
     std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
     if (entry == nodalDofSet_.end())
@@ -245,7 +253,7 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
       // no dofs for this node... must be a hole or somethin'
       continue;
     }
-    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+    const std::vector<int> gdofs(ih_->FluidDis()->Dof(actnode));
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
@@ -265,9 +273,9 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
 
   ElementalDofDistributionMap.clear();
   // loop all (non-overlapping = Row)-Elements and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->xfemdis()->NumMyRowElements(); ++i)
+  for (int i=0; i<ih_->FluidDis()->NumMyRowElements(); ++i)
   {
-    const DRT::Element* actele = ih_->xfemdis()->lRowElement(i);
+    const DRT::Element* actele = ih_->FluidDis()->lRowElement(i);
     const int gid = actele->Id();
     std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
     if (entry == elementalDofs_.end())
@@ -275,7 +283,7 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
       // no dofs for this element... must be a hole or somethin'
       continue;
     }
-    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actele));
+    const std::vector<int> gdofs(ih_->FluidDis()->Dof(actele));
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
@@ -305,9 +313,9 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
 {
   NodalDofColDistributionMap.clear();
   // loop all (overlapping = Col)-Nodes and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+  for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
   {
-    const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+    const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const int gid = actnode->Id();
     std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
     if (entry == nodalDofSet_.end())
@@ -315,11 +323,11 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
       // no dofs for this node... must be a hole or somethin'
       continue;
     }
-    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+    const std::vector<int> gdofs(ih_->FluidDis()->Dof(actnode));
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
-      cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " node " << actnode->Id() << endl;
+      cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " node " << actnode->Id() << endl;
       cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
       cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
       dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
@@ -348,15 +356,15 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
 {
   // get DofRowMaps for output and XFEM vectors
   const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
-  const Epetra_Map* xfemdofrowmap = ih_->xfemdis()->DofRowMap();
+  const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
   // create output vector (standard FEM layout)
   Teuchos::RCP<Epetra_Vector> outvector = LINALG::CreateVector(*outdofrowmap,true);
 
   // loop nodes on this processor
-  for (int inode=0; inode<ih_->xfemdis()->NumMyRowNodes(); ++inode)
+  for (int inode=0; inode<ih_->FluidDis()->NumMyRowNodes(); ++inode)
   {
     // get XFEM GID of this node
-    const DRT::Node* xfemnode = ih_->xfemdis()->lRowNode(inode);
+    const DRT::Node* xfemnode = ih_->FluidDis()->lRowNode(inode);
     const int nodegid = xfemnode->Id();
     // get vector of dof GIDs for this node according to output (standard FEM) layout
     const std::vector<int> outgid(outdofset.Dof(xfemnode));
@@ -457,10 +465,10 @@ void XFEM::DofManager::overwritePhysicalField(
 ) const
 {
   // loop nodes on this processor
-  for (int inode=0; inode < ih_->xfemdis()->NumMyRowNodes(); ++inode)
+  for (int inode=0; inode < ih_->FluidDis()->NumMyRowNodes(); ++inode)
   {
     // get GID of this node
-    const DRT::Node* node = ih_->xfemdis()->lRowNode(inode);
+    const DRT::Node* node = ih_->FluidDis()->lRowNode(inode);
     const int nodegid = node->Id();
 
     // find the set of field enrichments (~ XFEM dofs) for this node
@@ -534,23 +542,23 @@ void XFEM::DofManager::toGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("numdof_coupled_system", step, 5, screen_out, ih_->xfemdis()->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("numdof_coupled_system", step, 5, screen_out, ih_->FluidDis()->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       // draw elements with associated gid
       gmshfilecontent << "View \" " << "Element->Id() \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColElements(); ++i)
       {
-        const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+        const DRT::Element* actele = ih_->FluidDis()->lColElement(i);
         IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
       };
       gmshfilecontent << "};\n";
     }
     {
       gmshfilecontent << "View \" " << "Node->Id() \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
         const LINALG::Matrix<3,1> pos(actnode->X());
         IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
       }
@@ -558,9 +566,9 @@ void XFEM::DofManager::toGmsh(
     }
     {
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColElements(); ++i)
       {
-        const DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+        const DRT::Element* actele = ih_->FluidDis()->lColElement(i);
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter =
             elementalDofs_.find(actele->Id());
 
@@ -575,9 +583,9 @@ void XFEM::DofManager::toGmsh(
     }
     {
       gmshfilecontent << "View \" " << "NumDof per node \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->FluidDis()->lColNode(i);
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub =
             nodalDofSet_.find(xfemnode->Id());
@@ -593,9 +601,9 @@ void XFEM::DofManager::toGmsh(
 
     {
       gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->FluidDis()->lColNode(i);
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
@@ -621,9 +629,9 @@ void XFEM::DofManager::toGmsh(
 
     {
       gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->FluidDis()->lColNode(i);
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
@@ -649,9 +657,9 @@ void XFEM::DofManager::toGmsh(
 
     {
       gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->FluidDis()->lColNode(i);
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
@@ -677,9 +685,9 @@ void XFEM::DofManager::toGmsh(
 
     {
       gmshfilecontent << "View \" " << "NumDof" << " Kink enriched nodes \" {\n";
-      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      for (int i=0; i<ih_->FluidDis()->NumMyColNodes(); ++i)
       {
-        const DRT::Node* xfemnode = ih_->xfemdis()->lColNode(i);
+        const DRT::Node* xfemnode = ih_->FluidDis()->lColNode(i);
 
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(xfemnode->Id());
         if (blub != nodalDofSet_.end())
@@ -709,13 +717,13 @@ void XFEM::DofManager::toGmsh(
 #if 1
   if (gmshdebugout)
   {
-      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("eledofman_check", step, 5, screen_out, ih_->xfemdis()->Comm().MyPID());
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("eledofman_check", step, 5, screen_out, ih_->FluidDis()->Comm().MyPID());
       std::ofstream gmshfilecontent(filename.c_str());
       {
         gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {\n";
-        for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
+        for (int i=0; i<ih_->FluidDis()->NumMyColElements(); ++i)
         {
-          DRT::Element* actele = ih_->xfemdis()->lColElement(i);
+          DRT::Element* actele = ih_->FluidDis()->lColElement(i);
           const double val = actele->NumDofPerElement();
           IO::GMSH::elementAtInitialPositionToStream(val, actele, gmshfilecontent);
         };

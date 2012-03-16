@@ -102,7 +102,7 @@ void SysmatDomainNitscheNormal(
   const double mk = FLD::UTILS::MK<DISTYPE>();
 
   // get domain integration cells for this element
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   //-----------------------------------
   // loop over domain integration cells
@@ -2372,7 +2372,7 @@ void SysmatBoundaryNitscheNormal(
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)

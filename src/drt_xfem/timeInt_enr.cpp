@@ -15,6 +15,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "timeInt_enr.H"
+#include "../drt_combust/combust_flamefront.H"
 
 
 /*------------------------------------------------------------------------------------------------*

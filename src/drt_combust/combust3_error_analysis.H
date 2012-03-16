@@ -1284,7 +1284,7 @@ void Nitsche_BuildDomainIntegratedErrors(
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
 
   // get domain integration cells for this element
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   //=================================================================================
   //-----------------------------------
@@ -2323,7 +2323,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)

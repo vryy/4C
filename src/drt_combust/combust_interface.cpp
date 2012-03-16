@@ -14,6 +14,7 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 
 #include "combust_interface.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/position_array.H"
@@ -26,14 +27,16 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
     const Teuchos::RCP<DRT::Discretization> fluiddis,
-    const Teuchos::RCP<const DRT::Discretization> gfuncdis,
-    const Teuchos::RCP<const COMBUST::FlameFront> flamefront
-    ) : xfemdis_(fluiddis),
-        gfuncdis_(gfuncdis),
-        flamefront_(flamefront)
+    const Teuchos::RCP<DRT::Discretization> gfuncdis
+    ) : fluiddis_(fluiddis),
+        gfuncdis_(gfuncdis)
 {
+  elementalDomainIntCells_.clear();
+  elementalBoundaryIntCells_.clear();
   elementcutstatus_.clear();
 }
+
+
 /*------------------------------------------------------------------------------------------------*
  | destructor                                                                         henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -52,7 +55,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 
   //const bool gmsh_tree_output = false;
 
-  const int myrank = xfemdis_->Comm().MyPID();
+  const int myrank = fluiddis_->Comm().MyPID();
 
   //if (gmshdebugout)
   //{
@@ -64,7 +67,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
   //  std::remove(filenamedel.str().c_str());
   //  if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
   //  std::ofstream f_system(filename.str().c_str());
-  //  IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, f_system);
+  //  IO::GMSH::XdisToStream("Fluid", 0.0, fluiddis_, elementalDomainIntCells_, elementalBoundaryIntCells_, f_system);
   //  //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
   //  f_system.close();
   //  if (screen_out) cout << " done" << endl;
@@ -85,10 +88,10 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
 
-      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+      for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = xfemdis_->lRowElement(i);
-        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
+        const DRT::Element* actele = fluiddis_->lRowElement(i);
+        const GEO::DomainIntCells& elementDomainIntCells = this->ElementDomainIntCells(actele->Id());
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
@@ -106,10 +109,10 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 
       // the cut is done in element coordinates; for distorted elements, the sence of orientation can be reversed in physical coordinates
       gmshfilecontent << "View \" " << "Volume negative physical coordinates \" {" << endl;
-      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+      for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = xfemdis_->lRowElement(i);
-        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
+        const DRT::Element* actele = fluiddis_->lRowElement(i);
+        const GEO::DomainIntCells& elementDomainIntCells = this->ElementDomainIntCells(actele->Id());
         GEO::DomainIntCells::const_iterator cell;
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
@@ -178,9 +181,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //      stringstream gmshfilecontentP;
 //      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
 //
-//      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+//      for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
 //      {
-//        const DRT::Element* actele = xfemdis_->lRowElement(i);
+//        const DRT::Element* actele = fluiddis_->lRowElement(i);
 //        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
 //        GEO::DomainIntCells::const_iterator cell;
 //        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
@@ -212,15 +215,19 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 /*------------------------------------------------------------------------------------------------*
  | fill integration cells according to current flame front                            henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
+void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle(
+    std::map<int,GEO::DomainIntCells >&                         elementalDomainIntCells,
+    std::map<int,GEO::BoundaryIntCells >&                       elementalBoundaryIntCells,
+    std::map<int,COMBUST::InterfaceHandleCombust::CutStatus >&  elementcutstatus
+)
 {
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
   elementcutstatus_.clear();
 
-  elementalDomainIntCells_ = flamefront_->DomainIntCells();
-  elementalBoundaryIntCells_ = flamefront_->BoundaryIntCells();
-  elementcutstatus_ = flamefront_->ElementCutStatus();
+  elementalDomainIntCells_ = elementalDomainIntCells;
+  elementalBoundaryIntCells_ = elementalBoundaryIntCells;
+  elementcutstatus_ = elementcutstatus;
   return;
 }
 
@@ -233,48 +240,52 @@ std::string COMBUST::InterfaceHandleCombust::toString() const
   return s.str();
 }
 
+//! return map of elemental domain integration cells
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-GEO::DomainIntCells COMBUST::InterfaceHandleCombust::GetDomainIntCells(
-    const DRT::Element* xfemElement) const
-{
-  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
-  if (tmp == elementalDomainIntCells_.end())
-  {
-    // create default set with one dummy DomainIntCell of proper size
-    GEO::DomainIntCells cells;
-    cells.push_back(GEO::DomainIntCell(xfemElement->Shape(), GEO::InitialPositionArray(xfemElement)));
-    return cells;
-  }
-  return tmp->second;
-}
-
-
 /*------------------------------------------------------------------------------------------------*
  | return number of domain integration cells for a given element                      henke 07/09 |
  *------------------------------------------------------------------------------------------------*/
-std::size_t COMBUST::InterfaceHandleCombust::GetNumDomainIntCells(
-    const DRT::Element* xfemElement) const
+std::map<int, GEO::DomainIntCells> COMBUST::InterfaceHandleCombust::DomainIntCells (
+) const
 {
-  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(xfemElement->Id());
-  if (tmp == elementalDomainIntCells_.end())
-  {
-    return 0;
-  }
-  return (tmp->second).size();
+  return elementalDomainIntCells_;
 }
 
 
-std::map<int, GEO::BoundaryIntCells> COMBUST::InterfaceHandleCombust::GetElementalBoundaryIntCells (
+std::map<int, GEO::BoundaryIntCells> COMBUST::InterfaceHandleCombust::BoundaryIntCells (
 ) const
 {
   return elementalBoundaryIntCells_;
 }
 
 
+std::map<int, COMBUST::InterfaceHandleCombust::CutStatus> COMBUST::InterfaceHandleCombust::CutState (
+) const
+{
+  return elementcutstatus_;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-GEO::BoundaryIntCells COMBUST::InterfaceHandleCombust::GetBoundaryIntCells(
+GEO::DomainIntCells COMBUST::InterfaceHandleCombust::ElementDomainIntCells(
+    const int gid) const
+{
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+  if (tmp == elementalDomainIntCells_.end())
+  {
+    // create default set with one dummy DomainIntCell of proper size
+//    GEO::DomainIntCells cells;
+//    cells.push_back(GEO::DomainIntCell(xfemElement->Shape(), GEO::InitialPositionArray(xfemElement)));
+//    return cells;
+    return GEO::DomainIntCells();
+  }
+  return tmp->second;
+}
+
+
+GEO::BoundaryIntCells COMBUST::InterfaceHandleCombust::ElementBoundaryIntCells(
     const int gid) const
 {
   std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
@@ -290,10 +301,34 @@ GEO::BoundaryIntCells COMBUST::InterfaceHandleCombust::GetBoundaryIntCells(
 /*------------------------------------------------------------------------------------------------*
  | return number of boundary integration cells for a given element                     henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
-std::size_t COMBUST::InterfaceHandleCombust::GetNumBoundaryIntCells(
-    const DRT::Element* xfemElement) const
+COMBUST::InterfaceHandleCombust::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus(const int xfemeleid) const
 {
-  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(xfemElement->Id());
+  COMBUST::InterfaceHandleCombust::CutStatus cutstat = COMBUST::InterfaceHandleCombust::undefined;
+
+  std::map<int,COMBUST::InterfaceHandleCombust::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  if (iter != elementcutstatus_.end())
+    cutstat = iter->second;
+
+  return cutstat;
+}
+
+
+std::size_t COMBUST::InterfaceHandleCombust::NumDomainIntCells(
+    const int gid) const
+{
+  std::map<int,GEO::DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+  if (tmp == elementalDomainIntCells_.end())
+  {
+    return 0;
+  }
+  return (tmp->second).size();
+}
+
+
+std::size_t COMBUST::InterfaceHandleCombust::NumBoundaryIntCells(
+    const int gid) const
+{
+  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
   if (tmp == elementalBoundaryIntCells_.end())
   {
     return 0;
@@ -309,10 +344,10 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
 
   double volume = 0.0;
 
-  for (int iele=0; iele<xfemdis_->NumMyRowElements(); ++iele)
+  for (int iele=0; iele<fluiddis_->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = xfemdis_->lRowElement(iele);
-    const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(ele);
+    const DRT::Element* ele = fluiddis_->lRowElement(iele);
+    const GEO::DomainIntCells& elementDomainIntCells = this->ElementDomainIntCells(ele->Id());
     GEO::DomainIntCells::const_iterator itercell;
     for(itercell = elementDomainIntCells.begin(); itercell != elementDomainIntCells.end(); ++itercell )
     {
@@ -333,10 +368,10 @@ const double COMBUST::InterfaceHandleCombust::ComputeSurface()
 {
   double area = 0.0;
 
-  for (int iele=0; iele<xfemdis_->NumMyRowElements(); ++iele)
+  for (int iele=0; iele<fluiddis_->NumMyRowElements(); ++iele)
   {
-    const DRT::Element* ele = xfemdis_->lRowElement(iele);
-    const GEO::BoundaryIntCells& elementBoundaryIntCells = this->GetBoundaryIntCells(ele->Id());
+    const DRT::Element* ele = fluiddis_->lRowElement(iele);
+    const GEO::BoundaryIntCells& elementBoundaryIntCells = this->ElementBoundaryIntCells(ele->Id());
     GEO::BoundaryIntCells::const_iterator itercell;
     for(itercell = elementBoundaryIntCells.begin(); itercell != elementBoundaryIntCells.end(); ++itercell )
     {
@@ -391,10 +426,10 @@ const double COMBUST::InterfaceHandleCombust::ComputeSurface()
 // return whether the element has a whole touched face and lies in the plus domain or not
 bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 {
-  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  std::map<int,COMBUST::InterfaceHandleCombust::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
-    if (iter->second == COMBUST::FlameFront::touched)
+    if (iter->second == COMBUST::InterfaceHandleCombust::touched)
       return true;
   }
   else
@@ -406,10 +441,10 @@ bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 // return whether the element is bisected or not
 bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
 {
-  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  std::map<int,COMBUST::InterfaceHandleCombust::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
-    if (iter->second == COMBUST::FlameFront::bisected)
+    if (iter->second == COMBUST::InterfaceHandleCombust::bisected)
       return true;
   }
   else
@@ -421,10 +456,10 @@ bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
 // return whether the element is trisected or not
 bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) const
 {
-  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  std::map<int,COMBUST::InterfaceHandleCombust::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
   if (iter != elementcutstatus_.end())
   {
-    if (iter->second == COMBUST::FlameFront::trisected)
+    if (iter->second == COMBUST::InterfaceHandleCombust::trisected)
       return true;
   }
   else
@@ -434,17 +469,6 @@ bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) cons
 }
 
 // return whether the element is trisected or not
-COMBUST::FlameFront::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus(const int xfemeleid) const
-{
-  COMBUST::FlameFront::CutStatus cutstat = COMBUST::FlameFront::undefined;
-
-  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
-  if (iter != elementcutstatus_.end())
-    cutstat = iter->second;
-
-  return cutstat;
-}
-
 /*------------------------------------------------------------------------------------------------*
  | decide if this element is intersected (touched elements are intersected)                       |
  *------------------------------------------------------------------------------------------------*/
@@ -462,11 +486,11 @@ bool COMBUST::InterfaceHandleCombust::ElementIntersected(
  | decide if this element is split (= bi- or trisected or numerically bi- or trisected            |
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::InterfaceHandleCombust::ElementSplit(
-    const DRT::Element* xfemElement) const
+    const int gid) const
 {
   bool bisected = false;
 
-  std::size_t numcells = this->GetNumDomainIntCells(xfemElement);
+  std::size_t numcells = this->NumDomainIntCells(gid);
 
   if (numcells > 1) // more than one domain integration cell -> element bisected or numerically touched
     bisected = true;
@@ -476,96 +500,3 @@ bool COMBUST::InterfaceHandleCombust::ElementSplit(
   return bisected;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool COMBUST::InterfaceHandleCombust::ElementHasLabel(
-    const int element_gid,
-    const int label) const
-{
-  if(elementalBoundaryIntCells_.empty())
-    dserror("boundary intcells are empty");
-
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
-  bool has_label = false;
-  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
-  {
-    const int surface_ele_gid = bcell->GetSurfaceEleGid();
-    const int label_for_current_bele = labelPerBoundaryElementId_.find(surface_ele_gid)->second;
-    if (label == label_for_current_bele)
-    {
-      has_label = true;
-      break;
-    }
-  }
-  return has_label;
-}
-
-/*----------------------------------------------------------------------*
- * implement this member function in derived classes!
- *----------------------------------------------------------------------*/
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
-{
-  dserror("not implemented for the InterfaceHandle base class");
-  return 0;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::set<int> COMBUST::InterfaceHandleCombust::GetIntersectingBoundaryElementsGID(
-    const int element_gid
-    ) const
-{
-  std::set<int> begids;
-
-  if(elementalBoundaryIntCells_.empty())
-    dserror("boundary intcells are empty");
-
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
-  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
-  {
-    begids.insert(bcell->GetSurfaceEleGid());
-  }
-  return begids;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::set<int> COMBUST::InterfaceHandleCombust::LabelsPerElement(
-    const int element_gid) const
-{
-  std::set<int> labelset;
-  if(elementalBoundaryIntCells_.empty())
-    return labelset;
-
-  const GEO::BoundaryIntCells& bcells = elementalBoundaryIntCells_.find(element_gid)->second;
-  for (GEO::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
-  {
-    labelset.insert(bcell->GetSurfaceEleGid());
-  }
-  return labelset;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void COMBUST::InterfaceHandleCombust::InvertElementsPerLabel()
-{
-  labelPerBoundaryElementId_.clear();
-  for(std::map<int,std::set<int> >::const_iterator conditer = boundaryElementsByLabel_.begin();
-      conditer!=boundaryElementsByLabel_.end();
-      ++conditer)
-  {
-    const int xfemlabel = conditer->first;
-    for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
-    {
-      const int eleid = *eleiditer;
-      if (labelPerBoundaryElementId_.count(eleid) == 1)
-        dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
-      labelPerBoundaryElementId_[eleid] = xfemlabel;
-    }
-  }
-  return;
-}

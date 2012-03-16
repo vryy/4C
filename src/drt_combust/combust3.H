@@ -97,7 +97,9 @@ private:
               const bool                             genalpha,
               const bool                             gradphi,
               const DRT::ELEMENTS::Combust3*         ele,
-              const COMBUST::InterfaceHandleCombust* ih
+              const Epetra_Vector*      phinp,
+              const Epetra_MultiVector*      gradphinp,
+              const Epetra_Vector*      curvature
               );
 
           const bool instationary_;
@@ -124,7 +126,7 @@ private:
               const bool                             genalpha,
               const bool                             gradphi,
               const DRT::ELEMENTS::Combust3*         ele,
-              const COMBUST::InterfaceHandleCombust* ih
+              const RCP<Epetra_Vector>               phinp
               );
 
           const bool instationary_;
@@ -192,6 +194,8 @@ private:
 
         virtual COMBUST::InterfaceHandleCombust* InterfaceHandle() const { return ih_; };
 
+        virtual Epetra_Vector* Phinp() const { return epetra_phinp_;}
+
         //! Destructor
         virtual ~Combust3();
 
@@ -204,8 +208,6 @@ private:
         virtual int NumDofPerElement() const;
 
         Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager(){ return eleDofManager_; }
-
-        COMBUST::InterfaceHandleCombust* GetInterfaceHandle(){ return ih_; }
 
         void Print(ostream& os) const;
 
@@ -332,6 +334,15 @@ private:
 
         //! store information about the interface handle
         COMBUST::InterfaceHandleCombust* ih_;
+
+        //! store the current phi-vector
+        Epetra_Vector* epetra_phinp_;
+
+        //! store the smoothed phi-gradient
+        Epetra_MultiVector* gradphi_;
+
+        //! store the curvature
+        Epetra_Vector* curvature_;
 
         //! boolean indicating whether element is bisected by the interface
         bool bisected_;

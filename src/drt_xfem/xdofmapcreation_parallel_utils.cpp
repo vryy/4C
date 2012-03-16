@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include <iterator>
 
 
+#include "../drt_combust/combust_interface.H"
 #include "xdofmapcreation_parallel_utils.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
@@ -37,9 +38,9 @@ void XFEM::fillNodalDofKeySet(
 {
   nodaldofkeyset.clear();
   // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
+  for (int i=0; i<ih.FluidDis()->NumMyColNodes(); ++i)
   {
-    const DRT::Node* actnode = ih.xfemdis()->lColNode(i);
+    const DRT::Node* actnode = ih.FluidDis()->lColNode(i);
     const int gid = actnode->Id();
     std::map<int, std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(gid);
     if (entry == nodalDofSet.end())
@@ -118,7 +119,7 @@ void XFEM::syncNodalDofs(
     const COMBUST::InterfaceHandleCombust& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet)
 {
-  const Epetra_Comm& comm = ih.xfemdis()->Comm();
+  const Epetra_Comm& comm = ih.FluidDis()->Comm();
   const int myrank = comm.MyPID();
   const int numproc = comm.NumProc();
 
@@ -200,7 +201,7 @@ void XFEM::syncNodalDofs(
     for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
     {
       const int nodegid = dofkey->getGid();
-      if (ih.xfemdis()->HaveGlobalNode(nodegid))
+      if (ih.FluidDis()->HaveGlobalNode(nodegid))
       {
         new_dofkeyset.insert(*dofkey);
       }

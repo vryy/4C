@@ -12,6 +12,7 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 
 #include "combust3.H"
+#include "combust_interface.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_xfem/dof_management_element.H"
@@ -285,6 +286,7 @@ int DRT::ELEMENTS::Combust3::NumDofPerElement() const
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 02/08|
  *----------------------------------------------------------------------*/
@@ -355,13 +357,15 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
  | constructor                                              henke 04/10 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::MyState::MyState(
-    const DRT::Discretization&             discretization,
-    const std::vector<int>&                lm,
-    const bool                             instationary,
-    const bool                             genalpha,
-    const bool                             gradphi,
-    const DRT::ELEMENTS::Combust3*         ele,
-    const COMBUST::InterfaceHandleCombust* ih
+    const DRT::Discretization&                  discretization,
+    const std::vector<int>&                     lm,
+    const bool                                  instationary,
+    const bool                                  genalpha,
+    const bool                                  gradphi,
+    const DRT::ELEMENTS::Combust3*              ele,
+    const Epetra_Vector*                        phinp,
+    const Epetra_MultiVector*                   gradphinp,
+    const Epetra_Vector*                        curvature
     ) :
       instationary_(instationary),
       genalpha_(genalpha),
@@ -381,8 +385,6 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     }
   }
 
-  // get pointer to vector holding G-function values at the fluid nodes
-  const Teuchos::RCP<Epetra_Vector> phinp = ih->FlameFront()->Phinp();
 #ifdef DEBUG
   // check if this element is the first element on this processor
   // remark:
@@ -400,15 +402,10 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
 #endif
 
   // extract local (element level) G-function values from global vector
-  DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_, *phinp);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_,*phinp);
 
   if(gradphi_)
   {
-    // get pointer to vector holding SMOOTHED G-function values at the fluid nodes
-    const Teuchos::RCP<Epetra_MultiVector> gradphinp = ih->FlameFront()->GradPhi();
-    // get pointer to vector holding curvature values at the fluid nodes
-    const Teuchos::RCP<Epetra_Vector> curv = ih->FlameFront()->Curvature();
-
     // extract local (element level) G-function values from global vector
     // only if element is intersected; only adjacent nodal values are calculated
 #ifndef COMBUST_NORMAL_ENRICHMENT
@@ -419,10 +416,10 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       //         - the intersected elements are not enough since normal shape functions are also
       //           needed for partially enriched elements
       //         - for simplicity the phi gradient is fetched for every element
-      if (gradphinp == Teuchos::null) dserror("no gradient of phi has been computed!");
+      if (gradphinp == NULL) dserror("no gradient of phi has been computed!");
       DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
-      if (curv == Teuchos::null) dserror("no curvature has been computed!");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele, curv_,*curv);
+      if (curvature == NULL) dserror("no curvature has been computed!");
+      DRT::UTILS::ExtractMyNodeBasedValues(ele, curv_,*curvature);
 #ifndef COMBUST_NORMAL_ENRICHMENT
     }
 #endif
@@ -440,7 +437,7 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
     const bool                             genalpha,
     const bool                             gradphi,
     const DRT::ELEMENTS::Combust3*         ele,
-    const COMBUST::InterfaceHandleCombust* ih
+    const Teuchos::RCP<Epetra_Vector>      phinp
     ) :
       instationary_(instationary),
       genalpha_(genalpha)
@@ -455,8 +452,6 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
     }
   }
 
-  // get pointer to vector holding G-function values at the fluid nodes
-  const Teuchos::RCP<Epetra_Vector> phinp = ih->FlameFront()->Phinp();
 #ifdef DEBUG
   // check if this element is the first element on this processor
   // remark:

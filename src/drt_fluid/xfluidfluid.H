@@ -33,6 +33,7 @@ namespace GEO
 {
   namespace CUT
   {
+    class ElementHandle;
     class VolumeCell;
   }
 }

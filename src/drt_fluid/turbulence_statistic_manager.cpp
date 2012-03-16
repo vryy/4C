@@ -662,7 +662,7 @@ namespace FLD
           timeint.standarddofset_,
           homdir,
           density_,  // density
-          timeint.velpressplitterForOutput_,
+          *timeint.velpressplitterForOutput_,
           withscatra // statistics for transported scalar
       ));
     }

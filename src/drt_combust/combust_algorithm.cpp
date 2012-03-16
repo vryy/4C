@@ -15,6 +15,7 @@ Maintainer: Florian Henke
 
 #include "combust_algorithm.H"
 #include "combust_defines.H"
+#include "combust_flamefront.H"
 #include "two_phase_defines.H"
 #include "combust_reinitializer.H"
 #include "combust_fluidimplicitintegration.H"
@@ -68,8 +69,6 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   convel_layers_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("NUM_CONVEL_LAYERS")),
   gmshoutput_(DRT::INPUT::IntegralValue<int>(combustdyn,"GMSH_OUTPUT")),
   combustdyn_(combustdyn),
-  interfacehandle_(Teuchos::null),
-  interfacehandle_old_(Teuchos::null),
   flamefront_(Teuchos::null),
   reinit_pde_(Teuchos::null),
   transport_vel_(DRT::INPUT::IntegralValue<INPAR::COMBUST::TransportVel>(combustdyn.sublist("COMBUSTION GFUNCTION"),"TRANSPORT_VEL")),
@@ -151,13 +150,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField().PBCmap()));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-
-  // construct interfacehandles using initial flame front
-  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
-  interfacehandle_old_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
-  // get integration cells according to initial flame front
-  interfacehandle_->UpdateInterfaceHandle();
-  interfacehandle_old_->UpdateInterfaceHandle();
+  flamefront_->UpdateOldInterfaceHandle();
 
   volume_start_ = ComputeVolume();
 
@@ -171,8 +164,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     {
       //cou t<< "reinitialization at timestep 0 switched off!" << endl;
 
-      // get my flame front (boundary integration cells)
-      std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+    // get my flame front (boundary integration cells)
+    std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
 #ifdef PARALLEL
       // export flame front (boundary integration cells) to all processors
       flamefront_->ExportFlameFront(myflamefront);
@@ -191,10 +184,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
         *ScaTraField().Phin() = *ScaTraField().Phinp();
       }
 
-      // update flame front according to reinitialized G-function field
-      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-      // update interfacehandle (get integration cells) according to updated flame front
-      interfacehandle_->UpdateInterfaceHandle();
+    // update flame front according to reinitialized G-function field
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
       // pointer not needed any more
       stepreinit_ = false;
@@ -213,8 +204,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
       combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD");
   const int initfuncno = combustdyn_.sublist("COMBUSTION FLUID").get<int>("INITFUNCNO");
 
-  // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_);
+  // update fluid interface with flamefront
+  FluidField().ImportFlameFront(flamefront_,true);
 
   FluidField().SetInitialFlowField(initfield, initfuncno);
 
@@ -222,13 +213,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
     FluidField().Output();
 
-  // TODO check if needed
-  // export interface information to the fluid time integration
-  // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
-  FluidField().ImportInterface(interfacehandle_,interfacehandle_old_);
-
-  // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null);
+  // clear fluid's memory to flamefront
+  FluidField().ImportFlameFront(Teuchos::null,false);
 
   if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
   {
@@ -476,10 +462,7 @@ void COMBUST::Algorithm::DoReinitialization()
       cout << "WARNING: reinitialization done every FLI" << endl;
 
     // update flame front according to reinitialized G-function field
-      flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
-
-    // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
+    flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
   }
 
   // TODO: the step used for output is switched for one
@@ -516,7 +499,7 @@ void COMBUST::Algorithm::ReinitializeGfuncSignedDistance()
 
     // get my flame front (boundary integration cells)
     // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
-    std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+    std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
 
 #ifdef PARALLEL
     // export flame front (boundary integration cells) to all processors
@@ -579,13 +562,10 @@ void COMBUST::Algorithm::ReinitializeGfunc()
     else
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
 
-    // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
-
 
     // get my flame front (boundary integration cells)
     // remark: we generate a copy of the flame front here, which is not neccessary in the serial case
-    std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+    std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
 
 #ifdef PARALLEL
     // export flame front (boundary integration cells) to all processors
@@ -616,9 +596,6 @@ void COMBUST::Algorithm::ReinitializeGfunc()
       // after the reinitialization we update the flamefront in the usual sense
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
     }
-
-    // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
   }
 
   //  // create Gmsh postprocessing file
@@ -1461,16 +1438,15 @@ void COMBUST::Algorithm::DoFluidField()
     std:: cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------" << std::endl;
   }
 
-  // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_);
-  // export interface information to the fluid time integration
-  FluidField().ImportInterface(interfacehandle_,interfacehandle_old_);
-  // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null);
+  // update fluid interface with flamefront
+  FluidField().ImportFlameFront(flamefront_,true);
 
   // solve nonlinear Navier-Stokes equations
   FluidField().NonlinearSolve();
-  //FluidField().MultiCorrector();
+
+  // clear fluid's memory to flamefront
+  FluidField().ImportFlameFront(Teuchos::null,false);
+
 
   return;
 }
@@ -1592,8 +1568,8 @@ void COMBUST::Algorithm::DoGfuncField()
 void COMBUST::Algorithm::UpdateInterface()
 {
   //overwrite old interfacehandle before updating flamefront in first FGI
-  if (fgiter_<=1 and interfacehandle_old_ != Teuchos::null)
-    interfacehandle_old_->UpdateInterfaceHandle();
+  if (fgiter_<=1)
+    flamefront_->UpdateOldInterfaceHandle();
 
   // update flame front according to evolved G-function field
   // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
@@ -1602,10 +1578,6 @@ void COMBUST::Algorithm::UpdateInterface()
   else
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
 
-  // update interfacehandle (get integration cells) according to updated flame front
-  interfacehandle_->UpdateInterfaceHandle();
-
-  // update the Fluid and the FGI vector at the end of the FGI loop
   return;
 }
 
@@ -1653,10 +1625,12 @@ void COMBUST::Algorithm::Output()
   // this hack is necessary for the visualization of disconituities in Gmsh             henke 10/09
   //------------------------------------------------------------------------------------------------
   // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_);
+  FluidField().ImportFlameFront(flamefront_,false);
+  // write fluid output
   FluidField().Output();
-  // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null);
+  // clear fluid's memory to flamefront
+  FluidField().ImportFlameFront(Teuchos::null,false);
+
 
   // causes error in DEBUG mode (trueresidual_ is null)
   //FluidField().LiftDrag();
@@ -1705,7 +1679,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
 double COMBUST::Algorithm::ComputeVolume()
 {
   // compute negative volume of discretization on this processor
-  double myvolume = interfacehandle_->ComputeVolumeMinus();
+  double myvolume = flamefront_->InterfaceHandle()->ComputeVolumeMinus();
 
   double sumvolume = 0.0;
 
@@ -1730,7 +1704,7 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
     std::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << std::flush;
 
   // compute negative volume of discretization on this processor
-  double myarea = interfacehandle_->ComputeSurface();
+  double myarea = flamefront_->InterfaceHandle()->ComputeSurface();
   double sumarea = 0.0;
 
   // sum volumes on all processors
@@ -1765,9 +1739,6 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
 
   // update flame front according to reinitialized G-function field
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-
-  // update interfacehandle (get integration cells) according to updated flame front
-  interfacehandle_->UpdateInterfaceHandle();
 
   if (Comm().MyPID() == 0)
     std::cout << "done" << std::endl;
@@ -2243,19 +2214,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
-  //-------------------------------------------------------------
-  // create (old) flamefront conforming to restart state of fluid
-  //-------------------------------------------------------------
-  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
-  interfacehandle_->UpdateInterfaceHandle();
-
-  // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_);
-  //FluidField().ImportInterface(interfacehandle,dummy);
-  FluidField().ImportInterface(interfacehandle_,interfacehandle_);
-  // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null);
-
   // restart of fluid field
   FluidField().ReadRestart(step);
 
@@ -2282,13 +2240,11 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     if (Comm().MyPID()==0)
       std::cout << "done" << std::endl;
 
-    // additionally we need to update the interfacehandle and flamefront
-    // or later on the computeVolume function will return the old volume
-    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-    interfacehandle_->UpdateInterfaceHandle();
-    FluidField().ImportFlameFront(flamefront_);
-    FluidField().ImportInterface(interfacehandle_,interfacehandle_);
-    FluidField().ImportFlameFront(Teuchos::null);
+    //-------------------------------------------------------------
+    // fill flamefront conforming to restart state
+    //-------------------------------------------------------------
+    flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+    flamefront_->UpdateOldInterfaceHandle();
 
     if (gmshoutput_)
     {
@@ -2341,7 +2297,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     if (!restartfromfluid) // default: restart from an XFEM problem, not from a standard fluid problem
     {
       // get my flame front (boundary integration cells)
-      std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+      std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
 #ifdef PARALLEL
       // export flame front (boundary integration cells) to all processors
       flamefront_->ExportFlameFront(myflamefront);
@@ -2358,11 +2314,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
         *ScaTraField().Phinm() = *ScaTraField().Phinp();
       //TODO: what should be done for gen alpha and does not phidtx have to be updated too?
-
-      // update flame front according to reinitialized G-function field
-      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-      // update interfacehandle (get integration cells) according to updated flame front
-      interfacehandle_->UpdateInterfaceHandle();
     }
   }
 
@@ -2415,17 +2366,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     gmshfilecontent.close();
     std::cout << " done" << endl;
   }
-
-  //-------------------
-  // write fluid output
-  //-------------------
-//  interfacehandle_->UpdateInterfaceHandle();
-//  interfacehandleold_->UpdateInterfaceHandle();
-//  // show flame front to fluid time integration scheme
-//  FluidField().ImportFlameFront(flamefront_);
-//  FluidField().Output();
-//  // delete fluid's memory of flame front; it should never have seen it in the first place!
-//  FluidField().ImportFlameFront(Teuchos::null);
 
   // set time in scalar transport time integration scheme
   if(restartfromfluid)
@@ -2501,7 +2441,7 @@ void COMBUST::Algorithm::Redistribute()
         for (int iele = 0; iele < fluiddis->NumMyRowElements(); ++iele)
         {
           DRT::Element* ele = fluiddis->lRowElement(iele);
-          if (interfacehandle_->ElementCutStatus(ele->Id()) != COMBUST::FlameFront::uncut)
+          if (flamefront_->InterfaceHandle()->ElementCutStatus(ele->Id()) != COMBUST::InterfaceHandleCombust::uncut)
           {
             const int* nodes = ele->NodeIds();
             for (int i = 0; i < ele->NumNode(); ++i)
@@ -3032,23 +2972,14 @@ void COMBUST::Algorithm::Redistribute()
       if(Comm().MyPID()==0)
         cout << "done\nUpdating interface                                                  ... " << flush;
 
-      // the old interfacehandle is now invalid
-      // Remark: even though the interfacehandle is invalid, there are still some useful
-      // informations in there. Since they are used by Martin's semi lagrange timeint. the
-      // interfacehandle should not be deleted.
-      //interfacehandle_old_ = Teuchos::null;
-
       // update flame front according to evolved G-function field
       // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
       flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
 
-       // update interfacehandle (get integration cells) according to updated flame front
-      interfacehandle_->UpdateInterfaceHandle();
-
       if(Comm().MyPID()==0)
         cout << "Transfering state vectors to new distribution                       ... " << flush;
 
-      FluidField().TransferVectorsToNewDistribution(interfacehandle_);
+      FluidField().TransferVectorsToNewDistribution(flamefront_);
 
       if(Comm().MyPID()==0)
         cout << "done" << endl;

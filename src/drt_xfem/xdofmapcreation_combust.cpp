@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include <iterator>
 
 
+#include "../drt_combust/combust_interface.H"
 #include "xdofmapcreation_combust.H"
 #include "xdofmapcreation_parallel_utils.H"
 #include "../drt_combust/two_phase_defines.H"
@@ -79,6 +80,7 @@ bool XFEM::ApplyJumpEnrichment(
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::ApplyJumpEnrichmentToTouched(
     const COMBUST::InterfaceHandleCombust&    ih,
+    const Epetra_Vector*                      phinp,
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
@@ -100,8 +102,6 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
     
     // get phi values for nodes
-    // get pointer to vector holding G-function values at the fluid nodes
-    const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
     std::vector<double> phinp_;
     
     // extract local (element level) G-function values from global vector
@@ -184,6 +184,7 @@ bool XFEM::ApplyKinkEnrichment(
  */
 bool XFEM::ApplyKinkJumpEnrichmentToTouched(
     const COMBUST::InterfaceHandleCombust&    ih,
+    const Epetra_Vector*                      phinp,
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
@@ -200,8 +201,6 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
   const int* nodeidptrs = xfemele->NodeIds();
 
   // get phi values for nodes
-  // get pointer to vector holding G-function values at the fluid nodes
-  const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
   std::vector<double> phinp_;
 
   // extract local (element level) G-function values from global vector
@@ -292,6 +291,7 @@ bool XFEM::ApplyKinkJumpEnrichment(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::createDofMapCombust(
   const COMBUST::InterfaceHandleCombust&    ih,
+  const Epetra_Vector*                      phinp,
   std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,
   std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap,
   const std::set<XFEM::PHYSICS::Field>&     fieldset,
@@ -303,9 +303,9 @@ void XFEM::createDofMapCombust(
   int skipped_elem_enr_count = 0;
 
   // loop my column elements and add enrichments to nodes of each element
-  for (int i=0; i < ih.xfemdis()->NumMyColElements(); ++i)
+  for (int i=0; i < ih.FluidDis()->NumMyColElements(); ++i)
   {
-    const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
+    const DRT::Element* xfemele = ih.FluidDis()->lColElement(i);
 
     bool skipped_node_enr = false;
 #ifdef COMBUST_STRESS_BASED
@@ -336,7 +336,7 @@ void XFEM::createDofMapCombust(
     // remark: - for any regular call of DofManager the flame front exists (ih.FlameFront() != Teuchos::null),
     //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
     //           flame front does not exist yet (ih.FlameFront() == Teuchos::null)
-    if (ih.FlameFront() != Teuchos::null)
+    if (phinp != NULL) // TODO works this???
     {
       //----------------------------------------
       // find out whether an element is bisected
@@ -419,7 +419,7 @@ void XFEM::createDofMapCombust(
           dserror(" apply enrichments for premixedcombustion with touched elements");
 #endif
 #ifdef COMBUST_NITSCHE
-          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, nodeDofMap);
+          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, nodeDofMap);
 #endif
         }
         break;
@@ -432,14 +432,14 @@ void XFEM::createDofMapCombust(
         {
           //std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
-          skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih, xfemele, fieldset, nodeDofMap);
+          skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, nodeDofMap);
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflowjump:
         {
           std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // apply additional jump enrichments for pressure to all nodes with Gfunc = 0.0 of a touched element
-          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, nodeDofMap);
+          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, nodeDofMap);
         }
         break;
         default:

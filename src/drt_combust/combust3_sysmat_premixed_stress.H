@@ -425,7 +425,7 @@ void SysmatDomainStress(
   const double mk = FLD::UTILS::MK<DISTYPE>();
 
   // get domain integration cells for this element
-  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   //-----------------------------------
   // loop over domain integration cells
@@ -1073,7 +1073,7 @@ void SysmatBoundaryStress(
   const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)
@@ -1998,7 +1998,7 @@ void SysmatBoundarySigma(
   const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)
@@ -2754,7 +2754,7 @@ void SysmatBoundaryStressDoubleOneSided(
   const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)

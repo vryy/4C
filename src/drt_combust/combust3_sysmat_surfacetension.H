@@ -1417,7 +1417,7 @@ void SysmatBoundarySurfaceTension(
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
 
   // get domain integration cells for this element
-  const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
+  const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
 
   //------------------------------------------------------------------------------------------------
   // loop over boundary integration cells

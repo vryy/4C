@@ -44,7 +44,7 @@ Maintainer: Florian Henke
  | constructor                                                                        henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::FlameFront::FlameFront(
-    const Teuchos::RCP<const DRT::Discretization> fluiddis,
+    const Teuchos::RCP<DRT::Discretization> fluiddis,
     const Teuchos::RCP<DRT::Discretization> gfuncdis,
     const Teuchos::RCP<map<int,vector<int> > > pbcmap
 ) :
@@ -60,6 +60,9 @@ refinement_(false),
 maxRefinementLevel_(0),
 xfeminttype_(INPAR::COMBUST::xfemintegration_cut)
 {
+  // construct interfacehandles using initial flame front
+  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
+  interfacehandle_old_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
 }
 
 
@@ -74,11 +77,29 @@ COMBUST::FlameFront::~FlameFront()
 /*------------------------------------------------------------------------------------------------*
  | public: update the flame front                                                     henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::UpdateOldInterfaceHandle()
+{
+  if (interfacehandle_==Teuchos::null)
+    dserror ("new interfacehandle has to be set before old interfacehandle is updated!");
+
+  std::map<int, GEO::DomainIntCells> domainIntCells = interfacehandle_->DomainIntCells();
+  std::map<int, GEO::BoundaryIntCells> boundaryIntCells = interfacehandle_->BoundaryIntCells();
+  std::map<int, COMBUST::InterfaceHandleCombust::CutStatus> cutstatus = interfacehandle_->CutState();
+
+  interfacehandle_old_->UpdateInterfaceHandle(
+      domainIntCells,
+      boundaryIntCells,
+      cutstatus);
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | public: update the flame front                                                     henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::UpdateFlameFront(
     const Teuchos::ParameterList& combustdyn,
     const Teuchos::RCP<const Epetra_Vector>& phin,
-    const Teuchos::RCP<const Epetra_Vector>& phinp,
-    bool ReinitModifyPhi
+    const Teuchos::RCP<const Epetra_Vector>& phinp
 )
 {
   // get
@@ -146,9 +167,10 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
   if (phicol->MyLength() != phi->MyLength())
     dserror("vector phi needs to be distributed according to fluid node column map");
 
-  // maps are cleared and refilled on every call of this function
-  myelementintcells_.clear();
-  myboundaryintcells_.clear();
+  // maps are defined
+  std::map<int,GEO::DomainIntCells >        elementalDomainIntCells;
+  std::map<int,GEO::BoundaryIntCells >      elementalBoundaryIntCells;
+  std::map<int,COMBUST::InterfaceHandleCombust::CutStatus > elementcutstatus;
 
   // loop over fluid (combustion) column elements
   // remark: loop over row elements would be sufficient, but enrichment is done in column loop
@@ -185,7 +207,15 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
      */
 
     // generate flame front (interface) geometry
-    CaptureFlameFront(rootcell);
+    CaptureFlameFront(rootcell,
+        elementalDomainIntCells,
+        elementalBoundaryIntCells,
+        elementcutstatus);
+
+    interfacehandle_->UpdateInterfaceHandle(
+        elementalDomainIntCells,
+        elementalBoundaryIntCells,
+        elementcutstatus);
 
     // should not be necessary
 #if 0
@@ -2008,7 +2038,7 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
       bool iscut = false;
       for (size_t i=0; i < numele; ++i)
       {
-        if (myelementcutstatus_[adjeles[i]->Id()] != COMBUST::FlameFront::uncut)
+        if (InterfaceHandle()->ElementCutStatus(adjeles[i]->Id()) != COMBUST::InterfaceHandleCombust::uncut)
         {
           iscut = true;
           break;
@@ -2729,7 +2759,11 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
  | capture flame front within one root refinement cell (==element) to create domain and boundary  |
  | integration cells                                                                  henke 08/10 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> rootcell)
+void COMBUST::FlameFront::CaptureFlameFront(
+    const Teuchos::RCP<const COMBUST::RefinementCell>           rootcell,
+    std::map<int,GEO::DomainIntCells >&                         elementDomainIntCells,
+    std::map<int,GEO::BoundaryIntCells >&                       elementBoundaryIntCells,
+    std::map<int,COMBUST::InterfaceHandleCombust::CutStatus >&  elementcutstatus)
 {
   // get all refinement cells attached to this root cell (leaves in tree structure)
   // remark: if refinement is turned off, the root cell (==element) itself is returned
@@ -2742,7 +2776,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   GEO::BoundaryIntCells listBoundaryIntCellsperEle;
 
   // set element cut status to default value 'undefined'
-  COMBUST::FlameFront::CutStatus cutstat = COMBUST::FlameFront::undefined;
+  COMBUST::InterfaceHandleCombust::CutStatus cutstat = COMBUST::InterfaceHandleCombust::undefined;
 
   // get vector of G-function values of root cell
   const std::vector<double>& gfuncvaluesrootcell = rootcell->GetGfuncValues();
@@ -2770,7 +2804,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // - store triangles as boundary integration cells
         // - create tetrahedral domain integration cell using TetGen
         buildPLC(RefinementCells[irefcell],gfuncvaluesrootcell,listDomainIntCellsperEle,listBoundaryIntCellsperEle);
-        StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::bisected;
       }
       // the cell is touched (interface aligned with a cell surface)
       else if(RefinementCells[irefcell]->Touched())
@@ -2779,14 +2813,14 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // store quad4 boundary integration cell
         StoreBoundaryIntegrationCell(RefinementCells[irefcell],listBoundaryIntCellsperEle);
-        StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::touched;
       }
       else // (not bisected) and (not touched)
       {
         // store hex8 domain integration cell
         StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // no boundary integration cell required
-        StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::uncut;
       }
 #else
       //-----------------------
@@ -2910,12 +2944,12 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 
             if (numstoredvol==1 and numstoredbound==0)
             {
-              StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
               //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             else if (numstoredvol==1 and numstoredbound==1)
             {
-              StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::touched;
               //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
             }
             else
@@ -2938,20 +2972,20 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             // all volume cells and boundary cells have been stored
             if (numstoredvol==2 and numstoredbound==1)
             {
-              StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
               //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
             // a volume cell has been deleted, because is was too small
             else if (numstoredvol==1 and numstoredbound==1)
             {
-              StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::touched;
               //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
               //FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)
             {
-              StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
               //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             // something went wrong
@@ -2986,8 +3020,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
                  (numstoredvol==5 and numstoredbound==4) )  // multi-sected in 3D
             {
               // update cut status of root cell (element)
-              //StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
-              StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+              //cutstat = COMBUST::InterfaceHandleCombust::trisected;
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
               //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
 
@@ -3011,7 +3045,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
                       (numstoredvol==2 and numstoredbound==4) )    // numvolcells==5; neglected 3 small volumes but 3 large boundaries
             {
               // update cut status of root cell (element)
-              StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
               //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
             // both outer volume cells are too small, but the boundary cells are not small
@@ -3028,7 +3062,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
                     )
             {
               // update cut status of root cell (element)
-              StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::touched;
               //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
             }
             // both outer volume cells are too small
@@ -3036,7 +3070,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             else if (numstoredvol==1 and numstoredbound==0)
             {
               // update cut status of root cell (element)
-              StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
               //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             else
@@ -3065,7 +3099,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       else
       {
         // update cut status of root cell (element)
-        StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::uncut;
         // store refinement cell in list of domain integration cells
         StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // remark: no boundary integration cell required
@@ -3095,7 +3129,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       {
         GEO::TetrahedraDecomposition decomposition(RefinementCells[irefcell], listBoundaryIntCellsperEle, listDomainIntCellsperEle);
         // update cut status of root cell (element)
-        StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::bisected;
       }
       // the cell is touched (interface aligned with a cell surface)
       else if(RefinementCells[irefcell]->Touched())
@@ -3105,7 +3139,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // store quad4 boundary integration cell
         StoreBoundaryIntegrationCell(RefinementCells[irefcell],listBoundaryIntCellsperEle);
         // update cut status of root cell (element)
-        StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::touched;
       }
       else // (not bisected) and (not touched)
       {
@@ -3113,7 +3147,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // no boundary integration cell required
         // update cut status of root cell (element)
-        StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::uncut;
       }
 
     } // end loop over all refinement cells
@@ -3193,20 +3227,20 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           // delete boundary integration cells
           listBoundaryIntCellsperEle.clear();
           // adapt cut status
-          StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+          cutstat = COMBUST::InterfaceHandleCombust::uncut;
         }
         else
         {
           if (listDomainIntCellsperEle[1].getDomainPlus())
           {
             // element is touched
-            StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+            cutstat = COMBUST::InterfaceHandleCombust::touched;
           }
         }
       }
       // element is bisected
       else
-        StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+        cutstat = COMBUST::InterfaceHandleCombust::bisected;
     }
     // the rootcell is touched (interface aligned with an element surface)
     // remark: in all other cases (leaf cell is touched) the root cell will be bisected
@@ -3218,7 +3252,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       // store quad4 boundary integration cell
       StoreBoundaryIntegrationCell(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle);
       // update cutstatus
-      StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+      cutstat = COMBUST::InterfaceHandleCombust::touched;
     }
     else // (not bisected) and (not touched)
     {
@@ -3226,7 +3260,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       StoreDomainIntegrationCell(rootcell->ReturnRootCell(),listDomainIntCellsperEle);
       // no boundary integration cell required
       // set cutstatus
-      StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+      cutstat = COMBUST::InterfaceHandleCombust::uncut;
     }
 #else
     if(rootcell->Bisected())
@@ -3277,7 +3311,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //   exist refinement cells in both domains (interface exactly aligned with refinement cell boundaries)
   // - a non-refined quadratic element constisting of touched sub-elements is actually bisected, if the
   //   exist refinement cells in both domains (interface exactly aligned with sub-element boundaries)
-  if (cutstat == COMBUST::FlameFront::touched)
+  if (cutstat == COMBUST::InterfaceHandleCombust::touched)
   {
     if( (refinement_ or rootcell->Ele()->Shape()!=DRT::Element::hex8) )
     {
@@ -3288,7 +3322,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // if any domain integration cell belongs to the other domain, the element is bisected
         if (itercell->getDomainPlus() != firstcellplus)
         {
-          cutstat = COMBUST::FlameFront::bisected;
+          cutstat = COMBUST::InterfaceHandleCombust::bisected;
           break;
         }
       }
@@ -3300,15 +3334,15 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //------------------------------------------------------
   // store list of integration cells per element in flame front
   const int eleid = rootcell->Ele()->Id();
-  myelementintcells_[eleid] = listDomainIntCellsperEle;
+  elementDomainIntCells[eleid] = listDomainIntCellsperEle;
   // if there exist boundary integration cells
   if(listBoundaryIntCellsperEle.size() > 0)
-    myboundaryintcells_[eleid] = listBoundaryIntCellsperEle;
+    elementBoundaryIntCells[eleid] = listBoundaryIntCellsperEle;
 
   // add cut status for this root cell
-  myelementcutstatus_[eleid] = cutstat;
+  elementcutstatus[eleid] = cutstat;
 
-  //if (cutstat == COMBUST::FlameFront::touched)
+  //if (cutstat == COMBUST::InterfaceHandleCombusttouched)
   //  FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
 
   return;
@@ -5493,229 +5527,6 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
 }
 
 
-/*------------------------------------------------------------------------------------------------*
- | store the cut status of an element                                                 henke 04/11 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::StoreElementCutStatus(
-    const CutStatus cellstat,
-    CutStatus&      elestat
-)
-{
-  if (cellstat > elestat)
-    elestat = cellstat;
-}
-
-#if 0
-#ifdef QHULL
-/*------------------------------------------------------------------------------------------------*
- | calls the CDT to create tetrahedral integration cells in TetGen format             henke 10/08 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::CallTetGen(
-    const std::vector<std::vector<double> >&  pointlist,
-    std::multimap<int,std::vector<int> >&     segmentlist,
-    const std::vector<std::vector<int> >&     xfemsurfacelist,
-    const std::vector<std::vector<int> >&     trianglelist,
-    GEO::DomainIntCells&                      domainintcelllist,
-    const LINALG::SerialDenseMatrix           xyze,
-    const std::vector<double>&                gfuncvalues
-)
-{
-  // tetgenio in is filled with the PLC
-  // tetgenio out is filled by TetGen with tetrahedras
-
-  const int dim = 3;
-  tetgenio in;
-  tetgenio out;
-  char switches[] = "pQYY";    //- p     tetrahedralizes a PLC
-  //-Q      no terminal output except errors
-  // YY     do not generate additional points on surfaces -> fewer cells
-  tetgenio::facet *f;
-  tetgenio::polygon *p;
-
-  //allocate point list
-  in.numberofpoints = pointlist.size();
-  in.pointlist = new double[in.numberofpoints * dim];
-
-  // should scale factor be an input parameter? Is it neccessary?
-  const double scalefactor = 1.0E7;
-
-  // fill point list
-  int fill = 0;
-  for(int i = 0; i <  in.numberofpoints; i++)
-  {
-    for(int j = 0; j < dim; j++)
-    {
-      double coord = pointlist[i][j] * scalefactor;
-      in.pointlist[fill] = (double) coord;
-      fill++;
-    }
-  }
-
-  in.numberoffacets = xfemsurfacelist.size() + trianglelist.size();
-  in.facetlist = new tetgenio::facet[in.numberoffacets];
-  in.facetmarkerlist = new int[in.numberoffacets];
-
-  // loop over all element surfaces
-  for(std::size_t i=0; i<xfemsurfacelist.size(); i++)
-  {
-    f = &in.facetlist[i];
-    //map
-    // int numsegments = 0;
-    // std::map<int,std::vector<int> >::const_iterator it_segmentlist = segmentlist.find(i);
-    // if (it_segmentlist!=segmentlist.end()) //check: is surface intersected?
-    // {
-    //   numsegments = 1;
-    // }
-    // falls zweimal geschnitten : numpolygons = 3
-    //multimap
-    int numsegments = (int) segmentlist.count(i);
-    f->numberofpolygons = 1 + numsegments;
-    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-    f->numberofholes = 0;
-    f->holelist = NULL;
-    // face of hex
-    p = &f->polygonlist[0];
-    p->numberofvertices = 4; //hexahedra has 4 verices
-    p->vertexlist = new int[p->numberofvertices];
-    for(int ivertex = 0; ivertex < p->numberofvertices; ivertex++)
-    {
-      p->vertexlist[ivertex] = xfemsurfacelist[i][ivertex];
-    }
-    //store segments if present
-    if (numsegments)
-    {
-      //map
-      // for(int j=1; j<(numsegments+1); j++) //vorsicht bei Obergrenze
-      // {
-      //   p = &f->polygonlist[j];
-      //   p->numberofvertices = 2;
-      //   p->vertexlist = new int[p->numberofvertices];
-      //   for(int k=0; k<2; k++)
-      //   {
-      //     p->vertexlist[k] = segmentlist[i][k]; //surface i, point k
-      //TEST
-      //     std::cout << "Surface " << i << std::endl;
-      //     std::cout << p->vertexlist[k] << std::endl;
-      //   }
-      // }
-      //multimap
-      int j=1;
-      for (std::multimap<int,std::vector<int> >::iterator iter=segmentlist.equal_range(i).first; iter!=segmentlist.equal_range(i).second; iter++)
-      {
-        p = &f->polygonlist[j];
-        p->numberofvertices = 2;
-        p->vertexlist = new int[p->numberofvertices];
-        std::vector<int> segmentpoints = iter->second;
-        for(int k=0; k<2; k++)
-        {
-          p->vertexlist[k] = segmentpoints[k];
-        }
-        j++;
-      }
-    }
-    //in.facetmarkerlist[i] = 0; nur für BoundaryIntCells
-  }
-  // store triangles
-  std::size_t k = xfemsurfacelist.size();
-  for(std::size_t i=0; i<trianglelist.size(); i++)
-  {
-    f = &in.facetlist[k];
-    f->numberofpolygons = 1;
-    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-    f->numberofholes = 0;
-    f->holelist = NULL;
-    p = &f->polygonlist[0];
-    p->numberofvertices = 3; //triangle has 3 vertices
-    p->vertexlist = new int[p->numberofvertices];
-    //TEST
-    //std::cout << "Triangle " << i << std::endl;
-    //std::cout << k << std::endl;
-    for(int j=0; j<3; j++)
-    {
-      p->vertexlist[j] = trianglelist[i][j];
-      //TEST
-      //std::cout << p->vertexlist[j] << std::endl;
-    }
-    //in.facetmarkerlist[k] = 1; nur für BoundaryIntCells
-    k++;
-  }
-
-  //std::cout << "----- Start Tetgen -----" << std::endl;
-  //in.save_nodes("tetin");
-  //in.save_poly("tetin");
-  tetrahedralize(switches, &in,  &out);
-  //out.save_nodes("tetout");
-  //out.save_elements("tetout");
-  //out.save_faces("tetout");
-  //std::cout << "----- End Tetgen -----" << std::endl;
-
-  // store interface triangles (+ recovery of higher order meshes)
-  fill = 0;
-  for(int i = 0; i <  out.numberofpoints; i++)
-    for(int j = 0; j < dim; j++)
-    {
-      out.pointlist[fill] = (double) (out.pointlist[fill] * (1.0/scalefactor));
-      fill++;
-    }
-
-  TransformIntegrationCells(out, domainintcelllist, xyze, gfuncvalues);
-
-  return;
-}
-#endif
-#endif
-
-#if 0
-#ifdef QHULL
-/*------------------------------------------------------------------------------------------------*
- | transform tetrahedral integration cells from TetGen format to BACI format          henke 10/08 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::TransformIntegrationCells(
-    tetgenio&                       out,
-    GEO::DomainIntCells&            domainintcelllist,
-    //GEO::BoundaryIntCells&          boundaryintcelllist,
-    const LINALG::SerialDenseMatrix xyze,
-    const std::vector<double>&      gfuncvalues
-) // output: integration cells in baci format
-{
-  DRT::Element::DiscretizationType distype = DRT::Element::tet4;
-  const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
-
-  //std::cout << "number of Tertrahedra " << out.numberoftetrahedra << std::endl;
-  for(int i=0; i<out.numberoftetrahedra; i++ )
-  {
-    LINALG::SerialDenseMatrix tetrahedroncoord(3, numTetNodes);
-    LINALG::SerialDenseMatrix phystetrahedroncoord(3, numTetNodes);
-    for(int j = 0; j < numTetNodes; j++)
-    {
-      static LINALG::Matrix<3,1> tetcoord;
-      for(int k = 0; k < 3; k++)
-      {
-        tetrahedroncoord(k,j) = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+k];
-        // k: drei aufeinanderfolgende Einträge in der pointlist, entspricht den 3 Richtungen
-        // *3: Richtungen je Knoten
-        // tetraherdronlist[i*out.numberofcorners+j]: node ID for ith element, jth node
-        tetcoord(k) = tetrahedroncoord(k,j);
-      }
-      // compute physical coordinates
-      GEO::elementToCurrentCoordinatesInPlace(DRT::Element::hex8, xyze, tetcoord);
-      for(int k = 0; k < 3; k++)
-        phystetrahedroncoord(k,j) = tetcoord(k);
-    }
-
-    // if degenerated don't store
-    if(!GEO::checkDegenerateTet(numTetNodes, tetrahedroncoord, phystetrahedroncoord))
-    {
-      bool inGplus = GetIntCellDomainInElement(tetrahedroncoord, gfuncvalues, DRT::Element::hex8, distype);
-
-      domainintcelllist.push_back(GEO::DomainIntCell(distype, tetrahedroncoord, phystetrahedroncoord, inGplus));
-    }
-  }
-
-  return;
-}
-#endif
-#endif
 
 /*------------------------------------------------------------------------------------------------*
  | compute GfuncValue for hexahedral integration cell                              rasthofer 04/10|
@@ -6360,25 +6171,4 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
   return;
 }
 
-
-const std::map<int,GEO::DomainIntCells> COMBUST::FlameFront::DomainIntCells(
-) const
-{
-  return myelementintcells_;
-}
-
-
-
-const std::map<int,GEO::BoundaryIntCells> COMBUST::FlameFront::BoundaryIntCells(
-) const
-{
-  return myboundaryintcells_;
-}
-
-
-const std::map<int,COMBUST::FlameFront::CutStatus> COMBUST::FlameFront::ElementCutStatus(
-) const
-{
-  return myelementcutstatus_;
-}
 

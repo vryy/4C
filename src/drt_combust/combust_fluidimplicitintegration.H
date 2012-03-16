@@ -42,7 +42,6 @@ class PeriodicBoundaryConditions;
 
 namespace COMBUST
 {
-  class InterfaceHandleCombust;
   class FlameFront;
 }
 
@@ -128,13 +127,10 @@ public:
   /// prepare a nonlinear iteration
   void PrepareNonlinearSolve();
 
-  /// import geometrical information about the interface and incorporate it into the fluid field
-  void IncorporateInterface(
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old);
-
   /// import the flame front from the combustion algorithm
-  void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
+  void StoreFlameFront(
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
+      bool UpdateDofSet);
 
   /*!
   \brief get the velocity vector based on standard dofs
@@ -430,7 +426,7 @@ public:
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
   /// Transfers all vectors based on an enriched dofmap to the new dofmap after a redistribution.
-  void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle);
+  void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront);
 
 protected:
 
@@ -446,9 +442,13 @@ protected:
   \brief give DOF information to elements
   */
   void TransferDofInformationToElements(
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const Teuchos::RCP<XFEM::DofManager> dofmanager
       );
+
+
+  /// import geometrical information about the interface and incorporate it into the fluid field
+  void IncorporateInterface(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
   /*!
   \brief call elements to calculate system matrix/rhs and assemble
@@ -470,12 +470,13 @@ protected:
 
   //! @name general algorithm parameters
   //! fluid discretization
-  Teuchos::RCP<DRT::Discretization>      discret_;
-  LINALG::Solver&                        solver_;
-  ParameterList&                         params_;
-  const ParameterList&                   xparams_;
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
-  Teuchos::RCP<COMBUST::FlameFront>      flamefront_;
+  Teuchos::RCP<DRT::Discretization>             discret_;
+  LINALG::Solver&                               solver_;
+  ParameterList&                                params_;
+  const ParameterList&                          xparams_;
+  Teuchos::RCP<IO::DiscretizationWriter>        output_;
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+  Teuchos::RCP<Epetra_Vector>                   phinp_;
 
   //! the processor ID from the communicator
   const int myrank_;
@@ -683,7 +684,7 @@ protected:
   Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
   //! Extractor used for output
-  LINALG::MapExtractor      velpressplitterForOutput_;
+  Teuchos::RCP<LINALG::MapExtractor>      velpressplitterForOutput_;
 
   // time integration handling
   Teuchos::RCP<XFEM::STD> timeIntStd_; //! Standard reference values

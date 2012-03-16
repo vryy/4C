@@ -481,8 +481,6 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
         newdofman_,
         oldVectors_,
         flamefront_,
-        oldinterfacehandle_,
-        newinterfacehandle_,
         olddofcolmap_,
         newdofrowmap_,
         oldNodalDofColDistrib_,
