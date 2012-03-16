@@ -433,8 +433,9 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
-  double VnodeL = 0.0;
-  LINALG::TMatrix<FAD,3,3> TFnodeL(true);
+  double Vnode = 0.0;
+  //FAD    TVnode = 0.0;
+  LINALG::TMatrix<FAD,3,3> TFnode(true);
   for (int i=0; i<neleinpatch; ++i)
   {
     DRT::ELEMENTS::NStet5* ele = adjele[i];
@@ -452,27 +453,36 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     
      // add 1/3 of subelement volume to this node
      const double V = ele->SubV(subeleid)/3.0;
-     VnodeL += V;
+     Vnode += V;
 
      // build F from this subelement
      LINALG::TMatrix<FAD,3,3> F(true);
      F = TBuildF<FAD>(eledispmat,ele->SubNxyz(subeleid));
+
+     //FAD detFe = Determinant3x3<FAD>(F);
+     //TVnode += (detFe*V);
      
      // add to nodal deformation gradient
      F.Scale(V);
-     TFnodeL += F;
+     TFnode += F;
 
     } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int i=0; i<neleinpatch; ++i)
   
   // do the actual averaging
-  TFnodeL.Scale(1.0/VnodeL);
+  TFnode.Scale(1.0/Vnode);
+  //FAD detFnode = Determinant3x3<FAD>(TFnode);
+  
+  // build corrected integration area of this node
+  //TVnode /= detFnode;
+  //printf("V %10.5e Vtilde %10.5e V/Vtilde %10.5e\n",Vnode,TVnode.val(),Vnode/TVnode.val());
+  //Vnode = TVnode.val();
   
   // copy fad F to double F
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
-      FnodeL(j,k) = TFnodeL(j,k).val();
+      FnodeL(j,k) = TFnode(j,k).val();
 
   //-----------------------------------------------------------------------
   // build B operator
@@ -494,7 +504,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 
       // volume ratio of volume per node of this element to
       // whole volume of node L
-      const double ratio = V/VnodeL;
+      const double ratio = V/Vnode;
       
       // get derivatives with respect to X
       const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
@@ -537,7 +547,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
   LINALG::TMatrix<FAD,3,3> CG(false);
-  CG.MultiplyTN(TFnodeL,TFnodeL);
+  CG.MultiplyTN(TFnode,TFnode);
   vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);
@@ -610,8 +620,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
     } // for (int ele=0; ele<neleinpatch; ++ele)
-    stress.Scale(1.0/VnodeL);
-    cmat.Scale(1.0/VnodeL);
+    stress.Scale(1.0/Vnode);
+    cmat.Scale(1.0/Vnode);
   }
 
   //-----------------------------------------------------------------------
@@ -652,7 +662,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
-    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
+    force->Multiply('T','N',Vnode,bop,stress_epetra,0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -661,7 +671,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     Epetra_SerialDenseMatrix cmat_epetra(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
-    stiff->Multiply('T','N',VnodeL,bop,cb,0.0);// bop
+    stiff->Multiply('T','N',Vnode,bop,cb,0.0);// bop
   }
 
   //----------------------------------------------------- geom. stiffness
