@@ -10,8 +10,10 @@
 
 using namespace std;
 
-/* compute the rhs of the moment fitting equations
-   Integration of base functions take place inside this */
+/*--------------------------------------------------------------------------*
+         compute the rhs of the moment fitting equations
+         Integration of base functions take place inside this
+*---------------------------------------------------------------------------*/
 Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 {
    Epetra_SerialDenseVector rhs_mom(num_func_);
@@ -48,9 +50,11 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
     return rhs_mom;
 }
 
-/*  compute the gaussian points of the volumecell with "numeach" points in each 3-directions
+/*-------------------------------------------------------------------------------------------------*
+    compute the gaussian points of the volumecell with "numeach" points in each 3-directions
     numeach should be more than 1
-    uses ray tracing method   */
+    uses ray tracing method
+*--------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 {
   BoundingBox box1(*volcell_,elem1_);
@@ -320,7 +324,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       OnLine(inter1,inter2,linePts,numeach);
 #endif
 #if 1 //scaled point distribution method in intersection lines
-    int numX = (int)(fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1;
+    int numX = (int)((fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1);
     if(numX==1)
     {
       vector<double> middle(3);

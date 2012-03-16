@@ -5,20 +5,22 @@
 #include<cmath>
 #include<iostream>
 
+#include "../linalg/linalg_fixedsizematrix.H"
+
 /*!
 \brief Returns the base function when the boundaycell is projected in y-z plane
 */
-//pt[0] --> y
-//pt[1] --> z
-double base_func_surfX(std::vector<double> pt, int inte_num,std::vector<double> alfa)
+//pt(0,0) --> y
+//pt(1,0) --> z
+double base_func_surfX(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<double> alfa)
 {
   double basef_surf=0.0;
   if(inte_num==1) //f(x,y,z) = 1
   {
-    basef_surf = pt[0];
+    basef_surf = pt(0,0);
     return basef_surf;
   }
-  double y=pt[0],y2=pow(pt[0],2),z=pt[1];
+  double y=pt(0,0),y2=pow(pt(0,0),2),z=pt(1,0);
   double a0=alfa[0],a1=alfa[1],a2=alfa[2];
   if(inte_num==2) //f(x,y,z) = x
   {
@@ -490,20 +492,20 @@ double base_func_surfX(std::vector<double> pt, int inte_num,std::vector<double> 
 /*!
 \brief Returns the base function when the boundaycell is projected in z-x plane
 */
-//pt[0] --> z
-//pt[1] --> x
-double base_func_surfY(std::vector<double> pt, int inte_num,std::vector<double> alfa)
+//pt(0,0) --> z
+//pt(1,0) --> x
+double base_func_surfY(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<double> alfa)
 {
   double basef_surf=0.0;
 
   if(inte_num==1) //f(x,y,z) = 1
   {
-    basef_surf = pt[0];
+    basef_surf = pt(0,0);
     return basef_surf;
   }
 
   double a0=alfa[0],a1=alfa[1],a2=alfa[2];
-  double z=pt[0],x=pt[1],z2=pow(pt[0],2);
+  double z=pt(0,0),x=pt(1,0),z2=pow(pt(0,0),2);
   if(inte_num==2) //f(x,y,z) = x
   {
     basef_surf = x*z;
@@ -975,19 +977,19 @@ double base_func_surfY(std::vector<double> pt, int inte_num,std::vector<double> 
 /*!
 \brief Returns the base function when the boundaycell is projected in x-y plane
 */
-//pt[0] --> x
-//pt[1] --> y
-double base_func_surfZ(std::vector<double> pt, int inte_num,std::vector<double> alfa)
+//pt(0,0) --> x
+//pt(1,0) --> y
+double base_func_surfZ(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<double> alfa)
 {
   double basef_surf=0.0;
   if(inte_num==1) //f(x,y,z) = 1
   {
-    basef_surf = pt[0];
+    basef_surf = pt(0,0);
     return basef_surf;
   }
 
   double a0=alfa[0],a1=alfa[1],a2=alfa[2];
-  double x=pt[0],y=pt[1],x2=pow(pt[0],2);
+  double x=pt(0,0),y=pt(1,0),x2=pow(pt(0,0),2);
   if(inte_num==2) //f(x,y,z) = x
   {
     basef_surf = 0.5*x*x;

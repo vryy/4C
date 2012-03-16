@@ -54,7 +54,8 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 
 //compute only the x-component of unit-normal vector which is used in further computations
 //also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
-void GEO::CUT::FacetIntegration::IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal)
+void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plane,
+                                              const std::vector<std::vector<double> > cornersLocal )
 {
 #if 0 //new generalized method
   clockwise_ = 0;
@@ -251,7 +252,8 @@ void GEO::CUT::FacetIntegration::IsClockwise(const std::vector<double> eqn_plane
 
 //computes x=a1+a2y+a3z from the plane equation
 //equation of this form is used to replace x in the line integral
-std::vector<double> GEO::CUT::FacetIntegration::compute_alpha(std::vector<double> eqn_plane,std::string intType)
+std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<double> eqn_plane,
+                                                               std::string intType )
 {
   std::vector<double> alfa(3);
   double a = eqn_plane[0];
@@ -354,18 +356,18 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 				else
 						coords2= *(cornersLocal.begin());
 
-				std::vector<double> coord1,coord2;
-				coord1.resize(2);
-				coord2.resize(2);
+  //first index decides the x or y coordinate, second index decides the start point or end point
+				LINALG::Matrix<2,2> coordLine;
+
 	//The facet is projected over y-z plane and then the integration is performed
 	//so only y- and z-coordinates are passed to make the lines
 	//[0]-- indicates y and [1] indicate z because we are now in y-z plane
-				coord1[0] = coords1[1];
-				coord1[1] = coords1[2];
-				coord2[0] = coords2[1];
-				coord2[1] = coords2[2];
+				coordLine(0,0) = coords1[1];
+				coordLine(1,0) = coords1[2];
+				coordLine(0,1) = coords2[1];
+				coordLine(1,1) = coords2[2];
 
-				LineIntegration line1(coord1,coord2,inte_num_,alpha,bcellInt_);
+				LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
 				facet_integ += line1.integrate_line();
 			}
     }
@@ -439,9 +441,9 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 }
 
 //Performs integration over the boundarycell
-void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,
-                                                          double &facet_integ,
-                                                          std::string intType)
+void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std::vector<double> > cornersLocal,
+                                                           double &facet_integ,
+                                                           std::string intType )
 {
 	std::vector<double> alpha;
 	double abs_normal=0.0;
@@ -457,9 +459,8 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 		else
       coords2= *(cornersLocal.begin());
 
-		std::vector<double> coord1,coord2;
-		coord1.resize(2);
-		coord2.resize(2);
+		//first index decides the x or y coordinate, second index decides the start point or end point
+		LINALG::Matrix<2,2> coordLine;
 		if(intType=="x")
 		{
 			if(k==cornersLocal.begin())
@@ -469,13 +470,13 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 			}
 	//The facet is projected over y-z plane and then the integration is performed
 	//so only y- and z-coordinates are passed to make the lines
-	//[0]-- indicates y and [1] indicate z because we are now in y-z plane
-			coord1[0] = coords1[1];
-			coord1[1] = coords1[2];
-			coord2[0] = coords2[1];
-			coord2[1] = coords2[2];
+	//(0,i)-- indicates y and (1,i) indicate z because we are now in y-z plane
+      coordLine(0,0) = coords1[1];
+      coordLine(1,0) = coords1[2];
+      coordLine(0,1) = coords2[1];
+      coordLine(1,1) = coords2[2];
 
-			LineIntegration line1(coord1,coord2,inte_num_,alpha,bcellInt_);
+			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
 			line1.set_integ_type("x");
 			facet_integ += line1.integrate_line();
 		}
@@ -488,12 +489,12 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 			}
 	//The facet is projected over y-z plane and then the integration is performed
 	//so only y- and z-coordinates are passed to make the lines
-	//[0]-- indicates y and [1] indicate z because we are now in y-z plane
-			coord1[0] = coords1[2];
-			coord1[1] = coords1[0];
-			coord2[0] = coords2[2];
-			coord2[1] = coords2[0];
-			LineIntegration line1(coord1,coord2,inte_num_,alpha,bcellInt_);
+	//(0,i)-- indicates y and (0,i) indicate z because we are now in y-z plane
+      coordLine(0,0) = coords1[2];
+      coordLine(1,0) = coords1[0];
+      coordLine(0,1) = coords2[2];
+      coordLine(1,1) = coords2[0];
+			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
 			line1.set_integ_type("y");
 			facet_integ += line1.integrate_line();
 		}
@@ -507,12 +508,12 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration(const std::vector<std:
 			}
 	//The facet is projected over y-z plane and then the integration is performed
 	//so only y- and z-coordinates are passed to make the lines
-	//[0]-- indicates y and [1] indicate z because we are now in y-z plane
-			coord1[0] = coords1[0];
-			coord1[1] = coords1[1];
-			coord2[0] = coords2[0];
-			coord2[1] = coords2[1];
-			LineIntegration line1(coord1,coord2,inte_num_,alpha,bcellInt_);
+	//(0,i)-- indicates y and (0,i) indicate z because we are now in y-z plane
+      coordLine(0,0) = coords1[0];
+      coordLine(1,0) = coords1[1];
+      coordLine(0,1) = coords2[0];
+      coordLine(1,1) = coords2[1];
+			LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
 			line1.set_integ_type("z");
 			facet_integ += line1.integrate_line();
 		}
@@ -590,9 +591,9 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(Mesh &mesh)
 }
 
 //generates integration rule for the considered facet
-void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence(bool divergenceRule, //if called to generate direct divergence rule
-                                                         Mesh &mesh,
-                                                         plain_boundarycell_set & divCells)
+void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool divergenceRule, //if called to generate direct divergence rule
+                                                                    Mesh &mesh,
+                                                                    plain_boundarycell_set & divCells)
 {
   std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
 
@@ -645,7 +646,8 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence(bool divergen
 }
 
 //temporarily create a tri3 cell
-void GEO::CUT::FacetIntegration::TemporaryTri3(std::vector<Point*>& corners, plain_boundarycell_set& divCells)
+void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
+                                                plain_boundarycell_set& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 3 );
   for ( int i=0; i<3; ++i )
@@ -655,7 +657,8 @@ void GEO::CUT::FacetIntegration::TemporaryTri3(std::vector<Point*>& corners, pla
 }
 
 //temporarily create a quad4 cell
-void GEO::CUT::FacetIntegration::TemporaryQuad4(std::vector<Point*>& corners, plain_boundarycell_set& divCells)
+void GEO::CUT::FacetIntegration::TemporaryQuad4( std::vector<Point*>& corners,
+                                                 plain_boundarycell_set& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 4 );
   for ( int i=0; i<4; ++i )
