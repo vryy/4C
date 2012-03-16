@@ -1,14 +1,3 @@
-//
-// Maintainer: Michael Gee
-// gee@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-25239
-//
-// necessary defines: CCADISCRET D_SOLID3 BINIO
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE -8.4385336002991168e-02 TOLERANCE 1e-5
 -----------------------------------------------------------------------TITLE
@@ -45,7 +34,8 @@ FILESTEPS                       1000
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics                          
+LINEAR_SOLVER			1
+DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     0
@@ -53,10 +43,6 @@ NLNSOL                          fullnewton                      // ptc fullnewto
 TIMESTEP                        0.01
 NUMSTEP                         5
 MAXTIME                         0.1                             // prestress 0.0 bis 0.3
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.0
-ALPHA_F                         0.0
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.0001
@@ -73,9 +59,10 @@ UZAWAPARAM                      1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                              // output every so often, 0 no output
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                              // how often to recompute some preconditioners
@@ -107,12 +94,9 @@ ML_DAMPFINE                     0.69                            // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
-----------------------------------------------------------------FLUID SOLVER
-------------------------------------------------------------------ALE SOLVER
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
-//MAT 2 MAT_Struct_NeoHooke YOUNG 1.044E5 NUE 0.45 DENS 0.0001
-MAT 2   MAT_Struct_AAAGasser   DENS 0.0001 VOL OSM NUE 0.49 BETA -2.0 CLUM 2.62e3 CMED 1.98e3 CABLUM 1.73e3
+MAT 2 MAT_Struct_AAAGasser DENS 0.0001 VOL OSM NUE 0.49 BETA -2.0 CLUM 2.62e3 CMED 1.98e3 CABLUM 1.73e3
 MAT 3 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 0.0001
 ----------------------------------------------------------------------CURVE1
 CURVE1 on PhysiologicalWaveform InterpolType Fourier Period 1.050 Flowrate 0.81 Samplingpoints 60 Arrayread 0.087093800356793 0.076978376389686 0.08203608837324 0.112382360274561 0.178132616060758 0.294459991682492 0.420902791271332 0.542287878876619 0.673788390449013 0.800231190037853 0.860923733840496 0.860923733840496 0.815404325988514 0.73953864623521 0.668730678465459 0.587807286728601 0.51699931895885 0.4461913511891 0.385498807386457 0.360210247468688 0.339979399534474 0.299517703666045 0.248940583830509 0.20847888796208 0.162959480110097 0.117440072258115 0.066862952422579 0.041574392504811 0.02640125655415 0.02640125655415 0.051689816471918 0.08203608837324 0.107324648291008 0.132613208208776 0.157901768126544 0.178132616060758 0.198363463994973 0.214548142342344 0.219605854325898 0.216571227135766 0.214548142342344 0.210501972755501 0.210501972755501 0.20847888796208 0.198363463994973 0.183190328044312 0.168017192093651 0.169028734490362 0.168017192093651 0.157901768126544 0.147786344159437 0.135647835398908 0.127555496225222 0.117440072258115 0.112382360274561 0.113393902671272 0.114405445067983 0.114405445067983 0.109347733084429 0.102266936307454
@@ -160,7 +144,7 @@ E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
 E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
 ------------------------------------------DESIGN EMBEDDING TISSUE CONDITIONS
 DSURF                           1
-E 13 - stiff 1.0e3 offset 0.0 lin 
+E 13 - stiff 1.0e3 offset 0.0 lin
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -19935,4 +19919,4 @@ NODE 5500 COORD -16.9669470958 -1.06746977491 9.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 -------------------------------------------------------------------------END
-//                              END
+// END
