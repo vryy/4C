@@ -106,6 +106,8 @@ namespace FSI
 
     virtual void PrepareTimeStep();
 
+    virtual void RecoverLagrangeMultiplier();
+
 
   private:
 
@@ -163,6 +165,44 @@ namespace FSI
     int currentstep_;
 
     int relaxing_ale_;
+
+    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
+    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> lambda_;
+
+    //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const Epetra_Vector> fgcur_;
+
+    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous NOX iteration \f$i\f$
+    //Teuchos::RCP<const Epetra_Vector> fgpre_;
+
+    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddiinc_;
+
+    //! inner displacement solution of the structure at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> solipre_;
+
+    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddginc_;
+
+    //! interface displacement solution of the structure at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> solgpre_;
+
+    //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> sgicur_;
+
+    //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
+    //Teuchos::RCP<const LINALG::SparseMatrix> sgipre_;
+
+    //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> sggcur_;
+
+    //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
+    //Teuchos::RCP<const LINALG::SparseMatrix> sggpre_;
+
+
   };
 }
 

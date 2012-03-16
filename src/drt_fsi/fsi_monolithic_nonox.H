@@ -214,6 +214,8 @@ namespace FSI
     double tolfres_;  //!< tolerance force residual
 
     //@}
+
+    //@}
   };
 }
 

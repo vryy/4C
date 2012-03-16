@@ -72,6 +72,7 @@ void FSI::MonolithicNoNOX::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::Newton()
 {
+  cout << " FSI::MonolithicNoNOX::Newton()" << endl;
   // initialise equilibrium loop
   iter_ = 1;
   normrhs_ = 0.0;
@@ -273,6 +274,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      x_sum_->Update(1.0,*x,1.0);
 
      ExtractFieldVectors(x_sum_,sx,fx,ax);
+
      if (sdbg_!=Teuchos::null)
      {
        sdbg_->NewIteration();
