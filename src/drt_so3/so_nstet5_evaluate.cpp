@@ -59,34 +59,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     else if (V_<0.0) dserror("Element volume is negative");
   }
   
-  //----------------------------------------- master element (is this needed?)
-  // compute derivatives of shape functions w.r.t. to material coords.
-  // one gauss point at 0.25/0.25/0.25
-  // gauss point weight is 1.0, so skip it
-  const double gploc = 0.25;
-  LINALG::Matrix<4,1> funct;
-  ShapeFunction(funct,gploc,gploc,gploc,gploc);
-  LINALG::Matrix<4,4> deriv;
-  ShapeFunctionDerivatives(deriv);
-  LINALG::Matrix<3,4> tmp;
-  tmp.MultiplyTN(xrefe,deriv);
-  for (int i=0; i<4; i++) J(0,i)=1;
-  for (int row=0;row<3;row++)
-    for (int col=0;col<4;col++)
-      J(row+1,col)=tmp(row,col);
-
-  LINALG::Matrix<4,3> Iaug(true); // initialize to zero
-  Iaug(1,0)=1;
-  Iaug(2,1)=1;
-  Iaug(3,2)=1;
-  LINALG::Matrix<4,3> partials;
-  LINALG::FixedSizeSerialDenseSolver<4,4,3> solver;
-  solver.SetMatrix(J);
-  solver.SetVectors(partials,Iaug);
-  solver.FactorWithEquilibration(true);
-  int err  = solver.Factor();
-  int err2 = solver.Solve();
-  if (err || err2) dserror("Inversion of Jacobian failed");
+  //------------------------------------------------------------------subtets
   /* structure of nxyz_:
   **             [   dN_1     dN_1     dN_1   ]
   **             [  ------   ------   ------  ]
@@ -97,9 +70,15 @@ void DRT::ELEMENTS::NStet5::InitElement()
   **             [  -------  -------  ------- ]
   **             [    dX       dY       dZ    ]
   */
-  nxyz_.Multiply(deriv,partials);
-  
-  //------------------------------------------------------------------subtets
+  const double gploc = 0.25;
+  LINALG::Matrix<4,1> funct;
+  ShapeFunction(funct,gploc,gploc,gploc,gploc);
+  LINALG::Matrix<4,4> deriv;
+  ShapeFunctionDerivatives(deriv);
+  LINALG::Matrix<3,4> tmp;
+  LINALG::Matrix<4,3> Iaug(true); // initialize to zero
+  LINALG::Matrix<4,3> partials;
+  LINALG::FixedSizeSerialDenseSolver<4,4,3> solver;
   for (int i=0; i<4; ++i)
   {
     // master tet has node numbering [0 1 2 3]    
@@ -232,7 +211,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
-      //printf("IN calc_struct_nlnstiff\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -472,21 +450,16 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 {
   if (elestrain) (*elestrain) = 0.0;
   if (elestress) (*elestress) = 0.0;
-  double SumV = 0; // do averaging of strain/stress weighted by subelement volume
-  if (elestrain || elestress)
-  {
-    for (int i=0; i<4; ++i) SumV += SubV(i);
-  }
       
 
   for (int sub=0; sub<4; ++sub) // loop subelements
   {
     // subelement deformation gradient previously computed in PreEvaluate
-    LINALG::Matrix<3,3>& defgrd = SubF(sub);
+    LINALG::Matrix<3,3>& F = SubF(sub);
 
     //--------------------------- Right Cauchy-Green tensor C = = F^T * F
     LINALG::Matrix<3,3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd,defgrd);
+    cauchygreen.MultiplyTN(F,F);
 
     // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -525,25 +498,25 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 
     for (int i=0; i<4; i++)
     {
-      bop(0,3*i+0) = defgrd(0,0)*nxyz(i,0);
-      bop(0,3*i+1) = defgrd(1,0)*nxyz(i,0);
-      bop(0,3*i+2) = defgrd(2,0)*nxyz(i,0);
-      bop(1,3*i+0) = defgrd(0,1)*nxyz(i,1);
-      bop(1,3*i+1) = defgrd(1,1)*nxyz(i,1);
-      bop(1,3*i+2) = defgrd(2,1)*nxyz(i,1);
-      bop(2,3*i+0) = defgrd(0,2)*nxyz(i,2);
-      bop(2,3*i+1) = defgrd(1,2)*nxyz(i,2);
-      bop(2,3*i+2) = defgrd(2,2)*nxyz(i,2);
+      bop(0,3*i+0) = F(0,0)*nxyz(i,0);
+      bop(0,3*i+1) = F(1,0)*nxyz(i,0);
+      bop(0,3*i+2) = F(2,0)*nxyz(i,0);
+      bop(1,3*i+0) = F(0,1)*nxyz(i,1);
+      bop(1,3*i+1) = F(1,1)*nxyz(i,1);
+      bop(1,3*i+2) = F(2,1)*nxyz(i,1);
+      bop(2,3*i+0) = F(0,2)*nxyz(i,2);
+      bop(2,3*i+1) = F(1,2)*nxyz(i,2);
+      bop(2,3*i+2) = F(2,2)*nxyz(i,2);
       /* ~~~ */
-      bop(3,3*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
-      bop(3,3*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
-      bop(3,3*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
-      bop(4,3*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
-      bop(4,3*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
-      bop(4,3*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
-      bop(5,3*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
-      bop(5,3*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
-      bop(5,3*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
+      bop(3,3*i+0) = F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0);
+      bop(3,3*i+1) = F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0);
+      bop(3,3*i+2) = F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0);
+      bop(4,3*i+0) = F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1);
+      bop(4,3*i+1) = F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1);
+      bop(4,3*i+2) = F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1);
+      bop(5,3*i+0) = F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2);
+      bop(5,3*i+1) = F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2);
+      bop(5,3*i+2) = F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2);
     }
 
     //------------------------------------------------- call material law
@@ -554,7 +527,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 #ifndef PUSO_NSTET5
     {
       // do deviatoric F, C, E
-      const double J = defgrd.Determinant();
+      const double J = F.Determinant();
       LINALG::Matrix<3,3> Cbar(cauchygreen);
       Cbar.Scale(pow(J,-2./3.));
       glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
@@ -564,7 +537,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       glstrainbar(4) = Cbar(1,2);
       glstrainbar(5) = Cbar(2,0);
       LINALG::Matrix<3,3> Fbar(false);
-      Fbar.SetCopy(defgrd.A());
+      Fbar.SetCopy(F.A());
       Fbar.Scale(pow(J,-1./3.));
 
       SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
@@ -583,7 +556,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     }
 #else
     {
-      SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
+      SelectMaterial(stress,cmat,density,glstrain,F,0);
       stress.Scale(ALPHA_NSTET5);
       cmat.Scale(ALPHA_NSTET5);
       glstrainbar = glstrain;
@@ -599,9 +572,9 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       {
         if (elestrain == NULL) dserror("no strain data available");
         for (int i = 0; i < 3; ++i)
-          (*elestrain)(0,i) += (SubV(sub)/SumV * ALPHA_NSTET5 * glstrainbar(i));
+          (*elestrain)(0,i) += (SubV(sub)/Vol() * ALPHA_NSTET5 * glstrainbar(i));
         for (int i = 0; i < 3; ++i)
-          (*elestrain)(0,i) += (SubV(sub)/SumV * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
+          (*elestrain)(0,i) += (SubV(sub)/Vol() * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
       }
       break;
       case INPAR::STR::strain_ea:
@@ -619,9 +592,9 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         gl(2,2) = glstrainbar(2);
 
         LINALG::Matrix<3,3> Fbar(false);
-        Fbar.SetCopy(defgrd.A());
+        Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
-        Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+        Fbar.Scale(pow(F.Determinant(),-1./3.));
 #endif
         LINALG::Matrix<3,3> invdefgrd;
         invdefgrd.Invert(Fbar);
@@ -632,12 +605,12 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         euler_almansi.MultiplyTN(invdefgrd,temp);
 
 
-        (*elestrain)(0,0) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,0));
-        (*elestrain)(0,1) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(1,1));
-        (*elestrain)(0,2) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(2,2));
-        (*elestrain)(0,3) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,1));
-        (*elestrain)(0,4) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(1,2));
-        (*elestrain)(0,5) += (SubV(sub)/SumV * ALPHA_NSTET5 * euler_almansi(0,2));
+        (*elestrain)(0,0) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(0,0));
+        (*elestrain)(0,1) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(1,1));
+        (*elestrain)(0,2) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(2,2));
+        (*elestrain)(0,3) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(0,1));
+        (*elestrain)(0,4) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(1,2));
+        (*elestrain)(0,5) += (SubV(sub)/Vol() * ALPHA_NSTET5 * euler_almansi(0,2));
       }
       break;
       case INPAR::STR::strain_none:
@@ -652,7 +625,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       {
         if (elestress == NULL) dserror("no stress data available");
         for (int i = 0; i<6; ++i)
-          (*elestress)(0,i) += (SubV(sub)/SumV * stress(i)); // ALPHA_NSTET already in stress
+          (*elestress)(0,i) += (SubV(sub)/Vol() * stress(i)); // ALPHA_NSTET already in stress
       }
       break;
       case INPAR::STR::stress_cauchy:
@@ -674,19 +647,19 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         LINALG::Matrix<3,3> cauchystress;
 
         LINALG::Matrix<3,3> Fbar(false);
-        Fbar.SetCopy(defgrd.A());
+        Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
-        Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+        Fbar.Scale(pow(F.Determinant(),-1./3.));
 #endif
         temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
         cauchystress.MultiplyNT(temp,Fbar);
 
-        (*elestress)(0,0) += (SubV(sub)/SumV * cauchystress(0,0));
-        (*elestress)(0,1) += (SubV(sub)/SumV * cauchystress(1,1));
-        (*elestress)(0,2) += (SubV(sub)/SumV * cauchystress(2,2));
-        (*elestress)(0,3) += (SubV(sub)/SumV * cauchystress(0,1));
-        (*elestress)(0,4) += (SubV(sub)/SumV * cauchystress(1,2));
-        (*elestress)(0,5) += (SubV(sub)/SumV * cauchystress(0,2));
+        (*elestress)(0,0) += (SubV(sub)/Vol() * cauchystress(0,0));
+        (*elestress)(0,1) += (SubV(sub)/Vol() * cauchystress(1,1));
+        (*elestress)(0,2) += (SubV(sub)/Vol() * cauchystress(2,2));
+        (*elestress)(0,3) += (SubV(sub)/Vol() * cauchystress(0,1));
+        (*elestress)(0,4) += (SubV(sub)/Vol() * cauchystress(1,2));
+        (*elestress)(0,5) += (SubV(sub)/Vol() * cauchystress(0,2));
       }
       break;
       case INPAR::STR::stress_none:
@@ -732,7 +705,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         {
           double BsB = 0.0;
           for (int dim=0; dim<3; ++dim)
-            BsB += nxyz_(j,dim) * sBL[dim];
+            BsB += SubNxyz(sub)(j,dim) * sBL[dim];
           substiffmatrix(3*i+0,3*j+0) += BsB;
           substiffmatrix(3*i+1,3*j+1) += BsB;
           substiffmatrix(3*i+2,3*j+2) += BsB;
@@ -844,8 +817,6 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(
   Epetra_SerialDenseVector stress_e(::View,stress.A(),stress.Rows());
   Epetra_SerialDenseMatrix cmat_e(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
   const Epetra_SerialDenseVector glstrain_e(::View,glstrain.A(),glstrain.Rows());
-  //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
-
 
   RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())

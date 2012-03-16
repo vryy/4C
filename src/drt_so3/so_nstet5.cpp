@@ -119,8 +119,8 @@ V_(-1.0)
 DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old) :
 DRT::Element(old),
 material_(old.material_),
-V_(old.V_),
-nxyz_(old.nxyz_)
+V_(old.V_)
+//nxyz_(old.nxyz_)
 {
   return;
 }
@@ -333,6 +333,8 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
                      map<int,vector<DRT::ELEMENTS::NStet5*> >& adjele,
                      map<int,map<int,DRT::Node*> >&           adjnode,
                      map<int,vector<int> >&                   adjlm,
+                     map<int,map<int,vector<int> > >&         adjsubele,
+                     map<int,vector<vector<vector<int> > > >& adjlmlm,
                      DRT::Discretization&                     dis)
 {
   std::map<int,DRT::Node*>::iterator node;
@@ -341,6 +343,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
     DRT::Node* nodeL  = node->second;
     const int nodeidL = nodeL->Id();
 
+    //-----------------------------------------------------------------
     // list of adjacent elements
     vector<DRT::ELEMENTS::NStet5*> myadjele(0);
     for (int j=0; j<nodeL->NumElement(); ++j)
@@ -352,6 +355,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
     }
     adjele[nodeidL] = myadjele;
 
+    //-----------------------------------------------------------------
     // patch of all nodes adjacent to adjacent elements
     map<int,DRT::Node*> nodepatch;
     for (unsigned j=0; j<myadjele.size(); ++j)
@@ -360,8 +364,9 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
       for (int k=0; k<myadjele[j]->NumNode(); ++k)
         nodepatch[nodes[k]->Id()] = nodes[k];
     }
-    adjnode_[nodeidL] = nodepatch;
+    adjnode[nodeidL] = nodepatch;
 
+    //-----------------------------------------------------------------
     // lm array
     const int ndofperpatch = ((int)nodepatch.size() + 
                               (int)myadjele.size()) * 3;
@@ -401,6 +406,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
     
     adjlm[nodeidL] = lm;
 
+    //-----------------------------------------------------------------
     // for each adjele, find out which subelements I participate in
     map<int,vector<int> > masterele;
     for (unsigned j=0; j<myadjele.size(); ++j)
@@ -444,11 +450,52 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
     } // for (unsigned j=0; j<myadjele.size(); ++j)
     if (masterele.size() != myadjele.size()) dserror("subelement connectivity wrong");
 
-    adjsubele_[nodeidL] = masterele;
+    adjsubele[nodeidL] = masterele;
 
 #if 0
     printf("\n");
 #endif
+
+    //-----------------------------------------------------------------
+    // for each adjele and its subele, build local connectivity
+    vector<vector<vector<int> > > lmlm((int)myadjele.size());
+    for (unsigned j=0; j<myadjele.size(); ++j)
+    {
+      DRT::ELEMENTS::NStet5* ele = myadjele[j];
+      vector<int>& subele = masterele[ele->Id()];
+      lmlm[j].resize((int)subele.size());
+      for (unsigned k=0; k<subele.size(); ++k)
+      {
+        const int   subeleid = subele[k];
+        const int*  sublm    = ele->SubLM(subeleid);
+        vector<int> elelm;
+        for (int l=0; l<4; ++l) // loop nodes of subelement and collect dofs
+        {
+          if (sublm[l]!=4) // node 4 is center node owned by the element
+          {
+            vector<int> dofs = dis.Dof(ele->Nodes()[sublm[l]]);
+            for (unsigned n=0; n<dofs.size(); ++n) elelm.push_back(dofs[n]);
+          }
+          else
+          {
+            vector<int> dofs = dis.Dof(ele);
+            for (unsigned n=0; n<dofs.size(); ++n) elelm.push_back(dofs[n]);
+          }
+        }
+        if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
+        lmlm[j][k].resize(12);
+        for (int l=0; l<12; ++l)
+        {
+          vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[l]);
+          lmlm[j][k][l] = fool-lm.begin();
+        }
+        
+      }
+    }
+    adjlmlm[nodeidL] = lmlm;
+   
+  
+
   } // for (node=noderids.begin(); node != noderids.end(); ++node)
   return;
 }
@@ -477,7 +524,7 @@ int DRT::ELEMENTS::NStet5Type::Initialize(DRT::Discretization& dis)
   // make patch of adjacent elements
   // make patch of adjacent nodes (including center node itself)
   // make lm for nodal patch
-  InitAdjacency(elecids_,noderids_,adjele_,adjnode_,adjlm_,dis);
+  InitAdjacency(elecids_,noderids_,adjele_,adjnode_,adjlm_,adjsubele_,lmlm_,dis);
 
 
   return 0;

@@ -55,21 +55,13 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-    // mydisp
-    LINALG::Matrix<4,3> disp(false);
-    for (int i=0; i<4; ++i)
-      for (int j=0; j<3; ++j)
-        disp(i,j) = mydisp[i*3+j];
-
-    // create deformation gradient
-    e->F() = e->BuildF(disp,e->Nxyz());
-
     //------------------------------------subelement F
+    LINALG::Matrix<4,3> disp(false);
     LINALG::Matrix<5,3> subdisp(false);
     for (int j=0; j<3; ++j)
     {
       for (int i=0; i<4; ++i)
-        subdisp(i,j) = disp(i,j);
+        subdisp(i,j) = mydisp[i*3+j];
       subdisp(4,j) = mydisp[4*3+j];
     }
     for (int k=0; k<4; ++k) 
@@ -133,8 +125,6 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
   LINALG::SerialDenseVector force;
 
   //-------------------------------------- construct F for each NStet5
-  //AutoDiffDemo();
-  //AutoDiffDemo(dis);
   ElementDeformationGradient(dis);
 
   //-----------------------------------------------------------------
@@ -184,6 +174,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     map<int,vector<int> >&           adjsubele = adjsubele_[nodeLid];
     map<int,DRT::Node*>&             adjnode   = adjnode_[nodeLid];
     vector<int>&                     lm        = adjlm_[nodeLid];
+    vector<vector<vector<int> > >&   lmlm      = lmlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
     if (action != "calc_struct_stress")
@@ -192,7 +183,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
       stiff.LightShape(ndofperpatch,ndofperpatch); 
       force.LightSize(ndofperpatch);
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
-      NodalIntegration(&stiff,&force,adjnode,adjele,adjsubele,lm,*disp,dis,
+      NodalIntegration(&stiff,&force,adjnode,adjele,adjsubele,lm,lmlm,*disp,dis,
                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
@@ -201,7 +192,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p,"iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      NodalIntegration(NULL,NULL,adjnode,adjele,adjsubele,lm,*disp,dis,
+      NodalIntegration(NULL,NULL,adjnode,adjele,adjsubele,lm,lmlm,*disp,dis,
                        &nodalstress,&nodalstrain,iostress,iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
@@ -394,12 +385,14 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      stiff,
+void DRT::ELEMENTS::NStet5Type::NodalIntegration(
+                                                Epetra_SerialDenseMatrix*      stiff,
                                                 Epetra_SerialDenseVector*       force,
                                                 map<int,DRT::Node*>&            adjnode,
                                                 vector<DRT::ELEMENTS::NStet5*>& adjele,
                                                 map<int,vector<int> >&          adjsubele,
                                                 vector<int>&                    lm,
+                                                vector<vector<vector<int> > >&  lmlm,
                                                 const Epetra_Vector&            disp,
                                                 DRT::Discretization&            dis,
                                                 vector<double>*                 nodalstress,
@@ -441,45 +434,15 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //-----------------------------------------------------------------------
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
-  LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
-  vector<vector<vector<int> > > lmlm(neleinpatch);
+  LINALG::TMatrix<FAD,3,3> TFnodeL(true);
   for (int i=0; i<neleinpatch; ++i)
   {
     DRT::ELEMENTS::NStet5* ele = adjele[i];
     vector<int>& subele = adjsubele[ele->Id()];
-    
-    //printf("ele %d subele %d %d %d\n",ele->Id(),subele[0],subele[1],subele[2]);
-    
-    lmlm[i].resize((int)subele.size());
+
     for (unsigned j=0; j<subele.size(); ++j)
     {
       const int   subeleid = subele[j];
-      const int*  sublm    = ele->SubLM(subeleid);
-      vector<int> elelm;
-      for (int k=0; k<4; ++k) // loop nodes of subelement and collect dofs
-      {
-        if (sublm[k]!=4) // node 4 is center node owned by the element
-        {
-          vector<int> dofs = dis.Dof(ele->Nodes()[sublm[k]]);
-          for (unsigned l=0; l<dofs.size(); ++l) elelm.push_back(dofs[l]);
-        }
-        else
-        {
-          vector<int> dofs = dis.Dof(ele);
-          for (unsigned l=0; l<dofs.size(); ++l) elelm.push_back(dofs[l]);
-        }
-      }
-      if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
-      //printf("dofs "); for (int k=0; k<12; ++k) printf("%d ",elelm[k]); printf("\n");
-
-      // find position of elelm[k] in lm
-      // lmlm[i][j][k] : element i subelement j degree of freedom k, lmlm[i][j][k] position in patchdisp[0..ndofinpatch]
-      lmlm[i][j].resize(12);
-      for (int k=0; k<12; ++k)
-      {
-        vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[k]);
-        lmlm[i][j][k] = fool-lm.begin();
-      }
       
       // copy subelement displacements to 4x3 format
      LINALG::TMatrix<FAD,4,3> eledispmat(false);
@@ -492,25 +455,24 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
      VnodeL += V;
 
      // build F from this subelement
-     LINALG::TMatrix<FAD,3,3> Fele(true);
-     Fele = ele->TBuildF<FAD>(eledispmat,ele->SubNxyz(subeleid));
+     LINALG::TMatrix<FAD,3,3> F(true);
+     F = TBuildF<FAD>(eledispmat,ele->SubNxyz(subeleid));
      
      // add to nodal deformation gradient
-     Fele.Scale(V);
-     fad_FnodeL += Fele;
-     
+     F.Scale(V);
+     TFnodeL += F;
 
     } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int i=0; i<neleinpatch; ++i)
   
   // do the actual averaging
-  fad_FnodeL.Scale(1.0/VnodeL);
+  TFnodeL.Scale(1.0/VnodeL);
   
   // copy fad F to double F
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
-      FnodeL(j,k) = fad_FnodeL(j,k).val();
+      FnodeL(j,k) = TFnodeL(j,k).val();
 
   //-----------------------------------------------------------------------
   // build B operator
@@ -575,7 +537,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix*      
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
   LINALG::TMatrix<FAD,3,3> CG(false);
-  CG.MultiplyTN(fad_FnodeL,fad_FnodeL);
+  CG.MultiplyTN(TFnodeL,TFnodeL);
   vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);

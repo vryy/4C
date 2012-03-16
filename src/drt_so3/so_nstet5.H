@@ -19,7 +19,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 
 //#define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
-#define ALPHA_NSTET5       0.02    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+#define ALPHA_NSTET5       0.01    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
 
 
@@ -111,6 +111,9 @@ private:
   // map<centernodeid,vector of degrees of freedom on patch including element dofs>
   map<int,vector<int> >                               adjlm_;
 
+  //! map of location vectors for patch around a node
+  map<int,vector<vector<vector<int> > > >             lmlm_;
+
   void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet5*>& elecids,
                            map<int,DRT::Node*>&             noderids,
                            const int                        myrank,
@@ -122,6 +125,8 @@ private:
                      map<int,vector<DRT::ELEMENTS::NStet5*> >& adjele,
                      map<int,map<int,DRT::Node*> >&            adjnode,
                      map<int,vector<int> >&                    adjlm,
+                     map<int,map<int,vector<int> > >&          adjsubele,
+                     map<int,vector<vector<vector<int> > > >&  adjlmlm,
                      DRT::Discretization&                      dis);
 
 
@@ -133,6 +138,7 @@ private:
                         vector<DRT::ELEMENTS::NStet5*>& adjele,
                         map<int,vector<int> >&          adjsubele,
                         vector<int>&                    lm,
+                        vector<vector<vector<int> > >&  lmlm,
                         const Epetra_Vector&            disp,
                         DRT::Discretization&            dis,
                         vector<double>*                 nodalstress,
@@ -176,11 +182,23 @@ private:
                     const double&                detF);
 
 
-  /*!
-  \brief Explicit determinant of a nonsymmetric 3x3 matrix
+  //! build deformation gradient
+  template<typename T> 
+  static LINALG::TMatrix<T,3,3> TBuildF(const LINALG::TMatrix<T,4,3>& xdisp,
+                                        const LINALG::Matrix<4,3>& nxyz)
+  {
+    LINALG::TMatrix<T,3,3> F(true);
+    for (int i=0; i<3; ++i)
+    {
+      for (int j=0; j<3; ++j)
+        for (int k=0; k<4; ++k)
+          F(i,j) += xdisp(k,i) * nxyz(k,j);
+      F(i,i) += 1.0;
+    }
+    return F;
+  }
 
-  \return the determinant of the matrix A
-  */
+  //! build and return determinant of a 3x3 matrix
   template<typename T> 
   T Determinant3x3(LINALG::TMatrix<T,3,3>& A)
   {
@@ -448,19 +466,6 @@ protected:
   double                                                   V_;
   inline double Vol() { return V_; }
 
-
-  //! derivs of shape functions wrt to material coords
-  LINALG::Matrix<4,3>                                      nxyz_;
-  public:
-  inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
-  protected:
-
-  //! element's def-gradient
-  LINALG::Matrix<3,3>                                      F_;
-  inline LINALG::Matrix<3,3>& F() { return F_; }
-
-
-
   //---------------------------------------------- quantities related to subtets
   //! nodal connectivity  of subelements
   int                                                      sublm_[16];
@@ -496,21 +501,6 @@ protected:
     return F;
   }
 
-
-  template<typename T>
-  static LINALG::TMatrix<T,3,3> TBuildF(const LINALG::TMatrix<T,4,3>& xdisp,
-                                        const LINALG::Matrix<4,3>& nxyz)
-  {
-    LINALG::TMatrix<T,3,3> F(true);
-    for (int i=0; i<3; ++i)
-    {
-      for (int j=0; j<3; ++j)
-        for (int k=0; k<4; ++k)
-          F(i,j) += xdisp(k,i) * nxyz(k,j);
-      F(i,i) += 1.0;
-    }
-    return F;
-  }
 
   // don't want = operator
   NStet5& operator = (const NStet5& old);
