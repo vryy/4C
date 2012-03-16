@@ -13,46 +13,108 @@ Maintainer: Michael Gee
 #ifndef GEN_INV_ANALYSIS_H
 #define GEN_INV_ANALYSIS_H
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
+#include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Epetra_LAPACK.h"
 #include "Epetra_Vector.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include <Teuchos_RefCountPtr.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include <math.h>
-#include "../drt_adapter/adapter_structure.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_structure/strtimint.H"
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/viscogenmax.H"
-#include "../drt_matelast/elast_summand.H"
 
+// forward declarations
+
+namespace STR
+{
+  class TimInt;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class Solver;
+}
+
+namespace DRT
+{
+  class Condition;
+  class Discretization;
+}
 
 namespace STR
 {
 
-/// Inverse Analysis of Structures
-///
-/// my long and detailed description
-/// including references to papers
-///
-/// \author rausch
+/*====================================================================*/
+/*!
+* Inverse Analysis of Structures
+*
+* To optimize the material parameters \f$ \mathbf p\f$ , given by
+*
+* \f[ \mathbf{p} = [p_1, ..., p_k]^T \f]
+*
+* of each constitutive model, an inverse analysis was performed.
+*
+*
+*
+* Beginning with an initial guess of the material parameters, displacements
+* were calculated and compared to those obtained from the experiment.
+* For the comparison, selected dofs of selected nodes, at every
+* time step of the simulation were measured.
+*
+* As long as the difference between calculated and measured dofs
+* was higher than a tolerance, a new set of parameters was calculated by
+* utilizing the Levenberg- Marquardt Algorithm, developed by
+* [Levenberg1944] and [Marquardt1963]. This algorithm is based
+* on a least square fit, and has already shown good results for soft
+* biological tissue [Kauer2002, Mahnken1996, Moulton1995, Seshaiyer2003].
+*
+* In this approach the material parameters were updated according to
+* \f[
+*       \Delta \mathbf{p} = [\mathbf{J}^T(\mathbf {p})\mathbf{J}(\mathbf {p}) +
+*       \mu ~ diag(\mathbf{J}^T(\mathbf {p})\mathbf{J}(\mathbf {p}))]^{-1} \mathbf{J}^T(\mathbf {p}) \mathbf {R}
+* \f]
+*
+* with \f$\mu\f$ being a dimensionless training parameter and \f$\mathbf{J}\f$ being the rectangular
+* Jacobian-Matrix of the dofs change with respect to the parameter change, i. e.
+*
+* \f[
+*     \begin{array}{c}
+*     \ \mathbf J= \left( \begin{array}{ccc}
+*     \frac {\partial \mathbf{u}_1} {\partial p_1} & ... & \frac {\partial \mathbf{u}_1}{\partial p_k} \\
+*     \vdots	 &   & \vdots \\
+*     \frac {\partial \mathbf{u}_{n}} {\partial p_1}	&  ... & \frac {\partial \mathbf{u}_{n}}{\partial p_k}
+*     \end{array} \right).
+*     \end{array}
+* \f]
+*
+* At each of the \f$ n\f$ time steps the dofs \f$\mathbf{u}\f$ were measured.
+* \f$\mathbf{R}\f$ is the residual vector given by the difference between
+* calculated and experimentally determined displacements
+*\f[
+*        \begin{array}{c}
+*        \mathbf R =  \left( \begin{array}{c}
+*        \mathbf {r}_{1}\\
+*        \vdots \\
+*        \mathbf {r}_{n}
+*        \end{array} \right)
+*         =  \left( \begin{array}{c}
+*        \mathbf{u}_{1, cal} - \mathbf{u}_{1, exp}\\
+*        \vdots \\
+*        \mathbf{u}_{n,cal} - \mathbf{u}_{n, exp}
+*        \end{array} \right).
+*        \end{array}
+*\f]
+*
+* The standardized error \f$ err\f$ used is the root mean square of
+* \f$\mathbf R \f$
+*\f[
+*     err =  \sqrt {\frac { \sum _{i=1}^{n} (\mathbf{r}_i\cdotp\mathbf{r}_i)} {n}}
+*\f]
+*
+*
+* \author rausch
+*/
+
 class GenInvAnalysis {
 
 private:
@@ -77,7 +139,7 @@ private:
   int nmp_;                         // total number of measured dofs
 
   Epetra_SerialDenseVector mcurve_; // measured displacment of the experiments (target value)
-  vector<double> timesteps_;  // time values where displacements are measured
+  std::vector<double> timesteps_;  // time values where displacements are measured
 
   double mu_;
 
@@ -100,18 +162,20 @@ private:
   Epetra_SerialDenseMatrix par_s_;
   Epetra_SerialDenseVector mu_s_;
   Epetra_SerialDenseVector error_s_;
+  Epetra_SerialDenseMatrix ccurve_s_;
   //@}
 
   int reset_out_count_;
 
   std::set<int> matset_;
+  std::vector<std::set<int> > eh_matset_;
 
-  // Michael's inv_analysis stuff
+  // observed nodes, dofs, timesteps
   int                  nnodes_;        // number of nodes observed
   int                  ndofs_;         // total number of dofs monitored
   int                  nsteps_;        // number of time steps observed
-  vector<int>          nodes_;         // list of node gids observed
-  vector<vector<int> > dofs_;          // list of dofs on each node that are monitored
+  std::vector<int>          nodes_;         // list of node gids observed
+  std::vector<std::vector<int> > dofs_;          // list of dofs on each node that are monitored
 
 public:
 
@@ -135,17 +199,22 @@ public:
   void PrecondParameters();
 
   /// fitting the material parameters using the Levenberg-Marquart algorithm
-  void CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, vector<double>& perturb);
+  void CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb);
 
 
-  ///
+  /// Calculate the new dof vector for comparison with the experimental data
   Epetra_SerialDenseVector CalcCvector(bool outputtofile);
 
   ///
   void Integrate();
 
-  ///
-  void PrintStorage(Epetra_SerialDenseVector delta_p);
+  /// Output of Inverse Analysis
+  void PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p);
+  void PrintFile();
+
+  /// Re-initialized micro-scale
+  void MultiInvAnaInit();
+
 
 };  // class GenInvAnalysis
 

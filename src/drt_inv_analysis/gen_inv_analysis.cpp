@@ -13,43 +13,58 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "gen_inv_analysis.H"
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include "Epetra_SerialDenseMatrix.h"
-//#include "../global_full/global_inp_control.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_io/io_hdf.H"
+#include "../drt_inpar/inpar_material.H"
 #include "../drt_io/io_control.H"
-#include "../drt_mat/material.H"
+#include "../drt_io/io_hdf.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/neohooke.H"
-#include "../drt_structure/strtimint_create.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/micromaterial.H"
+#include "../drt_mat/neohooke.H"
+#include "../drt_matelast/elast_coup1pow.H"
+#include "../drt_matelast/elast_coup2pow.H"
 #include "../drt_mat/viscogenmax.H"
 #include "../drt_matelast/elast_coupanisoexpotwo.H"
 #include "../drt_matelast/elast_coupanisoneohooketwo.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
+#include "../drt_matelast/elast_coupmooneyrivlin.H"
+#include "../drt_matelast/elast_coupneohooke.H"
+#include "../drt_matelast/elast_iso1pow.H"
+#include "../drt_matelast/elast_iso2pow.H"
+#include "../drt_matelast/elast_isocub.H"
 #include "../drt_matelast/elast_isoexpo.H"
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_isoneohooke.H"
+#include "../drt_matelast/elast_isoquad.H"
 #include "../drt_matelast/elast_isoyeoh.H"
-#include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
+#include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
-#include "../drt_mat/constraintmixture.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_structure/strtimint_create.H"
+#include "../drt_structure/strtimint.H"
+#include "../linalg/linalg_utils.H"
+#include "Epetra_SerialDenseMatrix.h"
+#include "inv_analysis.H"
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 #include "../drt_lib/drt_discret.H"
 
-using namespace std;
-using namespace DRT;
-using namespace MAT;
 
 
 #include "../drt_structure/stru_resulttest.H"
+
 
 
 /*----------------------------------------------------------------------*/
@@ -66,8 +81,6 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
 
   reset_out_count_=0;
 
-  // input parameters structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // input parameters inverse analysis
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   //  tolerance for the curve fitting
@@ -152,31 +165,34 @@ steps 25 nnodes 5
 
     // total number of measured dofs
     nmp_    = ndofs_*nsteps_;
-    mcurve_ = Epetra_SerialDenseVector(nmp_);
 
-    if (!myrank) printf("nsteps %d ndofs %d\n",nsteps_,ndofs_);
 
-    // time step from input file (do I need this?)
-    tstep_  = sdyn.get<double>("TIMESTEP");
+    // read in measured curve
 
-    // read comment lines
-    foundit = buffer;
-    fgets(buffer,150000,file);
-    while(strstr(buffer,"#"))
-      fgets(buffer,150000,file);
-
-    // read in the values for each node in dirs directions
-    int count=0;
-    for (int i=0; i<nsteps_; ++i)
     {
-      // read the time step
-      timesteps_[i] = strtod(foundit,&foundit);
-      for (int j=0; j<ndofs_; ++j)
-        mcurve_[count++] = strtod(foundit,&foundit);
-      fgets(buffer,150000,file);
+      mcurve_ = Epetra_SerialDenseVector(nmp_);
+
+      if (!myrank) printf("nsteps %d ndofs %d\n",nsteps_,ndofs_);
+
+      // read comment lines
       foundit = buffer;
+      fgets(buffer,150000,file);
+      while(strstr(buffer,"#"))
+        fgets(buffer,150000,file);
+
+      // read in the values for each node in dirs directions
+      int count=0;
+      for (int i=0; i<nsteps_; ++i)
+      {
+        // read the time step
+        timesteps_[i] = strtod(foundit,&foundit);
+        for (int j=0; j<ndofs_; ++j)
+          mcurve_[count++] = strtod(foundit,&foundit);
+        fgets(buffer,150000,file);
+        foundit = buffer;
+      }
+      if (count != nmp_) dserror("Number of measured disps wrong on input");
     }
-    if (count != nmp_) dserror("Number of measured disps wrong on input");
   }
 
   // error: diference of the measured to the calculated curve
@@ -187,6 +203,8 @@ steps 25 nnodes 5
   mu_ = iap.get<double>("INV_INITREG");
 
   kappa_multi_=1.0;
+
+  // list of materials for each problem instance that should be fitted
 
   int word1;
   std::istringstream matliststream(Teuchos::getNumericStringParameter(iap,"INV_LIST"));
@@ -203,7 +221,9 @@ steps 25 nnodes 5
   np_ = p_.Length();
 
   // controlling parameter
-  numb_run_ =  0;     // counter of how many runs were made in the inverse analysis
+  numb_run_ =  0;     //
+                      // counter of how many runs were made in the inverse analysis
+
 }
 
 
@@ -214,6 +234,7 @@ void STR::GenInvAnalysis::Integrate()
   int myrank = discret_->Comm().MyPID();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+  int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
 //  output_->NewResultFile((numb_run_));
   // fitting loop
   do
@@ -243,6 +264,26 @@ void STR::GenInvAnalysis::Integrate()
     // loop over parameters to fit and build cmatrix
     for (int i=0; i<np_+1;i++)
     {
+      bool outputtofile = false;
+      // output only for last run
+      if (i==np_) outputtofile = true;
+
+      if (outputtofile)
+      {
+        // no parameters for newfile yet
+        if (newfiles)
+          output_->NewResultFile((numb_run_));
+        else
+          output_->OverwriteResultFile();
+
+        output_->WriteMesh(0,0.0);
+      }
+
+      // Multi-scale: if an inverse analysis is performed on the micro-level,
+      // the time and step need to be reset now. Furthermore, the result file
+      // needs to be opened.
+      MultiInvAnaInit();
+
       if (!myrank)
         cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<endl;
       // make current set of material parameters
@@ -254,10 +295,9 @@ void STR::GenInvAnalysis::Integrate()
       SetParameters(p_cur);
 
       // compute nonlinear problem and obtain computed displacements
-      // output only for last run
+      // output at the last step
       Epetra_SerialDenseVector cvector;
-      if ( i != np_) cvector = CalcCvector(false);
-      else           cvector = CalcCvector(true);
+      cvector = CalcCvector(outputtofile);
 
       // copy displacements to sensitivity matrix
       if (!myrank)
@@ -284,6 +324,10 @@ void STR::GenInvAnalysis::Integrate()
 //      output_->NewResultFile(numb_run_);
   } while (error_>tol_ && numb_run_<max_itter);
 
+
+  // print results to file
+  if (!myrank) PrintFile();
+
   return;
 }
 
@@ -306,6 +350,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
 
+  //calculating J(p)
   for (int i=0; i<nmp_; i++)
     for (int j=0; j<np_; j++)
     {
@@ -313,17 +358,20 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
       J(i,j) /= perturb[j];
     }
 
+  //calculating J.T*J)
   sto.Multiply('T','N',1.0,J,J,0.0);
 
+  // calculating  (J.T*J+mu*I)
   // do regularization by adding artifical lumped mass
   for (int i=0; i<np_; i++)
     sto(i,i) += mu_*sto(i,i);
 
+  //calculating R
   // compute residual displacement (measured vs. computed)
   for (int i=0; i<nmp_; i++)
     rcurve[i] = mcurve_[i] - ccurve[i];
 
-  // delta_p = (J.T*J+mu*diag(J^T * J))^{-1} * J^T * r
+  // delta_p = (J.T*J+mu*diag(J.T*J)).I * J.T*R
   tmp.Multiply('T','N',1.0,J,rcurve,0.0);
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
@@ -337,175 +385,94 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   // dependent on the # of steps
   error_o_ = error_;
   error_   = rcurve.Norm2()/sqrt(nmp_);
+
   if (!numb_run_) error_o_ = error_;
 
 
   //Adjust training parameter
   mu_ *= (error_/error_o_);
 
-  PrintStorage(delta_p);
+
 
   // return cmatrix to previous size and zero out
   cmatrix.Shape(nmp_,np_+1);
 
+
+  cout << numb_run_ << endl;
+  PrintStorage(cmatrix, delta_p);
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* */
 
-//--------------------------------------------------------------------------------------------
+
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
-  /*----------------------------------------------------
-   * commented in order to remove the strugenalpha adapter 12.03.2012
-   ------------------------------------------------------*/
-//  int myrank = discret_->Comm().MyPID();
-//
-//  // create a StruGenAlpha solver
-//  ParameterList genalphaparams;
-//  StruGenAlpha::SetDefaults(genalphaparams);
-//  const Teuchos::ParameterList& sdyn    = DRT::Problem::Instance()->StructuralDynamicParams();
-//  const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
-//  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-//
-//  // get input parameter lists
-//  genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
-//  genalphaparams.set<bool>  ("damping",(! (sdyn.get<std::string>("DAMPING") == "no"
-//                                        || sdyn.get<std::string>("DAMPING") == "No"
-//                                        || sdyn.get<std::string>("DAMPING") == "NO")));
-//  genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
-//  genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
-//#ifdef STRUGENALPHA_BE
-//  genalphaparams.set<double>("delta",sdyn.get<double>("DELTA"));
-//#endif
-//  genalphaparams.set<double>("gamma",sdyn.get<double>("GAMMA"));
-//  genalphaparams.set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-//  genalphaparams.set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-//  genalphaparams.set<double>("total time",0.0);
-//  genalphaparams.set<double>("delta time",sdyn.get<double>("TIMESTEP"));
-//  genalphaparams.set<double>("max time",sdyn.get<double>("MAXTIME"));
-//  genalphaparams.set<int>   ("step",0);
-//  genalphaparams.set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
-//  genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-//  genalphaparams.set<int>   ("num iterations",-1);
-//  genalphaparams.set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
-//  genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-//  genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
-//  genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
-//  genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
-//  genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
-//  genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-//  genalphaparams.set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
-//  genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-//  genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
-//  genalphaparams.set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
-//  genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
-//  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-//  genalphaparams.set<int>("io structural stress", iostress);
-//  genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
-//  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
-//  genalphaparams.set<int>("io structural strain", iostrain);
-//  genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
-//  genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
-//  genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
-//  genalphaparams.set<bool>  ("print to screen",false);
-//  genalphaparams.set<bool>  ("print to err",true);
-//  genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-//  genalphaparams.set<bool>  ("LOADLIN",false);
-//  INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
-//  genalphaparams.set<int>("CONTROLTYPE",controltype);
-//  {
-//    vector<int> controlnode;
-//    std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
-//    std::string word;
-//    while (contnode >> word)
-//      controlnode.push_back(std::atoi(word.c_str()));
-//    if ((int)controlnode.size() != 3) dserror("Give proper values for CONTROLNODE in input file");
-//    genalphaparams.set("CONTROLNODE",controlnode[0]);
-//    genalphaparams.set("CONTROLDOF",controlnode[1]);
-//    genalphaparams.set("CONTROLCURVE",controlnode[2]);
-//  }
-//  genalphaparams.set<string>("equilibrium iteration","full newton");
-//  switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
-//  {
-//    case INPAR::STR::pred_vague:
-//      dserror("You have to define the predictor");
-//      break;
-//    case INPAR::STR::pred_constdis:
-//      genalphaparams.set<string>("predictor","consistent");
-//      break;
-//    case INPAR::STR::pred_constdisvelacc:
-//      genalphaparams.set<string>("predictor","constant");
-//      break;
-//    case INPAR::STR::pred_tangdis:
-//      genalphaparams.set<string>("predictor","tangdis");
-//      break;
-//    default:
-//      dserror("Cannot cope with choice of predictor");
-//      break;
-//  }
-//
-//  if (outputtofile)
-//  {
-//    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-//    int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
-//    if (newfiles)
-//      output_->NewResultFile((numb_run_));
-//    else
-//      output_->OverwriteResultFile();
-//
-//    output_->WriteMesh(0,0.0);
-//  }
-//
-//  RCP<StruGenAlpha> tintegrator = rcp(new StruGenAlpha(genalphaparams,*discret_,*solver_,*output_));
-//  int    step    = genalphaparams.get<int>("step",0);
-//  int    nstep   = genalphaparams.get<int>("nstep",-1);
-//  //double time    = genalphaparams.get<double>("total time",0.0);
-//  double maxtime = genalphaparams.get<double>("max time",0.0);
-//  string pred    = genalphaparams.get<string>("predictor","constant");
-//  string equil   = genalphaparams.get<string>("equilibrium iteration","full newton");
-//  int predictor=-1;
-//  if      (pred=="constant")   predictor = 1;
-//  else if (pred=="consistent") predictor = 2;
-//  else dserror("Unknown type of predictor");
-//
-//  Epetra_SerialDenseVector cvector;
-//  if (!myrank) cvector.Size(nmp_);
-//
-////  if (outputtofile) output_->WriteMesh(0,0.0);
-//
-//  int writestep = 0;
-//  double endtime = 0.0;
-//
-//  // load controled Newton only
-//  for (int i=step; i<nstep; ++i)
-//  {
-//    if      (predictor==1) tintegrator->ConstantPredictor();
-//    else if (predictor==2) tintegrator->ConsistentPredictor();
-//    tintegrator->FullNewton();
-//    tintegrator->PrepareOutput();
-//    tintegrator->Update();
-//    tintegrator->UpdateElement();
-//    if (outputtofile) tintegrator->Output();
-//    if (!myrank) printf("Step %d",i);
-//    double time = genalphaparams.get<double>("total time",0.0);
-//    if (abs(time - timesteps_[writestep]) < 1.0e-12)
-//    {
-//      if (!myrank) printf(" monitored %f", time);
-//      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
-//      if (!myrank)
-//        for (int j=0; j<ndofs_; ++j)
-//          cvector[writestep*ndofs_+j] = cvector_arg[j];
-//      writestep += 1;
-//    }
-//    if (!myrank) printf("\n");
-//    endtime = time;
-//    if (time>=maxtime) break;
-//  }
-//  if (!myrank && (abs(timesteps_.back() - endtime) > 1.0e-12 || nsteps_ != writestep))
-//    printf("Warning: there is something unclean!\nLook at your monitor file and/or your STRUCTURAL DYNAMIC parameters.\n");
-//
-//  return cvector;
-  return Epetra_SerialDenseVector(3);
+  int myrank = discret_->Comm().MyPID();
+  // get input parameter lists
+  const Teuchos::ParameterList& ioflags
+    = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+  Teuchos::ParameterList xparams;
+  xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  xparams.set<int>("REDUCED_OUTPUT",0);
+  // create time integrator
+  sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
+  if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
+  // initialize time loop / Attention the Functions give back the
+  // time and the step not timen and stepn value that is why we have
+  // to use < instead of <= for the while loop
+  double time = sti_->GetTime();
+  const double timemax = sti_->GetTimeEnd();
+  int step = sti_->GetStep();
+  const int stepmax = sti_->GetTimeNumStep();
+  Epetra_SerialDenseVector cvector(ndofs_*stepmax);
+
+  // time loop
+  while ( (time < timemax) && (step < stepmax) )
+  {
+    // integrate time step
+    // after this step we hold disn_, etc
+    sti_->IntegrateStep();
+
+    // calculate stresses, strains, energies
+    sti_->PrepareOutput();
+
+    // update displacements, velocities, accelerations
+    // after this call we will have disn_==dis_, etc
+    sti_->UpdateStepState();
+
+    // gets the displacments per timestep
+    {
+      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+            if (!myrank)
+              for (int j=0; j<ndofs_; ++j)
+                cvector[step*ndofs_+j] = cvector_arg[j];
+
+
+      //Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(sti_->DisNew());
+    }
+    //dserror("Halt");
+    // update time and step
+    sti_->UpdateStepTime();
+
+    // Update Element
+    sti_->UpdateStepElement();
+
+    // print info about finished time step
+    sti_->PrintStep();
+
+    // write output
+    if (outputtofile) sti_->OutputStep();
+
+    // get current time ...
+    time = sti_->GetTime();
+    // ... and step
+    step = sti_->GetStep();
+  }
+  return cvector;
 }
 
 
@@ -550,7 +517,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
 
 /*----------------------------------------------------------------------*/
 /* */
-void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
+void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p)
 {
   int myrank = discret_->Comm().MyPID();
   // store the error and mu_
@@ -565,6 +532,10 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
   for (int i=0; i<np_; i++)
     delta_p_s_(numb_run_, i)=delta_p(i);
 
+  ccurve_s_.Reshape(nmp_,  numb_run_+1);
+  for (int i=0; i<nmp_; i++)
+    ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
+
   mu_s_.Resize(numb_run_+1);
   mu_s_(numb_run_)=mu_;
 
@@ -574,28 +545,133 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
 
   if (!myrank)
   {
-    cout << endl;
-    printf("#################################################################\n");
-    printf("############################ Inverse Analysis run ## %3i ########\n",  numb_run_);
-    printf("#################################################################\n");
+      cout << endl;
+      printf("################################################");
+      printf("##############################################\n");
+      printf("############################ Inverse Analysis ##");
+      printf("##############################################\n");
+      printf("################################### run ########");
+      printf("##############################################\n");
+      printf("################################### %3i ########",  numb_run_);
+      printf("##############################################\n");
+      printf("################################################");
+      printf("##############################################\n");
 
-    for (int i=0; i < numb_run_+1; i++)
-    {
-      printf("Error    : ");
-      printf("%10.5e\n", error_s_(i));
+      for (int i=0; i < numb_run_+1; i++)
+      {
+        printf("Error: ");
+        printf("%10.3f", error_s_(i));
+        printf("\tParameter: ");
+        for (int j=0; j < delta_p.Length(); j++)
+          printf("%10.3f", p_s_(i, j));
+        //printf("\tDelta_p: ");
+        //for (int j=0; j < delta_p.Length(); j++)
+        //  printf("%10.3f", delta_p_s_(i, j));
+        printf("\tmu: ");
+        printf("%10.3f", mu_s_(i));
+        printf("\n");
+      }
 
-      printf("Parameter: ");
-      for (int j=0; j < delta_p.Length(); j++)
-        printf("%10.5e ", p_s_(i, j));
+      printf("\n");
+      for (int i=0; i < nmp_/2.; i++)
+      {
+        printf(" %10.2f ",  mcurve_(i*2));
+        if (numb_run_<15)
+        {
+          for (int j=0; j<numb_run_+1; j++)
+            printf(" %10.2f ",  ccurve_s_((i)*2, j));
+        }
+        else
+        {
+          for (int j=numb_run_-14; j<numb_run_+1; j++)
+            printf(" %10.2f ",  ccurve_s_((i)*2, j));
+        }
+        printf("\n");
+      }
+
       printf("\n");
 
-      printf("mu       : ");
-      printf("%10.5e", mu_s_(i));
-      printf("\n");
-      printf("#################################################################\n");
-    }
+      for (int i=0; i < nmp_/2.; i++)
+      {
+        printf(" %10.2f ",  mcurve_((i)*2+1));
+        if (numb_run_<15)
+        {
+          for (int j=0; j<numb_run_+1; j++)
+            printf(" %10.2f ",  ccurve_s_((i)*2+1, j));
+        }
+        else
+        {
+          for (int j=numb_run_-14; j<numb_run_+1; j++)
+            printf(" %10.2f ",  ccurve_s_((i)*2+1, j));
+        }
+        printf("\n");
+      }
+
+      printf("################################################");
+      printf("##############################################\n");
+      cout << endl;
   }
+
   return;
+}
+
+void STR::GenInvAnalysis::PrintFile()
+{
+  FILE * cxFile;
+  FILE * cyFile;
+  FILE * pFile;
+
+  string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  name.append(filename_);
+
+  if (name.rfind("_run_")!=string::npos)
+  {
+    size_t pos = name.rfind("_run_");
+    if (pos==string::npos)
+      dserror("inconsistent file name");
+    name = name.substr(0, pos);
+  }
+
+  string gp     = name+"_plot.gp";
+  string xcurve = name+"_Curve_x.txt";
+  string ycurve = name+"_Curve_y.txt";
+  string para   = name+"_Para.txt";
+
+  cxFile = fopen((xcurve).c_str(), "w");
+  for (int i=0; i < nmp_/2.; i++)
+  {
+    fprintf(cxFile, " %10.5f ,",  mcurve_(i*2));
+    for (int j=0; j<numb_run_; j++)
+      fprintf(cxFile, " %10.5f ,",  ccurve_s_(i*2, j));
+    fprintf(cxFile, "\n");
+  }
+  fclose(cxFile);
+
+  cyFile = fopen((ycurve).c_str(), "w");
+  for (int i=0; i < nmp_/2.; i++)
+  {
+    fprintf(cyFile, " %10.5f ,",  mcurve_((i)*2+1));
+    for (int j=0; j<numb_run_; j++)
+      fprintf(cyFile, " %10.5f ,",  ccurve_s_((i)*2+1, j));
+    fprintf(cyFile, "\n");
+  }
+  fclose(cyFile);
+
+  pFile  = fopen((para).c_str(), "w");
+  fprintf(pFile, "#Error       Parameter    Delta_p      mu \n");
+  for (int i=0; i < numb_run_; i++)
+  {
+    fprintf(pFile, "%10.3f,", error_s_(i));
+    for (int j=0; j < np_; j++)
+      fprintf(pFile, "%10.3f,", p_s_(i, j));
+    for (int j=0; j < np_; j++)
+      fprintf(pFile, "%10.3f,", delta_p_s_(i, j));
+    fprintf(pFile, "%10.3f", mu_s_(i));
+    fprintf(pFile, "\n");
+  }
+  fclose(pFile);
+
+  numb_run_=numb_run_-1;
 }
 
 
@@ -610,6 +686,7 @@ void STR::GenInvAnalysis::ReadInParameters()
   unsigned int nummat = mats.size();
   if (matset_.size() > 0 && nummat > matset_.size()) nummat = matset_.size();
   if (myrank == 0) printf("No. material laws considered : %d\n", nummat);
+
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
@@ -652,50 +729,223 @@ void STR::GenInvAnalysis::ReadInParameters()
             const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
             switch (actelastmat->Type())
             {
+              case INPAR::MAT::mes_couplogneohooke:
+              {
+                filename_=filename_+"_couplogneohooke";
+                const MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                //p_[j]   = params2->mue_;
+                //p_[j+1] = params2->lambda_;
+                //p_[j+2] = params2->parmode_;
+                p_[j] = params2->youngs_;
+                p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
+                cout << "Get the parameter: " << p_[j+1] << " for the Simulation " << params2->nue_ << " was used!" << endl;
+                break;
+              }
+              case INPAR::MAT::mes_coupneohooke:
+              {
+                filename_=filename_+"_coupneohooke";
+                const MAT::ELASTIC::PAR::CoupNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j] = params2->c_;
+                p_[j+1] = params2->beta_;
+                break;
+              }
+              case INPAR::MAT::mes_coupblatzko:
+              {
+                filename_=filename_+"_coupblatzko";
+                const MAT::ELASTIC::PAR::CoupBlatzKo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->mue_;
+                p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
+                //p_[j+1] = params2->f_;
+                break;
+              }
+              case INPAR::MAT::mes_isoneohooke:
+              {
+                filename_=filename_+"_isoneohooke";
+                const MAT::ELASTIC::PAR::IsoNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->mue_;
+                break;
+              }
               case INPAR::MAT::mes_isoyeoh:
               {
-                MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const int j = p_.Length();
+                filename_=filename_+"_isoyeoh";
+                const MAT::ELASTIC::PAR::IsoYeoh* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                int j = p_.Length();
                 p_.Resize(j+3);
-                p_(j)   = params->c1_;
-                p_(j+1) = params->c2_;
-                p_(j+2) = params->c3_;
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                p_[j+2] = params2->c3_;
+                break;
               }
-              break;
+              case INPAR::MAT::mes_isoquad:
+              {
+                filename_=filename_+"_isoquad";
+                const MAT::ELASTIC::PAR::IsoQuad* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_isocub:
+              {
+                filename_=filename_+"_isocub";
+                const MAT::ELASTIC::PAR::IsoCub* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_iso1pow:
+              {
+                filename_=filename_+"_iso1pow";
+                const MAT::ELASTIC::PAR::Iso1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_iso2pow:
+              {
+                filename_=filename_+"_iso2pow";
+                const MAT::ELASTIC::PAR::Iso2Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coup1pow:
+              {
+                filename_=filename_+"_coup1pow";
+                const MAT::ELASTIC::PAR::Coup1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coup2pow:
+              {
+                filename_=filename_+"_coup2pow";
+                const MAT::ELASTIC::PAR::Coup2Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coupmooneyrivlin:
+              {
+                filename_=filename_+"_coupmooneyrivlin";
+                const MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                p_[j+2] = params2->c3_;
+                break;
+              }
+              case INPAR::MAT::mes_isoexpo:
+              {
+                filename_=filename_+"_isoexpo";
+                const MAT::ELASTIC::PAR::IsoExpo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoExpo*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->k1_;
+                p_[j+1] = params2->k2_;
+                break;
+              }
+              case INPAR::MAT::mes_isomooneyrivlin:
+              {
+                filename_=filename_+"_isomooneyrivlin";
+                const MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                break;
+              }
+              case INPAR::MAT::mes_volsussmanbathe:
+              {
+                filename_=filename_+"_volsussmanbathe";
+                const MAT::ELASTIC::PAR::VolSussmanBathe* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->kappa_;
+                break;
+              }
+              case INPAR::MAT::mes_volpenalty:
+              {
+                filename_=filename_+"_volpenalty";
+                const MAT::ELASTIC::PAR::VolPenalty* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->eps_;
+                p_[j+1]   = params2->gam_;
+                break;
+              }
               case INPAR::MAT::mes_vologden:
               {
-                MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const int j = p_.Length();
+                filename_=filename_+"_vologden";
+                const MAT::ELASTIC::PAR::VolOgden* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                int j = p_.Length();
                 p_.Resize(j+1);
-                p_(j)   = params->kappa_;
-                // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
+                p_[j]   = params2->kappa_;
+                //p_[j+1] = params2->beta_;
+                break;
               }
-              break;
               case INPAR::MAT::mes_coupanisoexpotwo:
               {
-                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const int j = p_.Length();
+                filename_=filename_+"_coupanisoexpotwo";
+                const MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+                int j = p_.Length();
                 p_.Resize(j+4);
-                p_(j)    = params->k1_;
-                p_(j+1)  = params->k2_;
-                p_(j+2)  = params->k3_;
-                p_(j+3)  = params->k4_;
+                p_[j]   = params2->k1_;
+                p_[j+1] = params2->k2_;
+                p_[j+2] = params2->k3_;
+                p_[j+3] = params2->k4_;
+                break;
               }
-              break;
+              case INPAR::MAT::mes_coupanisoneohooketwo:
+              {
+                filename_=filename_+"_coupanisoneohooketwo";
+                const MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                break;
+              }
               default:
-                dserror("Unknown type of elasthyper material");
-              break;
+                dserror("cannot deal with this material");
+
             }
           }
         }
-        case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-        break;
-        case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-        break;
-        case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        case INPAR::MAT::mes_couplogneohooke:
+        case INPAR::MAT::mes_coupneohooke:
+        case INPAR::MAT::mes_coupblatzko:
+        case INPAR::MAT::mes_isoneohooke:
+        case INPAR::MAT::mes_isoyeoh:
+        case INPAR::MAT::mes_isoquad:
+        case INPAR::MAT::mes_isocub:
+        case INPAR::MAT::mes_iso1pow:
+        case INPAR::MAT::mes_iso2pow:
+        case INPAR::MAT::mes_coup1pow:
+        case INPAR::MAT::mes_coup2pow:
+        case INPAR::MAT::mes_isoexpo:
+        case INPAR::MAT::mes_isomooneyrivlin:
+        case INPAR::MAT::mes_coupmooneyrivlin:
+        case INPAR::MAT::mes_volsussmanbathe:
+        case INPAR::MAT::mes_volpenalty:
+        case INPAR::MAT::mes_vologden:
+        case INPAR::MAT::mes_coupanisoexpotwo:
+        case INPAR::MAT::mes_coupanisoneohooketwo:
+        case INPAR::MAT::m_struct_multiscale:
         break;
         case INPAR::MAT::m_constraintmixture:
         {
@@ -711,7 +961,7 @@ void STR::GenInvAnalysis::ReadInParameters()
         }
         break;
         default:
-          // ignore unknown materials ?
+          // currently the inverse analysis solely works with mat elast materials
           dserror("Unknown type of material");
         break;
       }
@@ -729,7 +979,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  int count=0;
+  int j=0;
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
@@ -744,11 +994,11 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
           if (!params) dserror("Cannot cast material parameters");
           // This is a tiny little bit brutal!!!
-          const_cast<double&>(params->youngs_) = p_cur[count];
-          const_cast<double&>(params->beta_)   = p_cur[count+1];
-          //const_cast<double&>(params->nue_)    = p_cur[count+2];
-          if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
-          count += 2;
+          const_cast<double&>(params->youngs_) = p_cur[j];
+          const_cast<double&>(params->beta_)   = p_cur[j+1];
+          //const_cast<double&>(params->nue_)    = p_cur[j+2];
+          if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[j],p_cur[j+1]);
+          j += 2;
         }
         break;
         case INPAR::MAT::m_neohooke:
@@ -756,10 +1006,10 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
           if (!params) dserror("Cannot cast material parameters");
           // This is a tiny little bit brutal!!!
-          const_cast<double&>(params->youngs_)       = p_cur[count];
-          const_cast<double&>(params->poissonratio_) = p_cur[count+1];
+          const_cast<double&>(params->youngs_)       = p_cur[j];
+          const_cast<double&>(params->poissonratio_) = p_cur[j+1];
           if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
-          count += 2;
+          j += 2;
         }
         break;
         case INPAR::MAT::m_elasthyper:
@@ -774,64 +1024,216 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
             const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
             switch (actelastmat->Type())
             {
+             case INPAR::MAT::mes_couplogneohooke:
+              {
+                MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+                //params2->SetMue(abs(p_cur(j)));
+                //params2->SetLambda(abs(p_cur(j+1)));
+                //params2->SetParmode(abs(p_cur(j+2)));
+                params2->SetYoungs(abs(p_cur(j)));
+                params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_coupneohooke:
+              {
+                MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                params2->SetBeta(abs(p_cur(j+1)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_coupblatzko:
+              {
+                MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+                params2->SetMue(abs(p_cur(j)));
+                //params2->SetF(abs(p_cur(j+1)));
+                params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_isoneohooke:
+              {
+                MAT::ELASTIC::PAR::IsoNeoHooke* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+                params2->SetMue(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
               case INPAR::MAT::mes_isoyeoh:
               {
-                MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const_cast<double&>(params->c1_) = p_cur[count];
-                const_cast<double&>(params->c2_) = p_cur[count+1];
-                const_cast<double&>(params->c3_) = p_cur[count+2];
-                if (myrank == 0) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
-                count += 3;
+                MAT::ELASTIC::PAR::IsoYeoh* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                params2->SetC1(abs(p_cur(j)));
+                params2->SetC2(abs(p_cur(j+1)));
+                params2->SetC3(abs(p_cur(j+2)));
+                j = j+3;
+                break;
               }
-              break;
+              case INPAR::MAT::mes_isoquad:
+              {
+                MAT::ELASTIC::PAR::IsoQuad* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_isocub:
+              {
+                MAT::ELASTIC::PAR::IsoCub* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_iso1pow:
+              {
+                MAT::ELASTIC::PAR::Iso1Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_iso2pow:
+              {
+                MAT::ELASTIC::PAR::Iso2Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coup1pow:
+              {
+                MAT::ELASTIC::PAR::Coup1Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coup2pow:
+              {
+                MAT::ELASTIC::PAR::Coup2Pow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                params2->SetC(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_coupmooneyrivlin:
+              {
+                MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                params2->SetC1(abs(p_cur(j)));
+                params2->SetC2(abs(p_cur(j+1)));
+                params2->SetC3(abs(p_cur(j+2)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_isoexpo:
+              {
+                MAT::ELASTIC::PAR::IsoExpo* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoExpo*>(actelastmat->Parameter());
+                params2->SetK1(abs(p_cur(j)));
+                params2->SetK2(abs(p_cur(j+1)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_isomooneyrivlin:
+              {
+                MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+                params2->SetC1(abs(p_cur(j)));
+                params2->SetC2(abs(p_cur(j+1)));
+                j = j+2;
+                break;
+              }
+              case INPAR::MAT::mes_volsussmanbathe:
+              {
+                MAT::ELASTIC::PAR::VolSussmanBathe* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+                params2->SetKappa(abs(p_cur(j)));
+                j = j+1;
+                break;
+              }
+              case INPAR::MAT::mes_volpenalty:
+              {
+                MAT::ELASTIC::PAR::VolPenalty* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+                params2->SetEpsilon(abs(p_cur(j)));
+                params2->SetGamma(abs(p_cur(j+1)));
+                j = j+2;
+                break;
+              }
               case INPAR::MAT::mes_vologden:
               {
-                MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const_cast<double&>(params->kappa_) = p_cur[count];
-                //const_cast<double&>(params->beta_) = p_cur[count+1];
-                if (myrank == 0) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
-                count += 1;
+                MAT::ELASTIC::PAR::VolOgden* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                params2->SetKappa(abs(p_cur(j)));
+                //params2->SetBeta(abs(p_cur(j+1)));
+                j = j+1;
+                break;
               }
-              break;
               case INPAR::MAT::mes_coupanisoexpotwo:
               {
-                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-                if (!params) dserror("Cannot cast material parameters");
-                const_cast<double&>(params->k1_) = p_cur[count];
-                const_cast<double&>(params->k2_) = p_cur[count+1];
-                const_cast<double&>(params->k3_) = p_cur[count+2];
-                const_cast<double&>(params->k4_) = p_cur[count+3];
-                if (myrank == 0) printf("MAT::ELASTIC::PAR::CoupAnisoExpoTwo %20.15e %20.15e %20.15e %20.15e\n",params->k1_,params->k2_,params->k3_,params->k4_);
-                count += 4;
+                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+                params2->SetK1(abs(p_cur(j)));
+                params2->SetK2(abs(p_cur(j+1)));
+                params2->SetK3(abs(p_cur(j+2)));
+                params2->SetK4(abs(p_cur(j+3)));
+                j = j+4;
+                break;
               }
-              break;
+              case INPAR::MAT::mes_coupanisoneohooketwo:
+              {
+                MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(actelastmat->Parameter());
+                params2->SetC1(abs(p_cur(j)));
+                params2->SetC2(abs(p_cur(j+1)));
+                j = j+2;
+                break;
+              }
               default:
-                dserror("Unknown type of elasthyper material");
-              break;
+                dserror("cannot deal with this material");
             }
           }
         }
         break;
-        case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-        break;
-        case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-        break;
-        case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        case INPAR::MAT::mes_couplogneohooke:
+        case INPAR::MAT::mes_coupneohooke:
+        case INPAR::MAT::mes_coupblatzko:
+        case INPAR::MAT::mes_isoneohooke:
+        case INPAR::MAT::mes_isoyeoh:
+        case INPAR::MAT::mes_isoquad:
+        case INPAR::MAT::mes_isocub:
+        case INPAR::MAT::mes_iso1pow:
+        case INPAR::MAT::mes_iso2pow:
+        case INPAR::MAT::mes_coup1pow:
+        case INPAR::MAT::mes_coup2pow:
+        case INPAR::MAT::mes_isoexpo:
+        case INPAR::MAT::mes_isomooneyrivlin:
+        case INPAR::MAT::mes_coupmooneyrivlin:
+        case INPAR::MAT::mes_volsussmanbathe:
+        case INPAR::MAT::mes_volpenalty:
+        case INPAR::MAT::mes_vologden:
+        case INPAR::MAT::mes_coupanisoexpotwo:
+        case INPAR::MAT::mes_coupanisoneohooketwo:
+        case INPAR::MAT::m_struct_multiscale:
         break;
         case INPAR::MAT::m_constraintmixture:
         {
           MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
           if (!params) dserror("Cannot cast material parameters");
           // This is a tiny little bit brutal!!!
-          //const_cast<double&>(params->mue_)  = p_cur[count];
-          //const_cast<double&>(params->k1_)  = p_cur[count+1];
-          //const_cast<double&>(params->k2_)  = p_cur[count+2];
-          //const_cast<double&>(params->prestretchcollagen_) = p_cur[count];
-          const_cast<double&>(params->growthfactor_) = abs(p_cur[count]);
+          //const_cast<double&>(params->mue_)  = p_cur[j];
+          //const_cast<double&>(params->k1_)  = p_cur[j+1];
+          //const_cast<double&>(params->k2_)  = p_cur[j+2];
+          //const_cast<double&>(params->prestretchcollagen_) = p_cur[j];
+          const_cast<double&>(params->growthfactor_) = abs(p_cur[j]);
           if (myrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->growthfactor_,params->k1_,params->k2_);
-          count += 1;
+          j += 1;
         }
         break;
         default:
@@ -846,6 +1248,20 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   return;
 }
 
-
+void STR::GenInvAnalysis::MultiInvAnaInit()
+{
+  for (int i=0; i<discret_->NumMyColElements(); i++)
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+      bool eleowner = false;
+      if (discret_->Comm().MyPID()==actele->Owner()) eleowner = true;
+      micro->InvAnaInit(eleowner);
+    }
+  }
+}
 
 #endif
