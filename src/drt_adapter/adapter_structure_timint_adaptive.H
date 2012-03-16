@@ -90,7 +90,8 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// switch structure field to block matrix
-    void UseBlockMatrix();
+    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+        const LINALG::MultiMapExtractor& rangemaps);
 
     /// recalculate structural matrices for tsi simulations
     void TSIMatrix();
@@ -325,7 +326,10 @@ namespace ADAPTER {
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp);
 
     // poroelasticity specific method
-    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) {dserror("not implemented");};
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) {dserror("not implemented");}
+
+    //! Set forces due to interface with fluid
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce){dserror("not implemented");}
 
     //! specific method for iterative staggered partitioned TSI
 

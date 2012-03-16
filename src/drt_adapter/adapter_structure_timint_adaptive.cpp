@@ -136,7 +136,9 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimIntAda::BlockSy
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::UseBlockMatrix()
+void ADAPTER::StructureTimIntAda::UseBlockMatrix(
+    const LINALG::MultiMapExtractor& domainmaps,
+    const LINALG::MultiMapExtractor& rangemaps)
 {
   dserror("not implemented");
 }
@@ -283,13 +285,13 @@ void ADAPTER::StructureTimIntAda::Solve()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::RelaxationSolve(
-  Teuchos::RCP<Epetra_Vector> iforce
-)
-{
-  dserror("not implemented");
-  return Teuchos::null;
-}
+//Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::RelaxationSolve(
+//  Teuchos::RCP<Epetra_Vector> iforce
+//)
+//{
+//  dserror("not implemented");
+//  return Teuchos::null;
+//}
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n} */

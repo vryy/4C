@@ -262,8 +262,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -318,7 +317,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     double scale     = FluidField().ResidualScaling();
 
-    veln->Scale(dd/(bb*scale));
+    veln->Scale(dd/((1.0-stiparam)*scale));
 
     Extractor().AddVector(*veln,1,f); // add fluid contribution to 'f'
 
@@ -443,8 +442,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -462,14 +460,14 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    ADAPTER::CouplingMasterConverter(coupsf),
                    mat.Matrix(0,1));
   (*sggtransform_)(s->Matrix(1,1),
-                   dd/bb/(scale*timescale),
+                   dd/((1.0-stiparam)*scale*timescale),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    *f,
                    true,
                    true);
   (*sgitransform_)(s->Matrix(1,0),
-                   dd/bb/scale,
+                   dd/((1.0-stiparam)*scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    mat.Matrix(1,0));
 
@@ -737,8 +735,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -752,11 +749,11 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
-    modfv->Update(1.0, *fv, dd/(bb*fluidscale));
+    modfv->Update(1.0, *fv, dd/((1.0-stiparam)*fluidscale));
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modfv->Update(-cc+aa*dd/bb, *StructToFluid(lambda_), 1.0);
+      modfv->Update(-cc+stiparam*dd/(1.0-stiparam), *StructToFluid(lambda_), 1.0);
 
     Extractor().InsertVector(*modfv,1,f);
   }
@@ -1027,8 +1024,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
 {
   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
   // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -1046,9 +1042,9 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::
   /* \lambda^{n+1} =  1/b * [ - a*\lambda^n - f_\Gamma^S
    *                          - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma]
    */
-  lambda_->Update(1.0, *fgpre_, -aa);
+  lambda_->Update(1.0, *fgpre_, -stiparam);
   lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
-  lambda_->Scale(1/bb); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
+  lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier ist divided by (1.-stiparam)
 
   return;
 }

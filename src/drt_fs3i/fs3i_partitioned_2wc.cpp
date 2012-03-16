@@ -80,7 +80,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
                                                Teuchos::null,
                                                fsi_->FluidField().FsVel(),
                                                Teuchos::null,
-                                               fsi_->FluidAdapter().Discretization());
+                                               fsi_->FluidField().Discretization());
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport

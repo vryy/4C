@@ -91,7 +91,6 @@ STR::TimIntImpl::TimIntImpl
   disi_(Teuchos::null),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
-  fifc_(Teuchos::null),
   stcscale_(DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
   stclayer_(sdynparams.get<int>("STC_LAYER")),
   ptcdt_(sdynparams.get<double>("PTCDT")),
@@ -119,9 +118,6 @@ STR::TimIntImpl::TimIntImpl
 
   // create empty reaction force vector of full length
   freact_ = LINALG::CreateVector(*dofrowmap_, false);
-
-  // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
@@ -2183,16 +2179,6 @@ void STR::TimIntImpl::SetForceInterface
   extractor.AddFSICondVector(iforce, fifc_);
 }
 
-/*----------------------------------------------------------------------*/
-/* Set forces due to interface with fluid,
- * the force is expected external-force-like */
-void STR::TimIntImpl::SetForceInterface
-(
-  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
-)
-{
-  fifc_->Update(1.0, *iforce, 0.0);
-}
 
 /*----------------------------------------------------------------------*/
 /* Linear structure solve with just an interface load */

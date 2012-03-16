@@ -35,8 +35,8 @@ namespace ADAPTER
     { return structure_->SystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     { return structure_->BlockSystemMatrix(); }
-    virtual void UseBlockMatrix()
-    { return structure_->UseBlockMatrix(); }
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps)
+    { return structure_->UseBlockMatrix(domainmaps, rangemaps); }
     virtual void TSIMatrix()
     { return structure_->TSIMatrix(); }
     virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
@@ -56,8 +56,8 @@ namespace ADAPTER
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
-    virtual const STR::AUX::MapExtractor& Interface() const
-    { return structure_->Interface(); }
+    virtual double TimIntParam()
+    { return structure_->TimIntParam(); }
     virtual double GetTime() const
     { return structure_->GetTime(); }
     virtual double GetTimeEnd() const
@@ -94,8 +94,10 @@ namespace ADAPTER
     { structure_->EvaluateReferenceState(); }
     virtual void Solve()
     { return structure_->Solve(); }
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
-    { return structure_->RelaxationSolve(iforce); }
+//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
+//    { return structure_->RelaxationSolve(iforce); }
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
+    { return structure_->SolveRelaxationLinear(); }
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     { return structure_->LinearSolver(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn()
@@ -113,7 +115,9 @@ namespace ADAPTER
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp)
     { structure_->ApplyTemperatures(temp); }
     virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp)
-    { structure_->ApplyVelAndPress(velnp); };
+    { structure_->ApplyVelAndPress(velnp); }
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce)
+    { structure_->SetForceInterface(iforce); }
     virtual void PreparePartitionStep()
     { structure_->PreparePartitionStep(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp()
@@ -126,6 +130,8 @@ namespace ADAPTER
     { return structure_->ExtractVelnp(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf()
     { return structure_->ExtractVelaf(); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn()
+    { return structure_->ExtractAccn(); }
     virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
     { structure_->ApplyDisMat(dismat); }
     virtual Teuchos::RCP<Epetra_Vector> DispMat()

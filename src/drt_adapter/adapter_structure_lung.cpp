@@ -17,7 +17,7 @@ extern struct _GENPROB     genprob;
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
-: StructureWrapper(stru)
+: FSIStructureWrapper(stru)
 {
   //----------------------------------------------------------------------
   // make sure

@@ -148,6 +148,7 @@ namespace ADAPTER
     /// fluid field solver
     FluidMovingBoundary& MBFluidField() { return *fluid_; }
     const FluidMovingBoundary& MBFluidField() const { return *fluid_; }
+    Teuchos::RCP<FluidMovingBoundary> MBFluidFieldrcp() { return fluid_; }
 
   private:
 

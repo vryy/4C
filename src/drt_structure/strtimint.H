@@ -431,6 +431,12 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> veln  //!< current velocities and pressures
     );
 
+    //! Set forces due to interface with fluid, the force is expected external-force-like
+    virtual void SetForceInterface
+    (
+      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+    );
+
     //! @name Attributes
     //@{
 
@@ -452,6 +458,9 @@ namespace STR
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a \f$m\f$-multistep method returns \f$m\f$
     virtual int MethodSteps() = 0;
+
+    //! return time integration factor
+    virtual double TimIntParam() = 0;
 
     //! Give order of accuracy
     int MethodOrderOfAccuracy()
@@ -784,7 +793,6 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     //@}
 
-
     //! @name Global state vectors
     //@{
 
@@ -803,10 +811,12 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                         //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
-    // global coupling variables of the thermo field
+    //! global coupling variables of the thermo field
     Teuchos::RCP<Epetra_Vector> tempn_; //!< global temperatures
                                         //!< \f${T}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
+    //! additional external forces
+    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
     //@}
 
     //! @name Structure with ale specific stuff
@@ -925,15 +935,18 @@ namespace STR
     /// been set.
     virtual void Solve() = 0;
 
+    //! Linear structure solve with just an interface load
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
+
     /// linear structure solve with just a interface load
     ///
     /// The very special solve done in steepest descent relaxation
     /// calculation (and matrix free Newton Krylov).
     ///
     /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-      Teuchos::RCP<Epetra_Vector> iforce
-    ) = 0;
+//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+//      Teuchos::RCP<Epetra_Vector> iforce
+//    ) = 0;
 
     //@}
 
@@ -954,6 +967,9 @@ namespace STR
 
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf(){ return Velaf(); }
+
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn(){ return Acc(); }
 
     //@}
 
@@ -991,14 +1007,15 @@ namespace STR
     // TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
     //----------------------------------------------------------------
 
-    /// communication object at the interface
-    virtual const STR::AUX::MapExtractor& Interface() const
-    {
-      return *interface_;
-    }
+//    /// communication object at the interface
+//    virtual const STR::AUX::MapExtractor& Interface() const
+//    {
+//      return *interface_;
+//    }
 
-    virtual void UseBlockMatrix()
-    { dserror("currently not available for explicit time integrator"); }
+    //! switch structure field to block matrix in fsi simulations
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+        const LINALG::MultiMapExtractor& rangemaps) = 0;
 
     /// @name Extract interface values
 

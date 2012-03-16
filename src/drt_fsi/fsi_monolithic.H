@@ -7,7 +7,7 @@
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
@@ -65,10 +65,7 @@ namespace UTILS
     \author u.kue
     \date 02/08
    */
-  class MonolithicBase : public ADAPTER::AlgorithmBase,
-                         public ADAPTER::StructureBaseAlgorithm,
-                         public ADAPTER::FluidBaseAlgorithm,
-                         public ALE::AleBaseAlgorithm
+  class MonolithicBase : public ADAPTER::AlgorithmBase
   {
   public:
 
@@ -91,24 +88,33 @@ namespace UTILS
     virtual void Update();
 
     /// calculate stresses, strains, energies
-    virtual void PrepareOutput()
-    {
-      StructureField().PrepareOutput();
-    }
+    virtual void PrepareOutput();
 
     /// write output
     virtual void Output();
 
-    /// access to fluid adapter
-    ADAPTER::Fluid& FluidAdapter(){return FluidField();};
-
     /// access to structure adapter
-    ADAPTER::Structure& StructureAdapter(){return StructureField();};
+    ADAPTER::FSIStructureWrapper& StructureField(){return *fsistructure_;}
+
+    /// access to fluid adapter
+    ADAPTER::Fluid& FluidField(){return *fsifluid_;}
+
+    /// access to ale field
+    ALE::Ale& AleField() { return *fsiale_; }
 
 
     //@}
 
   protected:
+
+    /// underlying structure of the FSI problem
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    fsistructure_;
+
+    /// underlying fluid of the FSI problem
+    Teuchos::RCP< ::ADAPTER::Fluid>    fsifluid_;
+
+    /// underlying ale of the FSI problem
+    Teuchos::RCP<ALE::Ale>    fsiale_;
 
     //! @name Transfer helpers
 

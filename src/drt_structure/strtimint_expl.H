@@ -144,6 +144,9 @@ namespace STR
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
 
+    //! return time integration factor
+    virtual double TimIntParam(){ dserror("TimeFac not yet implemented"); return -1.0; }
+
     //@}
 
     //! @name Fluid-structure-interaction specific methods
@@ -228,12 +231,18 @@ namespace STR
       dserror("just here for overloading reasons, should go as soon as possible");
     }
 
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-      Teuchos::RCP<Epetra_Vector> iforce
-    )
+//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+//      Teuchos::RCP<Epetra_Vector> iforce
+//    )
+//    {
+//      dserror("RelaxationSolve() is not needed for explicit time integrators");
+//      return Teuchos::null;
+//    }
+
+    /* Linear structure solve with just an interface load */
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
     {
-      dserror("RelaxationSolve() is not needed for explicit time integrators");
-      return Teuchos::null;
+      dserror("SolveRelaxationLinear() not implemented");
     }
 
     /// are there any algebraic constraints?
@@ -286,13 +295,11 @@ namespace STR
       dserror("PreparePartitionStep() is not needed for explicit time integrators");
       return;
     }
-    //@}
 
-  protected:
-
-    //! @name Interface stuff
-    //@{
-    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
+    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps)
+    {
+      dserror("UseBlockMatrix() not implemented");
+    }
     //@}
 
   };

@@ -530,6 +530,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_structure_timint_poroelast.cpp
   src/drt_adapter/adapter_structure_timint_adaptive.cpp
   src/drt_adapter/adapter_structure_wrapper.cpp
+  src/drt_adapter/FSIStructureWrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_thermo_timint_expl.cpp

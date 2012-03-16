@@ -5,7 +5,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid_xfem.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
@@ -53,8 +53,8 @@ namespace FSI
   };
 
   /// base class for monolithic FSI with XFEM
-  class MonolithicBaseXFEM : public ::ADAPTER::AlgorithmBase,
-                             public ::ADAPTER::StructureBaseAlgorithm
+  class MonolithicBaseXFEM : public ::ADAPTER::AlgorithmBase
+//                             public ::ADAPTER::StructureBaseAlgorithm
   {
   public:
 
@@ -66,6 +66,9 @@ namespace FSI
 
     /// read restart data
     void ReadRestart(int step);
+
+    /// structure field solver
+    ::ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
 
     /// fluid field solver
     ::ADAPTER::FluidXFEM& FluidField() { return fluidfield_; }
@@ -112,6 +115,9 @@ namespace FSI
 
     /// the very xfem fluid
     ::ADAPTER::FluidXFEM              fluidfield_;
+
+    /// underlying structure of the problem
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
     //!< a singular stream to stdout in parallel environment
     IO::Ostream0 cout0_;

@@ -29,7 +29,6 @@
 #endif
 
 
-
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
 // important here! In here control file entries are written. And these
@@ -39,11 +38,17 @@
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
                                     const Teuchos::ParameterList& timeparams)
-  : AlgorithmBase(comm,timeparams),
-    StructureBaseAlgorithm(timeparams),
-    FluidBaseAlgorithm(timeparams,true),
-    AleBaseAlgorithm(timeparams)
+  : AlgorithmBase(comm,timeparams)
 {
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
+  fsistructure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
+
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
+  fsifluid_ = fluid->FluidFieldrcp();
+
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(timeparams));
+  fsiale_ = ale->AleFieldrcp();
+
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
@@ -90,6 +95,14 @@ void FSI::MonolithicBase::Update()
   StructureField().Update();
   FluidField().    Update();
   AleField().      Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::PrepareOutput()
+{
+  StructureField().PrepareOutput();
 }
 
 

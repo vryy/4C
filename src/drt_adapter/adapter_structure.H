@@ -31,7 +31,7 @@ Maintainer: Ulrich Kuettler
 
 
 
-// forward delcarations:
+// forward declarations:
 namespace DRT
 {
   class Discretization;
@@ -159,7 +159,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// switch structure field to block matrix
-    virtual void UseBlockMatrix() = 0;
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+        const LINALG::MultiMapExtractor& rangemaps) = 0;
 
     /// recalculate structural matrices for tsi simulations
     virtual void TSIMatrix() = 0;
@@ -200,13 +201,16 @@ namespace ADAPTER {
     */
     //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
 
-    /// communication object at the interface
-    virtual const STR::AUX::MapExtractor& Interface() const = 0;
+//    /// communication object at the interface
+//    virtual const STR::AUX::MapExtractor& Interface() const = 0;
 
     //@}
 
     //! @name Time step helpers
     //@{
+
+    //! return time integration factor
+    virtual double TimIntParam() = 0;
 
     /// Get the current time
     virtual double GetTime() const = 0;
@@ -287,7 +291,10 @@ namespace ADAPTER {
     ///  calculation (and matrix free Newton Krylov).
     ///
     /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
+//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
+
+    //! Linear structure solve with just an interface load
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
@@ -342,6 +349,9 @@ namespace ADAPTER {
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf() = 0;
 
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn() = 0;
+
     //@}
 
     //! @name TSI specific methods
@@ -358,6 +368,9 @@ namespace ADAPTER {
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
     virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
+
+    //! Set forces due to interface with fluid, the force is expected external-force-like
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     //! specific method for iterative staggered partitioned TSI
 
@@ -417,13 +430,16 @@ namespace ADAPTER {
     /// const version of structural field solver
     const Structure& StructureField() const { return *structure_; }
 
+    /// Teuchos::rcp version of structural field solver
+    Teuchos::RCP<Structure> StructureFieldrcp() { return structure_; }
+
   private:
 
     /// setup structure algorithm
     void SetupStructure(const Teuchos::ParameterList& prbdyn);
 
     /// setup structure algorithm of STR::TimIntImpl type
-    void SetupTimIntImpl(const Teuchos::ParameterList& prbdyn);
+    void SetupTimInt(const Teuchos::ParameterList& prbdyn);
 
     /// create linear solver for contact/meshtying problems
     /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding structural elements

@@ -23,9 +23,11 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/adapter_structure.H"
+//#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
+
 
 namespace FSI
 {
@@ -51,9 +53,9 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public ADAPTER::AlgorithmBase,
-                    public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::FluidMovingBoundaryBaseAlgorithm
+  class Algorithm : public ADAPTER::AlgorithmBase
+//                    public ADAPTER::StructureBaseAlgorithm,
+//                    public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
 
@@ -62,6 +64,12 @@ namespace FSI
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
+
+    /// access to structure field
+    ADAPTER::FSIStructureWrapper& StructureField(){return *fsistructure_;}
+
+    /// access to fluid field
+    ADAPTER::FluidMovingBoundary& MBFluidField(){return *fluid_;}
 
     /// read restart data
     virtual void ReadRestart(int step);
@@ -103,6 +111,12 @@ namespace FSI
 
     ADAPTER::Coupling& StructureFluidCoupling();
     const ADAPTER::Coupling& StructureFluidCoupling() const;
+
+    /// underlying structure of the FSI problem
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    fsistructure_;
+
+    /// underlying fluid of the FSI problem
+    Teuchos::RCP< ::ADAPTER::FluidMovingBoundary> fluid_;
 
   private:
 

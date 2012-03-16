@@ -226,7 +226,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // check time-integration scheme (including parameter theta itself)
   // -> currently only one-step-theta scheme supported
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
-  INPAR::FLUID::TimeIntegrationScheme fluidtimealgo = fsi_->FluidAdapter().TimIntScheme();
+  INPAR::FLUID::TimeIntegrationScheme fluidtimealgo = fsi_->FluidField().TimIntScheme();
   INPAR::STR::DynamicType structtimealgo = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn,"DYNAMICTYP");
   if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
       fluidtimealgo  != INPAR::FLUID::timeint_one_step_theta or

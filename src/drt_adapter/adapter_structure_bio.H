@@ -26,13 +26,11 @@ namespace ADAPTER
   // forward declarations
 
   class Coupling;
+  class FSIStructureWrapper;
 
 
   class StructureBio
-	  : public AlgorithmBase//,
-        //public ADAPTER::StructureBaseAlgorithm,
-        //public ADAPTER::ScaTraBaseAlgorithm,
-        //public ALE::AleBaseAlgorithm
+	  : public AlgorithmBase
   {
   public:
 
@@ -79,8 +77,6 @@ namespace ADAPTER
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebasealgorithm;
-   // Structure& structure;
 
   private:
 
@@ -93,14 +89,12 @@ namespace ADAPTER
     /// coupling of structure and ale (whole field)
     Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 
-    RCP<DRT::Discretization> structuredis;
-
     ///  displacement at time t^{n+1} ???
     RCP<Epetra_Vector> dispnp_;
 
     Teuchos::RCP<Epetra_Vector> structdisp;
 
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure;
+    Teuchos::RCP<FSIStructureWrapper> structure_;
 
     Teuchos::RCP<ALE::AleBaseAlgorithm> ale;
   };

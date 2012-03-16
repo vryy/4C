@@ -20,10 +20,7 @@ Maintainer: Mirella Coroneo
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_structure/stru_aux.H"
-
-//#include "../drt_lib/drt_node.H"
-//#include "../drt_adapter/adapter_structure.H"
-//#include "../drt_ale/ale.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 
 
 extern struct _GENPROB     genprob;
@@ -39,15 +36,10 @@ ADAPTER::StructureBio::StructureBio(
     const std::string condname
     )
 :  AlgorithmBase(comm,prbdyn),
-   //StructureBaseAlgorithm(prbdyn),
-   //ScaTraBaseAlgorithm(prbdyn,isale,disnum),
-   //AleBaseAlgorithm(prbdyn),
    params_(prbdyn)
 {
 	// create ale elements for the structure
 	RefCountPtr<DRT::Discretization> aledis = null;
-
-	RCP<DRT::Discretization> structuredis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
 	Teuchos::RCP<DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy> > alecreator =
    	Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy>() );
@@ -59,26 +51,27 @@ ADAPTER::StructureBio::StructureBio(
    	  cout << "\n\nCreating ALE copy of the structure ....\n\n";
 	}
 
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn));
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn));
+  structure_ = Teuchos::rcp(new FSIStructureWrapper(structurebase->StructureFieldrcp()));
 
 	Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(prbdyn));
 
 
 	 // set up ale-structure couplings
         icoupsa_ = Teuchos::rcp(new Coupling());
-	 icoupsa_->SetupConditionCoupling(*structure->StructureField().Discretization(),
-									 structure->StructureField().Interface().FSICondMap(),
+	 icoupsa_->SetupConditionCoupling(*structure_->Discretization(),
+									 structure_->Interface().FSICondMap(),
 									 *ale->AleField().Discretization(),
 									 ale->AleField().Interface().FSICondMap(),
 									 condname,
 		                             genprob.ndim);
 
 	  // the structure-ale coupling always matches
-	  const Epetra_Map* structurenodemap = structure->StructureField().Discretization()->NodeRowMap();
+	  const Epetra_Map* structurenodemap = structure_->Discretization()->NodeRowMap();
 	  const Epetra_Map* alenodemap   = ale->AleField().Discretization()->NodeRowMap();
 
           coupsa_ = Teuchos::rcp(new Coupling());
-	  coupsa_->SetupCoupling(*structure->StructureField().Discretization(),
+	  coupsa_->SetupCoupling(*structure_->Discretization(),
 							*ale->AleField().Discretization(),
 							*structurenodemap,
 							*alenodemap,
@@ -120,7 +113,7 @@ void ADAPTER::StructureBio::StructAleSolve(
   ChangeConfig(structdisp);
 
   // computation of structure solution
-  structure->StructureField().Solve();
+  structure_->Solve();
 
   return;
 }
@@ -131,7 +124,7 @@ void ADAPTER::StructureBio::StructAleSolve(
 void ADAPTER::StructureBio::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
 	ALE::UTILS::MapExtractor interface_;
-	interface_.Setup(*structuredis);
+	interface_.Setup(*structure_->Discretization());
 	interface_.InsertFSICondVector(idisp,dispnp_);
 }
 
@@ -140,7 +133,7 @@ void ADAPTER::StructureBio::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBio::ChangeConfig(Teuchos::RCP<Epetra_Vector> structdisp)
 {
-	RCP<DRT::Discretization> structuredis = structure->StructureField().Discretization();
+	RCP<DRT::Discretization> structuredis = structure_->Discretization();
 	const int numnode = (structuredis->NodeRowMap())->NumMyElements();
 
 	const Epetra_Vector& gvector =*structdisp;

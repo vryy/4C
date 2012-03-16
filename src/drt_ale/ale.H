@@ -174,6 +174,7 @@ public:
   /// ale field solver
   Ale& AleField() { return *ale_; }
   const Ale& AleField() const { return *ale_; }
+  Teuchos::RCP<Ale> AleFieldrcp(){ return ale_; }
 
 private:
 

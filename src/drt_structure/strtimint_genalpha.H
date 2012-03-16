@@ -105,6 +105,9 @@ namespace STR
       return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
     }
 
+    //! return time integration factor
+    virtual double TimIntParam(){return alphaf_; }
+
     //! Return linear error coefficient of displacements
     double MethodLinErrCoeffDis()
     {

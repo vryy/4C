@@ -12,7 +12,7 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
                                                             const LINALG::MultiMapExtractor& maps,
-                                                            ADAPTER::Structure& structure,
+                                                            ADAPTER::FSIStructureWrapper& structure,
                                                             ADAPTER::Fluid& fluid,
                                                             ALE::Ale& ale,
                                                             int symmetric,
@@ -197,7 +197,7 @@ void FSI::BlockPreconditioningMatrix::LocalBlockRichardson(Teuchos::RCP<LINALG::
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
                                                     const LINALG::MultiMapExtractor& maps,
-                                                    ADAPTER::Structure& structure,
+                                                    ADAPTER::FSIStructureWrapper& structure,
                                                     ADAPTER::Fluid& fluid,
                                                     ALE::Ale& ale,
                                                     bool structuresplit,

@@ -32,10 +32,14 @@
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
-    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+//    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     cout0_(fluidfield_.Discretization()->Comm(), std::cout)
 {
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()));
+  structure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structurebase->StructureFieldrcp()));
+
   sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
   sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);

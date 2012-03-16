@@ -136,6 +136,7 @@ STR::TimInt::TimInt
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   tempn_(Teuchos::null),
+  fifc_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
   damp_(Teuchos::null),
@@ -208,6 +209,8 @@ STR::TimInt::TimInt
   veln_ = LINALG::CreateVector(*dofrowmap_, true);
   // accelerations A_{n+1} at t_{n+1}
   accn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create empty matrices
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
@@ -327,13 +330,6 @@ STR::TimInt::TimInt
       dofrowmap_ = discret_->DofRowMap();
     }
   }
-
-  // TODO: to be moved into new FSI adapter 13.03. 2012 Georg Hammerl
-  // set-up FSI interface
-  interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
-  interface_->Setup(*discret_, *discret_->DofRowMap());
-
-
 
   // stay with us
   return;
@@ -1871,6 +1867,18 @@ void STR::TimInt::ApplyVelAndPress(
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* Set forces due to interface with fluid,
+ * the force is expected external-force-like */
+void STR::TimInt::SetForceInterface
+(
+  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+)
+{
+  fifc_->Update(1.0, *iforce, 0.0);
+}
+
 /*----------------------------------------------------------------------*/
 /* apply the new material displacements                      mgit 05/11 */
 void STR::TimInt::ApplyDisMat(
@@ -2080,7 +2088,8 @@ Teuchos::RCP<Epetra_Vector> STR::TimInt::PredictInterfaceDispnp()
 }
 
 
-/// dof map of vector of unknowns
+/*----------------------------------------------------------------------*/
+/* dof map of vector of unknowns                                        */
 Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap()
 {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -2088,8 +2097,9 @@ Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap()
 }
 
 
-/// dof map of vector of unknowns
-// new method for multiple dofsets
+/*----------------------------------------------------------------------*/
+/* dof map of vector of unknowns                                        */
+/* new method for multiple dofsets                                      */
 Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap(unsigned nds)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);

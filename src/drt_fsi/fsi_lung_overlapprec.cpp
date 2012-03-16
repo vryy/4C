@@ -18,14 +18,15 @@ Maintainer: Lena Yoshihara
 
 #include "fsi_lung_overlapprec.H"
 #include "../drt_io/io_control.H"
-#include "../drt_adapter/adapter_structure.H"
+//#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
 FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                                                            ADAPTER::Structure& structure,
+                                                            ADAPTER::FSIStructureWrapper& structure,
                                                             ADAPTER::Fluid& fluid,
                                                             ALE::Ale& ale,
                                                             bool structuresplit,

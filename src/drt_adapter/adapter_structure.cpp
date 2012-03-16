@@ -86,7 +86,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
-    SetupTimIntImpl(prbdyn);  // <-- here is the show
+    SetupTimInt(prbdyn);  // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -98,7 +98,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList& prbdyn)
+void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prbdyn)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t

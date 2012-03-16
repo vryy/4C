@@ -6,7 +6,7 @@
 #include "fsi_debugwriter.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid.H"
 
 extern struct _GENPROB     genprob;
@@ -14,7 +14,7 @@ extern struct _GENPROB     genprob;
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
 FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                                                            ADAPTER::Structure& structure,
+                                                            ADAPTER::FSIStructureWrapper& structure,
                                                             ADAPTER::Fluid& fluid,
                                                             ALE::Ale& ale,
                                                             bool structuresplit,

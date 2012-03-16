@@ -81,6 +81,9 @@ namespace STR
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
+    //! return time integration factor
+    virtual double TimIntParam() = 0;
+
     //@}
 
     //! Do time integration of single step
@@ -422,17 +425,17 @@ namespace STR
     void NoxSolve();
 
     //! moved from the ADAPTER to here, to be checked carefully
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-      Teuchos::RCP<Epetra_Vector> iforce
-    )
-    {
-      Teuchos::RCP<Epetra_Vector> relax = interface_->InsertFSICondVector(iforce);
-      SetForceInterface(relax);
-      Teuchos::RCP<Epetra_Vector> idisi = SolveRelaxationLinear();
-
-      // we are just interested in the incremental interface displacements
-      return interface_->ExtractFSICondVector(idisi);
-    }
+//    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+//      Teuchos::RCP<Epetra_Vector> iforce
+//    )
+//    {
+//      Teuchos::RCP<Epetra_Vector> relax = interface_->InsertFSICondVector(iforce);
+//      SetForceInterface(relax);
+//      Teuchos::RCP<Epetra_Vector> idisi = SolveRelaxationLinear();
+//
+//      // we are just interested in the incremental interface displacements
+//      return interface_->ExtractFSICondVector(idisi);
+//    }
 
     //@}
 
@@ -594,7 +597,7 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(){UseBlockMatrix(Interface(),Interface()); return;}
+//    virtual void UseBlockMatrix(){UseBlockMatrix(Interface(),Interface()); return;}
 
     //! switch structure field to block matrix in fsi simulations
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
@@ -609,13 +612,13 @@ namespace STR
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(
-      Teuchos::RCP<Epetra_Vector> iforce
-    )
-    {
-      SetForceInterface(*interface_, iforce);
-      PreparePartitionStep();
-    }
+//    virtual void ApplyInterfaceForces(
+//      Teuchos::RCP<Epetra_Vector> iforce
+//    )
+//    {
+//      SetForceInterface(*interface_, iforce);
+//      PreparePartitionStep();
+//    }
 
 
     //! Set forces due to interface with fluid
@@ -625,19 +628,19 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
     );
 
-    //! Set forces due to interface with fluid,
-    //! the force is expected external-force-like
-    void SetForceInterface
-    (
-      Teuchos::RCP<Epetra_Vector> iforce  //!< the force on interface
-    );
+//    //! Set forces due to interface with fluid,
+//    //! the force is expected external-force-like
+//    virtual void SetForceInterface
+//    (
+//      Teuchos::RCP<Epetra_Vector> iforce  //!< the force on interface
+//    );
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
     virtual void EvaluateForceStiffResidualRelax() = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
         //! Prepare system for solving with Newton's method
     //!
@@ -806,11 +809,6 @@ namespace STR
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
-    //@}
-
-    //! @name Interface stuff
-    //@{
-    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
     //@}
 
     //! @name NOX variables

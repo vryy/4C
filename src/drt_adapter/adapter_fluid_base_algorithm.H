@@ -52,6 +52,8 @@ namespace ADAPTER {
     Fluid& FluidField() { return *fluid_; }
     /// return instance of fluid time integration class
     const Fluid& FluidField() const { return *fluid_; }
+    /// return instance of fluid time integration class
+    Teuchos::RCP<Fluid> FluidFieldrcp() { return fluid_; }
 
   private:
 

@@ -13,7 +13,7 @@
 
 namespace ADAPTER
 {
-  class Structure;
+  class FSIStructureWrapper;
   class Fluid;
 }
 
@@ -27,7 +27,7 @@ namespace FSI
 
     /// construction
     LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
-                          ::ADAPTER::Structure& structure,
+                          ::ADAPTER::FSIStructureWrapper& structure,
                           ::ADAPTER::Fluid& fluid,
                           ALE::Ale& ale,
                           int symmetric,
@@ -57,7 +57,7 @@ namespace FSI
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     const LINALG::MultiMapExtractor& maps_;
-    ::ADAPTER::Structure& structure_;
+    ::ADAPTER::FSIStructureWrapper& structure_;
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks_;
   };
 

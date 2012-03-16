@@ -200,6 +200,9 @@ namespace STR
       return MethodLinErrCoeffDis();
     }
 
+    //! return time integration factor
+    virtual double TimIntParam(){return theta_; }
+
     //! Linear error coefficent if 1st order accurate
     double MethodLinErrCoeff1()
     {

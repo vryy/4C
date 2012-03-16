@@ -235,11 +235,8 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
 
-  // interface forces to external forces
-  if (!is_null(interface_))
-  {
-    fextn_->Update(1.0, *fifc_, 1.0);
-  }
+  // additional external forces are added (e.g. interface forces)
+  fextn_->Update(1.0, *fifc_, 1.0);
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}

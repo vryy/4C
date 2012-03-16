@@ -25,14 +25,14 @@ Maintainer: Lena Wiechert
 #include <Epetra_Vector.h>
 
 #include "adapter_structure.H"
-#include "adapter_structure_wrapper.H"
+#include "FSIStructureWrapper.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_structure/stru_aux.H"
 
 
 namespace ADAPTER {
 
-class StructureLung : public StructureWrapper
+class StructureLung : public FSIStructureWrapper
 {
 public:
 

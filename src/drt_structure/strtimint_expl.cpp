@@ -48,8 +48,7 @@ STR::TimIntExpl::TimIntExpl
     solver,
     contactsolver,
     output
-  ),
-  fifc_(Teuchos::null)
+  )
 {
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
@@ -63,9 +62,6 @@ STR::TimIntExpl::TimIntExpl
     if (soltype != INPAR::CONTACT::solution_penalty)
       dserror("Explicit TIS can only handle penalty contact / meshtying");
   }
-
-  // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // cannot handle rotated DOFs
   if (locsysman_ != Teuchos::null)

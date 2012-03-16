@@ -204,8 +204,8 @@ void FS3I::PartFS3I::SetVelocityFields()
 
   std::vector<Teuchos::RCP<DRT::Discretization> > discret;
 
-  discret.push_back(fsi_->FluidAdapter().Discretization());
-  discret.push_back(fsi_->StructureAdapter().Discretization());
+  discret.push_back(fsi_->FluidField().Discretization());
+  discret.push_back(fsi_->StructureField().Discretization());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -226,13 +226,13 @@ void FS3I::PartFS3I::SetMeshDisp()
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  ADAPTER::Fluid& fluidadapter = fsi_->FluidAdapter();
+  ADAPTER::Fluid& fluidadapter = fsi_->FluidField();
   fluidscatra->ScaTraField().ApplyMeshMovement(fluidadapter.Dispnp(),
                                                fluidadapter.Discretization());
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
-  ADAPTER::Structure& structadapter = fsi_->StructureAdapter();
+  ADAPTER::Structure& structadapter = fsi_->StructureField();
   structscatra->ScaTraField().ApplyMeshMovement(structadapter.Dispnp(),
                                                 structadapter.Discretization());
 }
