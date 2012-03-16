@@ -222,11 +222,6 @@ private:
       LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
       );
 
-//    /// hyperelastic stress response plus elasticity tensor (Epetra-type interface)
-//    virtual void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-//                  Epetra_SerialDenseMatrix* cmat_e,
-//                  Epetra_SerialDenseVector* stress_e);
-
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
     /// setup patient-specific AAA stuff
     virtual void SetupAAA(Teuchos::ParameterList& params);
@@ -449,40 +444,6 @@ private:
 
     /// for Gasser AAA-ILT material
     double normdist_;
-
-    /// Kinematic and tensor quantities
-//    LINALG::Matrix<6,1> id2_;
-//    LINALG::Matrix<6,1> scg_;
-//    LINALG::Matrix<6,1> rcg_;
-//    LINALG::Matrix<6,1> icg_;
-//    LINALG::Matrix<6,6> id4_;
-//    LINALG::Matrix<6,6> id4sharp_;
-
-//    /// principal invariants
-//    LINALG::Matrix<3,1> prinv_;
-//
-//    /// modified invariants
-//    LINALG::Matrix<3,1> modinv_;
-//
-//    /// principal anisotropic invariants
-//    LINALG::Matrix<6,1> pranisoinv_;
-
-//    /// principal coefficients
-//    LINALG::Matrix<3,1> gamma_;
-//    LINALG::Matrix<5,1> delta_;
-//
-//    /// modified coefficients
-//    LINALG::Matrix<3,1> modgamma_;
-//    LINALG::Matrix<5,1> moddelta_;
-//
-//    /// principal anisotropic coefficients
-//    LINALG::Matrix<3,1> anisogamma_;
-//    LINALG::Matrix<5,1> anisodelta_;
-
-    /// variable to decide which formulations are used
-//    bool havecoeffprinc_ ;
-//    bool havecoeffmodi_ ;
-//    bool havecoeffpraniso_ ;
 
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;

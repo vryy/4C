@@ -20,13 +20,6 @@ Maintainer: Aline Brunon
 #include "material.H"
 #include "elasthyper.H"
 
-// included in matpar_parameter.H -> matpar_material.H
-//#include "../drt_lib/drt_parobjectfactory.H"
-// avoided by forward declaration
-//#include "../drt_matelast/elast_summand.H"
-// included in material.h -> inpar_material.H -> inpar_parameterlist.H
-//#include <Teuchos_ParameterList.hpp>
-
 using namespace Teuchos;
 
 // forward declaration due to avoid header definition
@@ -71,31 +64,23 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// provide access to material/summand by its ID
-//      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-//        const int id  ///< ID to look for in collection of summands
-//        ) const
-//        { return params_->MaterialById(id); }
-
-      /// length of material list
-//      const int nummat_;
-
-      /// the list of material IDs
-//      const std::vector<int>* matids_;
-
-      /// material mass density
-//      const double density_;
-
-      /// fiber angle
-//      double gamma_;
-
       // viscoelastic constant
-      const double relax_; // relaxation time
-      const double beta_; // ratio between the two branches of the gen. maxwell model
-
-      /// initalization modus;
-      /// default = -1, Initmodus derived from locsys = 0, Initmodus aligned to locsys = 1
-//      const int init_mode_;
+      // isotropic principal configuration
+      const double relax_isot_princ_; // relaxation time
+      const double beta_isot_princ_; // ratio between the two branches of the gen. maxwell model
+      // isotropic modified configuration
+      const double relax_isot_mod_vol_; // relaxation time
+      const double beta_isot_mod_vol_; // ratio between the two branches of the gen. maxwell model
+      const double relax_isot_mod_isoc_; // relaxation time
+      const double beta_isot_mod_isoc_; // ratio between the two branches of the gen. maxwell model
+      // anisotropic principal configuration
+      const double relax_anisot_princ_; // relaxation time
+      const double beta_anisot_princ_; // ratio between the two branches of the gen. maxwell model
+      // anisotropic modified configuration
+      const double relax_anisot_mod_vol_; // relaxation time
+      const double beta_anisot_mod_vol_; // ratio between the two branches of the gen. maxwell model
+      const double relax_anisot_mod_isoc_; // relaxation time
+      const double beta_anisot_mod_isoc_; // ratio between the two branches of the gen. maxwell model
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -208,23 +193,6 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoGenMax( *this ) ); }
 
-    /// number of materials
-//    int NumMat() const { return params_->nummat_; }
-
-    /// deliver material ID of index i'th potential summand in collection
-//    int MatID(
-//      const unsigned index  ///< index i
-//      ) const;
-
-    /// provide access to material by its ID
-//    Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
-
-    /// material mass density
-//    virtual double Density() const { return params_->density_; }
-
-//    /// a shear modulus equivalent
-//    double ShearMod() const;
-
     /// Check if history variables are already initialized
     virtual bool Initialized() const
     { return isinit_&&(histstressisoprinccurr_!=Teuchos::null);
@@ -246,16 +214,6 @@ private:
       Teuchos::ParameterList& params  ///< parameter list for communication
       );
 
-//    /// hyperelastic stress response plus elasticity tensor (Epetra-type interface)
-//    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-//                  Epetra_SerialDenseMatrix* cmat_e,
-//                  Epetra_SerialDenseVector* stress_e,
-//
-//                  //---
-//                  const int gp,   ///< current Gauss point
-//                  Teuchos::ParameterList& params  ///< parameter list for communication
-//                  //---
-//                  );
 
     virtual void Setup(const int numgp,DRT::INPUT::LineDefinition* linedef);
     /// setup patient-specific AAA stuff
@@ -267,18 +225,6 @@ private:
 
     // reset internal stress variables
     virtual void Reset();
-
-    /// return if anisotropic
-//    bool Anisotropic() const { return anisotropic_;}
-
-    /// return a1s
-//    LINALG::Matrix<3,1> Geta1() const {return a1_;}
-
-    /// return a2s
-//    LINALG::Matrix<3,1> Geta2() const {return a2_;}
-
-    /// Return quick accessible material parameter data
-//    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 
@@ -305,32 +251,27 @@ private:
 
     bool isinit_;  ///< indicates if #Initialized routine has been called
 
-//    /// Am I anisotropic?
-//    bool anisotropic_;
-//
-//    /// information about HU from medical image data?
-//    double HU_;
-//    int HUlumen_;
-//
-//    /// for Gasser AAA-ILT material
-//    double normdist_;
+    /// flags for the viscous contributions
+    bool vis_isoprinc_; ///< indicates that a viscous contribution is added to the isotropic not splitted contribution
+    bool vis_isomod_vol_; ///< indicates that a viscous contribution is added to the isotropic splitted contribution on the volumetric part
+    bool vis_isomod_iso_; ///< indicates that a viscous contribution is added to the isotropic splitted contribution on the isochoric part
+    bool vis_anisoprinc_; ///< indicates that a viscous contribution is added to the anisotropic not splitted contribution
+    bool vis_anisomod_vol_; ///< indicates that a viscous contribution is added to the anisotropic splitted contribution on the volumetric part
+    bool vis_anisomod_iso_;///< indicates that a viscous contribution is added to the anisotropic splitted contribution on the isochoric part
 
-//    /// structural tensors in voigt notation for anisotropy
-//    LINALG::Matrix<6,1>  A1_;
-//    LINALG::Matrix<6,1>  A2_;
-//    /// vectors of local coordinate system
-//    LINALG::Matrix<3,1>  a1_;
-//    LINALG::Matrix<3,1>  a2_;
-//    /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
-//    LINALG::Matrix<3,3>  A1A2_;
-//
-//    /// @name Voigt index arrays
-//    //@{
-//    static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
-//    static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
-//    static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
-//                                     ///< by [3*i+j] for any i,j=0,1,2
-//    //@}
+    /// viscous constants of the different formulations
+    double tau_isoprinc_;
+    double beta_isoprinc_;
+    double tau_isomod_vol_;
+    double beta_isomod_vol_;
+    double tau_isomod_iso_;
+    double beta_isomod_iso_;
+    double tau_anisoprinc_;
+    double beta_anisoprinc_;
+    double tau_anisomod_vol_;
+    double beta_anisomod_vol_;
+    double tau_anisomod_iso_ ;
+    double beta_anisomod_iso_;
 
     };
 
