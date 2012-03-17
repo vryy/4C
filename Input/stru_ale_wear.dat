@@ -56,6 +56,7 @@ NORMCOMBI_RESFDISP              Or
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 MAXITER                         50
+LINEAR_SOLVER                   1
 -------------------------------------------------------MESHTYING AND CONTACT
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
@@ -70,19 +71,20 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.2
 WEAR                            Archard
 WEARCOEFF                       0.0001
-
-
+LINEAR_SOLVER                   2
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   3
 -----------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------FLUID SOLVER
----------------------------------------------------------------STRUCT SOLVER
-SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym --------------------------------------------------------ALE SOLVER
---------------------------------------------------------------THERMAL SOLVER
---------------------------------------------------------------CONTACT SOLVER
+--------------------------------------------------------------------SOLVER 1
+NAME                            Struct_Solver
 SOLVER                          UMFPACK
-------------------------------------------------------------------ALE SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            ALE_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1 THEXPANS 0.0
