@@ -20,7 +20,9 @@ MAXTIME                         4
 NUMSTEP                         41
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-------------------------------------------------------------------ALE SOLVER
+LINEAR_SOLVER                   1
+--------------------------------------------------------------------SOLVER 1
+NAME                            ALE_Solver
 SOLVER                          Aztec_MSR
 PARTITION                       Cut_Elements
 -------------------------------------------------------------CONDITION NAMES
@@ -53,6 +55,8 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
+LINEAR_SOLVER                   2
+SIMPLER_SOLVER                  3
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -64,10 +68,12 @@ SUPG                            yes_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
--------------------------------------------------------FLUID PRESSURE SOLVER
+--------------------------------------------------------------------SOLVER 3
+NAME                            Fluid_Pressure_Solver
 SOLVER                          Aztec_MSR
 PARTITION                       Cut_Elements
-----------------------------------------------------------------FLUID SOLVER
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR
 PARTITION                       Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
@@ -105,10 +111,12 @@ PROBLEMTYP                      Fluid_Structure_Interaction_Lung
 RESTART                         0
 NUMFIELD                        3
 SHAPEFCT                        Polynomial
----------------------------------------------------------------STRUCT SOLVER
+--------------------------------------------------------------------SOLVER 4
+NAME                            Struct_Solver
 SOLVER                          Aztec_MSR
 PARTITION                       Cut_Elements
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   4
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
