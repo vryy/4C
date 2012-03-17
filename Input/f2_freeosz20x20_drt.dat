@@ -84,6 +84,7 @@ RELAX                           1.0
 ITEMAX                          1
 CONVTOL                         1.0E-6
 -----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   2
 TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -91,6 +92,10 @@ ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
+SOLVER                          UMFPACK
+PARTITION                       Cut_Elements
+--------------------------------------------------------------------SOLVER 2
+NAME                            ALE_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
