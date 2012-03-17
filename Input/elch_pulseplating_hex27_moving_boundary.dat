@@ -133,6 +133,7 @@ NUMSTEP                         21
 MAXTIME                         0.02
 ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
+LINEAR_SOLVER                   4
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -241,6 +242,9 @@ ML_DAMPFINE                     0.67                            // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
+--------------------------------------------------------------------SOLVER 4
+NAME                            ALE-Solver
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_matlist NUMMAT 3 MATIDS 3 4 5
