@@ -948,6 +948,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/xfluid.cpp
   src/drt_fluid/xfluidfluid.cpp
   src/drt_fluid/xfluidfluidresulttest.cpp
+  src/drt_fluid/fluid_timint.cpp
 )
 set(OBJS_DRT_SR_LIB
   src/drt_smoothrod/smoothrod.cpp
