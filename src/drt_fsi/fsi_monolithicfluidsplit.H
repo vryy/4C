@@ -5,13 +5,15 @@
 
 #include "fsi_monolithic.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "fsi_overlapprec.H"
 
 namespace FSI
 {
   // forward declarations
 
   class OverlappingBlockMatrix;
-
+  
+  
   namespace UTILS
   {
     class MatrixRowTransform;

@@ -638,12 +638,9 @@ FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
                        M,
                        noxSoln));
     break;
-  case INPAR::FSI::BGSAitken:
-  case INPAR::FSI::BGSVectorExtrapolation:
-  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
   case INPAR::FSI::FSIAMG:
   default:
-    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    dserror("unsupported linear block solver strategy: fsiamg");
   }
 
   return linSys;

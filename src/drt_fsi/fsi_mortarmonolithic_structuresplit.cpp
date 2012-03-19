@@ -9,7 +9,6 @@
 #include "fsi_debugwriter.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
@@ -834,19 +833,6 @@ FSI::MortarMonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
                                                            Teuchos::rcp(iPrec,false),
                                                            M,
                                                            noxSoln));
-    break;
-  case INPAR::FSI::BGSAitken:
-  case INPAR::FSI::BGSVectorExtrapolation:
-  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
-    linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
-                                                        *lsParams,
-                                                        Teuchos::rcp(iJac,false),
-                                                        J,
-                                                        noxSoln,
-                                                        StructureField().LinearSolver(),
-                                                        FluidField().LinearSolver(),
-                                                        AleField().LinearSolver(),
-                                                        linearsolverstrategy_));
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);

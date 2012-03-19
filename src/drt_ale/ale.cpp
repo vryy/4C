@@ -129,7 +129,6 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
         coupling == fsi_iter_constr_monolithicstructuresplit or
@@ -139,14 +138,6 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
         coupling == fsi_iter_mortar_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
-      // partitioned MFSI solvers require Dirichlet conditions
-      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-        DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-      if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
-          linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
-          linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
-        dirichletcond = true;
-      else
         dirichletcond = false;
     }
   }
@@ -157,7 +148,6 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
-         coupling == fsi_iter_monolithiclagrange or
          coupling == fsi_iter_monolithicstructuresplit or
          coupling == fsi_iter_constr_monolithicfluidsplit or
          coupling == fsi_iter_constr_monolithicstructuresplit or
@@ -166,15 +156,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
          coupling == fsi_iter_mortar_monolithicstructuresplit or
          coupling == fsi_iter_mortar_monolithicfluidsplit)
     {
-      // partitioned MFSI solvers require Dirichlet conditions
-      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-        DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-      if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
-          linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
-          linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
-        dirichletcond = true;
-      else
-        dirichletcond = false;
+      dirichletcond = false;
     }
   }
 

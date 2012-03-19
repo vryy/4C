@@ -11,12 +11,8 @@
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
 #include "fsi_dirichletneumannslideale.H"
-#include "fsi_robinneumann.H"
-#include "fsi_robin.H"
 #include "fsi_monolithicfluidsplit.H"
-#include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
-#include "fsi_partitionedmonolithic.H"
 #include "fsi_lungmonolithic.H"
 #include "fsi_lungmonolithic_structuresplit.H"
 #include "fsi_lungmonolithic_fluidsplit.H"
@@ -714,23 +710,13 @@ void fluid_fluid_fsi_drt()
       DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumannSlideale)
-    {
         fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(*comm));
-    }
     else if (method==INPAR::FSI::DirichletNeumann)
-    {
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(*comm));
-    }
-    else if (method==INPAR::FSI::RobinNeumann)
-    {
-      fsi = Teuchos::rcp(new FSI::RobinNeumann(*comm));
-    }
     else
-    {
-      fsi = Teuchos::rcp(new FSI::Robin(*comm));
-    }
+      dserror("unsupported partitioned FSI scheme");
 
-//     if (genprob.restart)
+    //     if (genprob.restart)
 //     {
 //       // read the restart information, set vectors and variables
 //       fsi->ReadRestart(genprob.restart);
@@ -786,16 +772,12 @@ void fluid_freesurf_drt()
   {
   case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
-  case fsi_iter_monolithiclagrange:
   {
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
-    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
-        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
-        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov or
-        linearsolverstrategy==INPAR::FSI::FSIAMG)
-      dserror("No partitioned linear solver strategy or FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
+    if (linearsolverstrategy==INPAR::FSI::FSIAMG)
+      dserror("No FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
 
     Teuchos::RCP<FSI::MonolithicMainFS> fsi;
 
@@ -894,7 +876,6 @@ void fsi_ale_drt()
   }
   case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
-  case fsi_iter_monolithiclagrange:
   case fsi_iter_lung_monolithicstructuresplit:
   case fsi_iter_lung_monolithicfluidsplit:
   case fsi_iter_constr_monolithicfluidsplit:
@@ -907,23 +888,13 @@ void fsi_ale_drt()
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
     // call constructor to initialise the base class
-    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
-        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
-        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
-    {
-      fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_monolithicfluidsplit)
+    if (coupling==fsi_iter_monolithicfluidsplit)
     {
       fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fsidyn));
     }
     else if (coupling==fsi_iter_monolithicstructuresplit)
     {
       fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fsidyn));
-    }
-    else if (coupling==fsi_iter_monolithiclagrange)
-    {
-      fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm,fsidyn));
     }
     else if (coupling==fsi_iter_lung_monolithicstructuresplit)
     {
@@ -982,22 +953,12 @@ void fsi_ale_drt()
       DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumannSlideale)
-    {
-        fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
-    }
+      fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
     else if (method==INPAR::FSI::DirichletNeumann)
-    {
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-    }
-    else if (method==INPAR::FSI::RobinNeumann)
-    {
-      fsi = Teuchos::rcp(new FSI::RobinNeumann(comm));
-    }
     else
-    {
-      fsi = Teuchos::rcp(new FSI::Robin(comm));
-    }
-
+      dserror("unsupported partitioned FSI scheme");
+    
     if (genprob.restart)
     {
       // read the restart information, set vectors and variables
@@ -1095,7 +1056,6 @@ void xfsi_drt()
   case fsi_pseudo_structureale:
   case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
-  case fsi_iter_monolithiclagrange:
     dserror("Unreasonable choice");
   default:
   {

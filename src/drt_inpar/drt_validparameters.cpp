@@ -4015,8 +4015,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Partitioned FSI solver with various coupling methods"
     );
 
-  Teuchos::Tuple<std::string,22> name;
-  Teuchos::Tuple<int,22> label;
+  Teuchos::Tuple<std::string,20> name;
+  Teuchos::Tuple<int,20> label;
 
   name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
   name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
@@ -4028,17 +4028,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[ 7] = "iter_stagg_MPE";                     label[ 7] = fsi_iter_stagg_MPE;
   name[ 8] = "iter_stagg_RRE";                     label[ 8] = fsi_iter_stagg_RRE;
   name[ 9] = "iter_monolithicfluidsplit";          label[ 9] = fsi_iter_monolithicfluidsplit;
-  name[10] = "iter_monolithiclagrange";            label[10] = fsi_iter_monolithiclagrange;
-  name[11] = "iter_monolithicstructuresplit";      label[11] = fsi_iter_monolithicstructuresplit;
-  name[12] = "iter_lung_monolithicstructuresplit"; label[12] = fsi_iter_lung_monolithicstructuresplit;
-  name[13] = "iter_lung_monolithicfluidsplit";     label[13] = fsi_iter_lung_monolithicfluidsplit;
-  name[14] = "iter_monolithicxfem";                label[14] = fsi_iter_monolithicxfem;
-  name[15] = "pseudo_structure";                   label[15] = fsi_pseudo_structureale;
-  name[16] = "iter_constr_monolithicfluidsplit";     label[16] = fsi_iter_constr_monolithicfluidsplit;
-  name[17] = "iter_constr_monolithicstructuresplit";     label[17] = fsi_iter_constr_monolithicstructuresplit;
-  name[18] = "iter_mortar_monolithicstructuresplit";     label[18] = fsi_iter_mortar_monolithicstructuresplit;
-  name[19] = "iter_mortar_monolithicfluidsplit";     label[19] = fsi_iter_mortar_monolithicfluidsplit;
-  name[20] = "iter_fluidfluid_monolithicstructuresplit";     label[20] = fsi_iter_fluidfluid_monolithicstructuresplit;
+  name[10] = "iter_monolithicstructuresplit";      label[10] = fsi_iter_monolithicstructuresplit;
+  name[11] = "iter_lung_monolithicstructuresplit"; label[11] = fsi_iter_lung_monolithicstructuresplit;
+  name[12] = "iter_lung_monolithicfluidsplit";     label[12] = fsi_iter_lung_monolithicfluidsplit;
+  name[13] = "iter_monolithicxfem";                label[13] = fsi_iter_monolithicxfem;
+  name[14] = "pseudo_structure";                   label[14] = fsi_pseudo_structureale;
+  name[15] = "iter_constr_monolithicfluidsplit";     label[15] = fsi_iter_constr_monolithicfluidsplit;
+  name[16] = "iter_constr_monolithicstructuresplit";     label[16] = fsi_iter_constr_monolithicstructuresplit;
+  name[17] = "iter_mortar_monolithicstructuresplit";     label[17] = fsi_iter_mortar_monolithicstructuresplit;
+  name[18] = "iter_mortar_monolithicfluidsplit";     label[18] = fsi_iter_mortar_monolithicfluidsplit;
+  name[19] = "iter_fluidfluid_monolithicstructuresplit";     label[19] = fsi_iter_fluidfluid_monolithicstructuresplit;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",
@@ -4051,22 +4050,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Coupling strategies for partitioned FSI solvers. Most of the time Dirichlet-Neumann is just right.",
                                tuple<std::string>(
                                  "DirichletNeumann",
-                                 "RobinNeumann",
-                                 "DirichletRobin",
-                                 "RobinRobin",
                                  "DirichletNeumannSlideALE"
                                  ),
                                tuple<int>(
                                  INPAR::FSI::DirichletNeumann,
-                                 INPAR::FSI::RobinNeumann,
-                                 INPAR::FSI::DirichletRobin,
-                                 INPAR::FSI::RobinRobin,
                                  INPAR::FSI::DirichletNeumannSlideale
                                  ),
                                &fsidyn);
-
-  DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);
-  DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
 
   setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
                                     "Output of unconverged interface values during partitioned FSI iteration.\n"
@@ -4149,23 +4139,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "block Gauss-Seidel methods as well.",
                                tuple<std::string>(
                                  "PreconditionedKrylov",
-                                 "FSIAMG",
-                                 "PartitionedAitken",
-                                 "PartitionedVectorExtrapolation",
-                                 "PartitionedJacobianFreeNewtonKrylov",
-                                 "BGSAitken",
-                                 "BGSVectorExtrapolation",
-                                 "BGSJacobianFreeNewtonKrylov"
+                                 "FSIAMG"
                                  ),
                                tuple<int>(
                                  INPAR::FSI::PreconditionedKrylov,
-                                 INPAR::FSI::FSIAMG,
-                                 INPAR::FSI::PartitionedAitken,
-                                 INPAR::FSI::PartitionedVectorExtrapolation,
-                                 INPAR::FSI::PartitionedJacobianFreeNewtonKrylov,
-                                 INPAR::FSI::BGSAitken,
-                                 INPAR::FSI::BGSVectorExtrapolation,
-                                 INPAR::FSI::BGSJacobianFreeNewtonKrylov
+                                 INPAR::FSI::FSIAMG
                                  ),
                                &fsidyn);
 

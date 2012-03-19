@@ -1246,8 +1246,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
     //const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
 
-    //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
-
     int               itnum = 0;
     bool              stopnonliniter = false;
 

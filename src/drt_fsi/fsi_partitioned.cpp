@@ -34,7 +34,6 @@ Maintainer: Ulrich Kuettler
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
-#include "fsi_nox_linearsystem_gcr.H"
 #include "fsi_nox_mpe.H"
 
 #include <string>
@@ -272,12 +271,6 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
     break;
   }
-  case fsi_iter_nox:
-    dserror("obsolete");
-    break;
-  case fsi_iter_monolithicfluidsplit:
-    dserror("No monolithic coupling with Dirichlet-Neumann partitioning. Panic.");
-    break;
   case fsi_basic_sequ_stagg:
   {
     // sequential coupling (no iteration!)
@@ -295,8 +288,6 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
     break;
   }
-  case fsi_sequ_stagg_pred:
-  case fsi_sequ_stagg_shift:
   default:
     dserror("coupling method type '%s' unsupported", fsidyn.get<string>("COUPALGO").c_str());
   }
@@ -602,9 +593,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
     }
     else
     {
-
-    linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
-
+      dserror("No preconditioner chosen!");
     }
   }
 

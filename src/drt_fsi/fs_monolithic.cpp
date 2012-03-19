@@ -7,7 +7,6 @@
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"

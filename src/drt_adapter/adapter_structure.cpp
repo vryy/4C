@@ -173,20 +173,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     const Teuchos::ParameterList& fsidyn
       = DRT::Problem::Instance()->FSIDynamicParams();
 
-    // Robin flags
-    INPAR::FSI::PartitionedCouplingMethod method
-      = DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-    xparams->set<bool>("structrobin",
-                       ( (method==INPAR::FSI::DirichletRobin)
-                         or (method==INPAR::FSI::RobinRobin) ));
-
-    // THIS SHOULD GO, OR SHOULDN'T IT?
-    xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
-
     // check if predictor fits to FSI algo
     int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if ( (coupling == fsi_iter_monolithicfluidsplit)
-         or (coupling == fsi_iter_monolithiclagrange)
          or (coupling == fsi_iter_monolithicstructuresplit)
          or (coupling == fsi_iter_lung_monolithicstructuresplit)
          or (coupling == fsi_iter_lung_monolithicfluidsplit)

@@ -6,7 +6,6 @@
 #include "fsi_matrixtransform.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_structure.H"
@@ -804,19 +803,6 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
                                                                Teuchos::rcp(iPrec,false),
                                                                M,
                                                                noxSoln));
-    break;
-  case INPAR::FSI::BGSAitken:
-  case INPAR::FSI::BGSVectorExtrapolation:
-  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
-    linSys = Teuchos::rcp(new NOX::FSI::LinearBGSSolver(printParams,
-                                                        *lsParams,
-                                                        Teuchos::rcp(iJac,false),
-                                                        J,
-                                                        noxSoln,
-                                                        StructureField().LinearSolver(),
-                                                        FluidField().LinearSolver(),
-                                                        AleField().LinearSolver(),
-                                                        linearsolverstrategy_));
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);

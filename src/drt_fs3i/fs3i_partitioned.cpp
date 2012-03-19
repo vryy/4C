@@ -20,9 +20,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_io/io_control.H"
 #include "../drt_fsi/fsi_monolithic.H"
-#include "../drt_fsi/fsi_partitionedmonolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
-#include "../drt_fsi/fsi_monolithiclagrange.H"
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_fsi/fsi_matrixtransform.H"
@@ -30,7 +28,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_fsi/fs_monolithic.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -183,21 +180,13 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
+    {
+      fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fs3icontrol));
+      break;
+    }
     case fsi_iter_monolithicstructuresplit:
     {
-      INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-
-      // call constructor to initialise base class
-      if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
-          linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
-          linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
-        fsi_ = Teuchos::rcp(new FSI::PartitionedMonolithic(comm,fs3icontrol));
-      else if (coupling==fsi_iter_monolithicfluidsplit)
-        fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fs3icontrol));
-      else if (coupling==fsi_iter_monolithicstructuresplit)
-        fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fs3icontrol));
-      else
-        dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
+      fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm,fs3icontrol));
       break;
     }
     default:

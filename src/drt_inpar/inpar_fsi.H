@@ -28,23 +28,14 @@ namespace INPAR
     enum PartitionedCouplingMethod
     {
       DirichletNeumannSlideale,
-      DirichletNeumann,
-      RobinNeumann,
-      DirichletRobin,
-      RobinRobin
+      DirichletNeumann
     };
 
     /// Linear solver algorithm for monolithic block system in monolithic FSI
     enum LinearBlockSolver
     {
       PreconditionedKrylov,
-      FSIAMG,
-      PartitionedAitken,
-      PartitionedVectorExtrapolation,
-      PartitionedJacobianFreeNewtonKrylov,
-      BGSAitken,
-      BGSVectorExtrapolation,
-      BGSJacobianFreeNewtonKrylov
+      FSIAMG
     };
 
     /// Projection methods for sliding fluid-structure interface

@@ -78,8 +78,6 @@ SAMPLING_START                  1
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 -----------------------------------------------------------------FSI DYNAMIC
-ALPHA_F                         -1
-ALPHA_S                         -1
 BASETOL                         0.001
 CONVTOL                         1e-06
 COUPALGO                        iter_stagg_AITKEN_rel_param

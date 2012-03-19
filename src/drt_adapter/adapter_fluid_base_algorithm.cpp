@@ -433,9 +433,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     INPAR::FSI::PartitionedCouplingMethod method =
       DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(prbdyn,"PARTITIONED");
-    fluidtimeparams->set<bool>("fluidrobin",
-                               method==INPAR::FSI::RobinNeumann or method==INPAR::FSI::RobinRobin);
-    fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
   }
 
   // --------------------------sublist containing turbulence parameters
@@ -548,7 +545,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
     if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicstructuresplit or
@@ -576,7 +572,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic Freesurface Algorithm
@@ -593,7 +588,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
@@ -656,7 +650,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
-          coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicfluidsplit or
@@ -670,11 +663,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       else
       {
-        const INPAR::FSI::PartitionedCouplingMethod method =
-          DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-        if (method==INPAR::FSI::RobinNeumann or
-            method==INPAR::FSI::RobinRobin)
-          dirichletcond = false;
+        dserror("unknown coupling algorithm!");
       }
     }
 

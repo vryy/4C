@@ -824,7 +824,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_monolithic.cpp
   src/drt_fsi/fsi_monolithic_nonox.cpp
   src/drt_fsi/fsi_monolithic_linearsystem.cpp
-  src/drt_fsi/fsi_monolithiclagrange.cpp
   src/drt_fsi/fsi_monolithicfluidsplit.cpp
   src/drt_fsi/fsi_monolithicstructuresplit.cpp
   src/drt_fsi/fsi_fluidfluidmonolithic_structuresplit_nonox.cpp
@@ -835,9 +834,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_nox_fixpoint.cpp
   src/drt_fsi/fsi_nox_group.cpp
   src/drt_fsi/fsi_nox_jacobian.cpp
-  src/drt_fsi/fsi_nox_linearsystem_bgs.cpp
-  src/drt_fsi/fsi_nox_linearsystem_gcr.cpp
-  src/drt_fsi/fsi_nox_linearsystem_partitioned.cpp
   src/drt_fsi/fsi_nox_mpe.cpp
   src/drt_fsi/fsi_nox_newton.cpp
   src/drt_fsi/fsi_nox_sd.cpp
@@ -849,9 +845,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_overlapprec_fsiamg_smoothers.cpp
   src/drt_fsi/fsi_overlapprec_fsiamg_vcycles.cpp
   src/drt_fsi/fsi_partitioned.cpp
-  src/drt_fsi/fsi_partitionedmonolithic.cpp
-  src/drt_fsi/fsi_robin.cpp
-  src/drt_fsi/fsi_robinneumann.cpp
   src/drt_fsi/fsi_statustest.cpp
   src/drt_fsi/fsi_structureale.cpp
   src/drt_fsi/fsi_utils.cpp

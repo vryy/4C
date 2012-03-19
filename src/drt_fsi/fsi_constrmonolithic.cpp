@@ -3,7 +3,6 @@
 #include "fsi_constrmonolithic.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -334,12 +333,9 @@ FSI::ConstrMonolithic::CreateLinearSystem(ParameterList& nlParams,
                                                                M,
                                                                noxSoln));
     break;
-  case INPAR::FSI::BGSAitken:
-  case INPAR::FSI::BGSVectorExtrapolation:
-  case INPAR::FSI::BGSJacobianFreeNewtonKrylov:
   case INPAR::FSI::FSIAMG:
   default:
-    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    dserror("Chosen FSI does not work with FSIAMG due to additional constraints!");
   }
 
   return linSys;

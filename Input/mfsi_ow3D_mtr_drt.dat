@@ -88,8 +88,6 @@ SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 -----------------------------------------------------------------FSI DYNAMIC
 ADAPTIVEDIST                    0
-ALPHA_F                         -1
-ALPHA_S                         -1
 BASETOL                         1.0e-8
 CONVTOL                         1e-09
 COUPALGO                        iter_mortar_monolithicstructuresplit
