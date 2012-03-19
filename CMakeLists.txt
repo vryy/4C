@@ -517,7 +517,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid_lung.cpp
   src/drt_adapter/adapter_fluid_moving_boundary.cpp
   src/drt_adapter/adapter_fluid_poro.cpp
-  src/drt_adapter/adapter_fluid_projection.cpp
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_fluid_xfem.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
@@ -926,7 +925,6 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
   src/drt_fluid/fluid_genalpha_integration.cpp
-  src/drt_fluid/fluid_projectionmethod.cpp
   src/drt_fluid/fluid_meshtying.cpp
   src/drt_fluid/fluid_discret_extractor.cpp
   src/drt_fluid/fluid_utils.cpp

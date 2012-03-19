@@ -2074,12 +2074,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
                                     "Solving strategy for fluid",
                                     tuple<std::string>("Implicit",
-                                                       "Pressure Correction",
-                                                       "Pressure Correction SemiImplicit",
                                                        "FluidXFluid"),
                                     tuple<int>(fluid_solver_implicit,
-                                               fluid_solver_pressurecorrection,
-                                               fluid_solver_pressurecorrection_semiimplicit,
                                                fluid_solver_fluid_xfluid),
                                     &fdyn);
 

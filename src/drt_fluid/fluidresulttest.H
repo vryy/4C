@@ -30,7 +30,6 @@ namespace FLD
 {
 // forward declarations
 class FluidImplicitTimeInt;
-class FluidProjectionMethod;
 class FluidGenAlphaIntegration;
 
 
@@ -47,11 +46,6 @@ public:
     \brief not documented yet
     */
     FluidResultTest(FluidImplicitTimeInt& fluid);
-
-    /*!
-    \brief not documented yet
-    */
-    FluidResultTest(FluidProjectionMethod& fluid);
 
     /*!
     \brief not documented yet

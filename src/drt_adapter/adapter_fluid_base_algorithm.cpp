@@ -29,7 +29,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 #include "adapter_fluid_impl.H"
-#include "adapter_fluid_projection.H"
 #include "adapter_xfluid2_impl.H"
 #include "adapter_fluid_genalpha.H"
 #include "adapter_fluid_combust.H"

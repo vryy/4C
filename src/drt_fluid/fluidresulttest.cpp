@@ -21,7 +21,6 @@ http://www.lnm.mw.tum.de/Members/kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "fluidimplicitintegration.H"
-#include "fluid_projectionmethod.H"
 #include "fluid_genalpha_integration.H"
 
 #ifdef PARALLEL
@@ -35,14 +34,6 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
     fluiddis_= fluid.discret_;
     mysol_   = fluid.velnp_ ;
     mytraction_ = fluid.CalcStresses();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FLD::FluidResultTest::FluidResultTest(FluidProjectionMethod& fluid)
-{
-    fluiddis_= fluid.discret_;
-    mysol_   = fluid.velnp_ ;
 }
 
 /*----------------------------------------------------------------------*/
