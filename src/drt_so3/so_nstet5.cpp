@@ -74,6 +74,60 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+  
+  // do nullspace for element degrees of freedom
+  const Epetra_Map* rowmap = dis.DofRowMap(0);
+  const int lrows = rowmap->NumMyElements();
+  double* mode[6];
+  for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
+  
+  for (int i=0; i<dis.NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = dis.lRowElement(i);
+    DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
+    if (!nstet) continue;
+    const double* x = nstet->MidX();
+    vector<int> dofs = dis.Dof(0,ele);
+#ifdef DEBUG
+    if (dofs.size() != 3) dserror("Wrong number of dofs");
+#endif
+    for (unsigned j=0; j<dofs.size(); ++j)
+    {
+      const int dof = dofs[j];
+      const int lid = rowmap->LID(dof);
+      if (lid<0) dserror("Cannot find element dof in dofrowmap");
+      switch (j)
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+          mode[4][lid] = x[2] - x0[2];
+          mode[5][lid] = -x[1] + x0[1];
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = -x[2] + x0[2];
+          mode[4][lid] = 0.0;
+          mode[5][lid] = x[0] - x0[0];
+        break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+          mode[3][lid] = x[1] - x0[1];
+          mode[4][lid] = -x[0] + x0[0];
+          mode[5][lid] = 0.0;
+        break;
+        default:
+          dserror("Only dofs 0 - 5 supported");
+        break;
+        } // switch (j)
+    }
+  }
 }
 
 //-----------------------------------------------------------------------
