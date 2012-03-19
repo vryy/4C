@@ -74,6 +74,7 @@ Maintainer: Ursula Rasthofer
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_scatra/scatra_ele_action.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -338,7 +339,7 @@ private:
   void GetSchmidtNumber()
   {
     ParameterList paramselescatra;
-    paramselescatra.set("action","get_material_parameters");
+    paramselescatra.set<int>("action",SCATRA::get_material_parameters);
     paramselescatra.set<int>("scatratype",INPAR::SCATRA::scatratype_turbpassivesca);
     scatradiscret_->Evaluate(paramselescatra,null,null,null,null,null);
     scnum_ = paramselescatra.get<double>("scnum");
