@@ -236,8 +236,8 @@ namespace FLD
 
     XFluidFluid(Teuchos::RCP<DRT::Discretization>  actdis,
                 Teuchos::RCP<DRT::Discretization>  embdis,
-                LINALG::Solver &                   solver,
-                const ParameterList &              params,
+                Teuchos::RCP<LINALG::Solver>       solver,
+                Teuchos::RCP<Teuchos::ParameterList>  params,
                 bool                               alefluid=false,
                 bool                               monolithicfluidfluidfsi=false);
 
@@ -279,7 +279,7 @@ namespace FLD
     /// (multiple) corrector
 //    void MultiCorrector();
 
-    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
+    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
@@ -398,8 +398,8 @@ namespace FLD
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
         {dserror("not implemented"); return Teuchos::null;}
 
-//    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-    void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+//    int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
+    void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
     double ResidualScaling() const
     {
@@ -571,14 +571,14 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
 
-    LINALG::Solver&               solver_;
+    Teuchos::RCP<LINALG::Solver>           solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
 //     //! integrated basis vector (pressure component)
 //     Teuchos::RCP<Epetra_Vector>   w_;
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
-    Teuchos::ParameterList        params_;
+    Teuchos::RCP<Teuchos::ParameterList>   params_;
 
 
     //! @name XFEM coupling specific parameters

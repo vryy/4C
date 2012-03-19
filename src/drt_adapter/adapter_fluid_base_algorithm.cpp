@@ -688,7 +688,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
       bool monolithicfluidfluidfsi = false;
-      fluid_ = Teuchos::rcp(new FLD::XFluidFluid(embfluiddis,actdis,*solver,*fluidtimeparams,isale,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FLD::XFluidFluid(embfluiddis,actdis,solver,fluidtimeparams,isale,monolithicfluidfluidfsi));
     }
     else if (genprob.probtyp == prb_fluid_fluid_fsi)
     {
@@ -701,7 +701,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       else
         monolithicfluidfluidfsi = false;
 
-      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,bgfluiddis,*solver,*fluidtimeparams,isale,monolithicfluidfluidfsi));
+      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,bgfluiddis,solver,fluidtimeparams,isale,monolithicfluidfluidfsi));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid, actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     else if (genprob.probtyp == prb_fsi or
