@@ -88,7 +88,7 @@ namespace ELASTIC
   /// The formulation is based on [1] p. 247,248 and 263
   ///
   /// The implemented material is the coupled form of the compressible NeoHook
-  /// model. The Parameters read in are the Young's modulus and the Possion's
+  /// model. The Parameters read in are the Young's modulus and the Poisson's
   /// ratio.
   ///
   ///

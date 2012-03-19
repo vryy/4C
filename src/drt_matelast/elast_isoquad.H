@@ -72,7 +72,7 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Isochoric quadratic material
   ///
-  /// This is the isochoric part of a third order hyperelastic, isotropic
+  /// This is the isochoric part of a second order hyperelastic, isotropic
   /// material depending on the modified trace of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by

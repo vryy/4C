@@ -89,7 +89,7 @@ namespace ELASTIC
   ///
   /// For references see Holzapfel p. 245,
   ///
-  /// Parameters are \f$ c_1, c_2\f$ and \f$c_3\f$ as penalty factor to effectuate incompressibility
+  /// Parameters are \f$ c_1, c_2\f$ and \f$c_3\f$ as penalty factor to enforce incompressibility
   /// (shear modulus \f$\mu = (c_1 + c_2) / 2)\f$
   ///
   ///

@@ -73,7 +73,7 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric Mooney-Rivline material according to [1]
+  /// Isochoric Mooney-Rivlin material according to [1]
   ///
   ///
   /// Strain energy function is given by
