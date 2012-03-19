@@ -35,6 +35,7 @@ using namespace std;
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5::InitElement()
 {
+  //printf("DRT::ELEMENTS::NStet5::InitElement %d\n",Id());
   LINALG::Matrix<4,3> xrefe;
   LINALG::Matrix<4,3+1> J;
   {
@@ -53,7 +54,6 @@ void DRT::ELEMENTS::NStet5::InitElement()
       midX_[2] += x[2];
     }
     for (int i=0; i<3; ++i) midX_[i] /= 4;
-    
     V_ = J.Determinant()/6.0;
     if (V_==0.0)     dserror("Element volume is zero");
     else if (V_<0.0) dserror("Element volume is negative");
@@ -194,7 +194,8 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
     {
-      //printf("IN calc_struct_nlnstiffmass\n");
+      //printf("calc_struct_nlnstiffmass\n");
+      //printf("calc_struct_nlnstifflmass\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -211,6 +212,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
+      //printf("calc_struct_nlnstiff\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -227,6 +229,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     // internal force vector only
     case calc_struct_internalforce:
     {
+      //printf("calc_struct_internalforce\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -247,6 +250,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
+        //printf("calc_struct_stress\n");
         //------------------------------- compute element stress from stabilization
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);

@@ -40,6 +40,7 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& dis)
 {
+  //printf("DRT::ELEMENTS::NStet5Type::ElementDeformationGradient\n");
   // current displacement
   RCP<const Epetra_Vector> disp = dis.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -96,10 +97,12 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
   string& action = p.get<string>("action","none");
-  if (action != "calc_struct_nlnstiffmass" &&
-      action != "calc_struct_nlnstiff"     &&
-      action != "calc_struct_stress") return;
-
+  if (action != "calc_struct_nlnstiffmass"  &&
+      action != "calc_struct_nlnstifflmass" &&
+      action != "calc_struct_nlnstiff"      &&
+      action != "calc_struct_stress"        &&
+      action != "calc_struct_internalforce") return;
+      
   // These get filled in here, so remove old stuff
   if (action == "calc_struct_stress")
   {
@@ -177,16 +180,21 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     vector<vector<vector<int> > >&   lmlm      = lmlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
-    if (action != "calc_struct_stress")
+    if (action == "calc_struct_nlnstiffmass" || 
+        action == "calc_struct_nlnstifflmass" ||
+        action == "calc_struct_nlnstiff" ||
+        action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch); 
       force.LightSize(ndofperpatch);
+      LINALG::SerialDenseMatrix* stiffptr = &stiff;
+      if (action == "calc_struct_internalforce") stiffptr = NULL;
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
-      NodalIntegration(&stiff,&force,adjnode,adjele,adjsubele,lm,lmlm,*disp,dis,
+      NodalIntegration(stiffptr,&force,adjnode,adjele,adjsubele,lm,lmlm,*disp,dis,
                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
-    else
+    else if (action == "calc_struct_stress")
     {
       INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(p,"iostress",INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p,"iostrain",INPAR::STR::strain_none);
@@ -203,6 +211,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
         (*(*nstrain_)(i))[lid] = nodalstrain[i];
       }
     }
+    else dserror("Unknown action");
 
 
     //---------------------- do assembly of stiffness and internal force
@@ -479,10 +488,10 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   //Vnode = TVnode.val();
   
   // copy fad F to double F
-  LINALG::Matrix<3,3> FnodeL(false);
+  LINALG::Matrix<3,3> Fnode(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
-      FnodeL(j,k) = TFnode(j,k).val();
+      Fnode(j,k) = TFnode(j,k).val();
 
   //-----------------------------------------------------------------------
   // build B operator
@@ -573,9 +582,9 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   if (iostrain != INPAR::STR::strain_none)
   {
 #ifndef PUSO_NSTET5
-    StrainOutput(iostrain,*nodalstrain,FnodeL,FnodeL.Determinant(),1.0,1.0-ALPHA_NSTET5);
+    StrainOutput(iostrain,*nodalstrain,Fnode,Fnode.Determinant(),1.0,1.0-ALPHA_NSTET5);
 #else
-    StrainOutput(iostrain,*nodalstrain,FnodeL,glstrain,1.0-ALPHA_NSTET5);
+    StrainOutput(iostrain,*nodalstrain,Fnode,glstrain,1.0-ALPHA_NSTET5);
 #endif
   }
 
@@ -583,8 +592,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   // build a second B-operator from the averaged strains that are based on
   // the averaged F
   Epetra_SerialDenseMatrix bopbar(6,ndofinpatch);
-  for (int i=0; i<ndofinpatch; ++i)
-    for (int k=0; k<6; ++k)
+  for (int k=0; k<6; ++k)
+    for (int i=0; i<ndofinpatch; ++i)
       bopbar(k,i) = Ebar[k].fastAccessDx(i);
 
   //----------------------------------------- averaged material and stresses
@@ -597,7 +606,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   {
     double density; // just a dummy density
     RCP<MAT::Material> mat = adjele[0]->Material();
-    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0);
+    SelectMaterial(mat,stress,cmat,density,glstrain,Fnode,0);
   }
   else
   {
@@ -616,7 +625,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
         V += (actele->SubV(adjsubele[actele->Id()][j])/3.0);
       // material of the element
       RCP<MAT::Material> mat = actele->Material();
-      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
+      SelectMaterial(mat,stressele,cmatele,density,glstrain,Fnode,0);
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
     } // for (int ele=0; ele<neleinpatch; ++ele)
@@ -655,7 +664,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   // stress output
   if (iostress != INPAR::STR::stress_none)
   {
-    StressOutput(iostress,*nodalstress,stress,FnodeL,FnodeL.Determinant());
+    StressOutput(iostress,*nodalstress,stress,Fnode,Fnode.Determinant());
   }
 
   //----------------------------------------------------- internal forces
@@ -664,21 +673,20 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
     force->Multiply('T','N',Vnode,bop,stress_epetra,0.0);
   }
-
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     Epetra_SerialDenseMatrix cmat_epetra(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
-    stiff->Multiply('T','N',Vnode,bop,cb,0.0);// bop
+    stiff->Multiply('T','N',Vnode,bop,cb,0.0);
   }
 
   //----------------------------------------------------- geom. stiffness
-  // do not use sacado for second derivative of E as it is too expensive!
-  // As long as the 2nd deriv is as easy as this, do it by hand
   if (stiff)
   {
+    if (!force) dserror("Cannot compute stiffness matrix without computing internal force");
+
     // loop elements in patch
     for (int ele=0; ele<neleinpatch; ++ele)
     {
@@ -796,7 +804,6 @@ void DRT::ELEMENTS::NStet5Type::DevStressTangent(
   // inverse of C
   LINALG::Matrix<3,3> Cinv;
   const double detC = Cinv.Invert(C);
-
   // J = det(F) = sqrt(detC)
   const double J = sqrt(detC);
 
