@@ -374,11 +374,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             int sid = bc->first; // all boundary cells within the current iterator belong to the same side
             DRT::Element * side = cutdiscret.gElement( sid );
 
-            // get the corresponding embedded element for nitsche
-            // embedded and two-sided
-            int emb_eid = xfluid_.boundary_emb_gid_map_.find(sid)->second;
-            DRT::Element * emb_ele = alediscret.gElement( emb_eid );
-
             vector<int> patchlm;
             vector<int> patchlmowner;
             vector<int> patchlmstride;
@@ -386,7 +381,13 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
               side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
             else if(xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
+            {
+              // get the corresponding embedded element for nitsche
+              // embedded and two-sided
+              int emb_eid = xfluid_.boundary_emb_gid_map_.find(sid)->second;
+              DRT::Element * emb_ele = alediscret.gElement( emb_eid );
               emb_ele->LocationVector(alediscret, patchlm, patchlmowner, patchlmstride);
+            }
 
             patchelementslm.reserve( patchelementslm.size() + patchlm.size());
             patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
