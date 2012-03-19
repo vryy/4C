@@ -636,9 +636,6 @@ namespace FLD
     bool    startalgo_;   ///< flag for starting algorithm
     //@}
 
-    /// time algorithm flag
-    INPAR::FLUID::TimeIntegrationScheme timealgo_;
-
     /// constant density extracted from element material for incompressible flow
     /// (set to 1.0 for low-Mach-number flow)
     double density_;

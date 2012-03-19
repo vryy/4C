@@ -1642,7 +1642,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
   if (boundarydis_->NumGlobalNodes() == 0)
   {
-    std::cout << "Empty XFEM-boundary discretization detected!\n";
+    dserror("Empty XFEM-boundary discretization detected!");
   }
 
   // create node and element distribution with elements and nodes ghosted on all processors

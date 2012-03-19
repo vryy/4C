@@ -249,7 +249,7 @@ namespace FLD
     /// Do time integration (time loop)
     void TimeLoop();
 
-    void Integrate() { TimeLoop(); }
+    void Integrate() { IntegrateFluidFluid(); }
 
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
@@ -615,9 +615,6 @@ namespace FLD
     int     numstasteps_; ///< number of steps for starting algorithm
     bool    startalgo_;   ///< flag for starting algorithm
     //@}
-
-    /// time algorithm flag
-    INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
     /// constant density extracted from element material for incompressible flow
     /// (set to 1.0 for low-Mach-number flow)

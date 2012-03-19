@@ -549,9 +549,6 @@ protected:
   double dtp_;    ///< time step size (used for BDF2 time integration scheme)
   //@}
 
-  /// time algorithm flag
-  INPAR::FLUID::TimeIntegrationScheme timealgo_;
-
   //! @name time-integration-scheme factors
   double theta_;
   double alphaM_;

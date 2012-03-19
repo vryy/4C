@@ -647,8 +647,6 @@ protected:
   bool    startalgo_;   ///< flag for starting algorithm
   //@}
 
-  /// time algorithm flag
-  INPAR::FLUID::TimeIntegrationScheme timealgo_;
   // genalpha integration scheme (afgenalpha or npgenalpha)
   bool is_genalpha_;
 

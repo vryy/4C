@@ -88,7 +88,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   startsteps_(params_->get<int> ("number of start steps")),
   dta_     (params_->get<double> ("time step size")),
   dtp_     (params_->get<double> ("time step size")),
-  timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
   theta_   (params_->get<double>("theta")),
   alphaM_(params_->get<double>("alpha_M")),
   alphaF_(params_->get<double>("alpha_F")),
@@ -119,6 +118,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
   if (timealgo_ == INPAR::FLUID::timeint_stationary)
   {
     dta_ = 1.0;
