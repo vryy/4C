@@ -274,7 +274,7 @@ namespace FLD
     /// Constructor
     XFluid( Teuchos::RCP<DRT::Discretization>      actdis,        ///< background fluid discretization
             Teuchos::RCP<DRT::Discretization>      soliddis,      ///< solid discretization
-            LINALG::Solver &                       solver,        ///< fluid solver
+            Teuchos::RCP<LINALG::Solver>           solver,        ///< fluid solver
             const Teuchos::ParameterList &         params,        ///< xfluid params
             Teuchos::RCP<IO::DiscretizationWriter> output,        ///< discretization writer for paraview output
             bool                                   alefluid=false ///< flag for alefluid
@@ -319,7 +319,7 @@ namespace FLD
     /// (multiple) corrector
 //    void MultiCorrector();
 
-    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
+    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
     void EvaluateErrorComparedToAnalyticalSol();
@@ -554,7 +554,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      discret_;      //! fluid discretization
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
-    LINALG::Solver&                        solver_;       //! fluid solver
+    Teuchos::RCP<LINALG::Solver>           solver_;       //! fluid solver
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
 //     //! integrated basis vector (pressure component)

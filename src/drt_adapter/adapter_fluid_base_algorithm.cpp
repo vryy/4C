@@ -677,7 +677,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
-      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, *solver, *fluidtimeparams, output));
+      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, *fluidtimeparams, output));
     }
     else if (genprob.probtyp == prb_combust)
     {

@@ -1188,7 +1188,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluid::XFluidState::BlockSyste
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> soliddis,
-                     LINALG::Solver & solver,
+                     Teuchos::RCP<LINALG::Solver>      solver,
                      const Teuchos::ParameterList & params,
                      Teuchos::RCP<IO::DiscretizationWriter> output,
                      bool alefluid )
@@ -1300,7 +1300,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   else                                      omtheta_ = 0.0;
 
 
-//  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+//  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // -------------------------------------------------------------------
   // create boundary dis
@@ -2253,7 +2253,7 @@ void FLD::XFluid::NonlinearSolve()
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
 #if 0
@@ -2284,8 +2284,8 @@ void FLD::XFluid::NonlinearSolve()
             // ScaleLinearSystem();  // still experimental (gjb 04/10)
 #endif
 
-      solver_.Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
-      solver_.ResetTolerance();
+      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
+      solver_->ResetTolerance();
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
