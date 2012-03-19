@@ -58,11 +58,11 @@ namespace ADAPTER
     { return fluid_->ConvectiveVel(); }
     virtual Teuchos::RCP<const Epetra_Vector> FsVel()
     { dserror("not implemented"); return Teuchos::null; };
-    virtual const Teuchos::RCP<Epetra_Vector> StdVeln()
+    virtual Teuchos::RCP<Epetra_Vector> StdVeln()
     { dserror("not implemented"); return Teuchos::null; };
-    virtual const Teuchos::RCP<Epetra_Vector> StdVelnp()
+    virtual Teuchos::RCP<Epetra_Vector> StdVelnp()
     { dserror("not implemented"); return Teuchos::null; };
-    virtual const Teuchos::RCP<Epetra_Vector> StdVelaf()
+    virtual Teuchos::RCP<Epetra_Vector> StdVelaf()
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return fluid_->DofRowMap(); }
@@ -108,8 +108,10 @@ namespace ADAPTER
     { return fluid_->TurbulenceStatisticManager();}
     virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
     { dserror("not implemented!");return; };
-    virtual void TimeLoop()
-    { return fluid_->TimeLoop(); }
+//    virtual void TimeLoop()
+//    { return fluid_->TimeLoop(); }
+    virtual void Integrate()
+    { return fluid_->Integrate(); }
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
     virtual void PrepareTimeandStep()
@@ -146,7 +148,7 @@ namespace ADAPTER
     { return fluid_->Step(); }
     virtual double Dt() const
     { return fluid_->Dt(); }
-    virtual void LiftDrag()
+    virtual void LiftDrag() const
     { return fluid_->LiftDrag(); }
     virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
@@ -184,7 +186,7 @@ namespace ADAPTER
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
-    virtual void ImportFlameFront(Teuchos::RCP<const COMBUST::FlameFront> importflamefront,bool UpdateDofSet)
+    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
@@ -194,8 +196,6 @@ namespace ADAPTER
     };
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
-    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,Teuchos::RCP<Epetra_Vector> iforce)
-    { return fluid_->ApplyInterfaceRobinValue(ivel,iforce); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
     { return fluid_->ExtractInterfaceFluidVelocity(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
@@ -204,8 +204,6 @@ namespace ADAPTER
     { return fluid_->ExtractFreeSurfaceVeln(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
     { return fluid_->ExtractInterfaceForces(); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin()
-    { return fluid_->ExtractInterfaceForcesRobin(); }
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
     { return fluid_->ApplyMeshDisplacement(fluiddisp); }
     virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)

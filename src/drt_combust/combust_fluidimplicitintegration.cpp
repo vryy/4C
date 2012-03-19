@@ -1092,7 +1092,7 @@ void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(
 /*------------------------------------------------------------------------------------------------*
  | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVeln(void)
+Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVeln(void)
 {
   // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
   // cannot handle XFEM dofs at enriched nodes
@@ -1119,7 +1119,7 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVeln(void
 /*------------------------------------------------------------------------------------------------*
  | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelnp(void)
+Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelnp(void)
 {
   // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
   // cannot handle XFEM dofs at enriched nodes
@@ -1145,7 +1145,7 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelnp(voi
 /*------------------------------------------------------------------------------------------------*
  | get convection velocity vector for transfer to scalar transport field           wichmann 02/12 |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelaf(void)
+Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelaf(void)
 {
   if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
     dserror("Velaf is only available for genalpha time int scheme.");
@@ -1175,7 +1175,7 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::StdVelaf(voi
  | get history vector for transfer to scalar transport field                      rasthofer 01/10 |
  | needed for subgrid-velocity                                                                    |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
+Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
 {
   // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
   // cannot handle XFEM dofs at enriched nodes
@@ -1245,6 +1245,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // are necessary before sampling to obtain a converged result
     // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
     //const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
+
+    //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
     int               itnum = 0;
     bool              stopnonliniter = false;
@@ -2743,8 +2745,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         //only perform stress calculation when output is needed
         if (writestresses_)
         {
-          Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-          output_->WriteVector("traction",traction);
+//          Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+//          output_->WriteVector("traction",traction);
         }
       }
       else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
@@ -5740,29 +5742,6 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem()
 
 }
 
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::CalcStresses()
-{
-  string condstring("FluidStressCalc");
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
-
-  // compute traction values at specified nodes; otherwise do not touch the zero values
-  for (int i=0;i<integratedshapefunc->MyLength();i++)
-  {
-    if ((*integratedshapefunc)[i] != 0.0)
-    {
-      // overwrite integratedshapefunc values with the calculated traction coefficients,
-      // which are reconstructed out of the nodal forces (trueresidual_) using the
-      // same shape functions on the boundary as for velocity and pressure.
-      (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
-    }
-  }
-
-  return integratedshapefunc;
-
-} // CombustFluidImplicitTimeInt::CalcStresses()
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -5777,95 +5756,15 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
   return;
 } // CombustFluidImplicitTimeInt::LiftDrag
 
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
-{
-
-//  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowrates(*discret_, state_.velnp_);
-//
-//  if (not volumeflowratepersurface.empty())
-//  {
-//    cout << "Number of flow rate conditions... " << volumeflowratepersurface.size() << endl;
-//  }
-//
-//  double overall_flowrate = 0.0;
-//  std::map<int,double>::const_iterator entry;
-//  for(entry = volumeflowratepersurface.begin(); entry != volumeflowratepersurface.end(); ++entry )
-//  {
-//    const int condID = entry->first;
-//    const double value = entry->second;
-//    overall_flowrate += value;
-//    if (myrank_ == 0)
-//    {
-//      cout << " - flowrate for label " << condID << ":  " <<  scientific << value << endl;
-//    }
-//  }
-//  if (not volumeflowratepersurface.empty())
-//  {
-//    cout << " - flowrate over all boundaries: " << overall_flowrate << endl;
-//  }
-
-  return;
-}
+///*------------------------------------------------------------------------------------------------*
+// | henke 08/08 |
+// *------------------------------------------------------------------------------------------------*/
+//Teuchos::RCP<DRT::ResultTest> FLD::CombustFluidImplicitTimeInt::CreateFieldTest()
+//{
+//  return Teuchos::rcp(new FLD::CombustFluidResultTest(fluid_));
+//}
 
 
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
-{
-  ParameterList eleparams;
-  // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  // call loop over elements
-  discret_->ClearState();
-  discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
-  discret_->ClearState();
-
-  return integratedshapefunc;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
- *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::UseBlockMatrix(
-    Teuchos::RCP<std::set<int> > condelements,
-    const LINALG::MultiMapExtractor& domainmaps,
-    const LINALG::MultiMapExtractor& rangemaps,
-    bool splitmatrix
-    )
-{
-  dserror("not tested");
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
-
-  if (splitmatrix)
-  {
-    // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    sysmat_ = mat;
-  }
-
-  // if we never build the matrix nothing will be done
-  if (params_.get<bool>("shape derivatives"))
-  {
-    // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    //shapederivatives_ = mat;
-  }
-}
 
 /*------------------------------------------------------------------------------------------------*
 | returns matching string for each time integration scheme                              gjb 08/08 |

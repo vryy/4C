@@ -2440,15 +2440,6 @@ void FLD::XFluidFluid::LinearSolve()
 
 }
 
-void FLD::XFluidFluid::Predictor()
-{
-
-}
-
-void FLD::XFluidFluid::MultiCorrector()
-{
-
-}
 
 // -------------------------------------------------------------------
 // evaluate method for monolithic fluid-fluid-fsi
@@ -3520,6 +3511,8 @@ void FLD::XFluidFluid::LiftDrag() const
 
   return;
 }
+
+
 //----------------------------------------------------------------------------
 //
 //----------------------------------------------------------------------------

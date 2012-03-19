@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_fluid/xfluid.H"
 
 #include "adapter_fluid_xfem.H"
 #include "adapter_coupling.H"
@@ -54,6 +55,16 @@ const FLD::UTILS::MapExtractor& ADAPTER::FluidXFEM::Interface() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFEM::PrepareTimeStep()
 {
+  FLD::XFluid* ffield = dynamic_cast<FLD::XFluid*>(&(FluidField()));
+  // update velocity n-1
+  ffield->ivelnm_->Update(1.0,*ffield->iveln_,0.0);
+
+  // update velocity n
+  ffield->iveln_->Update(1.0,*ffield->ivelnp_,0.0);
+
+  // update displacement n
+  ffield->idispn_->Update(1.0,*ffield->idispnp_,0.0);
+
   FluidField().PrepareTimeStep();
 }
 
@@ -140,7 +151,7 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidXFEM::GetDBCMapExtractor(
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFEM::Output()
 {
-  FluidField().Output();
+  FluidField().StatisticsAndOutput();
 
   FluidField().LiftDrag();
 }
@@ -192,16 +203,8 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   //FluidField().ApplyMeshDisplacement(fluiddisp);
 
 
+  FluidField().PrepareSolve();
   FluidField().NonlinearSolve();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                             Teuchos::RCP<Epetra_Vector> ivel,
-                                             Teuchos::RCP<Epetra_Vector> iforce)
-{
-  dserror("you should not use robin-BC with XFEM, yet");
 }
 
 
@@ -237,15 +240,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epe
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForcesRobin()
-{
-  dserror("no Robin around here");
-  return Teuchos::null;
 }
 
 

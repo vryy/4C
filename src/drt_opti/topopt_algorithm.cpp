@@ -181,7 +181,8 @@ void TOPOPT::Algorithm::PrepareFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoFluidField()
 {
-  FluidField().TimeLoop();
+  //FluidField().TimeLoop();
+  FluidField().Integrate();
   return;
 }
 

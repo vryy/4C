@@ -22,15 +22,10 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include <ctime>
 #include <cstdlib>
@@ -43,6 +38,11 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_utils_mapextractor.H" // should go away
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_fluid/fluid_timint.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -128,7 +128,7 @@ namespace UTILS
 
 \author gammi (gamnitzer@lnm.mw.tum.de)
 */
-class FluidImplicitTimeInt
+class FluidImplicitTimeInt : public TimInt
 {
   friend class TurbulenceStatisticManager;
   friend class FluidResultTest;
@@ -199,6 +199,8 @@ public:
   */
   void MultiCorrector();
 
+  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
+
   /*!
   \brief preparatives for solver
 
@@ -261,6 +263,9 @@ public:
          timestep.
   */
   void TimeUpdate();
+
+  /// Implement ADAPTER::Fluid
+  void Update() { TimeUpdate(); }
 
   /*!
   \brief lift'n'drag forces, statistics time sample and
@@ -367,24 +372,28 @@ public:
   //! @name access methods for composite algorithms
   /// monolithic FSI needs to access the linear fluid problem
 
-  Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
-  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
-  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
-  Teuchos::RCP<Epetra_Vector> Velnm() { return velnm_; }
-  Teuchos::RCP<Epetra_Vector> Accnp() { return accnp_; }
-  Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
-  Teuchos::RCP<Epetra_Vector> Accam() { return accam_; }
-  Teuchos::RCP<Epetra_Vector> Scaaf() { return scaaf_; }
-  Teuchos::RCP<Epetra_Vector> Scaam() { return scaam_; }
-  Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
-  Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
-  Teuchos::RCP<Epetra_Vector> FsVel() { return fsvelaf_; }
+  Teuchos::RCP<const Epetra_Vector> InitialGuess() { return incvel_; }
+  Teuchos::RCP<      Epetra_Vector> Residual() { return residual_; }
+  Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Velaf() { return velaf_; }
+  Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Velnm() { return velnm_; }
+  Teuchos::RCP<const Epetra_Vector> Accnp() { return accnp_; }
+  Teuchos::RCP<const Epetra_Vector> Accn() { return accn_; }
+  Teuchos::RCP<const Epetra_Vector> Accam() { return accam_; }
+  Teuchos::RCP<const Epetra_Vector> Scaaf() { return scaaf_; }
+  Teuchos::RCP<const Epetra_Vector> Scaam() { return scaam_; }
+  Teuchos::RCP<const Epetra_Vector> Hist() { return hist_; }
+  Teuchos::RCP<const Epetra_Vector> GridVel() { return gridv_; }
+  Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() { return gridv_; }
+  Teuchos::RCP<const Epetra_Vector> FsVel() { return fsvelaf_; }
 
   /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+  Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
+  /// implement ADAPTER::Fluid, passthrough DirichMaps()
+  Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return DirichMaps(); }
 
   /// Expand the Dirichlet DOF set
   ///
@@ -408,8 +417,9 @@ public:
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-  Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
-  Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
+  Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
+  Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() { return dispnp_; }
+  Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
@@ -419,6 +429,8 @@ public:
   LINALG::MapExtractor& VelPresSplitter(){ return velpressplitter_; };
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
+//  void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+//  double TimeScaling() const;
 
   double ResidualScaling() const
   { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
@@ -426,14 +438,17 @@ public:
     else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
          return alphaM_/(gamma_*dta_);
     else return 1.0/(theta_*dta_);}
-  double Dt() const { return dta_; }
+//  double Dt() const { return dta_; }
 
-  double Time() const { return time_; }
-  int Step() const { return step_; }
+//  double Time() const { return time_; }
+//  int Step() const { return step_; }
 
-  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+//  virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) ;
+
+//  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+  void PrepareTimeandStep() { UpdateStepandTime(); }
   void UpdateStepandTime(){ step_ += 1;
   time_ += dta_;}
 
@@ -442,7 +457,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+//  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /*!
   \brief set fields for low-Mach-number flow within outer iteration loop
@@ -547,6 +562,14 @@ public:
       Teuchos::RCP<Epetra_Vector> vecm ///< vector at time level of equilibrium
       );
   //@}
+
+
+//-------------------------------------------------------------------
+// from the adapter
+//-------------------------------------------------------------------
+
+  Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+
 
 protected:
 
@@ -821,6 +844,9 @@ protected:
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
+  /// ALE dof map
+  LINALG::MapExtractor                   meshmap_;
+
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
 
@@ -940,4 +966,3 @@ private:
 
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H
-#endif  // #ifdef CCADISCRET

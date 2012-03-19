@@ -14,6 +14,10 @@
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_fluid/fluid_timint.H"
+
+#include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 namespace DRT
 {
@@ -56,7 +60,7 @@ namespace FLD
   class XFluidFluid;
 
 
-  class XFluidFluid
+  class XFluidFluid : public TimInt
   {
     friend class XFluidFluidResultTest;
     friend class XFluidFluidState;
@@ -244,6 +248,8 @@ namespace FLD
     /// Do time integration (time loop)
     void TimeLoop();
 
+    void Integrate() { TimeLoop(); }
+
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
@@ -253,17 +259,26 @@ namespace FLD
     /// new cut and xfem-Timeintegration happens here
     void PrepareNonlinearSolve();
 
+    /// Implement ADAPTER::Fluid
+    void PrepareSolve() { PrepareNonlinearSolve(); }
+
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();
 
     /// solve linearised fluid
     void LinearSolve();
 
+//    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
+
+//    virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
+
     /// predictor
-    void Predictor();
+//    void Predictor();
 
     /// (multiple) corrector
-    void MultiCorrector();
+//    void MultiCorrector();
+
+    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
@@ -274,6 +289,9 @@ namespace FLD
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
     void TimeUpdate();
+
+    /// Implement ADAPTER::Fluid
+    void Update() { TimeUpdate(); }
 
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
@@ -315,17 +333,19 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
     Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
-    Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { return alevelnp_; }
-    Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
-    Teuchos::RCP<Epetra_Vector> GridVel() {return gridv_; }
-    Teuchos::RCP<Epetra_Vector> Stepinc() {return state_->stepinc_;}
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp() { return alevelnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
+    Teuchos::RCP<const Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
+    Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
+    Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() {return gridv_; }
+    Teuchos::RCP<const Epetra_Vector> Stepinc() {return state_->stepinc_;}
 
-    Teuchos::RCP<Epetra_Vector> Dispnp() {return aledispnp_; }
-    Teuchos::RCP<Epetra_Vector> Dispn() { return aledispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() {return aledispnp_; }
+    Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() {return aledispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn() { return aledispn_; }
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
 
@@ -340,6 +360,7 @@ namespace FLD
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_; }
     Teuchos::RCP<const Epetra_Map>  FluidFluidDirichMaps() { return state_->fluidfluiddbcmaps_; } // whole fluid
+    Teuchos::RCP<const Epetra_Map>  FluidDirichMaps()      { return FluidFluidDirichMaps(); } // implement ADAPTER::Fluid
 
     /// Expand the Dirichlet DOF set
     ///
@@ -362,16 +383,19 @@ namespace FLD
       \brief return type of time integration scheme
 
     */
-    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+//    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
-    double Dt() const { return dta_; }
+//    double Dt() const { return dta_; }
 
-    double Time() const { return time_; }
-    int Step() const { return step_; }
+//    double Time() const { return time_; }
+//    int Step() const { return step_; }
 
-    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+        {dserror("not implemented"); return Teuchos::null;}
+
+//    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
     void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
     double ResidualScaling() const
@@ -480,6 +504,9 @@ namespace FLD
 
     // output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
+      /// ALE dof map
+      LINALG::MapExtractor                   meshmap_;
 
   private:
 

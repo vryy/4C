@@ -48,12 +48,15 @@ Maintainer:  Benedikt Schott
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3_impl/fluid3_interface.H"
 
-
+#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 #include "time_integration_scheme.H"
 
 #include "xfluid_defines.H"
 
+
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                            schott 03/12 |
@@ -2014,6 +2017,23 @@ void FLD::XFluid::PrepareNonlinearSolve()
 
 
 /*----------------------------------------------------------------------*
+ |  Implement ADAPTER::Fluid
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::PrepareSolve()
+{
+  // compute or set interface velocities just for XFluidMovingBoundary
+  // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
+  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(params_.sublist("XFEM"), "XFLUID_BOUNDARY");
+  if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
+  {
+    ComputeInterfaceVelocities();
+  }
+
+  PrepareNonlinearSolve();
+}
+
+
+/*----------------------------------------------------------------------*
  |  solve the nonlinear problem                            schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::NonlinearSolve()
@@ -2305,10 +2325,10 @@ void FLD::XFluid::Predictor()
  cout << "IMPLEMENT explicit predictor!!!" << endl;
 }
 
-void FLD::XFluid::MultiCorrector()
-{
-
-}
+//void FLD::XFluid::MultiCorrector()
+//{
+//
+//}
 
 void FLD::XFluid::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1

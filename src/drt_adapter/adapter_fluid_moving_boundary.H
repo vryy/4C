@@ -88,10 +88,6 @@ namespace ADAPTER
       dserror("Not implemented in base class");
     }
 
-    virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-				     Teuchos::RCP<Epetra_Vector> ivel,
-				     Teuchos::RCP<Epetra_Vector> iforce)=0;
-
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                         double dt) = 0;
@@ -105,9 +101,6 @@ namespace ADAPTER
 
     /// After the fluid solve we need the forces at the FSI interface.
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
-
-    /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() = 0;
 
     //@}
 

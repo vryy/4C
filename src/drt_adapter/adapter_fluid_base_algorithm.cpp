@@ -17,23 +17,28 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_base_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/xfluid.H"
+#include "../drt_fluid/xfluidfluid.H"
+#include "../drt_combust/combust_fluidimplicitintegration.H"
+#include "../linalg/linalg_solver.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "adapter_fluid_impl.H"
-#include "adapter_xfluid2_impl.H"
-#include "adapter_fluid_genalpha.H"
-#include "adapter_fluid_combust.H"
+#include "adapter_fluid_fluid_fsi.H"
 #include "adapter_fluid_lung.H"
-#include "adapter_fluid_fluid_impl.H"
 #include "adapter_fluid_poro.H"
 
 /*----------------------------------------------------------------------*
@@ -77,7 +82,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
+  Teuchos::RCP<DRT::Discretization> actdis = null;
   if (genprob.probtyp == prb_fluid_fluid_fsi)
     actdis = DRT::Problem::Instance()->Dis(genprob.numff,1);
   else
@@ -427,13 +432,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
   fluidtimeparams->sublist("SCATRA STABILIZATION")=scatradyn.sublist("STABILIZATION");
 
-  // ------------------------------------------- Robin scheme parameters
-  if (genprob.probtyp == prb_fsi)
-  {
-    INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(prbdyn,"PARTITIONED");
-  }
-
   // --------------------------sublist containing turbulence parameters
   {
     fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
@@ -677,18 +675,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
-      fluid_ = rcp( new ADAPTER::XFluid2Impl( actdis, soliddis, solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, *solver, *fluidtimeparams, output));
     }
     else if (genprob.probtyp == prb_combust)
     {
-      fluid_ = rcp(new ADAPTER::FluidCombust(actdis, solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp(new FLD::CombustFluidImplicitTimeInt(actdis, *solver, *fluidtimeparams, *output));
     }
     else if (genprob.probtyp == prb_fluid_fluid_ale
              or genprob.probtyp == prb_fluid_fluid)
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
       bool monolithicfluidfluidfsi = false;
-      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FLD::XFluidFluid(embfluiddis,actdis,*solver,*fluidtimeparams,isale,monolithicfluidfluidfsi));
     }
     else if (genprob.probtyp == prb_fluid_fluid_fsi)
     {
@@ -701,13 +699,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       else
         monolithicfluidfluidfsi = false;
 
-      fluid_ = rcp(new ADAPTER::FluidFluidImpl(actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,bgfluiddis,*solver,*fluidtimeparams,isale,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid, actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     else
     {
       // what the hell is this???
-      RCP<Fluid> tmpfluid;
-      tmpfluid = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, *solver, *fluidtimeparams, *output, isale));
 
       if (genprob.probtyp == prb_fsi_lung)
         fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
@@ -716,25 +714,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       else
         fluid_ = tmpfluid;  // < default?? TODO improve me!
     }
-  }
-  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
-  {
-    fluidtimeparams->set<int>("time int algo",INPAR::FLUID::timeint_gen_alpha);
-
-    // -------------------------------------------------------------------
-    // no additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor);
-    // the only parameter from the list required here is the number of
-    // velocity degrees of freedom
-    //------------------------------------------------------------------
-    RCP<Fluid> tmpfluid;
-    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
-    if (genprob.probtyp == prb_fsi_lung)
-      fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
-    else
-      fluid_ = tmpfluid;
   }
   else
   {
@@ -994,24 +973,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = rcp(new ADAPTER::FluidImpl(discret, solver, fluidtimeparams, output, false, dirichletcond));
+    fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(discret, *solver, *fluidtimeparams, *output, false));
 
-  }
-  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
-  {
-    fluidtimeparams->set<int>("time int algo",timeint);
-
-    // -------------------------------------------------------------------
-    // no additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor);
-    // the only parameter from the list required here is the number of
-    // velocity degrees of freedom
-    //------------------------------------------------------------------
-    RCP<Fluid> tmpfluid; // what the hell is this???
-    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(discret, solver, fluidtimeparams, output, false , pbcmapmastertoslave));
-    fluid_ = tmpfluid;
   }
   else
   {

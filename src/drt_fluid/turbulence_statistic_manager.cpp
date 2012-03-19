@@ -657,7 +657,7 @@ namespace FLD
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      statistics_general_mean_ = rcp(new TurbulenceStatisticsGeneralMean(
+      statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
           discret_,
           timeint.standarddofset_,
           homdir,

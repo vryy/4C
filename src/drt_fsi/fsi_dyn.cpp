@@ -163,7 +163,8 @@ void fluid_xfem2_drt()
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
     // run the simulation (timeloop() calls the xfluid-"integrate()" routine)
-    fluidalgo->FluidField().TimeLoop();
+    //fluidalgo->FluidField().TimeLoop();
+    fluidalgo->FluidField().Integrate();
 
     // perform result tests if required
     problem->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());

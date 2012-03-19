@@ -169,13 +169,13 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> FsVel() = 0;
 
     /// velocities (and pressures) at t(n) w/out enriched dofs
-    virtual const Teuchos::RCP<Epetra_Vector> StdVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> StdVeln() = 0;
 
     /// velocities (and pressures) at t(n+1) w/out enriched dofs
-    virtual const Teuchos::RCP<Epetra_Vector> StdVelnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> StdVelnp() = 0;
 
     /// velocities (and pressures) at t(n+alpha_F) w/out enriched dofs
-    virtual const Teuchos::RCP<Epetra_Vector> StdVelaf() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> StdVelaf() = 0;
 
     //@}
 
@@ -246,7 +246,8 @@ namespace ADAPTER {
     //! @name Time step helpers
 
     /// run a complete simulation (for fluid stand-alone simulations)
-    virtual void TimeLoop() = 0;
+//    virtual void TimeLoop() = 0;
+    virtual void Integrate() = 0;
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
@@ -313,7 +314,7 @@ namespace ADAPTER {
     virtual double Dt() const = 0;
 
     /// calculation (and output) of lift&drag
-    virtual void LiftDrag() = 0;
+    virtual void LiftDrag() const = 0;
 
     /// this procs element evaluate time
     virtual const double EvalTime() const = 0;
@@ -399,10 +400,7 @@ namespace ADAPTER {
 
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to know the interface geometry
-    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& importflamefront,bool UpdateDofSet)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
+    virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) = 0;
 
     /// set initial flow field for combustion problem
     virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
@@ -422,10 +420,6 @@ namespace ADAPTER {
 
     /// at the interface the velocity is prescribed as a Dirichlet condition
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) = 0;
-
-    /// apply a generalized robin force to the interface
-    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,
-                                          Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     //@}
 
@@ -447,9 +441,6 @@ namespace ADAPTER {
     virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() = 0;
 
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
-
-    /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() = 0;
 
     //@}
 

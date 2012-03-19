@@ -1072,6 +1072,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
+  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+
   int  itnum = 0;
   int  itemax = 0;
   bool stopnonliniter = false;
@@ -1463,6 +1465,50 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         // finalize the complete matrix
         sysmat_->Complete();
 
+        // If we have a robin condition we need to modify both the rhs and the
+        // matrix diagonal corresponding to the dofs at the robin interface.
+        if (fluidrobin)
+        {
+          // Add structral part of Robin force
+          // (combination of structral force and velocity)
+          residual_->Update(theta_*dta_,*robinrhs_,1.0);
+
+          double alphaf = params_.get<double>("alpharobinf",-1.0);
+          double scale = alphaf*theta_*dta_;
+
+          // Add fluid part of Robin force
+          // (scaled fluid velocity)
+          surfacesplitter_->AddFSICondVector(-1.*scale,
+                                             surfacesplitter_->ExtractFSICondVector(velnp_),
+                                             residual_);
+
+          // Note: It is the right thing to test the robin enhanced residual_
+          // for convergence, since the velocity terms are to vanish and the
+          // structural forces are to cancel with the internal forces.
+          //
+          // Note: We do not add any external (robin) loads to
+          // trueresidual_. This way we get the unbalanced forces at the
+          // interface, which can be applied to the structure later on.
+
+          const Epetra_Map& robinmap = *surfacesplitter_->FSICondMap();
+          int numrdofs = robinmap.NumMyElements();
+          int* rdofs = robinmap.MyGlobalElements();
+          for (int lid=0; lid<numrdofs; ++lid)
+          {
+            int gid = rdofs[lid];
+            // We assemble with a global id into a filled matrix here. This is
+            // fine as we know we do not add new entries but just add to the
+            // diagonal.
+            //
+            // Note: The matrix lives in the full fluid map whereas
+            // we loop the robin interface map here, so our local ids are very
+            // different from the matrix local ids.
+            //
+            // Note: This assemble might fail if we have a block matrix here.
+            // (No, it won't since the matrix is already filled. :] )
+            sysmat_->Assemble(scale,gid,gid);
+          }
+        }
       }
 
       // end time measurement for element
@@ -6271,6 +6317,25 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
     vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);
 
   return vecnp;
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ConvectiveVel()
+{
+  if (GridVel() == Teuchos::null)
+    return Velnp(); // no moving mesh present
+  else
+  {
+    // make an intermediate copy of velnp
+    Teuchos::RCP<Epetra_Vector> convel = Teuchos::rcp(new Epetra_Vector(*(Velnp())));
+    // now subtract the grid velocity
+    convel->Update(-1.0,*(GridVel()),1.0);
+
+    return convel;
+  }
 }
 
 

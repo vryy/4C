@@ -105,7 +105,8 @@ void dyn_fluid_drt(const int restart)
     if (restart) fluidalgo->FluidField().ReadRestart(restart);
 
     // run the simulation
-    fluidalgo->FluidField().TimeLoop();
+//    fluidalgo->FluidField().TimeLoop();
+    fluidalgo->FluidField().Integrate();
 
     // perform result tests if required
     DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
@@ -344,7 +345,8 @@ void fluid_fluid_drt()
   //if (restart) fluidalgo->FluidField().ReadRestart(restart);
 
   // run the simulation
-  fluidalgo->FluidField().TimeLoop();
+//  fluidalgo->FluidField().TimeLoop();
+  fluidalgo->FluidField().Integrate();
 
   // perform result tests if required
   DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());

@@ -61,13 +61,10 @@ namespace ADAPTER
 
     virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
 
-    virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
-
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                         double dt);
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 

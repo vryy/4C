@@ -30,6 +30,11 @@ Maintainer:  Benedikt Schott
 #include "../drt_lib/drt_resulttest.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
+#include "../drt_fluid/fluid_timint.H"
+
+#include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 namespace DRT
 {
@@ -99,7 +104,7 @@ namespace FLD
     \author schott
     \date 03/12
   */
-  class XFluid
+  class XFluid : public TimInt
   {
     friend class XFluidResultTest2;
     friend class XFluidState;
@@ -296,6 +301,9 @@ namespace FLD
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void PrepareNonlinearSolve();
 
+    /// Implement ADAPTER::Fluid
+    void PrepareSolve();
+
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();
 
@@ -309,7 +317,9 @@ namespace FLD
     void Predictor();
 
     /// (multiple) corrector
-    void MultiCorrector();
+//    void MultiCorrector();
+
+    Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
 
     /// evaluate errors compared to implemented analytical solutions
     void EvaluateErrorComparedToAnalyticalSol();
@@ -323,6 +333,9 @@ namespace FLD
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
     void TimeUpdate();
+
+    /// Implement ADAPTER::Fluid
+    void Update() { TimeUpdate(); }
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
@@ -367,15 +380,15 @@ namespace FLD
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
-    Teuchos::RCP<Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
     Teuchos::RCP<Epetra_Vector> Residual()     { cout << "Residual" << endl;     return state_->residual_; }
-    Teuchos::RCP<Epetra_Vector> TrueResidual() { cout << "Xfluid_TrueResidual" << endl; return state_->trueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp()        { cout << "Velnp" << endl;        return state_->velnp_; }
-    Teuchos::RCP<Epetra_Vector> Velaf()        { cout << "Velaf" << endl;        return state_->velaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln()         { cout << "Veln() in!!! " <<  endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() { cout << "Xfluid_TrueResidual" << endl; return state_->trueresidual_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp()        { cout << "Velnp" << endl;        return state_->velnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf()        { cout << "Velaf" << endl;        return state_->velaf_; }
+    Teuchos::RCP<const Epetra_Vector> Veln()         { cout << "Veln() in!!! " <<  endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
 
-    Teuchos::RCP<Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
-    Teuchos::RCP<Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
 
     // @}
 
@@ -401,29 +414,30 @@ namespace FLD
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-    Teuchos::RCP<DRT::Discretization> Discretization() { dserror("which discretization"); return soliddis_; }
+    /// implements the ADAPTER::Fluid and returns the boundary discretization
+    Teuchos::RCP<DRT::Discretization> Discretization() { return boundarydis_; }
 
     /// return boundary discretization
     Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
 
     /// return type of time integration scheme
-    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+//    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
     /// return type of enforcing interface conditions
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
     /// return time step size
-    double Dt() const { return dta_; }
+//    double Dt() const { return dta_; }
 
     /// return global time
-    double Time() const { return time_; }
+//    double Time() const { return time_; }
 
     /// return step
-    int Step() const { return step_; }
+//    int Step() const { return step_; }
 
     /// get maximal number of nonlinear steps
-    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+//    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
 
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
@@ -438,6 +452,9 @@ namespace FLD
       else
         return density_/(theta_*dta_);
     }
+
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+       {dserror("not implemented"); return Teuchos::null;}
 
     /// introduce surface split extractor object
     /*!

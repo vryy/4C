@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 
 
 #include "../drt_fluid/drt_transfer_turb_inflow.H"
+#include "../drt_fluid/fluid_timint.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_io/io_ostream0.H"
@@ -61,7 +62,7 @@ namespace FLD
 // forward declarations
 class TurbulenceStatisticManager;
 
-class CombustFluidImplicitTimeInt
+class CombustFluidImplicitTimeInt : public TimInt
 {
   friend class TurbulenceStatisticManager;
   friend class CombustFluidResultTest;
@@ -85,7 +86,7 @@ public:
   virtual ~CombustFluidImplicitTimeInt();
 
   /// return type of time integration scheme
-  const enum INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /// Provide title of time integration scheme
   std::string TimIntTitle(){return MapTimIntEnumToString(TimIntScheme());}
@@ -132,29 +133,35 @@ public:
       const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       bool UpdateDofSet);
 
+  /// Implement ADAPTER::FLUID
+  void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
+  {
+    StoreFlameFront(flamefront, UpdateDofSet);
+  }
+
   /*!
   \brief get the velocity vector based on standard dofs
 
   \return RCP to a copy of Veln with only standard dofs
    */
-  const Teuchos::RCP<Epetra_Vector> StdVeln();
+  Teuchos::RCP<Epetra_Vector> StdVeln();
 
   /*!
   \brief get the velocity vector based on standard dofs
 
   \return RCP to a copy of Velnp with only standard dofs
    */
-  const Teuchos::RCP<Epetra_Vector> StdVelnp();
+  Teuchos::RCP<Epetra_Vector> StdVelnp();
 
   /*!
   \brief get the velocity vector based on standard dofs
 
   \return RCP to a copy of Velaf with only standard dofs
    */
-  const Teuchos::RCP<Epetra_Vector> StdVelaf();
+  Teuchos::RCP<Epetra_Vector> StdVelaf();
 
   /// get history vector for transfer to scalar transport field
-  const Teuchos::RCP<Epetra_Vector> Hist();
+  Teuchos::RCP<const Epetra_Vector> Hist();
 
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration
@@ -172,6 +179,8 @@ public:
 
   */
   void MultiCorrector();
+
+  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -218,6 +227,9 @@ public:
 
   */
   void TimeUpdate();
+
+  /// Implement ADAPTER::Fluid
+  void Update() { TimeUpdate(); }
 
   /*
   \brief provide access to turbulence statistics manager
@@ -270,7 +282,7 @@ public:
   /*!
   \brief calculate stresses
   */
-  Teuchos::RCP<Epetra_Vector> CalcStresses();
+//  Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /*!
   \brief out of use
@@ -326,20 +338,21 @@ public:
 
   //! @name access methods for composite algorithms
 
-  Teuchos::RCP<Epetra_Vector>& InitialGuess()  { return incvel_; }
-  Teuchos::RCP<Epetra_Vector>& Residual()      { return residual_; }
-  Teuchos::RCP<Epetra_Vector>& TrueResidual()  { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector>& Velnp()         { return state_.velnp_; }
-  Teuchos::RCP<Epetra_Vector>& Velaf()         { return state_.velaf_; }
-  Teuchos::RCP<Epetra_Vector>& Veln()          { return state_.veln_; }
-  Teuchos::RCP<Epetra_Vector>& Accam()         { return state_.accam_; }
+  Teuchos::RCP<const Epetra_Vector> InitialGuess()  { return incvel_; }
+  Teuchos::RCP<      Epetra_Vector> Residual()      { return residual_; }
+  Teuchos::RCP<const Epetra_Vector> TrueResidual()  { return trueresidual_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp()         { return state_.velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Velaf()         { return state_.velaf_; }
+  Teuchos::RCP<const Epetra_Vector> Veln()          { return state_.veln_; }
+  Teuchos::RCP<const Epetra_Vector> Accam()         { return state_.accam_; }
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-  Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+  Teuchos::RCP<const DRT::DofSet> DofSet() { return standarddofset_; }
   Teuchos::RCP<const DRT::IndependentPBCDofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
@@ -360,10 +373,12 @@ public:
     return 0.0;
   }
 
-  double Dt()   const { return dta_; }
-  double Time() const { return time_; }
-  int Step()    const { return step_; }
-  int Itemax()  const { return itemax_; }
+//  virtual double TimeScaling() const;
+
+//  double Dt()   const { return dta_; }
+//  double Time() const { return time_; }
+//  int Step()    const { return step_; }
+//  int Itemax()  const { return itemax_; }
 
   /// increment time and step value
   void IncrementTimeAndStep()
@@ -371,13 +386,6 @@ public:
     step_ += 1;
     time_ += dta_;
   }
-
-  /// introduce (robin) fsi surface extractor object
-  /*!
-    Introduce the FSI surface to the fluid algorithm. This way special case
-    algorithms (robin coupling) can work on the surface.
-   */
-  //void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
   /// calculate lift&drag forces and angular moments
   /*!
@@ -400,22 +408,8 @@ public:
   */
   void LiftDrag() const;
 
-  /// integrate shape functions at nodes marked by condition
-  /*!
-    Needed for Mortar coupling at the FSI interface
-   */
-  Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
-  /// integrate mass flow over a surface
-  void ComputeSurfaceFlowrates() const;
-
-  /// switch fluid field to block matrix
-  void UseBlockMatrix(
-      Teuchos::RCP<std::set<int> > condelements,
-      const LINALG::MultiMapExtractor& domainmaps,
-      const LINALG::MultiMapExtractor& rangemaps,
-      bool splitmatrix=true
-      );
+//  virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
   const double EvalTime() const
   {
@@ -427,6 +421,8 @@ public:
 
   /// Transfers all vectors based on an enriched dofmap to the new dofmap after a redistribution.
   void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront);
+  //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Teuchos::RCP<const Epetra_Vector> ConvectiveVel() { return Velnp(); }
 
 protected:
 

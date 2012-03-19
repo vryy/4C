@@ -159,6 +159,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   // no computation of fluid velocities in case only structure and ALE are to compute
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
+    FluidField().PrepareSolve();
     FluidField().NonlinearSolve();
   }
 }
@@ -195,31 +196,6 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAle::RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                            Teuchos::RCP<Epetra_Vector> ivel,
-                                            Teuchos::RCP<Epetra_Vector> iforce)
-{
-  // if we have values at the interface we need to apply them
-  AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
-
-  // pass coupling values for subsequent application at the interface of the
-  // fluid domain
-  FluidField().ApplyInterfaceRobinValue(ivel, iforce);
-
-  // Note: We do not look for moving ale boundaries (outside the coupling
-  // interface) on the fluid side. Thus if you prescribe time variable ale
-  // Dirichlet conditions the according fluid Dirichlet conditions will not
-  // notice.
-
-  AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
-  FluidField().NonlinearSolve();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                double dt)
 {
@@ -250,14 +226,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epet
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForcesRobin()
-{
-  return FluidField().ExtractInterfaceForcesRobin();
 }
 
 
