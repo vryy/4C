@@ -38,7 +38,7 @@
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_coupling.H"
 
@@ -784,7 +784,7 @@ aletype_(aleproj)
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::Remeshing
 (
-    ADAPTER::Structure& structure,
+    ADAPTER::FSIStructureWrapper& structure,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<Epetra_Vector> idispale,
     Teuchos::RCP<Epetra_Vector> iprojdispale,
@@ -895,7 +895,7 @@ Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
 /*----------------------------------------------------------------------*/
 vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 (
-    ADAPTER::Structure& structure,
+    ADAPTER::FSIStructureWrapper& structure,
     const Epetra_Comm& comm
 )
 {
@@ -1030,7 +1030,7 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::SlideProjection
 (
-    ADAPTER::Structure& structure,
+    ADAPTER::FSIStructureWrapper& structure,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     Teuchos::RCP<Epetra_Vector> idispale,
     Teuchos::RCP<Epetra_Vector> iprojdispale,

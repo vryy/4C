@@ -25,8 +25,6 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return structure_->DofRowMap(); }
-    /// dof map of vector of unknowns for multiple dofsets
-    // new method
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
     { return structure_->DofRowMap(nds); }
     virtual const Epetra_Map& DomainMap()
@@ -94,23 +92,10 @@ namespace ADAPTER
     { structure_->EvaluateReferenceState(); }
     virtual void Solve()
     { return structure_->Solve(); }
-//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
-//    { return structure_->RelaxationSolve(iforce); }
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
     { return structure_->SolveRelaxationLinear(); }
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     { return structure_->LinearSolver(); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn()
-    { return structure_->ExtractInterfaceDispn(); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp()
-    { return structure_->ExtractInterfaceDispnp(); }
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp()
-    { return structure_->PredictInterfaceDispnp(); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
-    { return structure_->ExtractInterfaceForces(); }
-
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
-    { structure_->ApplyInterfaceForces(iforce); }
 
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp)
     { structure_->ApplyTemperatures(temp); }
@@ -153,7 +138,6 @@ namespace ADAPTER
     virtual void PoroEvaluateForceStiffResidual(bool predict = false)
     { return structure_->PoroEvaluateForceStiffResidual(predict); }
     // to be removed by Anh-Tu ; END
-
 
 
     /// Integrate from t1 to t2

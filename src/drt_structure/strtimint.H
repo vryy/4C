@@ -37,13 +37,9 @@ Maintainer: Thomas Klöppel
 #include <nlnml_linearsystem.H>
 #include <nlnml_finelevelnoxinterface.H>
 
+#include "../drt_adapter/adapter_structure.H"
 #include "strtimint_mstep.H"
 #include "../drt_inpar/inpar_structure.H"
-
-
-//new headers
-#include "../drt_adapter/adapter_structure.H"
-// TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
 #include "../drt_structure/stru_aux.H"
 
 
@@ -585,6 +581,10 @@ namespace STR
     //! i.e. force residual differentiated by displacements
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
+    //! switch structure field to block matrix in fsi simulations
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+        const LINALG::MultiMapExtractor& rangemaps) = 0;
+
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();
 
@@ -686,11 +686,6 @@ namespace STR
     //@}
 
   protected:
-
-    /// the interface map setup for interface <-> full translation
-    Teuchos::RCP<STR::AUX::MapExtractor> interface_; // TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
-
-
 
     //! @name General purpose algorithm members
     //@{
@@ -997,65 +992,6 @@ namespace STR
     virtual void PoroEvaluateForceStiffResidual(bool predict = false)
     {dserror("not available for explicit time integrators"); }
     // to be removed by Anh-Tu ; END
-
-
-
-
-
-
-    //----------------------------------------------------------------
-    // TODO: to be moved into new FSI adapter 13.03.2012 Georg Hammerl
-    //----------------------------------------------------------------
-
-//    /// communication object at the interface
-//    virtual const STR::AUX::MapExtractor& Interface() const
-//    {
-//      return *interface_;
-//    }
-
-    //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-        const LINALG::MultiMapExtractor& rangemaps) = 0;
-
-    /// @name Extract interface values
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn()
-    {
-      return interface_->ExtractFSICondVector(Dis());
-    }
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp()
-    {
-      return interface_->ExtractFSICondVector(DisNew());
-    }
-
-    /// extract interface forces (necessary for robin-BC)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
-    {
-      return interface_->ExtractFSICondVector(FextNew());
-    }
-
-    /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
-
-    /// @name Apply interface forces
-
-    /// apply interface forces to structural solver
-    ///
-    /// This prepares a new solve of the structural field within one time
-    /// step. The middle values are newly created.
-    ///
-    /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(
-      Teuchos::RCP<Epetra_Vector> iforce
-    ){ dserror("currently not available for explicit time integrator"); }
-
-        //@}
-
-
-
 
   };
 

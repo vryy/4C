@@ -41,13 +41,13 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   : AlgorithmBase(comm,timeparams)
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
-  fsistructure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
+  structure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
 
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
-  fsifluid_ = fluid->FluidFieldrcp();
+  fluid_ = fluid->FluidFieldrcp();
 
   Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(timeparams));
-  fsiale_ = ale->AleFieldrcp();
+  ale_ = ale->AleFieldrcp();
 
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());

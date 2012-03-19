@@ -36,6 +36,7 @@ Maintainer: Georg Hammerl
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -253,6 +254,10 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   
   // map extractor for the communication between the full thermo field and the newly created thermo surf discret
   thermorowmapext_ = rcp(new LINALG::MapExtractor(*(thermodis->DofRowMap()),rcp(ithermodis_->DofRowMap(), false)));
+
+  // set-up FSI interface
+  interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
+  interface_->Setup(*structdis, *structdis->DofRowMap());
 
 }
 
@@ -518,5 +523,24 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
   return;
 }
 
+
+/// extract interface values for a given full field
+Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::ExtractInterfaceVal
+(
+  Teuchos::RCP<Epetra_Vector> fullvector)
+{
+  return interface_->ExtractFSICondVector(fullvector);
+}
+
+/// apply interface displacement from the interface to a full field
+void FS3I::UTILS::AeroCouplingUtils::ApplyInterfaceVal
+(
+  Teuchos::RCP<Epetra_Vector> iforce,
+  Teuchos::RCP<Epetra_Vector> force
+)
+{
+  interface_->AddFSICondVector(iforce, force);
+  return;
+}
 
 #endif

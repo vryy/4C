@@ -262,36 +262,6 @@ namespace ADAPTER {
 
     //@}
 
-    /// @name Extract interface values
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
-
-    /// extract interface forces (necessary for robin-BC)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
-
-    /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
-
-    //@}
-
-    /// @name Apply interface forces
-
-    /// apply interface forces to structural solver
-    ///
-    /// This prepares a new solve of the structural field within one time
-    /// step. The middle values are newly created.
-    ///
-    /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(
-      Teuchos::RCP<Epetra_Vector> iforce
-    );
-
-    //@}
-
     //! @name Extract methods
     //@{
 

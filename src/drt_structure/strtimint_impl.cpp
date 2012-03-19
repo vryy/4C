@@ -271,7 +271,7 @@ void STR::TimIntImpl::Predict()
 }
 
 /*----------------------------------------------------------------------*/
-/* prepare partiton step */
+/* prepare partition step */
 void STR::TimIntImpl::PreparePartitionStep()
 {
 

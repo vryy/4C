@@ -46,6 +46,14 @@ namespace LINALG
   class MapExtractor;
 }
 
+namespace STR
+{
+  namespace AUX
+  {
+    class MapExtractor;
+  }
+}
+
 
 namespace FS3I
 {
@@ -109,6 +117,13 @@ namespace FS3I
       /// get number of coupling interfaces
       int NumInterfaces(){ return (maxid_+1); }
 
+      /// extract interface values for a given full field
+      Teuchos::RCP<Epetra_Vector> ExtractInterfaceVal(Teuchos::RCP<Epetra_Vector> fullvector);
+
+      /// apply interface displacement from the interface to a full field
+      void ApplyInterfaceVal(Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> force);
+
+
     protected:
       /// calculate current position of structural interface nodes
       std::map<int,LINALG::Matrix<3,1> > CurrentInterfacePos
@@ -138,6 +153,9 @@ namespace FS3I
       std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structreduelements_; ///< redundant version of coupling elements for each interface
 
       Teuchos::RCP<const LINALG::MapExtractor> thermorowmapext_;  ///< map extractor between thermo discret and interface thermo dis
+
+      /// the interface map setup for interface <-> full translation
+      Teuchos::RCP<STR::AUX::MapExtractor> interface_;
 
       Teuchos::RCP<Epetra_Vector> matconfig_; ///< material configuration of structural gids
 

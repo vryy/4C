@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file FSIStructureWrapper.cpp
+
+\brief Structural adapter for FSI problems containing the interface
+       and methods dependent on the interface
+
+<pre>
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-152537
+</pre>
+*/
 
 #ifdef CCADISCRET
 

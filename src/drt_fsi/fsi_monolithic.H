@@ -92,14 +92,14 @@ namespace UTILS
     /// write output
     virtual void Output();
 
-    /// access to structure adapter
-    ADAPTER::FSIStructureWrapper& StructureField(){return *fsistructure_;}
+    /// access to structural field
+    ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
 
-    /// access to fluid adapter
-    ADAPTER::Fluid& FluidField(){return *fsifluid_;}
+    /// access to fluid field
+    ADAPTER::Fluid& FluidField(){return *fluid_;}
 
     /// access to ale field
-    ALE::Ale& AleField() { return *fsiale_; }
+    ALE::Ale& AleField() { return *ale_; }
 
 
     //@}
@@ -107,13 +107,13 @@ namespace UTILS
   protected:
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    fsistructure_;
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid>    fsifluid_;
+    Teuchos::RCP< ::ADAPTER::Fluid>                  fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<ALE::Ale>    fsiale_;
+    Teuchos::RCP<ALE::Ale>                           ale_;
 
     //! @name Transfer helpers
 

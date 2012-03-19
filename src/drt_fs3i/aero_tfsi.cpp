@@ -118,8 +118,12 @@ void FS3I::AeroTFSI::Timeloop()
     Teuchos::RCP<Epetra_Vector> ithermoloadRestart =
         LINALG::CreateVector(*(aerocoupling_->GetInterfaceThermoDis()->DofRowMap()), true);
 
-    Teuchos::RCP<Epetra_Vector> idispnRestart = tsi_->StructureField().ExtractInterfaceDispn();
-    Teuchos::RCP<Epetra_Vector> ivelnRestart = tsi_->StructureField().ExtractVeln();
+//    Teuchos::RCP<Epetra_Vector> idispnRestart = tsi_->StructureField().ExtractInterfaceDispn();
+    Teuchos::RCP<Epetra_Vector> idispnRestart = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractDispn());
+
+//    Teuchos::RCP<Epetra_Vector> ivelnRestart = tsi_->StructureField().ExtractVeln();
+    Teuchos::RCP<Epetra_Vector> ivelnRestart = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractVeln());
+
     aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField().ExtractTempn(), ithermoloadRestart);
 
     vector<double> aerosenddataRestart;
@@ -149,7 +153,8 @@ void FS3I::AeroTFSI::Timeloop()
     Teuchos::RCP<Epetra_Vector> ithermoload = LINALG::CreateVector(*(aerocoupling_->GetInterfaceThermoDis()->DofRowMap()), true);
 
     // current displacement of the interface
-    Teuchos::RCP<Epetra_Vector> idispn = tsi_->StructureField().ExtractInterfaceDispn();
+//    Teuchos::RCP<Epetra_Vector> idispn = tsi_->StructureField().ExtractInterfaceDispn();
+    Teuchos::RCP<Epetra_Vector> idispn = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractDispn());
 
     aerocoupling_->ProjectForceOnStruct(idispn, aerocoords, aeroforces, iforce, ithermoload);
 
@@ -172,7 +177,8 @@ void FS3I::AeroTFSI::Timeloop()
       idispn->PutScalar(0.0);
       ithermoload->PutScalar(0.0);
       // reuse of idispn; data is at n+1
-      idispn = tsi_->StructureField().ExtractInterfaceDispnp();
+//      idispn = tsi_->StructureField().ExtractInterfaceDispnp();
+      idispn = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractDispnp());
       // calculate velocity of the structure
       aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField().ExtractTempnp(), ithermoload);
 
@@ -224,7 +230,16 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
   Teuchos::RCP<Epetra_Vector> ithermoload
   )
 {
-  tsi_->StructureField().ApplyInterfaceForces(iforce);
+  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*tsi_->StructureField().Discretization()->DofRowMap(), true);
+
+  aerocoupling_->ApplyInterfaceVal(iforce, fifc);
+//  interface_->AddFSICondVector(iforce, fifc);
+
+  tsi_->StructureField().SetForceInterface(fifc);
+
+  tsi_->StructureField().PreparePartitionStep();
+
+//  tsi_->StructureField().ApplyInterfaceForces(iforce);
   tsi_->ThermoField().ApplyInterfaceForces(ithermoload);
 
   return;

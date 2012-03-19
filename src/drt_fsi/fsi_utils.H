@@ -23,7 +23,7 @@
 namespace ADAPTER
 {
   class CouplingMortar;
-  class Structure;
+  class FSIStructureWrapper;
 }
 
 namespace ALE
@@ -110,7 +110,7 @@ namespace FSI
       (
         Teuchos::RCP<DRT::Discretization> structdis,   ///< structure discretization
         Teuchos::RCP<DRT::Discretization> fluiddis,    ///< fluid discretization
-        ::ADAPTER::CouplingMortar& coupsf,               ///< mortar adapter
+        ::ADAPTER::CouplingMortar& coupsf,             ///< mortar adapter
         bool structcoupmaster,                         ///< is structure master of adapter coupling?
         INPAR::FSI::SlideALEProj aleproj               ///< projection enum
         );
@@ -121,19 +121,19 @@ namespace FSI
       /// remesh ALE corresponding
       void Remeshing
       (
-        ::ADAPTER::Structure& structure,                  ///< structure adapter
+        ::ADAPTER::FSIStructureWrapper& structure,      ///< structure adapter
         Teuchos::RCP<DRT::Discretization> fluiddis,     ///< fluid discretization
         Teuchos::RCP<Epetra_Vector> idispale,           ///< standard ALE interface displacement
         Teuchos::RCP<Epetra_Vector> iprojdispale,       ///< projected ALE interface displacement
-        ::ADAPTER::CouplingMortar& coupsf,                ///< mortar adapter
+        ::ADAPTER::CouplingMortar& coupsf,              ///< mortar adapter
         const Epetra_Comm& comm                         ///< communicator
         );
 
       /// Compute new coupling matrices D and M
       void EvaluateMortar
       (
-        Teuchos::RCP<Epetra_Vector> idispstruct, ///< displacement of structure
-        Teuchos::RCP<Epetra_Vector> idispale,    ///< (proj.) displacement of ale
+        Teuchos::RCP<Epetra_Vector> idispstruct,   ///< displacement of structure
+        Teuchos::RCP<Epetra_Vector> idispale,      ///< (proj.) displacement of ale
         ::ADAPTER::CouplingMortar& coupsf          ///< mortar adapter
         );
 
@@ -167,8 +167,8 @@ namespace FSI
       /// compute average interface displacement
       vector<double> Centerdisp
       (
-        ::ADAPTER::Structure& structure,          ///< structure adapter
-        const Epetra_Comm& comm                 ///< communicator
+        ::ADAPTER::FSIStructureWrapper& structure, ///< structure adapter
+        const Epetra_Comm& comm                    ///< communicator
         );
 
       /// compute approximate interface rotation (structuresplit)
@@ -194,7 +194,7 @@ namespace FSI
       /// project ALE nodes onto the structure surface
       void SlideProjection
       (
-        ::ADAPTER::Structure& structure,                ///< structure adapter
+        ::ADAPTER::FSIStructureWrapper& structure,                ///< structure adapter
         Teuchos::RCP<DRT::Discretization> fluiddis,   ///< fluid discretization
         Teuchos::RCP<Epetra_Vector> idispale,         ///< standard ALE interface displacement
         Teuchos::RCP<Epetra_Vector> iprojdispale,     ///< projected ALE interface displacement

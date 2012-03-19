@@ -31,12 +31,10 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams())
-//    StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-//    FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()));
-  fsistructure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
+  structure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
 
   Teuchos::RCP< ::ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"));

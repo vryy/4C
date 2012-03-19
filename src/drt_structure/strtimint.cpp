@@ -84,8 +84,7 @@ STR::TimInt::TimInt
   Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: interface_(Teuchos::null),
-  discret_(actdis),
+: discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
@@ -2029,66 +2028,6 @@ Teuchos::RCP<DRT::ResultTest> STR::TimInt::CreateFieldTest()
   return Teuchos::rcp(new StruResultTest(*this));
 }
 
-
-
-// TODO: to be moved into new FSI adapter 13.03. 2012 Georg Hammerl
-Teuchos::RCP<Epetra_Vector> STR::TimInt::PredictInterfaceDispnp()
-{
-  const Teuchos::ParameterList& fsidyn
-    = DRT::Problem::Instance()->FSIDynamicParams();
-
-  Teuchos::RCP<Epetra_Vector> idis;
-
-  switch (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR"))
-  {
-  case 1:
-  {
-    // d(n)
-    // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    idis  = interface_->ExtractFSICondVector(DisNew());
-    break;
-  }
-  case 2:
-    // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-    dserror("interface velocity v(n-1) not available");
-    break;
-  case 3:
-  {
-    // d(n)+dt*v(n)
-//    double dt = sdynparams_->get<double>("TIMESTEP");
-    double dt = (*dt_)[0];
-
-    idis = interface_->ExtractFSICondVector(Dis());
-    Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(Vel());
-
-    idis->Update(dt,* ivel, 1.0);
-    break;
-  }
-  case 4:
-  {
-    // d(n)+dt*v(n)+0.5*dt^2*a(n)
-//    double dt = sdynparams_->get<double>("TIMESTEP");
-    double dt = (*dt_)[0];
-
-    idis = interface_->ExtractFSICondVector(Dis());
-    Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(Vel());
-    Teuchos::RCP<Epetra_Vector> iacc
-      = interface_->ExtractFSICondVector(Acc());
-
-    idis->Update(dt, *ivel, 0.5*dt*dt, *iacc, 1.0);
-    break;
-  }
-  default:
-    dserror("unknown interface displacement predictor '%s'",
-            fsidyn.get<string>("PREDICTOR").c_str());
-  }
-
-  return idis;
-}
-
-
 /*----------------------------------------------------------------------*/
 /* dof map of vector of unknowns                                        */
 Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap()
@@ -2096,7 +2035,6 @@ Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap()
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
-
 
 /*----------------------------------------------------------------------*/
 /* dof map of vector of unknowns                                        */

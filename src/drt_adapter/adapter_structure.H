@@ -24,11 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
-
-
-// TODO: to be moved into new FSI adapter 13.03. 2012 Georg Hammerl and instead forward declaration or moving out totally
 #include "../drt_structure/stru_aux.H"
-
 
 
 // forward declarations:
@@ -65,13 +61,6 @@ namespace UTILS
   class ConstrManager;
 }
 
-//namespace STR
-//{
-//  namespace AUX
-//  {
-//    class MapExtractor;
-//  }
-//}
 
 namespace ADAPTER {
 
@@ -187,23 +176,6 @@ namespace ADAPTER {
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
-    /// structure part of the rhs to enforce coupling condition at the interface
-    /*!
-      structure part of
-      \f$ \mathbf{u}^{n+1}_{\Gamma} \Delta t = \mathbf{d}^{n+1}_{\Gamma} - \mathbf{d}^{n}_{\Gamma} \f$
-    */
-    //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const = 0;
-
-
-    /// structure part of the rhs to enforce structure -- mesh coupling at the interface
-    /*!
-      \f$ \mathbf{d}^{G,n+1}_{\Gamma} = \mathbf{d}^{n+1}_{\Gamma} \f$
-    */
-    //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
-
-//    /// communication object at the interface
-//    virtual const STR::AUX::MapExtractor& Interface() const = 0;
-
     //@}
 
     //! @name Time step helpers
@@ -298,34 +270,6 @@ namespace ADAPTER {
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
-
-    //@}
-
-    //! @name Extract interface values
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() = 0;
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp() = 0;
-
-    /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() = 0;
-
-    /// extract interface forces (necessary for robin-BC)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
-
-    //@}
-
-    //! @name Apply interface forces
-
-    /// apply interface forces to structural solver
-    ///
-    /// This prepares a new solve of the structural field within one time
-    /// step. The middle values are newly created.
-    ///
-    /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     //@}
 

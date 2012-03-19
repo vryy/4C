@@ -1,7 +1,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_overlapprec_fsiamg.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid.H"
 
 #include <Epetra_Time.h>

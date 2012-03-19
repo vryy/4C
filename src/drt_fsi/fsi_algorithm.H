@@ -54,8 +54,6 @@ namespace FSI
     \date 02/08
    */
   class Algorithm : public ADAPTER::AlgorithmBase
-//                    public ADAPTER::StructureBaseAlgorithm,
-//                    public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
 
@@ -66,7 +64,7 @@ namespace FSI
     virtual ~Algorithm();
 
     /// access to structure field
-    ADAPTER::FSIStructureWrapper& StructureField(){return *fsistructure_;}
+    ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
 
     /// access to fluid field
     ADAPTER::FluidMovingBoundary& MBFluidField(){return *fluid_;}
@@ -113,10 +111,10 @@ namespace FSI
     const ADAPTER::Coupling& StructureFluidCoupling() const;
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    fsistructure_;
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FluidMovingBoundary> fluid_;
+    Teuchos::RCP< ::ADAPTER::FluidMovingBoundary>    fluid_;
 
   private:
 

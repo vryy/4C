@@ -182,42 +182,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimIntAda::Discretization()
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::FluidCondRHS() const
-// {
-//   // structure part of the rhs to enforce
-//   // u(n+1) dt = d(n+1) - d(n)
-
-//   // extrapolate d(n+1) at the interface and substract d(n)
-
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractFSICondVector(structure_->Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractFSICondVector(structure_->Disp ());
-
-//   double alphaf = structure_->AlphaF();
-//   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
-//   return idis;
-// }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::MeshCondRHS() const
-// {
-//   // structure part of the rhs to enforce
-//   // d(G,n+1) = d(n+1)
-
-//   // extrapolate d(n+1) at the interface
-
-//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractFSICondVector(structure_->Dispm());
-//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractFSICondVector(structure_->Disp ());
-
-//   double alphaf = structure_->AlphaF();
-//   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
-//   return idis;
-// }
-
-
-/*----------------------------------------------------------------------*/
 /* prepare time step */
 void ADAPTER::StructureTimIntAda::PrepareTimeStep()
 {
@@ -292,48 +256,6 @@ void ADAPTER::StructureTimIntAda::Solve()
 //  dserror("not implemented");
 //  return Teuchos::null;
 //}
-
-/*----------------------------------------------------------------------*/
-/* extract interface displacements D_{n} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractInterfaceDispn()
-{
-  dserror("not implemented");
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*/
-/* extract interface displacements D_{n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractInterfaceDispnp()
-{
-  dserror("not implemented");
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*/
-/* extract external forces at interface F_{ext,n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractInterfaceForces()
-{
-  dserror("not implemented");
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*/
-/* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::PredictInterfaceDispnp()
-{
-  dserror("not implemented");
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*/
-/* */
-void ADAPTER::StructureTimIntAda::ApplyInterfaceForces(
-  Teuchos::RCP<Epetra_Vector> iforce
-)
-{
-  dserror("not implemented");
-}
 
 
 /*----------------------------------------------------------------------*/

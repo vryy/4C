@@ -153,7 +153,7 @@ namespace STR
     //@{
 
     //! Set forces due to interface with fluid
-    void SetForceInterface
+    virtual void SetForceInterface
     (
       const AUX::MapExtractor& extractor,
       Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
@@ -292,11 +292,11 @@ namespace STR
     //! prepare partiton step
     virtual void PreparePartitionStep()
     {
-      dserror("PreparePartitionStep() is not needed for explicit time integrators");
+      // do nothing for explicit time integrators;
       return;
     }
 
-    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps)
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps)
     {
       dserror("UseBlockMatrix() not implemented");
     }

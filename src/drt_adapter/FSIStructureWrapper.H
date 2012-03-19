@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file FSIStructureWrapper.H
+
+\brief Structural adapter for FSI problems containing the interface
+       and methods dependent on the interface
+
+<pre>
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-152537
+</pre>
+*/
+
 #ifndef FSI_STRUCTURE_WRAPPER_H
 #define FSI_STRUCTURE_WRAPPER_H
 
@@ -14,15 +29,14 @@ namespace STR
 }
 
 
-
 namespace ADAPTER
 {
 
-  /// Calculate increments from absolute values
   class FSIStructureWrapper : public StructureWrapper
   {
   public:
 
+    // constructor
     explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
 
@@ -45,10 +59,10 @@ namespace ADAPTER
 
     /// @name Extract interface values
 
-    /// extract displacements
+    /// extract interface displacements at t_{n}
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
 
-    /// extract displacements
+    /// extract interface displacements at t_{n+1}
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
 
     /// Predictor for interface displacements

@@ -4,7 +4,6 @@
 #include "fsi_debugwriter.H"
 #include <Epetra_Time.h>
 
-#include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 
 extern struct _GENPROB     genprob;
