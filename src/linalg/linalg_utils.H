@@ -70,7 +70,7 @@ class DiscretizationWriter;
 namespace LINALG
 {
   // forward declaration
-  class Solver;
+  //class Solver;
 
   /*!
   \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
