@@ -16,7 +16,6 @@
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
-#include "fsi_monolithicxfem.H"
 #include "fsi_partitionedmonolithic.H"
 #include "fsi_lungmonolithic.H"
 #include "fsi_lungmonolithic_structuresplit.H"
