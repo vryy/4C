@@ -232,10 +232,9 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
 
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -270,7 +269,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
 
-    rhs->Scale(bb/dd);  // scale 'rhs' due to consistent time integration
+    rhs->Scale((1.0-stiparam)/dd);  // scale 'rhs' due to consistent time integration
 
     Extractor().AddVector(*rhs,1,f); // add fluid contributions to 'f'
 
@@ -362,10 +361,9 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
   double cc = 0.0;
   double dd = 1.0;
 
@@ -375,7 +373,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   s->UnComplete();
 
   (*fggtransform_)(fgg,
-                   bb/dd*scale*timescale,
+                   (1.0-stiparam)/dd*scale*timescale,
                    ADAPTER::CouplingSlaveConverter(coupsf),
                    ADAPTER::CouplingSlaveConverter(coupsf),
                    *s,
@@ -384,7 +382,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
   (*fgitransform_)(fgi,
-                   bb/dd*scale,
+                   (1.0-stiparam)/dd*scale,
                    ADAPTER::CouplingSlaveConverter(coupsf),
                    *lfgi);
 
@@ -523,7 +521,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     }
 
     (*fggtransform_)(fmgg,
-                     bb/dd*scale,
+                     (1.0-stiparam)/dd*scale,
                      ADAPTER::CouplingSlaveConverter(coupsf),
                      ADAPTER::CouplingSlaveConverter(coupsf),
                      *s,
@@ -543,7 +541,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     {
       RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
       (*fmgitransform_)(fmgi,
-                        bb/dd*scale,
+                        (1.0-stiparam)/dd*scale,
                         ADAPTER::CouplingSlaveConverter(coupsf),
                         ADAPTER::CouplingMasterConverter(coupfa),
                         *lfmgi,//mat.Matrix(0,2),
@@ -787,12 +785,11 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                          double fluidscale)
 {
 
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-    // as soon as the 'new' adapter is working.
-    double aa = 0.0;//0.444444444444;
-    double bb = 1.0-aa;
-    double cc = 0.0;
-    double dd = 1.0;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
+  double cc = 0.0;
+  double dd = 1.0;
 
   // extract the inner and boundary dofs of all three fields
 
@@ -807,7 +804,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(FluidToStruct(fcv));
-    modsv->Update(1.0, *sv, bb/dd*fluidscale);
+    modsv->Update(1.0, *sv, (1.0-stiparam)/dd*fluidscale);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
@@ -821,7 +818,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modsv->Update(aa-bb*cc/dd, *FluidToStruct(lambda_), 1.0);
+      modsv->Update(stiparam-(1.0-stiparam)*cc/dd, *FluidToStruct(lambda_), 1.0);
 
     Extractor().InsertVector(*modsv,0,f); // add structural contributions to 'f'
   }
@@ -1083,10 +1080,8 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp)
 {
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
+  // get time integration parameter of fluid time integrator
+  // to enable consistent time integration among the fields
   double cc = 0.0;
   double dd = 1.0;
 
