@@ -660,7 +660,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       else
       {
-        dserror("unknown coupling algorithm!");
+        const INPAR::FSI::PartitionedCouplingMethod method =
+          DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
       }
     }
 
