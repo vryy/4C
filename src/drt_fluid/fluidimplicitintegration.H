@@ -141,11 +141,11 @@ public:
   \brief Standard Constructor
 
   */
-  FluidImplicitTimeInt(RCP<DRT::Discretization>  actdis,
-                       LINALG::Solver&           solver,
-                       ParameterList&            params,
-                       IO::DiscretizationWriter& output,
-                       bool                      alefluid=false);
+  FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization>      actdis,
+                       Teuchos::RCP<LINALG::Solver>           solver,
+                       Teuchos::RCP<Teuchos::ParameterList>   params,
+                       Teuchos::RCP<IO::DiscretizationWriter> output,
+                       bool                                   alefluid=false);
 
 
   /*!
@@ -200,7 +200,7 @@ public:
   */
   void MultiCorrector();
 
-  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
+  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
   /*!
   \brief preparatives for solver
@@ -300,7 +300,7 @@ public:
   */
   IO::DiscretizationWriter& DiscWriter()
   {
-    return output_;
+    return *output_;
   }
 
   /*!
@@ -449,8 +449,8 @@ public:
 
 //  virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) ;
 
-//  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+//  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
+  void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
   void PrepareTimeandStep() { UpdateStepandTime(); }
   void UpdateStepandTime(){ step_ += 1;
@@ -616,16 +616,16 @@ protected:
 
   //! @name general algorithm parameters
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
-  LINALG::Solver&               solver_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<LINALG::Solver>           solver_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                          project_;
   //! integrated basis vector (pressure component)
   Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
-  ParameterList&                params_;
-  IO::DiscretizationWriter&     output_;
+  Teuchos::RCP<Teuchos::ParameterList>   params_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
   //! the processor ID from the communicator
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?

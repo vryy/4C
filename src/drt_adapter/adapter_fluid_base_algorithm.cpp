@@ -672,25 +672,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
 
-    if (genprob.probtyp == prb_fsi_xfem or
-             genprob.probtyp == prb_fluid_xfem2 )
+    switch (genprob.probtyp)
+    {
+    case prb_fsi_xfem:
+    case prb_fluid_xfem2:
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
       fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
     }
-    else if (genprob.probtyp == prb_combust)
+    break;
+    case prb_combust:
     {
-      fluid_ = Teuchos::rcp(new FLD::CombustFluidImplicitTimeInt(actdis, *solver, *fluidtimeparams, *output));
+      fluid_ = Teuchos::rcp(new FLD::CombustFluidImplicitTimeInt(actdis, solver, fluidtimeparams, output));
     }
-    else if (genprob.probtyp == prb_fluid_fluid_ale
-             or genprob.probtyp == prb_fluid_fluid)
+    break;
+    case prb_fluid_fluid_ale:
+    case prb_fluid_fluid:
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
       bool monolithicfluidfluidfsi = false;
       fluid_ = Teuchos::rcp(new FLD::XFluidFluid(embfluiddis,actdis,solver,fluidtimeparams,isale,monolithicfluidfluidfsi));
     }
-    else if (genprob.probtyp == prb_fluid_fluid_fsi)
+    break;
+    case prb_fluid_fluid_fsi:
     {
       RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,0);
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -704,26 +708,34 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,bgfluiddis,solver,fluidtimeparams,isale,monolithicfluidfluidfsi));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid, actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
-    else if (genprob.probtyp == prb_fsi or
-        genprob.probtyp == prb_gas_fsi or
-        genprob.probtyp == prb_biofilm_fsi or
-        genprob.probtyp == prb_thermo_fsi)
+    break;
+    case prb_fsi:
+    case prb_gas_fsi:
+    case prb_biofilm_fsi:
+    case prb_thermo_fsi:
     {
-      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,*solver,*fluidtimeparams,*output,isale));
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,solver,fluidtimeparams,output,isale));
       fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid, actdis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
-    else
+    break;
+    case prb_fsi_lung:
     {
-      // what the hell is this???
-      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, *solver, *fluidtimeparams, *output, isale));
-
-      if (genprob.probtyp == prb_fsi_lung)
-        fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
-      else if (genprob.probtyp == prb_poroelast)
-        fluid_ = rcp(new ADAPTER::FluidPoro(rcp(new FluidWrapper(tmpfluid))));
-      else
-        fluid_ = tmpfluid;  // < default?? TODO improve me!
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
+      fluid_ = Teuchos::rcp(new FluidLung(Teuchos::rcp(new FluidWrapper(tmpfluid))));
     }
+    break;
+    case prb_poroelast:
+    {
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
+      fluid_ = Teuchos::rcp(new ADAPTER::FluidPoro(Teuchos::rcp(new FluidWrapper(tmpfluid))));
+    }
+    break;
+    default:
+    {
+        fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
+    }
+    break;
+    } // end switch (genprob.probtyp)
   }
   else
   {
@@ -983,7 +995,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(discret, *solver, *fluidtimeparams, *output, false));
+    fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(discret, solver, fluidtimeparams, output, false));
 
   }
   else

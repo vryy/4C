@@ -117,7 +117,7 @@ namespace ADAPTER
     virtual void PrepareTimeandStep()
     { dserror("not implemented!"); return; }
     virtual void PrepareSolve()
-    { dserror("not implemented!"); return; }
+    { fluid_->PrepareSolve(); }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
     { return fluid_->Evaluate(stepinc); }
     virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol)

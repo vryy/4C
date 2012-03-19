@@ -85,11 +85,11 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
-                                                LINALG::Solver&       solver,
-                                                ParameterList&        params,
-                                                IO::DiscretizationWriter& output,
-                                                bool alefluid)
+FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization>      actdis,
+    Teuchos::RCP<LINALG::Solver>           solver,
+    Teuchos::RCP<Teuchos::ParameterList>   params,
+    Teuchos::RCP<IO::DiscretizationWriter> output,
+    bool                                   alefluid)
   :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -99,11 +99,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
-  extrapolationpredictor_(params.get("do explicit predictor",true)),
-  uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1)),
-  writestresses_(params.get<int>("write stresses", 0)),
-  write_wall_shear_stresses_(params.get<int>("write wall shear stresses", 0)),
+  extrapolationpredictor_(params_->get("do explicit predictor",true)),
+  uprestart_(params_->get("write restart every", -1)),
+  upres_(params_->get("write solution every", -1)),
+  writestresses_(params_->get<int>("write stresses", 0)),
+  write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying)
@@ -122,33 +122,33 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
   // type of time-integration
-  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
   //genalpha integration scheme (afgenalpha or npgenalpha)
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_npgenalpha)
     is_genalpha_= true;
   else
     is_genalpha_= false;
   // time-step size
-  dtp_ = dta_ = params_.get<double>("time step size");
+  dtp_ = dta_ = params_->get<double>("time step size");
   // maximum number of timesteps
-  stepmax_  = params_.get<int>   ("max number timesteps");
+  stepmax_  = params_->get<int>   ("max number timesteps");
   // maximum simulation time
-  maxtime_  = params_.get<double>("total time");
+  maxtime_  = params_->get<double>("total time");
   // parameter theta for time-integration schemes
-  theta_    = params_.get<double>("theta");
+  theta_    = params_->get<double>("theta");
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
   else                                      omtheta_ = 0.0;
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
   // (may be reset below when starting algorithm is used)
-  alphaM_   = params_.get<double>("alpha_M");
-  alphaF_   = params_.get<double>("alpha_F");
-  gamma_    = params_.get<double>("gamma");
+  alphaM_   = params_->get<double>("alpha_M");
+  alphaF_   = params_->get<double>("alpha_F");
+  gamma_    = params_->get<double>("gamma");
 
   // number of steps for starting algorithm
-  numstasteps_ = params_.get<int> ("number of start steps");
+  numstasteps_ = params_->get<int> ("number of start steps");
   // starting algorithm only for af-generalized-alpha so far
   // -> check for time-integration scheme and reasonability of number of steps
   startalgo_ = false;
@@ -162,12 +162,12 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
+  newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
 
   // use of specific predictor
   // (might be used for af-generalized-alpha, but not yet activated)
 
-  if(params_.get<string>("predictor","disabled") == "disabled")
+  if(params_->get<string>("predictor","disabled") == "disabled")
   {
     if(myrank_==0)
     {
@@ -176,10 +176,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     extrapolationpredictor_=false;
   }
 
-  predictor_ = params_.get<string>("predictor","steady_state_predictor");
+  predictor_ = params_->get<string>("predictor","steady_state_predictor");
 
   // form of convective term
-  convform_ = params_.get<string>("form of convective term","convective");
+  convform_ = params_->get<string>("form of convective term","convective");
 
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
@@ -190,13 +190,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // account for potential Neuman inflow terms if required
   // -------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // account for poroelasticity
   // -------------------------------------------------------------------
   poroelast_ = false;
-  if (params_.get<bool>("poroelast",false))
+  if (params_->get<bool>("poroelast",false))
   {
 	  poroelast_ = true;
   }
@@ -205,8 +205,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
-  pbcmapmastertoslave_ = params_.get<RCP<map<int,vector<int> > > >("periodic bc");
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+  pbcmapmastertoslave_ = params_->get<RCP<map<int,vector<int> > > >("periodic bc");
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
@@ -223,7 +223,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  numdim_ = params_.get<int>("number of velocity degrees of freedom");
+  numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
   FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
@@ -238,15 +238,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0)
-      && params_.get<int>("MESHTYING")== INPAR::FLUID::no_meshtying)
+  if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
+      && params_->get<int>("MESHTYING")== INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
-  else if(params_.get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
+  else if(params_->get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
   {
-    msht_ = params_.get<int>("MESHTYING");
+    msht_ = params_->get<int>("MESHTYING");
 
     if (msht_ == INPAR::FLUID::coupling_iontransport_laplace)
       dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
@@ -256,7 +256,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     mshtparams.set("theta",theta_);
     mshtparams.set<int>("mshtoption", msht_);
 
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, solver_, mshtparams, surfacesplitter_));
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, mshtparams, surfacesplitter_));
     sysmat_ = meshtying_->Setup();
     //meshtying_->OutputSetUp();
   }
@@ -350,7 +350,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 #endif
 
-  vol_surf_flow_bc_     = rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, output_, dta_) );
+  vol_surf_flow_bc_     = rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, *output_, dta_) );
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
@@ -378,7 +378,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
 
   strong_redD_3d_coupling_ = false;
-  if (params_.get<string>("Strong 3D_redD coupling","no") == "yes")   strong_redD_3d_coupling_ = true;
+  if (params_->get<string>("Strong 3D_redD coupling","no") == "yes")   strong_redD_3d_coupling_ = true;
 
   {
 #ifdef D_ARTNET
@@ -434,7 +434,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     zeros_->PutScalar(0.0); // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = rcp(new UTILS::TotalTractionCorrector(discret_, output_, dta_) );
+  traction_vel_comp_adder_bc_ = rcp(new UTILS::TotalTractionCorrector(discret_, *output_, dta_) );
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -458,16 +458,16 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   turbmodel_ = INPAR::FLUID::no_model;
 
-  string physmodel = params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model");
+  string physmodel = params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model");
 
   // flag for special flow
-  special_flow_ = params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no");
+  special_flow_ = params_->sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no");
 
   // scale-separation
   scale_sep_ = INPAR::FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
-  fssgv_ = params_.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No");
+  fssgv_ = params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No");
 
   // warning if classical (all-scale) turbulence model and fine-scale
   // subgrid-viscosity approach are intended to be used simultaneously
@@ -477,7 +477,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         or physmodel == "Smagorinsky_with_van_Driest_damping"))
     dserror("No combination of classical all-scale subgrid-viscosity turbulence model and fine-scale subgrid-viscosity approach currently possible!");
 
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES")
+  if (params_->sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES")
   {
 
     if(physmodel == "Dynamic_Smagorinsky")
@@ -487,7 +487,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
       // get one instance of the dynamic Smagorinsky class
       DynSmag_=rcp(new DynSmagFilter(discret_            ,
                                      pbcmapmastertoslave_,
-                                     params_             ));
+                                     *params_             ));
     }
     else if (physmodel == "Smagorinsky")
       turbmodel_ = INPAR::FLUID::smagorinsky;
@@ -499,7 +499,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         turbmodel_ = INPAR::FLUID::scale_similarity;
       else
         turbmodel_ = INPAR::FLUID::scale_similarity_basic;
-      ParameterList *  modelparams =&(params_.sublist("MULTIFRACTAL SUBGRID SCALES"));
+      ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
       if (scale_sep == "box_filter")
       {
@@ -507,7 +507,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         // get one instance of the dynamic Smagorinsky class
         DynSmag_=rcp(new DynSmagFilter(discret_            ,
                                        pbcmapmastertoslave_,
-                                       params_             ));
+                                       *params_             ));
       }
       else if (scale_sep == "algebraic_multigrid_operator")
       {
@@ -535,7 +535,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
       fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
 
-      ParameterList *  modelparams =&(params_.sublist("MULTIFRACTAL SUBGRID SCALES"));
+      ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
 
       const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
       if (scale_sep == "box_filter")
@@ -545,7 +545,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
         // get one instance of the dynamic Smagorinsky class
         DynSmag_=rcp(new DynSmagFilter(discret_            ,
                                        pbcmapmastertoslave_,
-                                       params_             ));
+                                       *params_             ));
 
         if (fssgv_ != "No")
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
@@ -599,7 +599,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
       cout << &endl << &endl;
       cout << fssgv_;
       cout << " with Smagorinsky constant Cs= ";
-      cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+      cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
       cout << &endl << &endl << &endl;
     }
   }
@@ -618,7 +618,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
-    samstart_ = params_.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START",1);
+    samstart_ = params_->sublist("TURBULENCE MODEL").get<int>("SAMPLING_START",1);
 
   // ---------------------------------------------------------------------
   // set density variable to 1.0 and get gas constant for low-Mach-number
@@ -660,14 +660,14 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 #endif // D_ALE_BFLOW
   // construct impedance bc wrapper
-  impedancebc_      = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
+  impedancebc_      = rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
 
   Wk_optimization_  = rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
-                                                                output_,
+                                                                *output_,
                                                                 impedancebc_,
                                                                 dta_) );
 
-  if (params_.get<bool>("INFNORMSCALING"))
+  if (params_->get<bool>("INFNORMSCALING"))
   {
     fluid_infnormscaling_ = rcp(new FLD::UTILS::FluidInfNormScaling(velpressplitter_));
   }
@@ -702,7 +702,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
   // output of stabilization details
   if (myrank_==0)
   {
-    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+    ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
     cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
     cout << "                             " << stabparams->get<string>("TDS")<< "\n";
@@ -938,9 +938,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
       else
       {
         // recall original user wish
-        alphaM_ = params_.get<double>("alpha_M");
-        alphaF_ = params_.get<double>("alpha_F");
-        gamma_  = params_.get<double>("gamma");
+        alphaM_ = params_->get<double>("alpha_M");
+        alphaF_ = params_->get<double>("alpha_F");
+        gamma_  = params_->get<double>("gamma");
         // do not enter starting algorithm section in the future
         startalgo_ = false;
       }
@@ -1067,13 +1067,13 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
+  const double  ittol     =params_->get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
-  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+  const bool fluidrobin = params_->get<bool>("fluidrobin", false);
 
   int  itnum = 0;
   int  itemax = 0;
@@ -1086,7 +1086,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 //  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
 //       itemax  = 2;
 //  else
-  itemax  = params_.get<int>   ("max nonlin iter steps");
+  itemax  = params_->get<int>   ("max nonlin iter steps");
 
   dtsolve_  = 0.0;
   dtele_    = 0.0;
@@ -1181,7 +1181,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
           ||
-          (params_.get<string>("CONVCHECK","L_2_norm")
+          (params_->get<string>("CONVCHECK","L_2_norm")
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
@@ -1203,7 +1203,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // parameters for turbulence approach
       // TODO: rename list
-      eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+      eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 //      if (turbmodel_==INPAR::FLUID::scale_similarity
 //       or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
        if (turbmodel_==INPAR::FLUID::scale_similarity
@@ -1262,7 +1262,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
           ||
-          (params_.get<string>("CONVCHECK","L_2_norm")
+          (params_->get<string>("CONVCHECK","L_2_norm")
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
@@ -1420,7 +1420,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 //          }
 //
 //
-//          string fluid_stab_type_ = params_.sublist("STABILIZATION").get<string>("STABTYPE");
+//          string fluid_stab_type_ = params_->sublist("STABILIZATION").get<string>("STABTYPE");
 //
 //          if( fluid_stab_type_ == "edge_based") EdgeBasedStabilization(eleparams, *discret_, itnum);
 //
@@ -1474,7 +1474,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // (combination of structral force and velocity)
           residual_->Update(theta_*dta_,*robinrhs_,1.0);
 
-          double alphaf = params_.get<double>("alpharobinf",-1.0);
+          double alphaf = params_->get<double>("alpharobinf",-1.0);
           double scale = alphaf*theta_*dta_;
 
           // Add fluid part of Robin force
@@ -1735,7 +1735,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
-          FILE* errfile = params_.get<FILE*>("err file",NULL);
+          FILE* errfile = params_->get<FILE*>("err file",NULL);
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1773,7 +1773,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1811,11 +1811,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         double currresidual = max(vresnorm_,presnorm_);
         currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
         currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
 #ifdef WRITEOUTSTATISTICS
-    FILE* errfile = params_.get<FILE*>("err file",NULL);
+    FILE* errfile = params_->get<FILE*>("err file",NULL);
     if(errfile!=NULL)
     {
       fprintf(errfile, "TOBI: Proc %i/%i\tTimeStep %i\tNonlinIter %i\t",myrank_,discret_->Comm().NumProc(),step_,itnum);
@@ -1824,7 +1824,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 
       if (msht_!= INPAR::FLUID::no_meshtying)
-        meshtying_->SolveMeshtying(solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
       else
       {
         // scale system prior to solver call
@@ -1832,14 +1832,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
 
         // solve the system
-        solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
 
         // unscale solution
         if (fluid_infnormscaling_!= Teuchos::null)
           fluid_infnormscaling_->UnscaleSolution(sysmat_, *incvel_,*residual_);
       }
 
-      solver_.ResetTolerance();
+      solver_->ResetTolerance();
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
@@ -2077,7 +2077,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
   // -------------------------------------------------------------------
   int          itnum = 0;
   int          itmax = 0;
-  const double ittol = params_.get<double>("tolerance for nonlin iter");
+  const double ittol = params_->get<double>("tolerance for nonlin iter");
   bool         stopnonliniter = false;
 
   // -------------------------------------------------------------------
@@ -2090,13 +2090,13 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 //  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
 //       itmax = 1;
 //  else
-  itmax = params_.get<int>("max nonlin iter steps");
+  itmax = params_->get<int>("max nonlin iter steps");
 
   // -------------------------------------------------------------------
   // turn adaptive solver tolerance on/off
   // -------------------------------------------------------------------
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
   // -------------------------------------------------------------------
   // prepare print out for (multiple) corrector
@@ -2136,7 +2136,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
         double currresidual = max(vresnorm_,presnorm_);
         currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
         currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
       if (project_)
@@ -2256,9 +2256,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
         }
       }
 
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
 
-      solver_.ResetTolerance();
+      solver_->ResetTolerance();
 
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
@@ -2342,7 +2342,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
       if (myrank_ == 0)
       {
         printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2365,7 +2365,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2499,7 +2499,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // parameters for turbulence model
   // TODO: rename list
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 //      if (turbmodel_==INPAR::FLUID::scale_similarity
 //       or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
    if (turbmodel_==INPAR::FLUID::scale_similarity
@@ -2870,7 +2870,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
     if (myrank_ == 0)
     {
       printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-      FILE* errfile = params_.get<FILE*>("err file",NULL);
+      FILE* errfile = params_->get<FILE*>("err file",NULL);
       if (errfile!=NULL)
       {
         fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2890,7 +2890,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2912,7 +2912,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //    DRT::Discretization & discret,
 //    int& itnum )
 //{
-////  int itemax = params_.get<int>("max nonlin iter steps");
+////  int itemax = params_->get<int>("max nonlin iter steps");
 //
 //    // call standard loop over elements
 //    //discret.Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
@@ -3279,9 +3279,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   //set parameters for poroelasticity
   if(poroelast_)
   {
-	  eleparams.set("bulkmodulus",params_.get<double>("bulkmodulus",1.0));
-	  eleparams.set("penaltyparameter",params_.get<double>("penaltyparameter",0.0));
-	  eleparams.set("initporosity",params_.get<double>("initporosity",0.5));
+	  eleparams.set("bulkmodulus",params_->get<double>("bulkmodulus",1.0));
+	  eleparams.set("penaltyparameter",params_->get<double>("penaltyparameter",0.0));
+	  eleparams.set("initporosity",params_->get<double>("initporosity",0.5));
   }
 
   // set general vector values needed by elements
@@ -3410,7 +3410,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
   {
@@ -3631,7 +3631,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_);
+  statisticsmanager_->DoOutput(*output_,step_);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
@@ -3664,7 +3664,7 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_,true);
+  statisticsmanager_->DoOutput(*output_,step_,true);
 
 #ifdef GMSHOUTPUT
     OutputToGmsh(step_, time_,true);
@@ -3689,41 +3689,41 @@ void FLD::FluidImplicitTimeInt::Output()
   if (step_%upres_ == 0)
   {
     // step number and time
-    output_.NewStep(step_,time_);
+    output_->NewStep(step_,time_);
 
     // velocity/pressure vector
-    output_.WriteVector("velnp",velnp_);
-    output_.WriteVector("tract_resid",trac_residual_);
-    output_.WriteVector("neumann_loads",neumann_loads_);
+    output_->WriteVector("velnp",velnp_);
+    output_->WriteVector("tract_resid",trac_residual_);
+    output_->WriteVector("neumann_loads",neumann_loads_);
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
-    output_.WriteVector("pressure", pressure);
+    output_->WriteVector("pressure", pressure);
 
 #ifdef GMSHOUTPUT
     OutputToGmsh(step_, time_,false);
 #endif
 
-    //output_.WriteVector("residual", trueresidual_);
-    if (alefluid_) output_.WriteVector("dispnp", dispnp_);
+    //output_->WriteVector("residual", trueresidual_);
+    if (alefluid_) output_->WriteVector("dispnp", dispnp_);
 
     if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq)
     {
       Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
-      output_.WriteVector("scalar_field", scalar_field);
+      output_->WriteVector("scalar_field", scalar_field);
     }
 
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
       RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
+      output_->WriteVector("traction",traction);
       if (myrank_==0)
         cout<<"Writing stresses"<<endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
         RCP<Epetra_Vector> wss = CalcWallShearStresses();
-        output_.WriteVector("wss",wss);
+        output_->WriteVector("wss",wss);
       }
     }
 
@@ -3748,106 +3748,106 @@ void FLD::FluidImplicitTimeInt::Output()
         DynSmag_->OutputofAveragedVel(filteredvel);
         DynSmag_->OutputofFineScaleVel(fsvel);
       }
-      output_.WriteVector("filteredvel",filteredvel);
-      output_.WriteVector("fsvelaf",fsvel);
+      output_->WriteVector("filteredvel",filteredvel);
+      output_->WriteVector("fsvelaf",fsvel);
       if (turbmodel_==INPAR::FLUID::scale_similarity)
       {
         if (myrank_==0)
            std::cout << "output of subfilter stresses for scale similarity model ..." << std::endl;
         RCP<Epetra_Vector> stress11 = CalcSFS(1,1);
-        output_.WriteVector("sfs11",stress11);
+        output_->WriteVector("sfs11",stress11);
         RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
-        output_.WriteVector("sfs12",stress12);
+        output_->WriteVector("sfs12",stress12);
         RCP<Epetra_Vector> stress13 = CalcSFS(1,3);
-        output_.WriteVector("sfs13",stress13);
+        output_->WriteVector("sfs13",stress13);
         RCP<Epetra_Vector> stress22 = CalcSFS(2,2);
-        output_.WriteVector("sfs22",stress22);
+        output_->WriteVector("sfs22",stress22);
         RCP<Epetra_Vector> stress23 = CalcSFS(2,3);
-        output_.WriteVector("sfs23",stress23);
+        output_->WriteVector("sfs23",stress23);
         RCP<Epetra_Vector> stress33 = CalcSFS(3,3);
-        output_.WriteVector("sfs33",stress33);
+        output_->WriteVector("sfs33",stress33);
       }
     }
 #endif
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_.WriteElementData();
+    if (step_==upres_) output_->WriteElementData();
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      output_.WriteVector("accnp",accnp_);
-      output_.WriteVector("accn", accn_);
-      output_.WriteVector("veln", veln_);
-      output_.WriteVector("velnm",velnm_);
+      output_->WriteVector("accnp",accnp_);
+      output_->WriteVector("accn", accn_);
+      output_->WriteVector("veln", veln_);
+      output_->WriteVector("velnm",velnm_);
 
       if (alefluid_)
       {
-        output_.WriteVector("dispn", dispn_);
-        output_.WriteVector("dispnm",dispnm_);
+        output_->WriteVector("dispn", dispn_);
+        output_->WriteVector("dispnm",dispnm_);
       }
 
       if(poroelast_)
-      	output_.WriteVector("gridv", gridv_);
+      	output_->WriteVector("gridv", gridv_);
 
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
-      impedancebc_->WriteRestart(output_);
+      impedancebc_->WriteRestart(*output_);
 
-      Wk_optimization_->WriteRestart(output_);
+      Wk_optimization_->WriteRestart(*output_);
     }
 
-    vol_surf_flow_bc_->Output(output_);
-    traction_vel_comp_adder_bc_->Output(output_);
+    vol_surf_flow_bc_->Output(*output_);
+    traction_vel_comp_adder_bc_->Output(*output_);
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
   {
     // step number and time
-    output_.NewStep(step_,time_);
+    output_->NewStep(step_,time_);
 
     // velocity/pressure vector
-    output_.WriteVector("velnp",velnp_);
+    output_->WriteVector("velnp",velnp_);
 
-    //output_.WriteVector("residual", trueresidual_);
+    //output_->WriteVector("residual", trueresidual_);
     if (alefluid_)
     {
-      output_.WriteVector("dispnp", dispnp_);
-      output_.WriteVector("dispn", dispn_);
-      output_.WriteVector("dispnm",dispnm_);
+      output_->WriteVector("dispnp", dispnp_);
+      output_->WriteVector("dispn", dispn_);
+      output_->WriteVector("dispnm",dispnm_);
     }
 
     if(poroelast_)
-    	output_.WriteVector("gridv", gridv_);
+    	output_->WriteVector("gridv", gridv_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
       RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
+      output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
         RCP<Epetra_Vector> wss = CalcWallShearStresses();
-        output_.WriteVector("wss",wss);
+        output_->WriteVector("wss",wss);
       }
     }
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-    output_.WriteVector("accnp",accnp_);
-    output_.WriteVector("accn", accn_);
-    output_.WriteVector("veln", veln_);
-    output_.WriteVector("velnm",velnm_);
-    output_.WriteVector("tract_resid",trac_residual_);
-    output_.WriteVector("neumann_loads",neumann_loads_);
+    output_->WriteVector("accnp",accnp_);
+    output_->WriteVector("accn", accn_);
+    output_->WriteVector("veln", veln_);
+    output_->WriteVector("velnm",velnm_);
+    output_->WriteVector("tract_resid",trac_residual_);
+    output_->WriteVector("neumann_loads",neumann_loads_);
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
-    impedancebc_->WriteRestart(output_);
+    impedancebc_->WriteRestart(*output_);
 
-    Wk_optimization_->WriteRestart(output_);
-    vol_surf_flow_bc_->Output(output_);
-    traction_vel_comp_adder_bc_->Output(output_);
+    Wk_optimization_->WriteRestart(*output_);
+    vol_surf_flow_bc_->Output(*output_);
+    traction_vel_comp_adder_bc_->Output(*output_);
   }
 
   // write reduced model problem
@@ -4111,7 +4111,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  const int order  = params_.get<int>("order gridvel");
+  const int order  = params_->get<int>("order gridvel");
 
   switch (order)
   {
@@ -4168,7 +4168,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("action","calc_fluid_systemmat_and_residual");
 
   // parameters for turbulence approach
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
   // dummy vectors initialized with zeros
   // see remark fine scale velocity vector
   if (turbmodel_==INPAR::FLUID::scale_similarity
@@ -4251,7 +4251,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     MLAPI::Init();
 
     // extract the ML parameters
-    ParameterList&  mlparams = solver_.Params().sublist("ML Parameters");
+    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
 
     // get toggle vector for Dirchlet boundary conditions
     const Epetra_Vector& dbct = *Dirichlet();
@@ -4380,7 +4380,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       int err =0;
 
       // random noise is perc percent of the initial profile
-      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      double perc = params_->sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
       // out to screen
       if (myrank_==0)
@@ -4931,7 +4931,7 @@ void FLD::FluidImplicitTimeInt::SetTopOptData(
 void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
-  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
   switch(calcerr)
   {
@@ -4995,7 +4995,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         cout.precision(8);
         cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
-          DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error") <<
+          DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
           " ----------" << endl;
         cout << "| velocity:  " << velerr/velint << endl;
         cout << "| pressure:  " << preerr/pint << endl;
@@ -5244,7 +5244,7 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
   // in this map, the results of the lift drag calculation are stored
   RCP<map<int,vector<double> > > liftdragvals;
 
-  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
+  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 
   if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
     FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
@@ -5676,7 +5676,7 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
   }
 
   // if we never build the matrix nothing will be done
-  if (params_.get<bool>("shape derivatives"))
+  if (params_->get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
@@ -5731,7 +5731,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     residual_->PutScalar(0.0);
 
     // Get matrix for mesh derivatives. This is not meant to be efficient.
-    if (params_.get<bool>("shape derivatives"))
+    if (params_->get<bool>("shape derivatives"))
     {
       if (meshmatrix_==Teuchos::null)
       {
@@ -5747,7 +5747,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     ParameterList eleparams;
 
     // parameters for stabilization
-    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
     // set thermodynamic pressures
     eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -5819,7 +5819,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bcmaps_));
 
   //-------solve for residual displacements to correct incremental displacements
-  solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,not inrelaxation_,not inrelaxation_);
+  solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,not inrelaxation_,not inrelaxation_);
 
   // and now we need the reaction forces
 
@@ -6024,7 +6024,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -6090,11 +6090,11 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
   eleparams.set("action","set_turbulence_parameter");
 
   // set general parameters for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
   // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+  eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);
@@ -6113,9 +6113,9 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
 
   // set parameters to update material with subgrid-scale temperature
   // potential inclusion of addtional subgrid-scale terms in continuity equation
-  eleparams.sublist("LOMA") = params_.sublist("LOMA");
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+  eleparams.sublist("LOMA") = params_->sublist("LOMA");
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);
@@ -6226,19 +6226,19 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
 {
     // a canonical flow with homogeneous directions would allow a
     // spatial averaging of data
-    string homdir = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+    string homdir = params_->sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
 
     if (myrank_ == 0 and turbmodel_!=INPAR::FLUID::no_model)
     {
       cout << "Turbulence model        : ";
-      cout << params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model");
+      cout << params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model");
       cout << &endl;
 
       if (turbmodel_ == INPAR::FLUID::smagorinsky)
       {
         cout << "                             " ;
         cout << "with Smagorinsky constant Cs= ";
-        cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
+        cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
         cout << &endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
@@ -6253,10 +6253,10 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "                             "          ;
           cout << "\n";
           cout << "- Smagorinsky constant:   Cs   = "      ;
-          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
+          cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
           cout << &endl;
           cout << "- viscous length      :   l_tau= "      ;
-          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
+          cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
           cout << &endl;
         }
         else if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
@@ -6272,13 +6272,13 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "                             "      ;
           cout << "\n";
           cout << "- Constant:  Cl   = "      ;
-          cout << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
-          cout << "- Scale separation:  " << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
+          cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
+          cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
           cout << &endl;
         }
         else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         {
-          ParameterList *  modelparams =&(params_.sublist("MULTIFRACTAL SUBGRID SCALES"));
+          ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
           cout << "                             "      ;
           cout << "\n";
           cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";

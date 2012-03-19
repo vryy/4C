@@ -46,7 +46,7 @@ namespace FLD
     gamma_           (fluid.gamma_    ),
     density_         (fluid.density_  ),
     discret_         (fluid.discret_  ),
-    params_          (fluid.params_   ),
+//    params_          (fluid.params_   ),
     alefluid_        (fluid.alefluid_ ),
     myaccnp_         (fluid.accnp_    ),
     myaccn_          (fluid.accn_     ),
@@ -64,6 +64,7 @@ namespace FLD
     myfilteredreystr_(null            ),
     myfsvelaf_       (null            )
   {
+    params_ = Teuchos::rcp(&fluid.params_);
     // get density
 
     // activate the computation of subgrid dissipation,
@@ -71,7 +72,7 @@ namespace FLD
     subgrid_dissipation_=true;
 
     // toogle statistics output for turbulent inflow
-    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -87,7 +88,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -102,7 +103,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
@@ -117,7 +118,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));;
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -129,7 +130,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="loma_lid_driven_cavity")
     {
@@ -140,7 +141,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="backward_facing_step")
     {
@@ -151,7 +152,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
       if (inflow_)
         dserror("Sorry, no inflow generation for gammi-style fluid!");
     }
@@ -164,7 +165,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
       if (inflow_)
         dserror("Sorry, no inflow generation for gammi-style fluid!");
     }
@@ -180,7 +181,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES",false));
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
 
       if(discret_->Comm().MyPID()==0)
         std::cout << " done" << std::endl;
@@ -194,7 +195,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
+      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
     }
     else if(fluid.special_flow_=="square_cylinder_nurbs")
     {
@@ -216,7 +217,7 @@ namespace FLD
       statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
-                                                      params_             ,
+                                                      *params_             ,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
@@ -232,7 +233,7 @@ namespace FLD
       statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
-                                                      params_             ,
+                                                      *params_             ,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="time_averaging")
@@ -253,7 +254,7 @@ namespace FLD
     // allocate one instance of the flow independent averaging procedure
     // providing colorful output for paraview
     {
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
@@ -318,7 +319,7 @@ namespace FLD
     subgrid_dissipation_=false;
 
     // toogle statistics output for turbulent inflow
-    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -334,7 +335,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -349,7 +350,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
@@ -364,7 +365,7 @@ namespace FLD
       statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
-                                                          params_             ,
+                                                          *params_             ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -376,7 +377,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="loma_lid_driven_cavity")
     {
@@ -387,7 +388,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,params_));
+      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="backward_facing_step")
     {
@@ -398,18 +399,18 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
-                                                              params_,
+                                                              *params_,
                                                               subgrid_dissipation_));
         }
       }
@@ -423,19 +424,19 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
-         or params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
         {
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
-                                                              params_,
+                                                              *params_,
                                                               subgrid_dissipation_));
         }
       }
@@ -452,18 +453,18 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES",false));
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
-                                                              params_,
+                                                              *params_,
                                                               subgrid_dissipation_));
         }
       }
@@ -480,7 +481,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,params_));
+      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
     }
     else if(fluid.special_flow_=="square_cylinder_nurbs")
     {
@@ -502,7 +503,7 @@ namespace FLD
       statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
-                                                      params_             ,
+                                                      *params_             ,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
@@ -518,7 +519,7 @@ namespace FLD
       statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
-                                                      params_             ,
+                                                      *params_             ,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="time_averaging")
@@ -539,7 +540,7 @@ namespace FLD
     // allocate one instance of the flow independent averaging procedure
     // providing colorful output for paraview
     {
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
@@ -593,7 +594,7 @@ namespace FLD
     // boolean for statistics of transported scalar
     bool withscatra = false;
     // toogle statistics output for turbulent inflow
-    inflow_ = DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
+    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -606,7 +607,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_multiphase_ = rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, params_ ));
+      statistics_channel_multiphase_ = rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_ ));
     }
     else if(timeint.special_flow_=="combust_oracles")
     {
@@ -622,18 +623,18 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES",withscatra));
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
-                                                              params_,
+                                                              *params_,
                                                               subgrid_dissipation_));
         }
       }
@@ -653,7 +654,7 @@ namespace FLD
     // allocate one instance of the flow independent averaging procedure
     // providing colorful output for paraview
     {
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
@@ -689,7 +690,7 @@ namespace FLD
   void TurbulenceStatisticManager::Setup()
   {
 
-    ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+    ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
     smagorinsky_=false;
     scalesimilarity_=false;
@@ -968,7 +969,7 @@ namespace FLD
         // do time sample for inflow channel flow
         if (inflow_)
         {
-          if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
           }
@@ -981,14 +982,14 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::incompressible)
         {
           statistics_bfs_->DoTimeSample(myvelnp_);
 
           // do time sample for inflow channel flow
           if (inflow_)
           {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
             {
               statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
             }
@@ -1001,7 +1002,7 @@ namespace FLD
           // do time sample for inflow channel flow
           if (inflow_)
           {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
               statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
             }
@@ -1021,7 +1022,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
           }
@@ -1039,7 +1040,7 @@ namespace FLD
         {
           RCP<map<int,vector<double> > > liftdragvals;
 
-          FLD::UTILS::LiftDrag(*discret_,*myforce_,params_,liftdragvals);
+          FLD::UTILS::LiftDrag(*discret_,*myforce_,*params_,liftdragvals);
 
           if((*liftdragvals).size()!=1)
           {
@@ -1103,7 +1104,7 @@ namespace FLD
           map<string,RCP<Epetra_Vector> > statevecs;
           map<string,RCP<Epetra_MultiVector> > statetenss;
 
-          if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_gen_alpha)
+          if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_gen_alpha)
           {
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
@@ -1119,12 +1120,12 @@ namespace FLD
           }
           else
           {
-            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha)
+            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha)
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelaf_));
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccam_));
             }
-            else if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_one_step_theta)
+            else if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_one_step_theta)
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelnp_));
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccnp_));
@@ -1132,7 +1133,7 @@ namespace FLD
             else
               dserror("Time integartion scheme not supported!");
 
-            if (params_.sublist("SUBGRID VISCOSITY").get<string>("FSSUGRVISC")!= "No")
+            if (params_->sublist("SUBGRID VISCOSITY").get<string>("FSSUGRVISC")!= "No")
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvel",myfsvelaf_));
               if (myfsvelaf_==null)
@@ -1251,7 +1252,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             statistics_channel_->DoTimeSample(velnp,*force);
           }
@@ -1314,8 +1315,8 @@ namespace FLD
       // (allows restarts during sampling)
       if(dumperiod_==0)
       {
-        int upres    =params_.get<int>("write solution every");
-        int uprestart=params_.get<int>("write restart every" );
+        int upres    =params_->get<int>("write solution every");
+        int uprestart=params_->get<int>("write restart every" );
 
         // dump in combination with a restart/output
         if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>samstart_)
@@ -1323,8 +1324,8 @@ namespace FLD
       }
       if(inflow_)
       {
-        int upres    =params_.get<int>("write solution every");
-        int uprestart=params_.get<int>("write restart every" );
+        int upres    =params_->get<int>("write solution every");
+        int uprestart=params_->get<int>("write restart every" );
 
         // dump in combination with a restart/output
         if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>samstart_)
@@ -1415,7 +1416,7 @@ namespace FLD
         //write statistics of inflow channel flow
         if (inflow_)
         {
-          if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             if(output_inflow)
             {
@@ -1431,7 +1432,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::incompressible)
         {
           if(outputformat == write_single_record)
             statistics_bfs_->DumpStatistics(step);
@@ -1439,7 +1440,7 @@ namespace FLD
           // write statistics of inflow channel flow
           if (inflow_)
           {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
             {
               if(output_inflow)
               {
@@ -1457,7 +1458,7 @@ namespace FLD
           // write statistics of inflow channel flow
           if (inflow_)
           {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
               if(outputformat == write_single_record)
                 statistics_channel_->DumpLomaStatistics(step);
@@ -1480,7 +1481,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             if(outputformat == write_multiple_records)
             {
@@ -1532,8 +1533,8 @@ namespace FLD
       // don't write output if turbulent inflow or twophaseflow is computed
       if (!inflow and flow_ != bubbly_channel_flow)
       {
-        int upres    =params_.get<int>("write solution every");
-        int uprestart=params_.get<int>("write restart every" );
+        int upres    =params_->get<int>("write solution every");
+        int uprestart=params_->get<int>("write restart every" );
 
         if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
         {
@@ -1607,8 +1608,8 @@ namespace FLD
 
       // dump general mean value output for scatra results
       // in combination with a restart/output
-      int upres    =params_.get("write solution every", -1);
-      int uprestart=params_.get("write restart every" , -1);
+      int upres    =params_->get("write solution every", -1);
+      int uprestart=params_->get("write restart every" , -1);
 
       if(step%upres == 0 || step%uprestart == 0)
       {

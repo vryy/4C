@@ -50,59 +50,58 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     Teuchos::RCP<DRT::Discretization> actdis,
-    LINALG::Solver&                   solver,
-    ParameterList&                    params,
-    IO::DiscretizationWriter&         output) :
+    Teuchos::RCP<LINALG::Solver>      solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
   params_ (params),
-  xparams_(params.sublist("XFEM")),
-  //output_(output),
-  output_ (rcp(new IO::DiscretizationWriter(actdis))), // so ist es bei Axel
+  xparams_(params_->sublist("XFEM")),
+  output_(output),
   interfacehandle_(Teuchos::null),
   phinp_(Teuchos::null),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
-  combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
-  veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
-  fluxjumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::FluxJumpType>(params_.sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
-  xfemtimeint_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegration>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT")),
-  xfemtimeint_enr_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnr>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR")),
-  xfemtimeint_enr_comp_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP")),
-  flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
-  marksteinlength_(params_.sublist("COMBUSTION FLUID").get<double>("MARKSTEIN_LENGTH")),
-  moldiffusivity_(params_.sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY")),
-  nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
-  nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
+  combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_->sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
+  veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_->sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
+  fluxjumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::FluxJumpType>(params_->sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
+  xfemtimeint_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegration>(params_->sublist("COMBUSTION FLUID"),"XFEMTIMEINT")),
+  xfemtimeint_enr_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnr>(params_->sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR")),
+  xfemtimeint_enr_comp_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_->sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP")),
+  flamespeed_(params_->sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
+  marksteinlength_(params_->sublist("COMBUSTION FLUID").get<double>("MARKSTEIN_LENGTH")),
+  moldiffusivity_(params_->sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY")),
+  nitschevel_(params_->sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
+  nitschepres_(params_->sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
   gmshoutput_(xparams_.get<bool>("GMSH_OUTPUT")),
-  surftensapprox_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
-  connected_interface_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
-  smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
-  smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
+  surftensapprox_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_->sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
+  connected_interface_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
+  smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
+  smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_->sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   dtele_(0.0),
   step_(0),
   time_(0.0),
-  stepmax_ (params_.get<int>   ("max number timesteps")),
-  maxtime_ (params_.get<double>("total time")),
-  startsteps_(params_.get<int> ("number of start steps")),
-  dta_     (params_.get<double> ("time step size")),
-  dtp_     (params_.get<double> ("time step size")),
-  timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo")),
-  theta_   (params_.get<double>("theta")),
-  alphaM_(params_.get<double>("alpha_M")),
-  alphaF_(params_.get<double>("alpha_F")),
-  gamma_(params_.get<double>("gamma")),
-  initstatsol_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
-  itemax_(params_.get<int>("max nonlin iter steps")),
-  itemaxFRS_(params_.sublist("COMBUSTION FLUID").get<int>("ITE_MAX_FRS")),
+  stepmax_ (params_->get<int>   ("max number timesteps")),
+  maxtime_ (params_->get<double>("total time")),
+  startsteps_(params_->get<int> ("number of start steps")),
+  dta_     (params_->get<double> ("time step size")),
+  dtp_     (params_->get<double> ("time step size")),
+  timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+  theta_   (params_->get<double>("theta")),
+  alphaM_(params_->get<double>("alpha_M")),
+  alphaF_(params_->get<double>("alpha_F")),
+  gamma_(params_->get<double>("gamma")),
+  initstatsol_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"INITSTATSOL")),
+  itemax_(params_->get<int>("max nonlin iter steps")),
+  itemaxFRS_(params_->sublist("COMBUSTION FLUID").get<int>("ITE_MAX_FRS")),
   totalitnumFRS_(0),
   curritnumFRS_(0),
-  extrapolationpredictor_(params.get("do explicit predictor",false)),
-  uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1)),
-  writestresses_(params.get<int>("write stresses", 0)),
+  extrapolationpredictor_(params_->get("do explicit predictor",false)),
+  uprestart_(params_->get("write restart every", -1)),
+  upres_(params_->get("write solution every", -1)),
+  writestresses_(params_->get<int>("write stresses", 0)),
   project_(false),
   samstart_(-1),
   samstop_(-1)
@@ -128,7 +127,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
   }
 
-  numdim_ = params_.get<int>("number of velocity degrees of freedom");
+  numdim_ = params_->get<int>("number of velocity degrees of freedom");
   if (numdim_ != 3) dserror("COMBUST only supports 3D problems.");
 
   //------------------------------------------------------------------------------------------------
@@ -191,7 +190,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // Neumann inflow term if required
   //------------------------------------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -250,7 +249,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // get layout of velocity and pressure dofs in a vector
-  const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  const int numdim = params_->get<int>("number of velocity degrees of freedom");
   FLD::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
 
   //------------------------------------------------------------------------------------------------
@@ -321,7 +320,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // ----------------------------------------------------
 
   // get list of turbulence parameters
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
   // read turbulence model
   string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
@@ -462,11 +461,11 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   // set time dependent parameters
   // -----------------------------------------------------------------------------------------------
   // reset time step size, 'theta' and time integration algorithm
-  dta_      = params_.get<double> ("time step size");
-  dtp_      = params_.get<double> ("time step size");
-  theta_    = params_.get<double>("theta");
-  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
-  itemax_   = params_.get<int>("max nonlin iter steps");
+  dta_      = params_->get<double> ("time step size");
+  dtp_      = params_->get<double> ("time step size");
+  theta_    = params_->get<double>("theta");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
+  itemax_   = params_->get<int>("max nonlin iter steps");
 
   step_ += 1;
   time_ += dta_;
@@ -495,20 +494,20 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
       dtp_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
       theta_ = 1.0;
       // set max iterations for initial stationary algorithm
-      itemax_ = params_.get<int>("max nonlin iter steps init stat sol");
+      itemax_ = params_->get<int>("max nonlin iter steps init stat sol");
     }
     // compute first (instationary) time step differently
     // remark: usually backward Euler (theta=1.0) to damp inital pertubations
     else if (step_==1)
     {
       // get starting 'theta' for first time step
-      theta_ = params_.get<double>("start theta");
+      theta_ = params_->get<double>("start theta");
       cout0_ << "/!\\ first time step computed with theta =  " << theta_ << endl;
     }
     // regular time step
     else if (step_ > 1)
     {
-      theta_ = params_.get<double>("theta");
+      theta_ = params_->get<double>("theta");
     }
     else
       dserror("number of time step is wrong");
@@ -533,9 +532,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
       else
       {
         // recall original parameters from input file
-        alphaM_ = params_.get<double>("alpha_M");
-        alphaF_ = params_.get<double>("alpha_F");
-        gamma_  = params_.get<double>("gamma");
+        alphaM_ = params_->get<double>("alpha_M");
+        alphaF_ = params_->get<double>("alpha_F");
+        gamma_  = params_->get<double>("gamma");
       }
     }
     // compute "pseudo-theta" for af-generalized-alpha scheme
@@ -549,7 +548,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     if (step_==1)
     {
       timealgo_ = INPAR::FLUID::timeint_one_step_theta;
-      theta_ = params_.get<double>("start theta");
+      theta_ = params_->get<double>("start theta");
     }
     // regular time step (step_>1)
     else
@@ -800,7 +799,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   // remark: 'true' is needed to prevent iterative solver from crashing
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // anonymous namespace for dofswitcher and startvalues
   {
@@ -920,7 +919,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
           case INPAR::COMBUST::xfemtimeintenr_project:
           case INPAR::COMBUST::xfemtimeintenr_project_scalar:
           {
-            INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrComp(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP"));
+            INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrComp(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_->sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP"));
 
             // enrichment time integration data
             timeIntEnr_ = rcp(new XFEM::EnrichmentProjection(
@@ -1234,11 +1233,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // ---------------------------------------------- nonlinear iteration
     // ------------------------------- stop nonlinear iteration when both
     //                                 increment-norms are below this bound
-    const double  ittol     = params_.get<double>("tolerance for nonlin iter");
+    const double  ittol     = params_->get<double>("tolerance for nonlin iter");
 
     //------------------------------ turn adaptive solver tolerance on/off
-    const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
-    const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
+    const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
+    const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
 
 
     // REMARK:
@@ -1247,7 +1246,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
     //const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
 
-    //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+    //const bool fluidrobin = params_->get<bool>("fluidrobin", false);
 
     int               itnum = 0;
     bool              stopnonliniter = false;
@@ -1364,20 +1363,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         //eleparams.set("step",step_);
 #endif
 
-        //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+        //eleparams.set("include reactive terms for linearisation",params_->get<bool>("Use reaction terms for linearisation"));
         //type of linearisation: include reactive terms for linearisation
-        if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
+        if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::Newton)
           eleparams.set("include reactive terms for linearisation",true);
-        else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
+        else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::minimal)
           dserror("LinearisationAction minimal is not defined in the combustion formulation");
         else
           eleparams.set("include reactive terms for linearisation",false);
 
         // parameters for stabilization
-        eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
         // parameters for stabilization
-        eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+        eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
         // set vector values needed by elements
         discret_->ClearState();
@@ -1399,7 +1398,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // convergence check at itemax is skipped for speedup if
         // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-        if ((itnum != itemax_) || (params_.get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
+        if ((itnum != itemax_) || (params_->get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
         {
           // call standard loop over elements
           discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -1668,7 +1667,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           printf(" (ts=%10.3E,te_min=%10.3E,te_max=%10.3E)\n", dtsolve, min, max);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
-          FILE* errfile = params_.get<FILE*>("err file");
+          FILE* errfile = params_->get<FILE*>("err file");
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1793,7 +1792,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file");
+        FILE* errfile = params_->get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -1923,7 +1922,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
 //      // print matrix in matlab format
@@ -1951,8 +1950,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 //      cout << " ...done" << endl;
 //      dserror("Fertig");
 
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
-      solver_.ResetTolerance();
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
+      solver_->ResetTolerance();
 
       // end time measurement for solver
       // remark: to get realistic times, this barrier results in the longest time being printed
@@ -2015,7 +2014,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   //--------------------
   // compute error norms
   //--------------------
-  INPAR::COMBUST::NitscheError errortype = DRT::INPUT::IntegralValue<INPAR::COMBUST::NitscheError>(params_.sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
+  INPAR::COMBUST::NitscheError errortype = DRT::INPUT::IntegralValue<INPAR::COMBUST::NitscheError>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
   if(errortype != INPAR::COMBUST::nitsche_error_none)
     FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nitsche(errortype);
 
@@ -2131,7 +2130,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
   // -------------------------------------------------------------------
   // parameters and variables for nonlinear iteration
   // -------------------------------------------------------------------
-  const double ittol = params_.get<double>("tolerance for nonlin iter");
+  const double ittol = params_->get<double>("tolerance for nonlin iter");
   int          itnum = 0;
   //int          itemax = 0;
   bool         stopnonliniter = false;
@@ -2145,8 +2144,8 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
   // -------------------------------------------------------------------
   // turn adaptive solver tolerance on/off
   // -------------------------------------------------------------------
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
+  const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
+  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
 
   // -------------------------------------------------------------------
   // prepare print out for (multiple) corrector
@@ -2200,7 +2199,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
 #if 0
@@ -2320,12 +2319,12 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
           dserror("unknown definition of weight vector w for restriction of Krylov space");
         }
       }
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
-      solver_.ResetTolerance();
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      solver_->ResetTolerance();
 #endif
 
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
-      solver_.ResetTolerance();
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+      solver_->ResetTolerance();
 
       dtsolve = Teuchos::Time::wallTime()-tcpusolve;
     }
@@ -2408,7 +2407,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
       if (myrank_ == 0)
       {
         printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-        FILE* errfile = params_.get<FILE*>("err file");
+        FILE* errfile = params_->get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2431,7 +2430,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file");
+        FILE* errfile = params_->get<FILE*>("err file");
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2505,20 +2504,20 @@ void FLD::CombustFluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);
 
-  //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+  //eleparams.set("include reactive terms for linearisation",params_->get<bool>("Use reaction terms for linearisation"));
   //type of linearisation: include reactive terms for linearisation
-  if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
+  if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::Newton)
     eleparams.set("include reactive terms for linearisation",true);
-  else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
+  else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::minimal)
     dserror("LinearisationAction minimal is not defined in the combustion formulation");
   else
     eleparams.set("include reactive terms for linearisation",false);
 
   // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
   // parameters for stabilization
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
   // set general vector values needed by elements
   discret_->ClearState();
@@ -4330,7 +4329,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   case INPAR::COMBUST::initfield_field_by_function:
   case INPAR::COMBUST::initfield_disturbed_field_by_function:
   {
-    const int numdim = params_.get<int>("number of velocity degrees of freedom");
+    const int numdim = params_->get<int>("number of velocity degrees of freedom");
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -4354,7 +4353,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     // add random perturbation
     if(initfield == INPAR::COMBUST::initfield_disturbed_field_by_function)
     {
-      const int numdim = params_.get<int>("number of velocity degrees of freedom");
+      const int numdim = params_->get<int>("number of velocity degrees of freedom");
 
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -4362,7 +4361,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
       // random noise is perc percent of the initial profile
 
-      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
+      double perc = params_->sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
 
       // out to screen
       if (myrank_==0)
@@ -5430,7 +5429,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change in every time step/FG-iteration
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = Teuchos::rcp(new XFEM::DofManager(
       flamefront->InterfaceHandle(),
       flamefront->Phinp(),
       physprob_.xfemfieldset_,
@@ -5681,7 +5680,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(*params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
@@ -5763,7 +5762,7 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
   // in this map, the results of the lift drag calculation are stored
   RCP<map<int,vector<double> > > liftdragvals;
 
-  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,params_,liftdragvals);
+  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 
   return;
 } // CombustFluidImplicitTimeInt::LiftDrag

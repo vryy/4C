@@ -235,7 +235,7 @@ private:
 
   //! parameterlist of the discretization including time params,
   //! stabilization params and turbulence sublist
-  ParameterList&                       params_     ;
+  Teuchos::RCP<Teuchos::ParameterList> params_;
 
   //! parameterlist specially designed for the evaluation of
   //! gausspoint statistics

@@ -80,9 +80,9 @@ public:
   */
   explicit CombustFluidImplicitTimeInt(
       Teuchos::RCP<DRT::Discretization>  dis,
-      LINALG::Solver&           solver,
-      ParameterList&            params,
-      IO::DiscretizationWriter& output);
+      Teuchos::RCP<LINALG::Solver>       solver,
+      Teuchos::RCP<ParameterList>        params,
+      Teuchos::RCP<IO::DiscretizationWriter> output);
 
   /*!
   \brief destructor
@@ -185,7 +185,7 @@ public:
   */
   void MultiCorrector();
 
-  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return Teuchos::rcp<LINALG::Solver>(&solver_); };
+  Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -478,8 +478,8 @@ protected:
   //! @name general algorithm parameters
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>             discret_;
-  LINALG::Solver&                               solver_;
-  ParameterList&                                params_;
+  Teuchos::RCP<LINALG::Solver>                  solver_;
+  Teuchos::RCP<ParameterList>                   params_;
   const ParameterList&                          xparams_;
   Teuchos::RCP<IO::DiscretizationWriter>        output_;
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
