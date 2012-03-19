@@ -211,6 +211,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     reader.ReadGidSection(ss.str(), *list);
   }
 
+  reader.ReadGidSection("--UMFPACK SOLVER",*list);
+
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
   reader.ReadGidSection("--CONDITION NAMES", *list);
@@ -232,12 +234,11 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
 const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
 {
   Teuchos::RCP<Teuchos::ParameterList> params = getNonconstParameterList();
-  if(params->isSublist("UMFPACK SOLVER") == false)
-  {
-    Teuchos::ParameterList& subParams = params->sublist("UMFPACK SOLVER");
-    subParams.set("SOLVER", "UMFPACK");
-    subParams.set("NAME"  , "temporary UMFPACK solver");
-  }
+
+  Teuchos::ParameterList& subParams = params->sublist("UMFPACK SOLVER");
+  subParams.set("SOLVER", "UMFPACK");
+  subParams.set("NAME"  , "temporary UMFPACK solver");
+
   return getParameterList()->sublist("UMFPACK SOLVER");
 }
 
