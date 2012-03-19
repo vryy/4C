@@ -12,9 +12,9 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 Iterative staggered coupling algorithm for solution of thermo-structure
 interaction (heating due to nodal velocities)
-------------------------- mechanical problem: quasi-static, geometric linear
----------------------------------------------------- dynamic thermal problem
------------------------------------------------ material parameters of steel
+mechanical problem: quasi-static, geometric linear
+dynamic thermal problem
+material parameters of steel
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
 NODES                           12

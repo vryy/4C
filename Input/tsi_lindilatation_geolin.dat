@@ -153,7 +153,6 @@ RESTARTEVRY                     1
 TIMESTEP                        0.01
 UPRES                           1
 ----------------------------------------------------------------XFEM GENERAL
-----------------------------------------------------XFLUID PROJECTION SOLVER
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 PARTITION                       Cut_Elements

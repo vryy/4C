@@ -12,10 +12,10 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 Sequential staggered coupling algorithm for solution of thermo-structure
 interaction (heating due to nodal velocities)
-------------------------- mechanical problem: quasi-static, geometric linear
----------------------------------------------------- dynamic thermal problem
------------------------------------------------ material parameters of steel
---------------------------- structural predictor (COUPVARIABLE=Displacement)
+mechanical problem: quasi-static, geometric linear
+dynamic thermal problem
+material parameters of steel
+structural predictor (COUPVARIABLE=Displacement)
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
 NODES                           12
