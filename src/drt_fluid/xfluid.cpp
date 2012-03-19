@@ -3518,6 +3518,15 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | create field test
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FLD::XFluid::CreateFieldTest()
+{
+  return Teuchos::rcp(new FLD::XFluidResultTest2(this));
+}
+
+
 void FLD::XFluid::XFluidState::GenAlphaIntermediateValues()
 {
   //       n+alphaM                n+1                      n

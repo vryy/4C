@@ -41,6 +41,11 @@ namespace XFEM
 // forward declarations
 class PeriodicBoundaryConditions;
 
+namespace DRT
+{
+  class ResultTest;
+}
+
 namespace COMBUST
 {
   class FlameFront;
@@ -340,6 +345,8 @@ public:
 
   Teuchos::RCP<const Epetra_Vector> InitialGuess()  { return incvel_; }
   Teuchos::RCP<      Epetra_Vector> Residual()      { return residual_; }
+  /// implement adapter fluid
+  Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
   Teuchos::RCP<const Epetra_Vector> TrueResidual()  { return trueresidual_; }
   Teuchos::RCP<const Epetra_Vector> Velnp()         { return state_.velnp_; }
   Teuchos::RCP<const Epetra_Vector> Velaf()         { return state_.velaf_; }
@@ -421,8 +428,12 @@ public:
 
   /// Transfers all vectors based on an enriched dofmap to the new dofmap after a redistribution.
   void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront);
-  //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
   Teuchos::RCP<const Epetra_Vector> ConvectiveVel() { return Velnp(); }
+
+  /// create field test
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
 
 protected:
 

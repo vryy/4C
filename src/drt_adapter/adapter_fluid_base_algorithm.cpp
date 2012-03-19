@@ -38,6 +38,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 #include "adapter_fluid_fluid_fsi.H"
+#include "adapter_fluid_fsi.H"
 #include "adapter_fluid_lung.H"
 #include "adapter_fluid_poro.H"
 
@@ -702,6 +703,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,bgfluiddis,*solver,*fluidtimeparams,isale,monolithicfluidfluidfsi));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid, actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+    }
+    else if (genprob.probtyp == prb_fsi or
+        genprob.probtyp == prb_gas_fsi or
+        genprob.probtyp == prb_biofilm_fsi or
+        genprob.probtyp == prb_thermo_fsi)
+    {
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,*solver,*fluidtimeparams,*output,isale));
+      fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid, actdis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     else
     {

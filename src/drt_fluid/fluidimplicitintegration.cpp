@@ -39,6 +39,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
+#include "fluidresulttest.H"
 #include "fluidimpedancecondition.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
 #include "dyn_smag.H"
@@ -6320,9 +6321,18 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+/*------------------------------------------------------------------------------------------------*
+ | create field test
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FLD::FluidImplicitTimeInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new FLD::FluidResultTest(*this));
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ |
+ *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ConvectiveVel()
 {
   if (GridVel() == Teuchos::null)

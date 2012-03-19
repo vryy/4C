@@ -23,6 +23,7 @@ namespace DRT
 {
   class Discretization;
   class IndependentDofSet;
+  class ResultTest;
 }
 namespace LINALG
 {
@@ -335,6 +336,8 @@ namespace FLD
 
     Teuchos::RCP<const Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
     Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
+    /// implement adapter fluid
+    Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
     Teuchos::RCP<const Epetra_Vector> Velnp() { return alevelnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
@@ -411,6 +414,9 @@ namespace FLD
     //Teuchos::RCP<Epetra_Vector> calcStresses();
 
     void LiftDrag() const;
+
+    /// create field test
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     // embedded fluid state vectors
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;

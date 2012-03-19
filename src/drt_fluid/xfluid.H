@@ -382,6 +382,8 @@ namespace FLD
     /// monolithic FSI needs to access the linear fluid problem
     Teuchos::RCP<const Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
     Teuchos::RCP<Epetra_Vector> Residual()     { cout << "Residual" << endl;     return state_->residual_; }
+    /// implement adapter fluid
+    Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { cout << "Xfluid_TrueResidual" << endl; return state_->trueresidual_; }
     Teuchos::RCP<const Epetra_Vector> Velnp()        { cout << "Velnp" << endl;        return state_->velnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf()        { cout << "Velaf" << endl;        return state_->velaf_; }
@@ -462,6 +464,9 @@ namespace FLD
       initialized extractor object iff we are on an ale mesh.
      */
     void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { state_->surfacesplitter_ = surfacesplitter; }
+
+    /// create field test
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     // dof-row maps
     const Epetra_Map* soliddofrowmap_;

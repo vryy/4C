@@ -5,6 +5,7 @@
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -137,6 +138,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
   return Interface().ExtractFSCondVector(fluidimpl_->Veln());
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  interface_->InsertFSICondVector(ivel,fluidimpl_->ViewOfVelnp());
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
@@ -155,6 +164,13 @@ void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
   meshmap_->InsertCondVector(gridvel,fluidimpl_->ViewOfGridVel());
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+{
+  meshmap_->Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

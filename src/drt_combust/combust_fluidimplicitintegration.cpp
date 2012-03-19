@@ -27,6 +27,7 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
+#include "combust_fluidresulttest.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
@@ -5526,6 +5527,17 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
 
   return;
 } // FLD::CombustFluidImplicitTimeInt::Redistribute
+
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ | create field test
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FLD::CombustFluidImplicitTimeInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new FLD::CombustFluidResultTest(*this));
+}
 
 
 /*------------------------------------------------------------------------------------------------*

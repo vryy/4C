@@ -52,6 +52,7 @@ using namespace Teuchos;
 namespace DRT
 {
   class Discretization;
+  class ResultTest;
  // class DofSet;
  // class Condition;
 }
@@ -374,8 +375,11 @@ public:
 
   Teuchos::RCP<const Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<      Epetra_Vector> Residual() { return residual_; }
+  /// implement adapter fluid
+  Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
   Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
   Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<      Epetra_Vector> ViewOfVelnp() { return velnp_; }
   Teuchos::RCP<const Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<const Epetra_Vector> Velnm() { return velnm_; }
@@ -563,10 +567,8 @@ public:
       );
   //@}
 
-
-//-------------------------------------------------------------------
-// from the adapter
-//-------------------------------------------------------------------
+  /// create field test
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
 

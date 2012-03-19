@@ -42,6 +42,7 @@
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
 #include "time_integration_scheme.H"
+#include "xfluidfluidresulttest.H"
 
 #include "fluid_utils.H"
 
@@ -4108,4 +4109,13 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
     mat->SetCondElements(condelements);
     shapederivatives_ = mat;
   }
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | create field test
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
+{
+  return Teuchos::rcp(new FLD::XFluidFluidResultTest(*this));
 }

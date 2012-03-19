@@ -58,7 +58,7 @@ public:
   virtual ~TimInt();
 
   virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<const Epetra_Vector> RHS()           { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
   virtual Teuchos::RCP<const Epetra_Vector> TrueResidual()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
   virtual Teuchos::RCP<const Epetra_Vector> Velaf()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }

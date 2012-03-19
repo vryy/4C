@@ -95,6 +95,8 @@ namespace ADAPTER {
 
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
 
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
