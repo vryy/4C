@@ -19,7 +19,7 @@ Maintainer: Georg Bauer
 #define ELCH_ALGORITHM_H
 
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
-#include "../drt_inpar/inpar_elch.H"
+//#include "../drt_inpar/inpar_elch.H"
 
 
 /*!
