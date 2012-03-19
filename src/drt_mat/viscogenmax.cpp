@@ -2,6 +2,17 @@
 /*!
 \file viscogenmax.cpp
 
+\brief
+This file contains the Generalized Maxwell model consisting of one spring
+in parallel to a sequential branch of a spring and a dashpot. This model can
+be applied to any hyperelastic law of the Elasthyper toolbox. The viscous
+effect can be applied to any part of the SEF (isotropic,isotropic isochoric,
+isotropic volumetric, anisotropic, anisotropic isochoric, anisotropic
+volumetric).
+
+The input line should read
+MAT 0   MAT_ViscoGenMax   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 0 RELAX_ISOT_MOD_VOL 0 BETA_ISOT_MOD_VOL 0 RELAX_ISOT_MOD_ISOC 0 BETA_ISOT_MOD_ISOC 0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 RELAX_ANISOT_MOD_VOL 0 BETA_ANISOT_MOD_VOL 0 RELAX_ANISOT_MOD_ISOC 0 BETA_ANISOT_MOD_ISOC 0 INIT_MODE -1
+
 <pre>
 Maintainer: Aline Bel
             brunon@lnm.mw.tum.de
@@ -9,8 +20,6 @@ Maintainer: Aline Bel
             089 - 289-15255
 </pre>
 */
-
-
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
@@ -44,21 +53,7 @@ MAT::PAR::ViscoGenMax::ViscoGenMax(
   relax_anisot_mod_isoc_(matdata->GetDouble("RELAX_ANISOT_MOD_ISOC")),
   beta_anisot_mod_isoc_(matdata->GetDouble("BETA_ANISOT_MOD_ISOC"))
 
-//  init_mode_(matdata->GetInt("INIT_MODE"))
 {
-//  // check if sizes fit
-//  if (nummat_ != (int)matids_->size())
-//    dserror("number of materials %d does not fit to size of material vector %d", nummat_, matids_->size());
-//
-//  // make sure the referenced materials in material list have quick access parameters
-//  std::vector<int>::const_iterator m;
-//  for (m=matids_->begin(); m!=matids_->end(); ++m)
-//  {
-//    const int matid = *m;
-//    Teuchos::RCP<MAT::ELASTIC::Summand> potsum = MAT::ELASTIC::Summand::Factory(matid);
-//    if (potsum == Teuchos::null) dserror("Failed to allocate");
-//    potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELASTIC::Summand> >(matid,potsum));
-//  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -443,29 +438,6 @@ void MAT::ViscoGenMax::Evaluate(
   // ... even if it is an implicit law that cmat is zero upon input
   stress.Clear();
   cmat.Clear();
-//
-//  //initialize scalars
-//  double artscalar1;
-//  double artscalar2;
-//  double scalarvisco;
-//
-//  //  Get relaxation time and time integration constant
-//  double tau  = viscoparams_->relax_;
-//  double beta = viscoparams_->beta_;
-//  const double theta= 0.5 ;//params_->theta_;
-//
-//  // get time algorithmic parameters
-//  // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model
-//  // there is no special treatment required. Adaptation for Kelvin-Voigt were necessary.
-//  double dt = params.get<double>("delta time"); // TIMESTEP in the .dat file
-//
-//  // evaluate scalars to compute
-//  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + beta(S^(n+1) - S^n)]
-//  artscalar1=(tau - dt + theta*dt)/tau;
-//  artscalar2=tau/(tau + theta*dt);
-//
-//  // factor to calculate visco stiffness matrix from elastic stiffness matrix
-//  scalarvisco = 1+beta*exp(-dt/(2*tau));//+alpha1*tau/(tau+theta*dt);
 
   if (isoprinc_)
     {

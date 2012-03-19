@@ -1,6 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elasthyper.cpp
+\brief
+This file contains the hyperelastic toolbox. It allows summing up several summands
+of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic
+strain energy function.
+
+The input line should read
+MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -13,8 +20,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-// unnecessary
-//#include <vector>
 #include "elasthyper.H"
 #include "../drt_matelast/elast_summand.H"
 #include "../linalg/linalg_utils.H"
@@ -182,10 +187,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   anisoprinc_ = anisoprinc != 0;
   ExtractfromPack(position,data,anisomod);
   anisomod_ = anisomod != 0;
-//  ExtractfromPack(position,data,isoprinc_);
-//  ExtractfromPack(position,data,isomod_);
-//  ExtractfromPack(position,data,anisoprinc_);
-//  ExtractfromPack(position,data,anisomod_);
 
   ExtractfromPack(position,data,a1_);
   ExtractfromPack(position,data,a2_);
@@ -534,9 +535,6 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<6,1>& stress
   )
 {
-//  bool havecoeffprinc_ = false;
-//  bool havecoeffmodi_ = false;
-//  bool havecoeffpraniso_ = false;
 
   LINALG::Matrix<6,1> id2(true) ;
   LINALG::Matrix<6,1> rcg(true) ;
@@ -583,7 +581,6 @@ void MAT::ElastHyper::Evaluate(
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
     EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
     stress.Update(1.0, stressisomodiso, 1.0);
-//    cout << "stress" << stress << endl ;
     stress.Update(1.0, stressisomodvol, 1.0);
     cmat.Update(1.0,cmatisomodiso,1.0);
     cmat.Update(1.0,cmatisomodvol,1.0);
@@ -693,9 +690,6 @@ void MAT::ElastHyper::EvaluateGammaDelta(
 
 {
   // principal coefficients
-  //  bool havecoeffprinc_ = false;
-//  LINALG::Matrix<3,1> gamma_(true);
-//  LINALG::Matrix<8,1> delta_(true);
   if (isoprinc_)
   {
     // loop map of associated potential summands
@@ -707,17 +701,10 @@ void MAT::ElastHyper::EvaluateGammaDelta(
       p->second->AddCoefficientsPrincipal(gamma,delta,prinv,normdist_);
       //Do all the HU dependency (medical images) stuff!
       p->second->AddCoefficientsPrincipal(HU_,HUlumen_,gamma,delta,prinv);
-//      p->second->AddCoefficientsPrincipal(prinv);
-//      p->second->AddCoefficientsPrincipal(prinv,normdist_);
-//      //Do all the HU dependency (medical images) stuff!
-//      p->second->AddCoefficientsPrincipal(prinv);
     }
   }
 
   // modified coefficients
-//  bool havecoeffmodi_ = false;
-//  LINALG::Matrix<3,1> modgamma_(true);
-//  LINALG::Matrix<5,1> moddelta_(true);
   if (isomod_)
   {
 
@@ -727,15 +714,11 @@ void MAT::ElastHyper::EvaluateGammaDelta(
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsModified(modgamma,moddelta,modinv);
-//      p->second->AddCoefficientsModified(modinv);
     }
 
   }
 
 // modified coefficients
-//  bool havecoeffpraniso_ = false;
-//  LINALG::Matrix<3,1> anisogamma(true);
-//  LINALG::Matrix<15,1> anisodelta_(true);
   if (anisoprinc_)
   {
     // loop map of associated potential summands
@@ -744,7 +727,6 @@ void MAT::ElastHyper::EvaluateGammaDelta(
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsPrincipalAniso(anisogamma,anisodelta,pranisoinv);
-//      p->second->AddCoefficientsPrincipalAniso(pranisoinv);
     }
 
     return ;
@@ -764,10 +746,6 @@ void MAT::ElastHyper::EvaluateIsotropicPrinc(
     LINALG::Matrix<8,1> delta
     )
 {
-//  LINALG::Matrix<6,1> stressisoprinc_;// stress tensor in the unsplitted version of the ISOTROPIC formulation
-//  LINALG::Matrix<6,6> cmatisoprinc_;// elasticity tensor in the unsplitted version of the ISOTROPIC formulation
-//  stressisoprinc_.Clear();
-//  cmatisoprinc_.Clear();
 
   // 2nd Piola Kirchhoff stresses
   stressisoprinc.Update(gamma(0), id2, 1.0);
@@ -891,11 +869,6 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<15,1> anisodelta
     )
 {
-//  LINALG::Matrix<6,1> stressanisoprinc_; // stress tensor in the unsplitted version of the ANISOTROPIC formulation
-//  LINALG::Matrix<6,6> cmatanisoprinc_;// elasticity tensor in the unsplitted version of the ANISOTROPIC formulation
-//
-//  stressanisoprinc_.Clear();
-//  cmatanisoprinc_.Clear();
 
   // build Voigt (stress-like) version of a1 \otimes a2 + a2 \otimes a1
   LINALG::Matrix<6,1> A1A2sym;
@@ -957,22 +930,6 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
 
   return ;
 }
-//
-///*----------------------------------------------------------------------*/
-///*----------------------------------------------------------------------*/
-//void MAT::ElastHyper::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-//                               Epetra_SerialDenseMatrix* cmat_e,
-//                               Epetra_SerialDenseVector* stress_e)
-//{
-//  // this is temporary as long as the material does not have a
-//  // Matrix-type interface
-//  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
-//  LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
-//  LINALG::Matrix<6,1> stress(stress_e->A(),true);
-//
-//  Evaluate(glstrain,cmat,stress);
-//}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

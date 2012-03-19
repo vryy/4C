@@ -60,6 +60,10 @@ DRT::ParObject* MAT::NeoHookeType::Create( const std::vector<char> & data )
 MAT::NeoHooke::NeoHooke()
   : params_(NULL)
 {
+  dserror("This material law - NEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
+      "If you want to use this law, the material input line should read :\n"
+      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+      "MAT 2   ELAST_CoupNeoHooke YOUNG 1 NUE 1\n");
 }
 
 /*----------------------------------------------------------------------*/
@@ -67,6 +71,10 @@ MAT::NeoHooke::NeoHooke()
 MAT::NeoHooke::NeoHooke(MAT::PAR::NeoHooke* params)
   : params_(params)
 {
+  dserror("This material law - NEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
+      "If you want to use this law, the material input line should read :\n"
+      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+      "MAT 2   ELAST_CoupNeoHooke YOUNG 1 NUE 1\n");
 }
 
 /*----------------------------------------------------------------------*/

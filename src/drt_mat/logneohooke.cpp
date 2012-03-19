@@ -63,6 +63,12 @@ DRT::ParObject* MAT::LogNeoHookeType::Create( const std::vector<char> & data )
 MAT::LogNeoHooke::LogNeoHooke()
   : params_(NULL)
 {
+  dserror("This material law - LOGNEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
+    "If you want to use this law, the material input line should read :\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 2   ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3 MODE YN\n"
+    "or\n"
+    "MAT 2   ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE Lame\n");
 }
 
 
@@ -72,6 +78,12 @@ MAT::LogNeoHooke::LogNeoHooke()
 MAT::LogNeoHooke::LogNeoHooke(MAT::PAR::LogNeoHooke* params)
   : params_(params)
 {
+  dserror("This material law - LOGNEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
+    "If you want to use this law, the material input line should read :\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 2   ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3 MODE YN\n"
+    "or\n"
+    "MAT 2   ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE Lame\n");
 }
 
 /*----------------------------------------------------------------------*
