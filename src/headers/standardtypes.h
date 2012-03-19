@@ -51,13 +51,10 @@ Maintainer: Michael Gee
 typedef struct _GENPROB
 {
   enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
-  enum _TIME_TYP    timetyp;       /* type of time, see enum.h */
 
   INT               ndim;          /* dimension of problem (2 or 3) */
 
   INT               restart;       /* is restart or not */
-
-  INT               adaptive;      /* adaptive mesh algorithms */
 
   INT               numsf;         /* actual number of struct-field */
   INT               numff;         /* actual number of fluid field */

@@ -53,14 +53,6 @@ typedef enum _PROBLEM_TYP
  * The trailing NULL is essential for the filters to read the problem
  * type! */
 #define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt",NULL }
-/*----------------------------------------------------------------------*
- | TIME TYPES                                             m.gee 7/01    |
- *----------------------------------------------------------------------*/
-typedef enum _TIME_TYP
-{
-                       time_static,  /* time independent static analysis */
-                       time_dynamic  /* time dependent analysis */
-} TIME_TYP;
 
 
 /*----------------------------------------------------------------------*
