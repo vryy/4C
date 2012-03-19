@@ -74,16 +74,11 @@ STR::TimIntStatics::TimIntStatics
   fint_ = LINALG::CreateVector(*dofrowmap_, true);
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
-  // set initial internal force vector
-  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
-                          fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
-  // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext_);
 
   // have a nice day
   return;
