@@ -201,15 +201,15 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Trust Region", *list);
   reader.ReadSection("--STRUCT NOX/Printing", *list);
 
-  reader.ReadGidSection("--SOLVER 1", *list); // TODO replace me by something smarter
-  reader.ReadGidSection("--SOLVER 2", *list);
-  reader.ReadGidSection("--SOLVER 3", *list);
-  reader.ReadGidSection("--SOLVER 4", *list);
-  reader.ReadGidSection("--SOLVER 5", *list);
-  reader.ReadGidSection("--SOLVER 6", *list);
-  reader.ReadGidSection("--SOLVER 7", *list);
-  reader.ReadGidSection("--SOLVER 8", *list);
-  reader.ReadGidSection("--SOLVER 9", *list);
+  // read in solver sections
+  // Note: the maximum number of solver blocks in dat files is hardwired here.
+  // If you change this do not forget to edit the corresponding parts in
+  // drt_validparameters.cpp, too!
+  for (int i = 1; i<10; i++) {
+    std::stringstream ss;
+    ss << "--SOLVER " << i;
+    reader.ReadGidSection(ss.str(), *list);
+  }
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.

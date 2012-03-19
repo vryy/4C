@@ -4415,57 +4415,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<int>(0,1),
                                  &xfem_general);
 
-  // solver 1 section
+
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver1 = list->sublist("SOLVER 1",false,"solver parameters for solver 1");
-  SetValidSolverParameters(solver1);
+  // set valid parameters for solver blocks
 
-  // solver 2 section
+  // Note: the maximum number of solver blocks is hardwired here. If you change this,
+  // don't forget to edit the corresponding parts in globalproblems.cpp, too.
+  for (int i = 1; i<10; i++) {
+    std::stringstream ss;
+    ss << "SOLVER " << i;
+    std::stringstream ss_description;
+    ss_description << "solver parameters for solver block " << i;
+    Teuchos::ParameterList& solverlist = list->sublist(ss.str(),false,ss_description.str());
+    SetValidSolverParameters(solverlist);
+  }
+
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver2 = list->sublist("SOLVER 2",false,"solver parameters for solver 2");
-  SetValidSolverParameters(solver2);
-
-  // solver 3 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver3 = list->sublist("SOLVER 3",false,"solver parameters for solver 3");
-  SetValidSolverParameters(solver3);
-
-  // solver 4 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver4 = list->sublist("SOLVER 4",false,"solver parameters for solver 4");
-  SetValidSolverParameters(solver4);
-
-  // solver 5 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver5 = list->sublist("SOLVER 5",false,"solver parameters for solver 5");
-  SetValidSolverParameters(solver5);
-
-  // solver 6 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver6 = list->sublist("SOLVER 6",false,"solver parameters for solver 6");
-  SetValidSolverParameters(solver6);
-
-  // solver 7 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver7 = list->sublist("SOLVER 7",false,"solver parameters for solver 7");
-  SetValidSolverParameters(solver7);
-
-  // solver 8 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver8 = list->sublist("SOLVER 8",false,"solver parameters for solver 8");
-  SetValidSolverParameters(solver8);
-
-  // solver 9 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver9 = list->sublist("SOLVER 9",false,"solver parameters for solver 9");
-  SetValidSolverParameters(solver9);
-
-  // solver 10 section
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& solver10 = list->sublist("SOLVER 10",false,"solver parameters for solver 10");
-  SetValidSolverParameters(solver10);
-
-
+  // UMFPACK solver section
+  // some people just need a solver quickly. We provide a special paramter set
+  // for UMFPACK that users can just use temporarely without introducing a
+  // separate solver block.
+  Teuchos::ParameterList& solver_u = list->sublist("UMFPACK SOLVER",false,"solver parameters for UMFPACK");
+  SetValidSolverParameters(solver_u);
 
   return list;
 }
