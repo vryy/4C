@@ -2365,7 +2365,6 @@ baci_test(beam3iitest2linear 2 "")
 baci_test(inversedesign_wedge6 1 "")
 baci_test(inversedesign_wedge6 2 "")
 
-passive_baci_test(fluidfluidCoupling_simple 1 "")
 baci_test(xff_channel_simple_stat 1 "")
 baci_test(xff_shear_flow_stat 1 "")
 baci_test(xff_shear_flow_2D_stat_neumann 1 "")
