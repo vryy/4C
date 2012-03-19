@@ -17,8 +17,8 @@ c.f. M.Tanaka et al.(1995), Application of boundary element method to 3-D
 problems of coupled thermoelasticity
 
 benchmark for linear thermo-structure interaction
----------------------> validation of fully-coupled partitioned TSI-algorithm
------------------> for comparison with literature use: tmax = 4.0, dt = 0.01
+-> validation of fully-coupled partitioned TSI-algorithm
+-> for comparison with literature use: tmax = 4.0, dt = 0.01
 
 30x12x12 elements, i.e., 4320 elements: for the given problem inefficient fine
 mesh, but to test a BGS(AMG) preconditioner necessary.
@@ -26,7 +26,7 @@ mesh, but to test a BGS(AMG) preconditioner necessary.
 Be careful if you want to compare these results with Tanaka: coupling term in
 thermal equation depends only on initial temperature T_0, whereas:
 in BACI the coupling term depends on current temperature T
-------------------> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
+-> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
 
 NUMSTEP=10:
 STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx_x0 VALUE -3.3058750022255611e-04 TOLERANCE 1.0e-8
