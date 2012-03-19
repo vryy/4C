@@ -595,8 +595,12 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   // store parts of ALE matrix to know them in the next iteration as previous iteration matrices
   fmgipre_ = fmgicur_;
   fmggpre_ = fmggcur_;
-  fmgicur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,0)));
-  fmggcur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,1)));
+  if (mmm!=Teuchos::null)
+  {
+    fmgicur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,0)));
+    fmggcur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,1)));
+  }
+
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1074,7 +1078,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI:
   // store the prodcut F_{\Gamma I}^{G,n+1} \Delta d_I^{G,n+1} in here
   Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface().OtherMap(),true);
   // compute the above mentioned product
-  (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
+  if (fmgipre_ != Teuchos::null)
+    (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
 
   // store the prodcut F_{\Gamma I}^{n+1} \Delta u_I^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fgidui = LINALG::CreateVector(*FluidField().Interface().OtherMap(),true);
@@ -1090,7 +1095,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI:
   // store the prodcut F_{\Gamma\Gamma}^{G,n+1} \Delta d_Gamma^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fggaleddg = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
   // compute the above mentioned product
-  (fmggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggaleddg);
+  if (fmggpre_ != Teuchos::null)
+    (fmggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggaleddg);
 
   // Update the Lagrange multiplier:
   /* \lambda^{n+1} =  1/d * [ - c*\lambda^n - f_\Gamma^F
