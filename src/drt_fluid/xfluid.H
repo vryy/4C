@@ -275,7 +275,7 @@ namespace FLD
     XFluid( Teuchos::RCP<DRT::Discretization>      actdis,        ///< background fluid discretization
             Teuchos::RCP<DRT::Discretization>      soliddis,      ///< solid discretization
             Teuchos::RCP<LINALG::Solver>           solver,        ///< fluid solver
-            const Teuchos::ParameterList &         params,        ///< xfluid params
+            Teuchos::RCP<Teuchos::ParameterList>   params,        ///< xfluid params
             Teuchos::RCP<IO::DiscretizationWriter> output,        ///< discretization writer for paraview output
             bool                                   alefluid=false ///< flag for alefluid
       );
@@ -439,10 +439,10 @@ namespace FLD
 //    int Step() const { return step_; }
 
     /// get maximal number of nonlinear steps
-//    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+//    int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
 
     /// set the maximal number of nonlinear steps
-    void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+    void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
     /// scale the residual
     double ResidualScaling() const
@@ -561,7 +561,7 @@ namespace FLD
 //     Teuchos::RCP<Epetra_Vector>   w_;
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
-    Teuchos::ParameterList params_;
+    Teuchos::RCP<Teuchos::ParameterList>   params_;
     //@}
 
     /// type of enforcing interface conditions in XFEM

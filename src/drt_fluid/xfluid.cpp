@@ -213,13 +213,13 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   else
     discret.SetState("velaf",velnp_);
 
-  int itemax = xfluid_.params_.get<int>("max nonlin iter steps");
+  int itemax = xfluid_.params_->get<int>("max nonlin iter steps");
 
   // convergence check at itemax is skipped for speedup if
   // CONVCHECK is set to L_2_norm_without_residual_at_itemax
   if ((itnum != itemax)
       or
-      (xfluid_.params_.get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
+      (xfluid_.params_->get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
   {
     // call standard loop over elements
     //discret.Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
@@ -1189,7 +1189,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluid::XFluidState::BlockSyste
 FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> soliddis,
                      Teuchos::RCP<LINALG::Solver>      solver,
-                     const Teuchos::ParameterList & params,
+                     Teuchos::RCP<Teuchos::ParameterList> params,
                      Teuchos::RCP<IO::DiscretizationWriter> output,
                      bool alefluid )
   : discret_(actdis),
@@ -1210,37 +1210,37 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_,"Physical Type");
-  timealgo_     = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_,"time int algo");
-  stepmax_      = params_.get<int>   ("max number timesteps");
-  maxtime_      = params_.get<double>("total time");
-  dta_          = params_.get<double>("time step size");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_,"Physical Type");
+  timealgo_     = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_,"time int algo");
+  stepmax_      = params_->get<int>   ("max number timesteps");
+  maxtime_      = params_->get<double>("total time");
+  dta_          = params_->get<double>("time step size");
   dtp_          = dta_;
 
-  theta_        = params_.get<double>("theta");
-  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
-  convform_     = params_.get<string>("form of convective term","convective");
+  theta_        = params_->get<double>("theta");
+  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
+  convform_     = params_->get<string>("form of convective term","convective");
 
-  upres_        = params_.get<int>("write solution every", -1);
+  upres_        = params_->get<int>("write solution every", -1);
 
   numdim_       = genprob.ndim;
 
   // get the maximal number of dofsets that are possible to use
-  maxnumdofsets_ = params_.sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
+  maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
   // get XFEM specific input parameters
-  boundIntType_ = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_.sublist("XFEM"),"EMBEDDED_BOUNDARY");
+  boundIntType_ = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_->sublist("XFEM"),"EMBEDDED_BOUNDARY");
 
   // get input parameter how to prescribe interface velocity
-  interface_vel_init_          = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_.sublist("XFEM"),"INTERFACE_VEL_INITIAL");
-  interface_vel_init_func_no_  = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_.sublist("XFEM"),"VEL_INIT_FUNCT_NO");
-  interface_vel_               = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(params_.sublist("XFEM"),"INTERFACE_VEL");
-  interface_vel_func_no_       = params_.sublist("XFEM").get<int>("VEL_FUNCT_NO", -1);
+  interface_vel_init_          = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_->sublist("XFEM"),"INTERFACE_VEL_INITIAL");
+  interface_vel_init_func_no_  = DRT::INPUT::get<INPAR::XFEM::InterfaceInitVel>(params_->sublist("XFEM"),"VEL_INIT_FUNCT_NO");
+  interface_vel_               = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(params_->sublist("XFEM"),"INTERFACE_VEL");
+  interface_vel_func_no_       = params_->sublist("XFEM").get<int>("VEL_FUNCT_NO", -1);
 
   // get input parameter how to prescribe solid displacement
-  interface_disp_           = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(params_.sublist("XFEM"),"INTERFACE_DISP");
-  interface_disp_func_no_   = params_.sublist("XFEM").get<int>("DISP_FUNCT_NO", -1);
-  interface_disp_curve_no_  = params_.sublist("XFEM").get<int>("DISP_CURVE_NO", -1);
+  interface_disp_           = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(params_->sublist("XFEM"),"INTERFACE_DISP");
+  interface_disp_func_no_   = params_->sublist("XFEM").get<int>("DISP_FUNCT_NO", -1);
+  interface_disp_curve_no_  = params_->sublist("XFEM").get<int>("DISP_CURVE_NO", -1);
 
   // output for used FUNCT
   if(myrank_ == 0)
@@ -1253,13 +1253,13 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   }
 
   // get Nitsche stabilization factors
-  nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
-  nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
+  nitsche_stab_       = params_->sublist("XFEM").get<double>("Nitsche_stab", 0.0);
+  nitsche_stab_conv_  = params_->sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
 
-  fluid_stab_type_ = params_.sublist("STABILIZATION").get<string>("STABTYPE");
+  fluid_stab_type_ = params_->sublist("STABILIZATION").get<string>("STABTYPE");
 
-  VolumeCellGaussPointBy_ = params_.sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_  = params_.sublist("XFEM").get<std::string>("BOUNDARY_GAUSS_POINTS_BY");
+  VolumeCellGaussPointBy_ = params_->sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_  = params_->sublist("XFEM").get<std::string>("BOUNDARY_GAUSS_POINTS_BY");
 
   if(myrank_ == 0)
   {
@@ -1268,11 +1268,11 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   }
 
   // load GMSH output flags
-  gmsh_sol_out_          = (bool)params_.sublist("XFEM").get<int>("GMSH_SOL_OUT");
-  gmsh_debug_out_        = (bool)params_.sublist("XFEM").get<int>("GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = (bool)params_.sublist("XFEM").get<int>("GMSH_DEBUG_OUT_SCREEN");
-  gmsh_discret_out_      = (bool)params_.sublist("XFEM").get<int>("GMSH_DISCRET_OUT");
-  gmsh_cut_out_          = (bool)params_.sublist("XFEM").get<int>("GMSH_CUT_OUT");
+  gmsh_sol_out_          = (bool)params_->sublist("XFEM").get<int>("GMSH_SOL_OUT");
+  gmsh_debug_out_        = (bool)params_->sublist("XFEM").get<int>("GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = (bool)params_->sublist("XFEM").get<int>("GMSH_DEBUG_OUT_SCREEN");
+  gmsh_discret_out_      = (bool)params_->sublist("XFEM").get<int>("GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = (bool)params_->sublist("XFEM").get<int>("GMSH_CUT_OUT");
 
 
   switch (boundIntType_)
@@ -1451,7 +1451,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
        \|---
         |               */
 
-  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
   int numscalars = 4;
 
@@ -1520,7 +1520,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*discret_,nds,la,false);
 
-          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,params_, mat, *discret_, la[0].lm_,
+          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,*params_, mat, *discret_, la[0].lm_,
                                                                                       elescalars,intpoints_sets[set_counter]);
 
           // sum up (on each processor)
@@ -1548,7 +1548,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
             actele->LocationVector(*discret_,nds,la,false);
             //actele->LocationVector(*discret_,ndstest,la,false);
 
-            DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,params_, mat, *discret_, la[0].lm_,
+            DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,*params_, mat, *discret_, la[0].lm_,
                                                                                         elescalars,intpoints[count]);
 
             // sum up (on each processor)
@@ -1565,7 +1565,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*discret_,la,false);
-         DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, params_, mat, *discret_, la[0].lm_,
+         DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, *params_, mat, *discret_, la[0].lm_,
                                                                                      elescalars);
          // sum up (on each processor)
          cpuscalars += elescalars;
@@ -1601,7 +1601,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     {
       cout.precision(8);
       cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
-        DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error") <<
+        DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
         " ----------" << endl;
       cout << "| velocity:  " << velerr/velint << endl;
       cout << "| pressure:  " << preerr/pint << endl;
@@ -1658,7 +1658,7 @@ void FLD::XFluid::PrintStabilizationParams()
   // output of stabilization details
   if (myrank_==0)
   {
-    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+    ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
     cout << "+------------------------------------------------------------------------------------+" << endl;
     cout << "                              FLUID-STABILIZATION                       " << endl;
@@ -1954,12 +1954,12 @@ void FLD::XFluid::PrepareTimeStep()
     // do a backward Euler step for the first timestep
     if (step_==1)
     {
-      theta_ = params_.get<double>("start theta");
+      theta_ = params_->get<double>("start theta");
     }
     else if (step_ > 1)
     {
       // for OST
-      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_.get<double>("theta");
+      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_->get<double>("theta");
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
       if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -1987,7 +1987,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
   // -------------------------------------------------------------------
   //  perform CUT, transform vectors from old dofset to new dofset and set state vectors
   // -------------------------------------------------------------------
-  if(INPAR::XFEM::XFluidStationaryBoundary != params_.sublist("XFEM").get<int>("XFLUID_BOUNDARY"))
+  if(INPAR::XFEM::XFluidStationaryBoundary != params_->sublist("XFEM").get<int>("XFLUID_BOUNDARY"))
     CutAndSetStateVectors();
 
 
@@ -2023,7 +2023,7 @@ void FLD::XFluid::PrepareSolve()
 {
   // compute or set interface velocities just for XFluidMovingBoundary
   // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
-  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(params_.sublist("XFEM"), "XFLUID_BOUNDARY");
+  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(params_->sublist("XFEM"), "XFLUID_BOUNDARY");
   if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
   {
     ComputeInterfaceVelocities();
@@ -2041,16 +2041,16 @@ void FLD::XFluid::NonlinearSolve()
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol        = params_.get<double>("tolerance for nonlin iter");
+  const double  ittol        = params_->get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
+  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  int itemax = params_.get<int>("max nonlin iter steps");
+  int itemax = params_->get<int>("max nonlin iter steps");
 
   dtsolve_  = 0.0;
   dtele_    = 0.0;
@@ -2080,7 +2080,7 @@ void FLD::XFluid::NonlinearSolve()
       eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // parameters for turbulent approach
-      eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+      eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
       // set thermodynamic pressures
       eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -2187,7 +2187,7 @@ void FLD::XFluid::NonlinearSolve()
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
-          FILE* errfile = params_.get<FILE*>("err file",NULL);
+          FILE* errfile = params_->get<FILE*>("err file",NULL);
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2225,7 +2225,7 @@ void FLD::XFluid::NonlinearSolve()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
@@ -2345,7 +2345,7 @@ void FLD::XFluid::TimeUpdate()
 {
   cout << "FLD::XFluid::TimeUpdate " << endl;
 
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
   {
@@ -2571,7 +2571,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 void FLD::XFluid::LiftDrag() const
 {
 
-  const int liftdrag = params_.get<int>("liftdrag");
+  const int liftdrag = params_->get<int>("liftdrag");
 
   if (liftdrag == INPAR::FLUID::liftdrag_none); // do nothing, we don't want lift & drag
 
@@ -3293,7 +3293,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       cout << " PAY ATTENTION: MAYBE this is done twice (in ApplyInterfaceVelocities and here)" << endl;
 
       double thetaiface = 0.0;
-      if (params_.get<bool>("interface second order"))
+      if (params_->get<bool>("interface second order"))
       {
         cout << " (second order: YES) " << endl;
         thetaiface = 0.5;
@@ -3422,7 +3422,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -3447,11 +3447,11 @@ void FLD::XFluid::SetElementTurbulenceParameter()
   eleparams.set("action","set_turbulence_parameter");
 
   // set general parameters for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
   // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+  eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
