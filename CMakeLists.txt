@@ -511,12 +511,11 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid.cpp
   src/drt_adapter/adapter_fluid_ale.cpp
   src/drt_adapter/adapter_fluid_base_algorithm.cpp
-  src/drt_adapter/adapter_fluid_combust.cpp
-  src/drt_adapter/adapter_fluid_genalpha.cpp
-  src/drt_adapter/adapter_fluid_impl.cpp
   src/drt_adapter/adapter_fluid_lung.cpp
   src/drt_adapter/adapter_fluid_moving_boundary.cpp
   src/drt_adapter/adapter_fluid_poro.cpp
+  src/drt_adapter/adapter_fluid_fsi.cpp
+  src/drt_adapter/adapter_fluid_fluid_fsi.cpp
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_fluid_xfem.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
@@ -536,8 +535,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_topopt.cpp
   src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
   src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
-  src/drt_adapter/adapter_xfluid2_impl.cpp
-  src/drt_adapter/adapter_fluid_fluid_impl.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp
