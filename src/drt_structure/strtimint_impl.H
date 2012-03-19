@@ -235,9 +235,9 @@ namespace STR
     //! Evaluate forces and stiffness due to embedding tissue condition
     void ApplyForceStiffEmbedTissue
     (
-      Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fint,  //!< internal forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis,   //!< current displacement state
+      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness is modified
+      Teuchos::RCP<Epetra_Vector> fint,  //!< internal forces are modified
+      Teuchos::RCP<Epetra_Vector> dis,   //!< current displacement state
       bool predict                        //!< flag indicating predictor step
     );
 

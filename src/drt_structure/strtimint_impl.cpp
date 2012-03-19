@@ -661,13 +661,13 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
 
 void STR::TimIntImpl::ApplyForceStiffEmbedTissue
 (
-  Teuchos::RCP<LINALG::SparseOperator>& stiff,
-  Teuchos::RCP<Epetra_Vector>& fint,
-  Teuchos::RCP<Epetra_Vector>& disn,
+  Teuchos::RCP<LINALG::SparseOperator> stiff,
+  Teuchos::RCP<Epetra_Vector> fint,
+  Teuchos::RCP<Epetra_Vector> disn,
   bool predict
 )
 {
-  if (pslist_->get<bool>("haveembedtissue") && !predict)
+  if (pslist_ != Teuchos::null && pslist_->get<bool>("haveembedtissue") && !predict)
   {
     PATSPEC::CheckEmbeddingTissue(discret_,stiff,fint,disn);
   }

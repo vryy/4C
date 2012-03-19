@@ -657,9 +657,9 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
  |                                                              gee 4/11|
  *----------------------------------------------------------------------*/
 void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
-                                   Teuchos::RCP<LINALG::SparseOperator>& stiff,
-                                   Teuchos::RCP<Epetra_Vector>& fint,
-                                   Teuchos::RCP<Epetra_Vector>& disp)
+                                   Teuchos::RCP<LINALG::SparseOperator> stiff,
+                                   Teuchos::RCP<Epetra_Vector> fint,
+                                   Teuchos::RCP<Epetra_Vector> disp)
 {
   //RCP<const Epetra_Vector> disp = discret->GetState("displacement");
   //cout << *(disp) << endl;
