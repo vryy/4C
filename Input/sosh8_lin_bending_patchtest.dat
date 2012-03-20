@@ -235,7 +235,8 @@ ML_SMOTIMES 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_LogNeoHooke YOUNG 1.0E6 NUE 0.25 DENS 1.0
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 1.0
+MAT 2   ELAST_CoupLogNeoHooke MODE YN C1 1.0E6 C2 0.25
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
