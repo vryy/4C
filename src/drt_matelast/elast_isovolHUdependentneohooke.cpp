@@ -19,7 +19,6 @@ maintainer: Andreas Maier
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_utils.H"  // for function Factory in Unpack
 
 /*----------------------------------------------------------------------*
  |                                                                      |

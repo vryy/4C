@@ -1140,22 +1140,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "logarithmic neo-Hooke material acc. to Bonet and Wood",
                                             INPAR::MAT::mes_couplogneohooke));
 
-    AddNamedReal(m,"MUE","shear modulus");
-    AddNamedReal(m,"LAMBDA","Lame's constant");
-    AddNamedString(m,"MODE","parameter set: Lame=use MUE and LAMBDA (default); YN=use YOUNG and NUE","Lame");
-    AddNamedReal(m,"YOUNG","Young's modulus",true);
-    AddNamedReal(m,"NUE","Poisson's ratio",true);
+    AddNamedString(m,"MODE","parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)", "YN");
+    AddNamedReal(m,"C1","E or mue");
+    AddNamedReal(m,"C2","nue or lambda");
 
     AppendMaterialDefinition(matlist,m);
   }
 
-    /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
 
-    //compressible neo-Hooke material acc. to Holtzapfel
+    //compressible neo-Hooke material acc. to Holzapfel
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_CoupNeoHooke",
-                                            "compressible neo-Hooke material acc. to Holtzapfel",
+                                            "compressible neo-Hooke material acc. to Holzapfel",
                                             INPAR::MAT::mes_coupneohooke));
 
     AddNamedReal(m,"YOUNG","Young's modulus",true);
@@ -1163,11 +1161,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-    //Mooney Rivlin  material acc. to Holtzapfel
+    //Mooney Rivlin  material acc. to Holzapfel
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_CoupMooneyRivlin",
-                                            "Mooney - Rivlin material acc. to Holtzapfel",
+                                            "Mooney - Rivlin material acc. to Holzapfel",
                                             INPAR::MAT::mes_coupmooneyrivlin));
 
     AddNamedReal(m,"C1","material constant",true);
@@ -1182,7 +1180,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_CoupBlatzKo",
-                                            "Blatz and Ko material acc. to Holtzapfel",
+                                            "Blatz and Ko material acc. to Holzapfel",
                                             INPAR::MAT::mes_coupblatzko));
 
     AddNamedReal(m,"MUE","Shear modulus");
@@ -1197,7 +1195,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_Holzapfel_Cardiac",
-                                            "Anisotropic cardiac material  acc. to Holtzapfel",
+                                            "Anisotropic cardiac material  acc. to Holzapfel",
                                             INPAR::MAT::mes_holzapfel_cardiac));
 
     AddNamedReal(m,"A","linear isotropic constant");

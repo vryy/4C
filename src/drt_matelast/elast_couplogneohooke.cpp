@@ -4,9 +4,10 @@
 \brief
 
 
-the input line should read
-  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3 MODE YN
-  MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1. MODE Lame
+the input line should read either
+  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
+or
+  MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1.
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -30,24 +31,28 @@ Maintainer: Burkhard Bornemann
 MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  mue_(matdata->GetDouble("MUE")),
-  lambda_(matdata->GetDouble("LAMBDA")),
-  parmode_(*(matdata->Get<std::string>("MODE"))),
-  youngs_(matdata->GetDouble("YOUNG")),
-  nue_(matdata->GetDouble("NUE"))
+: Parameter(matdata)
 {
-  if (parmode_ == "YN")
+  string parmode = *(matdata->Get<std::string>("MODE"));
+  double c1 = matdata->GetDouble("C1");
+  double c2 = matdata->GetDouble("C2");
+
+  if (parmode == "YN")
   {
-    if (nue_ < 0.5 and nue_ > -1.0)
+    if (c2 <= 0.5 and c2 > -1.0)
     {
-      lambda_ = youngs_*nue_/((1.0+nue_)*(1.0-2.0*nue_));  // Lame coeff.
-      mue_ = youngs_/(2.0*(1.0+nue_));  // shear modulus
+      lambda_ = (c2 == 0.5) ? 0.0 : c1*c2/((1.0+c2)*(1.0-2.0*c2));
+      mue_ = c1/(2.0*(1.0+c2));  // shear modulus
     }
     else
       dserror("Poisson's ratio must be between -1.0 and 0.5!");
   }
-  else if (parmode_ != "Lame")
+  else if (parmode == "Lame")
+  {
+    mue_ = c1;
+    lambda_ = c2;
+  }
+  else
     dserror("unknown parameter set for NeoHooke material!\n Must be either YN (Young's modulus and Poisson's ratio) or Lame");
 }
 
@@ -55,7 +60,6 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
 Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupLogNeoHooke::CreateMaterial()
 {
   return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupLogNeoHooke( this ) );
 }
 
 /*----------------------------------------------------------------------*

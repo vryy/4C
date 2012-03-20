@@ -33,9 +33,8 @@ namespace ELASTIC
     /// material parameters for logarithmic neo-Hooke material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupLogNeoHooke MUE 1.0 LAMBDA 1.0 [MODE 1 YOUNG 1.044E7 NUE 0.3]
-    /// in case of MODE=0 (default) MUE and LAMBDA are taken
-    /// in case of MODE=1 (optional) YOUNG and NUE (both optional) are taken
+    /// MAT 1 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
+    /// MAT 1 ELAST_CoupLogNeoHooke MODE Lame C1 1.0 C2 1.0
     class CoupLogNeoHooke : public MAT::PAR::Parameter
     {
     public:
@@ -55,12 +54,6 @@ namespace ELASTIC
       double mue_;
       /// Lame's constant
       double lambda_;
-      /// Parameter mode
-      std::string parmode_;
-      /// Young's modulus
-      double youngs_;
-      /// Possion's ratio
-      double nue_;
 
       //@}
 
@@ -71,9 +64,6 @@ namespace ELASTIC
       //@{
       void SetMue    (const double mue    ) { mue_     =  mue    ; }
       void SetLambda (const double lambda ) { lambda_  =  lambda ; }
-      void SetParmode(const std::string    parmode) { parmode_ =  parmode; }
-      void SetYoungs (const double youngs ) { youngs_  =  youngs ; }
-      void SetNue    (const double nue    ) { nue_     =  nue    ; }
       //@}
 
     };  // class CoupLogNeoHooke
@@ -212,9 +202,6 @@ namespace ELASTIC
     //@{
     double Mue() const { return params_->mue_; }
     double Lambda() const { return params_->lambda_; }
-    std::string Parmode() const { return params_->parmode_; }
-    double Youngs() const { return params_->youngs_; }
-    double Nue() const { return params_->nue_; }
 
     //@}
 

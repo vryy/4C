@@ -145,12 +145,15 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
 
-  // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
-    p->second->PackSummand(data);
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->PackSummand(data);
+    }
   }
 }
 
@@ -198,9 +201,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,anisomod);
 
   if (isoprinc != 0) isoprinc_ = true;
-  if (isomod != 0) isomod = true;
-  if (anisoprinc != 0) anisoprinc = true;
-  if (anisomod != 0) anisomod = true;
+  if (isomod != 0) isomod_ = true;
+  if (anisoprinc != 0) anisoprinc_ = true;
+  if (anisomod != 0) anisomod_ = true;
 
   ExtractfromPack(position,data,a1_);
   ExtractfromPack(position,data,a2_);
@@ -208,16 +211,20 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
 
-  // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
-    p->second->UnpackSummand(data,position);
+    // loop map of associated potential summands
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->UnpackSummand(data,position);
+    }
+    // in the postprocessing mode, we do not unpack everything we have packed
+    // -> position check cannot be done in this case
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   }
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
 /*----------------------------------------------------------------------*/

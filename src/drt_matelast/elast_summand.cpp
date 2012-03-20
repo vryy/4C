@@ -245,7 +245,6 @@ void MAT::ELASTIC::Summand::AddShearMod(
   double& shearmod
   ) const
 {
-  haveshearmod = haveshearmod or false;
   return;
 }
 

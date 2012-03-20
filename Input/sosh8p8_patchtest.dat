@@ -68,8 +68,8 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_LogNeoHooke YOUNG 1.0 NUE 0.5 DENS 0.0
-//MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.499999 DENS 0.0 THEXPANS 0.0
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1
+MAT 2   ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.5  
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE2

@@ -636,12 +636,8 @@ void STR::InvAnalysis::ReadInParameters()
                 const MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
                 int j = p_.Length();
                 p_.Resize(j+2);
-                //p_[j]   = params2->mue_;
-                //p_[j+1] = params2->lambda_;
-                //p_[j+2] = params2->parmode_;
-                p_[j] = params2->youngs_;
-                p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
-                cout << "Get the parameter: " << p_[j+1] << " for the Simulation " << params2->nue_ << " was used!" << endl;
+                p_[j]   = params2->mue_;
+                p_[j+1] = params2->lambda_;
                 break;
               }
               case INPAR::MAT::mes_coupneohooke:
@@ -909,11 +905,8 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               {
                 MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 =
                   dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
-                //params2->SetMue(abs(p_cur(j)));
-                //params2->SetLambda(abs(p_cur(j+1)));
-                //params2->SetParmode(abs(p_cur(j+2)));
-                params2->SetYoungs(abs(p_cur(j)));
-                params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+                params2->SetMue(abs(p_cur(j)));
+                params2->SetLambda(abs(p_cur(j+1)));
                 j = j+2;
                 break;
               }
