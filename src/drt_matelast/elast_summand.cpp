@@ -26,7 +26,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_iso2pow.H"
 #include "elast_coup1pow.H"
 #include "elast_coup2pow.H"
-#include "elast_isoexpo.H"
+#include "elast_isoexpopow.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"

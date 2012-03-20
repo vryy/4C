@@ -480,7 +480,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupvarga.cpp
   src/drt_matelast/elast_isoanisoexpo.cpp
   src/drt_matelast/elast_isocub.cpp
-  src/drt_matelast/elast_isoexpo.cpp
+  src/drt_matelast/elast_isoexpopow.cpp
   src/drt_matelast/elast_coupmooneyrivlin.cpp
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isoneohooke.cpp

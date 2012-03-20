@@ -41,7 +41,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_iso1pow.H"
 #include "../drt_matelast/elast_iso2pow.H"
 #include "../drt_matelast/elast_isocub.H"
-#include "../drt_matelast/elast_isoexpo.H"
+#include "../drt_matelast/elast_isoexpopow.H"
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoquad.H"
