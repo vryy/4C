@@ -65,6 +65,8 @@ TIMEINTEGR Stationary //One_Step_Theta
 TIMESTEP                        1.0
 2DFLOW                          yes
 LINEAR_SOLVER                   1
+-----------------------------------------------------------------ALE DYNAMIC
+-----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0
