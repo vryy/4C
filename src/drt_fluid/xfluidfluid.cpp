@@ -1400,13 +1400,12 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
                                Teuchos::RCP<Teuchos::ParameterList> params,
                                bool       alefluid ,
                                bool       monolithicfluidfluidfsi)
-  : bgdis_(actdis),
+  : TimInt(params),
+    bgdis_(actdis),
     embdis_(embdis),
     solver_(solver),
     params_(params),
     alefluid_(alefluid),
-    time_(0.0),
-    step_(0),
     monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
   // -------------------------------------------------------------------
@@ -1415,10 +1414,9 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   myrank_  = bgdis_->Comm().MyPID();
 
   physicaltype_      = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
-  timealgo_          = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
   stepmax_           = params_->get<int>   ("max number timesteps");
   maxtime_           = params_->get<double>("total time");
-  dtp_ = dta_        = params_->get<double>("time step size");
+  dtp_               = params_->get<double>("time step size");
   theta_             = params_->get<double>("theta");
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_          = params_->get<string>("form of convective term","convective");

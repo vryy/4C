@@ -15,9 +15,19 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+FLD::TimInt::TimInt(Teuchos::RCP<Teuchos::ParameterList> params)
+  :time_    (0.0),
+   step_    (0),
+   dta_     (params->get<double> ("time step size")),
+   timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params, "time int algo"))
+{}
 
 FLD::TimInt::~TimInt()
 {

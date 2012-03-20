@@ -90,15 +90,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization
     Teuchos::RCP<Teuchos::ParameterList>   params,
     Teuchos::RCP<IO::DiscretizationWriter> output,
     bool                                   alefluid)
-  :
+ :TimInt(params),
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
   params_ (params),
   output_ (output),
   alefluid_(alefluid),
-  time_(0.0),
-  step_(0),
   extrapolationpredictor_(params_->get("do explicit predictor",true)),
   uprestart_(params_->get("write restart every", -1)),
   upres_(params_->get("write solution every", -1)),
@@ -123,15 +121,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
-  // type of time-integration
-  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
   //genalpha integration scheme (afgenalpha or npgenalpha)
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_npgenalpha)
     is_genalpha_= true;
   else
     is_genalpha_= false;
   // time-step size
-  dtp_ = dta_ = params_->get<double>("time step size");
+  dtp_ = params_->get<double>("time step size");
   // maximum number of timesteps
   stepmax_  = params_->get<int>   ("max number timesteps");
   // maximum simulation time

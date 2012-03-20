@@ -53,6 +53,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     Teuchos::RCP<LINALG::Solver>      solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output) :
+  TimInt(params),
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
@@ -81,12 +82,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
   smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_->sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   dtele_(0.0),
-  step_(0),
-  time_(0.0),
   stepmax_ (params_->get<int>   ("max number timesteps")),
   maxtime_ (params_->get<double>("total time")),
   startsteps_(params_->get<int> ("number of start steps")),
-  dta_     (params_->get<double> ("time step size")),
   dtp_     (params_->get<double> ("time step size")),
   theta_   (params_->get<double>("theta")),
   alphaM_(params_->get<double>("alpha_M")),
@@ -118,7 +116,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
-  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
   if (timealgo_ == INPAR::FLUID::timeint_stationary)
   {
     dta_ = 1.0;

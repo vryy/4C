@@ -41,6 +41,7 @@ namespace IO
 
 namespace FLD
 {
+  class TurbulenceStatisticManager;
   namespace UTILS
   {
     class FluidXFluidMapExtractor;
@@ -50,6 +51,7 @@ class TimInt : public ADAPTER::Fluid
 {
 public:
 
+  TimInt(Teuchos::RCP<Teuchos::ParameterList> params);
 
   /*!
   \brief Destructor
@@ -137,9 +139,14 @@ public:
                     Teuchos::RCP<const Epetra_Vector> readvelnm,
                     Teuchos::RCP<const Epetra_Vector> readaccnp,
                     Teuchos::RCP<const Epetra_Vector> readaccn) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
-  double Time() const { return time_; }
-  int Step()    const { return step_; }
-  double Dt()   const { return dta_; }
+
+  virtual double Time() const { return time_; }
+  virtual int    Step() const { return step_; }
+  virtual double Dt()   const { return dta_;  }
+  /// increment time and step value
+  virtual void   IncrementTimeAndStep() { step_ += 1; time_ += dta_; }
+
+
   virtual void LiftDrag() const = 0;
   virtual const double EvalTime() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 0.0; }
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
@@ -231,7 +238,7 @@ protected:
   double        dta_;
   INPAR::FLUID::TimeIntegrationScheme timealgo_;                  /// time algorithm flag
   int           itemax_;                                          /// maximum number of nonlinear iterations
-  RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;        /// manager for turbulence statistics
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;        /// manager for turbulence statistics
 
 }; // class TimInt
 

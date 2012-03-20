@@ -1192,14 +1192,13 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<Teuchos::ParameterList> params,
                      Teuchos::RCP<IO::DiscretizationWriter> output,
                      bool alefluid )
-  : discret_(actdis),
+  : TimInt(params),
+    discret_(actdis),
     soliddis_(soliddis),
     solver_(solver),
     params_(params),
     fluid_output_(output),
-    alefluid_(alefluid),
-    time_(0.0),
-    step_(0)
+    alefluid_(alefluid)
 {
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -1211,11 +1210,9 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_,"Physical Type");
-  timealgo_     = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_,"time int algo");
   stepmax_      = params_->get<int>   ("max number timesteps");
   maxtime_      = params_->get<double>("total time");
-  dta_          = params_->get<double>("time step size");
-  dtp_          = dta_;
+  dtp_          = params_->get<double>("time step size");
 
   theta_        = params_->get<double>("theta");
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");

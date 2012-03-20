@@ -382,18 +382,6 @@ public:
 
 //  virtual double TimeScaling() const;
 
-//  double Dt()   const { return dta_; }
-//  double Time() const { return time_; }
-//  int Step()    const { return step_; }
-//  int Itemax()  const { return itemax_; }
-
-  /// increment time and step value
-  void IncrementTimeAndStep()
-  {
-    step_ += 1;
-    time_ += dta_;
-  }
-
   /// calculate lift&drag forces and angular moments
   /*!
   Lift and drag forces are based upon the right hand side true-residual entities
@@ -536,8 +524,6 @@ protected:
   double  dtele_;
 
   //! @name time stepping variables
-  int           step_;        ///< timestep
-  double        time_;        ///< physical time
   const int     stepmax_;     ///< maximal number of timesteps
   const double  maxtime_;     ///< maximal physical computation time
 
@@ -545,7 +531,6 @@ protected:
   //@}
 
   //! @name time step sizes
-  double dta_;    ///< time step size
   double dtp_;    ///< time step size (used for BDF2 time integration scheme)
   //@}
 

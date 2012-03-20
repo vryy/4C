@@ -390,11 +390,6 @@ namespace FLD
 
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
-//    double Dt() const { return dta_; }
-
-//    double Time() const { return time_; }
-//    int Step() const { return step_; }
-
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
         {dserror("not implemented"); return Teuchos::null;}
 
@@ -608,8 +603,6 @@ namespace FLD
     int numdim_;
 
     //! @name time stepping variables
-    double  time_;        ///< physical time
-    int     step_;        ///< timestep
     int     stepmax_;     ///< maximal number of timesteps
     double  maxtime_;     ///< maximal physical computation time
     int     numstasteps_; ///< number of steps for starting algorithm
@@ -641,7 +634,6 @@ namespace FLD
     //@}
 
     //! @name time step sizes
-    double dta_;
     double dtp_;
     //@}
 

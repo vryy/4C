@@ -429,15 +429,6 @@ namespace FLD
     /// return type of enforcing interface conditions
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
-    /// return time step size
-//    double Dt() const { return dta_; }
-
-    /// return global time
-//    double Time() const { return time_; }
-
-    /// return step
-//    int Step() const { return step_; }
-
     /// get maximal number of nonlinear steps
 //    int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
 
@@ -628,8 +619,6 @@ namespace FLD
     int numdim_;
 
     //! @name time stepping variables
-    double  time_;        ///< physical time
-    int     step_;        ///< timestep
     int     stepmax_;     ///< maximal number of timesteps
     double  maxtime_;     ///< maximal physical computation time
     int     numstasteps_; ///< number of steps for starting algorithm
@@ -655,7 +644,6 @@ namespace FLD
     //@}
 
     //! @name time step sizes
-    double dta_;
     double dtp_;
     //@}
 
