@@ -44,7 +44,7 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::Output(ParameterList& params, const int ndim,
+void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
                              const double& time, const int& istep, const double& dt,
                              const Epetra_Vector& dis, const Epetra_Vector& fint,
                              RCP<CONTACT::Beam3cmanager> beamcmanager)
@@ -497,13 +497,13 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
   }
 
   return;
-} // StatMechManager::Output()
+} // STATMECH::StatMechManager::Output()
 
 
 /*----------------------------------------------------------------------*
  | writing Gmsh data for current step                 public)cyron 01/09|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
@@ -728,14 +728,14 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
   discret_.Comm().Barrier();
 
   return;
-} // StatMechManager::GmshOutput()
+} // STATMECH::StatMechManager::GmshOutput()
 
 
 /*----------------------------------------------------------------------*
  | gmsh output data in case of periodic boundary conditions             |
  |                                                    public)cyron 02/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
+void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
 {
   //number of solid elements by which a round line is depicted
   const int nline = 16;
@@ -928,12 +928,12 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     }
   }
   return;
-} // StatMechManager::GmshOutputPeriodicBoundary()
+} // STATMECH::StatMechManager::GmshOutputPeriodicBoundary()
 
 /*----------------------------------------------------------------------*
  | plot the periodic boundary box                  (public) mueller 7/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename)
+void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename)
 {
   // plot the periodic box in case of periodic boundary conditions (first processor)
   if (periodlength_->at(0) > 0.0 && discret_.Comm().MyPID() == 0)
@@ -1003,12 +1003,12 @@ void StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* b
   }
   // wait for Proc 0 to catch up to the others
   discret_.Comm().Barrier();
-}// StatMechManager::GmshOutputBoundaryBox
+}// STATMECH::StatMechManager::GmshOutputBoundaryBox
 
 /*----------------------------------------------------------------------*
  | Gmsh output for crosslink molecule diffusion    (public) mueller 7/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow)
+void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow)
 {
   // export row displacement to column map format
   Epetra_Vector discol(*(discret_.DofColMap()), true);
@@ -1165,7 +1165,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
  | Special Gmsh output for crosslinkers occupying two binding spots on  |
  | the same filament                              (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent)
+void STATMECH::StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent)
 {
   /* We need a third point in order to visualize the crosslinker.
    * It marks the location of the kink.
@@ -1244,12 +1244,12 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, c
    cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
    cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
   return;
-}// StatMechManager::GmshKinkedVisual
+}// STATMECH::StatMechManager::GmshKinkedVisual
 
 /*----------------------------------------------------------------------*
  | prepare visualization vector for Gmsh Output  (private) mueller 08/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
+void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 {
   double ronebond = statmechparams_.get<double> ("R_LINK", 0.0) / 2.0;
 
@@ -1519,7 +1519,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 /*----------------------------------------------------------------------*
  | wedge output for two-noded beams                        cyron   11/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshWedge(const int& n,
+void STATMECH::StatMechManager::GmshWedge(const int& n,
                                   const Epetra_SerialDenseMatrix& coord,
                                   DRT::Element* thisele,
                                   std::stringstream& gmshfilecontent,
@@ -1695,7 +1695,7 @@ void StatMechManager::GmshWedge(const int& n,
 /*----------------------------------------------------------------------*
  | Gmsh Output of detected network structure volume        mueller 12/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
+void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
   {
@@ -2028,7 +2028,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 /*----------------------------------------------------------------------*
  | Gmsh periodic bound. output for test volumes  (protected)mueller 1/11|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color)
+void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color)
 {
   // direction of edge
 
@@ -2128,7 +2128,7 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::InitOutput(const double& ndim, const double& dt)
+void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
 
@@ -2502,12 +2502,12 @@ void StatMechManager::InitOutput(const double& ndim, const double& dt)
   }
 
   return;
-} // StatMechManager::InitOutput()
+} // STATMECH::StatMechManager::InitOutput()
 
 /*----------------------------------------------------------------------*
  | output for density-density-correlation-function(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt)
+void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt)
 {
   /*Output:
    * (1) structure number and characteristic length (radius, thickness)
@@ -2632,7 +2632,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   }
   if(!discret_.Comm().MyPID())
     cout<<"================================================================================="<<endl;
-}//StatMechManager::DDCorrOutput()
+}//STATMECH::StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*
  | Selects raster point with the smallest average distance to all crosslinker   |
@@ -2640,7 +2640,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
  | positions.                                                                   |
  |                                                        (public) mueller 11/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
+void STATMECH::StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
 {
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -2712,14 +2712,14 @@ void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix
   //if(!discret_.Comm().MyPID())
     //cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
   return;
-}//StatMechManager::DDCorrShift()
+}//STATMECH::StatMechManager::DDCorrShift()
 
 /*------------------------------------------------------------------------------*
  | Determine current network structure and output network type as single        |
  | characteristic number. Also, output filament orientations.                   |
  |                                                        (public) mueller 11/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
+void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
                                              LINALG::Matrix<3,1>* cog,
                                              LINALG::Matrix<3,1>* centershift,
                                              std::vector<int>* crosslinkerentries,
@@ -3593,7 +3593,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 /*------------------------------------------------------------------------------*                                                 |
  | density-density correlation function                   (private) mueller 01/11|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
+void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
 {
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -3671,7 +3671,7 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 /*------------------------------------------------------------------------------*                                                 |
  | density-density correlation function                  (private) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift)
+void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift)
 {
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -3837,14 +3837,14 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
           }
         }
   return;
-}//StatMechManager::DDCorrFunction()
+}//STATMECH::StatMechManager::DDCorrFunction()
 
 /*------------------------------------------------------------------------------*                                                 |
  | Output of distances between doubly bound linkers of the horizontal filament  |
  | in a loom type network                                                       |
  |                                                       (private) mueller 2/12 |
  *------------------------------------------------------------------------------*/
-void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
   Epetra_Vector discol(*discret_.DofColMap(),true);
   LINALG::Export(disrow,discol);
@@ -3945,7 +3945,7 @@ void StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostring
  | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
  |                                                        (public) mueller 4/11 |
  *------------------------------------------------------------------------------*/
-void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
+void STATMECH::StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 {
   if(discret_.Comm().MyPID()==0)
   {
@@ -3996,7 +3996,7 @@ void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 /*------------------------------------------------------------------------------*                                                 |
  | linker spot counter and check of interfilament orient. (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep)
+void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep)
 {
   /* what this does:
    * 1) orientation correlation function for all proximal binding spot pairs (regardless of orientation)
@@ -4233,7 +4233,7 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
  | computes the mesh size of the network dep. on distance to cog                |
  |                                                        (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
+void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
 {
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -4423,7 +4423,7 @@ void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::
 /*------------------------------------------------------------------------------*                                                 |
 | distribution of spherical coordinates                  (public) mueller 12/10|
 *------------------------------------------------------------------------------*/
-void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
+void STATMECH::StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
                                                   Epetra_Vector& phibinsrow,
                                                   Epetra_Vector& thetabinsrow,
                                                   Epetra_Vector& costhetabinsrow)
@@ -4498,7 +4498,7 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 /*------------------------------------------------------------------------------*
  | radial crosslinker density distribution                (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift)
+void STATMECH::StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift)
 {
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -4559,7 +4559,7 @@ void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesro
 /*----------------------------------------------------------------------*
  | filament orientations and output               (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vector<LINALG::Matrix<3,1> >* normedvectors, const std::ostringstream& filename, bool fileoutput)
+void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vector<LINALG::Matrix<3,1> >* normedvectors, const std::ostringstream& filename, bool fileoutput)
 {
   /* Output of filament element orientations (Proc 0 only):
    * format: filamentnumber    d_x  d_y  d_z
@@ -4644,7 +4644,7 @@ void StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vec
 /*----------------------------------------------------------------------*
  | check the binding mode of a crosslinker        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-bool StatMechManager::CheckForKinkedVisual(int eleid)
+bool STATMECH::StatMechManager::CheckForKinkedVisual(int eleid)
 {
   bool kinked = true;
   // if element is a crosslinker
@@ -4660,6 +4660,6 @@ bool StatMechManager::CheckForKinkedVisual(int eleid)
   else
     kinked = false;
   return kinked;
-}//StatMechManager::CheckForKinkedVisual
+}//STATMECH::StatMechManager::CheckForKinkedVisual
 
 #endif  // #ifdef CCADISCRET

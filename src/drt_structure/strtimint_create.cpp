@@ -32,6 +32,7 @@ Maintainer: Thomas Klöppel
 #include "strtimint_expleuler.H"
 #include "strtimint_centrdiff.H"
 #include "strtimint_ab2.H"
+#include "strtimint_statmech.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -126,6 +127,14 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(ioflags, sdyn, xparams,
                                              actdis, solver, contactsolver, output));
+      break;
+    }
+
+    // Statistical Mechanics Time Integration
+    case INPAR::STR::dyna_statmech :
+    {
+      sti = Teuchos::rcp(new STR::TimIntStatMech(ioflags, sdyn, xparams,
+                                                 actdis, solver, contactsolver, output));
       break;
     }
 

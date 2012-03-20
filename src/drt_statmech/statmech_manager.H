@@ -16,7 +16,6 @@ Maintainer: Kei Müller
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -27,6 +26,8 @@ Maintainer: Kei Müller
 //including random number library of blitz for statistical forces
 #include <random/uniform.h>
 #include <random/normal.h>
+
+#include "../linalg/linalg_fixedsizematrix.H"
 
 /*!
 \brief management and auxiliary functions for statistical mechanics
@@ -59,11 +60,14 @@ namespace LINALG
   class SerialDenseMatrix;
 }
 
+namespace STATMECH
+{
+
 class StatMechManager
 {
 public:
   //! \brief Standard Constructor
-  explicit StatMechManager(Teuchos::ParameterList& params, DRT::Discretization& discret);
+  explicit StatMechManager(const Teuchos::ParameterList& params, DRT::Discretization& discret);
 
   //! \brief Destructor
   virtual ~StatMechManager() {};
@@ -106,8 +110,11 @@ public:
    */
   void Update(const int& istep, const double dt, Epetra_Vector& disrow, Teuchos::RCP<LINALG::SparseOperator>& stiff, int ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null, bool rebuildoctree=false);
 
+  //! \brief update time and time step size of statmechmanager
+  void UpdateTimeAndStepSize(double& dt, double& time);
+
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void InitOutput(const double& ndim, const double& dt);
+  void InitOutput(const int& ndim, const double& dt);
 
   //! \brief Get current binding spot positions
   void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
@@ -136,13 +143,13 @@ public:
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(Teuchos::RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
 
-  //! \brief Initializes beam3 elements in case of perioddic boundary conditions
+  //! \brief Initializes beam3 elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
 
-  //! \brief Initializes beam3ii elements in case of perioddic boundary conditions
+  //! \brief Initializes beam3ii elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
 
-  //! \brief Initializes truss3 elements in case of perioddic boundary conditions
+  //! \brief Initializes truss3 elements in case of periodic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
@@ -189,16 +196,21 @@ public:
 
   //! \brief return number of initial elements
   const int& NumBasisElements() const {return basiselements_;}
+
   //! \brief return vector holding the dimensions of the periodic boundary box
   const Teuchos::RCP<std::vector<double> > GetPeriodLength() const {return periodlength_;}
-  //! \brief containing statistical mechanics input parameters
-  Teuchos::ParameterList statmechparams_;
 
-  //! \brief current simulation time
-  double time_;
+  //! \brief return statistical mechanics parameter list
+  const Teuchos::ParameterList& GetStatMechParams() const {return statmechparams_;}
 
-  //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
-  int unconvergedsteps_;
+  //! \brief return number of unconverged steps since beginning of the simulation
+  const int& NumberOfUnconvergedSteps() const {return unconvergedsteps_;}
+
+  //! \brief return number of unconverged steps since beginning of the simulation
+  void UpdateNumberOfUnconvergedSteps(bool flag = true);
+
+  //! \brief pass statistical mechanics parameters to parameter list
+  void AddStatMechParamsTo(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> randomnumbers = Teuchos::null);
 
 protected:
 
@@ -413,7 +425,7 @@ protected:
 
   /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
    *  \param currentpositions     (in)      column map node positions (fully overlapping)
-   *  \params bspottriadscol      (in)      nodal triads as quaternions in column map format (fully overlapping)
+   *  \param bspottriadscol      (in)      nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
   void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
 
@@ -432,6 +444,18 @@ protected:
    *  \param doimport (in) import flag
    */
   void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport=true, bool doimport=true);
+
+  //! \brief containing statistical mechanics input parameters
+  Teuchos::ParameterList statmechparams_;
+
+  //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
+  int unconvergedsteps_;
+
+  //! \brief time within Statistical Mechanics Manager
+  double time_;
+
+  //! \brief time step size
+  double dt_;
 
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
@@ -603,6 +627,7 @@ protected:
   std::vector<int> freenodes_;
   bool initialset_;
 }; // class StatMechManager
+}
 
 #endif /*STATMECH_MANAGER_H*/
 #endif  // #ifdef CCADISCRET

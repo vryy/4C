@@ -812,7 +812,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "CentrDiff",
                                  "AdamsBashforth2",
                                  "EulerMaruyama",
-                                 "EulerImpStoch"),
+                                 "EulerImpStoch",
+                                 "StatMech"),
                                tuple<int>(
                                  INPAR::STR::dyna_statics,
                                  INPAR::STR::dyna_genalpha,
@@ -822,7 +823,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_centrdiff,
                                  INPAR::STR::dyna_ab2,
                                  INPAR::STR::dyna_euma,
-                                 INPAR::STR::dyna_euimsto),
+                                 INPAR::STR::dyna_euimsto,
+                                 INPAR::STR::dyna_statmech),
                                &sdyn);
 
   setStringToIntegralParameter<int>("PRESTRESS","none","prestressing takes values none mulf id",

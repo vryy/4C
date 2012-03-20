@@ -17,6 +17,7 @@ Maintainer: Kei Müller
 #include <Teuchos_Time.hpp>
 
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_element.H"
@@ -29,7 +30,6 @@ Maintainer: Kei Müller
 #include "../drt_beamcontact/beam3contact_octtree.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
@@ -47,9 +47,11 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
  *----------------------------------------------------------------------*/
-StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
+STATMECH::StatMechManager::StatMechManager(const Teuchos::ParameterList& params, DRT::Discretization& discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
 unconvergedsteps_(0),
+time_(0.0),
+dt_(-1e9),
 starttimeoutput_(-1.0),
 endtoendref_(0.0),
 istart_(0),
@@ -60,6 +62,8 @@ normalgen_(0,1),
 discret_(discret),
 initialset_(false)
 {
+  Teuchos::ParameterList parameters = params;
+
   //initialize random generators
   SeedRandomGenerators(0);
 
@@ -244,7 +248,8 @@ initialset_(false)
   CrosslinkerMoleculeInit();
 
   // initialize istart_ with step number of the beginning of statistical mechanics output
-  istart_ = (int)(statmechparams_.get<double>("STARTTIMEOUT", 0.0) / params.get<double>("delta time", 0.01));
+  dt_ = parameters.get<double>("delta time",0.01);
+  istart_ = (int)(statmechparams_.get<double>("STARTTIMEOUT", 0.0) / dt_);
 
   return;
 }// StatMechManager::StatMechManager
@@ -259,7 +264,7 @@ initialset_(false)
  | method at a certain point in the program always the same number       |
  | whenever the program is used                               cyron 11/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::SeedRandomGenerators(const int seedparameter)
+void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
 {
   //integer for seeding all random generators
   int seedvariable = 0;
@@ -292,7 +297,7 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
   return;
 }
 
-void StatMechManager::InitializePLengthAndSearchRes()
+void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
 {
   periodlength_ = Teuchos::rcp(new std::vector<double>);
   periodlength_->clear();
@@ -344,7 +349,7 @@ void StatMechManager::InitializePLengthAndSearchRes()
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim, RCP<CONTACT::Beam3cmanager> beamcmanager, bool rebuildoctree)
+void STATMECH::StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim, RCP<CONTACT::Beam3cmanager> beamcmanager, bool rebuildoctree)
 {
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
@@ -441,9 +446,29 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 } // StatMechManager::Update()
 
 /*----------------------------------------------------------------------*
+ | Update time step size and total time         (public)   mueller 03/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& time)
+{
+  dt_ = dt;
+  if(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) > statmechparams_.get<double>("STARTTIMEACT", 0.0))
+  {
+    if(statmechparams_.get<double>("DELTA_T_NEW",dt_)>0.0)
+    {
+      dt_ = statmechparams_.get<double>("DELTA_T_NEW",0.01);
+      dt = dt_;
+    }
+  }
+
+  time_ += dt_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Retrieve nodal positions                     (public)   mueller 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::GetNodePositions(Epetra_Vector& discol,
+void STATMECH::StatMechManager::GetNodePositions(Epetra_Vector& discol,
                                        std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                        std::map<int,LINALG::Matrix<3,1> >& currentrotations,
                                        bool positionsonly)
@@ -494,7 +519,7 @@ void StatMechManager::GetNodePositions(Epetra_Vector& discol,
 /*----------------------------------------------------------------------*
  | Updates positions and rotations of binding spots        mueller 11/11|
  *----------------------------------------------------------------------*/
-void StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,std::map<int,LINALG::Matrix<3,1> >& currentpositions)
+void STATMECH::StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,std::map<int,LINALG::Matrix<3,1> >& currentpositions)
 {
   Epetra_Vector bspotpositionsrow(*bspotrowmap_);
   Epetra_Vector bspotrotationsrow(*bspotrowmap_);
@@ -561,7 +586,7 @@ void StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,std::map<in
  | Shifts current position of nodes so that they comply with periodic   |
  | boundary conditions                                       cyron 04/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
+void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
 {
   double starttime = statmechparams_.get<double>("STARTTIMEACT",0.0);
 
@@ -617,7 +642,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
  | reference configuration; if yes initial values of curvature and jacobi |
  | determinants are adapted in a proper way                    cyron 02/10|
  *-----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 {
   DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*> (element);
 
@@ -691,7 +716,7 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
  | reference configuration; if yes initial values of curvature and jacobi |
  | determinants are adapted in a proper way                    cyron 02/10|
  *-----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
 {
   DRT::ELEMENTS::Beam3ii* beam = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element);
 
@@ -765,7 +790,7 @@ void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
  | reference configuration; if yes initial values of jacobi determinants  |
  | are adapted in a proper way                                 cyron 03/10|
  *-----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 {
   DRT::ELEMENTS::Truss3* truss = dynamic_cast<DRT::ELEMENTS::Truss3*> (element);
 
@@ -805,7 +830,7 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
  | Assign crosslink molecules and nodes to volume partitions            |
  |																								(public) mueller 08/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid)
+void STATMECH::StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid)
 {
   //filament binding spots and crosslink molecules are indexed according to their positions within the boundary box volume
   std::vector<std::vector<std::vector<int> > > bspotinpartition;
@@ -862,7 +887,7 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 /*----------------------------------------------------------------------*
  | detect neighbour nodes to crosslink molecules (public) mueller (7/10)|
  *----------------------------------------------------------------------*/
-void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+void STATMECH::StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                            std::vector<std::vector<std::vector<int> > >* bspotinpartition,
                                            Epetra_Vector& numbond,
                                            Epetra_MultiVector& crosslinkerpositions,
@@ -1025,7 +1050,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 /*----------------------------------------------------------------------*
  | rotation around a fixed axis by angle phirot          mueller (11/11)|
  *----------------------------------------------------------------------*/
-void StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot)
+void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot)
 {
   // unit length
   axis.Scale(1.0/axis.Norm2());
@@ -1053,7 +1078,7 @@ void StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG:
  | crosslinker elements once linking conditions are met.       					|
  | (private)                                              mueller (7/10)|
  *----------------------------------------------------------------------*/
-void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                                const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
                                                RCP<CONTACT::Beam3cmanager> beamcmanager)
@@ -1415,7 +1440,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
  | create a new crosslinker element and add it to your discretization of|
  | choice (public) 				  														 mueller (11/11)|
  *----------------------------------------------------------------------*/
-void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks)
+void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks)
 {
   // get the nodes from the discretization (redundant on both the problem as well as the contact discretization
   DRT::Node* nodes[2] = {	mydiscret.gNode( globalnodeids[0] ) , mydiscret.gNode( globalnodeids[1] )};
@@ -1476,7 +1501,7 @@ void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globaln
  | setting of crosslinkers for loom network setup                       |
  | (private)                                              mueller (2/12)|
  *----------------------------------------------------------------------*/
-bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol)
+bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
   {
@@ -1556,7 +1581,7 @@ bool StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const st
  | searches crosslinkers and deletes them if probability check is passed|
  | (public) 																							mueller (7/10)|
  *----------------------------------------------------------------------*/
-void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                                   const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_Vector& discol,
                                                   RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
@@ -1708,7 +1733,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 /*----------------------------------------------------------------------*
  | (private) remove crosslinker element                    mueller 1/11 |
  *----------------------------------------------------------------------*/
-void StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements)
+void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements)
 {
   unsigned startsize = deletedelements->size();
   std::vector<DRT::PackBuffer> vdata( startsize );
@@ -1749,7 +1774,7 @@ void StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& mydiscret, 
 /*----------------------------------------------------------------------*
  | (private) force dependent off-rate                      mueller 1/11 |
  *----------------------------------------------------------------------*/
-void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff0, Epetra_Vector* punlink, Epetra_Vector& discol)
+void STATMECH::StatMechManager::ForceDependentOffRate(const double& dt, const double& koff0, Epetra_Vector* punlink, Epetra_Vector& discol)
 {
   // update element2crosslink_
   element2crosslink_->PutScalar(-1.0);
@@ -1821,7 +1846,7 @@ void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff
 /*----------------------------------------------------------------------*
  | (private) update nodal triads                           mueller 1/11 |
  *----------------------------------------------------------------------*/
-void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
+void STATMECH::StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
 {
   //first get triads at all row nodes
   Epetra_MultiVector bspottriadsrow(*bspotrowmap_, 4, true);
@@ -1878,7 +1903,7 @@ void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
  | (private) Reduce currently existing crosslinkers by a certain        |
  | percentage.                                              mueller 1/11|
  *----------------------------------------------------------------------*/
-void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
+void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 {
   int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
 
@@ -2092,7 +2117,7 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
  | (public) generate gaussian randomnumbers with mean "meanvalue" and   |
  | standarddeviation "standarddeviation" for parallel use     cyron10/09|
  *----------------------------------------------------------------------*/
-void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers, const double meanvalue, const double standarddeviation)
+void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers, const double meanvalue, const double standarddeviation)
 {
   //multivector for stochastic forces evaluated by each element based on row map
   Epetra_MultiVector randomnumbersrow(*(discret_.ElementRowMap()), randomnumbers->NumVectors());
@@ -2105,15 +2130,13 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
   Epetra_Export exporter(*discret_.ElementRowMap(), *discret_.ElementColMap());
   randomnumbers->Export(randomnumbersrow, exporter, Add);
 
-  //now fstoch contains stochastic forces identical on all processors
-
   return;
 } // StatMechManager::SynchronizeRandomForces()
 
 /*----------------------------------------------------------------------*
  | (public) writing restart information for manager objects   cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
+void STATMECH::StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 {
   output.WriteInt("istart", istart_);
   output.WriteInt("unconvergedsteps", unconvergedsteps_);
@@ -2155,7 +2178,7 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
  | (public) write restart information for fully redundant   Epetra_Multivector|
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter& output, const string name, RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter& output, const string name, RCP<Epetra_MultiVector> multivector)
 {
   //create stl vector to store information in multivector
   RCP<vector<double> > stlvector = rcp(new vector<double>);
@@ -2176,7 +2199,7 @@ void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter&
 /*----------------------------------------------------------------------*
  |read restart information for statistical mechanics (public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
+void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 {
 
   // read restart information for statistical mechanics
@@ -2221,7 +2244,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
  | (public) read restart information for fully redundant Epetra_Multivector   |
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
 {
     //we assume that information was stored like for a redundant stl vector
     RCP<vector<double> > stlvector = rcp(new vector<double>);
@@ -2244,7 +2267,7 @@ void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& 
  | (public) saves all relevant variables *_ as *conv_ to allow  for      |
  | returning to the beginning of a time step                 cyron 11/10 |
  *-----------------------------------------------------------------------*/
-void StatMechManager::WriteConv()
+void STATMECH::StatMechManager::WriteConv()
 {
   //save relevant class variables at the very end of the time step
   crosslinkerbondconv_ = rcp(new Epetra_MultiVector(*crosslinkerbond_));
@@ -2270,7 +2293,7 @@ void StatMechManager::WriteConv()
 /*-----------------------------------------------------------------------*
  | communicate Vector to all Processors                    mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void StatMechManager::CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport, bool doimport)
+void STATMECH::StatMechManager::CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport, bool doimport)
 {
   /* zerofy InVec at the beginning of each search except for Proc 0
    * for subsequent export and reimport. This way, we guarantee redundant information
@@ -2294,7 +2317,7 @@ void StatMechManager::CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& Out
 /*-----------------------------------------------------------------------*
  | communicate MultiVector to all Processors               mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport, bool doimport)
+void STATMECH::StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport, bool doimport)
 {
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
   Epetra_Export exporter(OutVec.Map(), InVec.Map());
@@ -2314,7 +2337,7 @@ void StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_M
 /*-----------------------------------------------------------------------*
  | (public) restore state at the beginning of this time step cyron 11/10 |
  *-----------------------------------------------------------------------*/
-void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   //restore state at the beginning of time step for relevant class variables
   crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
@@ -2388,7 +2411,7 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTAC
 /*----------------------------------------------------------------------*
  | check for broken element                        (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken)
+void STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken)
 {
   // empty cut just in case it was handed over non-empty
   cut.Zero();
@@ -2419,7 +2442,7 @@ void StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LI
  | get a matrix with node coordinates and their DOF LIDs                |
  |																							   (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids)
+void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids)
 {
   // clear LID vector just in case it was handed over non-empty
   lids->clear();
@@ -2446,7 +2469,7 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
 /*----------------------------------------------------------------------*
  | update force sensor locations                   (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
+void STATMECH::StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 {
   // reinitialize forcesensor_
   forcesensor_->PutScalar(-1.0);
@@ -2472,10 +2495,41 @@ void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 } // StatMechManager::UpdateForceSensors
 
 /*----------------------------------------------------------------------*
+ | update number of unconverged steps              (public) mueller 3/10|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps(bool flag)
+{
+  if(flag)
+    unconvergedsteps_++;
+  else
+    unconvergedsteps_--;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | add parameters to given parameter list          (public) mueller 3/10|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
+{
+  params.set("ETA",statmechparams_.get<double>("ETA",0.0));
+  params.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
+  params.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
+  if(randomnumbers!=Teuchos::null)
+    params.set("RandomNumbers",randomnumbers);
+  params.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
+  params.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
+  params.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
+  params.set("STARTTIMEACT",statmechparams_.get<double>("STARTTIMEACT",0.0));
+  params.set("DELTA_T_NEW",statmechparams_.get<double>("DELTA_T_NEW",0.0));
+  params.set("PERIODLENGTH",GetPeriodLength());
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | generates a vector with a random permutation of the numbers between 0|
  | and N - 1                                        (public) cyron 06/10|
  *----------------------------------------------------------------------*/
-std::vector<int> StatMechManager::Permutation(const int& N)
+std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
 {
   //auxiliary variable
   int j = 0;
@@ -2502,7 +2556,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
+void STATMECH::StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -2547,7 +2601,7 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
 
-bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil)
+bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil)
 {
 
   //if orientation is not to be checked explicitly, this function always returns true
@@ -2609,7 +2663,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 /*----------------------------------------------------------------------*
 | simulation of crosslinker diffusion		        (public) mueller 07/10|
 *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean, double standarddev, const double &dt)
+void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean, double standarddev, const double &dt)
 {
 /* Here, the diffusion of crosslink molecules is handled.
  * Depending on the number of occupied binding spots of the molecule, its motion
@@ -2704,7 +2758,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
  | update crosslink molecule positions	                 								|
  |																				        (public) mueller 08/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
+void STATMECH::StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                     const LINALG::SerialDenseMatrix& LID, const int& crosslinkernumber,
                                                     Epetra_MultiVector& bspottriadscol,
                                                     bool coupledmovement)
@@ -2804,7 +2858,7 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int, LINALG::
 /*----------------------------------------------------------------------*
  | Initialize crosslinker positions  			        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerMoleculeInit()
+void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 {
   int ncrosslink = statmechparams_.get<int> ("N_crosslink", 0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -3153,7 +3207,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 | Set crosslinkers whereever possible before the first time step        |
 |                                                (private) mueller 11/11|
 *----------------------------------------------------------------------*/
-void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
   {
@@ -3460,7 +3514,7 @@ void StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcma
  |  Periodic Boundary Shift for crosslinker diffusion simulation        |
  |                                                (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions)
+void STATMECH::StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions)
 {
   for (int i=0; i<crosslinkerpositions.MyLength(); i++)
     for (int j=0; j<crosslinkerpositions.NumVectors(); j++)
@@ -3476,7 +3530,7 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
 /*----------------------------------------------------------------------*
  |  Evaluate DBCs in case of periodic BCs (public)         mueller  2/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
+void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
                                                 RCP<Epetra_Vector> disn,
                                                 RCP<Epetra_Vector> dirichtoggle,
                                                 RCP<Epetra_Vector> invtoggle)
@@ -3756,7 +3810,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  fill system vector and toggle vector (public)          mueller  3/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeids,
+void STATMECH::StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeids,
                                                    vector<int>* onoff,
                                                    RCP<Epetra_Vector> disn,
                                                    RCP<Epetra_Vector> dirichtoggle,

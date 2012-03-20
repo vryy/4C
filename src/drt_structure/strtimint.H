@@ -71,6 +71,11 @@ namespace CONTACT
   class Beam3cmanager;
 }
 
+namespace STATMECH
+{
+  class StatMechManager;
+}
+
 namespace POTENTIAL
 {
   class PotentialManager;
@@ -537,6 +542,9 @@ namespace STR
     //! Read and set restart values for contact / meshtying
     void ReadRestartContactMeshtying();
 
+    //! Read and set restart values for statmech
+    void ReadRestartStatMech();
+
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
 
@@ -674,6 +682,24 @@ namespace STR
 
     //@}
 
+    //@}
+
+    //! @name Statistical Mechanics methods
+    //@{
+
+    //! return bool indicating if statmech is defined
+    bool HaveStatMech() { return (statmechman_ != Teuchos::null); }
+
+    //! return statmech manager
+    Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() {return statmechman_;}
+
+    //! Check if statistical mechanics is chosen in input file and
+    //! create manager object + initialize all relevant stuff if so
+    void PrepareStatMech(const Teuchos::ParameterList& sdynparams);
+
+    //@}
+
+
     //! @name Structure with ale specific methods
     //@{
 
@@ -762,6 +788,9 @@ namespace STR
 
     //! beam contact
     Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;
+
+    //! statistical mechanics
+    Teuchos::RCP<STATMECH::StatMechManager>   statmechman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

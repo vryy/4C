@@ -45,11 +45,13 @@ Maintainer: Thomas Klöppel
 #include "../drt_contact/contact_abstract_strategy.H" // for feeding contactsolver with maps
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_statmech/statmech_manager.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -117,6 +119,7 @@ STR::TimInt::TimInt
   potman_(Teuchos::null),
   cmtman_(Teuchos::null),
   beamcman_(Teuchos::null),
+  statmechman_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
   time_(Teuchos::null),
@@ -249,6 +252,10 @@ STR::TimInt::TimInt
     PrepareContactMeshtying(sdynparams);
   }
 
+  // check for statistical mechanics
+  {
+    PrepareStatMech(sdynparams);
+  }
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   // (this is necessary to BOTH constraints and contact / meshtying)
@@ -579,6 +586,46 @@ void STR::TimInt::PrepareStepContact()
 }
 
 /*----------------------------------------------------------------------*/
+/* Check for contact or meshtying and do preparations */
+void STR::TimInt::PrepareStatMech(const Teuchos::ParameterList& sdynparams)
+{
+  // some parameters
+  const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  INPAR::STATMECH::ThermalBathType tbtype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams,"THERMALBATH");
+
+  if(tbtype != INPAR::STATMECH::thermalbath_none)
+  {
+    // note: "0.0" for alpha_f (originally, statmech time integration derived from strugenalpha.cpp
+    statmechman_ = rcp(new STATMECH::StatMechManager(sdynparams,*discret_));
+  }
+
+  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle_);
+
+  // output
+  if (!discret_->Comm().MyPID())
+  {
+    switch(tbtype)
+    {
+      case INPAR::STATMECH::thermalbath_none:
+        cout << "===== Statistical Mechanics without Statistical Mechanics ======\n" << endl;
+        break;
+      case INPAR::STATMECH::thermalbath_uniform:
+        cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << endl;
+        break;
+      case INPAR::STATMECH::thermalbath_shearflow:
+        cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << endl;
+        break;
+      default: dserror("Undefined thermalbath type!");
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* EvaluateReferenceState for frictional contact */
 void STR::TimInt::EvaluateReferenceState()
 {
@@ -824,6 +871,7 @@ void STR::TimInt::ReadRestart
   ReadRestartState();
   ReadRestartConstraint();
   ReadRestartContactMeshtying();
+  ReadRestartStatMech();
   ReadRestartForce();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
@@ -883,6 +931,19 @@ void STR::TimInt::ReadRestartContactMeshtying()
     IO::DiscretizationReader reader(discret_,step_);
     cmtman_->ReadRestart(reader,(*dis_)(0),zeros_);
   }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for statmech */
+void STR::TimInt::ReadRestartStatMech()
+{
+  if (HaveStatMech())
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    statmechman_->ReadRestart(reader);
+  }
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1044,6 +1105,12 @@ void STR::TimInt::OutputRestart
   {
       cmtman_->WriteRestart(*output_);
       cmtman_->PostprocessTractions(*output_);
+  }
+
+  // statistical mechanics
+  if (HaveStatMech())
+  {
+    statmechman_->WriteRestart(*output_);
   }
 
   // info dedicated to user's eyes staring at standard out

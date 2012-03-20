@@ -12,14 +12,15 @@ Maintainer: Christoph Meier
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Teuchos_RefCountPtr.hpp"
+
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 #include "Epetra_Comm.h"
-#include "../linalg/linalg_fixedsizematrix.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace LINALG
 {
