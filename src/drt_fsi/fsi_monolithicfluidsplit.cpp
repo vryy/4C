@@ -555,10 +555,10 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
 #ifdef FLUIDSPLITAMG
       mat.Matrix(0,2).UnComplete();
-        mat.Matrix(0,2).Add(*lfmgi,false,1.,0.0);
-      #else
-        mat.Assign(0,2,View,*lfmgi);
-      #endif
+      mat.Matrix(0,2).Add(*lfmgi,false,1.,0.0);
+#else
+      mat.Assign(0,2,View,*lfmgi);
+#endif
 
     }
 
@@ -600,8 +600,9 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     fmgicur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,0)));
     fmggcur_ = rcp(new LINALG::SparseMatrix(mmm->Matrix(1,1)));
   }
-
 }
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)

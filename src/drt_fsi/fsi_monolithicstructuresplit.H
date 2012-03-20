@@ -7,7 +7,6 @@
 #include "fsi_monolithic.H"
 
 // forward declarations
-
 namespace ADAPTER
 {
   class Structure;
@@ -25,8 +24,6 @@ namespace NOX
 
 namespace FSI
 {
-  // forward declarations
-
   class OverlappingBlockMatrix;
 
   namespace UTILS
