@@ -307,6 +307,16 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
     TestForceStiffPotential(timen_, dism_, step_);
   }
 
+  // apply forces and stiffness due to embedding tissue condition
+  if (midavg_ == INPAR::STR::midavg_trlike)
+  {
+	ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
+  }
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
+  {
+    ApplyForceStiffEmbedTissue(stiff_,fintm_,dism_,predict);
+  }
+
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);
 
