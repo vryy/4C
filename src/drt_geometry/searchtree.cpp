@@ -13,7 +13,10 @@ Maintainer: Ursula Mayer
 
 #ifdef CCADISCRET
 #include "searchtree.H"
+#include "searchtree_geometry_service.H"
 #include "intersection_service.H"
+#include "intersection_service_templates.H"
+#include "position_array.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -1299,6 +1302,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
         }
       }
       else if (treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 3;
         else
@@ -1306,6 +1310,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           index = -1;
           return false;
         }
+      }
     }
 
     // check min_y less than y-plane
@@ -1338,6 +1343,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 1;
         else
@@ -1345,6 +1351,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           index = -1;
           return false;
         }
+      }
     }
   }
 
@@ -1381,6 +1388,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 0;
         else
@@ -1388,6 +1396,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           index = -1;
           return false;
         }
+      }
     }
 
     // check max_y greater than y-plane
@@ -1420,6 +1429,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 2;
         else
@@ -1427,6 +1437,7 @@ bool GEO::SearchTree::TreeNode::classifyXAABB(
           index = -1;
           return false;
         }
+      }
     }
   }
   return oneIndex;
@@ -1479,6 +1490,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
         }
       }
       else if (treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 3;
         else
@@ -1486,6 +1498,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           index = -1;
           return false;
         }
+      }
     }
 
     // check min_y less than y-plane
@@ -1518,6 +1531,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 1;
         else
@@ -1525,6 +1539,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           index = -1;
           return false;
         }
+      }
     }
   }
 
@@ -1561,6 +1576,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 0;
         else
@@ -1568,6 +1584,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           index = -1;
           return false;
         }
+      }
     }
 
     // check max_y greater than y-plane
@@ -1600,6 +1617,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
         }
       }
       else if(treeType_ == QUADTREE)
+      {
         if(index == -1)
           index = 2;
         else
@@ -1607,6 +1625,7 @@ bool GEO::SearchTree::TreeNode::classifyKDOP(
           index = -1;
           return false;
         }
+      }
     }
   }
   return oneIndex;

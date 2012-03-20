@@ -15,44 +15,60 @@ Maintainer: Florian Henke
 #define COMBUST_FLUIDIMPLICITINTEGRATION_H
 
 
-#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/fluid_timint.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_xfem/physics.H"
+#include "../drt_xfem/xfem_utils.H"
 #include "../drt_io/io_ostream0.H"
-#include "../drt_lib/drt_dofset_pbc.H"
-#include "../drt_lib/drt_dofset_independent_pbc.H"
-#include "../drt_xfem/dofkey.H"
 
 
 // forward declarations
-namespace XFEM
-{
-  class DofManager;
-  class ElementAnsatz;
-  class ENR;
-  class EnrichmentProjection;
-  class Extrapolation;
-  class SemiLagrange;
-  class STD;
-  class TIMEINT;
-}
-
-// forward declarations
+class Epetra_CrsGraph;
+class Epetra_Map;
+class Epetra_Vector;
 class PeriodicBoundaryConditions;
-
-namespace DRT
-{
-  class ResultTest;
-}
 
 namespace COMBUST
 {
   class FlameFront;
+  class InterfaceHandleCombust;
+}
+
+namespace DRT
+{
+  class Discretization;
+  class IndependentPBCDofSet;
+}
+
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+  class MultiMapExtractor;
+  class SparseMatrix;
+  class SparseOperator;
+  class Solver;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace XFEM
+{
+  class DofKey;
+  class DofManager;
+  class ElementAnsatz;
+  class ENR;
+  class STD;
 }
 
 namespace FLD
 {
+  class TransferTurbulentInflowCondition;
+
   namespace UTILS
   {
     class KSPMapExtractor;
@@ -256,6 +272,13 @@ public:
     return *output_;
   }
 
+  void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno)
+  {
+    // This function is called from the Fluid Base Algorithm, but has no effect.
+    // The fluid flow field is initialized from the COMBUST::Algorithm.
+    return;
+  }
+
   /*!
   \brief set initial flow field, also for analytical test problems
   */
@@ -271,7 +294,7 @@ public:
   /*!
    * \brief check symmetry of some numerical examples (flame-vortex-interaction, collapse-flame) 
    */
-  void EvaluateSymmetryError(RCP<Epetra_Vector> stateVec);
+  void EvaluateSymmetryError(Teuchos::RCP<Epetra_Vector> stateVec);
 
   /*!
   \brief calculate error between a analytical solution and the
@@ -359,13 +382,13 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
-  Teuchos::RCP<const DRT::DofSet> DofSet() { return standarddofset_; }
+  Teuchos::RCP<const DRT::DofSet> DofSet();
   Teuchos::RCP<const DRT::IndependentPBCDofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
-  LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
-  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
+  Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()         { return velpressplitter_; }
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap();
+  Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
   double ResidualScaling() const
   {
@@ -403,8 +426,6 @@ public:
   */
   void LiftDrag() const;
 
-
-//  virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
   const double EvalTime() const
   {
@@ -480,7 +501,7 @@ protected:
   int numdim_;
 
   //! connection between master and slave row nodes
-  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;
@@ -637,13 +658,7 @@ protected:
      *
      *  should always fit to the current Epetra_Maps of this classes vectors
      */
-    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>    nodalDofDistributionMap_;
-
-    /*! contains connection between elemental DofKey and a position in the global state arrays
-     *
-     *  should always fit to the current Epetra_Maps of this classes vectors
-     */
-    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>    elementalDofDistributionMap_;
+    std::map<XFEM::DofKey, XFEM::DofGID>    nodalDofDistributionMap_;
 
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
@@ -667,7 +682,7 @@ protected:
   } physprob_;
 
   //! Extractor used for convergence check
-  LINALG::MapExtractor      velpressplitter_;
+  Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
 
   //! Krylov space projection map extractor
   Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;

@@ -30,6 +30,7 @@ Maintainer: Volker Gravemeier / Andreas Ehrl
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
+#include "../drt_geometry/position_array.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"

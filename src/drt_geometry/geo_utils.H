@@ -33,6 +33,10 @@ namespace GEO
 
   //! shortcut for a vector of DomainIntCells
   typedef std::vector<GEO::DomainIntCell > DomainIntCells;
+
+
+  //! based on this element property, one can speed up geometry algorithms
+  enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
 }
 
 #endif /* GEO_UTILS_H_ */

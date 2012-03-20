@@ -40,11 +40,11 @@ Maintainer: Ursula Mayer
 </pre>
  */
 
-#ifdef CCADISCRET
+
 #ifndef SEARCHTREE_NEARESTOBJECT_H_
 #define SEARCHTREE_NEARESTOBJECT_H_
 
-#include "../drt_lib/drt_dserror.H"
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
 
@@ -199,6 +199,4 @@ class NearestObject
 }
 
 #endif /*OCTTREE_NEARESTOBJECT_H_*/
-#endif /*CCADISCRET*/
-
 

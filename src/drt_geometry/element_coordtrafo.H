@@ -12,15 +12,12 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ELEMENT_COORDTRAFO_H_
 #define ELEMENT_COORDTRAFO_H_
 
 
-// #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_geometry/intersection_math.H"
 
 
@@ -918,8 +915,5 @@ static void CurrentToLineElementCoordinates(
 
 
 #endif /*ELEMENT_COORDTRAFO_H_*/
-#endif /*CCADISCRET*/
-
-
 
 

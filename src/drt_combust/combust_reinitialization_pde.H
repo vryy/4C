@@ -13,11 +13,25 @@ Maintainer: Benedikt Schott
 #ifndef COMBUST_REINITIALIZATION_PDE_H
 #define COMBUST_REINITIALIZATION_PDE_H
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+#include <Teuchos_RCP.hpp>
+
+
+class Epetra_Vector;
 
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
+}
+
+namespace SCATRA
+{
+  class ScaTraTimIntImpl;
+}
+
+namespace Teuchos
+{
+  class ParameterList;
 }
 
 namespace COMBUST
@@ -94,7 +108,7 @@ private:
   void ReinitializeInfo();
 
   //! return the ScaTraTimIntImpl object of the ScaTraBaseAlgorithm
-  SCATRA::ScaTraTimIntImpl& ScaTraReinitField(){return reinit_->ScaTraField();};
+  SCATRA::ScaTraTimIntImpl& ScaTraReinitField();
 
   //! evaluate a gradient based error norm
   double EvaluateGradientNormError();

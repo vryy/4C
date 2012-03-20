@@ -30,6 +30,8 @@ Maintainer: Axel Gerstenberger
 #include "xfem_fluidwizard.H"
 
 
+#include "dofkey.H"
+
 /*------------------------------------------------------------------------------------------------*
  | constructor: used for combustion problems only                                     henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
@@ -237,8 +239,7 @@ int XFEM::DofManager::NumNodalDof() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::fillDofRowDistributionMaps(
-    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>&  NodalDofDistributionMap,
-    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>&  ElementalDofDistributionMap
+    std::map<XFEM::DofKey, XFEM::DofGID>&  NodalDofDistributionMap
 ) const
 {
   NodalDofDistributionMap.clear();
@@ -266,39 +267,7 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
     std::set<FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
-      NodalDofDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
-      dofcount++;
-    }
-  };
-
-  ElementalDofDistributionMap.clear();
-  // loop all (non-overlapping = Row)-Elements and store the DOF information w.t.h. of DofKeys
-  for (int i=0; i<ih_->FluidDis()->NumMyRowElements(); ++i)
-  {
-    const DRT::Element* actele = ih_->FluidDis()->lRowElement(i);
-    const int gid = actele->Id();
-    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
-    if (entry == elementalDofs_.end())
-    {
-      // no dofs for this element... must be a hole or somethin'
-      continue;
-    }
-    const std::vector<int> gdofs(ih_->FluidDis()->Dof(actele));
-    const std::set<FieldEnr> dofset = entry->second;
-    if (gdofs.size() != dofset.size())
-    {
-//      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
-//      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
-//      dserror("Bug!!! Information about element dofs in DofManager and Discretization does not fit together!");
-      // TODO: this mismatch is known and a better structure for element dofs should be found,
-      //       e.g. DofKey(gid,fieldenr,dofperfieldenr), the latter being the number of dofs per fieldenr in the element
-    }
-
-    int dofcount = 0;
-    std::set<FieldEnr>::const_iterator fieldenr;
-    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-    {
-      ElementalDofDistributionMap.insert(make_pair(DofKey<onElem>(gid, *fieldenr), gdofs[dofcount]));
+      NodalDofDistributionMap.insert(make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
       dofcount++;
     }
   };
@@ -308,7 +277,7 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::fillNodalDofColDistributionMap(
-    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>&  NodalDofColDistributionMap
+    std::map<XFEM::DofKey, XFEM::DofGID>&  NodalDofColDistributionMap
 ) const
 {
   NodalDofColDistributionMap.clear();
@@ -337,7 +306,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
     std::set<FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
-      NodalDofColDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
+      NodalDofColDistributionMap.insert(make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
       dofcount++;
     }
   }
@@ -350,7 +319,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
 Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
     const Epetra_Vector&                   xfemvector,
     const DRT::DofSet&                     outdofset,
-    const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+    const map<DofKey, DofGID>&     nodalDofDistributionMap,
     const std::set<XFEM::PHYSICS::Field>&  outputfields
 ) const
 {
@@ -407,7 +376,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
         else // there is a standard enrichment for this desired output field
         {
           // build a dofkey (= XFEM dof)
-          const XFEM::DofKey<XFEM::onNode> dofkey(nodegid,*fieldenrentry);
+          const XFEM::DofKey dofkey(nodegid,*fieldenrentry);
           // get dof GID (XFEM layout) corresponding to this dofkey
           const int xfemgid = nodalDofDistributionMap.find(dofkey)->second;
           if (xfemgid < 0)
@@ -427,7 +396,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
 //          if ((xfemfield == *outputfield) and (xfemenrtype == XFEM::Enrichment::typeStandard))
 //          {
 //            // build a dofkey (= XFEM dof)
-//            const XFEM::DofKey<XFEM::onNode> dofkey(nodegid,*fieldenr);
+//            const XFEM::DofKey dofkey(nodegid,*fieldenr);
 //            // get dof GID (XFEM layout) corresponding to this dofkey
 //            const int xfemgid = nodalDofDistributionMap.find(dofkey)->second;
 //            if (xfemgid < 0)
@@ -457,7 +426,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::overwritePhysicalField(
     Teuchos::RCP<Epetra_Vector>&           vector,
-    const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+    const map<DofKey, DofGID>&     nodalDofDistributionMap,
     const XFEM::PHYSICS::Field&            physfield,
     const XFEM::Enrichment::EnrType&       enrichment,
     const double                           value,
@@ -510,9 +479,9 @@ void XFEM::DofManager::overwritePhysicalField(
           if (ifield->getField() == physfield)
           {
             // build a dofkey (= XFEM dof)
-            const XFEM::DofKey<XFEM::onNode> dofkey(nodegid, *ifield);
+            const XFEM::DofKey dofkey(nodegid, *ifield);
             // get dof GID (XFEM layout) corresponding to this dofkey
-            std::map<DofKey<onNode>, DofGID>::const_iterator idof = nodalDofDistributionMap.find(dofkey);
+            std::map<DofKey, DofGID>::const_iterator idof = nodalDofDistributionMap.find(dofkey);
             if (idof == nodalDofDistributionMap.end())
               dserror("bug!");
             const int dofgid = idof->second;

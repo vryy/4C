@@ -20,7 +20,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
-#include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/turbulence_statistics_ccy.H"
 #include "../drt_fluid/turbulence_statistics_cha.H"

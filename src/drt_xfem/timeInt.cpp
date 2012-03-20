@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 #include "timeInt.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_combust/combust_flamefront.H"
+#include "../drt_geometry/position_array.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -30,8 +31,8 @@ XFEM::TIMEINT::TIMEINT(
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& olddofcolmap,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
-    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
+    const map<DofKey, DofGID>& oldNodalDofColDistrib,
+    const map<DofKey, DofGID>& newNodalDofRowDistrib,
     const RCP<map<int,vector<int> > > pbcmap
 ) :
 discret_(discret),
@@ -611,7 +612,7 @@ void XFEM::STD::importNewFGIData(
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib)
+    const map<DofKey, DofGID>& newNodalDofRowDistrib)
 {
   discret_ = discret;
   newdofman_ = newdofman;
@@ -743,7 +744,7 @@ void XFEM::STD::startpoints()
               for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
                   fieldenr != fieldenrset.end();++fieldenr)
               {
-                const DofKey<onNode> olddofkey(*enrnode,*fieldenr);
+                const DofKey olddofkey(*enrnode,*fieldenr);
                 const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
 
                 if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
@@ -834,7 +835,7 @@ void XFEM::STD::setFinalData(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr) // loop over field enr set
     {
-      const DofKey<onNode> newdofkey(gnodeid, *fieldenr);
+      const DofKey newdofkey(gnodeid, *fieldenr);
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
 
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
@@ -1157,8 +1158,8 @@ void XFEM::ENR::importNewFGIData(
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
-    const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib
+    const map<DofKey, DofGID>& newNodalDofRowDistrib,
+    const map<DofKey, DofGID>& oldNodalDofColDistrib
 )
 {
   discret_=discret;
@@ -1193,7 +1194,7 @@ bool XFEM::ENR::newEnrValueNeeded(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const DofKey<onNode> newdofkey(gid, *fieldenr);
+      const DofKey newdofkey(gid, *fieldenr);
 
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
@@ -1203,7 +1204,7 @@ bool XFEM::ENR::newEnrValueNeeded(
         // additional checks for standard or minimal enrichment computation:
 
         // check if enrichment dofs existed before
-        map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
+        map<DofKey, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
         if (olddof == oldNodalDofColDistrib_.end()) // olddof not found -> no enr value before -> enr value has to be set
           return true;
 
@@ -1224,15 +1225,15 @@ bool XFEM::ENR::newEnrValueNeeded(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const DofKey<onNode> newdofkey(gid, *fieldenr);
+      const DofKey newdofkey(gid, *fieldenr);
 
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
         // check if enrichment dofs existed before
-        map<DofKey<onNode>, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
+        map<DofKey, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
         if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
         {
-          map<DofKey<onNode>, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
+          map<DofKey, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
           if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if it is not critical
           {
             if ((timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard) and (critCut(node))) // critical cut has to be recomputed

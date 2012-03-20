@@ -14,18 +14,9 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "../drt_geometry/intersection_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "Epetra_SerialDenseMatrix.h"
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
-
-
+#include "../linalg/linalg_serialdensematrix.H"
 
 
 void GEO::test_svdcmp(
@@ -386,6 +377,4 @@ void GEO::svdcmpSerialDense(
                }
            }  
   }
-
-#endif  // #ifdef CCADISCRET
 

@@ -16,9 +16,14 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
-#include "dofkey.H"
+
+//#include "dofkey.H"
+#include "field_enriched.H"
+
+
 #include "element_ansatz.H"
 #include "../drt_lib/drt_dofset.H"
+
 
 namespace COMBUST
 {
@@ -27,6 +32,7 @@ namespace COMBUST
 
 namespace XFEM
 {
+  class DofKey;
 
   /*!
  \brief He knows everything about the XFEM enrichments for one particular interface setup
@@ -97,13 +103,12 @@ namespace XFEM
 
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
       void fillDofRowDistributionMaps(
-          map<DofKey<onNode>, DofGID>&  NodalDofDistributionMap,        ///< nodal dofs
-          map<DofKey<onElem>, DofGID>&  ElementalDofDistributionMap     ///< element dofs
+          map<DofKey, DofGID>&  NodalDofDistributionMap        ///< nodal dofs
       ) const;
 
       // fill column map with nodal dof positions in EpetraVectors for all DofKeys on this proc
       void fillNodalDofColDistributionMap(
-          map<XFEM::DofKey<XFEM::onNode>, DofGID>&  NodalDofColDistributionMap
+          map<XFEM::DofKey, DofGID>&  NodalDofColDistributionMap
       ) const;
 
       /*!
@@ -126,7 +131,7 @@ namespace XFEM
       Teuchos::RCP<Epetra_Vector> transformXFEMtoStandardVector(
           const Epetra_Vector&                    originalvector,
           const DRT::DofSet&                      dofsetout,
-          const map<DofKey<onNode>, DofGID>&      nodalDofDistributionMap,
+          const map<DofKey, DofGID>&      nodalDofDistributionMap,
           const std::set<XFEM::PHYSICS::Field>&   fieldsout
       ) const;
 
@@ -135,15 +140,12 @@ namespace XFEM
       */
       void overwritePhysicalField(
           Teuchos::RCP<Epetra_Vector>&           vector,
-          const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+          const map<DofKey, DofGID>&     nodalDofDistributionMap,
           const XFEM::PHYSICS::Field&            physfield,
           const XFEM::Enrichment::EnrType&       enrichment,
           const double                           value,
           const bool                             strict = false
       ) const;
-
-//      //! return pointer to interface handle
-//      const Teuchos::RCP<COMBUST::InterfaceHandleCombust> getInterfaceHandle() const { return ih_; }
 
     private:
 

@@ -36,6 +36,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_geometry/position_array.H"
 
 
 namespace COMBUST

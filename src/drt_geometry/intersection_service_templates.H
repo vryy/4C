@@ -42,24 +42,19 @@ Maintainer: Ursula Mayer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef INTERSECTION_SERVICE_TEMPLATES_H_
 #define INTERSECTION_SERVICE_TEMPLATES_H_
 
-#include "../drt_lib/drt_discret.H"
+
+#include "intersection_math.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_geometry/intersection_math.H"
-#include "../drt_geometry/element_coordtrafo.H"
+#include "geo_utils.H"
+
 
 namespace GEO
 {
-
-
-  //! based on this element property, one can speed up geometry algorithms
-  enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
-
-
-
   //! checks if a given surface element lies in a plane
   template <class M>
     static inline bool SurfaceElementIsPlane(
@@ -343,7 +338,4 @@ namespace GEO
 
 
 #endif /*INTERSECTION_SERVICE_TEMPLATES_H_*/
-#endif /*CCADISCRET*/
-
-
 

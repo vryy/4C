@@ -560,6 +560,7 @@ set(OBJS_DRT_ARTNET
 )
 set(OBJS_INTERSECTION
   src/drt_xfem/dof_distribution_switcher.cpp
+  src/drt_xfem/dofkey.cpp
   src/drt_xfem/dof_management.cpp
   src/drt_xfem/dof_management_element.cpp
   src/drt_xfem/enrichment.cpp
@@ -737,7 +738,6 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_geometry/integrationcell.cpp
-  src/drt_geometry/intersection.cpp
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
   src/drt_geometry/intersection_service.cpp

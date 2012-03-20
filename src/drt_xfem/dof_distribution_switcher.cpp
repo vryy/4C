@@ -34,12 +34,12 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
   unknownFieldEnr.clear();
 
   // step 1: find predecessor of new nodal dofkey
-  for (map<DofKey<onNode>, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
+  for (map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
                                                    newdof != newNodalDofDistrib_.end();
                                                    ++newdof)
   {
-    const DofKey<onNode> newdofkey = newdof->first;
-    map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
+    const DofKey newdofkey = newdof->first;
+    map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
     if (olddof != oldNodalDofDistrib_.end()) // if dofkey has existed before, use old value
     {
 
@@ -51,14 +51,14 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
   }
 
   // step 2: find successor of old nodal dofkey to sum up values
-  for (map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofDistrib_.begin();
+  for (map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.begin();
                                                    olddof != oldNodalDofDistrib_.end();
                                                    ++olddof)
   {
-    const DofKey<XFEM::onNode> olddofkey = olddof->first;
+    const DofKey olddofkey = olddof->first;
 
     // try to find successor
-    map<DofKey<onNode>, DofGID>::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
+    map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
     if (newdof == newNodalDofDistrib_.end())  // if no successor found (was handled already in step 1)
     {
       // try to find another usefull value
@@ -72,7 +72,7 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
       if (altenr.Type() != XFEM::Enrichment::typeUndefined) // if alternative key found, add old solution to it
       {
         // find dof position of alternative key
-        const DofKey<onNode> altdofkey(nodegid, XFEM::FieldEnr(olddofkey.getFieldEnr().getField(), altenr));
+        const DofKey altdofkey(nodegid, XFEM::FieldEnr(olddofkey.getFieldEnr().getField(), altenr));
         const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
 
         //std::cout << olddofkey.toString() << " -> " << altdofkey.toString() << endl;
@@ -217,17 +217,17 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
     if (not oldmap.SameAs(olddofrowmap_)) dserror("bug!");
 
     // step 1: find predecessor of new nodal dofkey
-    for (map<DofKey<onNode>, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
+    for (map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
                                                      newdof != newNodalDofDistrib_.end();
                                                      ++newdof)
     {
-      const DofKey<onNode> newdofkey = newdof->first;
+      const DofKey newdofkey = newdof->first;
       const int newdofpos = newdof->second;
 
-      map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
+      map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
       if (olddof != oldNodalDofDistrib_.end()) // if dofkey has existed before, use old value
       {
-        const DofKey<onNode> olddofkey = olddof->first;
+        const DofKey olddofkey = olddof->first;
         const int olddofpos = olddof->second;
         //cout << newdofkey.toString() << " -> init to old value" << endl;
         (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
@@ -249,62 +249,8 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
       }
     }
 
-//    // step 2: find sucessor of old nodal dofkey to sum up values
-//    for (map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofDistrib_.begin();
-//                                                     olddof != oldNodalDofDistrib_.end();
-//                                                     ++olddof)
-//    {
-//      const DofKey<XFEM::onNode> olddofkey = olddof->first;
-//      const int olddofpos = olddof->second;
-//      const XFEM::PHYSICS::Field oldphysvar = olddofkey.getFieldEnr().getField();
-//
-//      // try to find successor
-//      map<DofKey<onNode>, DofGID>::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
-//      if (newdof == newNodalDofDistrib_.end())  // if no successor found (was handled already in step 1)
-//      {
-//        // try to find another usefull value
-//        // current assumption: there is only one type of enrichment per node
-//        // no overlapping enrichments allowed for now
-//        const int nodegid = olddofkey.getGid();
-//        const XFEM::Enrichment oldenr(olddofkey.getFieldEnr().getEnrichment());
-//
-//        // create alternative dofkey
-//        XFEM::Enrichment altenr(genAlternativeEnrichment(nodegid, oldphysvar, dofman_));
-//
-//        if (altenr.Type() != XFEM::Enrichment::typeUndefined) // if alternative key found, add old solution to it
-//        {
-//          // find dof position of alternative key
-//          const XFEM::FieldEnr altfieldenr(olddofkey.getFieldEnr().getField(), altenr);
-//          const DofKey<onNode> altdofkey(nodegid, altfieldenr);
-//          const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
-//
-//          //std::cout << olddofkey.toString() << " -> " << altdofkey.toString() << endl;
-//          if (newdofpos < 0)
-//          {
-//            std::cout << "old Dofkey" << endl << olddofkey.toString() << endl;
-//            std::cout << "alt Dofkey" << endl << altdofkey.toString() << endl;
-//            dserror("bug!");
-//          }
-//
-//          // add old value to already existing values
-//          //(*newVector)[newdofrowmap_.LID(newdofpos)] += enrval*(*oldVector)[olddofrowmap_.LID(olddofpos)];
-//          (*newVector)[newdofrowmap_.LID(newdofpos)] += (*oldVector)[olddofrowmap_.LID(olddofpos)];
-//          completely_unchanged = false;
-//        }
-//        else // if not alternative is found
-//        {
-//          // this can only happen in the void enrichment case and in that case,
-//          // the dof value is zero anyway, which coincides with the fact that we have no place,
-//          // where we could store it ;-)
-//        }
-//      }
-//      else
-//      {
-//        // do nothing, this case was handled in step 1
-//      }
-//    }
-
-#if 0
+    // The following remark is "from the past" where element data existed on global level
+    //
     // remark: Only if DLM condensation is turned off, there will be element dofs visible in the global
     //         DofManager. Of course, irrespective of the DLM condensation setting, there will be
     //         element dofs on the element level (ElementDofManager), if a stress-based approach is
@@ -325,39 +271,6 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
     //         That is, element dofs cannot be switched correctly here, since not all element dofs
     //         are known. They only exist on the element level. They are generated in
     //         ElementDofManager::ComputeDependentInfo()
-    dserror("This will not work properly! Read comment above!");
-
-    // step 3: find predecessor of new elemental dofkey
-    for (map<DofKey<onElem>, DofGID>::const_iterator newdof = newElementalDofDistrib_.begin();
-                                                     newdof != newElementalDofDistrib_.end();
-                                                     ++newdof)
-    {
-      const DofKey<XFEM::onElem> newdofkey = newdof->first;
-      const int newdofpos = newdof->second;
-
-      map<DofKey<onElem>, DofGID>::const_iterator olddof = oldElementalDofDistrib_.find(newdofkey);
-      if (olddof != oldElementalDofDistrib_.end())  // if dofkey has existed before, use old value
-      {
-        const DofKey<XFEM::onElem> olddofkey = olddof->first;
-        const int olddofpos = olddof->second;
-        //cout << "init to old value" << endl;
-        (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
-      }
-      else // if dofkey has not been existed before, initialize to zero
-      {
-        //cout << "init to zero" << endl;
-        (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
-        completely_unchanged = false;
-      }
-    }
-#endif
-
-#if 0
-    if (completely_unchanged)
-      cout << "completely unchanged vector" << endl;
-    else
-      cout << "modified vector" << endl;
-#endif
   }
 
   // set vector to zero or initialized vector

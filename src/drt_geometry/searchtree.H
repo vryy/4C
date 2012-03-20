@@ -39,16 +39,31 @@ Maintainer: Ursula Mayer
             089 - 289-15257
 </pre>
  */
-#ifdef CCADISCRET
+
 
 #ifndef SEARCHTREE_H
 #define SEARCHTREE_H
 
-#include "../drt_geometry/searchtree_geometry_service.H"
 
+#include <Teuchos_RCP.hpp>
+#include "searchtree_nearestobject.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+
+namespace DRT
+{
+  class Discretization;
+  class Element;
+}
+
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 namespace GEO
 {
+  class InterfacePoint;
 
 //! identifies tree type
 enum TreeType {
@@ -235,8 +250,8 @@ private:
    \return vector of children ids
    */
   std::vector<int> classifyElement(
-      const RCP<DRT::Element>       		       			element,
-      const std::map<int,LINALG::Matrix<3,1> >&   	currentpositions
+      const Teuchos::RCP<DRT::Element>             element,
+      const std::map<int,LINALG::Matrix<3,1> >&    currentpositions
   ) const;
 
 
@@ -269,8 +284,8 @@ private:
    \param currentpositions		current nodal positions of masterelements
    */
   void createChildren(
-      map<int, RCP<DRT::Element> >& 				      masterelements,
-      const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions
+      std::map<int, Teuchos::RCP<DRT::Element> >&     masterelements,
+      const std::map<int,LINALG::Matrix<3,1> >&       currentpositions
   );
 
     
@@ -321,7 +336,7 @@ private:
    \param currentpositions     current nodal positions in discretization
    */
   void setXFEMLabelOfEmptyChildren(
-    const vector<vector<int> >&                   triangleList,
+    const std::vector<std::vector<int> >&                   triangleList,
     const std::vector<GEO::InterfacePoint>&       pointList
     );
 
@@ -529,8 +544,8 @@ public:
   \return 0->fluid 1..n->Solid with XFEM-Coupling condition
    */
   void moveContactNodes(
-    const vector<vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList,
+    const std::vector<std::vector<int> >&                   triangleList,
+    std::vector< GEO::InterfacePoint >&                pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,
@@ -643,7 +658,7 @@ public:
    */
   void printTreeNode(
       const int       max_depth,
-      stringstream&   fc
+      std::stringstream&   fc
       ) const;
 
 
@@ -742,7 +757,7 @@ public:
    */
   void initializeTreeSlideALE(
       const LINALG::Matrix<3,2>&        nodeBox,
-      map<int, RCP<DRT::Element> >&     elements,
+      std::map<int, Teuchos::RCP<DRT::Element> >&     elements,
       const TreeType                    treetype
   );
 
@@ -803,8 +818,8 @@ public:
   \param querypointId                   point id in triangle list
    */
   void moveContactNodes(
-    const vector<vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList,
+    const std::vector<std::vector<int> >&                   triangleList,
+    std::vector< GEO::InterfacePoint >&                pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,
@@ -943,5 +958,4 @@ private:
 } // namespace GEO
 
 
-#endif
 #endif

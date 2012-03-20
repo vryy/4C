@@ -19,15 +19,14 @@ Maintainer: Florian Henke
 #include "two_phase_defines.H"
 #include "combust_reinitializer.H"
 #include "combust_fluidimplicitintegration.H"
-
+#include "combust_reinitialization_pde.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"
-
-#include "combust_reinitialization_pde.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -73,8 +72,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   reinit_pde_(Teuchos::null),
   transport_vel_(DRT::INPUT::IntegralValue<INPAR::COMBUST::TransportVel>(combustdyn.sublist("COMBUSTION GFUNCTION"),"TRANSPORT_VEL")),
   transport_vel_no_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("TRANSPORT_VEL_FUNC"))
-  {
-
+{
   if (Comm().MyPID()==0)
   {
     switch(combusttype_)

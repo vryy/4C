@@ -13,7 +13,6 @@ Maintainer: Ursula Mayer
 
 */
 
-#ifdef CCADISCRET
 
 #include "../drt_geometry/position_array.H"
 
@@ -90,10 +89,4 @@ LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
   }
   return xyze;
 }
-
-
-
-#endif
-
-
 

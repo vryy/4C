@@ -23,6 +23,7 @@ Maintainer: Florian Henke
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust_defines.H"
+#include "../drt_geometry/position_array.H"
 
 
 namespace COMBUST
@@ -834,7 +835,8 @@ void Sysmat(
 #else
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
+        newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
 #ifdef COMBUST_SIGMA_BASED
     // TODO: der aufruf ist doch der gleiche wie der darueber? -> COMBUST_SIGMA_BASED raus?
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
@@ -891,7 +893,7 @@ void Sysmat(
 #else
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
-          theta, assembler, flamespeed);
+          theta, ga_alphaF, ga_alphaM, ga_gamma, assembler, flamespeed);
 #endif
 #ifdef COMBUST_SIGMA_BASED
       COMBUST::SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(

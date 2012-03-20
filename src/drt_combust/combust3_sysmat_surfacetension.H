@@ -24,6 +24,8 @@ Maintainer: Benedikt Schott
 #include "../drt_mat/material.H"
 #include "../drt_inpar/inpar_material.H"
 #endif
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/element_normals.H"
 
 
 namespace COMBUST

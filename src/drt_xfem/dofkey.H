@@ -15,62 +15,24 @@ Maintainer: Axel Gerstenberger
 #define DOFKEY_H
 
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "field_enriched.H"
 
 
 namespace XFEM
 {
 
-  //! A DofType to distinguish between nodal and elemental dofs
-  enum DofType
-  {
-    onNode,
-    onElem
-  };
-
-
-  //! create a string from the DofType enum
-  inline std::string dofTypeToString(DofType t)
-  {
-    switch (t)
-    {
-      case onNode: return "Node";
-      case onElem: return "Elem";
-      default:
-        dserror("undefined behaviour");
-        exit(1);
-    }
-  }
-
-
-template <DofType doftype>
 class DofKeyType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const
-  {
-    //return "DofKeyType<doftype>";
+  std::string Name() const;
 
-    // make the name unique but compiler dependent
-    // This is fine since DofKeyType<doftype> is never written to binary io.
-    const type_info & ti = typeid( *this );
-    return ti.name();
-  }
-
-  static DofKeyType & Instance() { return instance_; };
+  static DofKeyType & Instance(){ return instance_; };
 
 private:
 
   static DofKeyType instance_;
 };
-
-
-template <DofType doftype>
-DofKeyType<doftype> DofKeyType<doftype>::instance_;
 
 
   /*!
@@ -81,13 +43,7 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
    *
    * In Haskell one would write:
    * type DofKey = (gid, FieldEnr)
-   *
-   * \tparam doftype a DofType to distinguish between element and nodal dofs.
-   *                 the compiler will complain when we mix nodal and
-   *                 elemental DOFs, since DofKey<onNode> is different from
-   *                 DofKey<onElement>.
    */
-  template <DofType doftype>
   class DofKey : public DRT::ParObject
   {
     public:
@@ -95,141 +51,43 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
       explicit DofKey(
           const int             gid,      ///< global id
           const FieldEnr&       fieldenr  ///< enriched field
-      ) :
-        DRT::ParObject(),
-        fieldenr_(fieldenr),
-        gid_(gid)
-        {
-            return;
-        }
+      );
 
       //! constructor, get values from char array using Unpack member function
       explicit DofKey(
           vector<char>& data      ///< char array with data to unpack
-      ) :
-        DRT::ParObject()
-      {
-        Unpack(data);
-        return;
-      }
+      );
 
       //! copy constructor
       DofKey(
           const DofKey& other           ///< source
-      ) :
-        DRT::ParObject(other),
-        fieldenr_(other.fieldenr_),
-        gid_(other.gid_)
-
-      {
-          assert(&other != this);
-          return;
-      }
+      );
 
       //! return string representation of this class
-      std::string toString() const
-      {
-        std::stringstream s;
-        s << "Dofkey: [" << dofTypeToString(doftype) << " " << setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
-        return s.str();
-      };
+      std::string toString() const;
 
-      virtual int UniqueParObjectId() const { return DofKeyType<doftype>::Instance().UniqueParObjectId(); }
+      virtual int UniqueParObjectId() const;
 
       //! pack all content to char array
-      virtual void Pack(DRT::PackBuffer& data) const
-      {
-        DRT::PackBuffer::SizeMarker sm( data );
-        sm.Insert();
-
-        AddtoPack(data,UniqueParObjectId());
-        AddtoPack(data,gid_);
-        AddtoPack(data,fieldenr_.getField());
-        const XFEM::Enrichment::EnrType enrtype = fieldenr_.getEnrichment().Type();
-        AddtoPack(data,enrtype);
-        const int label = fieldenr_.getEnrichment().XFEMConditionLabel();
-        AddtoPack(data,label);
-      }
+      virtual void Pack(DRT::PackBuffer& data) const;
 
       //! unpack all content from char array
-      virtual void Unpack(const vector<char>& data)
-      {
-        vector<char>::size_type position = 0;
-        // extract type
-        int type = 0;
-        ExtractfromPack(position,data,type);
-        if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-        ExtractfromPack(position,data,gid_);
-
-        // read field
-        int field;
-        ExtractfromPack(position,data,field);
-
-        // read enrichment type
-        int enrtype;
-        ExtractfromPack(position,data,enrtype);
-
-        // read xfem condition label
-        int label;
-        ExtractfromPack(position,data,label);
-
-        // check correct reading
-        if (position != data.size())
-          dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-
-        // create my enriched field
-        fieldenr_ = FieldEnr(static_cast<PHYSICS::Field>( field ),Enrichment(static_cast<XFEM::Enrichment::EnrType>( enrtype ),label));
-
-        return;
-      }
+      virtual void Unpack(const vector<char>& data);
 
       //! return global node or element Id
-      int getGid() const
-      {
-        return gid_;
-      };
+      int getGid() const;
 
       //! return enriched field
-      const FieldEnr& getFieldEnr() const
-      {
-        return fieldenr_;
-      };
+      const FieldEnr& getFieldEnr() const;
 
       //! compare: dofkeys are ordered first by the global id and then by their enrichment
-      bool operator <(const DofKey& rhs) const
-      {
-        if (gid_ < rhs.gid_)
-          return true;
-        else if (gid_ > rhs.gid_)
-          return false;
-        else
-        {
-          if (fieldenr_ < rhs.fieldenr_)
-            return true;
-          else
-            return false;
-        }
-      }
+      bool operator <(const DofKey& rhs) const;
 
       //! test for equality: only equal, if gid and enriched field are identical
-      bool operator ==(const DofKey& rhs) const
-      {
-        if (gid_ == rhs.gid_ and fieldenr_ == rhs.fieldenr_)
-          return true;
-        else
-          return false;
-      }
+      bool operator ==(const DofKey& rhs) const;
 
       //! test for inequality: if any member differs, the objects are not equal
-      bool operator !=(const DofKey& rhs) const
-      {
-        //        return (!(*this == rhs));
-        if (gid_ != rhs.gid_ or fieldenr_ != rhs.fieldenr_)
-          return true;
-        else
-          return false;
-      }
+      bool operator !=(const DofKey& rhs) const;
 
       friend ostream& operator<<(ostream& out, const DofKey& key)
       {
@@ -244,13 +102,6 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
 
       //! no assignment operator implemented
       DofKey& operator = (const DofKey& old);
-      //    :
-      //        gid_(-1),
-      //        fieldenr_(FieldEnr())
-      //    {
-      //        dserror("DofKey() -> please don't call me!");
-      //        return;
-      //    }
 
       //! specific enriched field
       XFEM::FieldEnr  fieldenr_;
@@ -259,10 +110,6 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
       int             gid_;
 
   };
-
-  //! global Position in Epetra vector
-  typedef int DofGID;
-
 } // namespace XFEM
 
 #endif  // #ifndef DOFKEY_H

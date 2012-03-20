@@ -11,14 +11,19 @@ Maintainer: Florian Henke
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
+
 #ifndef TETRAHEDRADECOMPOSITION_H_
 #define TETRAHEDRADECOMPOSITION_H_
 
-#include "geo_utils.H"
-#include "integrationcell.H"
-#include "../drt_inpar/inpar_combust.H"
-#include "../drt_combust/combust_refinementcell.H"
 
+#include "../drt_lib/drt_element.H"
+#include "geo_utils.H"
+
+
+namespace COMBUST
+{
+  class RefinementCell;
+}
 
 namespace GEO
 {

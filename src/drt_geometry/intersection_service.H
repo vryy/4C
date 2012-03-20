@@ -40,19 +40,19 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef CCADISCRET
+
 #ifndef INTERSECTION_SERVICE_H_
 #define INTERSECTION_SERVICE_H_
 
-#include "../drt_geometry/intersection_service_templates.H"
-#include "../drt_geometry/intersection_interfacepoint.H"
-#include "../drt_geometry/element_normals.H"
-#include "../drt_geometry/position_array.H"
 
+#include "geo_utils.H"
+#include "intersection_math.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace GEO
 {
+  class InterfacePoint;
 
 
     const double Dop18Normals[6][3] = {
@@ -266,6 +266,5 @@ namespace GEO
 
 
 #endif  //INTERSECTION_MATH_H_
-#endif  // #ifdef CCADISCRET
 
 

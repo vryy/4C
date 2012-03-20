@@ -27,14 +27,19 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
+
 #include "combust_fluidresulttest.H"
+
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_geometry/position_array.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
@@ -234,8 +239,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
-  // split based on complete fluid field
   velpressplitterForOutput_ = rcp(new LINALG::MapExtractor());
+  // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
 
   //------------------------------------------------------------------------------------------------
@@ -247,7 +252,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // get layout of velocity and pressure dofs in a vector
   const int numdim = params_->get<int>("number of velocity degrees of freedom");
-  FLD::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+  velpressplitter_ = rcp(new LINALG::MapExtractor());
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim,*velpressplitter_);
 
   //------------------------------------------------------------------------------------------------
   // create empty system matrix - stiffness and mass are assembled in one system matrix!
@@ -284,11 +290,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   }
 
   state_.nodalDofDistributionMap_.clear();
-  state_.elementalDofDistributionMap_.clear();
 
   dofmanagerForOutput_->fillDofRowDistributionMaps(
-      state_.nodalDofDistributionMap_,
-      state_.elementalDofDistributionMap_);
+      state_.nodalDofDistributionMap_);
 
   //---------------------------------------------
   // vectors associated with boundary conditions
@@ -780,7 +784,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   const Epetra_Map olddofcolmap = *discret_->DofColMap();
-  map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldNodalDofColDistrib;
+  map<XFEM::DofKey,XFEM::DofGID> oldNodalDofColDistrib;
   olddofmanager->fillNodalDofColDistributionMap(oldNodalDofColDistrib);
 
   // -------------------------------------------------------------------
@@ -800,19 +804,16 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
 
   // anonymous namespace for dofswitcher and startvalues
   {
-    //const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-    const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+    //const std::map<XFEM::DofKey, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+    std::map<XFEM::DofKey, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
     dofmanager->fillDofRowDistributionMaps(
-        state_.nodalDofDistributionMap_,
-        state_.elementalDofDistributionMap_);
+        state_.nodalDofDistributionMap_);
 
     // create switcher
     const XFEM::DofDistributionSwitcher dofswitch(
         interfacehandle_, dofmanager,
         olddofrowmap, newdofrowmap,
-        oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
-        oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
+        oldNodalDofDistributionMap, state_.nodalDofDistributionMap_
     );
 
     //---------------------------------------------------------------
@@ -1040,7 +1041,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,*velpressplitter_);
 
   // -------------------------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in one system matrix!
@@ -1587,26 +1588,26 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       double velnorm_L2 = 0.0;
       double vresnorm = 0.0;
 
-      Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+      Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(residual_);
       onlyvel->Norm2(&vresnorm);
 
-      velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+      velpressplitter_->ExtractOtherVector(incvel_,onlyvel);
       onlyvel->Norm2(&incvelnorm_L2);
 
-      velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
+      velpressplitter_->ExtractOtherVector(state_.velnp_,onlyvel);
       onlyvel->Norm2(&velnorm_L2);
 
       double incprenorm_L2 = 0.0;
       double prenorm_L2 = 0.0;
       double presnorm = 0.0;
 
-      Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+      Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(residual_);
       onlypre->Norm2(&presnorm);
 
-      velpressplitter_.ExtractCondVector(incvel_,onlypre);
+      velpressplitter_->ExtractCondVector(incvel_,onlypre);
       onlypre->Norm2(&incprenorm_L2);
 
-      velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
+      velpressplitter_->ExtractCondVector(state_.velnp_,onlypre);
       onlypre->Norm2(&prenorm_L2);
 
       // care for the case that nothing really happens in the velocity
@@ -1679,7 +1680,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (dim == 2)
         {
           const Epetra_Map* dofcolmap = discret_->DofColMap();
-          map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
+          map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
           dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
           RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
@@ -1732,8 +1733,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
                 fieldenr != frontfieldEnrSet.end();fieldenr++)
             {
-              const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
-              const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
+              const XFEM::DofKey frontdofkey(frontnode->Id(),*fieldenr);
+              const XFEM::DofKey backdofkey(backnode->Id(),*fieldenr);
 
               const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
               const int backdofpos = dofColDistrib.find(backdofkey)->second;
@@ -1805,7 +1806,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       if (dim == 2)
       {
         const Epetra_Map* dofcolmap = discret_->DofColMap();
-        map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
+        map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
         dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
         RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
@@ -1858,8 +1859,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
               fieldenr != frontfieldEnrSet.end();fieldenr++)
           {
-            const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
-            const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
+            const XFEM::DofKey frontdofkey(frontnode->Id(),*fieldenr);
+            const XFEM::DofKey backdofkey(backnode->Id(),*fieldenr);
 
             const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
             const int backdofpos = dofColDistrib.find(backdofkey)->second;
@@ -2041,7 +2042,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const XFEM::DofKey<XFEM::onNode> newdofkey(i, *fieldenr);
+      const XFEM::DofKey newdofkey(i, *fieldenr);
       const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
@@ -2092,10 +2093,10 @@ void FLD::CombustFluidImplicitTimeInt::Predictor()
   double vresnorm;
   double presnorm;
 
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(residual_);
   onlyvel->Norm2(&vresnorm);
 
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(residual_);
   onlypre->Norm2(&presnorm);
 
   if (myrank_ == 0)
@@ -2226,7 +2227,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
 
           int predof = numdim_;
 
-          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->ExtractCondVector(*w_);
 
           presmode->PutScalar((*mode)[predof]);
 
@@ -2302,7 +2303,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
             }
           }
 
-          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->ExtractCondVector(*w_);
 
           // export to vector of ones
           presmode->PutScalar(1.0);
@@ -2358,22 +2359,22 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
     // -------------------------------------------------------------------
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
 
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm);
 
-    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+    velpressplitter_->ExtractOtherVector(incvel_,onlyvel);
     onlyvel->Norm2(&incvelnorm_L2);
 
-    velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
+    velpressplitter_->ExtractOtherVector(state_.velnp_,onlyvel);
     onlyvel->Norm2(&velnorm_L2);
 
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(residual_);
     onlypre->Norm2(&presnorm);
 
-    velpressplitter_.ExtractCondVector(incvel_,onlypre);
+    velpressplitter_->ExtractCondVector(incvel_,onlypre);
     onlypre->Norm2(&incprenorm_L2);
 
-    velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
+    velpressplitter_->ExtractCondVector(state_.velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
     // care for the case that nothing really happens in velocity
@@ -2616,9 +2617,9 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   // only these are allowed to be updated, otherwise you will
   // run into trouble in loma, where the 'pressure' component
   // is used to store the acceleration of the temperature
-  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(state_.accn_ );
-  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(state_.veln_ );
-  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(state_.velnp_);
+  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(state_.accn_ );
+  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(state_.veln_ );
+  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(state_.velnp_);
 
   Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
 
@@ -2646,8 +2647,8 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaIntermediateValues()
     // only these are allowed to be updated, otherwise you will
     // run into trouble in loma, where the 'pressure' component
     // is used to store the acceleration of the temperature
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(state_.accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(state_.accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(state_.accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(state_.accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
 
@@ -4621,7 +4622,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const XFEM::DofKey<XFEM::onNode> dofkey(lnode->Id(), *fieldenr);
+      const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
       const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
       {
@@ -4672,7 +4673,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const XFEM::DofKey<XFEM::onNode> dofkey(lnode->Id(), *fieldenr);
+      const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
       const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
       {
@@ -4787,7 +4788,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const XFEM::DofKey<XFEM::onNode> dofkey(lnode->Id(), *fieldenr);
+      const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
       const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
       {
@@ -4909,10 +4910,10 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> 
         for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
             fieldenr != fieldenrset.end();++fieldenr)
         {
-          const XFEM::DofKey<XFEM::onNode> dofkeyld(leftdownid, *fieldenr);
-          const XFEM::DofKey<XFEM::onNode> dofkeylu(leftupid, *fieldenr);
-          const XFEM::DofKey<XFEM::onNode> dofkeyru(rightupid, *fieldenr);
-          const XFEM::DofKey<XFEM::onNode> dofkeyrd(rightdownid, *fieldenr);
+          const XFEM::DofKey dofkeyld(leftdownid, *fieldenr);
+          const XFEM::DofKey dofkeylu(leftupid, *fieldenr);
+          const XFEM::DofKey dofkeyru(rightupid, *fieldenr);
+          const XFEM::DofKey dofkeyrd(rightdownid, *fieldenr);
 
           const int dofposld = state_.nodalDofDistributionMap_.find(dofkeyld)->second;
           const int dofposlu = state_.nodalDofDistributionMap_.find(dofkeylu)->second;
@@ -5169,8 +5170,8 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> 
         for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
             fieldenr != fieldenrset.end();++fieldenr)
         {
-          const XFEM::DofKey<XFEM::onNode> dofkeyleft(leftid, *fieldenr);
-          const XFEM::DofKey<XFEM::onNode> dofkeyright(rightid, *fieldenr);
+          const XFEM::DofKey dofkeyleft(leftid, *fieldenr);
+          const XFEM::DofKey dofkeyright(rightid, *fieldenr);
 
           const int dofposleft = state_.nodalDofDistributionMap_.find(dofkeyleft)->second;
           const int dofposright = state_.nodalDofDistributionMap_.find(dofkeyright)->second;
@@ -5450,8 +5451,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
   discret_->FillComplete(true,false,true);
 
   dofmanager->fillDofRowDistributionMaps(
-        state_.nodalDofDistributionMap_,
-        state_.elementalDofDistributionMap_);
+        state_.nodalDofDistributionMap_);
 
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
@@ -5748,6 +5748,24 @@ void FLD::CombustFluidImplicitTimeInt::SolveStationaryProblem()
 
   dserror("This is the wrong stationary algorithm! Use COMBUST::Algorithm::SolveStationaryProblem()");
 
+}
+
+
+Teuchos::RCP<const DRT::DofSet> FLD::CombustFluidImplicitTimeInt::DofSet()
+{
+  return standarddofset_;
+}
+
+
+Teuchos::RCP<const Epetra_Map> FLD::CombustFluidImplicitTimeInt::VelocityRowMap()
+{
+  return velpressplitter_->OtherMap();
+}
+
+
+Teuchos::RCP<const Epetra_Map> FLD::CombustFluidImplicitTimeInt::PressureRowMap()
+{
+  return velpressplitter_->CondMap();
 }
 
 

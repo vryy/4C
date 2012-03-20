@@ -15,6 +15,10 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "drt_potential_volume.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
+#include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"

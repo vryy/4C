@@ -255,7 +255,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
         // control boolean not used here
-        bool skipped_elem_enr = false;
+        //bool skipped_elem_enr = false;
         // apply element enrichments (fill elementFieldEnrSet)
         // remark: This procedure must give the same result as the element enrichment procedure in
         //         createDofMapCombust(). The element dof manager has to be consistent with the
@@ -373,7 +373,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if ((not this->bisected_ and not this->trisected_) or
           not params.get<bool>("DLM_condensation"))
       {
-        if (ih_->GetNumBoundaryIntCells(this) > 0)
+        if (ih_->NumBoundaryIntCells(this->Id()) > 0)
           cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << endl;
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -383,7 +383,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
+          genalpha,combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization

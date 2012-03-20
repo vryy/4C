@@ -26,14 +26,14 @@ namespace XFEM
   void fillNodalDofKeySet(
       const COMBUST::InterfaceHandleCombust& ih,
       const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
-      std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+      std::set<XFEM::DofKey >&      nodaldofkeyset
   );
 
 
   void updateNodalDofMap(
       const COMBUST::InterfaceHandleCombust& ih,
       std::map<int, std::set<XFEM::FieldEnr> >&      nodalDofSet,
-      const std::set<XFEM::DofKey<XFEM::onNode> >&   nodaldofkeyset
+      const std::set<XFEM::DofKey >&   nodaldofkeyset
       );
 
 
@@ -41,7 +41,7 @@ namespace XFEM
    * \brief pack dofkeys from set into char array
    */
   void packDofKeys(
-      const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
+      const set<XFEM::DofKey >&     dofkeyset,
       DRT::PackBuffer&                            dataSend
       );
 
@@ -51,7 +51,7 @@ namespace XFEM
    */
   void unpackDofKeys(
       const vector<char>&                     dataRecv,
-      set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset
+      set<XFEM::DofKey >&       dofkeyset
       );
 
 #ifdef PARALLEL

@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_geometry/position_array.H"
 #include "../drt_combust/combust_defines.H"
 #include "../drt_combust/combust3_utils.H"
 
@@ -308,14 +309,11 @@ void XFEM::createDofMapCombust(
     const DRT::Element* xfemele = ih.FluidDis()->lColElement(i);
 
     bool skipped_node_enr = false;
-#ifdef COMBUST_STRESS_BASED
-    bool skipped_elem_enr = false;
-#endif
 
+#ifdef COMBUST_STRESS_BASED
     // create an empty element ansatz map
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
 
-#ifdef COMBUST_STRESS_BASED
     // add discontinuous stress unknowns for this element, if DLM condensation is turned off
     if (not params.get<bool>("DLM_condensation"))
     {

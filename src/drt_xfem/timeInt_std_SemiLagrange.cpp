@@ -763,7 +763,7 @@ void XFEM::SemiLagrange::backTracking(
       for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
           fieldenr != fieldEnrSet.end();++fieldenr)
       {
-        const DofKey<onNode> olddofkey(elenodeids[nodeid], *fieldenr);
+        const DofKey olddofkey(elenodeids[nodeid], *fieldenr);
         const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
         switch (fieldenr->getEnrichment().Type())
         {
@@ -1008,7 +1008,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
 
   // data about column vectors required
   const Epetra_Map& newdofcolmap = *discret_->DofColMap();
-  map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> newNodalDofColDistrib;
+  map<XFEM::DofKey,XFEM::DofGID> newNodalDofColDistrib;
   newdofman_->fillNodalDofColDistributionMap(newNodalDofColDistrib);
 
   vector<RCP<Epetra_Vector> > newColVectors;
@@ -1077,7 +1077,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
-      const DofKey<onNode> newdofkey(gid, *fieldenr);
+      const DofKey newdofkey(gid, *fieldenr);
 
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
@@ -1162,7 +1162,7 @@ void XFEM::SemiLagrange::reinitializeData()
           for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
               fieldenr != fieldEnrSet.end();++fieldenr)
           {
-            const DofKey<onNode> dofkey(nodeid, *fieldenr);
+            const DofKey dofkey(nodeid, *fieldenr);
             const int newdofpos = newNodalDofRowDistrib_.find(dofkey)->second;
             const int olddofpos = oldNodalDofColDistrib_.find(dofkey)->second;
             switch (fieldenr->getEnrichment().Type())
@@ -1212,7 +1212,7 @@ template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::SemiLagrange::computeNodalGradient(
     vector<RCP<Epetra_Vector> >& newColVectors,
     const Epetra_Map& newdofcolmap,
-    map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>& newNodalDofColDistrib,
+    map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
     const DRT::Element* ele,
     DRT::Node* node,
     vector<LINALG::Matrix<3,3> >& velnpDeriv1,

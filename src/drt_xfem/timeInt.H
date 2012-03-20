@@ -21,7 +21,7 @@ Maintainer: Martin Winklmaier
 
 #include "enrichment_utils.H"
 #include "../drt_cut/cut_position.H"
-
+#include "dofkey.H"
 
 namespace COMBUST
 {
@@ -30,6 +30,7 @@ namespace COMBUST
 
 namespace XFEM
 {
+  class DofKey;
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
        something else in XFEM-problems between consecutive time steps
@@ -47,8 +48,8 @@ public:
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
-      const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
+      const map<DofKey, DofGID>& oldNodalDofColDistrib,
+      const map<DofKey, DofGID>& newNodalDofRowDistrib,
       const RCP<map<int,vector<int> > > pbcmap
   );
 
@@ -410,8 +411,8 @@ protected:
   RCP<XFEM::DofManager> newdofman_; // dof manager of current time step t^n+1
   const Epetra_Map olddofcolmap_; // dof column map of last time step t^n in column map
   Epetra_Map newdofrowmap_; // dof column map of current time step t^n+1 in row map
-  const map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
-  map<DofKey<onNode>, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
+  const map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
+  map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
 
   // data
   const RCP<Epetra_Vector> phin_; // phi^n in column map
@@ -757,7 +758,7 @@ public:
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib
+      const map<DofKey, DofGID>& newNodalDofRowDistrib
   );
 
   //! search for an element containing some point
@@ -903,7 +904,7 @@ public:
       const RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
       const RCP<DofManager> dofman,
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution
-      const map<DofKey<onNode>, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
+      const map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
       LINALG::Matrix<3,2*numnode>& nodevel,
 #ifdef COMBUST_NORMAL_ENRICHMENT
       LINALG::Matrix<1,numnode>& nodevelenr,
@@ -934,7 +935,7 @@ public:
       for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
           fieldenr != fieldEnrSet.end();++fieldenr)
       {
-        const DofKey<onNode> dofkey(elenodeids[nodeid], *fieldenr);
+        const DofKey dofkey(elenodeids[nodeid], *fieldenr);
         const int dofpos = dofDistribution.find(dofkey)->second;
         switch (fieldenr->getEnrichment().Type())
         {
@@ -1060,8 +1061,8 @@ public:
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
-      const map<DofKey<onNode>,XFEM::DofGID>& oldNodalDofColDistrib
+      const map<DofKey, DofGID>& newNodalDofRowDistrib,
+      const map<DofKey,XFEM::DofGID>& oldNodalDofColDistrib
   );
 
   //! main function computing the enrichment values
@@ -1134,7 +1135,7 @@ protected:
         for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
             fieldenr != fieldenrset.end();++fieldenr)
         {
-          const DofKey<onNode> olddofkey(currnode->Id(), *fieldenr);
+          const DofKey olddofkey(currnode->Id(), *fieldenr);
           const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
 
           // remark: in touched elements nodes may be not enriched
@@ -1469,7 +1470,7 @@ protected:
   map<int,vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_; // map for element jump and kink values for an ele gid
   map<int,vector<LINALG::Matrix<1,4> > > eleKinks_; // map for element jump and kink values for an ele gid
 
-  map<DofKey<onNode>, DofGID> nodalDofColDistrib_npi_; // dof distribution of last fgi iteration (t^n+1,i)
+  map<DofKey, DofGID> nodalDofColDistrib_npi_; // dof distribution of last fgi iteration (t^n+1,i)
 }; // class Enrichmentvalues
 } // namespace XFEM
 

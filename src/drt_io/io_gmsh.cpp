@@ -11,14 +11,15 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 
-#ifdef CCADISCRET
 
 #include "io_gmsh.H"
 #include "io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"  // LINALG::Export
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_geometry/intersection_service.H"
+#include "../drt_geometry/position_array.H"
 
 
 std::string IO::GMSH::distypeToGmshElementHeader(
@@ -605,4 +606,3 @@ std::string IO::GMSH::GetFileName(
   return filename.str();
 }
 
-#endif // #ifdef CCADISCRET

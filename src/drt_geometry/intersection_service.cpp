@@ -12,9 +12,14 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
+#include "element_coordtrafo.H"
+#include "element_normals.H"
+#include "intersection_interfacepoint.H"
 #include "intersection_service.H"
+#include "intersection_service_templates.H"
+#include "position_array.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 
 
@@ -295,7 +300,3 @@ bool GEO::searchForNearestPointOnSurface(
 
   return pointWithinElement;
 }
-
-
-
-#endif  // #ifdef CCADISCRET

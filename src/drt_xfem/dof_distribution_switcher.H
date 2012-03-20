@@ -14,9 +14,10 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_DISTRIBUTION_SWITCHER_H
 #define DOF_DISTRIBUTION_SWITCHER_H
 
-#include "dofkey.H"
+
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_lib/drt_exporter.H"
+
 
 namespace COMBUST
 {
@@ -25,6 +26,8 @@ namespace COMBUST
 
 namespace XFEM
 {
+  class DofKey;
+
   /*!
   \brief this class is used to switch from one distribution to a second
 
@@ -39,19 +42,15 @@ namespace XFEM
         const Teuchos::RCP<DofManager>             dofman,
         const Epetra_Map&                          olddofrowmap,
         const Epetra_Map&                          newdofrowmap,
-        const std::map<DofKey<onNode>, DofGID>&    oldNodalDofDistrib,
-        const std::map<DofKey<onNode>, DofGID>&    newNodalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&    oldElementalDofDistrib,
-        const std::map<DofKey<onElem>, DofGID>&    newElementalDofDistrib
+        const std::map<DofKey, DofGID>&    oldNodalDofDistrib,
+        const std::map<DofKey, DofGID>&    newNodalDofDistrib
     ) :
       ih_(ih),
       dofman_(dofman),
       olddofrowmap_(olddofrowmap),
       newdofrowmap_(newdofrowmap),
       oldNodalDofDistrib_(oldNodalDofDistrib),
-      newNodalDofDistrib_(newNodalDofDistrib),
-      oldElementalDofDistrib_(oldElementalDofDistrib),
-      newElementalDofDistrib_(newElementalDofDistrib)
+      newNodalDofDistrib_(newNodalDofDistrib)
     {
       extractDofKeysForInitialization(unknownFieldEnr_);
 #ifdef DEBUG
@@ -98,10 +97,8 @@ namespace XFEM
     const Teuchos::RCP<DofManager>                      dofman_;                  ///< dofmanager for this proc
     const Epetra_Map                                    olddofrowmap_;            ///< dofrowmap of the old state vector
     const Epetra_Map                                    newdofrowmap_;            ///< dofrowmap of the new state vector
-    const std::map<DofKey<onNode>, DofGID>              oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
-    const std::map<DofKey<onNode>, DofGID>              newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
-    const std::map<DofKey<onElem>, DofGID>              oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
-    const std::map<DofKey<onElem>, DofGID>              newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    const std::map<DofKey, DofGID>              oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const std::map<DofKey, DofGID>              newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
 
     std::map<int, std::set<FieldEnr> >  unknownFieldEnr_;
   };

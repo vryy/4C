@@ -11,12 +11,12 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef INTEGRATIONCELL_H
 #define INTEGRATIONCELL_H
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_geometry/element_coordtrafo.H"
+
+#include "../drt_lib/drt_element.H"
 
 
 namespace GEO
@@ -47,7 +47,7 @@ class IntCell
     DRT::Element::DiscretizationType Shape() const {return distype_;};
 
     //! brief returns number of nodes
-    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(Shape());};
+    int NumNode() const;
 
     //! returns a string representation of the IntCell
     virtual std::string toString() const;
@@ -243,4 +243,3 @@ class BoundaryIntCell : public IntCell
 }
 
 #endif  // #ifndef INTEGRATIONCELL_H
-#endif  // #ifdef CCADISCRET

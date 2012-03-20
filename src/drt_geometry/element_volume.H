@@ -11,14 +11,14 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ELEMENT_VOLUME_H
 #define ELEMENT_VOLUME_H
 
+
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
+
 
 namespace GEO
 {
@@ -138,4 +138,3 @@ namespace GEO
 
 
 #endif /*ELEMENT_VOLUME_H*/
-#endif /*CCADISCRET*/

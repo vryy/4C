@@ -12,17 +12,9 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
+
 #include "enrichment.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
-#include <string>
-#include <sstream>
-
-
 
 
 /*----------------------------------------------------------------------*

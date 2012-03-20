@@ -786,7 +786,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
     {
-      const DofKey<onNode> newdofkey(node->Id(), *fieldenr);
+      const DofKey newdofkey(node->Id(), *fieldenr);
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       const int lid = newdofrowmap_.LID(newdofpos);
 
@@ -862,7 +862,7 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeKink)
     {
-      const DofKey<onNode> newdofkey(node->Id(), *fieldenr);
+      const DofKey newdofkey(node->Id(), *fieldenr);
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       const int lid = newdofrowmap_.LID(newdofpos);
 

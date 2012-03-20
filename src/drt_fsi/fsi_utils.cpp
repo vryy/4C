@@ -35,6 +35,7 @@
 
 #include "fsi_debugwriter.H"
 #include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"

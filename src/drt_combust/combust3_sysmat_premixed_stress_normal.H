@@ -20,6 +20,8 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_geometry/element_normals.H"
 
 
 #ifdef COMBUST_NORMAL_ENRICHMENT

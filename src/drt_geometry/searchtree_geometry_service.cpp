@@ -10,10 +10,18 @@ Maintainer: Ursula Mayer
             089 - 289-15257
 </pre>
  */
-#ifdef CCADISCRET
-#include "searchtree_geometry_service.H"
+
+
+#include "element_coordtrafo.H"
+#include "element_normals.H"
+#include "intersection_interfacepoint.H"
+#include "intersection_service_templates.H"
 #include "intersection_service.H"
+#include "position_array.H"
+#include "searchtree_geometry_service.H"
+#include "searchtree_nearestobject.H"
 #include "../drt_contact/contact_element.H"
+#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1741,5 +1749,3 @@ void GEO::getPotentialElements(
 	}  
   return;
 }
-
-#endif  // #ifdef CCADISCRET

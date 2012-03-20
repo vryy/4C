@@ -17,8 +17,10 @@ Maintainer: Ursula Mayer
 #include "drt_potential.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/element_volume.H"
 #include "../drt_geometry/intersection_service_templates.H"
+#include "../drt_geometry/searchtree_nearestobject.H"
 #include "../drt_io/io_control.H"
 
 

@@ -14,14 +14,7 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
-
 #include "intersection_interfacepoint.H"
-
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 
 
@@ -286,7 +279,4 @@ void GEO::InterfacePoint::setSingleCoord(
   coord_(index) = coord;
 }
 
-
-
-#endif  // #ifdef CCADISCRET
 

@@ -33,7 +33,7 @@ Maintainer: Axel Gerstenberger
 void XFEM::fillNodalDofKeySet(
     const COMBUST::InterfaceHandleCombust& ih,
     const std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
-    std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+    std::set<XFEM::DofKey >&      nodaldofkeyset
 )
 {
   nodaldofkeyset.clear();
@@ -53,7 +53,7 @@ void XFEM::fillNodalDofKeySet(
     std::set<XFEM::FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
-      nodaldofkeyset.insert(XFEM::DofKey<XFEM::onNode>(gid, *fieldenr));
+      nodaldofkeyset.insert(XFEM::DofKey(gid, *fieldenr));
     }
   };
 }
@@ -64,11 +64,11 @@ void XFEM::fillNodalDofKeySet(
 void XFEM::updateNodalDofMap(
     const COMBUST::InterfaceHandleCombust& ih,
     std::map<int, std::set<XFEM::FieldEnr> >&  nodalDofSet,
-    const std::set<XFEM::DofKey<XFEM::onNode> >&      nodaldofkeyset
+    const std::set<XFEM::DofKey >&      nodaldofkeyset
 )
 {
   // pack data on all processors
-  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=nodaldofkeyset.begin();
+  for(std::set<XFEM::DofKey >::const_iterator dofkey=nodaldofkeyset.begin();
       dofkey != nodaldofkeyset.end();
       ++dofkey)
   {
@@ -84,11 +84,11 @@ void XFEM::updateNodalDofMap(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::packDofKeys(
-    const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
+    const set<XFEM::DofKey >&     dofkeyset,
     DRT::PackBuffer&                            dataSend )
 {
   // pack data on all processors
-  for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+  for(std::set<XFEM::DofKey >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
   {
     DRT::ParObject::AddtoPack(dataSend,*dofkey);
   }
@@ -100,14 +100,14 @@ void XFEM::packDofKeys(
  *----------------------------------------------------------------------*/
 void XFEM::unpackDofKeys(
     const vector<char>&                     dataRecv,
-    set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
+    set<XFEM::DofKey >&       dofkeyset )
 {
 	vector<char>::size_type index = 0;
   while (index < dataRecv.size())
   {
     vector<char> data;
     DRT::ParObject::ExtractfromPack(index, dataRecv, data);
-    dofkeyset.insert(XFEM::DofKey<XFEM::onNode>(data));
+    dofkeyset.insert(XFEM::DofKey(data));
   }
 }
 
@@ -135,12 +135,12 @@ void XFEM::syncNodalDofs(
   if(myrank == 0)
     source = numproc-1;
 
-  set<XFEM::DofKey<XFEM::onNode> >  original_dofkeyset;
+  set<XFEM::DofKey >  original_dofkeyset;
   XFEM::fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
 
-  set<XFEM::DofKey<XFEM::onNode> >  new_dofkeyset;
+  set<XFEM::DofKey >  new_dofkeyset;
   //  new_dofkeyset = original_dofkeyset;
-  for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
+  for (set<XFEM::DofKey >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
   {
     new_dofkeyset.insert(*dofkey);
   }
@@ -191,14 +191,14 @@ void XFEM::syncNodalDofs(
 
 
     // unpack dofkeys from char array
-    set<XFEM::DofKey<XFEM::onNode> >       dofkeyset;
+    set<XFEM::DofKey >       dofkeyset;
     XFEM::unpackDofKeys(dataRecv, dofkeyset);
 #ifdef DEBUG
     cout << "proc " << myrank << ": receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
     cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << endl;
 #endif
     // get all dofkeys whose nodegid is on this proc in the coloumnmap
-    for (set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+    for (set<XFEM::DofKey >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
     {
       const int nodegid = dofkey->getGid();
       if (ih.FluidDis()->HaveGlobalNode(nodegid))

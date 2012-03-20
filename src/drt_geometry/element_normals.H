@@ -11,15 +11,12 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ELEMENT_NORMALS_H_
 #define ELEMENT_NORMALS_H_
 
 
-// #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace GEO
@@ -139,4 +136,3 @@ inline void computeNormalToSurfaceElement(
 
 
 #endif /*ELEMENT_NORMALS_H_NORMALS_H_*/
-#endif /*CCADISCRET*/

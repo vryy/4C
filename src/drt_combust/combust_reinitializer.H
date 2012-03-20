@@ -15,6 +15,7 @@ Maintainer: Florian Henke
 #define COMBUST_REINITIALIZER_H
 
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/geo_utils.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"

@@ -34,9 +34,12 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_thermo/thermo_element.H"
+#include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_structure/stru_aux.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

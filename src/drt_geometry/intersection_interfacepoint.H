@@ -11,18 +11,12 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef CCADISCRET
+
 #ifndef INTERSECTION_INTERFACEPOINT_H_
 #define INTERSECTION_INTERFACEPOINT_H_
 
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include <vector>
 
 
 namespace GEO
@@ -250,5 +244,3 @@ class InterfacePoint
 
 
 #endif /*INTERSECTION_INTERFACEPOINT_H_*/
-#endif  // #ifdef CCADISCRET
-

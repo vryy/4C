@@ -12,14 +12,14 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef INTEGRATIONCELL_COORDTRAFO_H
 #define INTEGRATIONCELL_COORDTRAFO_H
 
 
 #include "../drt_xfem/xfem_utils.H"
-#include "../drt_geometry/integrationcell.H"
+#include "element_coordtrafo.H"
+#include "integrationcell.H"
 
 
 namespace GEO
@@ -245,4 +245,3 @@ namespace GEO
 
 #endif
 
-#endif

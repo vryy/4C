@@ -19,6 +19,8 @@ Maintainer: Benedikt Schott
 
 namespace XFEM
 {
+  //! global Position of degree of freedom in Epetra vector
+  typedef int DofGID;
 
   //! Allows to distinguish between normal assembly and xfem assembly
   enum AssemblyType

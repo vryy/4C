@@ -11,22 +11,11 @@ Maintainer: Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "combust_reinitialization_pde.H"
-
-#include "../drt_lib/drt_discret.H"
-#include "../drt_io/io_gmsh.H"
-
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_SerialDenseVector.h>
-
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "combust_reinitialization_pde.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_io/io_gmsh.H"
 #include "../drt_scatra/scatra_ele_action.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -190,6 +179,12 @@ bool COMBUST::ReinitializationPDE::CallReinitialization(Teuchos::RCP<Epetra_Vect
   return reinitialization_accepted_;
 
 } //COMBUST::ReinitializationPDE::CallReinitialization
+
+
+SCATRA::ScaTraTimIntImpl& COMBUST::ReinitializationPDE::ScaTraReinitField()
+{
+  return reinit_->ScaTraField();
+}
 
 
 /*----------------------------------------------------------------------*

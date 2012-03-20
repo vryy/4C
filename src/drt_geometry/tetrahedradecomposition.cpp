@@ -12,9 +12,14 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 
 
+#include "element_coordtrafo.H"
+#include "integrationcell.H"
 #include "tetrahedradecomposition.H"
 #include "intersection_service_templates.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_combust/combust_refinementcell.H"
+#include "../drt_lib/drt_node.H"
+#include "../headers/definitions.h"
+
 
 /*----------------------------------------------------------------------------------*
  | Decompose into tetrahedra and intersect with interface            sons 01/11     |

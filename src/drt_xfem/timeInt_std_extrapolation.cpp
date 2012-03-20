@@ -560,7 +560,7 @@ void XFEM::Extrapolation::interpolation(
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
         fieldenr != fieldEnrSet.end();++fieldenr)
     {
-      const DofKey<onNode> olddofkey(elenodeids[nodeid], *fieldenr);
+      const DofKey olddofkey(elenodeids[nodeid], *fieldenr);
       const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
       switch (fieldenr->getEnrichment().Type())
       {

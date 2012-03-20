@@ -11,7 +11,7 @@ Maintainer: Ursula Mayer
 </pre>
  */
 
-#ifdef CCADISCRET
+
 #include "../drt_geometry/searchtree_nearestobject.H"
 
 
@@ -135,11 +135,4 @@ void GEO::NearestObject::setSurfaceObjectType(
   nodeId_ = -1;
   lineId_ = -1;
 }
-
-
-
-#endif  // #ifdef CCADISCRET
-
-
-
 

@@ -13,14 +13,18 @@ Maintainer: Florian Henke
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
+
 #include "combust_flamefront.H"
 #include "combust_defines.H"
+#include "combust_refinementcell.H"
 #include "combust3_utils.H"
 #include "../drt_geometry/tetrahedradecomposition.H"
 #include "../drt_io/io_gmsh.H"
-#include "../linalg/linalg_utils.H" // LINALG::Export
+#include "../linalg/linalg_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_geometry/integrationcell.H"
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_cut/cut_levelsetintersection.H"
 #include "../drt_cut/cut_integrationcell.H"

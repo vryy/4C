@@ -15,9 +15,8 @@ Maintainer: Ursula Mayer
 
 
 #include "integrationcell.H"
-#include "../drt_geometry/element_volume.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_geometry/intersection_service_templates.H"
+#include "element_coordtrafo.H"
+#include "element_volume.H"
 #include "../drt_io/io_gmsh.H"
 
 
@@ -76,6 +75,11 @@ GEO::IntCell& GEO::IntCell::operator=(const IntCell& intcell)
 GEO::IntCell::~IntCell()
 {}
 
+
+int GEO::IntCell::NumNode() const
+{
+  return DRT::UTILS::getNumberOfElementNodes(Shape());
+}
 
 
 /*----------------------------------------------------------------------*
@@ -191,7 +195,6 @@ static string PosToString(double x, double y, double z)
        "," << std::setw(14) << scientific << z << ")";
   return s.str();
 }
-
 
 
 /*----------------------------------------------------------------------*

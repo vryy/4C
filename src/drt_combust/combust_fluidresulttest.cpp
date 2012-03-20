@@ -15,9 +15,12 @@ Maintainer: Axel Gerstenberger
 
 #include "combust_fluidimplicitintegration.H"
 #include "combust_fluidresulttest.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_xfem/dof_management.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 
 /*----------------------------------------------------------------------*/
