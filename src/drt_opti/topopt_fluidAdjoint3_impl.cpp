@@ -14,8 +14,8 @@ Maintainer: Martin Winklmaier
 #ifdef CCADISCRET
 
 
-#include "../drt_f3/fluid3.H"
-#include "../drt_f3/fluid3_ele_impl_utils.H"
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_globalproblem.H"

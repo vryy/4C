@@ -29,9 +29,10 @@
 #include "../drt_cut/cut_meshintersection.H"
 #include "../drt_cut/cut_position.H"
 
-#include "../drt_f3/fluid3.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 
-#include "../drt_f3_impl/fluid3_interface.H"
+#include "../drt_fluid_ele/fluid_ele_interface.H"
+#include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
@@ -269,7 +270,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       dserror( "expect fluid element" );
     }
 
-    DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actele->Shape() );
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem");
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     // Evaluate xfem
@@ -739,7 +740,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       dserror( "expect fluid element" );
     }
 
-    DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actaleele->Shape() );
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl(actaleele->Shape(), "xfem");
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actaleele );
     if ( e!=NULL )
@@ -2150,6 +2151,7 @@ void FLD::XFluidFluid::NonlinearSolve()
 
       // Set action type
       eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set<int>("physical type",physicaltype_);
 
       // parameters for turbulent approach
       eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -2526,6 +2528,7 @@ void FLD::XFluidFluid::Evaluate(
 
   // Set action type
   eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulent approach
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -3710,7 +3713,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*bgdis_,nds,la,false);
 
-          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,*params_, mat, *bgdis_, la[0].lm_,
+          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
                                                                                       elescalars,intpoints_sets[set_counter]);
 
           // sum up (on each processor)
@@ -3754,7 +3757,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*bgdis_,la,false);
-         DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, *params_, mat, *bgdis_, la[0].lm_,
+         DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *bgdis_, la[0].lm_,
                                                                                      elescalars);
          // sum up (on each processor)
          cpuscalars += elescalars;
@@ -3782,7 +3785,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*embdis_,alela,false);
-      DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, *params_, mat, *embdis_, alela[0].lm_,
+      DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *embdis_, alela[0].lm_,
                                                                                   elescalars);
       // sum up (on each processor)
       cpuscalars += elescalars;

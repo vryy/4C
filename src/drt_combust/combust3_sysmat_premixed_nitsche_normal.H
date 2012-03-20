@@ -23,7 +23,7 @@ Maintainer: Florian Henke
 #include "combust3_sysmat_standard.H"
 #include "combust3_sysmat_surfacetension.H"
 #include "combust_defines.H"
-#include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_normals.H"
 

@@ -2061,13 +2061,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Incompressible",
                                  "Varying_density",
                                  "Loma",
-                                 "Boussinesq"
+                                 "Boussinesq",
+                                 "Poro"
                                  ),
                                tuple<int>(
                                      INPAR::FLUID::incompressible,
                                      INPAR::FLUID::varying_density,
                                      INPAR::FLUID::loma,
-                                     INPAR::FLUID::boussinesq),
+                                     INPAR::FLUID::boussinesq,
+                                     INPAR::FLUID::poro),
                                &fdyn);
 
   // TODO: is this outdated?

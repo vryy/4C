@@ -20,8 +20,8 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_side.H"
 #include "../drt_cut/cut_volumecell.H"
 
-#include "../drt_f3/fluid3.H"
-#include "../drt_f3/fluid3_boundary_impl.H"
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_boundary_calc.H"
 
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
   Teuchos::RCP<XFEM::FluidWizard>              wizard

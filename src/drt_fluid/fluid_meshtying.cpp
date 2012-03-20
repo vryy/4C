@@ -23,7 +23,7 @@ Maintainer: Andreas Ehrl
 #include "fluid_utils.H"
 #include "fluid_utils_mapextractor.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_f3_impl/fluid3_impl_parameter.H"
+#include "../drt_fluid_ele/fluid_ele_parameter.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_globalproblem.H"

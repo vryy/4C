@@ -47,7 +47,7 @@ NEUMANNINFLOW                   no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
-PHYSICAL_TYPE                   Incompressible
+PHYSICAL_TYPE                   Poro
 PREDICTOR                       default
 RESTARTEVRY                     20
 SIMPLER                         no

@@ -1195,7 +1195,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // set action type
       eleparams.set("action","calc_fluid_systemmat_and_residual");
-      //eleparams.set("action","calc_porousflow_sysmat_and_residual");
+      eleparams.set<int>("physical type",physicaltype_);
 
       // parameters for turbulence approach
       // TODO: rename list
@@ -2492,6 +2492,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // set action type
   eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulence model
   // TODO: rename list
@@ -3265,6 +3266,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // set action type
   eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("physical type",physicaltype_);
 
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -4162,6 +4164,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // set action type
   eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulence approach
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -5761,6 +5764,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("gridv", zeros_);
 
     eleparams.set("action","calc_fluid_systemmat_and_residual");
+    eleparams.set<int>("physical type",physicaltype_);
     // set scheme-specific element parameters and vector values
     if (is_genalpha_)
     {

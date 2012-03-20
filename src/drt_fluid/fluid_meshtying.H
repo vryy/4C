@@ -30,7 +30,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Fluid3ImplParameter;
+    class FluidEleParameter;
   }
 }
 
@@ -69,7 +69,7 @@ namespace UTILS
 }
 class Meshtying
 {
-  friend class Fluid3ImplParameter;
+  friend class FluidEleParameter;
 
   public:
 

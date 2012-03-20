@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_f3/fluid3.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_combust/combust3.H"
 
 /*----------------------------------------------------------------------*

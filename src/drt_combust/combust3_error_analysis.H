@@ -20,7 +20,6 @@ Maintainer: Florian Henke
 
 #include "combust_defines.H"
 
-
 namespace COMBUST
 {
 

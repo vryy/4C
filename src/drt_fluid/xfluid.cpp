@@ -45,8 +45,9 @@ Maintainer:  Benedikt Schott
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_f3/fluid3.H"
-#include "../drt_f3_impl/fluid3_interface.H"
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_interface.H"
+#include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
@@ -248,7 +249,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
         dserror( "expect fluid element" );
       }
 
-      DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actele->Shape() );
+      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem");
 
       GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
       if ( e!=NULL )
@@ -1517,7 +1518,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*discret_,nds,la,false);
 
-          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,*params_, mat, *discret_, la[0].lm_,
+          DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
                                                                                       elescalars,intpoints_sets[set_counter]);
 
           // sum up (on each processor)
@@ -1562,7 +1563,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*discret_,la,false);
-         DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele, *params_, mat, *discret_, la[0].lm_,
+         DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *discret_, la[0].lm_,
                                                                                      elescalars);
          // sum up (on each processor)
          cpuscalars += elescalars;
@@ -2075,6 +2076,7 @@ void FLD::XFluid::NonlinearSolve()
 
       // Set action type
       eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set<int>("physical type",physicaltype_);
 
       // parameters for turbulent approach
       eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");

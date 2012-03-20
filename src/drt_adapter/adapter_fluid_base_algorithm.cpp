@@ -329,7 +329,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // number of degrees of freedom
   fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
-  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
+  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
   fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
@@ -338,6 +338,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") 
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
+  if (genprob.probtyp == prb_poroelast and
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
+      != INPAR::FLUID::poro)
+    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Poro' for poro-elasticity!");
 
 
   // -------------------------------------------------- time integration

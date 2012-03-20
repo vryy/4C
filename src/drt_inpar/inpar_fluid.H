@@ -30,7 +30,8 @@ namespace INPAR
       incompressible,
       boussinesq,
       varying_density,
-      loma
+      loma,
+      poro
     };
     //! flag to (de)activate PSPG stabilization
     enum PSPG

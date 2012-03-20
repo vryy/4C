@@ -23,7 +23,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 // we need to know all element types for the ale mesh creation
-#include "../drt_f3/fluid3.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"

@@ -27,8 +27,9 @@ Maintainer: Shadan Shahmiri
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_volumecell.H"
-#include "../drt_f3/fluid3.H"
-#include "../drt_f3_impl/fluid3_interface.H"
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_interface.H"
+#include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include <iostream>
 
@@ -1460,7 +1461,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 
 
         // call element method
-        DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->CalculateContinuityXFEM(ele,
+        DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
                                                                                            *bgdis,
                                                                                            la[0].lm_,
                                                                                            C_elevec,
@@ -1535,7 +1536,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
       const size_t ndof   = la[0].lm_.size();
       C_elevec.Reshape(ndof,1);
 
-      DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->CalculateContinuityXFEM(ele,
+      DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
                                                                                          *bgdis,
                                                                                          la[0].lm_,
                                                                                          C_elevec);

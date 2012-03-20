@@ -27,7 +27,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_xfem/enrichment.H"

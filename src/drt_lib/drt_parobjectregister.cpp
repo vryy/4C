@@ -17,7 +17,7 @@
 #include "../drt_torsion2/torsion2.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_scatra/scatra_element.H"
-#include "../drt_f3/fluid3.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"

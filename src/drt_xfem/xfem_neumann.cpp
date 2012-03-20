@@ -35,7 +35,7 @@ Maintainer: Dipl.-Math. Benedikt Schott
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
 
-#include "../drt_f3/fluid3.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 
 #include "../drt_xfem/xfem_fluidwizard.H"
 

@@ -1187,22 +1187,29 @@ set(OBJS_DRT_B3_LIB
   src/drt_beam3/beam3_evaluate.cpp
   src/drt_beam3/beam3_input.cpp
 )
-set(OBJS_DRT_F3_LIB
-  src/drt_f3/fluid3.cpp
-  src/drt_f3/fluid3_boundary_impl.cpp
-  src/drt_f3/fluid3_element_boundary.cpp
-  src/drt_f3/fluid3_element_boundary_evaluate.cpp
-  src/drt_f3/fluid3_evaluate.cpp
-  src/drt_f3/fluid3_genalpha_resVMM.cpp
-  src/drt_f3/fluid3_input.cpp
-  src/drt_f3/fluid3_internalfaces_stabilization.cpp
-  src/drt_f3/fluid3_stabilization.cpp
-  src/drt_f3/fluid3_weak_dbc.cpp
+set(OBJS_DRT_FLUID_ELE_LIB
+  src/drt_fluid_ele/fluid_ele.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
+  src/drt_fluid_ele/fluid_ele_boundary.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
+  src/drt_fluid_ele/fluid_ele_calc.cpp
+  src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
+  src/drt_fluid_ele/fluid_ele_calc_general_service.cpp
+  src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
+  src/drt_fluid_ele/fluid_ele_calc_loma.cpp
+  src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
+  src/drt_fluid_ele/fluid_ele_calc_poro.cpp
+  src/drt_fluid_ele/fluid_ele_calc_stabilization.cpp
+  src/drt_fluid_ele/fluid_ele_calc_std.cpp
+  src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
+  src/drt_fluid_ele/fluid_ele_calc_weak_dbc.cpp
+  src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
+  src/drt_fluid_ele/fluid_ele_evaluate.cpp
+  src/drt_fluid_ele/fluid_ele_factory.cpp
+  src/drt_fluid_ele/fluid_ele_input.cpp
+  src/drt_fluid_ele/fluid_ele_parameter.cpp
+  src/drt_fluid_ele/fluid_genalpha_resVMM.cpp
   src/drt_fluid/time_integration_element.cpp
-)
-set(OBJS_DRT_F3_IMPL_LIB
-  src/drt_f3_impl/fluid3_impl.cpp
-  src/drt_f3_impl/fluid3_impl_parameter.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
 )
@@ -1412,8 +1419,7 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 # Define the libraries. The link order is important!
 
 # Compile element libraries first. There are files that take time to compile.
-add_library(ele_f3 ${OBJS_DRT_F3_LIB})
-add_library(ele_f3_impl ${OBJS_DRT_F3_IMPL_LIB})
+add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b2 ${OBJS_DRT_B2_LIB})
 add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
@@ -1439,8 +1445,7 @@ set(ELEMENT_LIBRARIES
   ele_b3ii
   ele_bele3
   ele_combust3
-  ele_f3
-  ele_f3_impl
+  ele_fluid
   ele_s8
   ele_scatra
   ele_so

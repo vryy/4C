@@ -26,7 +26,7 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
