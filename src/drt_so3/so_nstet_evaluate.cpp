@@ -784,7 +784,8 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      hyper->Evaluate(glstrain,cmat,stress,params);
       density = hyper->Density();
       return;
       break;
@@ -821,3 +822,4 @@ int DRT::ELEMENTS::NStet::EvaluateNeumann(ParameterList& params,
 
 
 #endif  // #ifdef CCADISCRET
+

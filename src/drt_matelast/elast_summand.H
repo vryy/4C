@@ -15,12 +15,22 @@ Maintainer: Burkhard Bornemann
 
 #ifdef CCADISCRET
 
-// not necessary
-//#include "../drt_mat/matpar_parameter.H"
-//#include "../drt_mat/material.H"
-
 #include "../drt_inpar/inpar_material.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_parobject.H"
+
+// forward declarations
+
+namespace DRT
+{
+  class PackBuffer;
+
+  namespace INPUT
+  {
+    class LineDefinition;
+  }
+}
+
 
 namespace MAT
 {
@@ -49,7 +59,7 @@ namespace MAT
     ///
     /// \author rausch,tk,bborn
     /// \date 05/09
-    class Summand
+    class Summand : public DRT::ParObject
     {
     public:
 
@@ -59,6 +69,21 @@ namespace MAT
       /// destructor
       virtual ~Summand() { ; }
 
+      ///@name Packing and Unpacking (dummy routines)
+      //@{
+
+      virtual int UniqueParObjectId() const;
+
+      virtual void Pack(DRT::PackBuffer& data) const;
+
+      virtual void Unpack(const vector<char>& data);
+
+      virtual void PackSummand(DRT::PackBuffer& data) const { return; };
+
+      virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position) { return; };
+
+      //@}
+
       /// provide material type
       virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
@@ -66,6 +91,13 @@ namespace MAT
       static Teuchos::RCP<Summand> Factory(
         int matnum  ///< material ID
         );
+
+      /// Dummy routine for setup of summand (needed, e.g., for HU-dependent material
+      /// parameters)
+      virtual void Setup(DRT::INPUT::LineDefinition* linedef) { return; };
+
+      /// Dummy routine for setup of patient-specific materials
+      virtual void SetupAAA(Teuchos::ParameterList& params) { return; };
 
       /// add shear modulus equivalent
       virtual void AddShearMod(
@@ -146,30 +178,6 @@ namespace MAT
         LINALG::Matrix<8,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
         ) = 0;
-
-      /// for special type of patient-specific AAA ilt material
-      virtual void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< see above
-        LINALG::Matrix<8,1>& delta,  ///< see above
-        const LINALG::Matrix<3,1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-        double normdist  ///< AAA specific stuff from PATSPEC: normalized ILT thickness
-        )
-      {
-        return ;
-      };
-
-      /// For HU dependent material (Hounsfield Units - form medical images)
-      virtual void AddCoefficientsPrincipal(
-        double HU, ///< Hounsfield units (HU) of the respective element
-        int HUlumen, ///< maximum Hounsfield unit (HU) in the lumen
-        LINALG::Matrix<3,1>& gamma,  ///< same as for AddCoefficientsPrincipal()
-        LINALG::Matrix<8,1>& delta,  ///< dito
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-        )
-      {
-        return ;
-      };
-
 
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
@@ -429,9 +437,6 @@ namespace MAT
           bool& anisoprinc_, ///< global indicator for anisotropy
           bool& anisomod_ ///< global indicator for anisotropy
         ) = 0;
-
-    private:
-
 
     };  // class Summand
 

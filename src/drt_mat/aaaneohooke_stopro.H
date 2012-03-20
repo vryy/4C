@@ -30,8 +30,6 @@ Maintainer: Jonas Biehler
 #include "matpar_parameter.H"
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
 
 namespace MAT
 {
@@ -179,11 +177,6 @@ private:
 
     // Init stochastic beta
     void Init(double value_stopro, string stochpar);
-
-    // THE material routine
-    //void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-      //Epetra_SerialDenseMatrix* cmat_e,
-      //Epetra_SerialDenseVector* stress_e);
 
     // THE material routine
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,

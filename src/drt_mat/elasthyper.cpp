@@ -86,6 +86,7 @@ DRT::ParObject* MAT::ElastHyperType::Create( const std::vector<char> & data )
 {
   MAT::ElastHyper* elhy = new MAT::ElastHyper();
   elhy->Unpack(data);
+
   return elhy;
 }
 
@@ -143,9 +144,14 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,A1_);
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
-  AddtoPack(data,HU_);
-  AddtoPack(data,HUlumen_);
-  AddtoPack(data,normdist_);
+
+  // loop map of associated potential summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->PackSummand(data);
+  }
 }
 
 
@@ -164,6 +170,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,matid);
   params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -173,29 +180,41 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
+  }
+
+  isoprinc_ = false;
+  isomod_ = false;
+  anisoprinc_ = false;
+  anisomod_ = false;
 
   int isoprinc;
-	int isomod;
-	int anisoprinc;
-	int anisomod;
-	
+  int isomod;
+  int anisoprinc;
+  int anisomod;
+
   ExtractfromPack(position,data,isoprinc);
-  isoprinc_ = isoprinc != 0;
   ExtractfromPack(position,data,isomod);
-  isomod_ = isomod != 0;
   ExtractfromPack(position,data,anisoprinc);
-  anisoprinc_ = anisoprinc != 0;
   ExtractfromPack(position,data,anisomod);
-  anisomod_ = anisomod != 0;
+
+  if (isoprinc != 0) isoprinc_ = true;
+  if (isomod != 0) isomod = true;
+  if (anisoprinc != 0) anisoprinc = true;
+  if (anisomod != 0) anisomod = true;
 
   ExtractfromPack(position,data,a1_);
   ExtractfromPack(position,data,a2_);
   ExtractfromPack(position,data,A1_);
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
-  ExtractfromPack(position,data,HU_);
-  ExtractfromPack(position,data,HUlumen_);
-  ExtractfromPack(position,data,normdist_);
+
+  // loop map of associated potential summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->UnpackSummand(data,position);
+  }
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -248,9 +267,14 @@ double MAT::ElastHyper::ShearMod() const
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 {
-  normdist_ = params.get("iltthick meanvalue",-999.0);
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  HUlumen_ = pslist.get<int>("MAXHULUMEN");
+  // loop map of associated potential summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->SetupAAA(params);
+  }
+
   return;
 }
 
@@ -258,13 +282,12 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  if (linedef->HaveNamed("HU"))
+  // Setup summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
   {
-    linedef->ExtractDouble("HU",HU_);
-  }
-  else
-  {
-    HU_ = -999.0;
+    p->second->Setup(linedef);
   }
 
   // find out which formulations are used
@@ -274,10 +297,6 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   anisoprinc_ = false ;
   anisomod_ = false;
 
-  // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
   for (p=pot.begin(); p!=pot.end(); ++p)
   {
     p->second->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_);
@@ -532,7 +551,8 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 void MAT::ElastHyper::Evaluate(
   const LINALG::Matrix<6,1>& glstrain,
   LINALG::Matrix<6,6>& cmat,
-  LINALG::Matrix<6,1>& stress
+  LINALG::Matrix<6,1>& stress,
+  Teuchos::ParameterList& params
   )
 {
 
@@ -698,9 +718,6 @@ void MAT::ElastHyper::EvaluateGammaDelta(
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsPrincipal(gamma,delta,prinv);
-      p->second->AddCoefficientsPrincipal(gamma,delta,prinv,normdist_);
-      //Do all the HU dependency (medical images) stuff!
-      p->second->AddCoefficientsPrincipal(HU_,HUlumen_,gamma,delta,prinv);
     }
   }
 
@@ -718,7 +735,7 @@ void MAT::ElastHyper::EvaluateGammaDelta(
 
   }
 
-// modified coefficients
+  // modified coefficients
   if (anisoprinc_)
   {
     // loop map of associated potential summands
@@ -869,7 +886,6 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<15,1> anisodelta
     )
 {
-
   // build Voigt (stress-like) version of a1 \otimes a2 + a2 \otimes a1
   LINALG::Matrix<6,1> A1A2sym;
   A1A2sym(0)=2*A1A2_(0,0);

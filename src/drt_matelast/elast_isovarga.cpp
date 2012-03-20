@@ -85,48 +85,6 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
   const LINALG::Matrix<3,1>& modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
   )
 {
-#if 0
-  // here, the isochoric neo-Hooke material in principal stretches is
-  // implemented to verify implementation
-
-  // energy density
-  //   Psi = mu/2 [ \bar{lam}_1^2 + \bar{lam}_2^2 + \bar{lam}_3^2 - 3 ]
-  //       = mu/2 [ (J^{-1/3} lam_1)^2 + (J^{-1/3} lam_2)^2 + (J^{-1/3} lam_3)^2 - 3 ]
-  //       = mu/2 [ J^{-2/3} (lam_1^2 + lam_2^2 + lam_3^2) - 3 ]
-  //       = mu/2 [ J^{-2/3} I_C - 3 ]
-  // with
-  //   mu ... shear modulus
-  //   lam_\alpha ... principal stretches, \alpha=1,2,3
-  //   \bar{lam}_\alpha = J^{-1/3} lam_\alpha ... modified principal stretches
-  //   I_C ... 1st invariant of right Cauchy-Green 2-tensor
-  //   J = lam_1*lam_2*lam_3 ... determinant of deformation gradient
-
-  // shear modulus
-  const double mue = params_->mue_;
-
-  // first derivatives
-  gamma(0)  // ,0
-    += mue*modstr(0);
-  gamma(1)  // ,1
-    += mue*modstr(1);
-  gamma(2)  // ,2
-    += mue*modstr(2);
-
-  // second derivatives
-  delta(0)  // ,00
-    += mue;
-  delta(1)  // ,11
-    += mue;
-  delta(2)  // ,22
-    += mue;
-  delta(3)  // ,01
-    += 0.0;
-  delta(4)  // ,12
-    += 0.0;
-  delta(5)  // ,20
-    += 0.0;
-
-#else
   // parameters
   const double alpha = 2.0*params_->mue_ - params_->beta_;
   const double beta = params_->beta_;
@@ -152,7 +110,6 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
   delta(4) += 0.0;
   // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
   delta(5) += 0.0;
-#endif
 
   // done
   return;

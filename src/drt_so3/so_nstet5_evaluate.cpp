@@ -58,7 +58,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     if (V_==0.0)     dserror("Element volume is zero");
     else if (V_<0.0) dserror("Element volume is negative");
   }
-  
+
   //------------------------------------------------------------------subtets
   /* structure of nxyz_:
   **             [   dN_1     dN_1     dN_1   ]
@@ -81,7 +81,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
   LINALG::FixedSizeSerialDenseSolver<4,4,3> solver;
   for (int i=0; i<4; ++i)
   {
-    // master tet has node numbering [0 1 2 3]    
+    // master tet has node numbering [0 1 2 3]
 
     // subtets have node numberings  [0 1 2 4]
     //                               [1 3 2 4]
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     subV_[i] = J.Determinant()/6.0;
     if (subV_[i]==0.0)     dserror("NSTET5 %d Subelement %d volume is zero %10.6e",Id(),i,subV_[i]);
     else if (subV_[i]<0.0) dserror("NSTET5 %d Subelement %d volume is negative %10.6e",Id(),i,subV_[i]);
-    
+
     // spatial derivatives of shape functions
     tmp.MultiplyTN(xrefe,deriv);
     for (int j=0; j<4; j++) J(0,j)=1;
@@ -203,7 +203,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       nstet5nlnstiffmass(lm,mydisp,&elemat1,&elemat2,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      if (act==calc_struct_nlnstifflmass) 
+      if (act==calc_struct_nlnstifflmass)
         nstet5lumpmass(&elemat2);
     }
     break;
@@ -454,7 +454,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 {
   if (elestrain) (*elestrain) = 0.0;
   if (elestress) (*elestress) = 0.0;
-      
+
 
   for (int sub=0; sub<4; ++sub) // loop subelements
   {
@@ -547,7 +547,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
 
       // define stuff we need to do the split
-      LINALG::Matrix<6,6> cmatdev; 
+      LINALG::Matrix<6,6> cmatdev;
       LINALG::Matrix<6,1> stressdev;
 
       // do just the deviatoric components
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       cmat.Scale(ALPHA_NSTET5);
       glstrainbar = glstrain;
     }
-#endif    
+#endif
 
     //---------------------------------------------- output of stress and strain
     {
@@ -672,7 +672,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         dserror("requested stress type not available");
       }
     }
-    
+
     //----------------------------------------------- internal force and tangent
     // update internal force vector
     if (force)
@@ -687,7 +687,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         (*force)(SubLM(sub)[i]*3+2) += subforce(i*3+2);
       }
     } // if (force)
-  
+
     // update stiffness matrix
     if (stiffmatrix)
     {
@@ -731,11 +731,11 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
           (*stiffmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+2) += substiffmatrix(i*3+2,j*3+2);
         }
     } // if (stiffmatrix)
-    
+
     if (massmatrix)
     {
       LINALG::Matrix<12,12> submassmatrix; submassmatrix = 0.0;
-      
+
       // for mass matrix use a 4 gauss points integration:
       // ( 1 gauss point is not enough!)
       const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
@@ -778,7 +778,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         }
     } // if (massmatrix)
   } // for (int sub=0; sub<4; ++sub) loop subelements
-  
+
 
   return;
 } // DRT::ELEMENTS::NStet5::nstet5nlnstiffmass
@@ -849,7 +849,8 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      hyper->Evaluate(glstrain,cmat,stress,params);
       density = hyper->Density();
       return;
       break;

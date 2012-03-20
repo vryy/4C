@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 
 #include "patspec.H"
 #include "../drt_mat/material.H"
+#include "../drt_mat/elasthyper.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
@@ -35,9 +36,6 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
     cout << "Entering patient specific structural preprocessing (PATSPEC)\n";
     cout << "\n";
   }
-
-
-
 
   //------------- test discretization for presence of the Gasser ILT material
   int lfoundit = 0;
@@ -230,16 +228,16 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
     if (ilt)
     {
       for (int j=0; j<elestrength->MyLength(); ++j)
-      {	
+      {
 	// contribution of local ilt thickness to strength; lower and
 	// upper bounds for the ilt thickness are 0 and 36
 	// Careful! ilt thickness is still normalized! Multiply with max
 	// ilt thickness.
 	(*elestrength)[j] = spatialconst - 379000 * (pow((max(0., min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
-    
+
       }
     }
-    
+
   }
 
   for(unsigned int i=0; i<mypatspeccond.size(); ++i)
@@ -564,6 +562,21 @@ void PATSPEC::GetILTDistance(const int eleid,
 
       double meaniltthick = (*fool)[fool->Map().LID(eleid)];
       params.set("iltthick meanvalue",meaniltthick);
+
+      DRT::Element* actele = dis.gElement(eleid);
+      Teuchos::RCP<MAT::Material> actmat = actele->Material();
+
+      if (actmat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(actmat.get());
+
+        const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+        int maxhulumen  = pslist.get<int>("MAXHULUMEN");
+        params.set("max hu lumen", maxhulumen);
+
+        hyper->SetupAAA(params);
+      }
+
       return;
     }
   }

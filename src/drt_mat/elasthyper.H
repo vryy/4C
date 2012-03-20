@@ -18,14 +18,6 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
-// included in matpar_parameter.H -> matpar_material.H
-//#include "../drt_lib/drt_parobjectfactory.H"
-// avoided by forward declaration
-//#include "../drt_matelast/elast_summand.H"
-// included in material.h -> inpar_material.H -> inpar_parameterlist.H
-//#include <Teuchos_ParameterList.hpp>
-
-using namespace Teuchos;
 
 // forward declaration due to avoid header definition
 namespace MAT
@@ -219,10 +211,12 @@ private:
     virtual void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain
       LINALG::Matrix<6,6>& cmat,  ///< elasticity matrix
-      LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
+      LINALG::Matrix<6,1>& stress,  ///< 2nd Piola--Kirchhoff stress
+      Teuchos::ParameterList& params ///< Container for additional information
       );
 
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+
     /// setup patient-specific AAA stuff
     virtual void SetupAAA(Teuchos::ParameterList& params);
 
@@ -430,20 +424,11 @@ private:
     const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
     );
 
-
-
     /// Flags to specify the formulations
     bool isoprinc_;
     bool isomod_;
     bool anisoprinc_ ;
     bool anisomod_ ;
-
-    /// information about HU from medical image data?
-    double HU_;
-    int HUlumen_;
-
-    /// for Gasser AAA-ILT material
-    double normdist_;
 
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;

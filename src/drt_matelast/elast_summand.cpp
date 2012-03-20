@@ -14,11 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-// included in elast_summand
-//#include "../drt_mat/matpar_parameter.H"
-//not necessary
-//#include "../drt_mat/elasthyper.H"
-//#include "../drt_mat/material.H"
 #include "elast_couplogneohooke.H"
 #include "elast_coupneohooke.H"
 #include "elast_coupblatzko.H"
@@ -45,6 +40,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isovolaaagasser.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -253,5 +249,25 @@ void MAT::ELASTIC::Summand::AddShearMod(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int MAT::ELASTIC::Summand::UniqueParObjectId() const
+{
+  return -1;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::Pack(DRT::PackBuffer& data) const
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::Unpack(const vector<char>& data)
+{
+  return;
+};
 
 #endif

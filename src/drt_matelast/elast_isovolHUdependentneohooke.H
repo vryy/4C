@@ -100,6 +100,14 @@ namespace ELASTIC
     /// constructor with given material parameters
     IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params);
 
+    ///@name Packing and Unpacking
+    //@{
+
+    virtual void PackSummand(DRT::PackBuffer& data) const;
+
+    virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position);
+
+    //@}
 
     /// @name Access material constants
     //@{
@@ -109,21 +117,14 @@ namespace ELASTIC
 
     //@}
 
-    /// Add principal coefficients.
-    /// Nothing to do for this material if no HUs!
-    void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
+    /// Setup of summand
+    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+
+    /// Setup of patient-specific materials
+    virtual void SetupAAA(Teuchos::ParameterList& params);
 
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
     void AddCoefficientsPrincipal(
-        double HU,   ///< the element Hounsfield Unit
-        int HUlumen, ///< the maximum HU within the lumen
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
@@ -138,7 +139,6 @@ namespace ELASTIC
     {
       return;
     };
-
 
     /// Add anisotropic principal coefficients.
     /// Nothing to do for this (isotropic) material!
@@ -181,11 +181,18 @@ namespace ELASTIC
       return;
     };
 
+
   private:
 
     /// my material parameters
     MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params_;
 
+    /// information about HU from medical image data
+    double HU_;
+    int HUlumen_;
+
+    /// factor for material parameter
+    double alpha_;
   };
 
 }  // namespace ELAST

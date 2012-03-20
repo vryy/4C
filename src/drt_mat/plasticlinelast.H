@@ -27,14 +27,6 @@ Maintainer: Caroline Danowski
 
 #include "matpar_parameter.H"
 #include "material.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-using namespace Teuchos;
 
 namespace MAT
 {

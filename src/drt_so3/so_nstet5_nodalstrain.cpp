@@ -65,16 +65,16 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
         subdisp(i,j) = mydisp[i*3+j];
       subdisp(4,j) = mydisp[4*3+j];
     }
-    for (int k=0; k<4; ++k) 
+    for (int k=0; k<4; ++k)
     {
       for (int i=0; i<4; ++i)
         for (int j=0; j<3; ++j)
           disp(i,j) = subdisp(e->SubLM(k)[i],j);
-      
+
       e->SubF(k) = e->BuildF(disp,e->SubNxyz(k));
       double J = e->SubF(k).Determinant();
       if (J<=0.0) dserror("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n",e->Id(),k,J);
-    } // for (int k=0; k<4; ++k) 
+    } // for (int k=0; k<4; ++k)
 
   } // ele
   return;
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
         action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
-      stiff.LightShape(ndofperpatch,ndofperpatch); 
+      stiff.LightShape(ndofperpatch,ndofperpatch);
       force.LightSize(ndofperpatch);
       LINALG::SerialDenseMatrix* stiffptr = &stiff;
       if (action == "calc_struct_internalforce") stiffptr = NULL;
@@ -453,13 +453,13 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     for (unsigned j=0; j<subele.size(); ++j)
     {
       const int   subeleid = subele[j];
-      
+
       // copy subelement displacements to 4x3 format
      LINALG::TMatrix<FAD,4,3> eledispmat(false);
      for (int k=0; k<4; ++k)
        for (int l=0; l<3; ++l)
          eledispmat(k,l) = patchdisp[lmlm[i][j][k*3+l]];
-    
+
      // add 1/3 of subelement volume to this node
      const double V = ele->SubV(subeleid)/3.0;
      Vnode += V;
@@ -470,23 +470,23 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 
      //FAD detFe = Determinant3x3<FAD>(F);
      //TVnode += (detFe*V);
-     
+
      // add to nodal deformation gradient
      F.Scale(V);
      TFnode += F;
 
     } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int i=0; i<neleinpatch; ++i)
-  
+
   // do the actual averaging
   TFnode.Scale(1.0/Vnode);
   //FAD detFnode = Determinant3x3<FAD>(TFnode);
-  
+
   // build corrected integration area of this node
   //TVnode /= detFnode;
   //printf("V %10.5e Vtilde %10.5e V/Vtilde %10.5e\n",Vnode,TVnode.val(),Vnode/TVnode.val());
   //Vnode = TVnode.val();
-  
+
   // copy fad F to double F
   LINALG::Matrix<3,3> Fnode(false);
   for (int j=0; j<3; ++j)
@@ -502,7 +502,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     // current element
     DRT::ELEMENTS::NStet5* actele = adjele[ele];
     vector<int>& subele = adjsubele[actele->Id()];
-    
+
     // loop subelements in this element
     for (unsigned j=0; j<subele.size(); ++j)
     {
@@ -514,15 +514,15 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
       // volume ratio of volume per node of this element to
       // whole volume of node L
       const double ratio = V/Vnode;
-      
+
       // get derivatives with respect to X
       const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
-      
+
       // get defgrd
       LINALG::Matrix<3,3>& F = actele->SubF(subeleid);
-      
+
       LINALG::Matrix<6,12> bele(false);
-      
+
       for (int i=0; i<4; ++i)
       {
         bele(0,3*i+0) = F(0,0)*nxyz(i,0);
@@ -693,15 +693,15 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
       // current element
       DRT::ELEMENTS::NStet5* actele = adjele[ele];
       vector<int>& subele = adjsubele[actele->Id()];
-      
+
       // loop subelements in this element
       for (unsigned sub=0; sub<subele.size(); ++sub)
       {
         const int   subeleid = subele[sub];
-      
+
         // material deriv of element
         const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
-      
+
         // volume of element assigned to node L
         const double V = actele->SubV(subeleid)/3;
 
@@ -775,7 +775,8 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      hyper->Evaluate(glstrain,cmat,stress,params);
       density = hyper->Density();
       return;
       break;

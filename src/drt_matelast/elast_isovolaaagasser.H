@@ -103,6 +103,15 @@ namespace ELASTIC
     /// constructor with given material parameters
     IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params);
 
+    ///@name Packing and Unpacking
+    //@{
+
+    virtual void PackSummand(DRT::PackBuffer& data) const;
+
+    virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position);
+
+    //@}
+
     /// @name Access material constants
     //@{
 
@@ -111,24 +120,14 @@ namespace ELASTIC
 
     //@}
 
+    /// Setup of patient-specific stuff
+    virtual void SetupAAA(Teuchos::ParameterList& params);
+
     /// Add principal coefficients.
-    /// Nothing to do for this (decoupled) material!
     void AddCoefficientsPrincipal(
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
-
-
-    /// Add principal coefficients for IsoVolAAAGasser material.
-    void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-        double normdist
     );
 
     /// Add modified coefficients.
@@ -162,16 +161,6 @@ namespace ELASTIC
     double BETA() const { return params_->beta_; }
     //@}
 
-    /// @name Write methods
-    //@{
-    //void SetCLUM(const double clum) { params_->clum_ = clum; }
-    //void SetCMED(const double cmed) { params_->cmed_ = cmed; }
-    //void SetCABLUM(const double cablum) { params_->cablum_ = cablum; }
-    //void SetNUE(const double nue) { params_->nue_ = nue; }
-    //void SetBETA(const double beta) { params_->beta_ = beta; }
-
-    //@}
-
     /// Indicator for formulation
     virtual void SpecifyFormulation(
         bool& isoprinc, ///< global indicator for isotropic principal formulation
@@ -189,6 +178,11 @@ namespace ELASTIC
     /// my material parameters
     MAT::ELASTIC::PAR::IsoVolAAAGasser* params_;
 
+    /// for Gasser AAA-ILT material
+    double normdist_;
+
+    /// factor for material parameter
+    double cele_;
 
   };
 

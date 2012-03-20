@@ -571,7 +571,8 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      Teuchos::ParameterList params;
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       return;
       break;
     }

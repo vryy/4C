@@ -27,13 +27,6 @@ date: 26/05/2009
 #include "matpar_parameter.H"
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-//#include <Teuchos_RefCountPtr.hpp>
-//#include <Teuchos_ParameterList.hpp>
-
-using namespace Teuchos;
-
 
 namespace MAT
 {
@@ -212,8 +205,6 @@ private:
    // damage history parameter g
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histgcurr_; ///< current damage parameter
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histglast_; ///< damage of last converged state
-//   Teuchos::RCP<vector< double > > histgcurr_; ///< current damage parameter
-//   Teuchos::RCP<vector< double > > histglast_; ///< damage of last converged state
 
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxcurr_; ///< current damage parameter
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxlast_; ///< damage of last converged state

@@ -21,10 +21,6 @@ Maintainer: goe
 
 #include "matpar_parameter.H"
 #include "material.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include "../drt_lib/drt_parobjectfactory.H"
-
 
 namespace MAT
 {

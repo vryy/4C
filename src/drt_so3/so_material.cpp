@@ -62,6 +62,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/structporo.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -262,42 +263,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_artwallremod: /*-Arterial Wall (Holzapfel) with remodeling (Hariton) */
     {
       MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-//      // Check if we use EAS
-//      if (eastype_ != soh8_easnone)
-//      {
-//        // In this case, we have to calculate the "enhanced" deformation gradient
-//        // from the enhanced GL strains with the help of two polar decompositions
-//
-//        // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
-//        // -> get C_enh from enhanced GL strains
-//        LINALG::Matrix<3,3> C_enh;
-//        for (int i = 0; i < 3; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
-//        // off-diagonal terms are already twice in the Voigt-GLstrain-vector
-//        C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
-//        C_enh(1,2) =  (*glstrain)(4);  C_enh(2,1) =  (*glstrain)(4);
-//        C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
-//
-//        // -> polar decomposition of (U^mod)^2
-//        LINALG::Matrix<3,3> Q;
-//        LINALG::Matrix<3,3> S;
-//        LINALG::Matrix<3,3> VT;
-//        LINALG::SVD<3,3>(C_enh,Q,S,VT); // Singular Value Decomposition
-//        LINALG::Matrix<3,3> U_enh;
-//        LINALG::Matrix<3,3> temp;
-//        for (int i = 0; i < 3; ++i) S(i,i) = sqrt(S(i,i));
-//        temp.MultiplyNN(Q,S);
-//        U_enh.MultiplyNN(temp,VT);
-//
-//        // Second step: determine rotation tensor R from F (F=R*U)
-//        // -> polar decomposition of displacement based F
-//        LINALG::SVD<3,3>(*defgrd,Q,S,VT); // Singular Value Decomposition
-//        LINALG::Matrix<3,3> R;
-//        R.MultiplyNN(Q,VT);
-//
-//        // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
-//        defgrd->MultiplyNN(R,U_enh);
-//      }
-
       remo->Evaluate(glstrain,gp,params,cmat,stress,*defgrd);
       *density = remo->Density();
       break;
@@ -391,8 +356,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -701,8 +665,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -957,8 +920,7 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -1149,8 +1111,7 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -1253,8 +1214,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -1371,8 +1331,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
@@ -1481,8 +1440,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      //hyper-> SetupAAA(params);
-      hyper->Evaluate(*glstrain,*cmat,*stress);
+      Teuchos::ParameterList params;
+      hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
     }
