@@ -3833,7 +3833,7 @@ NODE 1082 COORD 0.000000000000000e+00 -5.000000000000000e+01 0.000000000000000e+
 1080 SHELL8 QUAD4 240 293 317 298 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_NeoHooke YOUNG 1.044E6 NUE 0.45 DENS 0.001
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.044E6 NUE 0.45 DENS 0.001
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132.0
 ----------------------------------------------------------------------CURVE2
@@ -3847,7 +3847,7 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 33 POSITION dispx NAME ux VALUE 1.704871886465665306e-04 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 109 POSITION dispz NAME uz VALUE -3.004128029552727026e-04 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 33 POSITION dispx NAME ux VALUE 1.7048654191077441e-04 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 109 POSITION dispz NAME uz VALUE -3.0041160140851386e-04 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
