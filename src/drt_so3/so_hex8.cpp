@@ -558,10 +558,17 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
     if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
     {
-      string fiber = "Fiber1";
-      names[fiber] = 3; // 3-dim vector
-      fiber = "Fiber2";
-      names[fiber] = 3; // 3-dim vector
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      string fiber;
+      for (int i = 0; i < vissize; i++)
+      {
+        ostringstream s;
+        s << "Fiber" << i+1;
+        fiber = s.str();
+        names[fiber] = 3; // 3-dim vector
+      }
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
@@ -855,25 +862,23 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
     if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
     {
-      if (name == "Fiber1")
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      for (int i = 0; i < vissize; i++)
       {
-        if ((int)data.size()!=3)
-          dserror("size mismatch");
-        data[0] = (elahy->Geta1())(0);
-        data[1] = (elahy->Geta1())(1);
-        data[2] = (elahy->Geta1())(2);
-      }
-      else if (name == "Fiber2")
-      {
-        if ((int)data.size()!=3)
-          dserror("size mismatch");
-        data[0] = (elahy->Geta2())(0);
-        data[1] = (elahy->Geta2())(1);
-        data[2] = (elahy->Geta2())(2);
-      }
-      else
-      {
-        return false;
+        ostringstream s;
+        s << "Fiber" << i+1;
+        string fiber;
+        fiber = s.str();
+        if (name == fiber)
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          data[0] = fibervecs.at(i)(0);
+          data[1] = fibervecs.at(i)(1);
+          data[2] = fibervecs.at(i)(2);
+        }
       }
     }
   }

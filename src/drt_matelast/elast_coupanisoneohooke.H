@@ -1,26 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoneohooketwo.H
+\file elast_coupanisoneohooke.H
 \brief
 This file contains the routines required for the anisotropic material
-using two  neo-Hooke materials in both directions according to
+using a neo-Hooke material according to
 
 <pre>
-Maintainer: Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
+Maintainer: Susanna Tinkl
+            tinkl@lnm.mw.tum.de
+            089/289 15265
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_COUPANISONEOHOOKETWO_H_
-#define ELAST_COUPANISONEOHOOKETWO_H_
-#ifdef CCADISCRET
+#ifndef ELAST_COUPANISONEOHOOKE_H_
+#define ELAST_COUPANISONEOHOOKE_H_
 
-// Linalg matrices used instead; included in elast_summand
-//#include <Epetra_SerialDenseVector.h>
-//#include <Epetra_SerialDenseMatrix.h>
-// included in elast_summand
-//#include "../drt_inpar/inpar_material.H"
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 
@@ -34,29 +28,30 @@ namespace ELASTIC
 
     /*----------------------------------------------------------------------*/
     /// material parameters for anisochoric contribution of a
-    /// neo-Hooke material with two fiber directions
+    /// neo-Hooke material with one fiber direction
     ///
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 CoupAnisoNeoHookeTwo C1 100 C2 100
-    class CoupAnisoNeoHookeTwo : public MAT::PAR::Parameter
+    /// MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0
+    class CoupAnisoNeoHooke : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      CoupAnisoNeoHookeTwo(
+      CoupAnisoNeoHooke(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~CoupAnisoNeoHookeTwo() { ; }
+      virtual ~CoupAnisoNeoHooke() { ; }
 
       /// @name material parameters
       //@{
 
       /// fiber params
-      double c1_;
-      double c2_;
+      double c_;
+      /// angle between circumferential and fiber direction
+      double gamma_;
 
       //@}
 
@@ -65,23 +60,22 @@ namespace ELASTIC
 
       /// @name Write methods
       //@{
-      void SetC1(const double c1) { c1_ = c1; }
-      void SetC2(const double c2) { c2_ = c2; }
+      void SetC(const double c) { c_ = c; }
       //@}
 
-    };  // class CoupAnisoNeoHookeTwo
+    };  // class CoupAnisoNeoHooke
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Coupled anisotropic exponential fiber function, implemented for two possible fiber families
+  /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
   /// [1]
   /// This is a hyperelastic, anisotropic material
   /// of the most simple kind.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = c_1 \left(IV_{\boldsymbol C}-1\right)+c_2 \left(VI_{\boldsymbol C}-1\right).
+  ///   \Psi = c \left(IV_{\boldsymbol C}-1\right).
   ///\f]
   ///
   ///
@@ -92,32 +86,59 @@ namespace ELASTIC
   ///
   /// \author rausch
   /// \date 05/09
-  class CoupAnisoNeoHookeTwo : public Summand
+  class CoupAnisoNeoHooke : public Summand
   {
 
   public:
 
     /// empty constructor
-    CoupAnisoNeoHookeTwo();
+    CoupAnisoNeoHooke();
 
     /// constructor with given material parameters
-    CoupAnisoNeoHookeTwo(MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params);
+    CoupAnisoNeoHooke(MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params);
 
+    ///@name Packing and Unpacking
+    //@{
+
+    virtual void PackSummand(DRT::PackBuffer& data) const;
+
+    virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position);
+
+    //@}
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoneohooketwo; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoneohooke; }
 
     //@}
+
+    /// Setup of summand
+    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+
+    /// Add anisotropic principal stresses
+    virtual void AddStressAnisoPrincipal(
+        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress  ///< 2nd PK-stress
+    );
 
     /// @name Access methods
     //@{
-    double C1() const { return params_->c1_; }
-    double C2() const { return params_->c2_; }
+    double C() const { return params_->c_; }
 
     //@}
+
+    /// Set fiber directions
+    virtual void SetFiberVecs(
+        LINALG::Matrix<3,3> locsys ///< local coordinate system
+    );
+
+    /// Get fiber directions
+    virtual void GetFiberVecs(
+        std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+    );
 
     /// Indicator for formulation
     virtual void SpecifyFormulation(
@@ -134,12 +155,16 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params_;
+    MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params_;
+
+    /// fiber direction
+    LINALG::Matrix<3,1>  a_;
+    /// structural tensors in voigt notation for anisotropy
+    LINALG::Matrix<6,1>  A_;
 
   };
 
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
-#endif  // COUPANISONEOHOOKETWO_H_
+#endif  // COUPANISONEOHOOKE_H_

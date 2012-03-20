@@ -75,13 +75,6 @@ namespace MAT
       /// material mass density
       const double density_;
 
-      /// fiber angle
-      double gamma_;
-
-      /// initalization modus;
-      /// default = -1, Initmodus derived from locsys = 0, Initmodus aligned to locsys = 1
-      const int init_mode_;
-
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
@@ -232,11 +225,8 @@ private:
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
 
-    /// return a1s
-    virtual LINALG::Matrix<3,1> Geta1() const {return a1_;}
-
-    /// return a2s
-    virtual LINALG::Matrix<3,1> Geta2() const {return a2_;}
+    /// get fiber vectors
+    virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -268,9 +258,7 @@ private:
         LINALG::Matrix<3,1>& gamma,
         LINALG::Matrix<8,1>& delta,
         LINALG::Matrix<3,1>& modgamma,
-        LINALG::Matrix<5,1>& moddelta,
-        LINALG::Matrix<3,1>& anisogamma,
-        LINALG::Matrix<15,1>& anisodelta
+        LINALG::Matrix<5,1>& moddelta
         );
 
 
@@ -307,11 +295,16 @@ private:
     virtual void EvaluateAnisotropicPrinc(
         LINALG::Matrix<6,1>& stressanisoprinc,
         LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> scg,
-        LINALG::Matrix<6,1> id2,
+        LINALG::Matrix<6,1> rcg
+        );
+
+    /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
+    virtual void EvaluateAnisotropicMod(
+        LINALG::Matrix<6,1>& stressanisoprinc,
+        LINALG::Matrix<6,6>& cmatanisoprinc,
+        LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<3,1> anisogamma,
-        LINALG::Matrix<15,1> anisodelta
+        LINALG::Matrix<3,1> prinv
         );
 
     /// calculate principal invariants
@@ -319,12 +312,6 @@ private:
       LINALG::Matrix<3,1>& prinv,  ///< principal invariants
       const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
       );
-
-    /// calculate principal invariants
-    virtual void InvariantsPrincipalAniso(
-        LINALG::Matrix<6,1>& pranisoinv, ///< principal invariants
-        const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-        );
 
     /// calculate modified invariants
     virtual void InvariantsModified(
@@ -429,15 +416,6 @@ private:
     bool isomod_;
     bool anisoprinc_ ;
     bool anisomod_ ;
-
-    /// structural tensors in voigt notation for anisotropy
-    LINALG::Matrix<6,1>  A1_;
-    LINALG::Matrix<6,1>  A2_;
-    /// vectors of local coordinate system
-    LINALG::Matrix<3,1>  a1_;
-    LINALG::Matrix<3,1>  a2_;
-    /// mixed structural tensor (asymmetric) \f$a1 \otimes a2\f$
-    LINALG::Matrix<3,3>  A1A2_;
 
     /// @name Voigt index arrays
     //@{

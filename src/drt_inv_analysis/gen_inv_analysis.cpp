@@ -34,8 +34,6 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_coup1pow.H"
 #include "../drt_matelast/elast_coup2pow.H"
 #include "../drt_mat/viscogenmax.H"
-#include "../drt_matelast/elast_coupanisoexpotwo.H"
-#include "../drt_matelast/elast_coupanisoneohooketwo.H"
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
 #include "../drt_matelast/elast_coupmooneyrivlin.H"
@@ -845,10 +843,10 @@ void STR::GenInvAnalysis::ReadInParameters()
                 p_[j+2] = params2->c3_;
                 break;
               }
-              case INPAR::MAT::mes_isoexpo:
+              case INPAR::MAT::mes_isoexpopow:
               {
-                filename_=filename_+"_isoexpo";
-                const MAT::ELASTIC::PAR::IsoExpo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoExpo*>(actelastmat->Parameter());
+                filename_=filename_+"_isoexpopow";
+                const MAT::ELASTIC::PAR::IsoExpoPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
                 int j = p_.Length();
                 p_.Resize(j+2);
                 p_[j]   = params2->k1_;
@@ -894,28 +892,6 @@ void STR::GenInvAnalysis::ReadInParameters()
                 //p_[j+1] = params2->beta_;
                 break;
               }
-              case INPAR::MAT::mes_coupanisoexpotwo:
-              {
-                filename_=filename_+"_coupanisoexpotwo";
-                const MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+4);
-                p_[j]   = params2->k1_;
-                p_[j+1] = params2->k2_;
-                p_[j+2] = params2->k3_;
-                p_[j+3] = params2->k4_;
-                break;
-              }
-              case INPAR::MAT::mes_coupanisoneohooketwo:
-              {
-                filename_=filename_+"_coupanisoneohooketwo";
-                const MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(actelastmat->Parameter());
-                int j = p_.Length();
-                p_.Resize(j+2);
-                p_[j]   = params2->c1_;
-                p_[j+1] = params2->c2_;
-                break;
-              }
               default:
                 dserror("cannot deal with this material");
 
@@ -933,14 +909,12 @@ void STR::GenInvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_iso2pow:
         case INPAR::MAT::mes_coup1pow:
         case INPAR::MAT::mes_coup2pow:
-        case INPAR::MAT::mes_isoexpo:
+        case INPAR::MAT::mes_isoexpopow:
         case INPAR::MAT::mes_isomooneyrivlin:
         case INPAR::MAT::mes_coupmooneyrivlin:
         case INPAR::MAT::mes_volsussmanbathe:
         case INPAR::MAT::mes_volpenalty:
         case INPAR::MAT::mes_vologden:
-        case INPAR::MAT::mes_coupanisoexpotwo:
-        case INPAR::MAT::mes_coupanisoneohooketwo:
         case INPAR::MAT::m_struct_multiscale:
         break;
         case INPAR::MAT::m_constraintmixture:
@@ -1124,10 +1098,10 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
                 j = j+2;
                 break;
               }
-              case INPAR::MAT::mes_isoexpo:
+              case INPAR::MAT::mes_isoexpopow:
               {
-                MAT::ELASTIC::PAR::IsoExpo* params2 =
-                  dynamic_cast<MAT::ELASTIC::PAR::IsoExpo*>(actelastmat->Parameter());
+                MAT::ELASTIC::PAR::IsoExpoPow* params2 =
+                  dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
                 params2->SetK1(abs(p_cur(j)));
                 params2->SetK2(abs(p_cur(j+1)));
                 j = j+2;
@@ -1168,26 +1142,6 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
                 j = j+1;
                 break;
               }
-              case INPAR::MAT::mes_coupanisoexpotwo:
-              {
-                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params2 =
-                  dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-                params2->SetK1(abs(p_cur(j)));
-                params2->SetK2(abs(p_cur(j+1)));
-                params2->SetK3(abs(p_cur(j+2)));
-                params2->SetK4(abs(p_cur(j+3)));
-                j = j+4;
-                break;
-              }
-              case INPAR::MAT::mes_coupanisoneohooketwo:
-              {
-                MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params2 =
-                  dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(actelastmat->Parameter());
-                params2->SetC1(abs(p_cur(j)));
-                params2->SetC2(abs(p_cur(j+1)));
-                j = j+2;
-                break;
-              }
               default:
                 dserror("cannot deal with this material");
             }
@@ -1205,14 +1159,12 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         case INPAR::MAT::mes_iso2pow:
         case INPAR::MAT::mes_coup1pow:
         case INPAR::MAT::mes_coup2pow:
-        case INPAR::MAT::mes_isoexpo:
+        case INPAR::MAT::mes_isoexpopow:
         case INPAR::MAT::mes_isomooneyrivlin:
         case INPAR::MAT::mes_coupmooneyrivlin:
         case INPAR::MAT::mes_volsussmanbathe:
         case INPAR::MAT::mes_volpenalty:
         case INPAR::MAT::mes_vologden:
-        case INPAR::MAT::mes_coupanisoexpotwo:
-        case INPAR::MAT::mes_coupanisoneohooketwo:
         case INPAR::MAT::m_struct_multiscale:
         break;
         case INPAR::MAT::m_constraintmixture:

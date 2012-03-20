@@ -2737,50 +2737,6 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    /* non-linear B-operator (may so be called, meaning
-    ** of B-operator is not so sharp in the non-linear realm) *
-    ** B = F . Bl *
-    **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-    */
-    LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> bop;
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-      bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
-
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,

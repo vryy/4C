@@ -4235,7 +4235,8 @@ NODE 762 COORD 0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+01
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
-MAT 1 MAT_Struct_NeoHooke YOUNG 1000000.0 NUE 0.45 DENS 0.001
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.001
+MAT 2   ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION
 // with NUMSTEP=300
 //STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE -8.312638521868429553e-01 TOLERANCE 1e-8

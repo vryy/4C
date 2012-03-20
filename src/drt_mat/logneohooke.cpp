@@ -65,7 +65,7 @@ MAT::LogNeoHooke::LogNeoHooke()
 {
   dserror("This material law - LOGNEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0\n"
     "MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3\n"
     "or\n"
     "MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 1.0 C2 1.0");
@@ -80,7 +80,7 @@ MAT::LogNeoHooke::LogNeoHooke(MAT::PAR::LogNeoHooke* params)
 {
   dserror("This material law - LOGNEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0\n"
     "MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3\n"
     "or\n"
     "MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 1.0 C2 1.0");

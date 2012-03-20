@@ -62,7 +62,7 @@ MAT::NeoHooke::NeoHooke()
 {
   dserror("This material law - NEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
       "If you want to use this law, the material input line should read :\n"
-      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1 GAMMA 0 INIT_MODE -1\n"
+      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1\n"
       "MAT 2   ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.3\n");
 }
 
@@ -73,7 +73,7 @@ MAT::NeoHooke::NeoHooke(MAT::PAR::NeoHooke* params)
 {
   dserror("This material law - NEOHOOKE - is maintained only inside the Elasthyper Toolbox.\n"
       "If you want to use this law, the material input line should read :\n"
-      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1 GAMMA 0 INIT_MODE -1\n"
+      "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1\n"
       "MAT 2   ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.3\n");
 }
 

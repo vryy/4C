@@ -1104,9 +1104,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
-    AddNamedReal(m,"GAMMA","fiber angle");
-    // optional
-    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement", -1, true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1192,23 +1189,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*--------------------------------------------------------------------*/
   // anisotropic cardiac material acc. to Holzapfel
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_Holzapfel_Cardiac",
-                                            "Anisotropic cardiac material  acc. to Holzapfel",
-                                            INPAR::MAT::mes_holzapfel_cardiac));
+//  {
+//    Teuchos::RCP<MaterialDefinition> m
+//      = Teuchos::rcp(new MaterialDefinition("ELAST_Holzapfel_Cardiac",
+//                                            "Anisotropic cardiac material  acc. to Holtzapfel",
+//                                            INPAR::MAT::mes_holzapfel_cardiac));
+//
+//    AddNamedReal(m,"A","linear isotropic constant");
+//    AddNamedReal(m,"B","exponential isotropic constant");
+//    AddNamedReal(m,"A4","linear anisotropic constant for fiber 1");
+//    AddNamedReal(m,"B4","exponential anisotropic constant for fiber 1");
+//    AddNamedReal(m,"A6","linear anisotropic constant for fiber 2");
+//    AddNamedReal(m,"B6","exponential anisotropic constant for fiber 2");
+//    AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
+//    AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
+//
+//    AppendMaterialDefinition(matlist,m);
+//  }
 
-    AddNamedReal(m,"A","linear isotropic constant");
-    AddNamedReal(m,"B","exponential isotropic constant");
-    AddNamedReal(m,"A4","linear anisotropic constant for fiber 1");
-    AddNamedReal(m,"B4","exponential anisotropic constant for fiber 1");
-    AddNamedReal(m,"A6","linear anisotropic constant for fiber 2");
-    AddNamedReal(m,"B6","exponential anisotropic constant for fiber 2");
-    AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
-    AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
-
-    AppendMaterialDefinition(matlist,m);
-  }
 
 
   /*--------------------------------------------------------------------*/
@@ -1362,12 +1360,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // isochoric contribution of expo
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpo",
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpoPow",
                                             "isochoric part of  exponential material acc. to Holzapfel",
-                                            INPAR::MAT::mes_isoexpo));
+                                            INPAR::MAT::mes_isoexpopow));
 
     AddNamedReal(m,"K1","material parameter");
     AddNamedReal(m,"K2","material parameter");
+    AddNamedInt(m,"C","exponent");
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -1431,17 +1430,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
 
   /*--------------------------------------------------------------------*/
-  // coupled anisotropic material with two exponential fiber families
+  // coupled anisotropic material with one exponential fiber family
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoTwo",
-                                            "anisotropic part with two exp. fibers",
-                                            INPAR::MAT::mes_coupanisoexpotwo));
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpo",
+                                            "anisotropic part with one exp. fiber",
+                                            INPAR::MAT::mes_coupanisoexpo));
 
-    AddNamedReal(m,"K1","linear constant fiber 1");
-    AddNamedReal(m,"K2","exponential constant fiber 1");
-    AddNamedReal(m,"K3","linear constant fiber 2");
-    AddNamedReal(m,"K4","exponential constant fiber 2");
+    AddNamedReal(m,"K1","linear constant");
+    AddNamedReal(m,"K2","exponential constant");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedReal(m,"K1COMP","linear constant");
+    AddNamedReal(m,"K2COMP","exponential constant");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1450,12 +1450,49 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // coupled anisotropic material with two exponential fiber families
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHookeTwo",
-                                            "anisotropic part with two neo Hookean fibers",
-                                            INPAR::MAT::mes_coupanisoneohooketwo));
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoExpoTwoCoup",
+                                            "anisotropic part with two exp. fibers",
+                                            INPAR::MAT::mes_coupanisoexpotwocoup));
 
-    AddNamedReal(m,"C1","linear constant fiber 1");
-    AddNamedReal(m,"C2","linear constant fiber 2");
+    AddNamedReal(m,"A4","linear anisotropic constant for fiber 1");
+    AddNamedReal(m,"B4","exponential anisotropic constant for fiber 1");
+    AddNamedReal(m,"A6","linear anisotropic constant for fiber 2");
+    AddNamedReal(m,"B6","exponential anisotropic constant for fiber 2");
+    AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
+    AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with two exponential fiber families
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke",
+                                            "anisotropic part with one neo Hookean fiber",
+                                            INPAR::MAT::mes_coupanisoneohooke));
+
+    AddNamedReal(m,"C","linear constant");
+    AddNamedReal(m,"GAMMA","angle");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric anisotropic material with one exponential fiber family
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoAnisoExpo",
+                                            "anisotropic part with one exp. fiber",
+                                            INPAR::MAT::mes_isoanisoexpo));
+
+    AddNamedReal(m,"K1","linear constant");
+    AddNamedReal(m,"K2","exponential constant");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedReal(m,"K1COMP","linear constant");
+    AddNamedReal(m,"K2COMP","exponential constant");
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -90,6 +90,12 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
   	humcard->Setup(NUMGPT_SOH20, linedef);
   	break;
   }
+  case INPAR::MAT::m_elasthyper:
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
+    break;
+  }
   default:
     // Do nothing. Simple material.
     break;

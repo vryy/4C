@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isoexpo.H
+\file elast_isoexpopow.H
 \brief
 
 This file contains the routines required to calculate the isochoric contribution
@@ -13,9 +13,8 @@ Maintainer: Sophie Rausch
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_ISOEXPO_H_
-#define ELAST_ISOEXPO_H_
-#ifdef CCADISCRET
+#ifndef ELAST_ISOEXPOPOW_H_
+#define ELAST_ISOEXPOPOW_H_
 
 // Linalg matrices used instead; included in elast_summand
 //#include <Epetra_SerialDenseVector.h>
@@ -38,17 +37,17 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 ELAST_IsoExpo K1 1. K2 1.
-    class IsoExpo : public MAT::PAR::Parameter
+    class IsoExpoPow : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      IsoExpo(
+      IsoExpoPow(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~IsoExpo() { ; }
+      virtual ~IsoExpoPow() { ; }
 
       /// @name material parameters
       //@{
@@ -56,6 +55,8 @@ namespace ELASTIC
       /// Shear modulus
       double k1_;
       double k2_;
+      /// exponent
+      int d_;
 
       //@}
 
@@ -68,7 +69,7 @@ namespace ELASTIC
       void SetK2(const double k2) { k2_ = k2; }
       //@}
 
-    };  // class IsoExpo
+    };  // class IsoExpoPow
 
   }  // namespace PAR
 
@@ -78,60 +79,38 @@ namespace ELASTIC
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = \frac{k_1}{2k_2} (k_2e^{(\overline{I}_{\boldsymbol{C}}-3)^2}-1).
+  ///   \Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
   ///\f]
   ///
   ///
   /// \author rausch
   /// \date 08/09
-  class IsoExpo : public Summand
+  class IsoExpoPow : public Summand
   {
 
   public:
 
     /// empty constructor
-    IsoExpo();
+    IsoExpoPow();
 
     /// constructor with given material parameters
-    IsoExpo(MAT::ELASTIC::PAR::IsoExpo* params);
+    IsoExpoPow(MAT::ELASTIC::PAR::IsoExpoPow* params);
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoexpo; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoexpopow; }
 
     //@}
 
-    /// Add principal coeffiencts.
-    /// Nothing to do for this (decoupled) material!
-    void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
-
     /// Add modified coeffiencts.
-    void AddCoefficientsModified(
+    virtual void AddCoefficientsModified(
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
     );
 
-
-    /// Add anisotropic principal coeffiencts.
-    /// Nothing to do for this (isotropic) material!
-    void AddCoefficientsPrincipalAniso(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
 
     /// @name Access methods
     //@{
@@ -155,12 +134,11 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::IsoExpo* params_;
+    MAT::ELASTIC::PAR::IsoExpoPow* params_;
 
   };
 
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif

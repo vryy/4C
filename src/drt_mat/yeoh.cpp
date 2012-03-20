@@ -58,7 +58,7 @@ MAT::Yeoh::Yeoh()
 {
   dserror("This material law - YEOH - is maintained only inside the Elasthyper Toolbox.\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 2 MATIDS 2 3 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 2 MATIDS 2 3 DENS 0\n"
     "MAT 2   ELAST_IsoYeoh C1 1 C2 1 C3 1 \n"
     "MAT 3   ELAST_Vol... the volumetric summand of your choice \n");
 }
@@ -72,7 +72,7 @@ MAT::Yeoh::Yeoh(MAT::PAR::Yeoh* params)
 {
   dserror("This material law - YEOH - is maintained only inside the Elasthyper Toolbox.\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 2 MATIDS 2 3 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 2 MATIDS 2 3 DENS 0\n"
     "MAT 2   ELAST_IsoYeoh C1 1 C2 1 C3 1 \n"
     "MAT 3   ELAST_Vol... the volumetric summand of your choice \n");
 }

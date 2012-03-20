@@ -116,35 +116,6 @@ namespace ELASTIC
 
     //@}
 
-    /// Add principal coeffiencts.
-    /// Nothing to do for this (decoupled) material!
-    void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
-
-    /// Add modified coeffiencts.
-    void AddCoefficientsModified(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
-    )
-    {
-      return;
-    };
-
-    /// Add anisotropic principal coeffiencts.
-    /// Nothing to do for this (isotropic) material!
-    void AddCoefficientsPrincipalAniso(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<15,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-    );
-
     /// @name Access methods
     //@{
     double K1() const { return params_->k1_; }

@@ -432,7 +432,7 @@ void MAT::ViscoGenMax::Evaluate(
   LINALG::Matrix<15,1> anisodelta(true);
 
   EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
-  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta,anisogamma,anisodelta);
+  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -625,7 +625,7 @@ void MAT::ViscoGenMax::Evaluate(
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,scg,id2,icg,anisogamma,anisodelta);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg);
       stress.Update(1.0, stressanisoprinc, 1.0);
       cmat.Update(1.0, cmatanisoprinc, 1.0);
 

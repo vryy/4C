@@ -124,7 +124,7 @@ UZAWATOL                        1e-08
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0 GAMMA 0
+MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0
 MAT 10 ELAST_CoupLogNeoHooke MUE 80.1938 LAMBDA 0.0
 MAT 11 ELAST_VolOgden KAPPA 40.0889e4 BETA -2.0
 ----------------------------------------------------------------------CURVE1

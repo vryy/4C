@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
@@ -405,6 +406,24 @@ void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+    {
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      string fiber;
+      for (int i = 0; i < vissize; i++)
+      {
+        ostringstream s;
+        s << "Fiber" << i+1;
+        fiber = s.str();
+        names[fiber] = 3; // 3-dim vector
+      }
+    }
+  }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
   {
     string fiber = "Fiber1";
@@ -531,6 +550,31 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     else
     {
       return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+    {
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      for (int i = 0; i < vissize; i++)
+      {
+        ostringstream s;
+        s << "Fiber" << i+1;
+        string fiber;
+        fiber = s.str();
+        if (name == fiber)
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          data[0] = fibervecs.at(i)(0);
+          data[1] = fibervecs.at(i)(1);
+          data[2] = fibervecs.at(i)(2);
+        }
+      }
     }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)

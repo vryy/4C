@@ -471,13 +471,14 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yeoh.cpp
   src/drt_mat/yoghurt.cpp
-  src/drt_matelast/elast_coupanisoexpotwo.cpp
-  src/drt_matelast/elast_coupanisoneohooketwo.cpp
+  src/drt_matelast/elast_coupanisoexpo.cpp
+  src/drt_matelast/elast_coupanisoexpotwocoup.cpp
+  src/drt_matelast/elast_coupanisoneohooke.cpp
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
   src/drt_matelast/elast_coupneohooke.cpp
   src/drt_matelast/elast_coupvarga.cpp
-  src/drt_matelast/elast_holzapfel_cardiac.cpp
+  src/drt_matelast/elast_isoanisoexpo.cpp
   src/drt_matelast/elast_isocub.cpp
   src/drt_matelast/elast_isoexpo.cpp
   src/drt_matelast/elast_coupmooneyrivlin.cpp

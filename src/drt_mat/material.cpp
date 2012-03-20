@@ -404,7 +404,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_couplogneohooke:
   case INPAR::MAT::mes_coupneohooke:
   case INPAR::MAT::mes_coupblatzko:
-  case INPAR::MAT::mes_holzapfel_cardiac:
   case INPAR::MAT::mes_isoneohooke:
   case INPAR::MAT::mes_isoyeoh:
   case INPAR::MAT::mes_isoquad:
@@ -414,13 +413,15 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coup1pow:
   case INPAR::MAT::mes_coup2pow:
   case INPAR::MAT::mes_coupmooneyrivlin:
-  case INPAR::MAT::mes_isoexpo:
+  case INPAR::MAT::mes_isoexpopow:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
   case INPAR::MAT::mes_volpenalty:
   case INPAR::MAT::mes_vologden:
-  case INPAR::MAT::mes_coupanisoexpotwo:
-  case INPAR::MAT::mes_coupanisoneohooketwo:
+  case INPAR::MAT::mes_coupanisoexpo:
+  case INPAR::MAT::mes_coupanisoexpotwocoup:
+  case INPAR::MAT::mes_coupanisoneohooke:
+  case INPAR::MAT::mes_isoanisoexpo:
   case INPAR::MAT::mes_coupvarga:
   case INPAR::MAT::mes_isovarga:
   case INPAR::MAT::mes_isovolHUdependentneohooke:

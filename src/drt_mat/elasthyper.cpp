@@ -35,9 +35,7 @@ MAT::PAR::ElastHyper::ElastHyper(
 : Parameter(matdata),
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
-  density_(matdata->GetDouble("DENS")),
-  gamma_(matdata->GetDouble("GAMMA")),
-  init_mode_(matdata->GetInt("INIT_MODE"))
+  density_(matdata->GetDouble("DENS"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
@@ -139,11 +137,6 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isomod_);
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
-  AddtoPack(data,a1_);
-  AddtoPack(data,a2_);
-  AddtoPack(data,A1_);
-  AddtoPack(data,A2_);
-  AddtoPack(data,A1A2_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -204,12 +197,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   if (isomod != 0) isomod_ = true;
   if (anisoprinc != 0) anisoprinc_ = true;
   if (anisomod != 0) anisomod_ = true;
-
-  ExtractfromPack(position,data,a1_);
-  ExtractfromPack(position,data,a2_);
-  ExtractfromPack(position,data,A1_);
-  ExtractfromPack(position,data,A2_);
-  ExtractfromPack(position,data,A1A2_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -309,93 +296,20 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
     p->second->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_);
   }
 
-
-  if (anisoprinc_ or anisomod_)
-  {
-    // fibers aligned in local element cosy with gamma_i around circumferential direction
-    // -> check whether element supports local element cosy
-    vector<double> rad;
-    vector<double> axi;
-    vector<double> cir;
-    if (linedef->HaveNamed("RAD") and
-        linedef->HaveNamed("AXI") and
-        linedef->HaveNamed("CIR"))
-    {
-      // read local (cylindrical) cosy-directions at current element
-      // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-      LINALG::Matrix<3,3> locsys(true);
-      linedef->ExtractDoubleVector("RAD",rad);
-      linedef->ExtractDoubleVector("AXI",axi);
-      linedef->ExtractDoubleVector("CIR",cir);
-      double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-
-      for (int i = 0; i < 3; ++i)
-      {
-        radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-      }
-      radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-
-      for (int i=0; i<3; ++i)
-      {
-        locsys(i,0) = rad[i]/radnorm;
-        locsys(i,1) = axi[i]/axinorm;
-        locsys(i,2) = cir[i]/cirnorm;
-      }
-      // INIT_MODE = 0 : Fiber direction derived from local cosy
-      if( 0 == params_->init_mode_)
-      {
-        // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-        if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
-        //convert
-        const double gamma = (params_->gamma_*PI)/180.;
-
-        for (int i = 0; i < 3; ++i)
-        {
-          // a1 = cos gamma e3 + sin gamma e2
-          a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-          // a2 = cos gamma e3 - sin gamma e2
-          a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
-        }
-      }
-      // INIT_MODE = 1 : Fiber direction aligned to local cosy
-      else if (1 == params_->init_mode_)
-      {
-        for (int i = 0; i < 3; ++i)
-        {
-          a1_(i) = locsys(i,0);
-          a2_(i) = locsys(i,1);
-        }
-      }
-      // INIT_MODE = -1 = default value; usage of fiber direction without initialization mode
-      else if (-1 == params_->init_mode_)
-      {
-        dserror("Forgotten to give INIT_MODE in .dat-file");
-      }
-      else
-      {
-        dserror("Problem with fiber initialization");
-      }
-      for (int i = 0; i < 3; ++i) {
-        A1_(i) = a1_(i)*a1_(i);
-        A2_(i) = a2_(i)*a2_(i);
-        for (int j=0; j<3; j++)
-        {
-          A1A2_(j,i) = a1_(j)*a2_(i);
-        }
-      }
-      A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
-      A2_(3) = a2_(0)*a2_(1); A2_(4) = a2_(1)*a2_(2); A2_(5) = a2_(0)*a2_(2);
-    }
-
-    else
-    {
-      dserror("Reading of element local cosy for anisotropic materials failed");
-    }
-  }
-
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
+{
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->GetFiberVecs(fibervecs);
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -430,39 +344,6 @@ void MAT::ElastHyper::InvariantsModified(
   modinv(1) = prinv(1)*std::pow(prinv(2),-2./3.);
   // J
   modinv(2) = std::pow(prinv(2),1./2.);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::InvariantsPrincipalAniso(
-          LINALG::Matrix<6,1>& pranisoinv, ///< principal invariants
-          const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-          )
-{
-  // 1st invariant, trace
-  pranisoinv(0) = rcg(0) + rcg(1) + rcg(2);
-  // 2nd invariant
-  pranisoinv(1) = 0.5*( pranisoinv(0)*pranisoinv(0)
-                   - rcg(0)*rcg(0) - rcg(1)*rcg(1) - rcg(2)*rcg(2)
-                   - .5*rcg(3)*rcg(3) - .5*rcg(4)*rcg(4) - .5*rcg(5)*rcg(5) );
-  // 3rd invariant, determinant
-  pranisoinv(2) = rcg(0)*rcg(1)*rcg(2)
-    + 0.25 * rcg(3)*rcg(4)*rcg(5)
-    - 0.25 * rcg(1)*rcg(5)*rcg(5)
-    - 0.25 * rcg(2)*rcg(3)*rcg(3)
-    - 0.25 * rcg(0)*rcg(4)*rcg(4);
-
-  pranisoinv(3) =  A1_(0)*rcg(0) + A1_(1)*rcg(1) + A1_(2)*rcg(2)
-            + A1_(3)*rcg(3) + A1_(4)*rcg(4) + A1_(5)*rcg(5);
-
-  pranisoinv(4) =  A2_(0)*rcg(0) + A2_(1)*rcg(1) + A2_(2)*rcg(2)
-            + A2_(3)*rcg(3) + A2_(4)*rcg(4) + A2_(5)*rcg(5);
-
-  pranisoinv(5) =  A1A2_(0,0)*rcg(0) + A1A2_(1,1)*rcg(1) + A1A2_(2,2)*rcg(2)
-            + 0.5*(A1A2_(0,1)*rcg(3) + A1A2_(1,2)*rcg(4) + A1A2_(0,2)*rcg(5))
-            + 0.5*(A1A2_(1,0)*rcg(3) + A1A2_(2,1)*rcg(4) + A1A2_(2,0)*rcg(5));
 
   return;
 }
@@ -578,11 +459,9 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<8,1> delta(true);
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
-  LINALG::Matrix<3,1> anisogamma(true);
-  LINALG::Matrix<15,1> anisodelta(true);
 
   EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
-  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta,anisogamma,anisodelta);
+  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -627,9 +506,18 @@ void MAT::ElastHyper::Evaluate(
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,scg,id2,icg,anisogamma,anisodelta);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg);
       stress.Update(1.0, stressanisoprinc, 1.0);
       cmat.Update(1.0, cmatanisoprinc, 1.0);
+  }
+
+  if (anisomod_)
+  {
+      LINALG::Matrix<NUM_STRESS_3D,1> stressanisomod(true) ;
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisomod(true) ;
+      EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv);
+      stress.Update(1.0, stressanisomod, 1.0);
+      cmat.Update(1.0, cmatanisomod, 1.0);
   }
 
   return ;
@@ -692,12 +580,6 @@ void MAT::ElastHyper::EvaluateKinQuant(
 
   // modified invariants of right Cauchy-Green strain
   InvariantsModified(modinv,prinv);
-
-  // Anisotropic contribution
-  // principal anisotropic invariants of right Cauchy-Green strain
-  // we only use the set {I1,I2,I3,I4,I6,I8},
-  // because the quadratic invariants I5 and I7 don't give any new info, I9 is constant
-  InvariantsPrincipalAniso(pranisoinv,rcg);
 }
 
 /*----------------------------------------------------------------------*/
@@ -710,9 +592,7 @@ void MAT::ElastHyper::EvaluateGammaDelta(
     LINALG::Matrix<3,1>& gamma,
     LINALG::Matrix<8,1>& delta,
     LINALG::Matrix<3,1>& modgamma,
-    LINALG::Matrix<5,1>& moddelta,
-    LINALG::Matrix<3,1>& anisogamma,
-    LINALG::Matrix<15,1>& anisodelta
+    LINALG::Matrix<5,1>& moddelta
     )
 
 {
@@ -740,20 +620,6 @@ void MAT::ElastHyper::EvaluateGammaDelta(
       p->second->AddCoefficientsModified(modgamma,moddelta,modinv);
     }
 
-  }
-
-  // modified coefficients
-  if (anisoprinc_)
-  {
-    // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
-    {
-      p->second->AddCoefficientsPrincipalAniso(anisogamma,anisodelta,pranisoinv);
-    }
-
-    return ;
   }
 }
 
@@ -886,70 +752,38 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
 void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<6,1>& stressanisoprinc,
     LINALG::Matrix<6,6>& cmatanisoprinc,
-    LINALG::Matrix<6,1> scg,
-    LINALG::Matrix<6,1> id2,
-    LINALG::Matrix<6,1> icg,
-    LINALG::Matrix<3,1> anisogamma,
-    LINALG::Matrix<15,1> anisodelta
+    LINALG::Matrix<6,1> rcg
     )
 {
-  // build Voigt (stress-like) version of a1 \otimes a2 + a2 \otimes a1
-  LINALG::Matrix<6,1> A1A2sym;
-  A1A2sym(0)=2*A1A2_(0,0);
-  A1A2sym(1)=2*A1A2_(1,1);
-  A1A2sym(2)=2*A1A2_(2,2);
-  A1A2sym(3)=A1A2_(0,1)+A1A2_(1,0);
-  A1A2sym(4)=A1A2_(1,2)+A1A2_(2,1);
-  A1A2sym(5)=A1A2_(0,2)+A1A2_(2,0);
+  // loop map of associated potential summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc);
+  }
 
-  // 2nd Piola Kirchhoff stresses
-  stressanisoprinc.Update(anisogamma(0), A1_, 1.0);
-  stressanisoprinc.Update(anisogamma(1), A2_, 1.0);
-  stressanisoprinc.Update(anisogamma(2), A1A2sym, 1.0);
+  return ;
+}
 
-  // constitutive tensor
-  // contribution: A1_ \otimes A1_
-  cmatanisoprinc.MultiplyNT(anisodelta(0), A1_, A1_, 1.0);
-  // contribution: A2_ \otimes A2_
-  cmatanisoprinc.MultiplyNT(anisodelta(1), A2_, A2_, 1.0);
-  // contribution: A1_ \otimes Id + Id \otimes A1_
-  cmatanisoprinc.MultiplyNT(anisodelta(2), A1_, id2, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(2), id2, A1_, 1.0);
-  // contribution: A2_ \otimes Id + Id \otimes A2_
-  cmatanisoprinc.MultiplyNT(anisodelta(3), A2_, id2, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(3), id2, A2_, 1.0);
-  // contribution: A1_ \otimes C + C \otimes A1_
-  cmatanisoprinc.MultiplyNT(anisodelta(4), A1_, scg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(4), scg, A1_, 1.0);
-  // contribution: A2_ \otimes C + C \otimes A2_
-  cmatanisoprinc.MultiplyNT(anisodelta(5), A2_, scg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(5), scg, A2_, 1.0);
-  // contribution: A1_ \otimes Cinv + Cinv \otimes A1_
-  cmatanisoprinc.MultiplyNT(anisodelta(6), A1_, icg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(6), icg, A1_, 1.0);
-  // contribution: A2_ \otimes Cinv + Cinv \otimes A2_
-  cmatanisoprinc.MultiplyNT(anisodelta(7), A2_, icg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(7), icg, A2_, 1.0);
-  // contribution: A1_ \otimes A2_ + A2_ \otimes A1_
-  cmatanisoprinc.MultiplyNT(anisodelta(8), A1_, A2_, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(8), A2_, A1_, 1.0);
-  // contribution: A1A2sym \otimes Id + Id \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(9), A1A2sym, id2, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(9), id2, A1A2sym, 1.0);
-  // contribution: A1A2sym \otimes C + C \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(10), A1A2sym, scg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(10), scg, A1A2sym, 1.0);
-  // contribution: A1A2sym \otimes Cinv + Cinv \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(11), A1A2sym, icg, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(11), icg, A1A2sym, 1.0);
-  // contribution: A1A2sym \otimes A1_ + A1_ \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(12), A1A2sym, A1_, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(12), A1_, A1A2sym, 1.0);
-  // contribution: A1A2sym \otimes A2_ + A2_ \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(13), A1A2sym, A2_, 1.0);
-  cmatanisoprinc.MultiplyNT(anisodelta(13), A2_, A1A2sym, 1.0);
-  // contribution: A1A2sym \otimes A1A2sym
-  cmatanisoprinc.MultiplyNT(anisodelta(14), A1A2sym, A1A2sym, 1.0);
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateAnisotropicMod(
+    LINALG::Matrix<6,1>& stressanisomod,
+    LINALG::Matrix<6,6>& cmatanisomod,
+    LINALG::Matrix<6,1> rcg,
+    LINALG::Matrix<6,1> icg,
+    LINALG::Matrix<3,1> prinv
+    )
+{
+
+  // loop map of associated potential summands
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+  for (p=pot.begin(); p!=pot.end(); ++p)
+  {
+    p->second->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2));
+  }
 
   return ;
 }

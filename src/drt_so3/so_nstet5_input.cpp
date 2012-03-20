@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 
 #include "so_nstet5.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/elasthyper.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -25,6 +26,12 @@ bool DRT::ELEMENTS::NStet5::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
+  }
+
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
   if (buffer=="linear")

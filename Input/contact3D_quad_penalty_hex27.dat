@@ -4463,9 +4463,9 @@ NODE 1472 COORD -1.999999911791123e+00 -1.999999911791122e+00 1.000000000000000e
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 7.8e-6 GAMMA 0 INIT_MODE -1
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3   ELAST_CoupNeoHooke YOUNG 210 NUE 0.3
-MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 7.8e-6 GAMMA 0 INIT_MODE -1
+MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4   ELAST_CoupNeoHooke YOUNG 2100 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0

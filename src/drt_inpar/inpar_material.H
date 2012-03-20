@@ -101,11 +101,11 @@ namespace INPAR
       mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
       mes_coupmooneyrivlin,  ///< Mooney-Rivlin  material as hyperelastic potential summand
-      mes_holzapfel_cardiac, /// anisotropic cardiac material
+//      mes_holzapfel_cardiac, /// anisotropic cardiac material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
       mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)
-      mes_isoexpo,  ///< isochoric exponential hyperelastic potential summand
+      mes_isoexpopow,  ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,  ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand
       mes_isoquad,  ///< isochoric quadratic hyperelastic potential summand
@@ -117,8 +117,10 @@ namespace INPAR
       mes_volsussmanbathe,  ///< volumetric SussmanBathe hyperelastic potential summand
       mes_volpenalty,  ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand
-      mes_coupanisoexpotwo,  ///< anisotropic potential summand
-      mes_coupanisoneohooketwo,  ///< anisotropic potential summand
+      mes_coupanisoexpo,   ///< anisotropic exponential single fiber summand
+      mes_coupanisoexpotwocoup,  ///< anisotropic two fiber summand with coupling between the fibers
+      mes_coupanisoneohooke,  ///< anisotropic Neo-Hooke single fiber summand
+      mes_isoanisoexpo,   ///< isochoric anisotropic single fiber material
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material
       m_cnst_art,            ///< 1D_Artery constant material properties

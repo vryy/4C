@@ -61,7 +61,7 @@ MAT::MooneyRivlin::MooneyRivlin()
 {
   dserror("This material law - MOONEY-RIVLIN - is maintained only inside the Elasthyper Toolbox in its regular form (the one in this particular file has an additional summand).\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0\n"
     "MAT 2   ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1 \n");
 }
 
@@ -74,7 +74,7 @@ MAT::MooneyRivlin::MooneyRivlin(MAT::PAR::MooneyRivlin* params)
 {
   dserror("This material law - MOONEY-RIVLIN - is maintained only inside the Elasthyper Toolbox in its regular form (the one in this particular file has an additional summand).\n"
     "If you want to use this law, the material input line should read :\n"
-    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0 GAMMA 0 INIT_MODE -1\n"
+    "MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0\n"
     "MAT 2   ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1 \n");
 }
 

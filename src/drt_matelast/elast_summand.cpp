@@ -18,7 +18,6 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupneohooke.H"
 #include "elast_coupblatzko.H"
 #include "elast_coupmooneyrivlin.H"
-#include "elast_holzapfel_cardiac.H"
 #include "elast_isoneohooke.H"
 #include "elast_isoyeoh.H"
 #include "elast_isoquad.H"
@@ -32,8 +31,10 @@ Maintainer: Burkhard Bornemann
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
 #include "elast_vologden.H"
-#include "elast_coupanisoexpotwo.H"
-#include "elast_coupanisoneohooketwo.H"
+#include "elast_coupanisoexpo.H"
+#include "elast_coupanisoexpotwocoup.H"
+#include "elast_coupanisoneohooke.H"
+#include "elast_isoanisoexpo.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
@@ -92,13 +93,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::CoupMooneyRivlin* params = static_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(curmat->Parameter());
     return Teuchos::rcp(new CoupMooneyRivlin(params));
   }
-  case INPAR::MAT::mes_holzapfel_cardiac:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::Holzapfel_Cardiac(curmat));
-    MAT::ELASTIC::PAR::Holzapfel_Cardiac* params = static_cast<MAT::ELASTIC::PAR::Holzapfel_Cardiac*>(curmat->Parameter());
-    return Teuchos::rcp(new Holzapfel_Cardiac(params));
-  }
   case INPAR::MAT::mes_isoneohooke:
   {
     if (curmat->Parameter() == NULL)
@@ -155,12 +149,12 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::Coup2Pow* params = static_cast<MAT::ELASTIC::PAR::Coup2Pow*>(curmat->Parameter());
     return Teuchos::rcp(new Coup2Pow(params));
   }
-  case INPAR::MAT::mes_isoexpo:
+  case INPAR::MAT::mes_isoexpopow:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoExpo(curmat));
-    MAT::ELASTIC::PAR::IsoExpo* params = static_cast<MAT::ELASTIC::PAR::IsoExpo*>(curmat->Parameter());
-    return Teuchos::rcp(new IsoExpo(params));
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoExpoPow(curmat));
+    MAT::ELASTIC::PAR::IsoExpoPow* params = static_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoExpoPow(params));
   }
   case INPAR::MAT::mes_isomooneyrivlin:
   {
@@ -204,19 +198,33 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::VolOgden* params = static_cast<MAT::ELASTIC::PAR::VolOgden*>(curmat->Parameter());
     return Teuchos::rcp(new VolOgden(params));
   }
-  case INPAR::MAT::mes_coupanisoexpotwo:
+  case INPAR::MAT::mes_coupanisoexpo:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpoTwo(curmat));
-    MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(curmat->Parameter());
-    return Teuchos::rcp(new CoupAnisoExpoTwo(params));
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpo(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoExpo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpo*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoExpo(params));
   }
-  case INPAR::MAT::mes_coupanisoneohooketwo:
+  case INPAR::MAT::mes_coupanisoexpotwocoup:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo(curmat));
-    MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo*>(curmat->Parameter());
-    return Teuchos::rcp(new CoupAnisoNeoHookeTwo(params));
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoExpoTwoCoup(params));
+  }
+  case INPAR::MAT::mes_coupanisoneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoNeoHooke(params));
+  }
+  case INPAR::MAT::mes_isoanisoexpo:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoAnisoExpo(curmat));
+    MAT::ELASTIC::PAR::IsoAnisoExpo* params = static_cast<MAT::ELASTIC::PAR::IsoAnisoExpo*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoAnisoExpo(params));
   }
   case INPAR::MAT::mes_coupvarga:
   {

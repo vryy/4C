@@ -177,7 +177,10 @@ namespace MAT
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<8,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-        ) = 0;
+        )
+      {
+        return;  // do nothing
+      };
 
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
@@ -246,7 +249,10 @@ namespace MAT
         LINALG::Matrix<3,1>& gamma,  ///< see above
         LINALG::Matrix<5,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
-        ) = 0;
+        )
+      {
+        return;  // do nothing
+      };
 
       /// retrieve coefficients of first and second derivative
       /// of summand for fiber directions with respect to principal invariants
@@ -352,21 +358,27 @@ namespace MAT
       ///\f[
       /// \delta^{aniso}_{15} = \frac {\partial^2\Psi}{\partial VIII_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
       ///\f]
-      ///
-      /// Due [2] the anisotropic part will \bold(not) be calculated via the decoupling
-      virtual void AddCoefficientsPrincipalAniso(
-          LINALG::Matrix<3,1>& gamma,  ///< see above
-          LINALG::Matrix<15,1>& delta,  ///< see above
-          const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-          ) = 0;
+      virtual void AddStressAnisoPrincipal(
+        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress  ///< 2nd PK-stress
+        )
+      {
+        return;  // do nothing
+      };
 
-      // Since in the paper of Sansour is deducted that the decoupling of the anisotropic part should be avoided the corresponding parts of the code are commented
-      // virtual void AddCoefficientsModifiedAniso(
-      //  bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-      //  LINALG::Matrix<3,1>& gamma,  ///< see above
-      //  LINALG::Matrix<15,1>& delta,  ///< see above
-      //  const LINALG::Matrix<6,1>& inv  ///< modified invariants of right Cauchy-Green tensor
-      //) = 0;
+      /// retrieve stress and cmat
+      /// of summand for fiber directions with respect to modified strains
+      virtual void AddStressAnisoModified(
+        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1> icg,  ///< inverse of right Cauchy Green Tensor
+        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
+        double I3   ///< third principal invariant
+        )
+      {
+        return;  // do nothing
+      };
 
       /// Answer if coefficients with respect to principal stretches are provided
       virtual bool HaveCoefficientsStretchesPrincipal()
@@ -429,6 +441,22 @@ namespace MAT
       {
         return;  // do nothing
       }
+
+      /// Set fiber directions
+      virtual void SetFiberVecs(
+          LINALG::Matrix<3,3> locsys ///< local coordinate system
+      )
+      {
+        return;  // do nothing
+      };
+
+      /// Get fiber directions
+      virtual void GetFiberVecs(
+          std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+      )
+      {
+        return;  // do nothing
+      };
 
       /// Indicator for the chosen formulations
       virtual void SpecifyFormulation(
