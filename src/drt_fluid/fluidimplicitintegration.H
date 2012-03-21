@@ -312,6 +312,9 @@ public:
     const int startfuncno
     );
 
+  /// Implement ADAPTER::Fluid
+  Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
+
   /*!
   \brief reset density in topology optimization problems
 

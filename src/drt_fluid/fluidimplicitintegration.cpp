@@ -4900,6 +4900,13 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 } // ScaTraTimIntImpl::SetTimeLomaFields
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
+{
+   return VelPresSplitter().ExtractOtherVector(velpres);
+}
+
 
 /*----------------------------------------------------------------------*
  | sent density field for topology optimization         winklmaier 12/11|
