@@ -15,6 +15,7 @@ Maintainer: Lena Wiechert
 
 #include "so_hex8p1j1.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -34,6 +35,10 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
   {
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
+
+  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
   }
   // temporary variable for read-in
     std::string buffer;

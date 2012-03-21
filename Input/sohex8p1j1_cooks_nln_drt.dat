@@ -125,7 +125,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0
-MAT 10 ELAST_CoupLogNeoHooke MUE 80.1938 LAMBDA 0.0
+MAT 10 ELAST_CoupLogNeoHooke MODE Lame C1 80.1938 C2 0.0
 MAT 11 ELAST_VolOgden KAPPA 40.0889e4 BETA -2.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000

@@ -14,6 +14,7 @@ Maintainer: Markus Gitterle
 
 #include "wall1.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/elasthyper.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -27,9 +28,14 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
+  }
+
   // set discretization type
   SetDisType(DRT::StringToDistype(distype));
-  
+
   linedef->ExtractDouble("THICK",thickness_);
   if  (thickness_<=0) dserror("WALL element thickness needs to be < 0");
 
@@ -40,7 +46,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   else if ((NumNode()==8) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
   else if ((NumNode()==9) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
   else if ((NumNode()==6) and (ngp[0]<3)) dserror("Insufficient number of Gauss points");
-  
+
   gaussrule_ = getGaussrule(&ngp[0]);
 
   std::string buffer;

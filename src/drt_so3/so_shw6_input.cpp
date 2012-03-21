@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include "so_shw6.H" //**
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -37,6 +38,9 @@ bool DRT::ELEMENTS::So_shw6::ReadElement(const std::string& eletype,
   } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
     MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     visco->Setup(NUMGPT_WEG6, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    elahy->Setup(linedef);
   }
 
   std::string buffer;

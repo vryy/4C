@@ -159,7 +159,8 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
-MAT 2 MAT_Struct_NeoHooke YOUNG 1.044E5 NUE 0.45 DENS 0.001
+MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 5 DENS 0.001
+MAT 5   ELAST_CoupNeoHooke YOUNG 1.044E52 NUE 0.45
 MAT 3 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 0.001
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.0 DENS 1.0
 ----------------------------------------------------------------------CURVE1

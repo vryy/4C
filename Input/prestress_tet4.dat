@@ -4246,7 +4246,8 @@ NODE 762 COORD 0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+01
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
-MAT 1 MAT_Struct_NeoHooke YOUNG 1000000.0 NUE 0.45 DENS 0.001
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.001
+MAT 2   ELAST_CoupNeoHooke YOUNG 1000000 NUE 0.45
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 2.0 0.0

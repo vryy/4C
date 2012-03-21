@@ -4241,7 +4241,8 @@ NODE 1056 COORD 5.038998562016503 -1.317874407435426 4.829190890769729
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_Struct_NeoHooke YOUNG 1000000 NUE 0.45 DENS 0.001
+MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.001
+MAT 3   ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 4.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 4.0 0.0

@@ -129,7 +129,8 @@ BOUNDARY_GAUSS_POINTS_BY Tessellation //MomentFitting
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 2000.0 DENSITY 2.0 GAMMA 1.0
-MAT 2 MAT_Struct_NeoHooke YOUNG 10.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.0
+MAT 3   ELAST_CoupNeoHooke YOUNG 10.0 NUE 0.0
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
 //CURVE1 on EXPR FUNC 1.0*t t1 0.0 t2 1.0

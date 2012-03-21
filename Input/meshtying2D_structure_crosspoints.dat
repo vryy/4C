@@ -78,7 +78,8 @@ SOLVER                          UMFPACK
 NAME                            Meshtying_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_NeoHooke YOUNG 10 NUE 0.3 DENS 7.8e-6
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 7.8e-6
+MAT 2   ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------------------CURVE2

@@ -182,7 +182,8 @@ ML_SMOTIMES 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_NeoHooke YOUNG 3.0E2 NUE 0.49 DENS 0.02
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.02
+MAT 2   ELAST_CoupNeoHooke YOUNG 3.0E2 NUE 0.49
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1 FACTOR 0.0 0.02
 ----------------------------------------------------------------------CURVE2
