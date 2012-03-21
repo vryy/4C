@@ -66,7 +66,7 @@ namespace XFEM
       extractDofKeysForInitialization(unknownFieldEnr_);
 #ifdef DEBUG
       if (unknownFieldEnr_.size()>0)
-        cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
+        std::cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << std::endl;
 #endif
       return;
     }
