@@ -143,7 +143,8 @@ namespace FLD
                        );
 
       /// (standard) system matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
+
 
       /// maps for extracting Dirichlet and free DOF sets
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

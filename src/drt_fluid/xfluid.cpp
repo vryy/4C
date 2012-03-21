@@ -94,7 +94,16 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   const Epetra_Map* dofrowmap = xfluid.discret_->DofRowMap();
 
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+  // create an EpetraFECrs matrix that does communication for non-local rows and columns
+  // * this enables to do the evaluate loop over just row elements instead of col elements
+  // * time consuming assemble for cut elements is done only once on a unique row processor
+  // REMARK: call the SparseMatrix: * explicitdirichlet = true (is used in ApplyDirichlet, false uses Epetra memory based operations
+  //                                                            that are not ensured to be always compatible with baci)
+  //                                * savegraph = false ( the matrix graph (pattern for non-zero entries) can change ) do not store this graph
+  //                                * with FE_MATRIX flag
+  //TODO: for edgebased approaches the number of connections between rows and cols should be increased
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,true,false,LINALG::SparseMatrix::FE_MATRIX));
+//  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true,LINALG::SparseMatrix::FE_MATRIX));
 
   // Vectors passed to the element
   // -----------------------------
@@ -185,6 +194,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
 
+  // create an column residual vector for assembly over row elements that has to be communicated at the end
+  RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+
   // set general vector values needed by elements
   discret.ClearState();
   discret.SetState("hist" ,hist_ );
@@ -228,22 +240,18 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     // call standard loop over elements
     //discret.Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
-    DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-
-//     ParObjectFactory::Instance().PreEvaluate(*this,params,
-//                                              strategy.Systemmatrix1(),
-//                                              strategy.Systemmatrix2(),
-//                                              strategy.Systemvector1(),
-//                                              strategy.Systemvector2(),
-//                                              strategy.Systemvector3());
+    DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
 
     DRT::Element::LocationArray la( 1 );
 
     // loop over column elements
-    const int numcolele = discret.NumMyColElements();
-    for (int i=0; i<numcolele; ++i)
+    const int numrowele = discret.NumMyRowElements();
+
+    // REMARK: in this XFEM framework the whole evaluate routine uses only row elements and assembles into EpetraFECrs matrix
+    // this is baci-unusual but more efficient in all XFEM applications
+    for (int i=0; i<numrowele; ++i)
     {
-      DRT::Element* actele = discret.lColElement(i);
+      DRT::Element* actele = discret.lRowElement(i);
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
       DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
@@ -284,11 +292,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               // for quadratic elements, there are some volumecells with respect to subelements, that have to be assembled at once
 
 
-              // get element location vector, dirichlet flags and ownerships
+              // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
               actele->LocationVector(discret,nds,la,false);
 
               // get dimension of element matrices and vectors
-              // Reshape element matrices and vectors and init to zero
+              // Reshape element matrices and vectors and init to zero (rdim, cdim)
               strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
               {
@@ -367,25 +375,28 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                          strategy.Elematrix1(),
                                                          strategy.Elevector1(),
                                                          Cuiui);
-//                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
-//                      impl->ElementXfemInterfaceNeumann( ele,
-//                                                         discret,
-//                                                         la[0].lm_,
-//                                                         intpoints_sets[set_counter],
-//                                                         cutdiscret,
-//                                                         bcells,
-//                                                         bintpoints,
-//                                                         side_coupling,
-//                                                         eleparams,
-//                                                         strategy.Elematrix1(),
-//                                                         strategy.Elevector1(),
-//                                                         Cuiui);
 
               }
 
               int eid = actele->Id();
-              strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-              strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+              // introduce an vector containing the rows for that values have to be communicated
+              // REMARK: when assembling row elements also non-row rows have to be communicated
+              std::vector<int> myowner;
+              for(size_t index=0; index<la[0].lmowner_.size(); index++)
+              {
+                myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+              }
+
+              // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+              sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+              // REMARK:: call Assemble without lmowner
+              // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+              // do not exclude non-row nodes (modify the real owner to myowner)
+              // after assembly the col vector it has to be exported to the row residual_ vector
+              // using the 'Add' flag to get the right value for shared nodes
+              LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
 
               set_counter += 1;
@@ -487,25 +498,29 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui);
-//               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
-//                   impl->ElementXfemInterfaceNeumann( ele,
-//                                               discret,
-//                                               la[0].lm_,
-//                                               intpoints[count],
-//                                               cutdiscret,
-//                                               bcells,
-//                                               bintpoints,
-//                                               side_coupling,
-//                                               eleparams,
-//                                               strategy.Elematrix1(),
-//                                               strategy.Elevector1(),
-//                                               Cuiui);
+
 
             }
 
             int eid = actele->Id();
-            strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-            strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+            // introduce an vector containing the rows for that values have to be communicated
+            // REMARK: when assembling row elements also non-row rows have to be communicated
+            std::vector<int> myowner;
+            for(size_t index=0; index<la[0].lmowner_.size(); index++)
+            {
+              myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+            }
+
+            // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+            sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+            // REMARK:: call Assemble without lmowner
+            // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+            // do not exclude non-row nodes (modify the real owner to myowner)
+            // after assembly the col vector it has to be exported to the row residual_ vector
+            // using the 'Add' flag to get the right value for shared nodes
+            LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
           }
           count += 1;
@@ -534,11 +549,25 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
         if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
 
         int eid = actele->Id();
-        strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-//       strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
-        strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
-//       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
-//       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
+
+        // introduce an vector containing the rows for that values have to be communicated
+        // REMARK: when assembling row elements also non-row rows have to be communicated
+        std::vector<int> myowner;
+        for(size_t index=0; index<la[0].lmowner_.size(); index++)
+        {
+          myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+        }
+
+        // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+        sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+        // REMARK:: call Assemble without lmowner
+        // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+        // do not exclude non-row nodes (modify the real owner to myowner)
+        // after assembly the col vector it has to be exported to the row residual_ vector
+        // using the 'Add' flag to get the right value for shared nodes
+        LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
       }
 
 
@@ -554,6 +583,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
     discret.ClearState();
 
+    //-------------------------------------------------------------------------------
     // scaling to get true residual vector
     trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
 
@@ -566,11 +596,21 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
 
 
+    //-------------------------------------------------------------------------------
+    // need to export residual_col to systemvector1 (residual_)
+    Epetra_Vector res_tmp(residual_->Map(),false);
+    Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
+    int err = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
+    if (err) dserror("Export using exporter returned err=%d",err);
+    residual_->Update(1.0,res_tmp,1.0);
 
-
+    //-------------------------------------------------------------------------------
     // finalize the complete matrix
+    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     sysmat_->Complete();
-  }
+
+}
+
 #else
   dserror("D_FLUID3 required");
 #endif

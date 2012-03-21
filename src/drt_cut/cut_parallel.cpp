@@ -480,11 +480,12 @@ void GEO::CUT::Parallel::exportDofSetData()
 
         VolumeCell * my_vc = NULL;
 
-        DRT::Node* node = discret_.gNode(nid);
+        bool haveGlobalNode = discret_.HaveGlobalNode(nid);
 
         // decide if the current proc carries the required information
-        if(node!=NULL) // node on this proc available as row or col node
+        if(haveGlobalNode) // node on this proc available as row or col node
         {
+          DRT::Node* node = discret_.gNode(nid);
           if(node->Owner() == myrank_)
           {
           //parent element Id for current

@@ -723,9 +723,12 @@ void GEO::CUT::MeshIntersection::Status(std::string gausstype)
 
   //NormalMesh().DumpGmshVolumeCells( "volumecells" );
   if(gausstype=="Tessellation")
-	  DumpGmshIntegrationCells( "integrationcells.pos" );
+  {
+    DumpGmshIntegrationCells( "integrationcells.pos" );
+    DumpGmshVolumeCells("volumecells.pos");
+  }
   else if(gausstype=="MomentFitting")
-	  DumpGmshVolumeCells("volumecells.pos");
+    DumpGmshVolumeCells("volumecells.pos");
 #endif
 #endif
 }

@@ -1444,8 +1444,8 @@ void GEO::CUT::Mesh::FindFacetPositions()
   // this is a slow algorithm, but there should only be very few undecided
   // volume cells, so it should be fine.
 
-  if ( cells_.size()==undecided.size() )
-    throw std::runtime_error( "all volume cells undecided" );
+  if ( cells_.size()==undecided.size() and cells_.size() > 0)
+    throw std::runtime_error( "all volume cells undecided and volume cells available" );
 
   while ( undecided.size() > 0 )
   {
