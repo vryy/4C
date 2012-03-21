@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_solver.H"
+#include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
@@ -733,6 +734,20 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
       fluid_ = Teuchos::rcp(new ADAPTER::FluidPoro(Teuchos::rcp(new FluidWrapper(tmpfluid))));
+    }
+    case prb_elch:
+    {
+      // access the problem-specific parameter list
+      const Teuchos::ParameterList& elchcontrol = DRT::Problem::Instance()->ELCHControlParams();
+      // is ALE needed or not?
+      const INPAR::ELCH::ElchMovingBoundary withale = DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY");
+      if (withale!= INPAR::ELCH::elch_mov_bndry_no)
+      {
+        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,solver,fluidtimeparams,output,isale));
+        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid, actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+      }
+      else
+        fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
     }
     break;
     default:
