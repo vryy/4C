@@ -56,6 +56,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/dyn_smag.H"
 
+#include "../drt_fluid/fluid_timint.H"
+#include "../drt_fluid/fluidresulttest.H"
+
 #include "../drt_io/io.H"
 
 #include "../drt_fluid/fluid_MHD_evaluate.H"
@@ -118,7 +121,7 @@ namespace FLD {
 // forwarded declarations
 class TurbulenceStatisticManager;
 
-class FluidGenAlphaIntegration
+class FluidGenAlphaIntegration : public TimInt
 {
   //! @name Friends
   friend class FluidResultTest;
@@ -147,9 +150,9 @@ public:
   */
   FluidGenAlphaIntegration(
     RCP<DRT::Discretization>    actdis,
-    LINALG::Solver&             solver,
-    ParameterList&              params,
-    IO::DiscretizationWriter&   output,
+    RCP<LINALG::Solver>             solver,
+    RCP<ParameterList>              params,
+    RCP<IO::DiscretizationWriter>   output,
     bool                        alefluid,
     RCP<map<int,vector<int> > > pbcmapmastertoslave);
 
@@ -276,7 +279,7 @@ public:
   */
   IO::DiscretizationWriter& DiscWriter()
   {
-    return output_;
+    return *output_;
   }
 
 
@@ -430,7 +433,7 @@ public:
   \brief return the current increment for an initial guess
 
   */
-  Teuchos::RCP<Epetra_Vector> InitialGuess() { return increment_; }
+  Teuchos::RCP<const Epetra_Vector> InitialGuess() { return increment_; }
 
   /*!
   \brief return the residual vector, i.e. the rhs of the
@@ -444,13 +447,13 @@ public:
   density scaling has to be provided by the fluid implementation
 
   */
-  Teuchos::RCP<Epetra_Vector> TrueResidual() { return force_; }
+  Teuchos::RCP<const Epetra_Vector> TrueResidual() { return force_; }
 
   /*!
   \brief return current velocity and pressure solutions
 
   */
-  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
 
   /*!
   \brief return velocity and pressure solutions at
@@ -460,7 +463,7 @@ public:
          determination of an intermediate velocity before it is provided to
          the outer world
   */
-  Teuchos::RCP<Epetra_Vector> Velaf()
+  Teuchos::RCP<const Epetra_Vector> Velaf()
     {
       // to be sure: (re-)compute current value of velaf_
       GenAlphaComputeIntermediateSol();
@@ -471,7 +474,7 @@ public:
   \brief return acceleration values at
          intermediate time step n+alpha_M
   */
-  Teuchos::RCP<Epetra_Vector> Accam()
+  Teuchos::RCP<const Epetra_Vector> Accam()
     {
       // to be sure: (re-)compute current value of accam_
       // assuming that accnp_ is already up to date!
@@ -483,14 +486,14 @@ public:
   \brief return previous velocity and pressure solutions
 
   */
-  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
 
   /*!
   \brief return pointer to gridvelocities at intermediate stage.
   They are set from outside (strange, isn't it?)
 
   */
-  Teuchos::RCP<Epetra_Vector> GridVel() { return gridvelaf_; }
+  Teuchos::RCP<const Epetra_Vector> GridVel() { return gridvelaf_; }
 
   /*!
   \brief provide access to the Dirichlet map
@@ -533,13 +536,13 @@ public:
   \brief Allow access to current grid displacements
 
   */
-  Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
+  Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
 
   /*!
   \brief Allow access to previous grid displacements
 
   */
-  Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
+  Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
 
   /*!
   \brief return the system matrix if it is a plain matrix
@@ -639,11 +642,11 @@ public:
   /*!
   \brief return the nonlinear itemax
   */
-  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
   /*!
   \brief set the nonlinear itemax
   */
-  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+  void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
   /*!
   \brief return type of time integration scheme
@@ -726,6 +729,207 @@ public:
       );
   //@}
 
+
+
+
+  void Timeloop() { GenAlphaTimeloop(); }
+  Teuchos::RCP<const Epetra_Vector> RHS(){  return Residual(); }
+  Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){
+    if (GridVel() == Teuchos::null)
+      return Velnp(); // no moving mesh present
+    else
+    {
+      // make an intermediate copy of velnp
+      Teuchos::RCP<Epetra_Vector> convel = rcp(new Epetra_Vector(*(Velnp())));
+      // now subtract the grid velocity
+      convel->Update(-1.0,*(GridVel()),1.0);
+
+      return convel;
+    }
+  }
+  Teuchos::RCP<const Epetra_Map> DofRowMap()
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    return Teuchos::rcp(dofrowmap, false);
+  }
+  Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+  {
+    return DirichMaps();
+  }
+  void PrepareTimeStep()
+  {
+    GenAlphaPrepareTimeStep();
+  }
+  void Evaluate(Teuchos::RCP<const Epetra_Vector> accstepinc)
+  {
+    if (accstepinc!=Teuchos::null)
+    {
+      ExternIncrementOfVelnp(accstepinc);
+    }
+
+    GenAlphaComputeIntermediateSol();
+    GenAlphaAssembleResidualAndMatrix();
+  }
+  void Update()
+  {
+    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(TrueResidual());
+
+    interfaceforcen_ = ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
+
+    GenAlphaTimeUpdate();
+  }
+  void StatisticsAndOutput()
+  {
+    GenAlphaStatisticsAndOutput();
+  }
+  void Output()
+  {
+    GenAlphaOutput();
+  }
+  void NonlinearSolve()
+  {
+    DoGenAlphaPredictorCorrectorIteration();
+  }
+  Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
+  {
+    return innervelmap_;
+  }
+  void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+  {
+    meshmap_.Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
+  }
+  double TimeScaling() const
+  {
+    double dt = Dt();
+    double gamma = Gamma();
+    return 1./(dt*dt*gamma);
+  }
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+  {
+    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(TrueResidual());
+
+    return ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
+  }
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
+  {
+    return interface_.ExtractFSICondVector(Velnp());
+  }
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
+  {
+    return interface_.ExtractFSICondVector(Veln());
+  }
+  void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+  {
+    // --------------------------------------------------
+    // apply new Dirichlet values to velnp according to interface velocity
+    interface_.InsertFSICondVector(ivel,velnp_);
+
+    // adjust accnp according to new Dirichlet values of velnp
+    //
+    //                                  n+1     n
+    //                               vel   - vel
+    //       n+1      n  gamma-1.0      (0)
+    //    acc    = acc * --------- + ------------
+    //       (0)           gamma      gamma * dt
+    //
+    GenAlphaCalcInitialAccelerations();
+
+    // this is very easy, but there are two dangers:
+    // - We change ivel here. It must not be used afterwards.
+    // - The algorithm must support the change of Dirichlet DOFs
+    AddDirichCond(interface_.FSICondMap());
+  }
+  void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+  {
+    meshmap_.InsertCondVector(fluiddisp,dispnp_);
+
+    // new grid velocity
+    UpdateGridv();
+  }
+  void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
+  {
+    meshmap_.InsertCondVector(gridvel,gridvelaf_);
+  }
+  void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+  {
+    // We convert Delta d(n+1,i+1) to Delta a(n+1,i+1) here.
+    //
+    // Delta d(n+1,i+1) =   ( Delta u(n+1,i+1)              + u(n) ) * dt
+    //
+    //                  = ( ( Delta a(n+1,i+1) * gamma * dt + u(n) ) * dt
+    //
+
+    double dt = Dt();
+    double gamma = Gamma();
+
+    // get interface velocity at t(n)
+    Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+
+    // reduce to Delta u(n+1,i+1)
+    fcx->Update(-1.,*veln,1./dt);
+
+    // reduce to Delta a(n+1,i+1)
+    fcx->Scale(1./dt/gamma);
+  }
+  void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+  {
+    double dt = Dt();
+    double gamma = Gamma();
+
+    // get interface velocity at t(n)
+    Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+
+    fcx->Update(1.,*veln,dt*gamma);
+    fcx->Scale(dt);
+  }
+  Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape()
+  {
+    return interface_.ExtractFSICondVector(IntegrateInterfaceShape("FSICoupling"));
+  }
+  void UseBlockMatrix(bool splitmatrix)
+  {
+    Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
+    UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
+  }
+  Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+  {
+    const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+    Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
+    interface_.InsertFSICondVector(ivel,relax);
+    LinearRelaxationSolve(relax);
+    return ExtractInterfaceForces();
+  }
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
+  {
+    return Teuchos::rcp(new FluidResultTest(*this));
+  }
+  Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
+  {
+     return (VelPresSplitter()).ExtractOtherVector(velpres);
+  }
+  void SetTimeLomaFields(
+      RCP<const Epetra_Vector> scalarnp,
+      const double             thermpressnp,
+      RCP<const Epetra_Vector> scatraresidual,
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      const int whichscalar)
+  {
+      SetScalarField(scalarnp,scatradis, whichscalar);
+      return;
+  };
+  void Integrate() { GenAlphaTimeloop(); }
+
+  FLD::UTILS::MapExtractor               interface_;
+  Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
+  LINALG::MapExtractor                   meshmap_;
+  Teuchos::RCP<DRT::Discretization>      dis_;
+  Teuchos::RCP<LINALG::Solver>           solver_;
+  Teuchos::RCP<Teuchos::ParameterList>   params_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
+  Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+
+
+
 private:
 
   //@}
@@ -767,8 +971,6 @@ private:
   //
   //! the discretization
   RCP<DRT::Discretization>    discret_;
-  //! solver object
-  LINALG::Solver&             solver_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                        project_;
   //! integrated basis vector (pressure component)
@@ -776,10 +978,6 @@ private:
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector> c_;
 
-  //! parameterlist including time params, stabilization params and turbulence sublist
-  ParameterList&              params_ ;
-  //! io writer/reader
-  IO::DiscretizationWriter&   output_ ;
   //! decides whether we use an Eulerian or an ALE formulation
   bool                        alefluid_;
   //@}

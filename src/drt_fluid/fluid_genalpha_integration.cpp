@@ -35,14 +35,14 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization>    actdis,
-  LINALG::Solver&                     solver,
-  ParameterList&                      params,
-  IO::DiscretizationWriter&           output,
+  RCP<LINALG::Solver>                     solver,
+  RCP<ParameterList>                      params,
+  RCP<IO::DiscretizationWriter>           output,
   bool                                alefluid,
-  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave
-  )
-  :
-  // call constructor for "nontrivial" objects
+  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave)
+:
+  TimInt(params),
+  dis_   (actdis),
   discret_(actdis),
   solver_ (solver),
   params_ (params),
@@ -51,13 +51,12 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   density_(1.0),
   time_(0.0),
   step_(0),
-  uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1)),
-  writestresses_(params.get("write stresses", 0)),
+  uprestart_(params->get("write restart every", -1)),
+  upres_(params->get("write solution every", -1)),
+  writestresses_(params->get("write stresses", 0)),
   pbcmapmastertoslave_(pbcmapmastertoslave),
   locsysman_(Teuchos::null)
 {
-
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -79,7 +78,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // time measurement --- start TimeMonitor tm7
   tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
 
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // -------------------------------------------------------------------
   // check whether we have locsys BCs and create LocSysManager if so
@@ -113,35 +112,35 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // init some class variables (time integration)
 
   // time step size
-  dt_     = params_.get<double>("time step size");
+  dt_     = params_->get<double>("time step size");
   // maximum number of timesteps
-  endstep_= params_.get<int>   ("max number timesteps");
+  endstep_= params_->get<int>   ("max number timesteps");
   // maximum simulation time
-  endtime_= params_.get<double>("total time");
+  endtime_= params_->get<double>("total time");
 
   // generalized alpha parameters
   // (choice of third parameter necessary but not sufficiant for second
   // order accuracy)
   //           gamma_  = 0.5 + alphaM_ - alphaF_
-  alphaM_ = params_.get<double>("alpha_M");
-  alphaF_ = params_.get<double>("alpha_F");
-  gamma_  = params_.get<double>("gamma");
+  alphaM_ = params_->get<double>("alpha_M");
+  alphaF_ = params_->get<double>("alpha_F");
+  gamma_  = params_->get<double>("gamma");
 
   // use of predictor
-  predictor_ = params_.get<string>("predictor","steady_state_predictor");
+  predictor_ = params_->get<string>("predictor","steady_state_predictor");
 
   // parameter for linearisation scheme (fixed point like or newton like)
-  newton_    = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
+  newton_    = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
 
   itenum_    = 0;
-  itemax_    = params_.get<int>   ("max nonlin iter steps");
+  itemax_    = params_->get<int>   ("max nonlin iter steps");
 
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
 
   //--------------------------------------------------------------------
   // init some class variables (algorithm)
 
-  numdim_ = params_.get<int>("number of velocity degrees of freedom");
+  numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -267,13 +266,14 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
   // flag for special flow: currently channel flow or flow in a lid-driven cavity
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
 
   // all averaging is done in this statistics manager
-  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
+//  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
+  statisticsmanager_=Teuchos::null;
 
   if (special_flow_ != "no")
   {
@@ -285,7 +285,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // initialize outflow boundary stabilization if required
   // -------------------------------------------------------------------
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   // flag for potential Neumann-type outflow stabilization
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","yes_outstab");
@@ -295,7 +295,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     outflow_stabil_= LINALG::CreateVector(*dofrowmap,true);
 
   // (fine-scale) subgrid viscosity?
-  fssgv_ = params_.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No");
+  fssgv_ = params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No");
 
   // -------------------------------------------------------------------
   // necessary only for the AVM3 approach: fine-scale solution vector
@@ -317,7 +317,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       // get one instance of the dynamic Smagorinsky class
       DynSmag_=rcp(new DynSmagFilter(discret_            ,
                                      pbcmapmastertoslave_,
-                                     params_             ));
+                                     *params_             ));
     }
 
     if (model=="Dynamic_Smagorinsky"
@@ -356,6 +356,24 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // extra discretisation for mixed/hybrid Dirichlet conditions
   MHD_evaluator_=rcp(new FluidMHDEvaluate(discret_));
+
+  {
+    interface_.Setup(*actdis);
+
+    // build inner velocity map
+    // dofs at the interface are excluded
+    // we use only velocity dofs and only those without Dirichlet constraint
+    const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = DirichMaps();
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+    maps.push_back(interface_.OtherMap());
+    maps.push_back(dbcmaps->OtherMap());
+    innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+
+    interfaceforcen_ = rcp(new Epetra_Vector(*(interface_.FSICondMap())));
+  }
+
+
+
 
   return;
 
@@ -516,14 +534,14 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // currently default for turbulent channel flow: only one iteration before sampling
   if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
     itemax_  = 1;
-  else itemax_  = params_.get<int>   ("max nonlin iter steps");
+  else itemax_  = params_->get<int>   ("max nonlin iter steps");
 
   // stop nonlinear iteration when both increment-norms are below this
   // bound
-  ittol_     =params_.get<double>("tolerance for nonlin iter");
+  ittol_     =params_->get<double>("tolerance for nonlin iter");
 
   // set
-  if (params_.get<string>("CONVCHECK","L_2_norm")
+  if (params_->get<string>("CONVCHECK","L_2_norm")
       ==
       "L_2_norm_without_residual_at_itemax")
   {
@@ -921,7 +939,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
 
-  if(params_.sublist("STABILIZATION").get<string>("TDS")=="time_dependent")
+  if(params_->sublist("STABILIZATION").get<string>("TDS")=="time_dependent")
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -983,7 +1001,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_,0.0);
+//  statisticsmanager_->DoTimeSample(step_,time_,0.0);
 
   // -------------------------------------------------------------------
   //   calculate lift and drag values
@@ -1132,22 +1150,22 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
   //-------------------------------------------- output of solution
   if (step_%upres_ == 0)  //write solution
   {
-    output_.NewStep    (step_,time_);
+    output_->NewStep    (step_,time_);
 
-    output_.WriteVector("velnp"   , velnp_);
+    output_->WriteVector("velnp"   , velnp_);
 
     // output real pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     pressure->Scale(density_);
-    output_.WriteVector("pressure", pressure);
+    output_->WriteVector("pressure", pressure);
 
     if (alefluid_)
     {
-      output_.WriteVector("dispnp", dispnp_);
+      output_->WriteVector("dispnp", dispnp_);
     }
 
 
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if(params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky")
     {
@@ -1156,7 +1174,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
       RefCountPtr<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
 
       DynSmag_->OutputofAveragedVel(filteredvel);
-      output_.WriteVector("filteredvel",filteredvel);
+      output_->WriteVector("filteredvel",filteredvel);
     }
 
 
@@ -1164,27 +1182,27 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     if (writestresses_)
     {
      RefCountPtr<Epetra_Vector> traction = CalcStresses();
-     output_.WriteVector("traction",traction);
+     output_->WriteVector("traction",traction);
     }
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_)
-     output_.WriteElementData();
+     output_->WriteElementData();
 
     // dumping of turbulence statistics if required
-    statisticsmanager_->DoOutput(output_,step_);
+//    statisticsmanager_->DoOutput(*output_,step_);
 
     // do restart if we have to
     if (step_%uprestart_ == 0)
     {
-      output_.WriteVector("veln",  veln_ );
-      output_.WriteVector("accn",  accn_ );
+      output_->WriteVector("veln",  veln_ );
+      output_->WriteVector("accn",  accn_ );
 
       if (alefluid_)
       {
-        output_.WriteVector("dispn"   ,dispn_   );
-        output_.WriteVector("dispnm"  ,dispnm_  );
-        output_.WriteVector("gridveln",gridveln_);
+        output_->WriteVector("dispn"   ,dispn_   );
+        output_->WriteVector("dispnm"  ,dispnm_  );
+        output_->WriteVector("gridveln",gridveln_);
       }
 
       // write mesh in each restart step --- the elements are required since
@@ -1193,36 +1211,36 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
       // it would lead to writing the mesh twice for step 0
       // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
       if (step_!=0)
-        output_.WriteMesh(step_,time_);
+        output_->WriteMesh(step_,time_);
     }
 
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (step_%uprestart_ == 0)
   {
-    output_.NewStep    (step_,time_);
+    output_->NewStep    (step_,time_);
 
-    output_.WriteVector("velnp", velnp_);
-    output_.WriteVector("veln" , veln_ );
-    output_.WriteVector("accn" , accn_ );
+    output_->WriteVector("velnp", velnp_);
+    output_->WriteVector("veln" , veln_ );
+    output_->WriteVector("accn" , accn_ );
 
     if (alefluid_)
     {
-      output_.WriteVector("dispnp" , dispnp_  );
-      output_.WriteVector("dispn"   ,dispn_   );
-      output_.WriteVector("dispnm"  ,dispnm_  );
-      output_.WriteVector("gridveln",gridveln_);
+      output_->WriteVector("dispnp" , dispnp_  );
+      output_->WriteVector("dispn"   ,dispn_   );
+      output_->WriteVector("dispnm"  ,dispnm_  );
+      output_->WriteVector("gridveln",gridveln_);
     }
 
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
      RefCountPtr<Epetra_Vector> traction = CalcStresses();
-     output_.WriteVector("traction",traction);
+     output_->WriteVector("traction",traction);
     }
 
     // dumping of turbulence statistics if required
-    statisticsmanager_->DoOutput(output_,step_);
+//    statisticsmanager_->DoOutput(*output_,step_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -1230,7 +1248,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     // it would lead to writing the mesh twice for step 0
     // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
     if (step_!=0)
-      output_.WriteMesh(step_,time_);
+      output_->WriteMesh(step_,time_);
   }
 
   return;
@@ -1255,11 +1273,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // Filter velocity for dynamic Smagorinsky model --- this provides
   // the necessary dynamic constant
   // -------------------------------------------------------------------
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+  if (params_->sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
   {
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if(params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
       )
@@ -1371,16 +1389,16 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   eleparams.set<int>("Linearisation",newton_);
 
   // parameters for usage of conservative/convective form
-  eleparams.set("CONVFORM",params_.get<string>("form of convective term"));
+  eleparams.set("CONVFORM",params_->get<string>("form of convective term"));
 
   // parameters for stabilisation
   {
-    eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
+    eleparams.sublist("STABILIZATION")    = params_->sublist("STABILIZATION");
   }
 
   // parameters for a turbulence model
   {
-    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
   }
 
   // (fine-scale) subgrid viscosity flag
@@ -1426,7 +1444,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // extended statistics (plane average of Cs) for dynamic
   // Smagorinsky model --- communication part, store values
   //----------------------------------------------------------------------
-  statisticsmanager_->StoreElementValues(step_);
+//  statisticsmanager_->StoreElementValues(step_);
 
   //----------------------------------------------------------------------
   // remember force vector for stress computation
@@ -1561,7 +1579,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // apply consistent outflow boundary condition for conservative element
   //     formulation (expressions arising from partial integration)
   //----------------------------------------------------------------------
-  if(params_.get<string>("form of convective term")=="conservative")
+  if(params_->get<string>("form of convective term")=="conservative")
   {
     ParameterList apply_cons_params;
     // set action for elements
@@ -1804,14 +1822,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 {
-  bool   isadapttol    = params_.get<bool>  ("ADAPTCONV"                ,true  );
-  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER"         ,0.01  );
-  double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
+  bool   isadapttol    = params_->get<bool>  ("ADAPTCONV"                ,true  );
+  double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER"         ,0.01  );
+  double nlntolsol     = params_->get<double>("tolerance for nonlin iter",1.e-10);
 
   //--------------------------- adapt tolerance  in the convergence limit
   if (isadapttol && itenum_>1)
   {
-    solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
+    solver_->AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
   }
 
   //-------solve for residual displacements to correct incremental displacements
@@ -1829,7 +1847,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
     reset=true;
   }
 
-  solver_.Solve(sysmat_->EpetraOperator(),
+  solver_->Solve(sysmat_->EpetraOperator(),
                 increment_               ,
                 residual_                ,
                 refactor                 ,
@@ -1838,7 +1856,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
                 c_                       ,
                 project_                 );
 
-  solver_.ResetTolerance();
+  solver_->ResetTolerance();
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement
@@ -2061,7 +2079,7 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
   reader.ReadMesh(step_);
 
   // read previous averages
-  statisticsmanager_->Restart(reader,step_);
+//  statisticsmanager_->Restart(reader,step_);
 
   // since ReadMesh can change the overall dof numbering due
   // to a FillComplete() call performed internally, the underlying maps
@@ -2124,12 +2142,12 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
 
   // parameters for stabilisation
   {
-    eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
+    eleparams.sublist("STABILIZATION")    = params_->sublist("STABILIZATION");
   }
 
   // parameters for a turbulence model
   {
-    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
   }
 
   // (fine-scale) subgrid viscosity flag
@@ -2158,7 +2176,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
     MLAPI::Init();
 
     // extract the ML parameters
-    ParameterList&  mlparams = solver_.Params().sublist("ML Parameters");;
+    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");;
 
     // get toggle vector for Dirchlet boundary conditions
     const Epetra_Vector& dbct = *Dirichlet();
@@ -2289,7 +2307,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 
         // random noise is perc percent of the initial profile
 
-        double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+        double perc = params_->sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
 
         // out to screen
         if (myrank_==0)
@@ -2400,7 +2418,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 
     int err =0;
 
-    int numdim  = params_.get<int>("number of velocity degrees of freedom");
+    int numdim  = params_->get<int>("number of velocity degrees of freedom");
     int npredof = numdim;
 
     double         p;
@@ -2514,7 +2532,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
@@ -2627,12 +2645,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       {
         // alpha_F
         cout << "Generalized Alpha parameter: alpha_F = ";
-        cout << params_.get<double>("alpha_F");
+        cout << params_->get<double>("alpha_F");
         cout << "\n";
 
         // alpha_M
         cout << "                             alpha_M = ";
-        cout << params_.get<double>("alpha_M");
+        cout << params_->get<double>("alpha_M");
         cout << "\n";
 
         // gamma
@@ -2648,7 +2666,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
         // linearisation
 	cout << "Linearisation (1=fixed_point; 2=Newton; 3=minimal): ";
-	cout << DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
+	cout << DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
         cout << endl;
 
         // predictor
@@ -2659,7 +2677,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       //--------------------------------------------------------------------
       /* output of stabilisation details */
       {
-        ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+        ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
         // general
 
@@ -2735,7 +2753,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         // do we use a conservative approach?
         cout << "                             ";
         cout << "Choosing cross-stress stabilisation based on ";
-        cout << params_.get<string>("form of convective term");
+        cout << params_->get<string>("form of convective term");
         cout << " equation";
         cout << endl;
         cout << endl;
@@ -2745,7 +2763,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       //--------------------------------------------------------------------
       /* output of turbulence model if any */
       {
-        ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+        ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
         if (modelparams->get<string>("TURBULENCE_APPROACH", "none")
             !=
@@ -2786,7 +2804,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             {
               cout << "                             " ;
               cout << "with Smagorinsky constant Cs= ";
-              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+              cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
             }
             else if(physmodel == "Smagorinsky_with_van_Driest_damping")
             {
@@ -2799,12 +2817,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
               cout << "                             "          ;
               cout << "- Smagorinsky constant:   Cs   = "      ;
-              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
+              cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
               cout << endl;
 
               cout << "                             "          ;
               cout << "- viscous length      :   l_tau= "      ;
-              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU");
+              cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU");
               cout << endl;
             }
             else if(physmodel == "Dynamic_Smagorinsky")
@@ -2834,9 +2852,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         {
           cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
           cout << endl << endl;
-          cout << params_.get<string>("fs subgrid viscosity");
+          cout << params_->get<string>("fs subgrid viscosity");
           cout << " with Smagorinsky constant Cs= ";
-          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+          cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
           cout << endl << endl;
         }
 
@@ -2889,12 +2907,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       printf("                 (te=%10.3E)",dtele_);
       // additional output for dynamic Smagorinsky model --- the time spent on
       // filtering
-      if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH",
+      if (params_->sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH",
                                                           "DNS_OR_RESVMM_LES")
           ==
           "CLASSICAL_LES")
       {
-        if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL",
+        if(params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL",
                                                            "no_model")
            ==
            "Dynamic_Smagorinsky"
@@ -2917,12 +2935,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       printf("  (ts=%10.3E)(te=%10.3E)",dtsolve_,dtele_);
       // additional output for dynamic Smagorinsky model --- the time spent on
       // filtering
-      if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH",
+      if (params_->sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH",
                                                           "DNS_OR_RESVMM_LES")
           ==
           "CLASSICAL_LES")
       {
-        if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL",
+        if(params_->sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL",
                                                            "no_model")
            ==
            "Dynamic_Smagorinsky"
@@ -3096,7 +3114,7 @@ void FLD::FluidGenAlphaIntegration::LiftDrag() const
   // in this map, the results of the lift drag calculation are stored
   RCP<map<int,vector<double> > > liftdragvals;
 
-  FLD::UTILS::LiftDrag(*discret_,*force_,params_,liftdragvals);
+  FLD::UTILS::LiftDrag(*discret_,*force_,*params_,liftdragvals);
 
 
 }//FluidGenAlphaIntegration::LiftDrag
@@ -3187,7 +3205,7 @@ void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > 
   }
 
   // if we never build the matrix nothing will be done
-  if (params_.get<bool>("shape derivatives"))
+  if (params_->get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -3331,7 +3349,7 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
   // timealgorithm is gen_alpha
   eleparams.set<int>("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
@@ -3351,11 +3369,11 @@ void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
   eleparams.set("action","set_turbulence_parameter");
 
   // set general parameters for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
 
   // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+  eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

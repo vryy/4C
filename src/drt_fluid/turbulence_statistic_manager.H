@@ -70,7 +70,7 @@ public:
   \brief Genalpha Constructor (public)
 
   */
-  TurbulenceStatisticManager(FluidGenAlphaIntegration& timeint);
+//  TurbulenceStatisticManager(FluidGenAlphaIntegration& timeint);
 
   /*!
   \brief One-Step-Theta Constructor (public)

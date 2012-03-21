@@ -38,249 +38,249 @@ namespace FLD
     Standard Constructor for Genalpha time integration (public) (Gammis Fluid Algo!!!!!!)
 
   ----------------------------------------------------------------------*/
-  TurbulenceStatisticManager::TurbulenceStatisticManager(FluidGenAlphaIntegration& fluid)
-    :
-    dt_              (fluid.dt_       ),
-    alphaM_          (fluid.alphaM_   ),
-    alphaF_          (fluid.alphaF_   ),
-    gamma_           (fluid.gamma_    ),
-    density_         (fluid.density_  ),
-    discret_         (fluid.discret_  ),
-//    params_          (fluid.params_   ),
-    alefluid_        (fluid.alefluid_ ),
-    myaccnp_         (fluid.accnp_    ),
-    myaccn_          (fluid.accn_     ),
-    myaccam_         (fluid.accam_    ),
-    myvelnp_         (fluid.velnp_    ),
-    myveln_          (fluid.veln_     ),
-    myvelaf_         (fluid.velaf_    ),
-    myscanp_         (fluid.scaaf_    ),
-    mydispnp_        (fluid.dispnp_   ),
-    mydispn_         (fluid.dispn_    ),
-    mygridveln_      (fluid.gridveln_ ),
-    mygridvelaf_     (fluid.gridvelaf_),
-    myforce_         (fluid.force_    ),
-    myfilteredvel_   (null            ),
-    myfilteredreystr_(null            ),
-    myfsvelaf_       (null            )
-  {
-    params_ = Teuchos::rcp(&fluid.params_);
-    // get density
-
-    // activate the computation of subgrid dissipation,
-    // residuals etc
-    subgrid_dissipation_=true;
-
-    // toogle statistics output for turbulent inflow
-    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
-
-    // the flow parameter will control for which geometry the
-    // sampling is done
-    if(fluid.special_flow_=="channel_flow_of_height_2")
-    {
-      flow_=channel_flow_of_height_2;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-                                                          alefluid_           ,
-                                                          mydispnp_           ,
-                                                          *params_             ,
-                                                          subgrid_dissipation_));
-    }
-    else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
-    {
-      flow_=loma_channel_flow_of_height_2;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-                                                          alefluid_           ,
-                                                          mydispnp_           ,
-                                                          *params_             ,
-                                                          subgrid_dissipation_));
-    }
-    else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
-    {
-      flow_=scatra_channel_flow_of_height_2;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-                                                          alefluid_           ,
-                                                          mydispnp_           ,
-                                                          *params_             ,
-                                                          subgrid_dissipation_));;
-    }
-    else if(fluid.special_flow_=="lid_driven_cavity")
-    {
-      flow_=lid_driven_cavity;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
-    }
-    else if(fluid.special_flow_=="loma_lid_driven_cavity")
-    {
-      flow_=loma_lid_driven_cavity;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
-    }
-    else if(fluid.special_flow_=="backward_facing_step")
-    {
-      flow_=backward_facing_step;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
-      if (inflow_)
-        dserror("Sorry, no inflow generation for gammi-style fluid!");
-    }
-    else if(fluid.special_flow_=="loma_backward_facing_step")
-    {
-      flow_=loma_backward_facing_step;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
-      if (inflow_)
-        dserror("Sorry, no inflow generation for gammi-style fluid!");
-    }
-    else if(fluid.special_flow_=="combust_oracles")
-    {
-      flow_=combust_oracles;
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << " done" << std::endl;
-    }
-    else if(fluid.special_flow_=="square_cylinder")
-    {
-      flow_=square_cylinder;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
-    }
-    else if(fluid.special_flow_=="square_cylinder_nurbs")
-    {
-      flow_=square_cylinder_nurbs;
-
-      // do the time integration independent setup
-      Setup();
-    }
-    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
-    {
-      flow_=rotating_circular_cylinder_nurbs;
-      const bool withscatra = false;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
-                                                      alefluid_           ,
-                                                      mydispnp_           ,
-                                                      *params_             ,
-                                                      withscatra));
-    }
-    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
-    {
-      flow_=rotating_circular_cylinder_nurbs_scatra;
-      const bool withscatra = true;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
-                                                      alefluid_           ,
-                                                      mydispnp_           ,
-                                                      *params_             ,
-                                                      withscatra));
-    }
-    else if(fluid.special_flow_=="time_averaging")
-    {
-      flow_=time_averaging;
-
-      // do the time integration independent setup
-      Setup();
-    }
-    else
-    {
-      flow_=no_special_flow;
-
-      // do the time integration independent setup
-      Setup();
-    }
-
-    // allocate one instance of the flow independent averaging procedure
-    // providing colorful output for paraview
-    {
-      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
-
-      string homdir = modelparams->get<string>("HOMDIR","not_specified");
-
-      if(flow_==rotating_circular_cylinder_nurbs_scatra)
-      {
-        // additional averaging of scalar field
-        statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
-            discret_,
-            homdir,
-            density_,
-            fluid.VelPresSplitter(),true));
-      }
-      else
-      {
-        statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
-            discret_,
-            homdir,
-            density_,
-            fluid.VelPresSplitter(),false));
-      }
-    }
-    return;
-
-  }
+//  TurbulenceStatisticManager::TurbulenceStatisticManager(FluidGenAlphaIntegration& fluid)
+//    :
+//    dt_              (fluid.dt_       ),
+//    alphaM_          (fluid.alphaM_   ),
+//    alphaF_          (fluid.alphaF_   ),
+//    gamma_           (fluid.gamma_    ),
+//    density_         (fluid.density_  ),
+//    discret_         (fluid.discret_  ),
+////    params_          (fluid.params_   ),
+//    alefluid_        (fluid.alefluid_ ),
+//    myaccnp_         (fluid.accnp_    ),
+//    myaccn_          (fluid.accn_     ),
+//    myaccam_         (fluid.accam_    ),
+//    myvelnp_         (fluid.velnp_    ),
+//    myveln_          (fluid.veln_     ),
+//    myvelaf_         (fluid.velaf_    ),
+//    myscanp_         (fluid.scaaf_    ),
+//    mydispnp_        (fluid.dispnp_   ),
+//    mydispn_         (fluid.dispn_    ),
+//    mygridveln_      (fluid.gridveln_ ),
+//    mygridvelaf_     (fluid.gridvelaf_),
+//    myforce_         (fluid.force_    ),
+//    myfilteredvel_   (null            ),
+//    myfilteredreystr_(null            ),
+//    myfsvelaf_       (null            )
+//  {
+//    params_ = Teuchos::rcp(&fluid.params_);
+//    // get density
+//
+//    // activate the computation of subgrid dissipation,
+//    // residuals etc
+//    subgrid_dissipation_=true;
+//
+//    // toogle statistics output for turbulent inflow
+//    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
+//
+//    // the flow parameter will control for which geometry the
+//    // sampling is done
+//    if(fluid.special_flow_=="channel_flow_of_height_2")
+//    {
+//      flow_=channel_flow_of_height_2;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+//                                                          alefluid_           ,
+//                                                          mydispnp_           ,
+//                                                          *params_             ,
+//                                                          subgrid_dissipation_));
+//    }
+//    else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
+//    {
+//      flow_=loma_channel_flow_of_height_2;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+//                                                          alefluid_           ,
+//                                                          mydispnp_           ,
+//                                                          *params_             ,
+//                                                          subgrid_dissipation_));
+//    }
+//    else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
+//    {
+//      flow_=scatra_channel_flow_of_height_2;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+//                                                          alefluid_           ,
+//                                                          mydispnp_           ,
+//                                                          *params_             ,
+//                                                          subgrid_dissipation_));;
+//    }
+//    else if(fluid.special_flow_=="lid_driven_cavity")
+//    {
+//      flow_=lid_driven_cavity;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+//    }
+//    else if(fluid.special_flow_=="loma_lid_driven_cavity")
+//    {
+//      flow_=loma_lid_driven_cavity;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+//    }
+//    else if(fluid.special_flow_=="backward_facing_step")
+//    {
+//      flow_=backward_facing_step;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
+//      if (inflow_)
+//        dserror("Sorry, no inflow generation for gammi-style fluid!");
+//    }
+//    else if(fluid.special_flow_=="loma_backward_facing_step")
+//    {
+//      flow_=loma_backward_facing_step;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
+//      if (inflow_)
+//        dserror("Sorry, no inflow generation for gammi-style fluid!");
+//    }
+//    else if(fluid.special_flow_=="combust_oracles")
+//    {
+//      flow_=combust_oracles;
+//
+//      if(discret_->Comm().MyPID()==0)
+//        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
+//
+//      if(discret_->Comm().MyPID()==0)
+//        std::cout << " done" << std::endl;
+//    }
+//    else if(fluid.special_flow_=="square_cylinder")
+//    {
+//      flow_=square_cylinder;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
+//    }
+//    else if(fluid.special_flow_=="square_cylinder_nurbs")
+//    {
+//      flow_=square_cylinder_nurbs;
+//
+//      // do the time integration independent setup
+//      Setup();
+//    }
+//    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
+//    {
+//      flow_=rotating_circular_cylinder_nurbs;
+//      const bool withscatra = false;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+//                                                      alefluid_           ,
+//                                                      mydispnp_           ,
+//                                                      *params_             ,
+//                                                      withscatra));
+//    }
+//    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
+//    {
+//      flow_=rotating_circular_cylinder_nurbs_scatra;
+//      const bool withscatra = true;
+//
+//      // do the time integration independent setup
+//      Setup();
+//
+//      // allocate one instance of the averaging procedure for
+//      // the flow under consideration
+//      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+//                                                      alefluid_           ,
+//                                                      mydispnp_           ,
+//                                                      *params_             ,
+//                                                      withscatra));
+//    }
+//    else if(fluid.special_flow_=="time_averaging")
+//    {
+//      flow_=time_averaging;
+//
+//      // do the time integration independent setup
+//      Setup();
+//    }
+//    else
+//    {
+//      flow_=no_special_flow;
+//
+//      // do the time integration independent setup
+//      Setup();
+//    }
+//
+//    // allocate one instance of the flow independent averaging procedure
+//    // providing colorful output for paraview
+//    {
+//      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+//
+//      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+//
+//      if(flow_==rotating_circular_cylinder_nurbs_scatra)
+//      {
+//        // additional averaging of scalar field
+//        statistics_general_mean_
+//        =rcp(new TurbulenceStatisticsGeneralMean(
+//            discret_,
+//            homdir,
+//            density_,
+//            fluid.VelPresSplitter(),true));
+//      }
+//      else
+//      {
+//        statistics_general_mean_
+//        =rcp(new TurbulenceStatisticsGeneralMean(
+//            discret_,
+//            homdir,
+//            density_,
+//            fluid.VelPresSplitter(),false));
+//      }
+//    }
+//    return;
+//
+//  }
 
   /*----------------------------------------------------------------------
 
