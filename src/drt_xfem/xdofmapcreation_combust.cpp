@@ -12,25 +12,19 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
-#ifdef CCADISCRET
 
-#include <algorithm>
-#include <set>
-#include <iterator>
 
+#include "xdofmapcreation_combust.H"
 
 #include "../drt_combust/combust_interface.H"
-#include "xdofmapcreation_combust.H"
 #include "xdofmapcreation_parallel_utils.H"
 #include "../drt_combust/two_phase_defines.H"
-#include "enrichment_utils.H"
-#include "dofkey.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_parobject.H"
+#include "field_enriched.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_combust/combust_defines.H"
 #include "../drt_combust/combust3_utils.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
@@ -536,6 +530,3 @@ void XFEM::ApplyElementEnrichmentCombust(
     elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr2));
   }
 }
-
-
-#endif // #ifdef CCADISCRET

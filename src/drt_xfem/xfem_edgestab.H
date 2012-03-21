@@ -12,18 +12,20 @@ Maintainer: Benedikt Schott
 *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
-
 #ifndef XFEM_EDGESTAB_H_
 #define XFEM_EDGESTAB_H_
 
 
-#include "xfem_fluidwizard.H"
-#include "../drt_fluid/fluid_utils.H"
+#include <vector>
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT
 {
+  class AssembleStrategy;
+  class Discretization;
+  class Element;
+
   namespace ELEMENTS
   {
     class Fluid3;
@@ -41,6 +43,8 @@ namespace GEO
 
 namespace XFEM
 {
+  class FluidWizard;
+
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
        something else in XFEM-problems between consecutive time steps
@@ -60,17 +64,17 @@ public:
 
   void findSurface(std::vector<int>                nodeids,
                    DRT::ELEMENTS::Fluid3 *         actele,
-                   std::vector<RCP<DRT::Element> > surfaces,
+                   std::vector<Teuchos::RCP<DRT::Element> > surfaces,
                    int & surfid);
 
 
   void findSide   ( std::vector<int>                nodeids, // node ids of surface
                     DRT::ELEMENTS::Fluid3 *         actele,
-                    const vector<GEO::CUT::Side*> & sides,
+                    const std::vector<GEO::CUT::Side*> & sides,
                     int & side_index);
 
   void findNeighborElement(DRT::ELEMENTS::Fluid3 * actele,
-                           RCP<DRT::Element> surface,
+                           Teuchos::RCP<DRT::Element> surface,
                            bool & neighbor_found,
                            int & neighbor_id);
 
@@ -85,7 +89,7 @@ public:
 
   void callEdgeStabandGhostPenalty(                           bool & edge_based_stab,
                                                               bool & ghost_penalty,
-                                                              RCP<DRT::Element>       surface,
+                                                              Teuchos::RCP<DRT::Element>       surface,
                                                               DRT::Element * fele_1,
                                                               DRT::Element * fele_2,
                                                               std::vector<int> & nds_1,
@@ -102,4 +106,3 @@ public:
 } // namespace XFEM
 
 #endif /*XFEM_EDGESTAB_H_*/
-#endif // CCADISCRET

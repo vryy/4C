@@ -11,9 +11,22 @@ Maintainer: Dipl.-Math. Benedikt Schott
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef XFEM_NEUMANN_H_
 #define XFEM_NEUMANN_H_
+
+
+#include <Teuchos_RCP.hpp>
+
+
+class Epetra_Vector;
+
+namespace DRT
+{
+  class Condition;
+  class Discretization;
+  class Element;
+}
 
 namespace GEO
 {
@@ -21,6 +34,15 @@ namespace GEO
   {
     class ElementHandle;
   }
+}
+
+namespace LINALG
+{
+  class SparseOperator;
+}
+namespace Teuchos
+{
+  class ParameterList;
 }
 
 namespace XFEM
@@ -48,35 +70,38 @@ void EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
                        LINALG::SparseOperator*              systemmatrix = NULL );
 
 /// evaluate standard Neumann boundary conditions
-void EvaluateNeumannStandard( multimap<string,DRT::Condition* > &  condition,
-                              bool                                 usetime,
-                              const double                         time,
-                              bool                                 assemblemat,
-                              Teuchos::ParameterList &             params,
-                              DRT::Discretization &                discret,
-                              Epetra_Vector&                       systemvector,
-                              LINALG::SparseOperator*              systemmatrix);
+void EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* >&  condition,
+                              bool                                          usetime,
+                              const double                                  time,
+                              bool                                          assemblemat,
+                              Teuchos::ParameterList &                      params,
+                              DRT::Discretization &                         discret,
+                              Epetra_Vector&                                systemvector,
+                              LINALG::SparseOperator*                       systemmatrix);
 
-void CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* parentele, GEO::CUT::ElementHandle * parentele_handle, bool & eval_Neumann, bool & xfem_eval_Neumann);
+void CutNeumannSurf(
+    Teuchos::RCP<DRT::Element> neumann_surface,
+    DRT::Element* parentele, GEO::CUT::ElementHandle * parentele_handle,
+    bool & eval_Neumann,
+    bool & xfem_eval_Neumann);
 
 /// evaluate XFEM Neumann boundary conditions
-void EvaluateNeumannXFEM(     Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                              multimap<string,DRT::Condition* > &  condition,
-                              bool                                 usetime,
-                              const double                         time,
-                              bool                                 assemblemat,
-                              Teuchos::ParameterList &             params,
-                              DRT::Discretization &                discret,
-                              DRT::Discretization &                cutdiscret,
-                              Epetra_Vector&                       systemvector,
-                              LINALG::SparseOperator*              systemmatrix);
+void EvaluateNeumannXFEM(     Teuchos::RCP<XFEM::FluidWizard>               wizard,
+                              std::multimap<std::string,DRT::Condition* >&  condition,
+                              bool                                          usetime,
+                              const double                                  time,
+                              bool                                          assemblemat,
+                              Teuchos::ParameterList &                      params,
+                              DRT::Discretization &                         discret,
+                              DRT::Discretization &                         cutdiscret,
+                              Epetra_Vector&                                systemvector,
+                              LINALG::SparseOperator*                       systemmatrix);
 
-int getParentElementId(       DRT::Discretization&   discret,
-                              RCP<DRT::Element>      surf_ele  );
+int getParentElementId(       DRT::Discretization&        discret,
+                              Teuchos::RCP<DRT::Element>  surf_ele  );
 
 
 
 }
 
 #endif /* XFEM_NEUMANN_H_ */
-#endif

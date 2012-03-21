@@ -10,23 +10,26 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef ENRICHMENT_UTILS_H
 #define ENRICHMENT_UTILS_H
 
+
 #include "dof_management_element.H"
-#include "enrichment.H"
-#include "xfem_utils.H"
+#include "field_enriched.H"
 #include "xfem_element_utils.H"
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_combust.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+
 
 namespace COMBUST
 {
   class InterfaceHandleCombust;
+}
+
+namespace LINALG
+{
+  class SerialDenseVector;
 }
 
 namespace XFEM
@@ -1496,6 +1499,4 @@ template<std::size_t NUMNODE> struct NumParam<NUMNODE,XFEM::standard_assembly>
 
 }
 
-
 #endif  // #ifndef ENRICHMENT_UTILS_H
-#endif  // #ifdef CCADISCRET

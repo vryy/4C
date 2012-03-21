@@ -11,7 +11,8 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef XDOFMAPCREATION_COMBUST_H
 #define XDOFMAPCREATION_COMBUST_H
 
@@ -122,4 +123,3 @@ namespace XFEM
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H
-#endif  // #ifdef CCADISCRET

@@ -10,15 +10,21 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
-#ifdef CCADISCRET
+
+
 #ifndef DOF_MANAGEMENT_ELEMENT_H
 #define DOF_MANAGEMENT_ELEMENT_H
 
 
-#include "dof_management.H"
+#include "physics.H"
+#include "../drt_lib/drt_element.H"
+
 
 namespace XFEM
 {
+  class DofManager;
+  class Enrichment;
+  class FieldEnr;
 
   /*!
    * \brief He knows everything about the XFEM enrichments for a particular interface setup for one given element
@@ -76,7 +82,7 @@ namespace XFEM
       std::size_t NumDofElemAndNode() const { return numNodeDof_ + numElemDof_; };
 
       //! function that returns dofs for each node of this particular element
-      const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const { return nodalDofSet_; };
+      const std::map<int, const std::set<XFEM::FieldEnr> >& getNodalDofSet() const;
 
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
        *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
@@ -87,14 +93,7 @@ namespace XFEM
       ) const;
 
       //! return reference to list of local positions in a array of dofs
-      const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
-      {
-        std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
-        if (tmp == paramsLocalEntries_.end()){
-          dserror( "no local dofs for field %d", field );
-        }
-        return tmp->second;
-      };
+      const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const;;
 
       //! return reference to list of local positions in a array of dofs
       template <XFEM::PHYSICS::Field field>
@@ -108,40 +107,19 @@ namespace XFEM
       }
 
       //! return unique enrichments for this proc
-      const std::set<XFEM::Enrichment>& getUniqueEnrichments() const {return unique_enrichments_;}
+      const std::set<XFEM::Enrichment>& getUniqueEnrichments() const;
 
       //! return unique enrichments for this proc
       std::set<int> getUniqueEnrichmentLabels() const;
 
       //! access to map
-      DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
-      {
-        std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator i = DisTypePerElementField_.find(field);
-        if ( i==DisTypePerElementField_.end() )
-        {
-          dserror( "no field %d", field );
-        }
-        return i->second;
-      }
+      DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const;
 
       //! access to map
-      const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
-      {
-        std::map<XFEM::PHYSICS::Field, std::set<XFEM::FieldEnr> >::const_iterator i = enrichedFieldperPhysField_.find(field);
-        if ( i==enrichedFieldperPhysField_.end() )
-        {
-          dserror( "no field %d", field );
-        }
-        return i->second;
-      }
+      const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const;
 
       //! not equal operator (for use in STL iterators)
-      bool operator !=(const ElementDofManager& rhs) const
-      {
-        // in principle, they can be only not equal, if the nodalDofSet is not equal
-        // everything else is derived from that in the constructor
-        return nodalDofSet_ != rhs.nodalDofSet_;
-      };
+      bool operator !=(const ElementDofManager& rhs) const;
 
     private:
 
@@ -192,4 +170,3 @@ namespace XFEM
 } // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H
-#endif  // #ifdef CCADISCRET

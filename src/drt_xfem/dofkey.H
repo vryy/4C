@@ -3,6 +3,29 @@
 
 \brief provides a class with a unique identifier for a degree of freedom (DOF)
 
+     The following remark is "from the past" where element data existed on global level
+
+     remark: Only if DLM condensation is turned off, there will be element dofs visible in the global
+             DofManager. Of course, irrespective of the DLM condensation setting, there will be
+             element dofs on the element level (ElementDofManager), if a stress-based approach is
+             chosen to handle the boundary terms.
+             So, if there are element dofs, they are not known here, since 'elementalDofs_' in
+             fillDofRowDistributionMaps() only knows the different field enrichments for a specific
+             element, that is
+
+             e.g.
+             element 103 has 28 element dofs ((6 x stess + 1 x disc pressure) x element ansatz (e.g. quad4))
+
+             but 'elementalDofs_' contains only 7 "dof-type entries"
+             <ele 103, Tauxx + quad4>
+             <ele 103, Tauxy + quad4>
+             ...
+             <ele 103, DiscPres + quad4>
+
+             That is, element dofs cannot be switched correctly here, since not all element dofs
+             are known. They only exist on the element level. They are generated in
+             ElementDofManager::ComputeDependentInfo()
+
 <pre>
 Maintainer: Axel Gerstenberger
             gerstenberger@lnm.mw.tum.de
@@ -10,12 +33,15 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
-#ifdef CCADISCRET
+
+
 #ifndef DOFKEY_H
 #define DOFKEY_H
 
 
 #include "field_enriched.H"
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 namespace XFEM
@@ -55,7 +81,7 @@ private:
 
       //! constructor, get values from char array using Unpack member function
       explicit DofKey(
-          vector<char>& data      ///< char array with data to unpack
+          std::vector<char>& data      ///< char array with data to unpack
       );
 
       //! copy constructor
@@ -72,7 +98,7 @@ private:
       virtual void Pack(DRT::PackBuffer& data) const;
 
       //! unpack all content from char array
-      virtual void Unpack(const vector<char>& data);
+      virtual void Unpack(const std::vector<char>& data);
 
       //! return global node or element Id
       int getGid() const;
@@ -89,7 +115,7 @@ private:
       //! test for inequality: if any member differs, the objects are not equal
       bool operator !=(const DofKey& rhs) const;
 
-      friend ostream& operator<<(ostream& out, const DofKey& key)
+      friend std::ostream& operator<<(std::ostream& out, const DofKey& key)
       {
         out << key.toString();
         return out;
@@ -113,4 +139,3 @@ private:
 } // namespace XFEM
 
 #endif  // #ifndef DOFKEY_H
-#endif  // #ifdef CCADISCRET

@@ -13,13 +13,14 @@ Maintainer: Florian Henke
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef XFEM_ELEMENT_UTILS_H
 #define XFEM_ELEMENT_UTILS_H
 
-#include "dof_management_element.H"
+
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
+
 
 namespace XFEM
 {
@@ -605,5 +606,4 @@ struct EnrViscs2N
 
 }
 
-#endif
 #endif

@@ -11,17 +11,18 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TIMEINTEGRATION_H_
 #define TIMEINTEGRATION_H_
 
 
-
-
+#include "dof_management.H"
+#include "dofkey.H"
 #include "enrichment_utils.H"
 #include "../drt_cut/cut_position.H"
-#include "dofkey.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_combust.H"
+
 
 namespace COMBUST
 {
@@ -1475,4 +1476,3 @@ protected:
 } // namespace XFEM
 
 #endif /*TIMEINTEGRATION_H_*/
-#endif // CCADISCRET

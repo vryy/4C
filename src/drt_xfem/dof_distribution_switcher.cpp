@@ -10,21 +10,13 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
 
-#include "dof_management.H"
+
 #include "dof_distribution_switcher.H"
+#include "dof_management.H"
 #include "dofkey.H"
 #include "../drt_combust/combust_interface.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_lib/drt_colors.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_cut/cut_boundingbox.H"
-#include "../drt_cut/cut_position.H"
-#include "../drt_cut/cut_element.H"
-#include <iostream>
 
 
 void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
@@ -67,7 +59,19 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
       const int nodegid = olddofkey.getGid();
 
       // create alternative dofkey
-      XFEM::Enrichment altenr(genAlternativeEnrichment(nodegid, olddofkey.getFieldEnr().getField(), dofman_));
+      XFEM::Enrichment altenr;
+      {
+        XFEM::PHYSICS::Field oldphysvar = olddofkey.getFieldEnr().getField();
+        const std::set<XFEM::FieldEnr>& fieldset(dofman_->getNodeDofSet(nodegid));
+        for (std::set<XFEM::FieldEnr>::const_iterator fieldenriter = fieldset.begin(); fieldenriter != fieldset.end(); ++fieldenriter)
+        {
+          if (oldphysvar == fieldenriter->getField())
+          {
+            altenr = fieldenriter->getEnrichment();
+            break;
+          }
+        }
+      }
 
       if (altenr.Type() != XFEM::Enrichment::typeUndefined) // if alternative key found, add old solution to it
       {
@@ -189,12 +193,12 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
-    RCP<Epetra_Vector>&    vector,
+    Teuchos::RCP<Epetra_Vector>&    vector,
     const bool             quasi_static_enr
 ) const
 {
   // create new vector with new number of dofs
-  const RCP<Epetra_Vector> newVector = LINALG::CreateVector(newdofrowmap_,true);
+  const Teuchos::RCP<Epetra_Vector> newVector = rcp(new Epetra_Vector(newdofrowmap_,true));
 
   if (vector == null)
   {
@@ -277,25 +281,3 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
   vector = newVector;
 }
 
-
-//! try to find another enrichment for this physical field
-XFEM::Enrichment XFEM::genAlternativeEnrichment(
-    const int                    gnodeid,
-    const XFEM::PHYSICS::Field   oldphysvar,
-    const RCP<XFEM::DofManager>& dofman
-)
-{
-  const std::set<XFEM::FieldEnr>& fieldset(dofman->getNodeDofSet(gnodeid));
-  for (std::set<XFEM::FieldEnr>::const_iterator fieldenriter = fieldset.begin(); fieldenriter != fieldset.end(); ++fieldenriter)
-  {
-    const XFEM::PHYSICS::Field physvar = fieldenriter->getField();
-    if (oldphysvar == physvar)
-    {
-      return fieldenriter->getEnrichment();
-      break;
-    }
-  }
-  return XFEM::Enrichment();
-}
-
-#endif  // #ifdef CCADISCRET

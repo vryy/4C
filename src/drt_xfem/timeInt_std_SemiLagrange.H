@@ -12,7 +12,6 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
 #ifndef TIMEINT_STD_SEMILAGRANGE_H_
 #define TIMEINT_STD_SEMILAGRANGE_H_
 
@@ -159,4 +158,3 @@ private:
 }; // class Startvalues
 } // namespace XFEM
 #endif /*TIMEINT_SEMILAGRANGE_H_*/
-#endif  // CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
 
 
 #include "enrichment.H"
@@ -233,4 +232,3 @@ double XFEM::Enrichment::EnrValueAtInterface(
     return enrval;
 }
 
-#endif  // #ifdef CCADISCRET

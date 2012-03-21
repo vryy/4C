@@ -1,8 +1,9 @@
 #ifndef XFEM_FLUIDDOFSET_H
 #define XFEM_FLUIDDOFSET_H
 
-#include "../drt_lib/drt_dofset.H"
+
 #include "../drt_lib/drt_dofset_fixed_size.H"
+
 
 namespace XFEM
 {

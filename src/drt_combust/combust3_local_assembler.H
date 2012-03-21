@@ -17,7 +17,10 @@ Maintainer: Florian Henke
 #define COMBUST3_LOCAL_ASSEMBLER_H
 
 
-#include "../drt_combust/combust_defines.H"
+#include "combust_defines.H"
+#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/physics.H"
+#include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_element_utils.H"
 
 

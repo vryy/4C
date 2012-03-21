@@ -1,13 +1,9 @@
 #ifndef XFEM_FLUIDWIZARD_H
 #define XFEM_FLUIDWIZARD_H
 
-#include <map>
-#include <set>
 
-
+#include <Teuchos_RCP.hpp>
 #include "../drt_geometry/geo_utils.H"
-#include "../drt_geometry/geo_intersection.H"
-
 #include "physics.H"
 
 
@@ -17,6 +13,18 @@ class Epetra_IntVector;
 namespace DRT
 {
   class Discretization;
+  class Element;
+}
+
+namespace GEO
+{
+  class CutWizard;
+
+  namespace CUT
+  {
+    class ElementHandle;
+    class Node;
+  }
 }
 
 namespace Teuchos
@@ -51,14 +59,11 @@ public:
 
   Teuchos::RCP<FluidDofSet> DofSet(int maxNumMyReservedDofs);
 
-  GEO::CutWizard & CutWizard()
-  {
-    return *cut_;
-  }
+  GEO::CutWizard& CutWizard();
 
-  GEO::CUT::ElementHandle * GetElement( DRT::Element * ele ) { return cut_->GetElement( ele ); }
+  GEO::CUT::ElementHandle* GetElement( DRT::Element * ele );
 
-  GEO::CUT::Node * GetNode( int nid ) { return cut_->GetNode( nid ); }
+  GEO::CUT::Node * GetNode( int nid );
 
 private:
 

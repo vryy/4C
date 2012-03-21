@@ -10,7 +10,8 @@
  *             089 - 289-15236
  * </pre>
  */
-#ifdef CCADISCRET
+
+
 #ifndef ENRICHMENT_H
 #define ENRICHMENT_H
 
@@ -502,6 +503,4 @@ namespace XFEM
   };
 }
 
-
 #endif  // #ifndef ENRICHMENT_H
-#endif  // #ifdef CCADISCRET

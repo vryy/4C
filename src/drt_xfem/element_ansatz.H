@@ -10,9 +10,11 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef ELEMENT_ANSATZ_H
 #define ELEMENT_ANSATZ_H
+
 
 #include "../drt_xfem/physics.H"
 #include "../drt_lib/drt_element.H"
@@ -38,4 +40,4 @@ namespace XFEM
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H
-#endif  // #ifdef CCADISCRET
+

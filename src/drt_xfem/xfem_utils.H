@@ -13,9 +13,10 @@ Maintainer: Benedikt Schott
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef XFEM_UTILS_H
 #define XFEM_UTILS_H
+
 
 namespace XFEM
 {
@@ -40,5 +41,4 @@ namespace XFEM
   };
 }
 
-#endif
 #endif

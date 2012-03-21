@@ -12,17 +12,12 @@ Maintainer: Axel Gerstenberger
  */
 
 
-#ifdef CCADISCRET
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
 
-//#include "dofkey.H"
-#include "field_enriched.H"
-
-
-#include "element_ansatz.H"
-#include "../drt_lib/drt_dofset.H"
+#include "enrichment.H"
+#include "physics.H"
 
 
 namespace COMBUST
@@ -30,9 +25,16 @@ namespace COMBUST
   class InterfaceHandleCombust;
 }
 
+namespace DRT
+{
+  class DofSet;
+}
+
 namespace XFEM
 {
   class DofKey;
+  class ElementAnsatz;
+  class FieldEnr;
 
   /*!
  \brief He knows everything about the XFEM enrichments for one particular interface setup
@@ -52,7 +54,7 @@ namespace XFEM
           const std::set<XFEM::PHYSICS::Field>&                fieldset,        ///< physical fields to be enriched
           const XFEM::ElementAnsatz&                           element_ansatz,  ///< element dofs
           const Teuchos::ParameterList&                        params,          ///< XFEM parameters
-          const RCP<map<int,vector<int> > >                    pbcmap           ///< nodes on periodic boundaries
+          const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap           ///< nodes on periodic boundaries
           );
 
       //! copy constructor
@@ -103,12 +105,12 @@ namespace XFEM
 
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
       void fillDofRowDistributionMaps(
-          map<DofKey, DofGID>&  NodalDofDistributionMap        ///< nodal dofs
+          std::map<XFEM::DofKey, XFEM::DofGID>&  NodalDofDistributionMap        ///< nodal dofs
       ) const;
 
       // fill column map with nodal dof positions in EpetraVectors for all DofKeys on this proc
       void fillNodalDofColDistributionMap(
-          map<XFEM::DofKey, DofGID>&  NodalDofColDistributionMap
+          std::map<XFEM::DofKey, XFEM::DofGID>&  NodalDofColDistributionMap
       ) const;
 
       /*!
@@ -129,22 +131,22 @@ namespace XFEM
        \author henke 07/09
       */
       Teuchos::RCP<Epetra_Vector> transformXFEMtoStandardVector(
-          const Epetra_Vector&                    originalvector,
-          const DRT::DofSet&                      dofsetout,
-          const map<DofKey, DofGID>&      nodalDofDistributionMap,
-          const std::set<XFEM::PHYSICS::Field>&   fieldsout
+          const Epetra_Vector&                        originalvector,
+          const DRT::DofSet&                          dofsetout,
+          const std::map<XFEM::DofKey, XFEM::DofGID>& nodalDofDistributionMap,
+          const std::set<XFEM::PHYSICS::Field>&       fieldsout
       ) const;
 
       /*!
        \brief overwrite the values of a certain physical field and enrichment
       */
       void overwritePhysicalField(
-          Teuchos::RCP<Epetra_Vector>&           vector,
-          const map<DofKey, DofGID>&     nodalDofDistributionMap,
-          const XFEM::PHYSICS::Field&            physfield,
-          const XFEM::Enrichment::EnrType&       enrichment,
-          const double                           value,
-          const bool                             strict = false
+          Teuchos::RCP<Epetra_Vector>&                vector,
+          const std::map<XFEM::DofKey, XFEM::DofGID>& nodalDofDistributionMap,
+          const XFEM::PHYSICS::Field&                 physfield,
+          const XFEM::Enrichment::EnrType&            enrichment,
+          const double                                value,
+          const bool                                  strict = false
       ) const;
 
     private:
@@ -181,4 +183,3 @@ namespace XFEM
 } // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H
-#endif  // #ifdef CCADISCRET

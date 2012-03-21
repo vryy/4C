@@ -2,10 +2,8 @@
 #include "xfem_fluiddofset.H"
 #include "xfem_fluidwizard.H"
 
-#include "../drt_lib/drt_node.H"
+#include "../drt_geometry/geo_intersection.H"
 #include "../drt_lib/drt_discret.H"
-
-#include "../drt_cut/cut_meshintersection.H"
 #include "../drt_cut/cut_node.H"
 
 

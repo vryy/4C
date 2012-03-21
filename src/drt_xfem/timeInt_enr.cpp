@@ -11,11 +11,8 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "timeInt_enr.H"
-#include "../drt_combust/combust_flamefront.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -612,13 +609,6 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
           if (numOldIntersectedEle==0)
           {
-            for (int iele=0;iele<numeles;iele++)
-            {
-              const int elegid = eles[iele]->Id(); // global id of current element
-              cout << "cutstatus of ele " << *eles[iele] << " is: " << oldinterfacehandle_->ElementCutStatus(elegid);
-//              cout << ", ele touchedplus: " << oldinterfacehandle_->ElementTouchedPlus(elegid);
-//              cout << ", ele touchedminus: " << oldinterfacehandle_->ElementTouchedMinus(elegid) << endl;
-            }
             cout << *currOldNode << " is enriched at old timestep" << endl;
             dserror("Enriched node shall have an intersected element around");
           }
@@ -960,6 +950,4 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
 } // end exportEnrichmentData
 
 #endif // parallel
-
-#endif // CCADISCRET
 

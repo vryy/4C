@@ -13,22 +13,38 @@ Maintainer: Shadan Shahmiri
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef XFLUIDFLUID_TIMEINTEGRATION_H_
 #define XFLUIDFLUID_TIMEINTEGRATION_H_
 
 
-#include "xfem_fluidwizard.H"
-#include "../drt_io/io_ostream0.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_fluid/fluid_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 
+class Epetra_Map;
+class Epetra_Vector;
+
+namespace DRT
+{
+  class Discretization;
+  class Element;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
+}
+
+namespace Teuchos
+{
+  class ParameterList;
+}
+
 namespace XFEM
 {
+  class FluidWizard;
+
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
        something else in XFEM-problems between consecutive time steps
@@ -39,12 +55,12 @@ public:
 
   //! constructor
   explicit XFluidFluidTimeIntegration(
-    const RCP<DRT::Discretization> bgdis,
-    const RCP<DRT::Discretization> embdis,
-    RCP<XFEM::FluidWizard>         wizard,
+    const Teuchos::RCP<DRT::Discretization> bgdis,
+    const Teuchos::RCP<DRT::Discretization> embdis,
+    Teuchos::RCP<XFEM::FluidWizard>         wizard,
     int                            step,
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
-    const ParameterList&              params
+    const Teuchos::ParameterList&              params
     );
 
   //! destructor
@@ -55,35 +71,35 @@ public:
 
 
   // Create maps of bgfluid's nodes needed for time integration
-  void CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
-                        RCP<XFEM::FluidWizard>         wizard);
+  void CreateBgNodeMaps(const Teuchos::RCP<DRT::Discretization> bgdis,
+                        Teuchos::RCP<XFEM::FluidWizard>         wizard);
 
   // Save the old state
   void SaveBgNodeMaps();
 
 
-  int SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
-                                 RCP<XFEM::FluidWizard>   wizard);
+  int SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
+                                 Teuchos::RCP<XFEM::FluidWizard>   wizard);
 
-  void SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
+  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                             Teuchos::RCP<Epetra_Vector>           bgstatevn,
                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                             Teuchos::RCP<Epetra_Vector>           aledispn);
 
-  void SetNewBgStatevectorKeepGhostValues(const RCP<DRT::Discretization>        bgdis,
+  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                           Teuchos::RCP<Epetra_Vector>           bgstatevn,
                                           Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                           Teuchos::RCP<Epetra_Vector>           embstatevn,
                                           Teuchos::RCP<Epetra_Vector>           aledispn);
 
-  void SetNewBgStatevectorFullProjection(const RCP<DRT::Discretization>        bgdis,
+  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                          Teuchos::RCP<Epetra_Vector>           bgstatevn,
                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp,
                                          Teuchos::RCP<Epetra_Vector>           embstatevn,
                                          Teuchos::RCP<Epetra_Vector>           aledispn);
 
-  void SetNewEmbStatevector(const RCP<DRT::Discretization>        bgdis,
+  void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>        bgdis,
                             Teuchos::RCP<Epetra_Vector>    statevbg_n,
                             Epetra_Vector                  statevemb_n,
                             Teuchos::RCP<Epetra_Vector>    statevembnew_n,
@@ -104,14 +120,14 @@ public:
                                                Teuchos::RCP<Epetra_Vector>         embeddeddisp,
                                                Teuchos::RCP<DRT::Discretization>   sourcedis);
 
-  void GmshOutput(const RCP<DRT::Discretization>        bgdis);
+  void GmshOutput(const Teuchos::RCP<DRT::Discretization>        bgdis);
 
-  void PatchelementForIncompressibility(const RCP<DRT::Discretization>     bgdis,
+  void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>     bgdis,
                                         XFEM::FluidWizard                  wizard_n,
                                         XFEM::FluidWizard                  wizard_np,
                                         Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
-  void EnforceIncompressibility(const RCP<DRT::Discretization>  bgdis,
+  void EnforceIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
                                 XFEM::FluidWizard               wizard,
                                 Teuchos::RCP<Epetra_Vector>     initialvel);
 
@@ -121,18 +137,18 @@ public:
 
   private:
 
-  RCP<DRT::Discretization> embdis_; // bg  discretization
+  Teuchos::RCP<DRT::Discretization> embdis_; // bg  discretization
 
   // maps needed for xfem time integration
-  std::map<int, vector<int> > stdnoden_;
-  std::map<int, vector<int> > stdnodenp_;
+  std::map<int, std::vector<int> > stdnoden_;
+  std::map<int, std::vector<int> > stdnodenp_;
 
-  std::map<int, vector<int> > enrichednoden_;
-  std::map<int, vector<int> > enrichednodenp_;
+  std::map<int, std::vector<int> > enrichednoden_;
+  std::map<int, std::vector<int> > enrichednodenp_;
 
   // map of every node to it's parent elements. This could be more
   // than one if we have more than one volume cells for the node
-  std::map<int, vector<int> > nodetoparentele_;
+  std::map<int, std::vector<int> > nodetoparentele_;
 
   // map of the parent elements (from the map above) to their nds
   // vectos
@@ -150,7 +166,7 @@ public:
   enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
 
   // elements of the incompressibility patch
-  vector<int> incompelementidsAllproc_;
+  std::vector<int> incompelementidsAllproc_;
 
   // Incompressibilitypatch dofrowmap
   // map of all dofs of incompressibility patch
@@ -166,4 +182,4 @@ public:
 } // namespace XFEM
 
 #endif /*TIMEINTEGRATION_H_*/
-#endif // CCADISCRET
+

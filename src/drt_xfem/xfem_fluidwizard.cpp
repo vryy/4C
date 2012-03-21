@@ -1,19 +1,15 @@
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
-#include "../drt_lib/drt_discret.H"
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/geo_intersection.H"
 
 #include "xfem_fluidwizard.H"
 #include "xfem_fluiddofset.H"
-#include "enrichment.H"
-
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_node.H"
 
 #include "../drt_io/io_control.H"
 
@@ -147,6 +143,29 @@ Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDo
 {
   return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs, backdis_ ) );
 }
+
+
+GEO::CutWizard & XFEM::FluidWizard::CutWizard()
+{
+  return *cut_;
+}
+
+
+GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
+    DRT::Element * ele
+)
+{
+  return cut_->GetElement( ele );
+}
+
+
+GEO::CUT::Node * XFEM::FluidWizard::GetNode(
+    int nid
+)
+{
+  return cut_->GetNode( nid );
+}
+
 
 void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
                                                   std::map< int, GEO::BoundaryIntCells > & boundaryintcells )

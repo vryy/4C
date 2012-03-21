@@ -14,32 +14,19 @@ Maintainer: Dipl.-Math. Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
+#include "../drt_xfem/xfem_neumann.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-
-#include "../drt_lib/drt_discret.H"
-
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_condition_utils.H"
-
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
-
+#include "../drt_fluid_ele/fluid_ele.H"
 #include "../linalg/linalg_utils.H"
-
+#include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
 
-#include "../drt_fluid_ele/fluid_ele.H"
 
-#include "../drt_xfem/xfem_fluidwizard.H"
 
-#include "../drt_xfem/xfem_neumann.H"
 
 
 /*----------------------------------------------------------------------*
@@ -716,6 +703,3 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
   return;
 }
 
-
-
-#endif //CCADISCRET

@@ -12,20 +12,13 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
-#ifdef CCADISCRET
 
-#include <algorithm>
-#include <set>
-#include <iterator>
 
+#include "xdofmapcreation_parallel_utils.H"
 
 #include "../drt_combust/combust_interface.H"
-#include "xdofmapcreation_parallel_utils.H"
-#include "enrichment_utils.H"
 #include "dofkey.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/drt_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -227,4 +220,3 @@ void XFEM::syncNodalDofs(
 #endif
 
 
-#endif  // #ifdef CCADISCRET

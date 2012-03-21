@@ -10,20 +10,12 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
 
-#include <string>
-#include <sstream>
 
 #include "enrichment_utils.H"
 #include "../drt_combust/combust_defines.H"
-#include "../drt_combust/combust_interface.H"
-#include "../drt_xfem/dof_management.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_geometry/integrationcell_coordtrafo.H"
-#include "../drt_geometry/intersection_service.H"
-#include "../drt_geometry/position_array.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 /*----------------------------------------------------------------------*
@@ -507,6 +499,3 @@ XFEM::AssemblyType XFEM::ComputeAssemblyType(
 
   return assembly_type;
 }
-
-
-#endif  // #ifdef CCADISCRET

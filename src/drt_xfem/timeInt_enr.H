@@ -11,7 +11,7 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef TIMEINT_ENR_H_
 #define TIMEINT_ENR_H_
 
@@ -118,4 +118,3 @@ protected:
 } // namespace XFEM
 
 #endif /*TIMEINT_ENR_H_*/
-#endif // CCADISCRET

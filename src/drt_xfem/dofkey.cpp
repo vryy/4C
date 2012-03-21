@@ -11,10 +11,9 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "dofkey.H"
+#include "enrichment.H"
 
 
   XFEM::DofKeyType XFEM::DofKeyType::instance_;
@@ -46,7 +45,7 @@ Maintainer: Martin Winklmaier
 
   //! constructor, get values from char array using Unpack member function
   XFEM::DofKey::DofKey(
-      vector<char>& data      ///< char array with data to unpack
+      std::vector<char>& data      ///< char array with data to unpack
   ) :
     DRT::ParObject()
   {
@@ -96,7 +95,7 @@ Maintainer: Martin Winklmaier
   }
 
   //! unpack all content from char array
-  void XFEM::DofKey::Unpack(const vector<char>& data)
+  void XFEM::DofKey::Unpack(const std::vector<char>& data)
   {
     vector<char>::size_type position = 0;
     // extract type
@@ -175,4 +174,3 @@ Maintainer: Martin Winklmaier
       return false;
   }
 
-#endif  // #ifdef CCADISCRET

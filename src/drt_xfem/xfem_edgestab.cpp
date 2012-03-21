@@ -10,18 +10,23 @@ Maintainer: Benedikt Schott
             089 - 289-15241
 </pre>
 */
-#ifdef CCADISCRET
+
 
 #include "xfem_edgestab.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_side.H"
+//#include "../drt_cut/cut_side.H"
 #include "../drt_cut/cut_volumecell.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_boundary_calc.H"
+#include "xfem_fluidwizard.H"
+
 
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
   Teuchos::RCP<XFEM::FluidWizard>              wizard
@@ -214,8 +219,6 @@ void XFEM::XFEM_EdgeStab::stabilizeStandardElement( DRT::AssembleStrategy&   str
                                                              DRT::ELEMENTS::Fluid3 *  actele,
                                                              DRT::Discretization &    discret)
 {
-#ifdef D_FLUID3
-
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EdgeBasedStabilization" );
 
   // all surfaces of Fluid3 elements are Fluid3BoundaryElements
@@ -427,8 +430,6 @@ void XFEM::XFEM_EdgeStab::stabilizeStandardElement( DRT::AssembleStrategy&   str
     } // if(neighbor)
 
   } // surfaces
-
-#endif
 }
 
 
@@ -787,7 +788,3 @@ void XFEM::XFEM_EdgeStab::callEdgeStabandGhostPenalty( bool & edge_based_stab,
 
   return;
 }
-
-
-
-#endif // CCADISCRET

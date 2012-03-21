@@ -10,17 +10,18 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef FIELD_ENRICHED_H
 #define FIELD_ENRICHED_H
 
-#include "physics.H"
+
 #include "enrichment.H"
+#include "physics.H"
 
 
 namespace XFEM
 {
-
 /*!
  \brief Corresponds to a specific enriched physical field variable
 
@@ -36,32 +37,15 @@ class FieldEnr
     explicit FieldEnr(
         const PHYSICS::Field  physvar,  ///< physical variable
         const Enrichment&     enr       ///< enrichment
-    ) :
-      enr_(enr),
-      field_(physvar)
-    {
-      return;
-    }
+    );
 
     //! copy constructor
     FieldEnr(
         const FieldEnr& other           ///< source
-        ) :
-          enr_(other.enr_),
-          field_(other.field_)
-    {
-      assert(&other != this);
-      return;
-    }
+    );
 
     //! default constructor
-    explicit FieldEnr(
-    ) :
-      enr_(XFEM::Enrichment()),
-      field_(XFEM::PHYSICS::undefinedField)
-    {
-      return;
-    }
+    explicit FieldEnr();
 
     //! assignment operator
     FieldEnr& operator = (const FieldEnr& old);
@@ -70,44 +54,19 @@ class FieldEnr
     std::string toString() const;
 
     //! return physical field
-    PHYSICS::Field getField() const {return field_;};
+    PHYSICS::Field getField() const;
 
     //! return enrichement for the field
-    const Enrichment& getEnrichment() const {return enr_;};
+    const Enrichment& getEnrichment() const;
 
     //! order is given first by field, then by the enrichment
-    bool operator <(const FieldEnr& rhs) const
-    {
-      if (field_ < rhs.field_)
-        return true;
-      else if (field_ > rhs.field_)
-        return false;
-      else
-      {
-        if (enr_ < rhs.enr_)
-          return true;
-        else
-          return false;
-      }
-    }
+    bool operator <(const FieldEnr& rhs) const;
 
     //! equality, if everything is equal
-    bool operator ==(const FieldEnr& rhs) const
-    {
-      if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
-        return true;
-      else
-        return false;
-    }
-    //! inequality if any member differs
-    bool operator !=(const FieldEnr& rhs) const
-    {
-      if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
-        return true;
-      else
-        return false;
-    }
+    bool operator ==(const FieldEnr& rhs) const;
 
+    //! inequality if any member differs
+    bool operator !=(const FieldEnr& rhs) const;
 
   private:
 
@@ -122,4 +81,4 @@ class FieldEnr
 } // namespace XFEM
 
 #endif  // #ifndef FIELD_ENRICHED_H
-#endif  // #ifdef CCADISCRET
+

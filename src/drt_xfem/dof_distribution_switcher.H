@@ -10,23 +10,34 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef DOF_DISTRIBUTION_SWITCHER_H
 #define DOF_DISTRIBUTION_SWITCHER_H
 
 
-#include "../drt_cut/cut_boundingbox.H"
-#include "../drt_lib/drt_exporter.H"
+#include <Teuchos_RCP.hpp>
+#include "xfem_utils.H"
 
+
+class Epetra_Map;
+class Epetra_Vector;
 
 namespace COMBUST
 {
   class InterfaceHandleCombust;
 }
 
+namespace DRT
+{
+  class Discretization;
+}
+
 namespace XFEM
 {
   class DofKey;
+  class DofManager;
+  class FieldEnr;
 
   /*!
   \brief this class is used to switch from one distribution to a second
@@ -78,7 +89,7 @@ namespace XFEM
 
     void GmshOutput(
       int                               step,
-      const RCP<DRT::Discretization>    patchdis,
+      const Teuchos::RCP<DRT::Discretization>    patchdis,
       std::map<int,int>                mapforoutput
     ) const;
 
@@ -95,23 +106,13 @@ namespace XFEM
 
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;                      ///< interface information
     const Teuchos::RCP<DofManager>                      dofman_;                  ///< dofmanager for this proc
-    const Epetra_Map                                    olddofrowmap_;            ///< dofrowmap of the old state vector
-    const Epetra_Map                                    newdofrowmap_;            ///< dofrowmap of the new state vector
+    const Epetra_Map&                                   olddofrowmap_;            ///< dofrowmap of the old state vector
+    const Epetra_Map&                                   newdofrowmap_;            ///< dofrowmap of the new state vector
     const std::map<DofKey, DofGID>              oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
     const std::map<DofKey, DofGID>              newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
 
     std::map<int, std::set<FieldEnr> >  unknownFieldEnr_;
   };
-
-  //! try to find another enrichment for this physical field
-  Enrichment genAlternativeEnrichment(
-      const int                             gnodeid,
-      const PHYSICS::Field            oldphysvar,
-      const Teuchos::RCP<DofManager>& dofman
-  );
-
-
 } // namespace XFEM
 
 #endif
-#endif  // #ifdef CCADISCRET

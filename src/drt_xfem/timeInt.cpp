@@ -11,8 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "timeInt.H"
 #include "../drt_lib/drt_exporter.H"
@@ -1695,7 +1693,4 @@ void XFEM::ENR::ComputeNormalVectorToFlameFront(
 
   return;
 }
-
-#endif // CCADISCRET
-
 

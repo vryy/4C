@@ -292,11 +292,6 @@ public:
       const Epetra_Map dofrowmap);
 
   /*!
-   * \brief check symmetry of some numerical examples (flame-vortex-interaction, collapse-flame) 
-   */
-  void EvaluateSymmetryError(Teuchos::RCP<Epetra_Vector> stateVec);
-
-  /*!
   \brief calculate error between a analytical solution and the
          numerical solution of a test problems
   */
@@ -431,6 +426,24 @@ public:
   {
     return dtele_;
   };
+
+  /// Split dof row map of discretization into velocity and pressure maps
+  /*!
+
+    We assume that each node possesses ndim velocity dofs and (optionally)
+    one pressure dof. The dof row map is thus split in two.
+
+    The velocity dofs are assigned to map 0 (the other map) and the pressure
+    dofs are assigned to map 1 (the condition map).
+
+    \author a.ger
+    \date 03/08
+   */
+  void SetupXFluidSplit(
+          const DRT::Discretization&   dis,       ///< fluid discretization
+          const Teuchos::RCP<XFEM::DofManager>  dofman,    ///< information about the dofs per node
+          LINALG::MapExtractor&        extractor  ///< ready made map splitter
+          );
 
   /// Redistribute the fluid discretization and vectors according to nodegraph. This is only done in STANDARD MODE!!!
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);

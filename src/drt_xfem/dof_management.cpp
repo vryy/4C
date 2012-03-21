@@ -10,27 +10,15 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
  */
-#ifdef CCADISCRET
+
 
 #include "dof_management.H"
-#include "xdofmapcreation_combust.H"
-#include "enrichment_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_gmsh.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-#include "../drt_combust/combust_interface.H"
-#include "xfem_fluidwizard.H"
-
-
 #include "dofkey.H"
+#include "xdofmapcreation_combust.H"
+#include "../drt_combust/combust_interface.H"
+#include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 
 /*------------------------------------------------------------------------------------------------*
  | constructor: used for combustion problems only                                     henke 03/09 |
@@ -327,7 +315,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
   const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
   const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
   // create output vector (standard FEM layout)
-  Teuchos::RCP<Epetra_Vector> outvector = LINALG::CreateVector(*outdofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> outvector = rcp(new Epetra_Vector(*outdofrowmap,true));
 
   // loop nodes on this processor
   for (int inode=0; inode<ih_->FluidDis()->NumMyRowNodes(); ++inode)
@@ -705,6 +693,3 @@ void XFEM::DofManager::toGmsh(
 #endif
 }
 
-
-
-#endif  // #ifdef CCADISCRET

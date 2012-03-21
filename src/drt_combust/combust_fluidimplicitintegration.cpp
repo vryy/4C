@@ -48,6 +48,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/timeInt_std_extrapolation.H"
 #include "../drt_xfem/timeInt_enr.H"
 #include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -645,15 +646,6 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
         timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp); // call computation
         cout0_ << "done" << std::endl;
       }
-
-      //#ifdef COLLAPSE_FLAME
-      //        cout << endl << endl << "reference solution symmetry error" << endl;
-      //        EvaluateSymmetryError(state_.veln_);
-      //#endif
-      //#ifdef FLAME_VORTEX
-      //        cout << endl << endl << "reference solution symmetry error" << endl;
-      //        EvaluateSymmetryError(state_.veln_);
-      //#endif
     }
 
     // set vector values needed by elements
@@ -1041,7 +1033,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,*velpressplitter_);
+  SetupXFluidSplit(*discret_,dofmanager,*velpressplitter_);
 
   // -------------------------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in one system matrix!
@@ -1980,15 +1972,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     oldinc_->Update(1.0,*incvel_,0.0);
     }
   }
-
-#ifdef COLLAPSE_FLAME
-//  cout << endl << endl << "solution solution symmetry error" << endl;
-  EvaluateSymmetryError(state_.velnp_);
-#endif
-#ifdef FLAME_VORTEX
-//  cout << endl << endl << "solution solution symmetry error" << endl;
-  //EvaluateSymmetryError(state_.velnp_);
-#endif
 
 #ifdef SUGRVEL_OUTPUT
   const bool screen_out = false;
@@ -4863,506 +4846,67 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 }
 
 
-void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> stateVec)
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
+        const DRT::Discretization& dis,
+        const RCP<XFEM::DofManager> dofman,
+        LINALG::MapExtractor& extractor)
 {
-  // nodes are ordered through elements. Thus every node row (top-bottom row) is ordered after the last,
-  // despite of the first two node rows coming from the same element. Thus, these cannot be used.
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  //
+  // The maps are designed assuming that every node has pressure and
+  // velocity degrees of freedom --- this won't work for inf-sup stable
+  // elements at the moment!
+  // -------------------------------------------------------------------
 
-  if (discret_->Comm().NumProc() == 1) // just test with one proc that has all data
-  {
-    const Epetra_Map dofrowmap = *discret_->DofRowMap();
+  // Allocate integer vectors which will hold the dof number of the
+  // velocity or pressure dofs
+  vector<int> velmapdata;
+  vector<int> premapdata;
 
-#ifdef COLLAPSE_FLAME
-    const int numnodes = discret_->NumGlobalNodes();
-    const int numnodesperrow = static_cast<int>(2*(sqrt(numnodes/2)));
-    const int numcols = numnodesperrow/2;
-    // square root should be an integer! scaling with since pseudo 2D with one front and one back node
-
-    double maxError = 0.0;
-
-    for (int i=0;i<discret_->NumGlobalNodes();i++)
+  // collect global dofids for velocity and pressure in vectors
+  for (int i=0; i<dis.NumMyRowNodes(); ++i) {
+    const DRT::Node* node = dis.lRowNode(i);
+    const std::set<XFEM::FieldEnr>& enrvarset(dofman->getNodeDofSet(node->Id()));
+    const vector<int> dof = dis.Dof(node);
+    dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
+    std::set<XFEM::FieldEnr>::const_iterator enrvar;
+    size_t countdof = 0;
+    for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar)
     {
-      if ((i >= 2*numnodesperrow) and // don't use first two rows
-          (i%numnodesperrow > 1) and // don't use the two bottom nodes
-          (i%numnodesperrow < numnodesperrow/2) and // down half
-          (i<numnodes/2.0)) // left half
-      {
-//        double TOL = 1.0e-14;
-        int colnumber = (i-i%numnodesperrow)/numnodesperrow;
-        int leftdownid = i;
-        int leftupid;
-        int rightupid;
-        int rightdownid;
-        if (i%2==0)
-        {
-          leftupid = (colnumber+1)*numnodesperrow - leftdownid%numnodesperrow - 2;
-          rightupid = (numcols-colnumber-1+1)*numnodesperrow - leftdownid%numnodesperrow - 2;
-          rightdownid = (numcols-colnumber-1)*numnodesperrow + leftdownid%numnodesperrow;
-        }
-        else
-        {
-          leftupid = (colnumber+1)*numnodesperrow - leftdownid%numnodesperrow;
-          rightupid = (numcols-colnumber-1+1)*numnodesperrow - leftdownid%numnodesperrow;
-          rightdownid = (numcols-colnumber-1)*numnodesperrow + leftdownid%numnodesperrow;
-        }
-
-        const set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(leftdownid));
-        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-            fieldenr != fieldenrset.end();++fieldenr)
-        {
-          const XFEM::DofKey dofkeyld(leftdownid, *fieldenr);
-          const XFEM::DofKey dofkeylu(leftupid, *fieldenr);
-          const XFEM::DofKey dofkeyru(rightupid, *fieldenr);
-          const XFEM::DofKey dofkeyrd(rightdownid, *fieldenr);
-
-          const int dofposld = state_.nodalDofDistributionMap_.find(dofkeyld)->second;
-          const int dofposlu = state_.nodalDofDistributionMap_.find(dofkeylu)->second;
-          const int dofposru = state_.nodalDofDistributionMap_.find(dofkeyru)->second;
-          const int dofposrd = state_.nodalDofDistributionMap_.find(dofkeyrd)->second;
-
-          double valueld = (*stateVec)[dofrowmap.LID(dofposld)];
-          double valuelu = (*stateVec)[dofrowmap.LID(dofposlu)];
-          double valueru = (*stateVec)[dofrowmap.LID(dofposru)];
-          double valuerd = (*stateVec)[dofrowmap.LID(dofposrd)];
-#if 0 // absolute symmetry errors in collapse_flame
-          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld+valueru) > maxError) or
-                  (fabs(valueld+valuerd) > maxError))
-              {
-                cout << "field: standard - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld+valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld+valueru),fabs(valueld+valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if ((fabs(valueld+valuelu) > maxError) or
-                  (fabs(valueld+valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: standard - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld+valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld+valuelu),max(fabs(valueld+valueru),fabs(valueld-valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld-valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: standard - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld-valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: standard - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
-              }
-            }
-            else
-              dserror("unknown physical field!");
-          } // end if std enrichment
-          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld+valueru) > maxError) or
-                  (fabs(valueld+valuerd) > maxError))
-              {
-                cout << "field: enriched - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld+valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld+valueru),fabs(valueld+valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if ((fabs(valueld+valuelu) > maxError) or
-                  (fabs(valueld+valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: enriched - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld+valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld+valuelu),max(fabs(valueld+valueru),fabs(valueld-valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld-valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: enriched - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if ((fabs(valueld-valuelu) > maxError) or
-                  (fabs(valueld-valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: enriched - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
-                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld+-valuerd)));
-              }
-            }
-          } // end if jump enr
-#else // relative symmetry errors in collapse_flame
-          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld+valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: standard - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld+valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld+valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if ((fabs(valueld+valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: standard - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld+valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld+valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: standard - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: standard - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else
-              dserror("unknown physical field!");
-          } // end if std enrichment
-          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld+valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: enriched - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld+valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld+valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if ((fabs(valueld+valuelu) > maxError) or
-                  (fabs(valueld+valueru) > maxError) or
-                  (fabs(valueld-valuerd) > maxError))
-              {
-                cout << "field: enriched - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld+valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld+valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: enriched - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
-                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
-              {
-                cout << "field: enriched - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
-                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
-                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0)  << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
-                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld+-valuerd)/max(fabs(valueld),1.0)));
-              }
-            }
-          } // end if jump enr
-#endif // relative errors in collapse_flame
-        } // loop over fieldenr
-      } // end if what nodes shall be used
+      switch (enrvar->getField()) {
+      case XFEM::PHYSICS::Velx:
+      case XFEM::PHYSICS::Vely:
+      case XFEM::PHYSICS::Velz:
+        velmapdata.push_back(dof[countdof]);
+        break;
+      case XFEM::PHYSICS::Pres:
+        premapdata.push_back(dof[countdof]);
+        break;
+      default:
+        break;
+      }
+      countdof++;
     }
-#endif
-
-#ifdef FLAME_VORTEX
-    const int numnodes = discret_->NumGlobalNodes();
-    const int numnodespercol = static_cast<int>(2.0*(-1.0+sqrt(1.0+numnodes)));
-    //cout << "numnodespercol: " << 2.0*(1.0+sqrt(1.0+numnodes)) << endl;
-    const int numcols = static_cast<int>(numnodespercol/4.0 +1.0);
-    //cout << "numcols: " << numnodespercol/2.0 << endl;
-
-    // square root should be an integer! scaling since pseudo 2D with one front and one back node
-
-    double maxError = 0.0;
-
-    for (int i=0;i<discret_->NumGlobalNodes();i++)
-    {
-      if ((i >= 2*numnodespercol) and // don't use first two rows
-          (i%numnodespercol > 1) and // don't use the two bottom nodes
-          (i<numnodes/2.0)) // left half
-      {
-//        double TOL = 1.0e-14;
-        int colnumber = (i-i%numnodespercol)/numnodespercol;
-        int leftid = i;
-        int rightid;
-        if (i%2==0)
-          rightid = (numcols-colnumber-1)*numnodespercol + leftid%numnodespercol;
-        else
-          rightid = (numcols-colnumber-1)*numnodespercol + leftid%numnodespercol;
-
-        const set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(leftid));
-        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-            fieldenr != fieldenrset.end();++fieldenr)
-        {
-          const XFEM::DofKey dofkeyleft(leftid, *fieldenr);
-          const XFEM::DofKey dofkeyright(rightid, *fieldenr);
-
-          const int dofposleft = state_.nodalDofDistributionMap_.find(dofkeyleft)->second;
-          const int dofposright = state_.nodalDofDistributionMap_.find(dofkeyright)->second;
-
-          double valueleft = (*stateVec)[dofrowmap.LID(dofposleft)];
-          double valueright = (*stateVec)[dofrowmap.LID(dofposright)];
-#if 1 // absolute symmetry errors in flame-vortex interaction
-          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if (fabs(valueleft+valueright) > maxError)
-              {
-                cout << "field: standard - velx, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft+valueright) << endl;
-                maxError = fabs(valueleft+valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - vely nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - velz, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - pres, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else
-              dserror("unknown physical field!");
-          } // end if std enrichment
-          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if (fabs(valueleft+valueright) > maxError)
-              {
-                cout << "field: enriched - velx, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft+valueright) << endl;
-                maxError = fabs(valueleft+valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - vely, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - velz, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - pres, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-          } // end if jump enr
-#else // relative symmetry errors in flame-vortex interaction
-          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if (fabs(valueleft+valueright) > maxError)
-              {
-                cout << "field: standard - velx, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft+valueright) << endl;
-                maxError = fabs(valueleft+valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - vely, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - velz, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: standard - pres, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }}
-            }
-            else
-              dserror("unknown physical field!");
-          } // end if std enrichment
-          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
-          {
-            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            {
-              if (fabs(valueleft+valueright) > maxError)
-              {
-                cout << "field: enriched - velx, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft+valueright) << endl;
-                maxError = fabs(valueleft+valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - vely, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - velz, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            {
-              if (fabs(valueleft-valueright) > maxError)
-              {
-                cout << "field: enriched - pres, nodeids: " << leftid << " and " << rightid << endl;
-                cout << valueleft << " and " << valueright << endl;
-                cout << fabs(valueleft-valueright) << endl;
-                maxError = fabs(valueleft-valueright);
-              }
-            }
-          } // end if jump enr
-#endif // relative errors in flame-vortex interaction
-        } // loop over fieldenr
-      } // end if what nodes shall be used
-    }
-#endif // flame-vortex interaction
   }
+
+  // the rowmaps are generated according to the pattern provided by
+  // the data vectors
+  RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
+      velmapdata.size(),&velmapdata[0],0,
+      dis.Comm()));
+  RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
+      premapdata.size(),&premapdata[0],0,
+      dis.Comm()));
+
+  const Epetra_Map* map = dis.DofRowMap();
+  extractor.Setup(*map, prerowmap, velrowmap);
 }
+
 
 /*--------------------------------------------------------------------------------------------*
  | Redistribute the fluid discretization and vectors according to nodegraph   rasthofer 07/11 |

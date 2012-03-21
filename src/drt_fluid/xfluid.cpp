@@ -30,9 +30,12 @@ Maintainer:  Benedikt Schott
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_xfem/xfem_fluiddofset.H"
 #include "../drt_xfem/xfem_neumann.H"
 #include "../drt_xfem/xfem_edgestab.H"
+
+#include "../drt_geometry/geo_intersection.H"
 
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"

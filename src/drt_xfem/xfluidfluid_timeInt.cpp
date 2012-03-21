@@ -10,12 +10,13 @@ Maintainer: Shadan Shahmiri
             089 - 289-15240
 </pre>
 */
-#ifdef CCADISCRET
+
 
 #include "xfluidfluid_timeInt.H"
 #include "xfem_fluidwizard.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_gmsh.H"
@@ -1753,4 +1754,3 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 //   }
 // }
 
-#endif // CCADISCRET

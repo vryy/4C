@@ -11,14 +11,31 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
+
 #ifndef XDOFMAPCREATION_PARALLEL_UTILS_H
 #define XDOFMAPCREATION_PARALLEL_UTILS_H
 
-#include "../drt_xfem/dof_management.H"
+
+#include <set>
+#include <map>
+#include <vector>
+
+
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
+
+namespace DRT
+{
+  class PackBuffer;
+}
 
 namespace XFEM
 {
+  class DofKey;
+  class FieldEnr;
 
   /*!
    * \brief create dofkeyset from nodal dofmap
@@ -41,7 +58,7 @@ namespace XFEM
    * \brief pack dofkeys from set into char array
    */
   void packDofKeys(
-      const set<XFEM::DofKey >&     dofkeyset,
+      const std::set<XFEM::DofKey >&     dofkeyset,
       DRT::PackBuffer&                            dataSend
       );
 
@@ -50,8 +67,8 @@ namespace XFEM
    * \brief unpack dofkeys from char array
    */
   void unpackDofKeys(
-      const vector<char>&                     dataRecv,
-      set<XFEM::DofKey >&       dofkeyset
+      const std::vector<char>&                     dataRecv,
+      std::set<XFEM::DofKey >&       dofkeyset
       );
 
 #ifdef PARALLEL
@@ -67,4 +84,4 @@ namespace XFEM
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H
-#endif  // #ifdef CCADISCRET
+

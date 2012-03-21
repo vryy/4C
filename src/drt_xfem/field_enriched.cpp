@@ -9,10 +9,45 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*/
-#ifdef CCADISCRET
+ */
 
+
+#include "enrichment.H"
 #include "field_enriched.H"
+
+
+//! constructor
+XFEM::FieldEnr::FieldEnr(
+    const PHYSICS::Field  physvar,  ///< physical variable
+    const XFEM::Enrichment&     enr       ///< enrichment
+) :
+enr_(enr),
+field_(physvar)
+{
+  return;
+}
+
+
+//! copy constructor
+XFEM::FieldEnr::FieldEnr(
+    const XFEM::FieldEnr& other           ///< source
+) :
+enr_(other.enr_),
+field_(other.field_)
+{
+  assert(&other != this);
+  return;
+}
+
+
+//! default constructor
+XFEM::FieldEnr::FieldEnr(
+) :
+enr_(XFEM::Enrichment()),
+field_(XFEM::PHYSICS::undefinedField)
+{
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -26,6 +61,8 @@ XFEM::FieldEnr& XFEM::FieldEnr::operator = (const XFEM::FieldEnr& old)
 }
 
 
+
+
 /*----------------------------------------------------------------------*
  |  transform to a string                                       ag 11/07|
  *----------------------------------------------------------------------*/
@@ -37,5 +74,53 @@ std::string XFEM::FieldEnr::toString() const
 }
 
 
+//! return physical field
+XFEM::PHYSICS::Field XFEM::FieldEnr::getField() const
+{
+  return field_;
+}
 
-#endif  // #ifdef CCADISCRET
+
+//! return enrichement for the field
+const XFEM::Enrichment& XFEM::FieldEnr::getEnrichment() const
+{
+  return enr_;
+}
+
+
+//! order is given first by field, then by the enrichment
+bool XFEM::FieldEnr::operator <(const FieldEnr& rhs) const
+{
+  if (field_ < rhs.field_)
+    return true;
+  else if (field_ > rhs.field_)
+    return false;
+  else
+  {
+    if (enr_ < rhs.enr_)
+      return true;
+    else
+      return false;
+  }
+}
+
+
+//! equality, if everything is equal
+bool XFEM::FieldEnr::operator ==(const FieldEnr& rhs) const
+{
+  if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
+    return true;
+  else
+    return false;
+}
+
+
+//! inequality if any member differs
+bool XFEM::FieldEnr::operator !=(const FieldEnr& rhs) const
+{
+  if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
+    return true;
+  else
+    return false;
+}
+

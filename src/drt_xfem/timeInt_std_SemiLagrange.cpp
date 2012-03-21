@@ -11,8 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "timeInt_std_extrapolation.H"
 #include "timeInt_std_SemiLagrange.H"
@@ -1707,8 +1705,5 @@ void XFEM::SemiLagrange::exportIterData(
   } // end if procfinished == false
 } // end exportIterData
 #endif // parallel
-
-#endif // CCADISCRET
-
 
 
