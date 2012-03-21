@@ -11,7 +11,9 @@ Maintainer:  Benedikt Schott
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "xfluid.H"
+
+#include <Teuchos_ParameterList.hpp>
+
 #include "fluid_utils.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -24,6 +26,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_resulttest.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -52,6 +55,8 @@ Maintainer:  Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
+
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
 
@@ -60,7 +65,7 @@ Maintainer:  Benedikt Schott
 #include "xfluid_defines.H"
 
 
-#include <Teuchos_ParameterList.hpp>
+#include "xfluid.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                            schott 03/12 |
@@ -70,10 +75,19 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
     wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
 {
 
+  //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
-  wizard_->Cut( false, idispcol, true, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
+  wizard_->Cut( false,                                 // include_inner
+                idispcol,                              // interface displacements
+                xfluid_.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
+                xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
+                true,                                  // parallel cut framework
+                xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
+                true                                   // find point positions
+                );
 
+  //--------------------------------------------------------------------------------------
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
@@ -86,6 +100,8 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   //print all dofsets
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
+
+  //--------------------------------------------------------------------------------------
   if(xfluid_.myrank_ == 0) cout << "\n" << endl;
 
   velpressplitter_ = rcp( new LINALG::MapExtractor());
@@ -104,6 +120,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //TODO: for edgebased approaches the number of connections between rows and cols should be increased
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,true,false,LINALG::SparseMatrix::FE_MATRIX));
 //  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true,LINALG::SparseMatrix::FE_MATRIX));
+
 
   // Vectors passed to the element
   // -----------------------------
@@ -722,10 +739,10 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
        gmshfilecontent_acc_ghost   << "View \"" << "SOL " << "acc_ghost   " << "\" {\n";
    }
 
-  const int numcolele = discret.NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
+  const int numrowele = discret.NumMyRowElements();
+  for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = discret.lColElement(i);
+    DRT::Element* actele = discret.lRowElement(i);
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )

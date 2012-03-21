@@ -1,4 +1,15 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file xfem_fluidwizard.cpp
 
+\brief class that provides the interface that bridges the cut libraries and fluid part of XFEM
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -14,14 +25,16 @@
 #include "../drt_io/io_control.H"
 
 /*-------------------------------------------------------------*
-* The new cut algorithm used in xfluid and xfluidfluid         *
+* Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)*
 *--------------------------------------------------------------*/
-void XFEM::FluidWizard::Cut(  bool include_inner,
-                              const Epetra_Vector & idispcol,
-                              bool parallel,
-                              std::string VCellgausstype,     //Gauss point generation method for Volumecell
-                              std::string BCellgausstype,     //Gauss point generation method for Boundarycell
-                              bool positions )
+void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut within the structure
+                              const Epetra_Vector & idispcol, //!< col vector holding interface displacements
+                              std::string VCellgausstype,     //!< Gauss point generation method for Volumecell
+                              std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
+                              bool parallel,                  //!< use parallel cut algorithms
+                              bool gmsh_output,               //!< print write gmsh output for cut
+                              bool positions                  //!< set inside and outside point, facet and volumecell positions
+                              )
 {
 #ifdef QHULL
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
@@ -42,12 +55,12 @@ void XFEM::FluidWizard::Cut(  bool include_inner,
 
   // fill the cutwizard cw with information:
   // build up the mesh_ (normal background mesh) and the cut_mesh_ (cutter mesh) created by the meshhandle:
-  // DO NOT CHANGE THE ORDER of 1. and 2.
+  // REMARK: DO NOT CHANGE THE ORDER of 1. and 2.
   // 1. Add CutSides (sides of the cutterdiscretization)
   //      -> Update the current position of all cutter-nodes dependent on displacement idispcol
   // 2. Add Elements (elements of the background discretization)
 
-  // 1.
+  // 1. Add CutSides (sides of the cutterdiscretization)
   int numcutelements = cutterdis_.NumMyColElements();
   for ( int lid = 0; lid < numcutelements; ++lid )
   {
@@ -126,31 +139,42 @@ void XFEM::FluidWizard::Cut(  bool include_inner,
     std::cout << "\n XFEM::FluidWizard::Cut: Success (" << t_end  <<  " secs)\n";
   }
 
-  cw.DumpGmshNumDOFSets(include_inner);
+  if(gmsh_output) cw.DumpGmshNumDOFSets(include_inner);
 
 
   cw.PrintCellStats();
-  cw.DumpGmshIntegrationCells();
-  cw.DumpGmshVolumeCells( include_inner );
+
+  if(gmsh_output)
+  {
+    cw.DumpGmshIntegrationCells();
+    cw.DumpGmshVolumeCells( include_inner );
+  }
 
 #else
   dserror( "QHULL needs to be defined to cut elements" );
 #endif
 }
 
-
+/*-------------------------------------------------------------*
+* creates a new fluid dofset                                   *
+*--------------------------------------------------------------*/
 Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofs)
 {
   return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs, backdis_ ) );
 }
 
-
+/*-------------------------------------------------------------*
+* get the cut wizard                                           *
+*--------------------------------------------------------------*/
 GEO::CutWizard & XFEM::FluidWizard::CutWizard()
 {
   return *cut_;
 }
 
 
+/*-------------------------------------------------------------*
+* get the elementhandle created within the cut                 *
+*--------------------------------------------------------------*/
 GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
     DRT::Element * ele
 )
@@ -158,7 +182,9 @@ GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
   return cut_->GetElement( ele );
 }
 
-
+/*-------------------------------------------------------------*
+* get the node created within the cut                          *
+*--------------------------------------------------------------*/
 GEO::CUT::Node * XFEM::FluidWizard::GetNode(
     int nid
 )
@@ -166,100 +192,3 @@ GEO::CUT::Node * XFEM::FluidWizard::GetNode(
   return cut_->GetNode( nid );
 }
 
-
-void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
-                                                  std::map< int, GEO::BoundaryIntCells > & boundaryintcells )
-{
-  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  std::stringstream str;
-  str << name
-      << ".cells."
-      << backdis_.Comm().MyPID()
-      << ".pos";
-
-  std::ofstream file( str.str().c_str() );
-
-  file << "View \"IntegrationCells\" {\n";
-  for ( std::map< int, GEO::DomainIntCells >::iterator i=domainintcells.begin();
-        i!=domainintcells.end();
-        ++i )
-  {
-    GEO::DomainIntCells & cells = i->second;
-    for ( GEO::DomainIntCells::iterator i=cells.begin(); i!=cells.end(); ++i )
-    {
-      GEO::DomainIntCell & cell = *i;
-      const LINALG::SerialDenseMatrix & xyz = cell.CellNodalPosXYZ();
-      switch ( cell.Shape() )
-      {
-      case DRT::Element::hex8:
-        file << "SH(";
-        break;
-      case DRT::Element::tet4:
-        file << "SS(";
-        break;
-      case DRT::Element::wedge6:
-        file << "SI(";
-        break;
-      case DRT::Element::pyramid5:
-        file << "SP(";
-        break;
-      default:
-        dserror( "distype unsupported" );
-      }
-      for ( int i=0; i<xyz.N(); ++i )
-      {
-        if ( i > 0 )
-          file << ",";
-        file << xyz( 0, i ) << "," << xyz( 1, i ) << "," << xyz( 2, i );
-      }
-      file << "){";
-      for ( int i=0; i<xyz.N(); ++i )
-      {
-        if ( i > 0 )
-          file << ",";
-        file << cell.VolumeInPhysicalDomain();
-      }
-      file << "};\n";
-    }
-  }
-  file << "};\n";
-
-  file << "View \"BoundaryCells\" {\n";
-  for ( std::map< int, GEO::BoundaryIntCells >::iterator i=boundaryintcells.begin();
-        i!=boundaryintcells.end();
-        ++i )
-  {
-    GEO::BoundaryIntCells & cells = i->second;
-    for ( GEO::BoundaryIntCells::iterator i=cells.begin(); i!=cells.end(); ++i )
-    {
-      GEO::BoundaryIntCell & cell = *i;
-      const LINALG::SerialDenseMatrix & xyz = cell.CellNodalPosXYZ();
-      switch ( cell.Shape() )
-      {
-      case DRT::Element::tri3:
-        file << "ST(";
-        break;
-      case DRT::Element::quad4:
-        file << "SQ(";
-        break;
-      default:
-        dserror( "distype unsupported" );
-      }
-      for ( int i=0; i<xyz.N(); ++i )
-      {
-        if ( i > 0 )
-          file << ",";
-        file << xyz( 0, i ) << "," << xyz( 1, i ) << "," << xyz( 2, i );
-      }
-      file << "){";
-      for ( int i=0; i<xyz.N(); ++i )
-      {
-        if ( i > 0 )
-          file << ",";
-        file << cell.GetSurfaceEleGid();
-      }
-      file << "};\n";
-    }
-  }
-  file << "};\n";
-}

@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file geo_intersection.H
+
+\brief class that provides to set up a mesh cut based on a level set field or on further surface meshes
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef GEO_INTERSECTION_H
 #define GEO_INTERSECTION_H
 
@@ -67,7 +80,7 @@ namespace GEO
     /*!
     \brief Routine for finding node positions and computing volumecell dofsets in a parallel way
     */
-    void CutParallel_FindPositionDofSets(bool include_inner, bool parallel);
+    void CutParallel_FindPositionDofSets(bool include_inner, bool communicate);
 
     /*!
     \brief Cut routine for standard non-parallel framework which is used only for cut_test

@@ -1,4 +1,15 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file geo_intersection.cpp
 
+\brief class that provides to set up a mesh cut based on a level set field or on further surface meshes
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "../drt_fluid/xfluid_defines.H"
 #include "geo_intersection.H"
@@ -77,7 +88,9 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
 void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
 {
   // for XFSI and XFLUIDFLUID we have communicate node positions and dofset data
-  bool parallel = true;
+  bool communicate = true;
+
+  if(dis_.Comm().NumProc() == 1) communicate = false;
 
   mesh_->Status();
 
@@ -86,7 +99,7 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
   mesh_->Cut_Mesh( include_inner );
 
   // SECOND step: find node positions and create dofset in PARALLEL
-  CutParallel_FindPositionDofSets( include_inner, parallel );
+  CutParallel_FindPositionDofSets( include_inner, communicate );
 
   // THIRD step: perform tessellation or moment fitting on the mesh
   mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
@@ -99,7 +112,7 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
 /*------------------------------------------------------------------------------------------------*
  * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool parallel)
+void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool communicate)
 {
   GEO::CUT::Options options;
   mesh_->GetOptions(options);
@@ -119,7 +132,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool pa
     // create a parallel Cut object for the current background mesh to communicate missing data
     Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( dis_, m, *mesh_ ) );
 
-    if(parallel) cut_parallel->CommunicateNodePositions();
+    if(communicate) cut_parallel->CommunicateNodePositions();
 
     m.FindFacetPositions();
 
@@ -130,7 +143,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool pa
       m.FindNodalDOFSets( include_inner );
     #endif
 
-    if(parallel) cut_parallel->CommunicateNodeDofSetNumbers();
+    if(communicate) cut_parallel->CommunicateNodeDofSetNumbers();
 
   }
 
@@ -165,7 +178,7 @@ void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name
-      << ".volumecells."
+      << ".CUT_volumecells."
       << dis_.Comm().MyPID()
       << ".pos";
   mesh_->DumpGmshVolumeCells( str.str(), include_inner );
@@ -176,7 +189,7 @@ void GEO::CutWizard::DumpGmshIntegrationCells()
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << name
-      << ".integrationcells."
+      << ".CUT_integrationcells."
       << dis_.Comm().MyPID()
       << ".pos";
   mesh_->DumpGmshIntegrationCells( str.str() );

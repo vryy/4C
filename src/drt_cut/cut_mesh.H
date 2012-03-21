@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_mesh.H
+
+\brief class that holds information about a mesh that is cut or about a cutmesh that cuts another mesh
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_MESH_H
 #define CUT_MESH_H
 

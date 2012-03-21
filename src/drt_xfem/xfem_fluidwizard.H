@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file xfem_fluidwizard.H
+
+\brief class that provides the interface that bridges the cut libraries and fluid part of XFEM
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef XFEM_FLUIDWIZARD_H
 #define XFEM_FLUIDWIZARD_H
 
@@ -54,25 +67,31 @@ public:
   /*!
   \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
   */
-  void Cut(  bool include_inner, const Epetra_Vector & idispcol, bool parallel, std::string VCellgausstype,
-      std::string BCellgausstype, bool positions=true  );
+  void Cut(   bool include_inner,             //!< perform cut within the structure
+              const Epetra_Vector & idispcol, //!< col vector holding interface displacements
+              std::string VCellgausstype,     //!< Gauss point generation method for Volumecell
+              std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
+              bool parallel,                  //!< use parallel cut algorithms
+              bool gmsh_output,               //!< print write gmsh output for cut
+              bool positions = true           //!< set inside and outside point, facet and volumecell positions);
+  );
 
+  //! create a new fluid dofset and reserve a dofs for a maximal number of dofsets
   Teuchos::RCP<FluidDofSet> DofSet(int maxNumMyReservedDofs);
 
+  //! get the cut wizard
   GEO::CutWizard& CutWizard();
 
+  //! get the elementhandle created within the cut
   GEO::CUT::ElementHandle* GetElement( DRT::Element * ele );
 
+  //! get the node created within the cut
   GEO::CUT::Node * GetNode( int nid );
 
 private:
 
-  /*!
-  \brief Writes GMSH output of integrationcells for old cut algorithm
-   */
-  void DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
-                                 std::map< int, GEO::BoundaryIntCells > & boundaryintcells );
 
+  /// cut wizard
   Teuchos::RCP<GEO::CutWizard> cut_;
 
   /// background discretization
@@ -81,23 +100,7 @@ private:
   /// cutter discretization
   DRT::Discretization & cutterdis_;
 
-  Teuchos::RCP<Epetra_IntVector> position_;
 
-#if 0
-  /// domainintegrationcells for each intersected element
-  std::map< int, GEO::DomainIntCells > domainintcells_;
-
-  /// boundaryintegrationcells for each intersected element
-  std::map< int, GEO::BoundaryIntCells > boundaryintcells_;
-
-  /// which physical fields are used in this problem
-  std::set<XFEM::PHYSICS::Field> fieldset_;
-
-  /// element dofs for this problem
-  Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz_;
-
-  Teuchos::RCP<XFEM::DofManager> dofmanager_;
-#endif
 };
 
 }

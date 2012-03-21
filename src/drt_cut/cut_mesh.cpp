@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_mesh.cpp
+
+\brief class that holds information about a mesh that is cut or about a cutmesh that cuts another mesh
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #include <boost/bind.hpp>
 
 #include "../drt_lib/drt_discret.H"
@@ -1634,111 +1647,6 @@ void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
   }
 }
 
-///*--------------------------------------------------------------------------------------*
-// | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
-// *-------------------------------------------------------------------------------------*/
-//void GEO::CUT::Mesh::FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData_)
-//{
-//  // find volumecells and non-row nodes for that dofset numbers has to be communicated parallel
-//
-////
-////  // TODO: this has to be done for cellsets and not only for cells
-////  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
-////        i!=cells_.end();
-////        ++i )
-////  {
-////    VolumeCell * cell = &**i;
-////
-////    // get the current nodaldofset vector
-////    const std::vector<int> nodeIdsToCommunicate = cell->GetNodeDofsToCommunicate();
-////
-////    if(nodeIdsToCommunicate.size() > 0)
-////    {
-////      // get volumcell information
-////      // REMARK: identify volumecells using the volumecells (its facets) points
-////      std::vector<Point*> cut_points;
-////      {
-////        // get all the facets points
-////        const plain_facet_set facets = cell->Facets();
-////
-////        for(plain_facet_set::const_iterator i = facets.begin(); i!=facets.end(); ++i)
-////        {
-////          Facet* f = *i;
-////
-////          // decide which points has to be send!!
-////          // Points, CornerPoints, AllPoints
-////          std::vector<Point*> facetpoints = f->Points();
-////
-////          std::copy( facetpoints.begin(), facetpoints.end(), std::inserter( cut_points, cut_points.begin() ) );
-////        }
-////      }
-////
-////
-////
-////      // get the parent element Id
-////      int peid = cell->ParentElement()->Id();
-////
-////      // create dofset data for this volumecell for Communication
-////      parallel_dofSetData_->push_back( DofSetData( cut_points, peid, nodeIdsToCommunicate) );
-////    }
-////
-////  }
-//
-//
-////  // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
-////  // the communication is done element wise for all its sets of volumecells when there is a non-row node in this element
-////  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-////      i!=elements_.end();
-////      i++)
-////  {
-////    ElementHandle* eh = GetElement(i->first);
-////  }
-//
-////
-////  for( std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
-////  {
-////      int eid = *i;
-////
-////      // get the nodes of this element
-////      // get the element via discret
-////      DRT::Element * e = dis_.gElement(eid);
-////
-////      if( e == NULL) dserror(" element not found, this should not be! ");
-////
-////      std::vector<Node * > nodes;
-////
-////      // get the nodes of this element
-////      int numnode = e->NumNode();
-////      const int* nids = e->NodeIds();
-////
-////      for(int i=0; i< numnode; i++)
-////      {
-////          Node * node = GetNode(nids[i]);
-////
-////          if(node == NULL) dserror("node not found!");
-////
-////          nodes.push_back( node );
-////      }
-////
-////      if((int)nodes.size() != numnode) dserror("number of nodes not equal to the required number of elemental nodes");
-////
-////      ElementHandle* eh = GetElement(eid);
-////
-////      // get inside and outside cell_sets connected within current element
-////
-////      const std::vector<plain_volumecell_set> & ele_vc_sets_inside = eh->GetVcSetsInside();
-////      const std::vector<plain_volumecell_set> & ele_vc_sets_outside = eh->GetVcSetsOutside();
-////
-////      std::vector<std::vector<int> > & nodaldofset_vc_sets_inside  = eh->GetNodalDofSet_VcSets_Inside();
-////      std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = eh->GetNodalDofSet_VcSets_Outside();
-////
-////      std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_inside  = eh->Get_NodeDofsetMap_VcSets_Inside_forCommunication()();
-////      std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_outside = eh->Get_NodeDofsetMap_VcSets_Outside_forCommunication();
-////
-////
-////
-//
-//}
 
 
 void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )

@@ -59,7 +59,14 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 {
 
   // do the (parallel!) cut for the 0 timestep and find the fluid dofset
-  wizard_->Cut( false, idispcol, true, xfluid_.VolumeCellGaussPointBy_, xfluid_.BoundCellGaussPointBy_ );
+  wizard_->Cut( false,                                 // include_inner
+                idispcol,                              // interface displacements
+                xfluid_.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
+                xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
+                true,                                  // parallel cut framework
+                xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
+                true                                   // find point positions
+                );
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
@@ -1445,6 +1452,10 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   relaxing_ale_ = params_->sublist("XFEM").get<int>("RELAXING_ALE");
 
   gmsh_count_ = 0;
+
+
+  // load GMSH output flags
+  gmsh_cut_out_          = (bool)params_->sublist("XFEM").get<int>("GMSH_CUT_OUT");
 
   // set the element name for boundary elements BELE3 or BELE3_4
   string element_name;

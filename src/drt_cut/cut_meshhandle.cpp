@@ -1,3 +1,15 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_meshhandle.cpp
+
+\brief handle that holds the mesh specific information
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "cut_meshhandle.H"
 

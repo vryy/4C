@@ -585,6 +585,9 @@ namespace FLD
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
     //@}
 
+    //! @name flags for gmsh output
+    bool gmsh_cut_out_;
+    //@}
 
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
     Teuchos::RCP<IO::DiscretizationWriter>     output_;

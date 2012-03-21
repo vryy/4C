@@ -15,25 +15,12 @@ Maintainer:  Benedikt Schott
 #ifndef XFLUID_H
 #define XFLUID_H
 
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../drt_lib/drt_resulttest.H"
-
-#include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
 #include "../drt_fluid/fluid_timint.H"
 
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
 namespace DRT

@@ -1,3 +1,15 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_meshintersection.cpp
+
+\brief provides the basic functionality for cutting a mesh
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -867,7 +879,7 @@ void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool i
 //    std::string filename = "hallo"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
     std::stringstream str;
     str << filename
-        << ".NumDOFSets."
+        << ".CUT_NumDOFSets."
         << dis.Comm().MyPID()
         << ".pos";
 
@@ -1002,18 +1014,27 @@ void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool i
 //    file << "};\n";
 
     // nodes used for CUT map<node->ID, Node>, shadow nodes have ID<0
+    // print the dofsets just for the row nodes
     std::map<int, Node* > nodes;
     m.GetNodeMap( nodes );
 
     file << "View \"NumDofSets\" {\n";
     for ( std::map<int, Node* >::iterator i=nodes.begin(); i!=nodes.end(); ++i )
     {
+      int nid = i->first;
+
+      if(nid >= 0)
+      {
+        if(dis.NodeRowMap()->LID(nid) == -1) continue; // non-local row node
+
         Node * n = i->second;
         Point * p = n->point();
         const double * x = p->X();
 
         // output just for real nodes of elements, not for shadow nodes
         if( n->Id() >= 0) file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" << n->NumDofSets() << "};\n";
+      }
+
     }
     file << "};\n";
 }

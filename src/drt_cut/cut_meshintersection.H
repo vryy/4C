@@ -1,3 +1,16 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file cut_meshintersection.H
+
+\brief provides the basic functionality for cutting a mesh
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef CUT_MESHINTERSECTION_H
 #define CUT_MESHINTERSECTION_H
 
@@ -49,7 +62,7 @@ public:
         set_index_(set_index),
         inside_cell_(inside_cell),
         peid_(peid)
-        //node_dofsetnumber_map_(node_dofsetnumber_map)
+      //node_dofsetnumber_map_(node_dofsetnumber_map)
       {
         std::copy(node_dofsetnumber_map.begin(), node_dofsetnumber_map.end(), std::inserter(node_dofsetnumber_map_, node_dofsetnumber_map_.begin()) );
         std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
@@ -57,7 +70,7 @@ public:
 
       /*!
       \brief print the dofset data to screen
-      */
+       */
       void print()
       {
         // print volumecell information
@@ -117,9 +130,6 @@ public:
 
   /// standard cut routine for non-parallel frameworks and cuttest
   void Cut( bool include_inner, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation" );
-
-  /// cut routine for parallel xfsi and xfluidfluid cuts
-  void CutParallel( bool include_inner, DRT::Discretization& backdis, bool parallel, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation");
 
   /*!
   \brief Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
