@@ -500,7 +500,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_patspec/patspec.cpp
 )
 set(OBJS_DRT_STATMECH
-  src/drt_statmech/brownianrod.cpp
   src/drt_statmech/statmech_manager.cpp
   src/drt_statmech/statmech_output.cpp
   src/drt_statmech/statmech_time.cpp
@@ -887,9 +886,6 @@ set(OBJS_DRT_T2_LIB
   src/drt_truss2/truss2_evaluate.cpp
   src/drt_truss2/truss2_input.cpp
 )
-set(OBJS_DRT_STATMECH_LIB
-  src/drt_statmech/bromotion_manager.cpp
-)
 set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust3.cpp
@@ -1084,6 +1080,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
+  src/drt_structure/strtimint_statmech.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1504,8 +1501,8 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid
   alg_redairways
   alg_scatra
-  alg_statmech
   alg_structure
+  alg_statmech
   alg_invanalysis
   alg_mlmc
   alg_thermo
@@ -1537,7 +1534,6 @@ add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
 add_library(drt_lib_potential ${OBJS_DRT_POTENTIAL})
-add_library(drt_lib_statmech ${OBJS_DRT_STATMECH_LIB})
 add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
@@ -1549,7 +1545,6 @@ set(SUPPORT_LIBRARIES
   drt_lib_artnet 
   drt_lib_redairways
   drt_lib_mortar
-  drt_lib_statmech
   drt_lib_constraint
   drt_lib_contact
   # Libraries needed by elements
