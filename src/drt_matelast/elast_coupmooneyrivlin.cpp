@@ -68,7 +68,7 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddCoefficientsPrincipal(
 {
 
    // determinant of deformation gradient
-  const double logdetf = std::log(std::sqrt(prinv(2)));
+  const double detf = std::sqrt(prinv(2));
 
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
@@ -79,11 +79,11 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddCoefficientsPrincipal(
 
   gamma(0) += 2.*(c1+c2*prinv(0));
   gamma(1) -= 2.*c2;
-  gamma(2) += 2.*c3*logdetf*(logdetf-1.)-2.*(c1+2.*c2);
+  gamma(2) += 2.*c3*detf*(detf-1.)-2.*(c1+2.*c2);
 
   delta(0) += 4.*c2;
-  delta(5) += 2.*c3*logdetf*(2.0*logdetf-1.);
-  delta(6) -= 2.*(2.*c3*logdetf*(logdetf-1.)-2.*(c1+2.*c2));
+  delta(5) += 2.*c3*detf*(2.0*detf-1.);
+  delta(6) -= 2.*(2.*c3*detf*(detf-1.)-2.*(c1+2.*c2));
   delta(7) -= 4.*c2;
 
 
