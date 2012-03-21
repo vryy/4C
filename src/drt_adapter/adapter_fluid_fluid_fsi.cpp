@@ -5,6 +5,7 @@
 #include "../drt_fluid/xfluidfluid.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -122,6 +123,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidFSI::ExtractInterfaceVeln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+FLD::UTILS::FluidXFluidMapExtractor ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
+{
+  return xfluidfluid_->XFluidFluidMapExtractor();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   // meshmap contains the whole ale map. It transfers the
@@ -132,6 +141,15 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
   // new grid velocity
   xfluidfluid_->UpdateGridv();
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+{
+  meshmap_->Setup(*embfluiddis_->DofRowMap(),mm,LINALG::SplitMap(*embfluiddis_->DofRowMap(),*mm));
   return;
 }
 

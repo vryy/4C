@@ -606,28 +606,8 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-//    virtual void UseBlockMatrix(){UseBlockMatrix(Interface(),Interface()); return;}
-
-    //! switch structure field to block matrix in fsi simulations
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                         const LINALG::MultiMapExtractor& rangemaps);
-
-
-    /// @name Apply interface forces
-
-    /// apply interface forces to structural solver
-    ///
-    /// This prepares a new solve of the structural field within one time
-    /// step. The middle values are newly created.
-    ///
-    /// \note This is not yet the most efficient implementation.
-//    virtual void ApplyInterfaceForces(
-//      Teuchos::RCP<Epetra_Vector> iforce
-//    )
-//    {
-//      SetForceInterface(*interface_, iforce);
-//      PreparePartitionStep();
-//    }
 
 
     //! Set forces due to interface with fluid
@@ -636,13 +616,6 @@ namespace STR
       const AUX::MapExtractor& extractor,
       Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
     );
-
-//    //! Set forces due to interface with fluid,
-//    //! the force is expected external-force-like
-//    virtual void SetForceInterface
-//    (
-//      Teuchos::RCP<Epetra_Vector> iforce  //!< the force on interface
-//    );
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear

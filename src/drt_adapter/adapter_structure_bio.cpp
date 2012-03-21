@@ -52,7 +52,10 @@ ADAPTER::StructureBio::StructureBio(
 	}
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn));
-  structure_ = Teuchos::rcp(new FSIStructureWrapper(structurebase->StructureFieldrcp()));
+  structure_ = rcp_dynamic_cast<FSIStructureWrapper>(structurebase->StructureFieldrcp());
+
+  if(structure_ == Teuchos::null)
+    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
 	Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(prbdyn));
 

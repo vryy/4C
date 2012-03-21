@@ -34,7 +34,10 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()));
-  structure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
+  structure_ = rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+
+  if(structure_ == Teuchos::null)
+    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   Teuchos::RCP< ::ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"));

@@ -362,8 +362,7 @@ namespace FLD
     /// provide access to the Dirichlet maps
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_; }
-    Teuchos::RCP<const Epetra_Map>  FluidFluidDirichMaps() { return state_->fluidfluiddbcmaps_; } // whole fluid
-    Teuchos::RCP<const Epetra_Map>  FluidDirichMaps()      { return FluidFluidDirichMaps(); } // implement ADAPTER::Fluid
+    virtual const Teuchos::RCP<const Epetra_Map>&  FluidDirichMaps() { return state_->fluidfluiddbcmaps_; }
 
     /// Expand the Dirichlet DOF set
     ///

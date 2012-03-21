@@ -118,7 +118,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   // for multilevel monte carlo we do not need to write mesh in every run
   Teuchos::RCP<Teuchos::ParameterList> mlmcp
-      = rcp(new Teuchos::ParameterList (DRT::Problem::Instance()->MultiLevelMonteCarloParams()));
+      = Teuchos::rcp(new Teuchos::ParameterList (DRT::Problem::Instance()->MultiLevelMonteCarloParams()));
   bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
     if (perform_mlmc!=true)
     {
@@ -243,17 +243,17 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
       // Note: We assume 3d here!
 
       Teuchos::RCP<Epetra_Vector> nsv1=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[0])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[0])));
       Teuchos::RCP<Epetra_Vector> nsv2=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[size])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[size])));
       Teuchos::RCP<Epetra_Vector> nsv3=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[2*size])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[2*size])));
       Teuchos::RCP<Epetra_Vector> nsv4=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[3*size])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[3*size])));
       Teuchos::RCP<Epetra_Vector> nsv5=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[4*size])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[4*size])));
       Teuchos::RCP<Epetra_Vector> nsv6=
-          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[5*size])));
+          Teuchos::rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[5*size])));
 
 
       //prepare matrix for scaled thickness business of thin shell structures
@@ -359,13 +359,15 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 
   if (tmpstr != Teuchos::null)
   {
-    if (genprob.probtyp == prb_fsi or
-        genprob.probtyp == prb_fsi_lung or
-        genprob.probtyp == prb_gas_fsi or
-        genprob.probtyp == prb_biofilm_fsi or
-        genprob.probtyp == prb_thermo_fsi or
-        genprob.probtyp == prb_fsi_xfem or
-        genprob.probtyp == prb_fluid_fluid_fsi)
+    switch(genprob.probtyp)
+    {
+    case prb_fsi:
+    case prb_fsi_lung:
+    case prb_gas_fsi:
+    case prb_biofilm_fsi:
+    case prb_thermo_fsi:
+    case prb_fsi_xfem:
+    case prb_fluid_fluid_fsi:
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -377,32 +379,36 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
-          structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
         else
-          structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(Teuchos::rcp(new StructureConstrMerged(tmpstr))))));
       }
       else
       {
         if (coupling == fsi_iter_lung_monolithicstructuresplit or
             coupling == fsi_iter_lung_monolithicfluidsplit)
-          structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+          structure_ = Teuchos::rcp(new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
         else
-          structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
       }
     }
-    else if (genprob.probtyp == prb_poroelast)
+    break;
+    case prb_poroelast:
     {
       tmpstr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
       if (tmpstr->HaveConstraint())
       {
-        structure_ = rcp(new StructureConstrMerged(tmpstr));
+        structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
       }
       else
         structure_ = tmpstr;
     }
-    else
+    break;
+    default:
     {
       structure_ = tmpstr;
+    }
+    break;
     }
   }
   else

@@ -207,7 +207,7 @@ namespace ADAPTER {
 
     // should it be pure virtual?!
     /// Return dirichlet boundray condition (used for fluidfluid)
-    virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps() = 0;
+    virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps() = 0;
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 

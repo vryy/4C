@@ -33,9 +33,10 @@ namespace ADAPTER
       FLD::UTILS::FluidXFluidMapExtractor  object;
       FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
       return reftoobject;}
-    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {dserror("not implemented"); return Teuchos::null;}
+    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
     /// Return dirichlet boundray condition (used for fluidfluid)
-    virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;};
+    virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()
+    { fluid_->FluidDirichMaps();}
     virtual Teuchos::RCP<const Epetra_Vector> Accnp()
     { return fluid_->Accnp(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
@@ -170,13 +171,13 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap()
     { return fluid_->PressureRowMap(); }
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
-    { return fluid_->SetMeshMap(mm); }
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
     virtual double ResidualScaling() const
     { return fluid_->ResidualScaling(); }
     virtual double TimeScaling() const
     { return fluid_->TimeScaling(); }
     virtual const FLD::UTILS::MapExtractor& Interface() const
-    { return fluid_->Interface(); }
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); return fluid_->Interface(); }
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)

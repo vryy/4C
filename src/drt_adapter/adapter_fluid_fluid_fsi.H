@@ -83,6 +83,10 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
+    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor();
+
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
     virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");};

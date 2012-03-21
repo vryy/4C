@@ -41,7 +41,10 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   : AlgorithmBase(comm,timeparams)
 {
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
-  structure_ = Teuchos::rcp(new ADAPTER::FSIStructureWrapper(structure->StructureFieldrcp()));
+  structure_ = rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+
+  if(structure_ == Teuchos::null)
+    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
   fluid_ = fluid->FluidFieldrcp();
