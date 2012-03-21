@@ -689,11 +689,21 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 {
   // time measurement:
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial phidt");
+
+  double initialtime = Time();
   if (myrank_ == 0)
-    std::cout<<"SCATRA: calculating initial time derivative of phi"<<endl;
+  {
+    std::cout<<"SCATRA: calculating initial time derivative of phi (step "
+    << Step() <<","<<" time "<<initialtime<<")"<<endl;
+  }
 
   // are we really at step 0?
-  dsassert(step_==0,"Step counter is not 0");
+  if(Step() !=0 ) //and scatratype_!= INPAR::SCATRA::scatratype_levelset)
+   ;// dserror("Step counter is not 0");
+
+  // zero out matrix and rhs entries !
+  sysmat_->Zero();
+  residual_->PutScalar(0.0);
 
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
@@ -726,14 +736,21 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
 
+    // set flag whether to consider stabilization terms or not
+    // for backward compatibility we do it like this:
+    if (Step() == 0)
+      eleparams.set<bool>("onlySGFEM",true); // initial calculation for step 0
+    else
+      eleparams.set<bool>("onlySGFEM",false);// for reinitialization of level-set fields
+
     // set type of scalar transport problem
     eleparams.set<int>("scatratype",scatratype_);
 
-    // add additional parameters (timefac_ remains unused at element level!!!!)
+    // add additional parameters
     AddSpecificTimeIntegrationParameters(eleparams);
 
     // other parameters that are needed by the elements
-    eleparams.set("incremental solver",incremental_);
+    eleparams.set("incremental solver",true); // we need an incremental formulation for this
     eleparams.set<int>("form of convective term",convform_);
     if (IsElch(scatratype_))
       eleparams.set("frt",frt_); // factor F/RT
@@ -749,6 +766,31 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
+    // set time step length
+    eleparams.set("time-step length",dta_);
+    // give correct time (override things set by AddSpecificTimeIntegrationParameters)
+    eleparams.set("total time",initialtime);
+
+    // ensure backward compatability (override genalpha settings):
+    eleparams.set("using generalized-alpha time integration",false);
+    // genalpha should only be supported for alpha_F = alpha_M = 1
+    // otherwise it is a two-step scheme that needs a start-up algorithm !!
+
+    // other parameters that might be needed by the elements
+    eleparams.set<int>("fs subgrid diffusivity",fssgd_);
+    // set general parameters for turbulent flow
+    eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+    // set model-dependent parameters
+    eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+    // and set parameters for multifractal subgrid-scale modeling
+    eleparams.set("turbulent inflow",turbinflow_);
+
+    if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+      eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
+
+    // set switch for reinitialization
+    eleparams.set("reinitswitch",reinitswitch_);
+
     // parameters for stabilization (here required for material evaluation location)
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
@@ -759,7 +801,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("phi0",phin_);
+    discret_->SetState("hist",zeros_); // we need a zero vector here!!!!
+    discret_->SetState("phinp",phin_); // that's the initial field phi0
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -779,7 +822,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
 {
   // are we really at step 0?
-  dsassert(step_==0,"Step counter is not 0");
+  //dsassert(step_==0,"Step counter is not 0");
 
   // We determine phidtn at every node (including boundaries)
   // To be consistent with time integration scheme we do not prescribe

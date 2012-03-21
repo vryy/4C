@@ -449,7 +449,7 @@ void SCATRA::TimIntGenAlpha::UpdateReinit()
   //phidtn_->Update(1.0,*phidtnp_,0.0);
 
   // compute time derivative at time n (and n+1)
-  CalcPhidtReinit();
+  CalcInitialPhidt();
 }
 
 
@@ -733,76 +733,6 @@ void SCATRA::TimIntGenAlpha::CalcPhidtReinit()
   if (myrank_ == 0)
     std::cout<<"SCATRA: calculating time derivative of reinitialized phi"<<endl;
 
-  // call elements to calculate matrix and right-hand-side
-  {
-    // zero out matrix entries
-    sysmat_->Zero();
-
-    // add potential Neumann boundary condition at time t=0
-    residual_->Update(1.0,*neumann_loads_,0.0);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set<int>("action",SCATRA::calc_time_deriv_reinit);
-
-    // set type of scalar transport problem
-    eleparams.set<int>("scatratype",scatratype_);
-
-    // other parameters that are needed by the elements
-    eleparams.set("incremental solver",incremental_);
-    eleparams.set<int>("form of convective term",convform_);
-
-    // provide velocity field and potentially acceleration/pressure field
-    // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-    eleparams.set("time-step length",dta_);
-    eleparams.set("time factor",genalphafac_*dta_);
-    if (MethodName() == INPAR::SCATRA::timeint_gen_alpha)
-      eleparams.set("alpha_F",alphaF_);
-
-    // parameters for stabilization (here required for material evaluation location)
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-    //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phi0",phin_);
-
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,residual_);
-    discret_->ClearState();
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-  }
-
-  // apply Dirichlet boundary conditions to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
-
-  // solve for phidtn
-  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
-
-  // copy solution also to phidtnp
-  phidtnp_->Update(1.0,*phidtn_,0.0);
-
-  // reset the matrix (and its graph!) since we solved
-  // a very special problem here that has a different sparsity pattern
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-    BlockSystemMatrix()->Reset();
-  else
-    SystemMatrix()->Reset();
-  // reset the solver as well
-  solver_->Reset();
-
-  return;
+  CalcInitialPhidt();
 }
 

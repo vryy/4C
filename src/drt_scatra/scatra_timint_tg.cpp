@@ -364,12 +364,4 @@ void SCATRA::TimIntTaylorGalerkin::SetPhin(Teuchos::RCP<Epetra_Vector> phireinit
   return;
 }
 
-/*--------------------------------------------------------------------------*
- | calculate time derivative of phi after reinitialization   rasthofer 02/10|
- *--------------------------------------------------------------------------*/
-void SCATRA::TimIntTaylorGalerkin::CalcPhidtReinit()
-{
-  dserror("do not call this function");
-  return;
-}
 

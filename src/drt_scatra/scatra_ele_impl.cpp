@@ -204,33 +204,33 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     is_elch_((numdofpernode_ - numscal_) == 1),  // bool set implicitely
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
-    diffreastafac_(0.0),
+    diffreastafac_(0.0),      // set double (SUPG)
     is_stationary_(false),    // bool set
     is_genalpha_(false),      // bool set
     is_incremental_(false),   // bool set
     is_conservative_(false),  // bool set
-    // sgvel_ not initialized
+    sgvel_(false),            // bool set
     betterconsistency_(false), // bool set
     migrationintau_(true),     // bool set
     migrationstab_(true),      // bool set
     migrationinresidual_(true),// bool set
     update_mat_(false),        // bool set
     // whichtau_ not initialized
-    // turnmodel_ not initialized
-    sgphi_(numscal_),   // size of vector
-    mfssgphi_(numscal_),// size of vector
+    // turbmodel_ not initialized
+    sgphi_(numscal_,0.0),   // size of vector + initialized to zero
+    mfssgphi_(numscal_,0.0),// size of vector + initialized to zero
     gradphi_(true),     // initialized to zero
     fsgradphi_(true),   // initialized to zero
     mfsggradphi_(true), // initialized to zero
     ephin_(numscal_),   // size of vector
     ephinp_(numscal_),  // size of vector
     ephiam_(numscal_),  // size of vector
-    hist_(numscal_),    // size of vector
+    hist_(numscal_,0.0),// size of vector + initialized to zero
     ehist_(numscal_),   // size of vector
     ephi0_Reinit_Reference_(numscal_),// size of vector
     ephi0_penalty_(numscal_),         // size of vector
     fsphinp_(numscal_), // size of vector
-    conint_(numscal_),  // size of vector
+    conint_(numscal_,0.0),  // size of vector + initialized to zero
     epotnp_(true),      // initialized to zero
     emagnetnp_(true),   // initialized to zero
     gradpot_(true),     // initialized to zero
@@ -252,16 +252,16 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     thermpressnp_(0.0), // set double
     thermpressam_(0.0), // set double
     thermpressdt_(0.0), // set double
-    densn_(numscal_),        // size of vector
-    densnp_(numscal_),       // size of vector
-    densam_(numscal_),       // size of vector
-    densgradfac_(numscal_),  // size of vector
-    diffus_(numscal_),       // size of vector
-    sgdiff_(numscal_),       // size of vector
-    reacoeff_(numscal_),     // size of vector
-    reacoeffderiv_(numscal_),// size of vector
-    valence_(numscal_),      // size of vector
-    diffusvalence_(numscal_),// size of vector
+    densn_(numscal_,1.0),        // size of vector + initialized to zero
+    densnp_(numscal_,1.0),       // size of vector + initialized to zero
+    densam_(numscal_,1.0),       // size of vector + initialized to zero
+    densgradfac_(numscal_,0.0),  // size of vector + initialized to zero
+    diffus_(numscal_,0.0),       // size of vector + initialized to zero
+    sgdiff_(numscal_,0.0),       // size of vector + initialized to zero
+    reacoeff_(numscal_,0.0),     // size of vector + initialized to zero
+    reacoeffderiv_(numscal_,0.0),// size of vector + initialized to zero
+    valence_(numscal_,0.0),      // size of vector + initialized to zero
+    diffusvalence_(numscal_,0.0),// size of vector + initialized to zero
     shc_(0.0),      // set double
     visc_(0.0),     // set double
     diff_(true),    // initialized to zero
@@ -278,16 +278,16 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     xij_(true),     // initialized to zero
     xder2_(true),   // initialized to zero
     laplace_(true), // initialized to zero
-    rhs_(numdofpernode_),       // size of vector
-    reatemprhs_(numdofpernode_),// size of vector
+    rhs_(numdofpernode_,0.0),       // size of vector + initialized to zero
+    reatemprhs_(numdofpernode_,0.0),// size of vector + initialized to zero
     bodyforce_(numdofpernode_), // size of vector
-    scatrares_(numscal_),  // size of vector
-    conv_phi_(numscal_),   // size of vector
-    diff_phi_(numscal_),   // size of vector
-    rea_phi_(numscal_),    // size of vector
-    tau_(numscal_),             // size of vector
-    tauderpot_(numscal_),       // size of vector
-    efluxreconstr_(numscal_),   // size of vector
+    scatrares_(numscal_,0.0),  // size of vector + initialized to zero
+    conv_phi_(numscal_,0.0),   // size of vector + initialized to zero
+    diff_phi_(numscal_,0.0),   // size of vector + initialized to zero
+    rea_phi_(numscal_,0.0),    // size of vector + initialized to zero
+    tau_(numscal_,0.0),        // size of vector + initialized to zero
+    tauderpot_(numscal_),      // size of vector
+    efluxreconstr_(numscal_),  // size of vector
     weights_(true),      // initialized to zero
     myknots_(nsd_)       // size of vector
 {
@@ -874,82 +874,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   // calculate time derivative for time value t_0
   case SCATRA::calc_initial_time_deriv:
   {
-    // set flag for including reactive terms to false initially
-    // flag will be set to true below when reactive material is included
-    is_reactive_ = false;
-
-    // set flag for conservative form
-    const INPAR::SCATRA::ConvForm convform =
-      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
-    is_conservative_ = false;
-    if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
-
-    // get initial velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-
-    // need initial field -> extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
-    vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-    } // for i
-
-    // set time derivative of thermodynamic pressure if required
-    if (scatratype ==INPAR::SCATRA::scatratype_loma)
-    {
-      thermpressnp_ = params.get<double>("thermodynamic pressure");
-      thermpressam_ = thermpressnp_;
-      thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
-    }
-
-    // get stabilization parameter sublist
-    ParameterList& stablist = params.sublist("STABILIZATION");
-
-    // set flags for potential evaluation of material law at int. point
-    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
-    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
-
-    double frt(0.0);
-    if(SCATRA::IsElchProblem(scatratype))
-    {
-      for (int i=0;i<nen_;++i)
-      {
-        // get values for el. potential at element nodes
-        epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
-      } // for i
-
-      // get parameter F/RT
-      frt = params.get<double>("frt");
-    }
-    else epotnp_.Clear();
-
-    // set control parameters to avoid that some actually unused variables are
-    // falsely set, on the one hand, and viscosity for unnecessary calculation
-    // of subgrid-scale velocity is computed, on the other hand, in
-    // GetMaterialParams
-    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
-    is_incremental_ = params.get<bool>("incremental solver");
-    sgvel_ = DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL");
-
     // calculate matrix and rhs
-    InitialTimeDerivative(
+    CalcInitialTimeDerivative(
       ele,
       elemat1_epetra,
       elevec1_epetra,
-      frt,
-      scatratype);
+      scatratype,
+      params,
+      discretization,
+      lm
+      );
 
     break;
   }
@@ -1137,83 +1071,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const double frt = params.get<double>("frt");
 
     CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
-
-    break;
-  }
-  case SCATRA::calc_time_deriv_reinit:
-  {
-    // set flag for including reactive terms to false initially
-    // flag will be set to true below when reactive material is included
-    is_reactive_ = false;
-
-    // set flag for conservative form
-    const INPAR::SCATRA::ConvForm convform = DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
-    is_conservative_ = false;
-    if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
-
-    // get initial velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-
-    // need initial field -> extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
-    vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-    } // for i
-
-    // get stabilization parameter sublist
-    ParameterList& stablist = params.sublist("STABILIZATION");
-
-    // select tau definition
-    whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
-
-    // get time-step length
-    const double dt   = params.get<double>("time-step length");
-
-    // get time factor and alpha_F if required
-    // one-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
-    double timefac = 1.0;
-    double alphaF  = 1.0;
-    if (not is_stationary_)
-    {
-      timefac = params.get<double>("time factor");
-      if (is_genalpha_)
-      {
-        alphaF = params.get<double>("alpha_F");
-        timefac *= alphaF;
-      }
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
-
-    // set flags for potential evaluation of material law at int. point
-    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
-    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
-
-    epotnp_.Clear();
-
-    // calculate matrix and rhs
-    CalcInitialTimeDerivative(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      dt,
-      timefac,
-      scatratype
-      );
 
     break;
   }
@@ -3185,36 +3042,64 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
 };
 
 
-/*----------------------------------------------------------------------*
-  | calculate mass matrix + rhs for determ. initial time deriv. gjb 08/08|
-  *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12|
+ *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   DRT::Element*                         ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
-  const double                          frt,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
+  const enum INPAR::SCATRA::ScaTraType  scatratype,
+  ParameterList&                        params,
+  DRT::Discretization&                  discretization,
+  vector<int>&                          lm
   )
-{
-  // dead load in element nodes at initial point in time
-  const double time = 0.0;
-
-  BodyForce(ele,time);
-
-  //----------------------------------------------------------------------
-  // get material parameters (evaluation at element center)
-  //----------------------------------------------------------------------
-  if (not mat_gp_)
   {
-    // use one-point Gauss rule to do calculations at the element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  // access flag
+  bool onlySGFEM = params.get<bool>("onlySGFEM");
 
-    // evaluate shape functions and derivatives at element center
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id()); //fac unused
+  // first, make a copy
+  Teuchos::ParameterList eparams(params);
 
-    GetMaterialParams(ele,scatratype);
+  // use standard element call including unpacking of required data and an up-to-date implementation
+  // of the rhs, which we will slightly altered below according to the present needs.
+  // Main advantage of this procedure is that we do not have to implement redundant rhs implementations
+  eparams.set<int>("action",SCATRA::calc_mat_and_rhs);
+
+  // change the parameter which governs type of stabilization,
+  // if only SGFEM terms should be considered
+  if (onlySGFEM)
+  {
+    setStringToIntegralParameter<int>("STABTYPE",
+        "no_stabilization",
+        "type of stabilization (if any)",
+        tuple<std::string>("no_stabilization"),
+        tuple<std::string>("Do not use any stabilizat"),
+        tuple<int>(
+            INPAR::SCATRA::stabtype_no_stabilization),
+            &eparams.sublist("STABILIZATION"));
   }
+
+  // dummy matrix + vectors required for Evaluate() call
+  Epetra_SerialDenseMatrix  elemat2_epetra;
+  Epetra_SerialDenseVector  elevec2_epetra;
+  Epetra_SerialDenseVector  elevec3_epetra;
+
+  Evaluate(
+      ele,
+      eparams,
+      discretization,
+      lm,
+      emat,
+      elemat2_epetra,
+      erhs,
+      elevec2_epetra,
+      elevec3_epetra
+  );
+
+  // undo the matrix from the standard call, only a mass matrix is needed here created below
+  emat.Scale(0.0);
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -3226,216 +3111,88 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    //----------------------------------------------------------------------
-    // get material parameters (evaluation at integration point)
-    //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele,scatratype);
-
-#if 0
-    int lastionidx(-1);
-    if (is_elch_)
-    {  for (int k=numscal_-1;k>-1;--k)
-      {
-        if (abs(valence_[k]) > EPS14)
-        {
-          lastionidx=k;
-          break;
-        }
-      }
-      //cout<<"lastionidx="<<lastionidx<<endl;
-    }
-#endif
-
-    //------------ get values of variables at integration point
-    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    if (is_incremental_)
     {
-      // get bodyforce in gausspoint (divided by specific heat capacity)
-      // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
-      rhs_[k] += thermpressdt_/shc_;
-
-      // get gradient of el. potential at integration point
-      gradpot_.Multiply(derxy_,epotnp_);
-
-      // migration part
-      migconv_.MultiplyTN(-frt,derxy_,gradpot_);
-
-      // get velocity at element center
-      velint_.Multiply(evelnp_,funct_);
-      convelint_.Multiply(econvelnp_,funct_);
-
-      // convective part in convective form: u_x*N,x+ u_y*N,y
-      conv_.MultiplyTN(derxy_,convelint_);
-
-      // velocity divergence required for conservative form
-      if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
-
-      // diffusive integration factor
-      const double fac_diffus = fac*diffus_[k];
-
-      // get value of current scalar
-      conint_[k] = funct_.Dot(ephinp_[k]);
-
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      // convective part in convective form times initial scalar field
-      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
-
-      // addition to convective term for conservative form
-      // -> spatial variation of density not yet accounted for
-      if (is_conservative_)
-        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
-
-      //----------------------------------------------------------------
-      // element matrix: transient term
-      //----------------------------------------------------------------
-      // transient term
-      for (int vi=0; vi<nen_; ++vi)
+      for (int k=0; k < numscal_; ++k)
       {
-        const double v = fac*funct_(vi)*densnp_[k];
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-#if 0
-      // initial time derivative of last scalar
-      // is obtained from electroneutrality!
-      if (is_elch_)
-      {
-        if (k==lastionidx)
-        {
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const double v = fac*funct_(vi)*densnp_[k];
-            const int fvi = vi*numdofpernode_+k;
-
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui = ui*numdofpernode_+k;
-
-              emat(fvi,fui) += valence_[k]*v*funct_(ui);
-              for (int kk=0; kk<lastionidx ; kk++)
-              {
-                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
-              }
-              for (int kk=lastionidx+1; kk<numscal_; kk++)
-              {
-                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
-              }
-            }
-          }
-        }
-        // we do not have to add anything to the rhs! -> go on with next k!
-        continue;
-      }
-#endif
-      //----------------------------------------------------------------
-      // element right hand side: convective term in convective form
-      //----------------------------------------------------------------
-      double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*funct_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: diffusive term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= vrhs*laplawf;
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: nonlinear migration term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus*conint_[k]*valence_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*migconv_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: reactive term
-      //----------------------------------------------------------------
-      if (is_reactive_)
-      {
-        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp_[k]);
+        const double vtrans = fac*densnp_[k]*phi;
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
 
-          erhs[fvi] -= vrhs*funct_(vi);
+          erhs[fvi] += vtrans*funct_(vi); // other sign!
         }
       }
+    }
+    else
+      dserror("Must be incremental!");
 
-      //----------------------------------------------------------------
-      // element right hand side: bodyforce term
-      //----------------------------------------------------------------
-      vrhs = fac*rhs_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*funct_(vi);
-      }
-    } // loop over each scalar k
-
-    if (is_elch_) // ELCH
+    if (is_elch_)
     {
       // we put a dummy mass matrix here in order to have a regular
       // matrix in the lower right block of the whole system-matrix
       // A identity matrix would cause problems with ML solver in the SIMPLE
       // schemes since ML needs to have off-diagonal entries for the aggregation!
-      for (int vi=0; vi<nen_; ++vi)
+
+      // loop starts at k=numscal_ !!
+      for (int k=numscal_; k < numdofpernode_; ++k)
       {
-        const double v = fac*funct_(vi); // density assumed to be 1.0 here
-        const int fvi = vi*numdofpernode_+numscal_;
-
-        for (int ui=0; ui<nen_; ++ui)
+        for (int vi=0; vi<nen_; ++vi)
         {
-          const int fui = ui*numdofpernode_+numscal_;
+          const double v = fac*funct_(vi); // no density here
+          const int fvi = vi*numdofpernode_+k;
 
-          emat(fvi,fui) += v*funct_(ui);
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) += v*funct_(ui);
+          }
         }
-      }
-      // dof for el. potential have no 'velocity' -> rhs is zero!
+      } // k
+
     }
 
   } // integration loop
 
-  return;
-} // ScaTraImpl::InitialTimeDerivative
+  // correct scaling of rhs (after subtraction!!!!)
+  double timefac2 = params.get<double>("time factor");
+  erhs.Scale(1.0/timefac2);
 
-/*----------------------------------------------------------------------------*
-  | calculate mass matrix + rhs for determ. time deriv. reinit. rasthofer 02/10|
-  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
-  DRT::Element*                         ele,
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  const double                          dt,
-  const double                          timefac,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
-  )
-{
+  if (is_elch_) // ELCH
+  {
+    // scalar at integration point
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+numscal_;
+
+      erhs[fvi] = 0.0; // zero out!
+    }
+  }
+
+  // get time-step length
+  const double dt   = params.get<double>("time-step length");
+
+  // get time factor and alpha_F if required
+  // one-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = alphaF * (gamma/alpha_M) * dt
+  double timefac = 1.0;
+  double alphaF  = 1.0;
+  if (not is_stationary_)
+  {
+    timefac = params.get<double>("time factor");
+    if (is_genalpha_)
+    {
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+    }
+    if (timefac < 0.0) dserror("time factor is negative.");
+  }
+
+
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -3469,12 +3226,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   }
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints222(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop
   /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints222.IP().nquad; ++iquad)
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -3486,14 +3243,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // get bodyforce in gausspoint (divided by specific heat capacity)
-      // (For temperature equation, time derivative of thermodynamic pressure
-      //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
-
-      // get gradient of el. potential at integration point
-      gradpot_.Multiply(derxy_,epotnp_);
-
       // get velocity at element center
       velint_.Multiply(evelnp_,funct_);
       convelint_.Multiply(econvelnp_,funct_);
@@ -3509,22 +3258,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
 
       const double fac_tau = fac*tau_[k];
 
-      // diffusive integration factor
-      const double fac_diffus = fac*diffus_[k];
-
       // get value of current scalar
       conint_[k] = funct_.Dot(ephinp_[k]);
 
       // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      // convective part in convective form times initial scalar field
-      double conv_ephi0_k = conv_.Dot(ephinp_[k]);
-
-      // addition to convective term for conservative form
-      // -> spatial variation of density not yet accounted for
-      if (is_conservative_)
-        conv_ephi0_k += conint_[k]*(vdiv_+(densgradfac_[k]/densnp_[k])*conv_ephi0_k);
+      // gradphi_.Multiply(derxy_,ephinp_[k]);
 
       //----------------------------------------------------------------
       // element matrix: transient term
@@ -3546,91 +3284,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
       //----------------------------------------------------------------
       // element matrix: stabilization of transient term
       //----------------------------------------------------------------
-      // convective stabilization of transient term (in convective form)
-      for (int vi=0; vi<nen_; ++vi)
+      if (not onlySGFEM)
       {
-        const double v = fac_tau*conv_(vi)*densnp_[k];//v = densamnptaufac*(conv_(vi)+sgconv_(vi));
-        const int fvi = vi*numdofpernode_+k;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: convective term in convective form
-      //----------------------------------------------------------------
-      double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*funct_(vi);
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: convective stabilization term
-      //----------------------------------------------------------------
-      // convective stabilization of convective term (in convective form)
-      vrhs = fac_tau*densnp_[k]*conv_ephi0_k*densnp_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*conv_(vi);
-      }
-
-      if (use2ndderiv_)
-      {
-        dserror("TimeDerivativePhidt not yet implemented for higher order elements");
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: diffusive term
-      //----------------------------------------------------------------
-      vrhs = fac_diffus;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= vrhs*laplawf;
-      }
-
-      //----------------------------------------------------------------
-      // element right hand side: reactive term
-      //----------------------------------------------------------------
-      if (is_reactive_)
-      {
-        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
+        // convective stabilization of transient term (in convective form)
         for (int vi=0; vi<nen_; ++vi)
         {
+          const double v = fac_tau*conv_(vi)*densnp_[k];//v = densamnptaufac*(conv_(vi)+sgconv_(vi));
           const int fvi = vi*numdofpernode_+k;
 
-          erhs[fvi] -= vrhs*funct_(vi);
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) += v*funct_(ui);
+          }
+
+          // remove convective stabilization of inertia term
+          erhs(fvi)+=fac_tau*densnp_[k]*conv_(vi)*densnp_[k]*conint_[k]/timefac2; // /timefac2;
+
         }
-      }
+      } // if (not onlySGFEM)
 
-      //----------------------------------------------------------------
-      // element right hand side: bodyforce term
-      //----------------------------------------------------------------
-      vrhs = fac*rhs_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] += vrhs*funct_(vi);
-      }
     } // loop over each scalar k
 
   } // integration loop
 
   return;
-} // ScaTraImpl::TimeDerivativeReinit
+  } // ScaTraImpl::CalcInitialTimeDerivative()
+
 
 
 /*---------------------------------------------------------------------*

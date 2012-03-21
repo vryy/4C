@@ -88,9 +88,6 @@ public:
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
                                                          return; };
 
-  /// calcuate phidt after reinitialization for OST scheme
-  void CalcPhidtReinit() { dserror("only implemented for OST"); return; };
-
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf(){return 1.0;}
 

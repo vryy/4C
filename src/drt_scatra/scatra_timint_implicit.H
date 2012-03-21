@@ -124,16 +124,14 @@ public:
   //! preparations for solve
   void PrepareLinearSolve();
 
-  //! increment time and step value ? rename to SetTimeAndStep
+  //! set time and step value
   void SetTimeStep(
-    double time = 0.0, //!< time in simulation
-    int step = 0       //!< iteration step
+    double time = 0.0, //!< new time value
+    int step = 0       //!< new step value
     )
   {
     time_ = time;
     step_ = step;
-
-    return;
   };
 
   //! do explicit predictor step (-> better starting value for nonlinear solver)
@@ -785,9 +783,6 @@ protected:
 
   //! call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
   void AssembleMatAndRHS_Boundary();
-
-  //! calculate phidt after reinitialization for OST scheme
-  virtual void CalcPhidtReinit() = 0;
 
   //! print information about current pseudo time step to screen
   virtual void PrintPseudoTimeStepInfoReinit()

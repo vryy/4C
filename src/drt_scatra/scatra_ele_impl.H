@@ -82,7 +82,7 @@ public:
     DRT::Element*              ele,            //!< the element we are dealing with
     ParameterList&             params,         //!< the parameter list
     DRT::Discretization&       discretization, //!< the discretization the element is part of
-    vector<int>&               lm,             //!< ?
+    vector<int>&               lm,             //!< location matrix
     Epetra_SerialDenseMatrix&  elemat1_epetra, //!< ?
     Epetra_SerialDenseMatrix&  elemat2_epetra, //!< ?
     Epetra_SerialDenseVector&  elevec1_epetra, //!< ?
@@ -215,23 +215,14 @@ private:
   );
 
   //! calculate mass matrix and rhs for determining initial time derivative
-  virtual void InitialTimeDerivative(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const double                          frt,       //!< factor F/RT needed for ELCH calculations
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-  );
-
-  //! calculate mass matrix and rhs for determining initial time derivative
   virtual void CalcInitialTimeDerivative(
     DRT::Element*                         ele,       //!< the element we are dealing with
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-//    const double                          frt      //!< factor F/RT needed for ELCH calculations
+    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
+    ParameterList&                        params,         //!< the parameter list
+    DRT::Discretization&                  discretization, //!< the discretization the element is part of
+    vector<int>&                          lm              //!< location matrix
   );
 
   //! calculate error compared to analytical solutions
