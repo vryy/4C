@@ -141,12 +141,42 @@ namespace ELEMENTS
                          const DRT::UTILS::GaussIntegration & intpoints,
                          bool                                 offdiag = false);
 
+    /*!
+      \brief calculate dissipation of various terms (evaluation of turbulence models)
+    */
     virtual int CalcDissipation(Fluid3*                    ele,
                                 ParameterList&             params,
                                 DRT::Discretization&       discretization,
                                 vector<int>&               lm,
-                                RefCountPtr<MAT::Material> mat)
-    {dserror("Implemented in derived standard class!"); return 0;}
+                                RefCountPtr<MAT::Material> mat);
+
+    /*!
+      \brief finite difference check for debugging
+    */
+    virtual void FDcheck(int                                                 eid,
+                         const LINALG::Matrix<nsd_,nen_>&                    evelaf,
+                         const LINALG::Matrix<nsd_,nen_>&                    eveln,
+                         const LINALG::Matrix<nsd_,nen_>&                    fsevelaf,
+                         const LINALG::Matrix<nen_,1>&                       epreaf,
+                         const LINALG::Matrix<nsd_,nen_>&                    eaccam,
+                         const LINALG::Matrix<nen_,1>&                       escaaf,
+                         const LINALG::Matrix<nen_,1>&                       escaam,
+                         const LINALG::Matrix<nen_,1>&                       escadtam,
+                         const LINALG::Matrix<nsd_,nen_>&                    emhist,
+                         const LINALG::Matrix<nsd_,nen_>&                    edispnp,
+                         const LINALG::Matrix<nsd_,nen_>&                    egridv,
+                         const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
+                         const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
+                         const LINALG::Matrix<(nsd_+1)*nen_,    1>&          eforce,
+                         const double                                        thermpressaf,
+                         const double                                        thermpressam,
+                         const double                                        thermpressdtaf,
+                         const double                                        thermpressdtam,
+                         const Teuchos::RCP<const MAT::Material>             material,
+                         const double                                        timefac,
+                         const double&                                       Cs,
+                         const double&                                       Cs_delta_sq,
+                         const double&                                       l_tau);
 
     virtual void ElementXfemInterface( DRT::ELEMENTS::Fluid3 *                                           ele,
                                        DRT::Discretization &                                             dis,
