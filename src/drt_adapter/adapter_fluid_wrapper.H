@@ -161,7 +161,7 @@ namespace ADAPTER
     virtual void MultiCorrector()
     { return fluid_->MultiCorrector(); }
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
-    { return fluid_->RelaxationSolve(ivel); }
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     { return fluid_->LinearSolver(); }
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()

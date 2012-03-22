@@ -88,6 +88,8 @@ double ADAPTER::FluidFSI::TimeScaling() const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::Update()
 {
   Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_->ExtractFSICondVector(fluidimpl_->TrueResidual());
@@ -97,6 +99,17 @@ void ADAPTER::FluidFSI::Update()
   fluidimpl_->TimeUpdate();
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
+  interface_->InsertFSICondVector(ivel,relax);
+  fluidimpl_->LinearRelaxationSolve(relax);
+  return ExtractInterfaceForces();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

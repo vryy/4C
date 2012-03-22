@@ -74,6 +74,8 @@ namespace ADAPTER {
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+
     /// communication object at the interface
     virtual const FLD::UTILS::MapExtractor& Interface() const { return *interface_; }
 
