@@ -2256,13 +2256,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "beltrami_flow",
                                  "channel2D",
                                  "gravitation",
-                                 "shear_flow"),
+                                 "shear_flow",
+                                 "jeffery_hamel_flow"),
                                tuple<int>(
                                    INPAR::FLUID::no_error_calculation,
                                    INPAR::FLUID::beltrami_flow,
                                    INPAR::FLUID::channel2D,
                                    INPAR::FLUID::gravitation,
-                                   INPAR::FLUID::shear_flow),
+                                   INPAR::FLUID::shear_flow,
+                                   INPAR::FLUID::jeffery_hamel_flow),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
@@ -4170,18 +4172,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   &fsidyn);
 
   // Iterationparameters for convergence check of newton loop
-  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+  setStringToIntegralParameter<int>("NORM_INC","Rel","type of norm for primary variables convergence check",
                                tuple<std::string>(
                                  "Abs",
-                                 "Rel"
+                                 "Rel",
+                                 "Mix"
                                  ),
                                tuple<int>(
                                  INPAR::FSI::convnorm_abs,
-                                 INPAR::FSI::convnorm_rel
+                                 INPAR::FSI::convnorm_rel,
+                                 INPAR::FSI::convnorm_mix
                                  ),
                                &fsidyn);
 
-  setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+  setStringToIntegralParameter<int>("NORM_RESF","Rel","type of norm for residual convergence check",
                                  tuple<std::string>(
                                    "Abs",
                                    "Rel",
