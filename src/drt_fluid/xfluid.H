@@ -132,7 +132,6 @@ namespace FLD
       /// (standard) system matrix
       Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
-
       /// maps for extracting Dirichlet and free DOF sets
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
@@ -209,14 +208,12 @@ namespace FLD
       /// return the wizard
       Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
 
-      /// edge stabilization and ghost penalty object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
-
       /// XFluid object
       XFluid & xfluid_;
 
       /// FluidWizard
       Teuchos::RCP<XFEM::FluidWizard> wizard_;
+
 
     private:
 
@@ -255,6 +252,11 @@ namespace FLD
 
       /// Fluid dofset
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
+
+
+      /// edge stabilization and ghost penalty object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+
     };
 
   public:
@@ -304,9 +306,7 @@ namespace FLD
     /// predictor
     void Predictor();
 
-    /// (multiple) corrector
-//    void MultiCorrector();
-
+    /// return rcp to linear solver
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
@@ -380,6 +380,13 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
     Teuchos::RCP<const Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
 
+    Teuchos::RCP<Epetra_Vector> IVelnp(){return ivelnp_; }
+    Teuchos::RCP<Epetra_Vector> IVeln() {return iveln_; }
+    Teuchos::RCP<Epetra_Vector> IVelnm(){return ivelnm_; }
+
+    Teuchos::RCP<Epetra_Vector> IDispnp() { return idispnp_; }
+    Teuchos::RCP<Epetra_Vector> IDispn()  { return idispn_; }
+
     // @}
 
 
@@ -410,16 +417,6 @@ namespace FLD
     /// return boundary discretization
     Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
-
-    /// return type of time integration scheme
-//    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
-
-    /// return type of enforcing interface conditions
-    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
-
-    /// get maximal number of nonlinear steps
-//    int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
-
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
@@ -434,6 +431,7 @@ namespace FLD
         return density_/(theta_*dta_);
     }
 
+    /// turbulence statistics manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
        {dserror("not implemented"); return Teuchos::null;}
 
@@ -447,36 +445,8 @@ namespace FLD
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-    // dof-row maps
-    const Epetra_Map* soliddofrowmap_;
-    const Epetra_Map* boundarydofrowmap_;
 
 
-    // dofset for fluid output
-    RCP<DRT::IndependentDofSet>    dofset_out_;
-
-    // velocity pressure splitter for fluid output
-    LINALG::MapExtractor      velpressplitterForOutput_;
-
-    // output vector for fluid field (velocity and pressure)
-    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
-
-
-    //! @name boundary-dis state vectors
-    Teuchos::RCP<Epetra_Vector>    ivelnp_;
-    Teuchos::RCP<Epetra_Vector>    iveln_;
-    Teuchos::RCP<Epetra_Vector>    ivelnm_;
-
-    Teuchos::RCP<Epetra_Vector>    idispnp_;
-    Teuchos::RCP<Epetra_Vector>    idispn_;
-    Teuchos::RCP<Epetra_Vector>    itrueresidual_;
-    Teuchos::RCP<Epetra_Vector>    iforcenp_;
-    //@}
-
-    //! @name solid-dis state vectors
-    Teuchos::RCP<Epetra_Vector>    solidvelnp_;
-    Teuchos::RCP<Epetra_Vector>    soliddispnp_;
-    //@}
 
 
   private:
@@ -529,6 +499,12 @@ namespace FLD
     */
     void GenAlphaUpdateAcceleration();
 
+    /// return type of enforcing interface conditions
+    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
+
+
+    //--------------- discretization and general algorithm parameters----------------
+
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      discret_;      //! fluid discretization
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
@@ -543,9 +519,10 @@ namespace FLD
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     //@}
 
+    //---------------------------------input parameters------------------
+
     /// type of enforcing interface conditions in XFEM
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
-
 
     //! @name setting an (initial) interface velocity
     INPAR::XFEM::InterfaceInitVel interface_vel_init_;
@@ -587,12 +564,28 @@ namespace FLD
     bool gmsh_cut_out_;
     //@}
 
+    /// flag for physical type of fluid flow (standard: incompressible)
+    enum INPAR::FLUID::PhysicalType physicaltype_;
+
+    //---------------------------------output----------------------------
+
     //! @name output discretization writers
     Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> boundary_output_;
     //@}
 
+    // dofset for fluid output
+    RCP<DRT::IndependentDofSet>    dofset_out_;
+
+    // velocity pressure splitter for fluid output
+    LINALG::MapExtractor      velpressplitterForOutput_;
+
+    // output vector for fluid field (velocity and pressure)
+    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
+
+    //--------------------------------------------------------------------
 
     //! the processor ID from the communicator
     int                           myrank_;
@@ -624,9 +617,6 @@ namespace FLD
     double thermpressdtaf_;
     double thermpressdtam_;
 
-    /// flag for physical type of fluid flow (standard: incompressible)
-    enum INPAR::FLUID::PhysicalType physicaltype_;
-
     //! @name restart variables
     int upres_;
     //@}
@@ -654,15 +644,45 @@ namespace FLD
     double  dtfilter_;
     double  dtsolve_;
 
+    //--------------------------------------------------------------------
+
     /// state object at old time step
     Teuchos::RCP<XFluidState> staten_;
     /// state object at current new time step
     Teuchos::RCP<XFluidState> state_;
 
+
+    //---------------------------------dofsets----------------------------
+
     //! @name dofset variables for dofsets with variable size
     int maxnumdofsets_;
     int minnumdofsets_;
     //@}
+
+    // dof-row maps
+    const Epetra_Map* soliddofrowmap_;
+    const Epetra_Map* boundarydofrowmap_;
+
+
+    //------------------------------- vectors -----------------------------
+
+    //! @name boundary-dis state vectors
+    Teuchos::RCP<Epetra_Vector>    ivelnp_;
+    Teuchos::RCP<Epetra_Vector>    iveln_;
+    Teuchos::RCP<Epetra_Vector>    ivelnm_;
+
+    Teuchos::RCP<Epetra_Vector>    idispnp_;
+    Teuchos::RCP<Epetra_Vector>    idispn_;
+    Teuchos::RCP<Epetra_Vector>    itrueresidual_;
+    Teuchos::RCP<Epetra_Vector>    iforcenp_;
+    //@}
+
+    //! @name solid-dis state vectors
+    Teuchos::RCP<Epetra_Vector>    solidvelnp_;
+    Teuchos::RCP<Epetra_Vector>    soliddispnp_;
+    //@}
+
+
   };
 }
 

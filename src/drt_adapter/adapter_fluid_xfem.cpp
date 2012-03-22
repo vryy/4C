@@ -57,13 +57,13 @@ void ADAPTER::FluidXFEM::PrepareTimeStep()
 {
   FLD::XFluid* ffield = dynamic_cast<FLD::XFluid*>(&(FluidField()));
   // update velocity n-1
-  ffield->ivelnm_->Update(1.0,*ffield->iveln_,0.0);
+  ffield->IVelnm()->Update(1.0,*ffield->IVeln(),0.0);
 
   // update velocity n
-  ffield->iveln_->Update(1.0,*ffield->ivelnp_,0.0);
+  ffield->IVeln()->Update(1.0,*ffield->IVelnp(),0.0);
 
   // update displacement n
-  ffield->idispn_->Update(1.0,*ffield->idispnp_,0.0);
+  ffield->IDispn()->Update(1.0,*ffield->IDispnp(),0.0);
 
   FluidField().PrepareTimeStep();
 }

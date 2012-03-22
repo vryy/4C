@@ -1,4 +1,6 @@
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "cut_integrationcell.H"
 #include "cut_meshintersection.H"
 #include "cut_position.H"
@@ -706,6 +708,7 @@ void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vecto
                                                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
                                                                       std::string gausstype)
 {
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
 
     GetVolumeCellsDofSets( cell_sets, nds_sets );
 

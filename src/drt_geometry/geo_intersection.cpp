@@ -12,7 +12,7 @@ Maintainer: Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 
 #include "../drt_fluid/xfluid_defines.H"
-#include "geo_intersection.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -28,6 +28,10 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_side.H"
 #include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_parallel.H"
+
+#include "geo_utils.H"
+
+#include "geo_intersection.H"
 
 
 GEO::CutWizard::CutWizard( DRT::Discretization & dis, bool include_inner, int numcutmesh )

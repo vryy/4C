@@ -147,13 +147,6 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // history vector
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
-//  if (xfluid.alefluid_)
-//  {
-//    dispnp_ = LINALG::CreateVector(*dofrowmap,true);
-//    dispn_  = LINALG::CreateVector(*dofrowmap,true);
-//    dispnm_ = LINALG::CreateVector(*dofrowmap,true);
-//    gridv_  = LINALG::CreateVector(*dofrowmap,true);
-//  }
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -214,6 +207,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   // create an column residual vector for assembly over row elements that has to be communicated at the end
   RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
 
+  // create an column iforce vector for assembly over row elements that has to be communicated at the end
+  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutdiscret.DofColMap(),true);
+
+
+  //----------------------------------------------------------------------
   // set general vector values needed by elements
   discret.ClearState();
   discret.SetState("hist" ,hist_ );
@@ -226,6 +224,12 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     discret.SetState("gridv", gridv_);
   }
 
+  // set scheme-specific element parameters and vector values
+  if (xfluid_.timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    discret.SetState("velaf",velaf_);
+  else
+    discret.SetState("velaf",velnp_);
+
   // set general vector values of boundarydis needed by elements
   cutdiscret.ClearState();
 
@@ -233,19 +237,15 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   cutdiscret.SetState("idispnp",xfluid_.idispnp_);
 
 
-  const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutdiscret.DofColMap(),true);
+  //----------------------------------------------------------------------
   // let the elements fill it
   eleparams.set("iforcenp",iforcecolnp);
 
   eleparams.set("nitsche_stab", xfluid_.nitsche_stab_);
   eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
 
-  // set scheme-specific element parameters and vector values
-  if (xfluid_.timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    discret.SetState("velaf",velaf_);
-  else
-    discret.SetState("velaf",velnp_);
 
+  //----------------------------------------------------------------------
   int itemax = xfluid_.params_->get<int>("max nonlin iter steps");
 
   // convergence check at itemax is skipped for speedup if
@@ -255,12 +255,13 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       (xfluid_.params_->get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
   {
     // call standard loop over elements
-    //discret.Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
     DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
 
     DRT::Element::LocationArray la( 1 );
 
+
+    //------------------------------------------------------------
     // loop over column elements
     const int numrowele = discret.NumMyRowElements();
 
@@ -284,6 +285,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       {
 
 #ifdef DOFSETS_NEW
+
           std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
           std::vector< std::vector<int> > nds_sets;
           std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
@@ -316,6 +318,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               // Reshape element matrices and vectors and init to zero (rdim, cdim)
               strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
+              //------------------------------------------------------------
+              // Evaluate domain integrals
               {
                   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
 
@@ -331,6 +335,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                   if (err)
                       dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
               }
+
+              //------------------------------------------------------------
+              // Evaluate interface integrals
 
               // do cut interface condition
 
@@ -394,6 +401,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                          Cuiui);
 
               }
+              //------------------------------------------------------------
+              // Assemble matrix and vectors
 
               int eid = actele->Id();
 
@@ -600,26 +609,31 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
     discret.ClearState();
 
+
+
     //-------------------------------------------------------------------------------
-    // scaling to get true residual vector
-    trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
+    // need to export the interface forces
+    Epetra_Vector iforce_tmp(xfluid_.itrueresidual_->Map(),false);
+    Epetra_Export exporter_iforce(iforcecolnp->Map(),iforce_tmp.Map());
+    int err1 = iforce_tmp.Export(*iforcecolnp,exporter_iforce,Add);
+    if (err1) dserror("Export using exporter returned err=%d",err1);
+    xfluid_.itrueresidual_->Update(1.0,iforce_tmp,0.0);
 
-
-    // for output in adapter
-//    cutdiscret.SetState("iforcenp", iforcecolnp);
-
-    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
-    xfluid_.itrueresidual_->PutScalar(0.0);
-    xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
-
+//    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
+//    xfluid_.itrueresidual_->PutScalar(0.0);
+//    xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
 
     //-------------------------------------------------------------------------------
     // need to export residual_col to systemvector1 (residual_)
     Epetra_Vector res_tmp(residual_->Map(),false);
     Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
-    int err = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
-    if (err) dserror("Export using exporter returned err=%d",err);
+    int err2 = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
+    if (err2) dserror("Export using exporter returned err=%d",err2);
     residual_->Update(1.0,res_tmp,1.0);
+
+    //-------------------------------------------------------------------------------
+    // scaling to get true residual vector
+    trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
 
     //-------------------------------------------------------------------------------
     // finalize the complete matrix

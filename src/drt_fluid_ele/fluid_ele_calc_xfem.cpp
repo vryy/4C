@@ -13,6 +13,7 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <fstream>
 
@@ -264,7 +265,7 @@ namespace DRT
                                     LINALG::Matrix<2,1> & xi_side
                                   )
         {
-
+          TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
           // Initialization
           LINALG::Matrix<side_nen_,1> funct(true);          // shape functions
           LINALG::Matrix<2,side_nen_> deriv(true);          // derivatives dr, ds

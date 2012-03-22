@@ -290,7 +290,7 @@ void GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
     int nid = it->first;
     Point::PointPosition received_pos = (Point::PointPosition)it->second;
 
-    // find the node on current proc
+    // find the node on current proc (remark: this node has to be on this proc, it's the original source proc)
     Node* n = mesh_.GetNode(nid);
 
     if(n!=NULL)
@@ -347,10 +347,6 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
 
   // check if there are missing dofset for volumecells on this proc
   meshintersection_.FillParallelDofSetData(dofSetData_, discret_);
-
-
-//  cout << "data to send for vc in element " << endl;
-//  printDofSetData();
 
 
   // perform just one Robin round to gather data from other procs
@@ -440,7 +436,7 @@ void GEO::CUT::Parallel::exportDofSetData()
         // unpack volumecell
         int set_index = -1;                                  // set index for Volumecell
         int inside_cell = false;                             // inside or outside cell
-        std::vector<LINALG::Matrix<3,1> > cut_points_coords;
+        std::vector<LINALG::Matrix<3,1> > cut_points_coords; // coordinates of cut points
         int peid = -1;                                       // parent element id for volume cell
         std::map<int,int> node_dofsetnumber_map;             // map <nid, current dofset number>
 
@@ -652,8 +648,6 @@ void GEO::CUT::Parallel::distributeDofSetData()
 
   // back to the original proc
 
-  // printDofSetData();
-
   for(std::vector<MeshIntersection::DofSetData>::iterator data = dofSetData_->begin(); data!=dofSetData_->end(); data++)
   {
     // set data in first volumecell of set with setindex
@@ -734,7 +728,6 @@ void GEO::CUT::Parallel::ReplaceNdsVectors (ElementHandle*                      
   // create the new dofset Vector
   std::vector<int> nds_new;
 
-//  cout << "replace nds vector " << endl;
   // fill the new nds-vector
   for(int i=0; i< (int)nds_old.size(); i++)
   {
@@ -743,7 +736,6 @@ void GEO::CUT::Parallel::ReplaceNdsVectors (ElementHandle*                      
     {
       int nid = nodes[i]->Id(); // key for received node_dofsetnumber_map
       nds_new.push_back( node_dofsetnumber_map.find(nid)->second );
-//      cout << "-1 replaced by" << node_dofsetnumber_map.find(nid)->second << endl;
     }
     else // set original dofset number
     {

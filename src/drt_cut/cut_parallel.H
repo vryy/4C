@@ -110,19 +110,19 @@ public:
   \brief Unpack the point coordinates
    */
   void unpackPoints(
-      vector<char>::size_type& posinData,
-      vector<char>& dataRecv,
-      vector<LINALG::Matrix<3,1> > & points_coords
+      vector<char>::size_type& posinData,               //!< position in data
+      vector<char>& dataRecv,                           //!< received data
+      vector<LINALG::Matrix<3,1> > & points_coords      //!< point coordinates
   ) const;
 
   /*!
   \brief Basic function sending data to destination and receiving data from source
    */
   void sendData(
-      DRT::PackBuffer& dataSend,
-      int& dest,
-      int& source,
-      std::vector<char>& dataRecv
+      DRT::PackBuffer& dataSend,                        //!< pack buffer
+      int& dest,                                        //!< destination proc
+      int& source,                                      //!< source proc
+      std::vector<char>& dataRecv                       //!< received data
   ) const;
 
   /*!
@@ -131,24 +131,31 @@ public:
   void printDofSetData();
 
   /*!
-  \brief Get the index of nid in the vector of elements (eid) node Ids
+  \brief Get the index of nid in the vector of element's (eid) node Ids
    */
-  void getDofSetVecIndex(int & index, int nid, int eid);
+  void getDofSetVecIndex(int & index,  //!< index in vector
+                         int nid,      //!< nid for which index has to be found
+                         int eid       //!< element id
+                         );
 
-  //!
-  void ReplaceNdsVectors (ElementHandle*                            e,
-                          const std::vector<plain_volumecell_set> & ele_vc_sets,
-                          std::vector<std::vector<int> > &          nodaldofset_vc_sets,
-                          int                                       set_index,
-                          std::map<int,int>&                        node_dofsetnumber_map);
+  //! replace nds (nodal dofset number) vectors for a volumecell set with set_index
+  void ReplaceNdsVectors (ElementHandle*                            e,                     //!< element handle
+                          const std::vector<plain_volumecell_set> & ele_vc_sets,           //!< sets of volumecells
+                          std::vector<std::vector<int> > &          nodaldofset_vc_sets,   //!< corresponding nodal dofsets for sets of volumecells
+                          int                                       set_index,             //!< number of set
+                          std::map<int,int>&                        node_dofsetnumber_map  //!< map of nid and corresponding dofset number for all nodes in element
+                          );
 
   // data accessing
 
   //! discretization
   DRT::Discretization & discret_;
 
-  const int myrank_;  // current processor id
-  const int numproc_; // number of processors
+  //! current processor id
+  const int myrank_;
+
+  //! number of processors
+  const int numproc_;
 
   GEO::CUT::Mesh & mesh_; // mesh that carries the cut information of the mesh
 
