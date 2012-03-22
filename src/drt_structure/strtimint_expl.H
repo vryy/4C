@@ -243,6 +243,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
     {
       dserror("SolveRelaxationLinear() not implemented");
+      return Teuchos::null;
     }
 
     /// are there any algebraic constraints?
