@@ -37,7 +37,6 @@ THETA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-10
-FLUID_SOLVER                    Implicit
 GRIDVEL                         1
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5

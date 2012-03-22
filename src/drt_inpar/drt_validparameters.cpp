@@ -2074,15 +2074,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::poro),
                                &fdyn);
 
-  // TODO: is this outdated?
-  setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
-                                    "Solving strategy for fluid",
-                                    tuple<std::string>("Implicit",
-                                                       "FluidXFluid"),
-                                    tuple<int>(fluid_solver_implicit,
-                                               fluid_solver_fluid_xfluid),
-                                    &fdyn);
-
   // number of linear solver used for fluid problem
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for fluid dynamics",&fdyn);
 

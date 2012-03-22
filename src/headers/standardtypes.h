@@ -59,7 +59,6 @@ typedef struct _GENPROB
   INT               numsf;         /* actual number of struct-field */
   INT               numff;         /* actual number of fluid field */
   INT               numaf;         /* actual number of ale field */
-  INT               numls;         /* actual number of ls field */
   INT               numtf;         /* actual number of the thermal field */
   INT               numscatra;     /* actual number of the scalar transport field */
   INT               numartf;       /* actual number of the 1D_Artery field */

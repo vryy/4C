@@ -146,28 +146,6 @@ typedef enum _MATERIAL_TYP
 } MATERIAL_TYP;
 #endif
 
-/*----------------------------------------------------------------------*/
-/* The known time marching schemes for fluids. */
-/*----------------------------------------------------------------------*/
-typedef enum _FLUID_DYNTYPE
-{
-  dyntyp_nln_time_int=0,
-  dyntyp_lin_time_int=1,
-  dyntyp_pm_discont=2,
-  dyntyp_pm_cont=3,
-  dyntyp_pm_cont_laplace=4
-} FLUID_DYNTYPE;
-
-/*----------------------------------------------------------------------*/
-/* The known solving strategies for fluids. */
-/*----------------------------------------------------------------------*/
-typedef enum _FLUID_SOLVINGSTRATEGIES
-{
-  fluid_solver_implicit=0,
-  fluid_solver_pressurecorrection=1,
-  fluid_solver_pressurecorrection_semiimplicit=2,
-  fluid_solver_fluid_xfluid
-} FLUID_SOLVINGSTRATEGIES;
 
 /*----------------------------------------------------------------------*/
 /* The coupling methods for FSI. */
