@@ -3754,8 +3754,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
             //actele->LocationVector(discret,nds,la,false);
             actele->LocationVector(*bgdis_,ndstest,la,false);
 
-            DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->ComputeErrorXFEM(ele,*params_, mat, *bgdis_, la[0].lm_,
-                                                                                        elescalars,intpoints[count]);
+            DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
+                                                                                      elescalars,intpoints[count]);
 
             // sum up (on each processor)
             cpuscalars += elescalars;
