@@ -317,7 +317,7 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.001
+MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2   ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 2.0 c2 1.0
