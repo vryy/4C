@@ -35,7 +35,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
 
-#include "adapter_structure_wrapper.H"
+#include "FSIStructureWrapper.H"
 
 //using namespace Teuchos;
 /*----------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ namespace ADAPTER {
    *
    * \date 11/08
    */
-  class StructureConstrMerged : public StructureWrapper
+  class StructureConstrMerged : public FSIStructureWrapper
   {
   public:
 

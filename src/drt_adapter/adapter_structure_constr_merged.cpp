@@ -38,7 +38,7 @@ ADAPTER::StructureConstrMerged::StructureConstrMerged
 (
   RCP<Structure> stru
 )
-: StructureWrapper(stru)
+: FSIStructureWrapper(stru)
 {
   // make sure
   if (structure_ == null)

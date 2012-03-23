@@ -380,8 +380,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
           structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
-        else
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(Teuchos::rcp(new StructureConstrMerged(tmpstr))))));
+        else 
+          structure_ = Teuchos::rcp(new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
       }
       else
       {
@@ -397,9 +397,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     {
       tmpstr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
       if (tmpstr->HaveConstraint())
-      {
         structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
-      }
       else
         structure_ = tmpstr;
     }
