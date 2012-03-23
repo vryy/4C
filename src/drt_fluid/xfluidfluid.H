@@ -13,11 +13,7 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/fluid_timint.H"
-
-#include "../linalg/linalg_sparseoperator.H"
-#include "../linalg/linalg_sparsematrix.H"
 
 namespace DRT
 {
@@ -89,8 +85,7 @@ namespace FLD
 
 
       /// (standard) system matrix
-
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
       /// maps for extracting Dirichlet and free DOF sets
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

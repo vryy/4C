@@ -87,7 +87,7 @@ INTERFACE_VEL_INITIAL           interface_vel_init_zero
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    Yes
 GMSH_DISCRET_OUT                Yes
-GMSH_CUT_OUT                    No
+GMSH_CUT_OUT                    Yes
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 --------------------------------------------------------------------SOLVER 1

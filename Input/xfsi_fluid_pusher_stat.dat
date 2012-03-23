@@ -39,18 +39,19 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
+DYNAMICTYP                      GenAlpha//OneStepTheta
 EIGEN                           0
-RESULTSEVRY                     1
-RESTARTEVRY                     5
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
-TIMESTEP                        1.0
+TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
+NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
 DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
+M_DAMP                          0.000001
+K_DAMP                          0.00001
 PREDICT                         ConstDisVelAcc
+NORM_DISP                       Rel
+NORM_RESF                       Rel
+NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 TOLCONSTR                       1.0E-06
@@ -65,8 +66,9 @@ GAMMA                           0.5
 ALPHA_M                         0.5
 ALPHA_F                         0.5
 ---------------------------------------------------------------FLUID DYNAMIC
-INITIALFIELD zero_field //zero_field
-TIMEINTEGR Stationary //One_Step_Theta
+LINEAR_SOLVER                   1
+INITIALFIELD                    zero_field //zero_field
+TIMEINTEGR                      Stationary //One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm

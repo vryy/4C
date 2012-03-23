@@ -129,7 +129,7 @@ namespace FLD
                        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
                        );
 
-      /// (standard) system matrix
+      /// system matrix filled with EpetraFECrs matrix
       Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
       /// maps for extracting Dirichlet and free DOF sets

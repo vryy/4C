@@ -1,7 +1,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "xfluidfluid.H"
+
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
@@ -36,6 +36,8 @@
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_ostream0.H"
@@ -51,6 +53,8 @@
 #include "fluid_utils.H"
 
 #include "xfluid_defines.H"
+
+#include "xfluidfluid.H"
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
@@ -84,7 +88,15 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   fluiddofrowmap_ = xfluid.bgdis_->DofRowMap();
 
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,108,false,true));
+  // create an EpetraFECrs matrix that does communication for non-local rows and columns
+  // * this enables to do the evaluate loop over just row elements instead of col elements
+  // * time consuming assemble for cut elements is done only once on a unique row processor
+  // REMARK: call the SparseMatrix: * explicitdirichlet = true (is used in ApplyDirichlet, false uses Epetra memory based operations
+  //                                                            that are not ensured to be always compatible with baci)
+  //                                * savegraph = false ( the matrix graph (pattern for non-zero entries) can change ) do not store this graph
+  //                                * with FE_MATRIX flag
+  //TODO: for edgebased approaches the number of connections between rows and cols should be increased
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,108,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // Vectors passed to the element
   // -----------------------------
@@ -181,13 +193,20 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid" );
 
+
   sysmat_->Zero();
   xfluid_.alesysmat_->Zero();
 
    // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
   xfluid_.aleresidual_->Update(1.0,*xfluid_.aleneumann_loads_,0.0);
-//  xfluid_.aleresidual_->PutScalar(0.0);
+
+  // create an column residual vector for assembly over row elements that has to be communicated at the end
+  RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  // create an column coupling rhC_ui vector for assembly over row elements that has to be communicated at the end
+  RCP<Epetra_Vector> rhC_ui_col;
+
+  //----------------------------------------------------------------------
 
   // set general vector values needed by elements
   discret.ClearState();
@@ -234,44 +253,48 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     alediscret.SetState("velaf",xfluid_.alevelnp_);
   }
 
+  //----------------------------------------------------------------------
+
   eleparams.set("coupling_strategy",xfluid_.coupling_strategy_);
 
   eleparams.set("nitsche_stab", xfluid_.nitsche_stab_);
   eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
 
-  DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-  DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_,xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
+  DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
+  DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_, xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
 
-  Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,false,false));
+  Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
   if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
   {
-    Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,false,false));
-    Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,false,false));
+    Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
     rhC_ui_= LINALG::CreateVector(*xfluid_.boundarydofrowmap_,true);
+    rhC_ui_col= LINALG::CreateVector(*cutdiscret.DofColMap(),true);
   }
   else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
   {
-    Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.aledofrowmap_,0,false,false));
-    Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.aledofrowmap_,0,false,false));
+    Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.aledofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.aledofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
     rhC_ui_= LINALG::CreateVector(*xfluid_.aledofrowmap_,true);
+    rhC_ui_col= LINALG::CreateVector(*alediscret.DofColMap(),true);
   }
 
-//     ParObjectFactory::Instance().PreEvaluate(*this,params,
-//                                              strategy.Systemmatrix1(),
-//                                              strategy.Systemmatrix2(),
-//                                              strategy.Systemvector1(),
-//                                              strategy.Systemvector2(),
-//                                              strategy.Systemvector3());
+
 
   DRT::Element::LocationArray la( 1 );
   DRT::Element::LocationArray alela( 1 );
   DRT::Element::LocationArray ila ( 1 );
 
-  // loop over column elements
-  const int numcolele = discret.NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
+  //------------------------------------------------------------
+  // loop over row elements
+  const int numrowele = discret.NumMyRowElements();
+
+  // REMARK: in this XFEM framework the whole evaluate routine uses only row elements and
+  // assembles into EpetraFECrs matrix
+  // this is baci-unusual but more efficient in all XFEM applications
+  for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = discret.lColElement(i);
+    DRT::Element* actele = discret.lRowElement(i);
     Teuchos::RCP<MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
@@ -364,8 +387,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
 
-          //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
-
           // set of all side Ids of involved sides
           std::set<int> begids;
           for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
@@ -379,7 +400,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           vector<int> patchelementslm;
           vector<int> patchelementslmowner;
 
-          // initialize the couplingmatrices for each side and the current element
+          // initialize the coupling matrices for each side and the current element
           for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
                 bc!=bcells.end(); ++bc )
           {
@@ -417,7 +438,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             couplingmatrices.resize(3);
 
             // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
-            couplingmatrices[0].Reshape(ndof_i,ndof); //C_uiu
+            couplingmatrices[0].Reshape(ndof_i,ndof);  //C_uiu
             couplingmatrices[1].Reshape(ndof,ndof_i);  //C_uui
             couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
 
@@ -469,10 +490,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                                        Cuiui);
 
 
-          if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
-            dserror("do not call BoundaryTypeNeumann for FluidFluidCoupling");
-
-
           for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                 sc!=side_coupling.end(); ++sc )
           {
@@ -497,23 +514,51 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                 emb_ele->LocationVector(alediscret, patchlm, patchlmowner, patchlmstride);
               }
 
-              // create a dummy stride vector that is correct
-              Cuiu_->Assemble(-1, la[0].stride_, couplingmatrices[0], patchlm, patchlmowner, la[0].lm_);
-              vector<int> stride(1); stride[0] = (int)patchlm.size();
-              Cuui_->Assemble(-1, stride, couplingmatrices[1], la[0].lm_, la[0].lmowner_, patchlm);
+              // assemble Cuiu
+              //create a dummy mypatchlmowner that assembles also non-local rows and communicates the required data
+              std::vector<int> mypatchlmowner;
+              for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(xfluid_.myrank_);
+
+              Cuiu_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+
+              // assemble Cuui
+              std::vector<int> mylmowner;
+              for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(xfluid_.myrank_);
+
+              Cuui_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+
+
+              // assemble rhC_ui_col
               Epetra_SerialDenseVector rhC_ui_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
-              LINALG::Assemble(*rhC_ui_, rhC_ui_eptvec, patchlm, patchlmowner);
+              LINALG::Assemble(*rhC_ui_col, rhC_ui_eptvec, patchlm, mypatchlmowner);
             }
           }
 
-          vector<int> stride(1); stride[0] = (int)patchelementslm.size();
-          Cuiui_->Assemble(-1,stride, Cuiui, patchelementslm, patchelementslmowner, patchelementslm );
+          // assemble Cuiui
+          std::vector<int> mypatchelementslmowner;
+          for(size_t index=0; index<patchelementslm.size(); index++) mypatchelementslmowner.push_back(xfluid_.myrank_);
+
+          Cuiui_->FEAssemble(-1,Cuiui, patchelementslm, mypatchelementslmowner, patchelementslm );
 
         }
 
         int eid = actele->Id();
-        strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-        strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+        // introduce an vector containing the rows for that values have to be communicated
+        // REMARK: when assembling row elements also non-row rows have to be communicated
+        std::vector<int> myowner;
+        for(size_t index=0; index<la[0].lmowner_.size(); index++) myowner.push_back(xfluid_.myrank_);
+
+        // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+        sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+        // REMARK:: call Assemble without lmowner
+        // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+        // do not exclude non-row nodes (modify the real owner to myowner)
+        // after assembly the col vector it has to be exported to the row residual_ vector
+        // using the 'Add' flag to get the right value for shared nodes
+        LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
 
         set_counter += 1;
 
@@ -617,7 +662,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                 dserror("zero sized vector expected");
 
               couplingmatrices.resize(3);
-              couplingmatrices[0].Reshape(ndof_i,ndof); //C_uiu
+              couplingmatrices[0].Reshape(ndof_i,ndof);  //C_uiu
               couplingmatrices[1].Reshape(ndof,ndof_i);  //C_uui
               couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
             }
@@ -654,22 +699,49 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                 vector<int> patchlmstride;
                 side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
 
-                // create a dummy stride vector that is correct
-                Cuiu_->Assemble(-1, la[0].stride_, couplingmatrices[0], patchlm, patchlmowner, la[0].lm_);
-                vector<int> stride(1); stride[0] = (int)patchlm.size();
-                Cuui_->Assemble(-1, stride, couplingmatrices[1], la[0].lm_, la[0].lmowner_, patchlm);
+                // assemble Cuiu
+                //create a dummy mypatchlmowner that assembles also non-local rows and communicates the required data
+                std::vector<int> mypatchlmowner;
+                for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(xfluid_.myrank_);
+
+                Cuiu_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+
+                // assemble Cuui
+                std::vector<int> mylmowner;
+                for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(xfluid_.myrank_);
+
+                Cuui_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+
+
+                // assemble rhC_ui_col
                 Epetra_SerialDenseVector rhC_ui_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
-                LINALG::Assemble(*rhC_ui_, rhC_ui_eptvec, patchlm, patchlmowner);
+                LINALG::Assemble(*rhC_ui_col, rhC_ui_eptvec, patchlm, mypatchlmowner);
               }
             }
 
-            vector<int> stride(1); stride[0] = (int)patchelementslm.size();
-            Cuiui_->Assemble(-1,stride, Cuiui, patchelementslm, patchelementslmowner, patchelementslm );
+            // assemble Cuiui
+            std::vector<int> mypatchelementslmowner;
+            for(size_t index=0; index<patchelementslm.size(); index++) mypatchelementslmowner.push_back(xfluid_.myrank_);
+
+            Cuiui_->FEAssemble(-1,Cuiui, patchelementslm, mypatchelementslmowner, patchelementslm );
           }
 
           int eid = actele->Id();
-          strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-          strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+          // introduce an vector containing the rows for that values have to be communicated
+          // REMARK: when assembling row elements also non-row rows have to be communicated
+          std::vector<int> myowner;
+          for(size_t index=0; index<la[0].lmowner_.size(); index++) myowner.push_back(xfluid_.myrank_);
+
+          // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+          sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+          // REMARK:: call Assemble without lmowner
+          // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+          // do not exclude non-row nodes (modify the real owner to myowner)
+          // after assembly the col vector it has to be exported to the row residual_ vector
+          // using the 'Add' flag to get the right value for shared nodes
+          LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
         }
         count += 1;
@@ -698,11 +770,22 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
 
       int eid = actele->Id();
-      strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
-//       strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
-      strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
-//       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
-//       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
+
+      // introduce an vector containing the rows for that values have to be communicated
+      // REMARK: when assembling row elements also non-row rows have to be communicated
+      std::vector<int> myowner;
+      for(size_t index=0; index<la[0].lmowner_.size(); index++) myowner.push_back(xfluid_.myrank_);
+
+      // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+      sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+
+      // REMARK:: call Assemble without lmowner
+      // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+      // do not exclude non-row nodes (modify the real owner to myowner)
+      // after assembly the col vector it has to be exported to the row residual_ vector
+      // using the 'Add' flag to get the right value for shared nodes
+      LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
     }
 
     // call edge stabilization
@@ -715,22 +798,44 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   } // end of loop over bgdis
 
+
   discret.ClearState();
 
   // finalize the complete matrices
   if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
   {
+    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     Cuui_->Complete(*xfluid_.boundarydofrowmap_,*fluiddofrowmap_);
     Cuiu_->Complete(*fluiddofrowmap_,*xfluid_.boundarydofrowmap_);
     Cuiui_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.boundarydofrowmap_);
   }
   else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
   {
+    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     Cuui_->Complete(*xfluid_.aledofrowmap_,*fluiddofrowmap_);
     Cuiu_->Complete(*fluiddofrowmap_,*xfluid_.aledofrowmap_);
     Cuiui_->Complete(*xfluid_.aledofrowmap_,*xfluid_.aledofrowmap_);
   }
 
+  //-------------------------------------------------------------------------------
+  // export the rhs coupling vector to a row vector
+  Epetra_Vector rhC_ui_tmp(rhC_ui_->Map(),false);
+  Epetra_Export exporter_rhC_ui_col(rhC_ui_col->Map(),rhC_ui_tmp.Map());
+  int err3 = rhC_ui_tmp.Export(*rhC_ui_col,exporter_rhC_ui_col,Add);
+  if (err3) dserror("Export using exporter returned err=%d",err3);
+  rhC_ui_->Update(1.0,rhC_ui_tmp,0.0);
+
+  //-------------------------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector res_tmp(residual_->Map(),false);
+  Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
+  int err2 = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
+  if (err2) dserror("Export using exporter returned err=%d",err2);
+  residual_->Update(1.0,res_tmp,1.0);
+
+  //-------------------------------------------------------------------------------
+  // finalize the complete matrix
+  // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
   sysmat_->Complete();
 
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -782,8 +887,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       alestrategy.AssembleMatrix1(eid,alela[0].lm_,alela[0].lm_,alela[0].lmowner_,alela[0].stride_);
       alestrategy.AssembleMatrix2(eid,alela[0].lm_,alela[0].lm_,alela[0].lmowner_,alela[0].stride_);
       alestrategy.AssembleVector1(alela[0].lm_,alela[0].lmowner_);
-//       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
-//       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
+
     }
 
     // call edge stabilization
@@ -809,6 +913,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     if (xfluid_.aleresidual_->Map().MyGID(rhsdgid))
       (*xfluid_.aleresidual_)[xfluid_.aleresidual_->Map().LID(rhsdgid)]=(*xfluid_.aleresidual_)[xfluid_.aleresidual_->Map().LID(rhsdgid)] +
                                                                         (*rhC_ui_)[rhC_ui_->Map().LID(rhsdgid)];
+    else dserror("cut dof not on ale discret available");
   }
 #else
   dserror("D_FLUID3 required");
@@ -1569,7 +1674,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
   cout << "Number of boundarydis elements: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "
        << boundarydis_->NumMyRowNodes()<< endl;
-
+#if(0) // delete duplicates of boundary elements
    for ( std::map<int, std::vector<double> >::const_iterator iter=eleIdToNodeCoord.begin();
              iter!=eleIdToNodeCoord.end(); ++iter)
    {
@@ -1598,7 +1703,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
        }
      }
    }
-
+#endif
    boundarydis_->FillComplete();
 
   cout << "Number of boundarydis elements after deleting the duplicates: " << boundarydis_->NumMyRowElements()  <<
@@ -1701,7 +1806,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
         DRT::Element* ele = embdis_->lColElement(it);
         const int* elenodes = (ele)->NodeIds();
 
-        // assume the element was found
+        // assume the element has been found
         bele_found = true;
 
         // check all nodes of the boundary element
@@ -1736,7 +1841,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
       }
 
-      if(bele_found == false) dserror("boundary element with boundary id %i not found", bele->Id());
+      if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
     }
   }
 
@@ -3356,7 +3461,7 @@ void FLD::XFluidFluid::Output()
 #ifdef PRINTALEDEFORMEDNODECOORDS
 
     if (discret_->Comm().NumProc() != 1)
-	dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
+  dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
 
     cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
     // does discret_ exist here?
@@ -3369,39 +3474,39 @@ void FLD::XFluidFluid::Output()
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
-	{
-	    int gid;
-	    // get global id of a node
-	    gid = noderowmap->GID(lid);
-	    // get the node
-	    DRT::Node * node = discret_->gNode(gid);
-	    // get the coordinates of the node
-	    const double * X = node->X();
-	    // get degrees of freedom of a node
-	    vector<int> gdofs = discret_->Dof(node);
-	    //cout << "for node:" << *node << endl;
-	    //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
+  {
+      int gid;
+      // get global id of a node
+      gid = noderowmap->GID(lid);
+      // get the node
+      DRT::Node * node = discret_->gNode(gid);
+      // get the coordinates of the node
+      const double * X = node->X();
+      // get degrees of freedom of a node
+      vector<int> gdofs = discret_->Dof(node);
+      //cout << "for node:" << *node << endl;
+      //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
 
-	    // get displacements of a node
-	    vector<double> mydisp (3,0.0);
-	    for (int ldof = 0; ldof<3; ldof ++)
-	    {
-	    	int displid = dofrowmap->LID(gdofs[ldof]);
-	    	//cout << "displacement local id - in the rowmap" << displid << endl;
-	    	mydisp[ldof] = (*dispnp_)[displid];
-	    	//make zero if it is too small
-	    	if (abs(mydisp[ldof]) < 0.00001)
-	    	    {
-			mydisp[ldof] = 0.0;
-	    	    }
-	    }
-	    // Export disp, X
-	    double newX = mydisp[0]+X[0];
-	    double newY = mydisp[1]+X[1];
-	    double newZ = mydisp[2]+X[2];
-	    //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
-	    cout << gid << " " << newX << " " << newY << " " << newZ << endl;
-	}
+      // get displacements of a node
+      vector<double> mydisp (3,0.0);
+      for (int ldof = 0; ldof<3; ldof ++)
+      {
+        int displid = dofrowmap->LID(gdofs[ldof]);
+        //cout << "displacement local id - in the rowmap" << displid << endl;
+        mydisp[ldof] = (*dispnp_)[displid];
+        //make zero if it is too small
+        if (abs(mydisp[ldof]) < 0.00001)
+            {
+      mydisp[ldof] = 0.0;
+            }
+      }
+      // Export disp, X
+      double newX = mydisp[0]+X[0];
+      double newY = mydisp[1]+X[1];
+      double newZ = mydisp[2]+X[2];
+      //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
+      cout << gid << " " << newX << " " << newY << " " << newZ << endl;
+  }
 #endif //PRINTALEDEFORMEDNODECOORDS
 
   return;
@@ -3972,7 +4077,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       //there wont be any dof for nodes which are inside the structure
       //the cut algorithm erases these dofs
       if(nodedofset.size()==0)
-    	  continue;
+        continue;
 
       // set node coordinates
       for(int dim=0;dim<numdim_;dim++)

@@ -119,7 +119,6 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //                                * with FE_MATRIX flag
   //TODO: for edgebased approaches the number of connections between rows and cols should be increased
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,true,false,LINALG::SparseMatrix::FE_MATRIX));
-//  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true,LINALG::SparseMatrix::FE_MATRIX));
 
 
   // Vectors passed to the element
@@ -262,10 +261,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
 
     //------------------------------------------------------------
-    // loop over column elements
+    // loop over row elements
     const int numrowele = discret.NumMyRowElements();
 
-    // REMARK: in this XFEM framework the whole evaluate routine uses only row elements and assembles into EpetraFECrs matrix
+    // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
+    // and assembles into EpetraFECrs matrix
     // this is baci-unusual but more efficient in all XFEM applications
     for (int i=0; i<numrowele; ++i)
     {
