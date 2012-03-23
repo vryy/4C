@@ -423,7 +423,7 @@ void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetDa
 
             if(cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
 
-            CreateParallelDofSetDataVC(parallel_dofSetData, set_index, true, cell, *set_it);
+            CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, true, cell, *set_it);
 
           }
 
@@ -455,7 +455,7 @@ void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetDa
 
             if(cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
 
-            CreateParallelDofSetDataVC(parallel_dofSetData, set_index, false, cell, *set_it);
+            CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, false, cell, *set_it);
 
           }
 
@@ -476,6 +476,7 @@ void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetDa
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData,
+                                                             int                           eid,
                                                              int                           set_index,
                                                              bool                          inside,
                                                              VolumeCell *                  cell,
@@ -519,7 +520,9 @@ void GEO::CUT::MeshIntersection::CreateParallelDofSetDataVC( RCP<std::vector<Dof
 
 
       // get the parent element Id
-      int peid = cell->ParentElement()->Id();
+//      int peid = cell->ParentElement()->Id();
+      // REMARK: for quadratic elements use the eid for the base element, not -1 for subelements
+      int peid = eid;
 
       // create dofset data for this volumecell for Communication
       parallel_dofSetData->push_back( DofSetData( set_index, inside, cut_points_coords_, peid, node_dofset_map) );
@@ -561,9 +564,6 @@ void GEO::CUT::MeshIntersection::FindNodalCellSets( bool include_inner,
 
         std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets, cell_sets.end() ) );
         std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets_outside, cell_sets_outside.end() ) );
-
-//	             cout << "\t number of connected_sets in element "<< i->first << " inside\t" << cell_sets_inside.size() << endl;
-//	             cout << "\t number of connected_sets in element "<< i->first << " outside\t" << cell_sets_outside.size() << endl;
 
 
         if(   (ele_vc_sets_inside.size() >0 and include_inner)

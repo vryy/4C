@@ -490,9 +490,14 @@ void GEO::CUT::Parallel::exportDofSetData()
 
           if(my_vc == NULL)
           {
-            Element* pele = mesh_.GetElement(peid);
 
-            plain_volumecell_set my_vcs = pele->VolumeCells();
+            ElementHandle* pele = meshintersection_.GetElement(peid);
+
+            if(pele == NULL) dserror("element with Id %i not found on proc %i", peid, myrank_);
+
+            plain_volumecell_set my_vcs;
+
+            pele->VolumeCells(my_vcs);
 
             bool vc_found = true;
 

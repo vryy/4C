@@ -151,7 +151,7 @@ public:
   void FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData, DRT::Discretization& dis);
 
   /// create parallel DofSetData for a volumecell that has to be communicated
-  void CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData , int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
+  void CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData , int eid, int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
 
   /*!
   \brief find cell sets around each node (especially for quadratic elements)
