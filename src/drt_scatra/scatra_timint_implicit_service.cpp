@@ -777,7 +777,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // otherwise it is a two-step scheme that needs a start-up algorithm !!
 
     // other parameters that might be needed by the elements
-    eleparams.set<int>("fs subgrid diffusivity",fssgd_);
+    eleparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no); // no fssgd for this Evaluate() call!!!!
     // set general parameters for turbulent flow
     eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
     // set model-dependent parameters

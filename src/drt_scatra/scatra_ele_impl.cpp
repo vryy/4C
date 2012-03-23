@@ -216,7 +216,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     migrationinresidual_(true),// bool set
     update_mat_(false),        // bool set
     // whichtau_ not initialized
-    // turbmodel_ not initialized
+    turbmodel_(INPAR::FLUID::no_model), // enum initialized
     sgphi_(numscal_,0.0),   // size of vector + initialized to zero
     mfssgphi_(numscal_,0.0),// size of vector + initialized to zero
     gradphi_(true),     // initialized to zero
@@ -318,8 +318,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   is_ale_ = params.get<bool>("isale",false);
   if (is_ale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
-    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp");
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -504,9 +504,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
     // get velocity at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // get data required for subgrid-scale velocity: acceleration and pressure
@@ -515,7 +515,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // check for matching flags
       if (not mat_gp_ or not tau_gp_) dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
 
-      const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field",null);
+      const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field");
       LINALG::Matrix<nsd_+1,nen_> eaccprenp;
       DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
 
@@ -533,7 +533,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // extract local values from the global vectors
     RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (hist==null || phinp==null)
+    if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
     vector<double> myhist(lm.size());
     vector<double> myphinp(lm.size());
@@ -559,7 +559,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // extract additional local values from global vector
       RefCountPtr<const Epetra_Vector> phiam = discretization.GetState("phiam");
-      if (phiam==null) dserror("Cannot get state vector 'phiam'");
+      if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
       vector<double> myphiam(lm.size());
       DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
 
@@ -578,7 +578,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // extract additional local values from global vector
       RefCountPtr<const Epetra_Vector> phin = discretization.GetState("phin");
-      if (phin==null) dserror("Cannot get state vector 'phin'");
+      if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
       vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
 
@@ -675,7 +675,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       {
         // get fine scale scalar field
         RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
-        if (gfsphinp==null) dserror("Cannot get state vector 'fsphinp'");
+        if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
         vector<double> myfsphinp(lm.size());
         DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
@@ -690,7 +690,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         }
 
         // get fine-scale velocity at nodes
-        const RCP<Epetra_MultiVector> fsvelocity = params.get< RCP<Epetra_MultiVector> >("fine-scale velocity field",null);
+        const RCP<Epetra_MultiVector> fsvelocity = params.get< RCP<Epetra_MultiVector> >("fine-scale velocity field");
         DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
       }
 
@@ -890,15 +890,15 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // need current values of transported scalar
     // -> extract local values from global vectors
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -976,7 +976,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // need current scalar vector
       // -> extract local values from the global vectors
       RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
       vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -992,7 +992,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // need current solution
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
     vector<double> myphinp(lm.size());
@@ -1055,7 +1055,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     // need initial field -> extract local values from the global vector
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==null) dserror("Cannot get state vector 'phi0'");
+    if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
     vector<double> myphi0(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
 
@@ -3075,13 +3075,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
         "no_stabilization",
         "type of stabilization (if any)",
         tuple<std::string>("no_stabilization"),
-        tuple<std::string>("Do not use any stabilizat"),
+        tuple<std::string>("Do not use any stabilization"),
         tuple<int>(
             INPAR::SCATRA::stabtype_no_stabilization),
             &eparams.sublist("STABILIZATION"));
   }
 
-  // dummy matrix + vectors required for Evaluate() call
+  // no turbulence modeling for the following Evaluate() call
+  setStringToIntegralParameter<int>(
+    "PHYSICAL_MODEL",
+    "no_model",
+    "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
+    tuple<std::string>("no_model"),
+    tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
+    tuple<int>(0),
+    &eparams.sublist("TURBULENCE MODEL"));
+
+  // dummy matrix + vectors required for Evaluate() call (zero size)
   Epetra_SerialDenseMatrix  elemat2_epetra;
   Epetra_SerialDenseVector  elevec2_epetra;
   Epetra_SerialDenseVector  elevec3_epetra;
@@ -3101,77 +3111,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   // undo the matrix from the standard call, only a mass matrix is needed here created below
   emat.Scale(0.0);
 
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  /*----------------------------------------------------------------------*/
-  // element integration loop
-  /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    if (is_incremental_)
-    {
-      for (int k=0; k < numscal_; ++k)
-      {
-        // scalar at integration point
-        const double phi = funct_.Dot(ephinp_[k]);
-        const double vtrans = fac*densnp_[k]*phi;
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          const int fvi = vi*numdofpernode_+k;
-
-          erhs[fvi] += vtrans*funct_(vi); // other sign!
-        }
-      }
-    }
-    else
-      dserror("Must be incremental!");
-
-    if (is_elch_)
-    {
-      // we put a dummy mass matrix here in order to have a regular
-      // matrix in the lower right block of the whole system-matrix
-      // A identity matrix would cause problems with ML solver in the SIMPLE
-      // schemes since ML needs to have off-diagonal entries for the aggregation!
-
-      // loop starts at k=numscal_ !!
-      for (int k=numscal_; k < numdofpernode_; ++k)
-      {
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          const double v = fac*funct_(vi); // no density here
-          const int fvi = vi*numdofpernode_+k;
-
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fui = ui*numdofpernode_+k;
-
-            emat(fvi,fui) += v*funct_(ui);
-          }
-        }
-      } // k
-
-    }
-
-  } // integration loop
-
-  // correct scaling of rhs (after subtraction!!!!)
-  double timefac2 = params.get<double>("time factor");
-  erhs.Scale(1.0/timefac2);
-
-  if (is_elch_) // ELCH
-  {
-    // scalar at integration point
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+numscal_;
-
-      erhs[fvi] = 0.0; // zero out!
-    }
-  }
-
   // get time-step length
   const double dt   = params.get<double>("time-step length");
 
@@ -3186,12 +3125,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
     timefac = params.get<double>("time factor");
     if (is_genalpha_)
     {
+      cout<<"changed timefac with alphaF"<<endl;
       alphaF = params.get<double>("alpha_F");
       timefac *= alphaF;
     }
     if (timefac < 0.0) dserror("time factor is negative.");
   }
-
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -3226,12 +3165,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   }
 
   // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints222(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop
   /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints222.IP().nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -3300,14 +3239,68 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
           }
 
           // remove convective stabilization of inertia term
-          erhs(fvi)+=fac_tau*densnp_[k]*conv_(vi)*densnp_[k]*conint_[k]/timefac2; // /timefac2;
+          erhs(fvi)+=fac_tau*densnp_[k]*conv_(vi)*densnp_[k]*conint_[k];
 
         }
       } // if (not onlySGFEM)
 
+      if (is_incremental_)
+      {
+          // scalar at integration point
+          const double phi = funct_.Dot(ephinp_[k]);
+          const double vtrans = fac*densnp_[k]*phi;
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = vi*numdofpernode_+k;
+
+            erhs[fvi] += vtrans*funct_(vi); // other sign!
+          }
+      }
+      else
+        dserror("Must be incremental!");
+
     } // loop over each scalar k
 
+    if (is_elch_)
+    {
+      // we put a dummy mass matrix here in order to have a regular
+      // matrix in the lower right block of the whole system-matrix
+      // A identity matrix would cause problems with ML solver in the SIMPLE
+      // schemes since ML needs to have off-diagonal entries for the aggregation!
+
+      // loop starts at k=numscal_ !!
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double v = fac*funct_(vi); // no density required here
+          const int fvi = vi*numdofpernode_+numscal_;
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+numscal_;
+
+            emat(fvi,fui) += v*funct_(ui);
+          }
+        }
+
+    } // if is_elch
+
   } // integration loop
+  
+  // correct scaling of rhs (after subtraction!!!!)
+  double timefac2 = params.get<double>("time factor");
+  erhs.Scale(1.0/timefac2);
+
+
+  if (is_elch_) // ELCH
+  {
+    // scalar at integration point
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+numscal_;
+
+      erhs[fvi] = 0.0; // zero out!
+    }
+  }
 
   return;
   } // ScaTraImpl::CalcInitialTimeDerivative()
