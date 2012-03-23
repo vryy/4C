@@ -31,6 +31,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"
 #include "drt_utils.H"
+#include "drt_discret.H"
+#include "drt_discret_xfem.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -1218,7 +1220,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_combust:
   {
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis = rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));

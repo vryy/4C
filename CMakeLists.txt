@@ -389,6 +389,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_conditiondefinition.cpp
   src/drt_lib/drt_container.cpp
   src/drt_lib/drt_discret.cpp
+  src/drt_lib/drt_discret_xfem.cpp
   src/drt_lib/drt_discret_conditions.cpp
   src/drt_lib/drt_discret_evaluate.cpp
   src/drt_lib/drt_discret_fillcomplete.cpp

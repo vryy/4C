@@ -23,17 +23,16 @@ Maintainer: Florian Henke
 
 *----------------------------------------------------------------------*/
 
-#include "combust_defines.H"
-#include "combust_flamefront.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
-#include "../drt_fluid/drt_transfer_turb_inflow.H"
-
+#include "combust_defines.H"
+#include "combust_flamefront.H"
 #include "combust_fluidresulttest.H"
 
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
@@ -41,6 +40,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
@@ -55,9 +55,9 @@ Maintainer: Florian Henke
  | constructor                                                                        henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver>      solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<DRT::Discretization>      actdis,
+    Teuchos::RCP<LINALG::Solver>           solver,
+    Teuchos::RCP<Teuchos::ParameterList>   params,
     Teuchos::RCP<IO::DiscretizationWriter> output) :
   TimInt(params),
   // call constructor for "nontrivial" objects
@@ -653,7 +653,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->SetState("velnp",state_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichletXFEM(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
     // Transfer of boundary data if necessary
@@ -1013,7 +1013,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichletXFEM(eleparams, zeros_, Teuchos::null, Teuchos::null,
+    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
         Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
