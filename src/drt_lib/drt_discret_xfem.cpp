@@ -97,7 +97,7 @@ Maintainer: Michael Gee
 \author henke 07/09
 */
 static void DoDirichletCondition(DRT::Condition&             cond,
-                                 DRT::DiscretizationXFEM&        dis,
+                                 DRT::DiscretizationXFEM&    dis,
                                  const bool                  usetime,
                                  const double                time,
                                  Teuchos::RCP<Epetra_Vector> systemvector,
@@ -113,7 +113,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
  | remark: read documentation at top of this file!                      |
  *----------------------------------------------------------------------*/
 void DoDirichletCondition(DRT::Condition&             cond,
-                          DRT::DiscretizationXFEM&        dis,
+                          DRT::DiscretizationXFEM&    dis,
                           const bool                  usetime,
                           const double                time,
                           Teuchos::RCP<Epetra_Vector> systemvector,
