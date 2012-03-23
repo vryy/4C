@@ -5,10 +5,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+Maintainer:  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -32,49 +32,29 @@ namespace ADAPTER
   public:
 
     explicit FluidXFEM(const Teuchos::ParameterList& prbdyn,
-                    std::string condname);
+                       std::string condname
+                       );
 
     /// fluid field
     Fluid& FluidField() { return fluid_.FluidField(); }
     const Fluid& FluidField() const { return fluid_.FluidField(); }
 
-//    XFluid& XFluidField() { return Teuchos::dyn_cast<XFluid>(fluid_.FluidField()); }
-//    const XFluid& XFluidField() const { return Teuchos::dyn_cast<const XFluid>(fluid_.FluidField()); }
-
-
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const FLD::UTILS::MapExtractor& Interface() const;
 
     virtual void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idispstepinc, Teuchos::RCP<const Epetra_Vector> fluidstepinc);
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
-    Teuchos::RCP<const Epetra_Vector> RHS();
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
-//    std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
-//    std::map<std::string,Teuchos::RCP<Epetra_Vector> > CouplingVectors();
     virtual void Update();
     virtual void Output();
     virtual double ReadRestart(int step);
 
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
+
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                         double dt);
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
-
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
-
-    void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
-    void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
-
-    double ResidualScaling() { return FluidField().ResidualScaling(); }
-    double TimeScaling() { return FluidField().TimeScaling(); }
-
-    virtual double Time() const {return FluidField().Time();};
-    virtual int Step() const  {return FluidField().Step();};
 
     virtual int Itemax() const { return FluidField().Itemax(); }
     virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
@@ -83,13 +63,13 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+
   private:
 
     FluidBaseAlgorithm fluid_;
 
     /// coupling of interface in to parallel distributions
-    Teuchos::RCP<Coupling>               icoupsf_;
-
+    Teuchos::RCP<Coupling> icoupsf_;
 
   };
 

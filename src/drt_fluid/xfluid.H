@@ -303,6 +303,9 @@ namespace FLD
     /// solve linearised fluid
     void LinearSolve();
 
+    /// update interface fields
+    void UpdateInterfaceFields();
+
     /// predictor
     void Predictor();
 
@@ -411,11 +414,9 @@ namespace FLD
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-    /// implements the ADAPTER::Fluid and returns the boundary discretization
+    /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
     Teuchos::RCP<DRT::Discretization> Discretization() { return boundarydis_; }
 
-    /// return boundary discretization
-    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
@@ -444,8 +445,6 @@ namespace FLD
 
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
-
-
 
 
 

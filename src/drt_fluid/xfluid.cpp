@@ -1906,6 +1906,7 @@ void FLD::XFluid::TimeLoop()
     // -------------------------------------------------------------------
     StatisticsAndOutput();
 
+
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
@@ -1967,14 +1968,10 @@ void FLD::XFluid::SolveStationaryProblem()
 
 
     // -------------------------------------------------------------------
-    //         calculate lift'n'drag forces from the residual
+    //  lift'n'drag forces, statistics time sample and output of solution
+    //  and statistics
     // -------------------------------------------------------------------
-    LiftDrag();
-
-    // -------------------------------------------------------------------
-    //                        compute flow rates
-    // -------------------------------------------------------------------
-    //ComputeFlowRates();
+    StatisticsAndOutput();
 
 
     // -------------------------------------------------------------------
@@ -1982,10 +1979,7 @@ void FLD::XFluid::SolveStationaryProblem()
     // -------------------------------------------------------------------
     EvaluateErrorComparedToAnalyticalSol();
 
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    Output();
+
   }
 }
 
@@ -1995,6 +1989,8 @@ void FLD::XFluid::SolveStationaryProblem()
  *------------------------------------------------------------------------------------------------*/
 void FLD::XFluid::PrepareTimeStep()
 {
+  UpdateInterfaceFields();
+
   cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << endl;
 
   //TODO: check if we have to use a stationary initial solution => SolveStationaryProblem()
@@ -2048,6 +2044,23 @@ void FLD::XFluid::PrepareTimeStep()
 
 
 /*----------------------------------------------------------------------*
+ |  Implement ADAPTER::Fluid
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::PrepareSolve()
+{
+  // compute or set interface velocities just for XFluidMovingBoundary
+  // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
+  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(params_->sublist("XFEM"), "XFLUID_BOUNDARY");
+  if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
+  {
+    ComputeInterfaceVelocities();
+  }
+
+  PrepareNonlinearSolve();
+}
+
+
+/*----------------------------------------------------------------------*
  |  prepare the nonlinear solver                           schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::PrepareNonlinearSolve()
@@ -2085,23 +2098,6 @@ void FLD::XFluid::PrepareNonlinearSolve()
   //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   SetDirichletNeumannBC();
-}
-
-
-/*----------------------------------------------------------------------*
- |  Implement ADAPTER::Fluid
- *----------------------------------------------------------------------*/
-void FLD::XFluid::PrepareSolve()
-{
-  // compute or set interface velocities just for XFluidMovingBoundary
-  // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
-  INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(params_->sublist("XFEM"), "XFLUID_BOUNDARY");
-  if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
-  {
-    ComputeInterfaceVelocities();
-  }
-
-  PrepareNonlinearSolve();
 }
 
 
@@ -2393,15 +2389,25 @@ void FLD::XFluid::LinearSolve()
   dserror("LinearSolve not implemented for Xfluid");
 }
 
+
+void FLD::XFluid::UpdateInterfaceFields()
+{
+  // update velocity n-1
+  ivelnm_->Update(1.0,*iveln_,0.0);
+
+  // update velocity n
+  iveln_->Update(1.0,*ivelnp_,0.0);
+
+  // update displacement n
+  idispn_->Update(1.0,*idispnp_,0.0);
+}
+
+
 void FLD::XFluid::Predictor()
 {
  cout << "IMPLEMENT explicit predictor!!!" << endl;
 }
 
-//void FLD::XFluid::MultiCorrector()
-//{
-//
-//}
 
 void FLD::XFluid::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
