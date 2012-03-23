@@ -33,10 +33,10 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Florian Henke
+            henke@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15265
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -44,14 +44,11 @@ Maintainer: Michael Gee
 #define DISCRET_XFEM_H
 
 #include "drt_discret.H"
+#include "drt_dserror.H"
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_Comm.h"
-
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "drt_dserror.H"
 #include <string>
 #include "Teuchos_ParameterList.hpp"
 

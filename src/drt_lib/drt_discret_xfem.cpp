@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_discret.cpp
+\file drt_discret_xfem.cpp
 
 \brief a class to manage one discretization
 
@@ -45,56 +45,6 @@ Maintainer: Michael Gee
 #include "drt_globalproblem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_combust/combust_defines.H"
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- |  comm             (in)  a communicator object                        |
- *----------------------------------------------------------------------*/
-//DRT::DiscretizationXFEM::DiscretizationXFEM(const string name, RCP<Epetra_Comm> comm) :
-//name_(name),
-//comm_(comm),
-//filled_(false),
-//havedof_(false)
-//{
-//  dofsets_.push_back(rcp(new DofSet()));
-//}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
- *----------------------------------------------------------------------*/
-//DRT::DiscretizationXFEM::DiscretizationXFEM(const DRT::DiscretizationXFEM& old) :
-//name_(old.name_),
-//state_(old.state_)
-//{
-//  comm_ = rcp(old.comm_->Clone());
-//  Reset();
-//
-//  // deep copy elements
-//  map<int,RCP<DRT::Element> >::const_iterator ecurr;
-//  for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
-//    element_[ecurr->first] = rcp(ecurr->second->Clone());
-//
-//  // deep copy nodes
-//  map<int,RCP<DRT::Node> >::const_iterator ncurr;
-//  for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
-//    node_[ncurr->first] = rcp(ncurr->second->Clone());
-//
-//  for (unsigned i=0; i<old.dofsets_.size(); ++i)
-//    dofsets_.push_back(old.dofsets_[i]->Clone());
-//
-//  // do fillcomplete if old was fillcomplete
-//  if (old.Filled()) FillComplete();
-//
-//  return;
-//}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-//DRT::DiscretizationXFEM::~DiscretizationXFEM()
-//{
-//  return;
-//}
 
 /*!
 \brief this is a modified copy of the original version DoDirchletCondition() for XFEM problems
@@ -143,8 +93,6 @@ Maintainer: Michael Gee
   dof 5        velz enriched    ->    vector component 2
   dof 6        pres standard    ->    vector component 3
   dof 7        pres enriched    ->    vector component 3
-
-- A general solution would affect BACI in a very extensive way (drt_discret.H, drt_discret_evaluate.cpp)
 
 \author henke 07/09
 */
@@ -695,8 +643,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
 
 
 /*----------------------------------------------------------------------*
- | preliminary hack for XFEM problems!                      henke 07/09 |
- | evaluate Dirichlet conditions (public)                   mwgee 01/07 |
+ | evaluate Dirichlet conditions (public)                   henke 07/09 |
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvector,
