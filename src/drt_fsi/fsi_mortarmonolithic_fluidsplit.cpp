@@ -782,7 +782,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
+    Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField().Interface().FSICondMap());
 
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
     mortar->Multiply(true,*fcv,*scv);
@@ -815,7 +815,6 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
   Extractor().InsertVector(*fov,1,f);
   Extractor().InsertVector(*aov,2,f);
-
 
 }
 

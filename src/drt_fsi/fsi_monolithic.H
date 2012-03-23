@@ -93,10 +93,10 @@ namespace UTILS
     virtual void Output();
 
     /// access to structural field
-    ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
+    ::ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
 
     /// access to fluid field
-    ADAPTER::Fluid& FluidField(){return *fluid_;}
+    ::ADAPTER::Fluid& FluidField(){return *fluid_;}
 
     /// access to ale field
     ALE::Ale& AleField() { return *ale_; }
