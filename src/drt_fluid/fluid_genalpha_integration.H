@@ -920,6 +920,7 @@ public:
   void Integrate() { GenAlphaTimeloop(); }
   virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
   virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; }
+  virtual void PrepareSolve()        { return; }
 
   FLD::UTILS::MapExtractor               interface_;
   Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
