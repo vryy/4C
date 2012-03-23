@@ -52,7 +52,6 @@ ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-FLUID_SOLVER                    Implicit
 GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
