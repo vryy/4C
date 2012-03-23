@@ -918,6 +918,7 @@ public:
       return;
   };
   void Integrate() { GenAlphaTimeloop(); }
+  virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
 
   FLD::UTILS::MapExtractor               interface_;
   Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
