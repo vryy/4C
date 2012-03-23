@@ -62,18 +62,6 @@ namespace UTILS
     );
 
     /*!
-    \brief Constructor with depreciated Dirichlet toggle vector
-    */
-    ConstraintSolver
-    (
-      RCP<DRT::Discretization> discr,     ///< Discretization
-      LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
-      RCP<Epetra_Vector> dirichtoggle,    ///< Vector used for ApplyDirichletToSystem
-      RCP<Epetra_Vector> invtoggle,       ///< Vector to blank residuals of Dirichlet DOFs
-      ParameterList param                 ///< parameterlist containing solver parameters
-    );
-
-    /*!
         \brief Destructor
      */
     ~ConstraintSolver()

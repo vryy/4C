@@ -31,26 +31,6 @@ UTILS::ConstraintSolver::ConstraintSolver
 (
   RCP<DRT::Discretization> discr,
   LINALG::Solver& solver,
-  RCP<Epetra_Vector> dirichtoggle,
-  RCP<Epetra_Vector> invtoggle,
-  ParameterList params
-):
-actdisc_(discr),
-maxIter_(params.get<int>   ("UZAWAMAXITER", 50)),
-dirichtoggle_(dirichtoggle),
-dbcmaps_(Teuchos::null)
-{
-  dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle);
-  Setup(discr,solver,dbcmaps_,params);
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                               tk 11/07|
- *----------------------------------------------------------------------*/
-UTILS::ConstraintSolver::ConstraintSolver
-(
-  RCP<DRT::Discretization> discr,
-  LINALG::Solver& solver,
   RCP<LINALG::MapExtractor> dbcmaps,
   ParameterList params
 ):
