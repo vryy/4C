@@ -2,39 +2,22 @@
 \file so_hex8.H
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SOH8_H
 #define SOH8_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-#include "so_surface.H"
-#include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
-
-// prestressing object
-#include "prestress.H"
-
 #include "../drt_mat/material.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Hex8
 const int NUMNOD_SOH8 = 8;      ///< number of nodes
@@ -54,6 +37,8 @@ namespace ELEMENTS
 {
 // forward declarations
 class InvDesign;
+class PreStress;
+
 
 class So_hex8Type : public DRT::ElementType
 {
@@ -881,4 +866,3 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef SOH8_H
-#endif  // #ifdef CCADISCRET

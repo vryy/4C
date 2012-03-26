@@ -11,24 +11,12 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* definitions */
-#ifdef CCADISCRET
-
 #ifndef SO_SH8P8_EAS_H
 #define SO_SH8P8_EAS_H
 
 /*----------------------------------------------------------------------*/
-/* headers */
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseSolver.h"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
 #include "so_sh8p8.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "Epetra_SerialDenseSolver.h"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -342,4 +330,3 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef SO_SH8P8_EAS_H
-#endif  // #ifdef CCADISCRET

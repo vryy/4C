@@ -12,8 +12,6 @@ Maintainer: Michael Gee
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H
 
-#include "Sacado.hpp"
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -231,8 +229,6 @@ class NStet5 : public DRT::Element
 public:
 
   friend class NStet5Type;
-  typedef Sacado::Fad::DFad<double> FAD;
-  typedef Sacado::Fad::DFad< Sacado::Fad::DFad<double> > FADFAD;
 
   /*!
   \brief Standard Constructor

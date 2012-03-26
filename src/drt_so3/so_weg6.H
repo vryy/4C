@@ -3,38 +3,24 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SO_WEG6_H_
 #define SO_WEG6_H_
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
-
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-
-// prestressing object
-#include "prestress.H"
 
 #include "../drt_mat/material.H"
-#include "so_surface.H"
-#include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;      ///< number of nodes
@@ -53,6 +39,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class InvDesign;
+class PreStress;
 
 class So_weg6Type : public DRT::ElementType
 {
@@ -499,5 +486,4 @@ protected:
 
 
 #endif /*SO_WEG6_H_*/
-#endif
 

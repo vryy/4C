@@ -9,20 +9,14 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
 
-#include "Teuchos_RefCountPtr.hpp"
-using namespace std;
-using namespace Teuchos;
-
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+
 
 namespace DRT
 {
@@ -376,4 +370,3 @@ protected:
 
 
 #endif // #ifndef SO_SURFACE_H
-#endif // #ifdef CCADISCRET

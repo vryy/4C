@@ -30,10 +30,6 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/micromaterial.H"
 
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/

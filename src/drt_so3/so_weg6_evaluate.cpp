@@ -10,8 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_weg6.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -35,9 +33,7 @@ Maintainer: Moritz Frenzel
 
 // inverse design object
 #include "inversedesign.H"
-
-using namespace std;
-using namespace LINALG; // our linear algebra
+#include "prestress.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -1288,4 +1284,3 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
   } // end loop over gauss points
 }
 
-#endif  // #ifdef CCADISCRET

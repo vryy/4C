@@ -44,11 +44,7 @@ Maintainer: Moritz Frenzel
 
 // inverse design object
 #include "inversedesign.H"
-
-using namespace std;
-using namespace LINALG; // our linear algebra
-using POTENTIAL::PotentialManager; // potential manager
-
+#include "prestress.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -994,10 +990,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   // compute additional stresses due to intermolecular potential forces
   case calc_potential_stiff:
   {
-    RCP<PotentialManager> potentialmanager =
-      params.get<RCP<PotentialManager> >("pot_man", null);
+    RCP<POTENTIAL::PotentialManager> potentialmanager =
+      params.get<RCP<POTENTIAL::PotentialManager> >("pot_man", null);
     if (potentialmanager==null)
-      dserror("No PotentialManager in Solid3 Surface available");
+      dserror("No POTENTIAL::PotentialManager in Solid3 Surface available");
 
     RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
     if (cond==null)

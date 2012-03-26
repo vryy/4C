@@ -13,6 +13,8 @@ Maintainer: Jonas Biehler
 #ifdef CCADISCRET
 
 #include "so_tet10.H"
+#include "so_surface.H"
+#include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -21,6 +23,7 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;

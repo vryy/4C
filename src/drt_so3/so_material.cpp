@@ -10,8 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_nurbs27.H"
 #include "so_hex27.H"
 #include "so_hex20.H"
@@ -63,9 +61,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/structporo.H"
 #include <Teuchos_TimeMonitor.hpp>
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  | material laws for So_hex8                                   gee 10/08|
@@ -1458,4 +1453,3 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
 } // of So_tet10_mat_sel
 
 
-#endif  // #ifdef CCADISCRET

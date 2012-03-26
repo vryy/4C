@@ -3,16 +3,18 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
 
 #include "so_hex8.H"
 #include "so_hex8fbar.H"
+#include "so_surface.H"
+#include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -35,6 +37,7 @@ Maintainer: Moritz Frenzel
 
 // inverse design object
 #include "inversedesign.H"
+#include "prestress.H"
 
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;

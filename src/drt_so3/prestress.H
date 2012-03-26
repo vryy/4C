@@ -15,11 +15,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-
-#include "../linalg/linalg_fixedsizematrix.H"
-
 namespace DRT
 {
 namespace ELEMENTS

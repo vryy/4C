@@ -11,24 +11,13 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef SO_DISP_H
 #define SO_DISP_H
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Wedge6
@@ -389,5 +378,4 @@ protected:
 
 
 #endif /*SO_DISP_H*/
-#endif
 

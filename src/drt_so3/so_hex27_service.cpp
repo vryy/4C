@@ -14,7 +14,7 @@ Maintainer: Thomas Kloeppel
 
 #include "so_hex27.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-using namespace std; // cout etc.
+#include "../drt_lib/drt_node.H"
 
 
 /*----------------------------------------------------------------------*

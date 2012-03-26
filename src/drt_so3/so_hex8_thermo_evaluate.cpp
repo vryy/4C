@@ -33,11 +33,6 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-//#include "Sacado.hpp"
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                             dano 02/10 |
  | originally by maf 04/07                                              |

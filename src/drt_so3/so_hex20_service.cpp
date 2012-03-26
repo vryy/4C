@@ -10,11 +10,9 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_hex20.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-using namespace std; // cout etc.
+#include "../drt_lib/drt_node.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,6 +42,4 @@ const vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
   centercoords[2] = midpoint(0,2);
   return centercoords;
 }
-
-#endif
 

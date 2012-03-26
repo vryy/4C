@@ -12,14 +12,15 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "Epetra_SerialDenseSolver.h"
 #include "so_hex8fbar.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
@@ -27,9 +28,7 @@ Maintainer: Alexander Popp
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
+#include "prestress.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

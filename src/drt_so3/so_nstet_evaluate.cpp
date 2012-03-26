@@ -28,8 +28,6 @@ Maintainer: Michael Gee
 
 #include "so_nstet.H"
 
-using namespace std;
-
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 05/08|
  *----------------------------------------------------------------------*/

@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
 #include "Sacado.hpp"

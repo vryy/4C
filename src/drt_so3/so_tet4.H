@@ -9,32 +9,17 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-
-#ifdef CCADISCRET
 #ifndef SO_TET4_H
 #define SO_TET4_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-
-// prestressing object
-#include "prestress.H"
 
 #include "../drt_mat/material.H"
 
-#include "so_surface.H"
-#include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
 
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node
@@ -55,6 +40,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class InvDesign;
+class PreStress;
 
 class So_tet4Type : public DRT::ElementType
 {
@@ -518,6 +504,5 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SO_TET4_H_
-#endif  // #ifdef  CCADISCRET
 
 

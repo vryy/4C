@@ -12,6 +12,8 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 
 #include "so_weg6.H"
+#include "so_surface.H"
+#include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -31,6 +33,7 @@ Maintainer: Moritz Frenzel
 
 // inverse design object
 #include "inversedesign.H"
+#include "prestress.H"
 
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
 

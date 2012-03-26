@@ -13,6 +13,8 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "so_hex20.H"
+#include "so_surface.H"
+#include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"

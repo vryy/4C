@@ -24,9 +24,6 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 
 
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/

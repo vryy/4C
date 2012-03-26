@@ -10,8 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_utils.H"
@@ -24,10 +22,7 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/micromaterial.H"
 #include "Epetra_SerialDenseSolver.h"
-
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1072,4 +1067,3 @@ int DRT::ELEMENTS::So_tet10Type::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
-#endif  // #ifdef CCADISCRET

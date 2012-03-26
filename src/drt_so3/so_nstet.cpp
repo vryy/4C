@@ -18,6 +18,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_linedefinition.H"
 
 #include "so_nstet.H"
+#include "so_surface.H"
+#include "so_line.H"
 
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 

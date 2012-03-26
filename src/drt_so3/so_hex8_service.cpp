@@ -3,17 +3,16 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "so_hex8.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-using namespace std; // cout etc.
+#include "../drt_lib/drt_node.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,4 +43,3 @@ const vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
   return centercoords;
 }
 
-#endif

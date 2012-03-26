@@ -21,8 +21,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-using namespace DRT::UTILS;
-
 DRT::ELEMENTS::SoDispType DRT::ELEMENTS::SoDispType::instance_;
 
 
@@ -163,7 +161,7 @@ DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
 DRT::Element(id,owner),
 kintype_(sodisp_totlag),
 stresstype_(sodisp_stress_none),
-gaussrule_(intrule3D_undefined),
+gaussrule_(DRT::UTILS::intrule3D_undefined),
 numnod_disp_(-1),
 numdof_disp_(-1),
 numgpt_disp_(-1)
@@ -266,7 +264,7 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
 
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
+  gaussrule_ = DRT::UTILS::GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
 
   ExtractfromPack(position,data,numnod_disp_);
   ExtractfromPack(position,data,numdof_disp_);

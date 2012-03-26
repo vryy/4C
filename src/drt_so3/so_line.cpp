@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "so_line.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_dserror.H"
 
 

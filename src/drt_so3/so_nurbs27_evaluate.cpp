@@ -10,8 +10,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_nurbs27.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -29,9 +27,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/viscogenmax.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_globalproblem.H"
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
 
 
 /*----------------------------------------------------------------------*
@@ -1197,5 +1192,4 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef CCADISCRET
 

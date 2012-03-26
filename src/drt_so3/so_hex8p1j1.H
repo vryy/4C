@@ -10,20 +10,10 @@ Maintainer: Lena Wiechert
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
-#ifdef CCADISCRET
 #ifndef SO_HEX8P1J1_H
 #define SO_HEX8P1J1_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "so_hex8.H"
-#include "../drt_inpar/inpar_structure.H"
 
 
 // forward declarations
@@ -339,5 +329,4 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef SO_HEX8P1J1_H
-#endif  // #ifdef CCADISCRET
 

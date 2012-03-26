@@ -28,9 +28,6 @@ Maintainer: Axel Gerstenberger
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/micromaterial.H"
 
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/

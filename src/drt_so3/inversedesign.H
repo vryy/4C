@@ -9,30 +9,27 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INVERSEDESIGN_H
 #define INVERSEDESIGN_H
 
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Vector.h"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-
-#include "so_hex8.H"
-#include "so_weg6.H"
-#include "so_tet4.H"
+#include "../drt_inpar/inpar_structure.H"
+#include "../drt_mat/material.H"
 
 
+namespace LINALG
+{
+  class SerialDenseVector;
+}
 namespace DRT
 {
 
 namespace ELEMENTS
 {
+class So_tet4;
+class So_weg6;
+class So_hex8;
 
 class InvDesignType : public DRT::ParObjectType
 {
@@ -136,12 +133,12 @@ public:
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      LINALG::Matrix<24,24>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<24,24>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<24,1>* force,          ///< element internal force vector
+      LINALG::Matrix<8,6>* elestress,      ///< stresses at GP
+      LINALG::Matrix<8,6>* elestrain,      ///< strains at GP
+      Teuchos::ParameterList&            params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain);   ///< strain output option
 
@@ -156,12 +153,12 @@ void sow6_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      LINALG::Matrix<18,18>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<18,18>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<18,1>* force,          ///< element internal force vector
+      LINALG::Matrix<6,6>* elestress,      ///< stresses at GP
+      LINALG::Matrix<6,6>* elestrain,      ///< strains at GP
+      Teuchos::ParameterList&            params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain);   ///< strain output option
 
@@ -172,16 +169,16 @@ void sow6_nlnstiffmass(
 
   /// id problem for tet4 element
 void so_tet4_nlnstiffmass(
-      ParameterList&           params,
+      Teuchos::ParameterList&           params,
       DRT::ELEMENTS::So_tet4*   ele,            ///< this element
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residuum
-      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
+      LINALG::Matrix<12,12>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<12,12>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<12,1>* force,          ///< element internal force vector
+      LINALG::Matrix<1,6>* elestress,      ///< stresses at GP
+      LINALG::Matrix<1,6>* elestrain,      ///< strains at GP
       Teuchos::RCP<MAT::Material>  material,       ///< element material data
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain);   ///< strain output option
@@ -258,4 +255,3 @@ private:
 
 
 #endif  // #ifndef INVERSEDESIGN_H
-#endif  // #ifdef CCADISCRET

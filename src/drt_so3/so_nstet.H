@@ -9,33 +9,16 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-
-#ifdef CCADISCRET
 #ifndef SO_NSTET4_H
 #define SO_NSTET4_H
-
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Sacado.hpp"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_mat/material.H"
 
-#include "so_surface.H"
-#include "so_line.H"
-
-#include "../linalg/linalg_fixedsizematrix.H"
-//#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Epetra_Time.h"
 
 //#define PRINT_NSTET            ///< printout of setup
@@ -304,8 +287,6 @@ class NStet : public DRT::Element
 public:
 
   friend class NStetType;
-  typedef Sacado::Fad::DFad<double> FAD;
-  typedef Sacado::Fad::DFad< Sacado::Fad::DFad<double> > FADFAD;
 
   /*!
   \brief Standard Constructor
@@ -677,6 +658,4 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SO_NSTET_H_
-#endif  // #ifdef  CCADISCRET
-
 

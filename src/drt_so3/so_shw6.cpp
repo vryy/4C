@@ -10,14 +10,12 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_shw6.H"
 #include "so_weg6.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-using namespace DRT::UTILS;
 
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
@@ -194,4 +192,3 @@ void DRT::ELEMENTS::So_shw6::Print(ostream& os) const
 }
 
 
-#endif  // #ifdef CCADISCRET

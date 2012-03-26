@@ -9,23 +9,10 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef SO_SH8_H
 #define SO_SH8_H
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
 #include "so_hex8.H"
-#include "../drt_inpar/inpar_structure.H"
-
 
 // forward declarations
 struct _SOH8_DATA;
@@ -332,4 +319,3 @@ protected:
 
 
 #endif  // #ifndef SO_SH8_H
-#endif  // #ifdef CCADISCRET

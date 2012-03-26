@@ -14,6 +14,8 @@ writen by : Alexander Volf
 *----------------------------------------------------------------------*/
 
 #include "so_tet4.H"
+#include "so_surface.H"
+#include "so_line.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -28,6 +30,7 @@ writen by : Alexander Volf
 
 // inverse design object
 #include "inversedesign.H"
+#include "prestress.H"
 
 
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;

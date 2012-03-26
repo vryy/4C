@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SONURBS27_H
 #define SONURBS27_H
 
@@ -18,8 +17,6 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -27,8 +24,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 
 //@=
-//#include "so_surface.H"
-//#include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_mat/material.H"
@@ -423,4 +418,3 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SONURBS27_H
-#endif  // #ifdef CCADISCRET

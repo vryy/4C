@@ -10,8 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_sh8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -34,11 +32,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_condition.H"
 
-
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-using POTENTIAL::PotentialManager; // potential manager
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -476,8 +469,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RefCountPtr<PotentialManager> potentialmanager =
-        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      RefCountPtr<POTENTIAL::PotentialManager> potentialmanager =
+        params.get<RefCountPtr<POTENTIAL::PotentialManager> >("pot_man", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in Solid SH8 available");
 
@@ -1855,5 +1848,3 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-
-#endif  // #ifdef CCADISCRET

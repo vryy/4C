@@ -11,24 +11,12 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* defintions */
-#ifdef CCADISCRET
 
 #ifndef SO_SH8P8_H
 #define SO_SH8P8_H
 
 /*----------------------------------------------------------------------*/
-/* headers */
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
 #include "so_sh8.H"
-#include "../drt_inpar/inpar_structure.H"
 
 
 // forward declarations
@@ -934,4 +922,3 @@ private:
 
 
 #endif  // #ifndef SO_SH8P8_H
-#endif  // #ifdef CCADISCRET

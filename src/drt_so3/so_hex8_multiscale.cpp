@@ -15,6 +15,7 @@ Maintainer: Lena Yoshihara
 #include "so_hex8.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "so_surface.H"
 
 extern struct _GENPROB     genprob;
 

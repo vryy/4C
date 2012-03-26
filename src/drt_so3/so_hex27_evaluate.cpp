@@ -30,10 +30,6 @@ Maintainer: Thomas Kloeppel
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
-
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/

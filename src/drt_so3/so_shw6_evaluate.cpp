@@ -10,8 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_shw6.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -27,9 +25,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/micromaterial.H"
 
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
@@ -1215,6 +1210,4 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-
-#endif  // #ifdef CCADISCRET
 

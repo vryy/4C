@@ -9,7 +9,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SOH8FBAR_H
 #define SOH8FBAR_H
 
@@ -255,4 +254,3 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SOH8FBAR_H
-#endif  // #ifdef CCADISCRET

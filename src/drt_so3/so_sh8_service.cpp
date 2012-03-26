@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8.H"
 #include "so_sh8.H"
@@ -21,9 +20,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/material.H"
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
 
 
 /*----------------------------------------------------------------------*
@@ -464,4 +460,3 @@ const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_sh8::so
   return derivs;
 }
 
-#endif

@@ -12,8 +12,6 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -36,6 +34,7 @@ written by : Alexander Volf
 
 // inverse design object
 #include "inversedesign.H"
+#include "prestress.H"
 
 //#define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -63,9 +62,6 @@ void writeComment(const std::string v)
 }
 #endif // PRINT_DEBUG
 
-
-using namespace std; // cout etc.
-using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
@@ -1706,4 +1702,3 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
   } // end loop over gauss points
 }
 
-#endif  // #ifdef CCADISCRET

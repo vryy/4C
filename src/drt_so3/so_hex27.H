@@ -9,29 +9,15 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SOH27_H
 #define SOH27_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_SerialDenseMatrix.h"
-using namespace std;
-using namespace Teuchos;
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-#include "so_surface.H"
-#include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_mat/material.H"
-
-#include "../linalg/linalg_fixedsizematrix.H"
 
 /// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;      ///< number of nodes
@@ -523,4 +509,3 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SOH27_H
-#endif  // #ifdef CCADISCRET

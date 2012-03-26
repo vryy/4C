@@ -10,11 +10,8 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
-using namespace std;
 #include "so_weg6.H"
-#include "../drt_lib/drt_elementtype.H"
 
 namespace DRT
 {
@@ -291,4 +288,3 @@ private:
 } // namespace DRT
 
 
-#endif
