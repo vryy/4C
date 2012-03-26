@@ -23,6 +23,8 @@ Maintainer:  Benedikt Schott
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
+#include "../drt_lib/drt_resulttest.H"
+
 namespace DRT
 {
   class Discretization;
@@ -383,6 +385,8 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
     Teuchos::RCP<const Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
 
+    Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
+
     Teuchos::RCP<Epetra_Vector> IVelnp(){return ivelnp_; }
     Teuchos::RCP<Epetra_Vector> IVeln() {return iveln_; }
     Teuchos::RCP<Epetra_Vector> IVelnm(){return ivelnm_; }
@@ -402,6 +406,9 @@ namespace FLD
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
 
 //    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
+
+    /// return boundary discretization
+    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
     /// provide access to the Dirichlet maps
     const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}

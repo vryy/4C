@@ -42,6 +42,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_fsi.H"
 #include "adapter_fluid_lung.H"
 #include "adapter_fluid_poro.H"
+#include "adapter_fluid_xfluid_fsi.H"
 
 // TODO remove
 #include "../drt_fluid/fluid_genalpha_integration.H"
@@ -686,7 +687,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_fluid_xfem2:
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid,actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;
     case prb_combust:
@@ -740,6 +742,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
       fluid_ = Teuchos::rcp(new ADAPTER::FluidPoro(Teuchos::rcp(new FluidWrapper(tmpfluid))));
     }
+    break;
     case prb_elch:
     {
       // access the problem-specific parameter list

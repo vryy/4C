@@ -519,6 +519,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid_fluid_fsi.cpp
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/adapter_fluid_xfem.cpp
+  src/drt_adapter/adapter_fluid_xfluid_fsi.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
