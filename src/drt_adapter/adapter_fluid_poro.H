@@ -18,7 +18,7 @@
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "adapter_fluid_wrapper.H"
+#include "adapter_fluid_fsi.H"
 #include "../linalg/linalg_mapextractor.H"
 
 namespace DRT
@@ -28,12 +28,18 @@ namespace DRT
 
 namespace ADAPTER {
 
-  class FluidPoro : public FluidWrapper
+  class FluidPoro : public FluidFSI
   {
   public:
 
     //! Constructor
-    FluidPoro(Teuchos::RCP<Fluid> fluid);
+    FluidPoro(Teuchos::RCP<Fluid> fluid,
+        Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output,
+        bool isale,
+        bool dirichletcond);
 
     //! Evaluate no penetration constraint
     /*!

@@ -740,7 +740,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_poroelast:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new ADAPTER::FluidPoro(Teuchos::rcp(new FluidWrapper(tmpfluid))));
+      fluid_ = Teuchos::rcp(new FluidPoro(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
     }
     break;
     case prb_elch:
@@ -752,7 +752,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       if (withale!= INPAR::ELCH::elch_mov_bndry_no)
       {
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,solver,fluidtimeparams,output,isale));
-        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid, actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       else
         fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));

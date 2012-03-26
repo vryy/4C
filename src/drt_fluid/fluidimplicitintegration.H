@@ -450,7 +450,8 @@ public:
 //  double Time() const { return time_; }
 //  int Step() const { return step_; }
 
-//  virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) ;
+  /// update velocity increment after Newton step
+  virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);
 
 //  int Itemax() const { return params_->get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }

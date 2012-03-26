@@ -6180,6 +6180,20 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
 } // FluidImplicitTimeInt::SetInitialField
 
 
+/*----------------------------------------------------------------------*
+ | update Newton step                                                   |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  UpdateIterIncrementally(vel);
+}
+
+
 // -------------------------------------------------------------------
 // provide access to turbulence statistics manager (gjb 06/2011)
 // -------------------------------------------------------------------

@@ -31,8 +31,14 @@ extern struct _GENPROB     genprob;
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid)
-: FluidWrapper(fluid)
+ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
+    Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output,
+    bool isale,
+    bool dirichletcond)
+: FluidFSI(fluid,dis,solver,params,output,isale,dirichletcond)
 {
   // make sure
 
