@@ -85,8 +85,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
   string& action = p.get<string>("action","none");
-  if (action != "calc_struct_nlnstiffmass" &&
-      action != "calc_struct_nlnstiff"     &&
+  if (action != "calc_struct_nlnstiffmass"  &&
+      action != "calc_struct_nlnstifflmass" &&
+      action != "calc_struct_nlnstiff"      &&
+      action != "calc_struct_internalforce" &&
       action != "calc_struct_stress") return;
 
   // These get filled in here, so remove old stuff
@@ -188,7 +190,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       mis_ndofperpatch = (int)(*mis_lm).size();
     }
 
-    if (action != "calc_struct_stress")
+    if (action == "calc_struct_nlnstiffmass" || 
+        action == "calc_struct_nlnstifflmass" ||
+        action == "calc_struct_nlnstiff" ||
+        action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
@@ -210,7 +215,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       } // mis
 #endif
     }
-    else
+    else  if (action == "calc_struct_stress")
     {
       INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress",INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain",INPAR::STR::strain_none);
@@ -244,6 +249,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 #endif
 
     }
+    else dserror("Unknown type of action");
 
 
     //---------------------- do assembly of stiffness and internal force

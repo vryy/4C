@@ -44,8 +44,8 @@ using namespace Teuchos;
 
 // stabilization approach & parameters
 //#define PUSOSOLBERG              ///< run the Puso&Solberg tet
-#define ALPHA_NSTET       0.02    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
-#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
+#define ALPHA_NSTET       0.01    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+#define BETA_NSTET        0.9    ///< stabilization parameter for MIS-pressure stabilization
 
 // make parameters match for puso&solberg tet
 #ifdef PUSOSOLBERG

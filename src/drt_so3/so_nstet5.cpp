@@ -136,7 +136,11 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["NSTET5"];
 
-  defs["TET4"].AddIntVector("TET4",4).AddNamedInt("MAT");
+  defs["TET4"]
+  .AddIntVector("TET4",4)
+  .AddNamedInt("MAT")
+  .AddNamedString("KINEM")
+  ;
 }
 
 
