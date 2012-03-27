@@ -1798,128 +1798,6 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
   return;
 }
 
-namespace COMBUST
-{
-template <DRT::Element::DiscretizationType DISTYPE,
-class M1, class M2, class M3>
-void CalcCurvature(
-    M1&                                        posXiDomain, // position of gaussian point for evaluating of surface tension terms
-//    const DRT::ELEMENTS::Combust3*             ele,           ///< the element those matrix is calculated
-    M2&                                        xyze,          ///< xyz coordinates of element ele
-    const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-//    M4&                                        normal,
-    double&                                    curvature   ///<
-)
-{
-  // number space dimensions for 3d combustion element
-  const size_t nsd = 3;
-
-  // number of nodes of element
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-  //==========================reconstruct normal_phi = grad(phi) / |grad(phi)| ===========
-
-    static LINALG::Matrix<nsd,1> grad_phi;
-    grad_phi.Clear();
-
-    // get shape functions at gaussian point
-    static LINALG::Matrix<numnode,1> funct_gp;
-    funct_gp.Clear();
-    DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-    // TODO: already defined above
-    static LINALG::Matrix<nsd,numnode> deriv_gp;
-    deriv_gp.Clear();
-    DRT::UTILS::shape_function_3D_deriv1(deriv_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-    static LINALG::Matrix<nsd,nsd> xjm_gp;
-    xjm_gp.Clear();
-    xjm_gp.MultiplyNT(deriv_gp,xyze);
-
-    static LINALG::Matrix<nsd,nsd> xji_gp;
-    xji_gp.Clear();
-    xji_gp.Invert(xjm_gp);
-
-    // derivatives in xyz-direction
-    static LINALG::Matrix<nsd,numnode> deriv_gp_xyz;
-    deriv_gp_xyz.Clear();
-    deriv_gp_xyz.Multiply(xji_gp,deriv_gp);
-
-
-    // get second derivatives of phi
-    static LINALG::Matrix<9,1> grad_phi2;
-    grad_phi2.Clear();
-
-    // loop over nodes
-    for(size_t i = 0; i< numnode; i++)
-    {
-      LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
-//      LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
-      nodal_grad_xyz_tmp.Clear();
-//      nodal_grad_xi_tmp.Clear();
-
-      // transform xyz-gradient
-      // 1. transformt nodal xyz-gradient (nodal_grad_xyz_tmp) to nodal xi-gradient => nodal_grad_xi_tmp
-      // 2. interpolate xi-gradient at Gaussian point          => nodal_grad_xi
-      // 3. transform xi-gradient at Gaussian point to xyz-gradient
-      // 4. normalize final gradient
-
-      // 1. transform nodal xyz-gradient to nodal xi-gradient
-      // get smoothed xyz-gradient at node i
-      nodal_grad_xyz_tmp(0) =  grad_ephi_smoothed(0,i);
-      nodal_grad_xyz_tmp(1) =  grad_ephi_smoothed(1,i);
-      nodal_grad_xyz_tmp(2) =  grad_ephi_smoothed(2,i);
-
-      grad_phi(0) += nodal_grad_xyz_tmp(0) *funct_gp(i);
-      grad_phi(1) += nodal_grad_xyz_tmp(1) *funct_gp(i);
-      grad_phi(2) += nodal_grad_xyz_tmp(2) *funct_gp(i);
-
-      grad_phi2(0) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(0); // ,xx
-      grad_phi2(1) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(1); // ,yy
-      grad_phi2(2) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(2); // ,zz
-      grad_phi2(3) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(0); // ,xy
-      grad_phi2(4) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(0); // ,xz
-      grad_phi2(5) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(1); // ,yz
-      grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
-      grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
-      grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
-    }
-
-        // 3. transform xi-gradient at Gaussian point to xyz-gradient
-        //      normal_Phi.Multiply(xji_gp,grad_xi);
-
-        // 4. normalize final gradient
-        //normal_Phi.Scale(1.0/normal_Phi.Norm2());
-
-    //cout << grad_phi2 << endl << endl;
-    //=========================================== calculate curvature =========================
-    //double curvature = 0.0;
-
-    double grad_phi_norm = grad_phi.Norm2();
-
-    // check norm of normal gradient
-    if (fabs(grad_phi_norm) < 1.0E-5)// 'ngradnorm' == 0.0
-    {
-      // phi gradient too small -> it must be a local max or min in the level-set field
-      // set curvature to a large value (it will be cut off based on the element size)
-      curvature = 1.0E12;
-    }
-    else
-    {
-      curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
-          + grad_phi(1)*grad_phi(1)*grad_phi2(1)
-          + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
-          -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
-              + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
-              + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
-              +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
-    }
-
-  return;
-
-}
-}
-
 
 /*------------------------------------------------------------------------------------------------*
  | compute curvature based on G-function                                              henke 05/11 |
@@ -1979,28 +1857,26 @@ void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::Parameter
 
       double curvature=0.0;
       COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
-
       //----------------------------------------------------------------
       // cut off curvature at a maximum value to prevent singular values
       //----------------------------------------------------------------
       // calculate largest element diameter
       const double elesize = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
       // use 1/h as the maximum admissible curvature
-      if (fabs(curvature) > (1.0/elesize) )
+      if (fabs(curvature) > (5.0/elesize) )
       {
         if (curvature < 0.0)
-          curvature = -1.0/elesize;
+          curvature = -5.0/elesize;
         else
-          curvature = 1.0/elesize;
+          curvature = 5.0/elesize;
 
-        cout << "curvature cut off at value " << 1.0/elesize << " in element " << adjele->Id() << endl;
+        cout << "curvature cut off at value " << 5.0/elesize << " in element " << adjele->Id() << endl;
       }
 
       avcurv += curvature;
     }
     avcurv /= numele;
     avcurv *= -1.0;
-    //cout << "avcurv" << avcurv << endl;
     const int gid = lnode->Id();
     int nodelid = fluiddis_->NodeRowMap()->LID(gid);
     // insert velocity value into node-based vector
