@@ -58,6 +58,7 @@ namespace LINALG
   class SparseOperator;
   class SparseMatrix;
   class SerialDenseMatrix;
+  class MapExtractor;
 }
 
 namespace STATMECH
@@ -167,29 +168,45 @@ public:
   //! \brief remove crosslinker element from a chosen discretization
   void RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements);
 
+  /*! \brief adjusted DBC evaluation for StatMech
+   *  \param params          (in)     a parameter list
+   *  \param disn            (in)     displacement vector
+   *  \param dirichtoggle    (in/out) vector marking the Dirichlet DOFs (old method)
+   *  \param invtoggle       (in/out) the inverse vector of dirichtoggle (old method)
+   *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
+  void EvaluateDirichletStatMech(Teuchos::ParameterList&                     params,
+                                 Teuchos::RCP<Epetra_Vector>        dis,
+                                 Teuchos::RCP<Epetra_Vector>        dirichtoggle,
+                                 Teuchos::RCP<Epetra_Vector>        invtoggle,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
+
   /*! \brief adjusted DBC evaluation for periodic case
-   *  \param params       (in)     a parameter list
-   *  \param disn         (in)     displacement vector
-   *  \param dirichtoggle (in)     vector marking the Dirichlet DOFs
-   *  \param invtoggle    (in)     the inverse vector of dirichtoggle*/
-  void EvaluateDirichletPeriodic(Teuchos::ParameterList&     params,
-                                 Teuchos::RCP<Epetra_Vector> disn,
-                                 Teuchos::RCP<Epetra_Vector> dirichtoggle,
-                                 Teuchos::RCP<Epetra_Vector> invtoggle);
+   *  \param params          (in)     a parameter list
+   *  \param disn            (in)     displacement vector
+   *  \param dirichtoggle    (in/out) vector marking the Dirichlet DOFs (old method)
+   *  \param invtoggle       (in/out) the inverse vector of dirichtoggle (old method)
+   *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
+  void EvaluateDirichletPeriodic(Teuchos::ParameterList&            params,
+                                 Teuchos::RCP<Epetra_Vector>        dis,
+                                 Teuchos::RCP<Epetra_Vector>        dirichtoggle,
+                                 Teuchos::RCP<Epetra_Vector>        invtoggle,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
-   *  \param nodeids      (in)  vector containing DBC Node IDs
-   *  \param onoff        (in)  vector containing onoff values for DOFs
-   *  \param disn         (in)  displacement vector
-   *  \param dirichtoggle (in)  vector marking the Dirichlet DOFs
-   *  \param invtoggle    (in)  the inverse vector of dirichtoggle
-   *  \param deltadbc     (in)  vector holding the increment in Dirichlet values*/
-  void DoDirichletConditionPeriodic(std::vector<int>*           nodeids,
-                                    std::vector<int>*           onoff,
-                                    Teuchos::RCP<Epetra_Vector> disn,
-                                    Teuchos::RCP<Epetra_Vector> dirichtoggle,
-                                    Teuchos::RCP<Epetra_Vector> invtoggle,
-                                    Epetra_Vector&              deltadbc);
+   *  \param nodeids      (in)      vector containing DBC Node IDs
+   *  \param onoff        (in)      vector containing onoff values for DOFs
+   *  \param disn         (in)      displacement vector
+   *  \param dirichtoggle (in/out)  vector marking the Dirichlet DOFs (old method)
+   *  \param invtoggle    (in/out)  the inverse vector of dirichtoggle (old method)
+   *  \param deltadbc     (in)      vector holding the increment in Dirichlet values
+   *  \param dbcgids      (in/out)  set holding dbc DOF GIDs (new method)*/
+  void DoDirichletConditionPeriodic(std::vector<int>*            nodeids,
+                                    std::vector<int>*            onoff,
+                                    Teuchos::RCP<Epetra_Vector>  dis,
+                                    Teuchos::RCP<Epetra_Vector>  dirichtoggle,
+                                    Teuchos::RCP<Epetra_Vector>  invtoggle,
+                                    Epetra_Vector&               deltadbc,
+                                    Teuchos::RCP<std::set<int> > dbcgids);
 
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename);

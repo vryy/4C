@@ -3528,12 +3528,46 @@ void STATMECH::StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVec
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
 
 /*----------------------------------------------------------------------*
- |  Evaluate DBCs in case of periodic BCs (public)         mueller  2/10|
+ |  Evaluate DBCs in case of periodic BCs (public)         mueller 03/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::EvaluateDirichletStatMech(ParameterList&                     params,
+                                                          Teuchos::RCP<Epetra_Vector>        dis,
+                                                          Teuchos::RCP<Epetra_Vector>        dirichtoggle,
+                                                          Teuchos::RCP<Epetra_Vector>        invtoggle,
+                                                          Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
+{
+  // in case of activated periodic boundary conditions
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"PERIODICDBC"))
+  {
+    // new DBC management method
+    if(dbcmapextractor!=Teuchos::null)
+      EvaluateDirichletPeriodic(params, dis, Teuchos::null, Teuchos::null, dbcmapextractor);
+    else
+    {
+      if(dirichtoggle==Teuchos::null || invtoggle==Teuchos::null)
+        dserror("When there is no dbcmaps, the toggle vectors have to be handed over instead!");
+      EvaluateDirichletPeriodic(params, dis, dirichtoggle, invtoggle);
+    }
+//    // convert dirichtoggle to dbcmap_
+//    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+  }
+  else
+  {
+    if(dbcmapextractor!=Teuchos::null)
+      discret_.EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, Teuchos::null, dbcmapextractor);
+    else
+      discret_.EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, dirichtoggle);
+  }
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  Evaluate DBCs in case of periodic BCs (public)         mueller 02/10|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
-                                                RCP<Epetra_Vector> disn,
-                                                RCP<Epetra_Vector> dirichtoggle,
-                                                RCP<Epetra_Vector> invtoggle)
+                                                          Teuchos::RCP<Epetra_Vector> dis,
+                                                          Teuchos::RCP<Epetra_Vector> dirichtoggle,
+                                                          Teuchos::RCP<Epetra_Vector> invtoggle,
+                                                          Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 /*The idea behind EvaluateDirichletPeriodic() is simple:
  * Give Dirichlet values to nodes of an element that is broken in
  * z-direction due to the application of periodic boundary conditions.
@@ -3566,7 +3600,6 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 
   if (!(discret_.Filled())) dserror("FillComplete() was not called");
   if (!(discret_.HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
-
   //----------------------------------- some variables
   // indicates broken element
   bool broken;
@@ -3599,6 +3632,10 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
   if (time<0.0)
     usetime = false;
 
+  // vector of DOF-IDs which are Dirichlet BCs
+  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
+  if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
+
   //---------------------------------------------------------- loop over elements
   // increment vector for dbc values
   Epetra_Vector deltadbc(*(discret_.DofRowMap()), true);
@@ -3629,7 +3666,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
       LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
 //-------------------------------- obtain nodal coordinates of the current element
       // get nodal coordinates and LIDs of the nodal DOFs
-      GetElementNodeCoords(element, disn, coord, &doflids);
+      GetElementNodeCoords(element, dis, coord, &doflids);
 //-----------------------detect broken/fixed/free elements and fill position vector
       // determine existence and location of broken element
       CheckForBrokenElement(coord, cut, &broken);
@@ -3780,11 +3817,11 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 
   // do not do anything if vector is empty
   if(!oscillnodes_.empty())
-    DoDirichletConditionPeriodic(&oscillnodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+    DoDirichletConditionPeriodic(&oscillnodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
 
   // set condition for fixed nodes
   if(!fixednodes_.empty())
-    DoDirichletConditionPeriodic(&fixednodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+    DoDirichletConditionPeriodic(&fixednodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
 
   // set condition for free or recently set free nodes
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES"))
@@ -3796,7 +3833,26 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
     addonoff.at(oscdir) = 0;
 
   if(!freenodes_.empty())
-    DoDirichletConditionPeriodic(&freenodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+    DoDirichletConditionPeriodic(&freenodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
+
+  // create DBC and free map and build their common extractor
+  if (dbcmapextractor != Teuchos::null)
+  {
+    // build map of Dirichlet DOFs
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
+    std::vector<int> dbcgidsv;
+    if (dbcgids->size() > 0)
+    {
+      dbcgidsv.reserve(dbcgids->size());
+      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
+    }
+    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, discret_.DofRowMap()->IndexBase(), discret_.DofRowMap()->Comm()));
+    // build the map extractor of Dirichlet-conditioned and free DOFs
+    *dbcmapextractor = LINALG::MapExtractor(*(discret_.DofRowMap()), dbcmap);
+  }
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
@@ -3810,12 +3866,13 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  fill system vector and toggle vector (public)          mueller  3/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeids,
-                                                   vector<int>* onoff,
-                                                   RCP<Epetra_Vector> disn,
-                                                   RCP<Epetra_Vector> dirichtoggle,
-                                                   RCP<Epetra_Vector> invtoggle,
-                                                   Epetra_Vector& deltadbc)
+void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*           nodeids,
+                                                             std::vector<int>*           onoff,
+                                                             Teuchos::RCP<Epetra_Vector> dis,
+                                                             Teuchos::RCP<Epetra_Vector> dirichtoggle,
+                                                             Teuchos::RCP<Epetra_Vector> invtoggle,
+                                                             Epetra_Vector&              deltadbc,
+                                                             Teuchos::RCP<std::set<int> > dbcgids)
 /*
  * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),
  * but with the slight difference of taking current displacements into account.
@@ -3854,13 +3911,32 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeid
     // loop over DOFs
     for (unsigned j=0; j<numdf; ++j)
     {
-      // get the LID of the currently handled DOF
-      const int lid = (*disn).Map().LID(dofs[j]);
+      // get the GID and the LID of the currently handled DOF
+      const int gid = dofs[j];
+      const int lid = (*dis).Map().LID(gid);
 
-      // if DOF in question is not subject to DBCs (anymore)
-      if (onoff->at(j)==0)
+//---------------------------------------------Dirichlet Value Assignment
+      if (onoff->at(j)==1)
       {
-        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+        // assign value
+        if (lid<0) dserror("Global id %d not on this proc in system vector", dofs[j]);
+        if (dis != Teuchos::null)
+          (*dis)[lid] += deltadbc[lid];
+        // set toggle vector and the inverse vector
+        if (dirichtoggle != Teuchos::null)
+        {
+          (*dirichtoggle)[lid] = 1.0;
+          (*invtoggle)[lid] = 0.0;
+        }
+        // amend vector of DOF-IDs which are Dirichlet BCs
+        if (dbcgids != Teuchos::null)
+          (*dbcgids).insert(gid);
+      }
+      else // if DOF in question is not subject to DBCs (anymore)
+      {
+        if (lid<0)
+          dserror("Global id %d not on this proc in system vector",dofs[j]);
+
         if (dirichtoggle!=Teuchos::null)
         {
           // turn off application of Dirichlet value
@@ -3868,18 +3944,9 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeid
           // in addition, modify the inverse vector (needed for manipulation of the residual vector)
           (*invtoggle)[lid] = 1.0;
         }
-        continue;
-      }
-//---------------------------------------------Dirichlet Value Assignment
-      // assign value
-      if (lid<0) dserror("Global id %d not on this proc in system vector", dofs[j]);
-      if (disn != Teuchos::null)
-        (*disn)[lid] += deltadbc[lid];
-      // set toggle vector and the inverse vector
-      if (dirichtoggle != Teuchos::null)
-      {
-        (*dirichtoggle)[lid] = 1.0;
-        (*invtoggle)[lid] = 0.0;
+        // get rid of entry in DBC map - if it exists
+        if (dbcgids != Teuchos::null)
+          (*dbcgids).erase(dofs[j]);
       }
     }  // loop over nodal DOFs
   }  // loop over nodes

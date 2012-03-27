@@ -88,17 +88,18 @@ namespace STR
     void PredictConstDisConsistVel();
 
     //! \brief evaluate residual
-    void EvaluateForceStiffResidual(bool predict);
+    void EvaluateForceStiffResidual(bool predict=false);
 
     //! \brief Apply Dirichlet Boundary values
     void ApplyDirichletBC(const double                time,
                           Teuchos::RCP<Epetra_Vector> dis,
                           Teuchos::RCP<Epetra_Vector> vel);
 
-    void ApplyForceExternal(const double time,  //!< evaluation time
-                            const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-                            const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
-                            Teuchos::RCP<Epetra_Vector>& fext);  //!< external force
+//    //! \brief Apply external forces
+//    void ApplyForceExternal(const double time,  //!< evaluation time
+//                            const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+//                            const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
+//                            Teuchos::RCP<Epetra_Vector>& fext);  //!< external force
 
     //! \brief internal forces and stiffness matrix
     void ApplyForceStiffInternal(const double                         time,
@@ -109,6 +110,9 @@ namespace STR
                                  Teuchos::RCP<Epetra_Vector>          fint,  //!<  internal force
                                  Teuchos::RCP<LINALG::SparseOperator> stiff,  //!<  stiffness matrix
                                  double                               t_eval=0.0);  //!<  evaluation time
+
+    //! \brief evaluate Mid State for one-step-theta scheme
+    void EvaluateMidState();
 
     //! \brief build residual
     void BuildResidual();
@@ -141,16 +145,16 @@ namespace STR
     TimIntStatMech(const TimIntStatMech& old);
 
     //! \brief preparation for the current time step relevant to Statistical Mechanics
-    void StatMechPrepareStep(int& currstep, int& ndim);
+    void StatMechPrepareStep();
 
     //! \brief call Update() method of statmechmanager_ according to options chosen
-    void StatMechUpdate(int& istep, int& ndim);
+    void StatMechUpdate();
 
     //! \brief print updated statmech values to screen
     void StatMechPrintUpdate(const double& t_admin);
 
     //! \brief call Output() method of statmechmanager_ according to options chosen
-    void StatMechOutput(int& istep, int& ndim);
+    void StatMechOutput();
 
     //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
     void StatMechRestoreConvState();
@@ -162,13 +166,13 @@ namespace STR
     bool BeamContactExitUzawaAt(int& maxuzawaiter);
 
     //! \brief evaluates beam contact according to options chosen in the input file
-    void BeamContactNonlinearSolve(int& istep, int& ndim);
+    void BeamContactNonlinearSolve();
 
     //! \brief beam contact penalty approach
-    void BeamContactPenalty(int& istep, int& ndim);
+    void BeamContactPenalty();
 
     //! \brief beam contact augmented lagrange approach
-    void BeamContactAugLag(int& istep, int& ndim);
+    void BeamContactAugLag();
 
     //! \brief Compute Statistical Forces and Damping Matrix for Brownian Dynamics Applications
     void PTCBrownianForcesAndDamping(double& dt, double& crotptc, double& ctransptc, double& sumptc);
@@ -179,6 +183,12 @@ namespace STR
     //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
     void PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent);
 
+    void UpdateIter(const int iter);
+
+    void UpdateIterIncrementally();
+
+    void UpdateIterIteratively();
+
     //! \brief set PTC status to unconverged
     void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
 
@@ -187,6 +197,9 @@ namespace STR
 
     //! \brief manager for administration of statistical mechanics stuff
     Teuchos::RCP<STATMECH::StatMechManager> statmechmanager_;
+
+    //! \brief spatial dimension
+    int ndim_;
 
     //! \brief maximal number of random numbers to be generated in each time step per element
     int maxrandomnumbersperglobalelement_;

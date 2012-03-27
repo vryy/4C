@@ -171,7 +171,10 @@ alphaf_(alphaf)
   uzawaiter_ = 0;
 
   if(!pdiscret_.Comm().MyPID())
+  {
+    cout << "========================= Beam Contact =========================" << endl;
     cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
+  }
 
   // initialize octtree for contact search
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
@@ -187,6 +190,17 @@ alphaf_(alphaf)
     tree_ = Teuchos::null;
     if(!pdiscret_.Comm().MyPID())
       cout<<"\nBrute Force Search"<<endl;
+  }
+
+
+
+  if(!pdiscret_.Comm().MyPID())
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_penalty )
+      cout << "Strategy               = Penalty" << endl;
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_auglag)
+      cout << "Strategy               = Augmented Lagrange" << endl;
+    cout <<"================================================================\n" << endl;
   }
 
   return;

@@ -370,7 +370,6 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
   // some parameters
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-  INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
 
   // only continue if beam contact unmistakably chosen in input file
   if (apptype == INPAR::CONTACT::app_beamcontact)
@@ -390,15 +389,6 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 
     // create beam contact manager
     beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
-
-    // output of strategy type to screen
-    if (!myrank_)
-    {
-      if (soltype == INPAR::CONTACT::solution_penalty )
-        cout << "===== Penalty strategy =========================================\n" << endl;
-      else if (soltype == INPAR::CONTACT::solution_auglag)
-        cout << "===== Augmented Lagrange strategy ==============================\n" << endl;
-    }
   }
 
   return;
@@ -774,8 +764,16 @@ void STR::TimInt::ApplyDirichletBC
   }
   else
   {
-    discret_->EvaluateDirichlet(p, dis, vel, acc,
-                                Teuchos::null, Teuchos::null);
+    // standard Dirichlet
+    if(!HaveStatMech())
+    {
+      discret_->EvaluateDirichlet(p, dis, vel, acc,
+                               Teuchos::null, Teuchos::null);
+    }
+    else //special implementation for StatMech
+    {
+      statmechman_->EvaluateDirichletStatMech(p, dis, Teuchos::null, Teuchos::null, dbcmaps_);
+    }
   }
   discret_->ClearState();
 
@@ -1715,7 +1713,8 @@ void STR::TimInt::ApplyForceExternal
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState(0,"displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
+  if (damping_ == INPAR::STR::damp_material)
+    discret_->SetState(0,"velocity", vel);
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
 

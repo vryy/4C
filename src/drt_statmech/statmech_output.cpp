@@ -473,6 +473,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
     default:
     break;
   }
+
   // handling gmsh output seperately
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 100) == 0) )
   {

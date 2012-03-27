@@ -394,6 +394,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  Bounding Box creation function (private)                 meier 01/11|
  |  generates bounding boxes extended with factor 1.05                  |
