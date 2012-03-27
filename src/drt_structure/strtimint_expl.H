@@ -208,7 +208,8 @@ namespace STR
     /* prepare time step */
     virtual void PrepareTimeStep()
     {
-      dserror("PrepareTimeStep() is not needed for explicit time integrators");
+      // do nothing
+      return;
     }
 
     /// has to be renamed either here or IntegrateStep()
@@ -222,22 +223,18 @@ namespace STR
     /// has to be renamed either here or PrintStep()
     virtual void Output()
     {
-      dserror("just here for overloading reasons, should go as soon as possible");
+      OutputStep();
+      return;
     }
 
     /// has to be renamed either here or UpdateStepState() /UpdateStepStateElement()
     virtual void Update()
     {
-      dserror("just here for overloading reasons, should go as soon as possible");
+      UpdateStepState();
+      UpdateStepTime();
+      UpdateStepElement();
+      return;
     }
-
-//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-//      Teuchos::RCP<Epetra_Vector> iforce
-//    )
-//    {
-//      dserror("RelaxationSolve() is not needed for explicit time integrators");
-//      return Teuchos::null;
-//    }
 
     /* Linear structure solve with just an interface load */
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
@@ -286,14 +283,14 @@ namespace STR
     /// eventually renamed here or IntegrateStep()
     virtual void Solve()
     {
-      dserror("Solve() is not needed for explicit time integrators or rename it correctly");
+      IntegrateStep();
       return;
     }
 
     //! prepare partiton step
     virtual void PreparePartitionStep()
     {
-      // do nothing for explicit time integrators;
+      // do nothing for explicit time integrators
       return;
     }
 
