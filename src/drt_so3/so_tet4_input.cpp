@@ -18,6 +18,7 @@ writen by : Alexander Volf
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/elasthyper.H"
 
@@ -38,6 +39,9 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
     humcard->Setup(NUMGPT_SOTET4, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_growth){
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    grow->Setup(NUMGPT_SOTET4, linedef);
   } else if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
     MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(Material().get());
     comix->Setup(NUMGPT_SOTET4, linedef);

@@ -25,6 +25,7 @@ written by : Alexander Volf
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
@@ -103,7 +104,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_struct_energy")	       act = So_tet4::calc_struct_energy;
-  else if (action=="calc_struct_output_E")	       act = So_tet4::calc_struct_output_E; 
+  else if (action=="calc_struct_output_E")	       act = So_tet4::calc_struct_output_E;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
@@ -352,7 +353,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       if (!stvk) dserror("dynamic cast to stvenant failed");
       double E = stvk->Youngs();
       elevec1_epetra(0) = E;
-    
+
     }
     break;
 
@@ -405,7 +406,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         so_tet4_remodel(lm,mydisp,params,mat);
       }
       // Update of history for visco material
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();

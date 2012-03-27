@@ -3,10 +3,12 @@
 \brief
 This file contains routines for constraint mixture growth and remodeling.
 example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0E3 PHIE 0.08 PREELA 1.0
-K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0 HOMSTR 0.0
-GROWTHFAC 0.0 STARTTIME 100.0 INTEGRATION Explicit TOL 1.0E-8
-GROWTHFORCE Single INITSTRETCH None DEGOPTION Lin
+example input line
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 PHIE 0.08 PREELA 1.0
+K1 1.0 K2 1.0 PRECOLL 1.06 K1M 1.0 K2M 1.0 PHIM 1.0 PREMUS 1.0
+SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 HOMSTR 6.75E4 GROWTHFAC 0.5
+STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single
+INITSTRETCH None DEGOPTION Cos
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:

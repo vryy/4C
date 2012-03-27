@@ -3,10 +3,11 @@
 \brief
 This file contains routines for constraint mixture growth and remodeling.
 example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0E3 PHIE 0.08 PREELA 1.0
-K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0 HOMSTR 0.0
-GROWTHFAC 0.0 STARTTIME 100.0 INTEGRATION Explicit TOL 1.0E-8
-GROWTHFORCE Single INITSTRETCH None DEGOPTION Lin
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 PHIE 0.08 PREELA 1.0
+K1 1.0 K2 1.0 PRECOLL 1.06 K1M 1.0 K2M 1.0 PHIM 1.0 PREMUS 1.0
+SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 HOMSTR 6.75E4 GROWTHFAC 0.5
+STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single
+INITSTRETCH None DEGOPTION Cos
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:
@@ -31,7 +32,9 @@ Maintainer: Susanna Tinkl
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_io/io_gmsh.H" // for debug plotting with gmsh
 #include "../drt_io/io_control.H" // for debug plotting with gmsh
-#include "contchainnetw.H" // for debug plotting with gmsh
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for debug plotting with gmsh
+#include "../drt_fem_general/drt_utils_integration.H" // for debug plotting with gmsh
+#include "../drt_lib/drt_utils.H" // for debug plotting with gmsh
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -2180,20 +2183,69 @@ void MAT::ConstraintMixtureOutputToGmsh
     actele->LocationVector(*dis,lm,lmowner,lmstride);
     Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
     vector<double> mydisp(lm.size(),0);
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
     Teuchos::RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::ConstraintMixture* grow = static_cast <MAT::ConstraintMixture*>(mat.get());
 
     // material plot at gauss points
     int ngp = grow->Geta1()->size();
-    for (int gp = 0; gp < ngp; ++gp){
-      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp); //defined in contchainnetw
+
+    // update element geometry
+    const int numnode = actele->NumNode();
+    const int numdof = 3;
+    Epetra_SerialDenseMatrix xcurr(numnode,3);  // material coord. of element
+    for (int i=0; i<numnode; ++i)
+    {
+      xcurr(i,0) = actele->Nodes()[i]->X()[0]+ mydisp[i*numdof+0];
+      xcurr(i,1) = actele->Nodes()[i]->X()[1]+ mydisp[i*numdof+1];
+      xcurr(i,2) = actele->Nodes()[i]->X()[2]+ mydisp[i*numdof+2];
+    }
+    const DRT::Element::DiscretizationType distype = actele->Shape();
+    Epetra_SerialDenseVector funct(numnode);
+
+    // define gauss rule
+    DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule3D_undefined;
+    switch (distype)
+    {
+    case DRT::Element::hex8:
+    {
+      gaussrule_ = DRT::UTILS::intrule_hex_8point;
+      if (ngp != 8)
+        dserror("hex8 has not 8 gauss points: %d", ngp);
+      break;
+    }
+    case DRT::Element::wedge6:
+    {
+      gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+      if (ngp != 6)
+        dserror("wedge6 has not 6 gauss points: %d", ngp);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      gaussrule_ = DRT::UTILS::intrule_tet_1point;
+      if (ngp != 1)
+        dserror("tet4 has not 1 gauss point: %d", ngp);
+      break;
+    }
+    default:
+      dserror("unknown element in ConstraintMixtureOutputToGmsh");
+    }
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+
+    for (int gp = 0; gp < ngp; ++gp)
+    {
+      DRT::UTILS::shape_function_3D(funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
+      Epetra_SerialDenseMatrix point(1,3);
+      point.Multiply('T','N',1.0,funct,xcurr,0.0);
 
       // write mandel stress
       LINALG::Matrix<3,1> mandelgp = grow->GetVis(gp);
-      gmshfilecontent << "SP(" << scientific << point[0] << ",";
-      gmshfilecontent << scientific << point[1] << ",";
-      gmshfilecontent << scientific << point[2] << ")";
+      gmshfilecontent << "SP(" << scientific << point(0,0) << ",";
+      gmshfilecontent << scientific << point(0,1) << ",";
+      gmshfilecontent << scientific << point(0,2) << ")";
       gmshfilecontent << "{" << scientific
       << mandelgp(0)
       << "};" << endl;

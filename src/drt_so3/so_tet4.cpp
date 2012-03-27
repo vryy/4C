@@ -22,6 +22,7 @@ writen by : Alexander Volf
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -443,6 +444,48 @@ void DRT::ELEMENTS::So_tet4::VisNames(map<string,int>& names)
     fiber = "Fiber4";
     names[fiber] = 3;
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_growth)
+  {
+    string fiber = "Theta";
+    names[fiber] = 1;
+    fiber = "Mandel";
+    names[fiber] = 1;
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
+    {
+      fiber = "Fiber1";
+      names[fiber] = 3; // 3-dim vector
+      fiber = "Fiber2";
+      names[fiber] = 3; // 3-dim vector
+    } else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+      fiber = "Fiber1";
+      names[fiber] = 3; // 3-dim vector
+      fiber = "Fiber2";
+      names[fiber] = 3;
+      fiber = "Fiber3";
+      names[fiber] = 3;
+      fiber = "Fiber4";
+      names[fiber] = 3;
+    }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(grow->Matelastic().get());
+      if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+      {
+        std::vector<LINALG::Matrix<3,1> > fibervecs;
+        elahy->GetFiberVecs(fibervecs);
+        int vissize = fibervecs.size();
+        string fiber;
+        for (int i = 0; i < vissize; i++)
+        {
+          ostringstream s;
+          s << "Fiber" << i+1;
+          fiber = s.str();
+          names[fiber] = 3; // 3-dim vector
+        }
+      }
+    }
+  }
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
   {
     string fiber = "MassStress";
@@ -556,6 +599,127 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
       data[0] = a4[0];
       data[1] = a4[1];
       data[2] = a4[2];
+    }
+    else
+    {
+      return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_growth)
+  {
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    if (name == "Theta")
+    {
+      if ((int)data.size()!=1)
+        dserror("size mismatch");
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp += grow->Gettheta()->at(iter);
+      data[0] = temp/NUMGPT_SOTET4;
+    }
+    else if (name == "Mandel")
+    {
+      if ((int)data.size()!=1)
+        dserror("size mismatch");
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp += grow->Getmandel()->at(iter);
+      data[0] = temp/NUMGPT_SOTET4;
+    }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
+    {
+      MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(grow->Matelastic().get());
+      if (name == "Fiber1")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+        data[0] = a1[0];
+        data[1] = a1[1];
+        data[2] = a1[2];
+      }
+      else if (name == "Fiber2")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+        data[0] = a2[0];
+        data[1] = a2[1];
+        data[2] = a2[2];
+      }
+      else
+      {
+        return false;
+      }
+    }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
+    {
+      MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(grow->Matelastic().get());
+      if (name == "Fiber1")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+        data[0] = a1[0];
+        data[1] = a1[1];
+        data[2] = a1[2];
+      }
+      else if (name == "Fiber2")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+        data[0] = a2[0];
+        data[1] = a2[1];
+        data[2] = a2[2];
+      }
+      else if (name == "Fiber3")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
+        data[0] = a3[0];
+        data[1] = a3[1];
+        data[2] = a3[2];
+      }
+      else if (name == "Fiber4")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
+        data[0] = a4[0];
+        data[1] = a4[1];
+        data[2] = a4[2];
+      }
+      else
+      {
+        return false;
+      }
+    }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(grow->Matelastic().get());
+      if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+      {
+        std::vector<LINALG::Matrix<3,1> > fibervecs;
+        elahy->GetFiberVecs(fibervecs);
+        int vissize = fibervecs.size();
+        for (int i = 0; i < vissize; i++)
+        {
+          ostringstream s;
+          s << "Fiber" << i+1;
+          string fiber;
+          fiber = s.str();
+          if (name == fiber)
+          {
+            if ((int)data.size()!=3)
+              dserror("size mismatch");
+            data[0] = fibervecs.at(i)(0);
+            data[1] = fibervecs.at(i)(1);
+            data[2] = fibervecs.at(i)(2);
+          }
+        }
+      }
     }
     else
     {

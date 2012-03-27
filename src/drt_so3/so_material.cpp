@@ -378,7 +378,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       *density = grow->Density();
       break;
     }
-    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
       double dt = params.get<double>("delta time",-1.0);
@@ -680,7 +680,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       *density = grow->Density();
       break;
     }
-    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
       double dt = params.get<double>("delta time",-1.0);
@@ -1334,7 +1334,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       *density = humcard->Density();
       break;
     }
-    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    case INPAR::MAT::m_growth: /*------- integration point based growth */
+    {
+      MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+      grow->Evaluate(glstrain,gp,cmat,stress,params);
+      *density = grow->Density();
+      break;
+    }
+    case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
       double dt = params.get<double>("delta time",-1.0);

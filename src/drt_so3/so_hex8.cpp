@@ -610,6 +610,24 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
       fiber = "Fiber4";
       names[fiber] = 3;
     }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(grow->Matelastic().get());
+      if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+      {
+        std::vector<LINALG::Matrix<3,1> > fibervecs;
+        elahy->GetFiberVecs(fibervecs);
+        int vissize = fibervecs.size();
+        string fiber;
+        for (int i = 0; i < vissize; i++)
+        {
+          ostringstream s;
+          s << "Fiber" << i+1;
+          fiber = s.str();
+          names[fiber] = 3; // 3-dim vector
+        }
+      }
+    }
   }
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
   {
@@ -1043,6 +1061,31 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       else
       {
         return false;
+      }
+    }
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(grow->Matelastic().get());
+      if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+      {
+        std::vector<LINALG::Matrix<3,1> > fibervecs;
+        elahy->GetFiberVecs(fibervecs);
+        int vissize = fibervecs.size();
+        for (int i = 0; i < vissize; i++)
+        {
+          ostringstream s;
+          s << "Fiber" << i+1;
+          string fiber;
+          fiber = s.str();
+          if (name == fiber)
+          {
+            if ((int)data.size()!=3)
+              dserror("size mismatch");
+            data[0] = fibervecs.at(i)(0);
+            data[1] = fibervecs.at(i)(1);
+            data[2] = fibervecs.at(i)(2);
+          }
+        }
       }
     }
     else

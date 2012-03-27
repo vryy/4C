@@ -31,10 +31,11 @@ Maintainer: Susanna Tinkl
 #include "aaaneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_utils.H"  // for function Factory in Unpack
+#include "../drt_lib/drt_utils.H"  // for function Factory in Unpack and debug plotting with gmsh
 #include "../drt_io/io_gmsh.H" // for debug plotting with gmsh
 #include "../drt_io/io_control.H" // for debug plotting with gmsh
-#include "contchainnetw.H" // for debug plotting with gmsh
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for debug plotting with gmsh
+#include "../drt_fem_general/drt_utils_integration.H" // for debug plotting with gmsh
 
 
 /*----------------------------------------------------------------------*
@@ -567,35 +568,84 @@ void MAT::GrowthOutputToGmsh
     vector<int> lmowner;
     vector<int> lmstride;
     actele->LocationVector(*dis,lm,lmowner,lmstride);
-    RCP<const Epetra_Vector> disp = dis->GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
     vector<double> mydisp(lm.size(),0);
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
     RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-    RCP<vector<double> > mandel = grow->Getmandel();
-    RCP<vector<double> > theta = grow->Gettheta();
+    Teuchos::RCP<vector<double> > mandel = grow->Getmandel();
+    Teuchos::RCP<vector<double> > theta = grow->Gettheta();
 
     // material plot at gauss points
     int ngp = grow->Gettheta()->size();
-    for (int gp = 0; gp < ngp; ++gp){
-      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp); //defined in contchainnetw
+
+    // update element geometry
+    const int numnode = actele->NumNode();
+    const int numdof = 3;
+    Epetra_SerialDenseMatrix xcurr(numnode,3);  // material coord. of element
+    for (int i=0; i<numnode; ++i)
+    {
+      xcurr(i,0) = actele->Nodes()[i]->X()[0]+ mydisp[i*numdof+0];
+      xcurr(i,1) = actele->Nodes()[i]->X()[1]+ mydisp[i*numdof+1];
+      xcurr(i,2) = actele->Nodes()[i]->X()[2]+ mydisp[i*numdof+2];
+    }
+    const DRT::Element::DiscretizationType distype = actele->Shape();
+    Epetra_SerialDenseVector funct(numnode);
+
+    // define gauss rule
+    DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule3D_undefined;
+    switch (distype)
+    {
+    case DRT::Element::hex8:
+    {
+      gaussrule_ = DRT::UTILS::intrule_hex_8point;
+      if (ngp != 8)
+        dserror("hex8 has not 8 gauss points: %d", ngp);
+      break;
+    }
+    case DRT::Element::wedge6:
+    {
+      gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+      if (ngp != 6)
+        dserror("wedge6 has not 6 gauss points: %d", ngp);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      gaussrule_ = DRT::UTILS::intrule_tet_1point;
+      if (ngp != 1)
+        dserror("tet4 has not 1 gauss point: %d", ngp);
+      break;
+    }
+    default:
+      dserror("unknown element in ConstraintMixtureOutputToGmsh");
+    }
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
+
+    for (int gp = 0; gp < ngp; ++gp)
+    {
+      DRT::UTILS::shape_function_3D(funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
+      Epetra_SerialDenseMatrix point(1,3);
+      point.Multiply('T','N',1.0,funct,xcurr,0.0);
 
       // write mandel stress
       double mandelgp = mandel->at(gp);
-      gmshfilecontent_mandel << "SP(" << scientific << point[0] << ",";
-      gmshfilecontent_mandel << scientific << point[1] << ",";
-      gmshfilecontent_mandel << scientific << point[2] << ")";
+      gmshfilecontent_mandel << "SP(" << scientific << point(0,0) << ",";
+      gmshfilecontent_mandel << scientific << point(0,1) << ",";
+      gmshfilecontent_mandel << scientific << point(0,2) << ")";
       gmshfilecontent_mandel << "{" << scientific
       << mandelgp
       << "};" << endl;
 
       // write theta
       double thetagp = theta->at(gp);
-	  gmshfilecontent_theta << "SP(" << scientific << point[0] << ",";
-	  gmshfilecontent_theta << scientific << point[1] << ",";
-	  gmshfilecontent_theta << scientific << point[2] << ")";
-	  gmshfilecontent_theta << "{" << scientific
-	  << thetagp
+	    gmshfilecontent_theta << "SP(" << scientific << point(0,0) << ",";
+  	  gmshfilecontent_theta << scientific << point(0,1) << ",";
+	    gmshfilecontent_theta << scientific << point(0,2) << ")";
+	    gmshfilecontent_theta << "{" << scientific
+	    << thetagp
       << "};" << endl;
     }
   }
