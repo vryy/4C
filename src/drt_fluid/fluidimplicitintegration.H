@@ -141,11 +141,12 @@ public:
   \brief Standard Constructor
 
   */
-  FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization>      actdis,
-                       Teuchos::RCP<LINALG::Solver>           solver,
-                       Teuchos::RCP<Teuchos::ParameterList>   params,
-                       Teuchos::RCP<IO::DiscretizationWriter> output,
-                       bool                                   alefluid=false);
+  FluidImplicitTimeInt(
+      const Teuchos::RCP<DRT::Discretization>&      actdis,
+      const Teuchos::RCP<LINALG::Solver>&           solver,
+      const Teuchos::RCP<Teuchos::ParameterList>&   params,
+      const Teuchos::RCP<IO::DiscretizationWriter>& output,
+      bool                                          alefluid = false);
 
 
   /*!
@@ -295,15 +296,6 @@ public:
       ) const;
 
   /*!
-  \brief Access output object
-
-  */
-  IO::DiscretizationWriter& DiscWriter()
-  {
-    return *output_;
-  }
-
-  /*!
   \brief set initial flow field for analytical test problems
 
   */
@@ -430,7 +422,6 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter(){ return velpressplitter_; };
@@ -440,15 +431,16 @@ public:
 //  double TimeScaling() const;
 
   double ResidualScaling() const
-  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
+  {
+    if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
          return 1.0;
     else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
          return alphaM_/(gamma_*dta_);
-    else return 1.0/(theta_*dta_);}
-//  double Dt() const { return dta_; }
+    else return 1.0/(theta_*dta_);
+  }
 
-//  double Time() const { return time_; }
-//  int Step() const { return step_; }
+  /// return time integration factor
+  double TimIntParam() const;
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);
@@ -619,19 +611,12 @@ protected:
 
 
   //! @name general algorithm parameters
-  //! fluid discretization
-  Teuchos::RCP<DRT::Discretization>      discret_;
-  Teuchos::RCP<LINALG::Solver>           solver_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                          project_;
   //! integrated basis vector (pressure component)
   Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
-  Teuchos::RCP<Teuchos::ParameterList>   params_;
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
-  //! the processor ID from the communicator
-  int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   //! do we have a turblence model?
@@ -643,8 +628,6 @@ protected:
   int numdim_;
 
   //! @name time stepping variables
-  int     stepmax_;     ///< maximal number of timesteps
-  double  maxtime_;     ///< maximal physical computation time
   int     numstasteps_; ///< number of steps for starting algorithm
   bool    startalgo_;   ///< flag for starting algorithm
   //@}
@@ -672,8 +655,6 @@ protected:
   string  predictor_;
 
   //! @name restart variables
-  int uprestart_;
-  int upres_;
   int writestresses_;
   int write_wall_shear_stresses_;
   //@}
@@ -704,9 +685,6 @@ protected:
   double vresnorm_;
   double presnorm_;
   //@}
-
-  /// flag for physical type of fluid flow (standard: incompressible)
-  enum INPAR::FLUID::PhysicalType physicaltype_;
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;

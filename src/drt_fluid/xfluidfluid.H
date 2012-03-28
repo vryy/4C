@@ -229,12 +229,15 @@ namespace FLD
   public:
 
 
-    XFluidFluid(Teuchos::RCP<DRT::Discretization>  actdis,
-                Teuchos::RCP<DRT::Discretization>  embdis,
-                Teuchos::RCP<LINALG::Solver>       solver,
-                Teuchos::RCP<Teuchos::ParameterList>  params,
-                bool                               alefluid=false,
-                bool                               monolithicfluidfluidfsi=false);
+    XFluidFluid(
+        const Teuchos::RCP<DRT::Discretization>&      actdis,
+        const Teuchos::RCP<DRT::Discretization>&      embdis,
+        const Teuchos::RCP<LINALG::Solver>&           solver,
+        const Teuchos::RCP<Teuchos::ParameterList>&   params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output,
+        bool                                          alefluid = false,
+        bool                                          monolithicfluidfluidfsi = false
+      );
 
 
     /// start time loop for startingalgo, normal problems and restarts
@@ -318,14 +321,6 @@ namespace FLD
                         const LINALG::MultiMapExtractor& rangemaps,
                         bool splitmatrix);
 
-     /*!
-       \brief Access output object
-     */
-     IO::DiscretizationWriter& DiscWriter()
-     {
-       return *output_;
-     }
-
     /// update configuration and output to file/screen
     void Output();
 
@@ -367,7 +362,7 @@ namespace FLD
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-    Teuchos::RCP<DRT::Discretization> Discretization() { return embdis_; }
+    const Teuchos::RCP<DRT::Discretization>& Discretization() { return embdis_; }
 
     /// introduce surface split extractor object
     /*!
@@ -400,7 +395,9 @@ namespace FLD
         return 1.0/(theta_*dta_);
       }
     }
-    //Teuchos::RCP<Epetra_Vector> calcStresses();
+
+    /// return time integration factor
+    double TimIntParam() const;
 
     void LiftDrag() const;
 
@@ -560,14 +557,12 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
 
-    Teuchos::RCP<LINALG::Solver>           solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
 //     //! integrated basis vector (pressure component)
 //     Teuchos::RCP<Epetra_Vector>   w_;
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
-    Teuchos::RCP<Teuchos::ParameterList>   params_;
 
 
     //! @name XFEM coupling specific parameters
@@ -585,10 +580,7 @@ namespace FLD
     //@}
 
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
-    Teuchos::RCP<IO::DiscretizationWriter>     output_;
 
-    //! the processor ID from the communicator
-    int                           myrank_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     bool                          embfluid_;
@@ -600,8 +592,6 @@ namespace FLD
     int numdim_;
 
     //! @name time stepping variables
-    int     stepmax_;     ///< maximal number of timesteps
-    double  maxtime_;     ///< maximal physical computation time
     int     numstasteps_; ///< number of steps for starting algorithm
     bool    startalgo_;   ///< flag for starting algorithm
     //@}
@@ -617,18 +607,11 @@ namespace FLD
     double thermpressdtaf_;
     double thermpressdtam_;
 
-    /// flag for physical type of fluid flow (standard: incompressible)
-    enum INPAR::FLUID::PhysicalType physicaltype_;
-
     /// whether we do some extrapolation at the begin of each time step (additional switch)
     bool extrapolationpredictor_;
 
     //! kind of predictor used in nonlinear iteration
     string  predictor_;
-
-    //! @name restart variables
-    int upres_;
-    //@}
 
     //! @name time step sizes
     double dtp_;

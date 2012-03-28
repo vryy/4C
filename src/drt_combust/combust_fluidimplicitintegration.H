@@ -95,10 +95,11 @@ public:
 
   */
   explicit CombustFluidImplicitTimeInt(
-      Teuchos::RCP<DRT::Discretization>  dis,
-      Teuchos::RCP<LINALG::Solver>       solver,
-      Teuchos::RCP<ParameterList>        params,
-      Teuchos::RCP<IO::DiscretizationWriter> output);
+      const Teuchos::RCP<DRT::Discretization>&      actdis,
+      const Teuchos::RCP<LINALG::Solver>&           solver,
+      const Teuchos::RCP<ParameterList>&            params,
+      const Teuchos::RCP<IO::DiscretizationWriter>& output
+    );
 
   /*!
   \brief destructor
@@ -263,15 +264,6 @@ public:
   */
   void Output();
 
-  /*!
-  \brief Access output object
-
-  */
-  IO::DiscretizationWriter& DiscWriter()
-  {
-    return *output_;
-  }
-
   void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno)
   {
     // This function is called from the Fluid Base Algorithm, but has no effect.
@@ -376,7 +368,6 @@ public:
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<const DRT::DofSet> DofSet();
   Teuchos::RCP<const DRT::IndependentPBCDofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
@@ -398,7 +389,8 @@ public:
     return 0.0;
   }
 
-//  virtual double TimeScaling() const;
+  /// return time integration factor
+  double TimIntParam() const;
 
   /// calculate lift&drag forces and angular moments
   /*!
@@ -498,17 +490,9 @@ protected:
   void GenAlphaUpdateAcceleration();
 
   //! @name general algorithm parameters
-  //! fluid discretization
-  Teuchos::RCP<DRT::Discretization>             discret_;
-  Teuchos::RCP<LINALG::Solver>                  solver_;
-  Teuchos::RCP<ParameterList>                   params_;
   const ParameterList&                          xparams_;
-  Teuchos::RCP<IO::DiscretizationWriter>        output_;
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
   Teuchos::RCP<Epetra_Vector>                   phinp_;
-
-  //! the processor ID from the communicator
-  const int myrank_;
 
   /// number of spatial dimensions
   int numdim_;
@@ -558,9 +542,6 @@ protected:
   double  dtele_;
 
   //! @name time stepping variables
-  const int     stepmax_;     ///< maximal number of timesteps
-  const double  maxtime_;     ///< maximal physical computation time
-
   int           startsteps_; ///< maximal number of starting time steps for generalized alpha scheme
   //@}
 
@@ -578,9 +559,6 @@ protected:
   /// boolean indicating if stationary solution is computed as initial solution
   const bool initstatsol_;
 
-  /// maximum number of nonlinear iterations
-  int itemax_;
-
   /// fluid reference solution iteration handling
   int itemaxFRS_; // maximal number of iterations per fgi
   int totalitnumFRS_; // total number of frs iterations in time step
@@ -593,8 +571,6 @@ protected:
   bool extrapolationpredictor_;
 
   //! @name restart variables
-  const int uprestart_;
-  const int upres_;
   const int writestresses_;
   //@}
 
@@ -616,9 +592,6 @@ protected:
   int samstop_;
   //int dumperiod_;
   //@}
-
-  /// flag for physical type of fluid flow (standard: incompressible)
-  enum INPAR::FLUID::PhysicalType physicaltype_;
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;

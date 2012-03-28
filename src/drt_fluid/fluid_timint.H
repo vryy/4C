@@ -51,7 +51,12 @@ class TimInt : public ADAPTER::Fluid
 {
 public:
 
-  TimInt(Teuchos::RCP<Teuchos::ParameterList> params);
+  TimInt(
+    const Teuchos::RCP<DRT::Discretization>&      discret,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output
+  );
 
   /*!
   \brief Destructor
@@ -85,7 +90,7 @@ public:
   virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+  virtual const Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
   virtual Teuchos::RCP<const DRT::DofSet> DofSet()          { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor();
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc()       { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
@@ -104,7 +109,8 @@ public:
   virtual void StatisticsAndOutput() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void Output()              { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void StatisticsOutput()    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-  virtual IO::DiscretizationWriter& DiscWriter() = 0;
+  virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
+
 
   virtual void NonlinearSolve() = 0;
   virtual void Predictor()           { dserror("Not implemented in the base class, may be overridden by a subclass."); }
@@ -123,7 +129,10 @@ public:
   /// scaling factor needed to convert the residual to real forces
   virtual double ResidualScaling() const = 0;
 
-  virtual double TimeScaling() const {dserror("Not implemented in the base class, may be overridden by a subclass."); return 1.0; }
+  virtual double TimeScaling() const {dserror("Not implemented in the base class, may be overridden by a subclass."); return 1337.0; }
+
+  /// return time integration factor
+  virtual double TimIntParam() const = 0;
 
   /// communication object at the interface
   virtual const FLD::UTILS::MapExtractor& Interface() const { dserror("Implemented in the fluid wrapper and derived classes"); }
@@ -232,11 +241,28 @@ public:
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
 protected:
-  int           step_;                                            /// timestep
-  double        time_;                                            /// physical time
-  double        dta_;
-  INPAR::FLUID::TimeIntegrationScheme timealgo_;                  /// time algorithm flag
-  int           itemax_;                                          /// maximum number of nonlinear iterations
+  //! fluid discretization
+  Teuchos::RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<LINALG::Solver>           solver_;
+  Teuchos::RCP<Teuchos::ParameterList>   params_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  double  time_;                                            /// physical time
+  int     step_;                                            /// timestep
+  double  dta_;
+
+  int     stepmax_;     ///< maximal number of timesteps
+  double  maxtime_;     ///< maximal physical computation time
+  int     itemax_;      /// maximum number of nonlinear iterations
+
+  int     uprestart_;
+  int     upres_;
+
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;     ///< time algorithm flag
+  INPAR::FLUID::PhysicalType          physicaltype_; ///< flag for physical type of fluid flow (standard: incompressible)
+
+  int     myrank_;      ///< the processor ID from the communicator
+
   Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;        /// manager for turbulence statistics
 
 }; // class TimInt

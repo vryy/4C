@@ -264,12 +264,13 @@ namespace FLD
   public:
 
     /// Constructor
-    XFluid( Teuchos::RCP<DRT::Discretization>      actdis,        ///< background fluid discretization
-            Teuchos::RCP<DRT::Discretization>      soliddis,      ///< solid discretization
-            Teuchos::RCP<LINALG::Solver>           solver,        ///< fluid solver
-            Teuchos::RCP<Teuchos::ParameterList>   params,        ///< xfluid params
-            Teuchos::RCP<IO::DiscretizationWriter> output,        ///< discretization writer for paraview output
-            bool                                   alefluid=false ///< flag for alefluid
+    XFluid(
+        const Teuchos::RCP<DRT::Discretization>&      actdis,          ///< background fluid discretization
+        const Teuchos::RCP<DRT::Discretization>&      soliddis,        ///< solid discretization
+        const Teuchos::RCP<LINALG::Solver>&           solver,          ///< fluid solver
+        const Teuchos::RCP<Teuchos::ParameterList>&   params,          ///< xfluid params
+        const Teuchos::RCP<IO::DiscretizationWriter>& output,          ///< discretization writer for paraview output
+        bool                                          alefluid = false ///< flag for alefluid
       );
 
     /// print stabilization params to screen
@@ -363,14 +364,6 @@ namespace FLD
     void SetDirichletNeumannBC();
 
 
-    /*!
-      \brief Access output object
-    */
-    IO::DiscretizationWriter& DiscWriter()
-    {
-      return *fluid_output_;
-    }
-
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
     Teuchos::RCP<const Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
@@ -422,7 +415,7 @@ namespace FLD
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
-    Teuchos::RCP<DRT::Discretization> Discretization() { return boundarydis_; }
+    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis_; }
 
 
     /// set the maximal number of nonlinear steps
@@ -438,6 +431,9 @@ namespace FLD
       else
         return density_/(theta_*dta_);
     }
+
+    /// return time integration factor
+    virtual double TimIntParam() const;
 
     /// turbulence statistics manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
@@ -512,17 +508,14 @@ namespace FLD
     //--------------- discretization and general algorithm parameters----------------
 
     //! @name general algorithm parameters
-    Teuchos::RCP<DRT::Discretization>      discret_;      //! fluid discretization
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
-    Teuchos::RCP<LINALG::Solver>           solver_;       //! fluid solver
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
 //     //! integrated basis vector (pressure component)
 //     Teuchos::RCP<Epetra_Vector>   w_;
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
-    Teuchos::RCP<Teuchos::ParameterList>   params_;
     //@}
 
     //---------------------------------input parameters------------------
@@ -570,9 +563,6 @@ namespace FLD
     bool gmsh_cut_out_;
     //@}
 
-    /// flag for physical type of fluid flow (standard: incompressible)
-    enum INPAR::FLUID::PhysicalType physicaltype_;
-
     //---------------------------------output----------------------------
 
     //! @name output discretization writers
@@ -593,9 +583,6 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
-    //! the processor ID from the communicator
-    int                           myrank_;
-
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     bool                          dynamic_smagorinsky_;
@@ -606,8 +593,6 @@ namespace FLD
     int numdim_;
 
     //! @name time stepping variables
-    int     stepmax_;     ///< maximal number of timesteps
-    double  maxtime_;     ///< maximal physical computation time
     int     numstasteps_; ///< number of steps for starting algorithm
     bool    startalgo_;   ///< flag for starting algorithm
     //@}
@@ -622,10 +607,6 @@ namespace FLD
     double thermpressam_;
     double thermpressdtaf_;
     double thermpressdtam_;
-
-    //! @name restart variables
-    int upres_;
-    //@}
 
     //! @name time step sizes
     double dtp_;

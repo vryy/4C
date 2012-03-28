@@ -149,10 +149,10 @@ public:
 
   */
   FluidGenAlphaIntegration(
-    RCP<DRT::Discretization>    actdis,
-    RCP<LINALG::Solver>             solver,
-    RCP<ParameterList>              params,
-    RCP<IO::DiscretizationWriter>   output,
+    const Teuchos::RCP<DRT::Discretization>&    actdis,
+    const Teuchos::RCP<LINALG::Solver>&             solver,
+    const Teuchos::RCP<ParameterList>&              params,
+    const Teuchos::RCP<IO::DiscretizationWriter>&   output,
     bool                        alefluid,
     RCP<map<int,vector<int> > > pbcmapmastertoslave);
 
@@ -271,16 +271,6 @@ public:
 
   */
   void GenAlphaOutput();
-
-
-  /*!
-  \brief Access output object
-
-  */
-  IO::DiscretizationWriter& DiscWriter()
-  {
-    return *output_;
-  }
 
 
   /*!
@@ -561,13 +551,6 @@ public:
 
 
   /*!
-  \brief return the fluid discretisation
-
-  */
-  Teuchos::RCP<DRT::Discretization> Discretization()
-    { return discret_; }
-
-  /*!
   \brief provide the velocity-pressure splitter
 
   */
@@ -627,6 +610,35 @@ public:
   for this generalized alpha implementation
   */
   double ResidualScaling() const { return density_; }
+  /// return time integration factor
+  double TimIntParam() const
+  {
+    double retval = 1.0;
+    switch (TimIntScheme())
+    {
+    case INPAR::FLUID::timeint_afgenalpha:
+    case INPAR::FLUID::timeint_gen_alpha:
+    case INPAR::FLUID::timeint_npgenalpha:
+      retval = alphaF_;
+    break;
+    case INPAR::FLUID::timeint_one_step_theta:
+      // this is the point where OST is evaluated
+      retval = 1.0;
+    break;
+    case INPAR::FLUID::timeint_bdf2:
+      // this is the point where bdf2 is evaluated
+      retval = 1.0;
+    break;
+    case INPAR::FLUID::timeint_stationary:
+      // this is the point where stat. is evaluated
+      retval = 1.0;
+    break;
+    default:
+      dserror("Unknown time integration scheme");
+    break;
+    }
+    return retval;
+  }
   /*!
   \brief return current time
   */
@@ -926,9 +938,6 @@ public:
   Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
   LINALG::MapExtractor                   meshmap_;
   Teuchos::RCP<DRT::Discretization>      dis_;
-  Teuchos::RCP<LINALG::Solver>           solver_;
-  Teuchos::RCP<Teuchos::ParameterList>   params_;
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
   Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
 
 
@@ -972,8 +981,6 @@ protected:
 private:
   //! @name input arguments of the constructor
   //
-  //! the discretization
-  RCP<DRT::Discretization>    discret_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                        project_;
   //! integrated basis vector (pressure component)
@@ -1001,10 +1008,6 @@ private:
   int                         endstep_;
   //! max. simulation time
   double                      endtime_;
-  //! current time
-  double                      time_;
-  //! current time step
-  int                         step_;
   //! current time step size
   double                      dt_;
 

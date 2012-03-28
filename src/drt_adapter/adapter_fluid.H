@@ -11,9 +11,6 @@ Maintainer: Ulrich Kuettler
             089 - 289-15238
 </pre>
 */
-/*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef ADAPTER_FLUID_H
 #define ADAPTER_FLUID_H
 
@@ -197,7 +194,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+    virtual const Teuchos::RCP<DRT::Discretization>& Discretization() = 0;
 
     /// direct access to dofset
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() = 0;
@@ -291,7 +288,7 @@ namespace ADAPTER {
     virtual void StatisticsOutput() = 0;
 
     /// access to output
-    virtual IO::DiscretizationWriter& DiscWriter() = 0;
+    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
@@ -367,6 +364,9 @@ namespace ADAPTER {
 
     /// time scaling factor to get back to real forces
     virtual double TimeScaling() const = 0;
+
+    /// return time integration factor
+    virtual double TimIntParam() const = 0;
 
     /// communication object at the interface
     virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
@@ -492,5 +492,4 @@ namespace ADAPTER {
   };
 }
 
-#endif
 #endif

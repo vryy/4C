@@ -1261,39 +1261,26 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluid::XFluidState::BlockSyste
 /*----------------------------------------------------------------------*
  |  Constructor for basic XFluid class                     schott 03/12 |
  *----------------------------------------------------------------------*/
-FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
-                     Teuchos::RCP<DRT::Discretization> soliddis,
-                     Teuchos::RCP<LINALG::Solver>      solver,
-                     Teuchos::RCP<Teuchos::ParameterList> params,
-                     Teuchos::RCP<IO::DiscretizationWriter> output,
-                     bool alefluid )
-  : TimInt(params),
-    discret_(actdis),
+FLD::XFluid::XFluid(
+    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<DRT::Discretization>&      soliddis,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output,
+    bool                                          alefluid /*= false*/)
+  : TimInt(actdis, solver, params, output),
     soliddis_(soliddis),
-    solver_(solver),
-    params_(params),
-    fluid_output_(output),
+    fluid_output_(output_),
     alefluid_(alefluid)
 {
   // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
-
-
-  // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_,"Physical Type");
-  stepmax_      = params_->get<int>   ("max number timesteps");
-  maxtime_      = params_->get<double>("total time");
   dtp_          = params_->get<double>("time step size");
 
   theta_        = params_->get<double>("theta");
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_     = params_->get<string>("form of convective term","convective");
-
-  upres_        = params_->get<int>("write solution every", -1);
 
   numdim_       = genprob.ndim;
 
@@ -1360,7 +1347,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
     break;
   default:
     dserror("BoundaryType unknown!!!");
-
+    break;
   }
 
 
@@ -2716,6 +2703,37 @@ void FLD::XFluid::LiftDrag() const
   }
 
   return;
+}
+
+
+/// return time integration factor
+double FLD::XFluid::TimIntParam() const
+{
+  double retval = 1.0;
+  switch (TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+    retval = alphaF_;
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+    // this is the point where OST is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_bdf2:
+    // this is the point where bdf2 is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_stationary:
+    // this is the point where stat. is evaluated
+    retval = 1.0;
+  break;
+  default:
+    dserror("Unknown time integration scheme");
+  break;
+  }
+  return retval;
 }
 
 

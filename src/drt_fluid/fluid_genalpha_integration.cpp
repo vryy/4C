@@ -34,26 +34,17 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
-  RefCountPtr<DRT::Discretization>    actdis,
-  RCP<LINALG::Solver>                     solver,
-  RCP<ParameterList>                      params,
-  RCP<IO::DiscretizationWriter>           output,
-  bool                                alefluid,
-  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave)
-:
-  TimInt(params),
-  dis_   (actdis),
-  discret_(actdis),
-  solver_ (solver),
-  params_ (params),
-  output_ (output),
+  const Teuchos::RCP<DRT::Discretization>&      actdis,
+  const Teuchos::RCP<LINALG::Solver>&           solver,
+  const Teuchos::RCP<ParameterList>&            params,
+  const Teuchos::RCP<IO::DiscretizationWriter>& output,
+  bool                                          alefluid,
+  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave
+):TimInt(actdis, solver, params, output),
+  dis_   (discret_),
   alefluid_(alefluid),
   density_(1.0),
-  time_(0.0),
-  step_(0),
-  uprestart_(params->get("write restart every", -1)),
-  upres_(params->get("write solution every", -1)),
-  writestresses_(params->get("write stresses", 0)),
+  writestresses_(params_->get("write stresses", 0)),
   pbcmapmastertoslave_(pbcmapmastertoslave),
   locsysman_(Teuchos::null)
 {

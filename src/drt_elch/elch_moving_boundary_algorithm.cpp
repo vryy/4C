@@ -297,7 +297,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   int uprestart = AlgoParameters().get<int>("RESTARTEVRY");
   if ((uprestart != 0) && (FluidField().Step() % uprestart == 0))
   {
-    FluidField().DiscWriter().WriteVector("idispn",idispnp_);
+    FluidField().DiscWriter()->WriteVector("idispn",idispnp_);
   }
 
 #if 0
@@ -305,7 +305,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   // for visualization only...
   Teuchos::RCP<Epetra_Vector> idispnpfull = LINALG::CreateVector(*(FluidField().DofRowMap()),true);
   (FluidField().Interface()).AddFSICondVector(idispnp_,idispnpfull);
-  FluidField().DiscWriter().WriteVector("idispnfull",idispnpfull);
+  FluidField().DiscWriter()->WriteVector("idispnfull",idispnpfull);
 #endif
 
   // now the other physical fiels

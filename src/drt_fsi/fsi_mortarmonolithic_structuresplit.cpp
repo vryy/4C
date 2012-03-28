@@ -1029,9 +1029,9 @@ void FSI::MortarMonolithicStructureSplit::Output()
     int uprestart = fsidyn.get<int>("RESTARTEVRY");
     if (uprestart != 0 && FluidField().Step() % uprestart == 0)
     {
-      FluidField().DiscWriter().WriteVector("slideALE", iprojdisp_);
-      FluidField().DiscWriter().WriteVector("slideALEincr", iprojdispinc_);
-      slideale_->OutputRestart(FluidField().DiscWriter());
+      FluidField().DiscWriter()->WriteVector("slideALE", iprojdisp_);
+      FluidField().DiscWriter()->WriteVector("slideALEincr", iprojdispinc_);
+      slideale_->OutputRestart(*FluidField().DiscWriter());
     }
   }
 

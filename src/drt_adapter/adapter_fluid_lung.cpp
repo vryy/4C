@@ -347,8 +347,8 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
 /* output of volume constraint related forces*/
 void ADAPTER::FluidLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
 {
-  IO::DiscretizationWriter& output = DiscWriter();
-  output.WriteVector("Add_Forces", Forces);
+  const Teuchos::RCP<IO::DiscretizationWriter>& output = DiscWriter();
+  output->WriteVector("Add_Forces", Forces);
 }
 
 

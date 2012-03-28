@@ -1510,33 +1510,24 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
-                               Teuchos::RCP<DRT::Discretization> embdis,
-                               Teuchos::RCP<LINALG::Solver>      solver,
-                               Teuchos::RCP<Teuchos::ParameterList> params,
-                               bool       alefluid ,
-                               bool       monolithicfluidfluidfsi)
-  : TimInt(params),
-    bgdis_(actdis),
-    embdis_(embdis),
-    solver_(solver),
-    params_(params),
-    alefluid_(alefluid),
-    monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
+FLD::XFluidFluid::XFluidFluid(
+    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<DRT::Discretization>&      embdis,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output,
+    bool                                          alefluid ,
+    bool                                          monolithicfluidfluidfsi
+):TimInt(actdis, solver, params, output),
+  bgdis_(discret_),
+  embdis_(embdis),
+  alefluid_(alefluid),
+  monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = bgdis_->Comm().MyPID();
-
-  physicaltype_      = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
-  stepmax_           = params_->get<int>   ("max number timesteps");
-  maxtime_           = params_->get<double>("total time");
   dtp_               = params_->get<double>("time step size");
   theta_             = params_->get<double>("theta");
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_          = params_->get<string>("form of convective term","convective");
-  upres_             = params_->get<int>("write solution every", -1);
 
   numdim_            = genprob.ndim; //params_->get<int>("DIM");
 
@@ -3607,6 +3598,38 @@ void FLD::XFluidFluid::SetElementTimeParameter()
   dserror("D_FLUID3 required");
 #endif
 }
+
+
+/// return time integration factor
+double FLD::XFluidFluid::TimIntParam() const
+{
+  double retval = 1.0;
+  switch (TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+    retval = alphaF_;
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+    // this is the point where OST is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_bdf2:
+    // this is the point where bdf2 is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_stationary:
+    // this is the point where stat. is evaluated
+    retval = 1.0;
+  break;
+  default:
+    dserror("Unknown time integration scheme");
+  break;
+  }
+  return retval;
+}
+
 
 //----------------------------------------------------------------------
 // LiftDrag                                                  chfoe 11/07

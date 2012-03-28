@@ -75,7 +75,7 @@ namespace ADAPTER
     { return fluid_->BlockSystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()
     { return fluid_->ShapeDerivatives(); }
-    virtual Teuchos::RCP<DRT::Discretization> Discretization()
+    virtual const Teuchos::RCP<DRT::Discretization>& Discretization()
     { return fluid_->Discretization(); }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet()
     { return fluid_->DofSet(); }
@@ -132,7 +132,7 @@ namespace ADAPTER
     virtual void Output()
     { return fluid_->Output(); }
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }
-    virtual IO::DiscretizationWriter& DiscWriter()
+    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
     { return fluid_->DiscWriter();}
     virtual void ReadRestart(int step)
     { return fluid_->ReadRestart(step); }
@@ -176,6 +176,8 @@ namespace ADAPTER
     { return fluid_->ResidualScaling(); }
     virtual double TimeScaling() const
     { return fluid_->TimeScaling(); }
+    virtual double TimIntParam() const
+    { return fluid_->TimIntParam(); }
     virtual const FLD::UTILS::MapExtractor& Interface() const
     { dserror("Not implemented in the base class, may be overridden by a subclass."); return fluid_->Interface(); }
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const

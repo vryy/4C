@@ -85,42 +85,28 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization>      actdis,
-    Teuchos::RCP<LINALG::Solver>           solver,
-    Teuchos::RCP<Teuchos::ParameterList>   params,
-    Teuchos::RCP<IO::DiscretizationWriter> output,
-    bool                                   alefluid)
- :TimInt(params),
+FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
+    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output,
+    bool                                          alefluid /*= false*/
+):TimInt(actdis,solver,params,output),
   // call constructor for "nontrivial" objects
-  discret_(actdis),
-  solver_ (solver),
-  params_ (params),
-  output_ (output),
   alefluid_(alefluid),
   extrapolationpredictor_(params_->get("do explicit predictor",true)),
-  uprestart_(params_->get("write restart every", -1)),
-  upres_(params_->get("write solution every", -1)),
   writestresses_(params_->get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying)
 {
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
-
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-
-  // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type");
   //genalpha integration scheme (afgenalpha or npgenalpha)
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_npgenalpha)
     is_genalpha_= true;
@@ -128,10 +114,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(Teuchos::RCP<DRT::Discretization
     is_genalpha_= false;
   // time-step size
   dtp_ = params_->get<double>("time step size");
-  // maximum number of timesteps
-  stepmax_  = params_->get<int>   ("max number timesteps");
-  // maximum simulation time
-  maxtime_  = params_->get<double>("total time");
   // parameter theta for time-integration schemes
   theta_    = params_->get<double>("theta");
   // compute or set 1.0 - theta for time-integration schemes
@@ -6178,6 +6160,37 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
 
   return;
 } // FluidImplicitTimeInt::SetInitialField
+
+
+/// return time integration factor
+double FLD::FluidImplicitTimeInt::TimIntParam() const
+{
+  double retval = 1.0;
+  switch (TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+    retval = alphaF_;
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+    // this is the point where OST is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_bdf2:
+    // this is the point where bdf2 is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_stationary:
+    // this is the point where stat. is evaluated
+    retval = 1.0;
+  break;
+  default:
+    dserror("Unknown time integration scheme");
+  break;
+  }
+  return retval;
+}
 
 
 /*----------------------------------------------------------------------*

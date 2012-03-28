@@ -22,11 +22,28 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-FLD::TimInt::TimInt(Teuchos::RCP<Teuchos::ParameterList> params)
-  :time_    (0.0),
-   step_    (0),
-   dta_     (params->get<double> ("time step size")),
-   timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params, "time int algo"))
+FLD::TimInt::TimInt(
+  const Teuchos::RCP<DRT::Discretization>&      discret,
+  const Teuchos::RCP<LINALG::Solver>&           solver,
+  const Teuchos::RCP<Teuchos::ParameterList>&   params,
+  const Teuchos::RCP<IO::DiscretizationWriter>& output
+):
+  discret_     (discret),
+  solver_      (solver),
+  params_      (params),
+  output_      (output),
+  time_        (0.0),
+  step_        (0),
+  dta_         (params_->get<double>("time step size")),
+  stepmax_     (params_->get<int>   ("max number timesteps")),
+  maxtime_     (params_->get<double>("total time")),
+  itemax_      (params_->get<int>("max nonlin iter steps")),
+  uprestart_   (params_->get("write restart every", -1)),
+  upres_       (params_->get("write solution every", -1)),
+  timealgo_    (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+  physicaltype_(DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
+  myrank_      (discret_->Comm().MyPID())
+
 {}
 
 FLD::TimInt::~TimInt()
@@ -44,4 +61,3 @@ FLD::UTILS::FluidXFluidMapExtractor FLD::TimInt::XFluidFluidMapExtractor()
   FLD::UTILS::FluidXFluidMapExtractor compilerBeQuiet;
   return compilerBeQuiet;
 }
-

@@ -55,20 +55,15 @@ Maintainer: Florian Henke
  | constructor                                                                        henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
-    Teuchos::RCP<DRT::Discretization>      actdis,
-    Teuchos::RCP<LINALG::Solver>           solver,
-    Teuchos::RCP<Teuchos::ParameterList>   params,
-    Teuchos::RCP<IO::DiscretizationWriter> output) :
-  TimInt(params),
+    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<ParameterList>&            params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output
+):TimInt(actdis, solver, params, output),
   // call constructor for "nontrivial" objects
-  discret_(actdis),
-  solver_ (solver),
-  params_ (params),
   xparams_(params_->sublist("XFEM")),
-  output_(output),
   interfacehandle_(Teuchos::null),
   phinp_(Teuchos::null),
-  myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_->sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_->sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
@@ -88,8 +83,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
   smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_->sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   dtele_(0.0),
-  stepmax_ (params_->get<int>   ("max number timesteps")),
-  maxtime_ (params_->get<double>("total time")),
   startsteps_(params_->get<int> ("number of start steps")),
   dtp_     (params_->get<double> ("time step size")),
   theta_   (params_->get<double>("theta")),
@@ -97,13 +90,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   alphaF_(params_->get<double>("alpha_F")),
   gamma_(params_->get<double>("gamma")),
   initstatsol_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"INITSTATSOL")),
-  itemax_(params_->get<int>("max nonlin iter steps")),
   itemaxFRS_(params_->sublist("COMBUSTION FLUID").get<int>("ITE_MAX_FRS")),
   totalitnumFRS_(0),
   curritnumFRS_(0),
   extrapolationpredictor_(params_->get("do explicit predictor",false)),
-  uprestart_(params_->get("write restart every", -1)),
-  upres_(params_->get("write solution every", -1)),
   writestresses_(params_->get<int>("write stresses", 0)),
   project_(false),
   samstart_(-1),
@@ -5310,6 +5300,37 @@ Teuchos::RCP<const Epetra_Map> FLD::CombustFluidImplicitTimeInt::VelocityRowMap(
 Teuchos::RCP<const Epetra_Map> FLD::CombustFluidImplicitTimeInt::PressureRowMap()
 {
   return velpressplitter_->CondMap();
+}
+
+
+/// return time integration factor
+double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
+{
+  double retval = 1.0;
+  switch (TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+    retval = alphaF_;
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+    // this is the point where OST is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_bdf2:
+    // this is the point where bdf2 is evaluated
+    retval = 1.0;
+  break;
+  case INPAR::FLUID::timeint_stationary:
+    // this is the point where stat. is evaluated
+    retval = 1.0;
+  break;
+  default:
+    dserror("Unknown time integration scheme");
+  break;
+  }
+  return retval;
 }
 
 
