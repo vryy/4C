@@ -278,7 +278,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      if (sdbg_!=Teuchos::null)
      {
        sdbg_->NewIteration();
-       sdbg_->WriteVector("x",*StructureField().Interface().ExtractFSICondVector(sx));
+       sdbg_->WriteVector("x",*StructureField().Interface()->ExtractFSICondVector(sx));
      }
    }
 

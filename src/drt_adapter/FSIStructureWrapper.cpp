@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_structure/stru_aux.H"
 
 
 
@@ -41,7 +42,7 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 /*----------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapper::UseBlockMatrix()
 {
-  StructureWrapper::UseBlockMatrix(*interface_,*interface_);
+  StructureWrapper::UseBlockMatrix(interface_,interface_);
 }
 
 

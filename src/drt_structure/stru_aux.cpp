@@ -75,7 +75,7 @@ double STR::AUX::CalculateVectorNorm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, Epetra_Map fullmap)
+void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_Map& fullmap)
 {
   DRT::UTILS::MultiConditionSelector mcs;
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));

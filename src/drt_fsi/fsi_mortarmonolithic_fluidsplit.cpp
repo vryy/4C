@@ -286,7 +286,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
         mortar->Multiply(true,*rhs,*tmprhs);
 
-        rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
+        rhs = StructureField().Interface()->InsertFSICondVector(tmprhs);
 
         Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
         LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
@@ -346,7 +346,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
     mortar->Multiply(true,*rhs,*tmprhs);
 
-    rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
+    rhs = StructureField().Interface()->InsertFSICondVector(tmprhs);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
@@ -782,12 +782,12 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField().Interface().FSICondMap());
+    Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField().Interface()->FSICondMap());
 
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
     mortar->Multiply(true,*fcv,*scv);
 
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(scv);
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(scv);
     modsv->Update(1.0, *sv, fluidscale);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
@@ -979,7 +979,7 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // right translation.)
 
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractFSICondVector(sx);
+  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface()->ExtractFSICondVector(sx);
 
   // get fluid displacements
 

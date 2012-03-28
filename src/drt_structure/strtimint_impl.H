@@ -606,8 +606,8 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                        const LINALG::MultiMapExtractor& rangemaps);
+    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+                                Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
 
     //! Set forces due to interface with fluid

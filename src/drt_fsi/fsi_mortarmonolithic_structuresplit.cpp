@@ -113,7 +113,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // create combined map
 
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-    vecSpaces.push_back(StructureField().Interface().OtherMap());
+    vecSpaces.push_back(StructureField().Interface()->OtherMap());
     vecSpaces.push_back(FluidField()    .DofRowMap());
     vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
@@ -761,7 +761,7 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 {
   // extract the inner and boundary dofs of all three fields
 
-  Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface().ExtractOtherVector(sv);
+  Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface()->ExtractOtherVector(sv);
   Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
 
   if (fluidscale!=0)
@@ -771,7 +771,7 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
 
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
+    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface()->ExtractFSICondVector(sv);
 
     mortar->SetUseTranspose(true);
     mortar->Apply(*scv,*fcv);
@@ -992,10 +992,10 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<Epetra_Vector> scx = LINALG::CreateVector(*StructureField().Interface().FSICondMap());
+  Teuchos::RCP<Epetra_Vector> scx = LINALG::CreateVector(*StructureField().Interface()->FSICondMap());
   mortar->Apply(*fcx,*scx);
-  Teuchos::RCP<Epetra_Vector> s = StructureField().Interface().InsertOtherVector(sox);
-  StructureField().Interface().InsertFSICondVector(scx, s);
+  Teuchos::RCP<Epetra_Vector> s = StructureField().Interface()->InsertOtherVector(sox);
+  StructureField().Interface()->InsertFSICondVector(scx, s);
   sx = s;
   // process ale unknowns
 

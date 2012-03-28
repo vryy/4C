@@ -41,9 +41,9 @@ namespace ADAPTER
 
 
     /// communication object at the interface
-    virtual const STR::AUX::MapExtractor& Interface() const
+    virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
     {
-     return *interface_;
+      return interface_;
     }
 
     //! switch structure field to block matrix in fsi simulations

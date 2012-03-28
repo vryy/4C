@@ -24,10 +24,19 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Vector.h>
 
-#include "adapter_structure.H"
 #include "FSIStructureWrapper.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_structure/stru_aux.H"
+
+
+// forward declarations
+namespace LINALG
+{
+  class MapExtractor;
+}
+
+namespace DRT
+{
+  class Condition;
+}
 
 
 namespace ADAPTER {
@@ -71,7 +80,7 @@ public:
                          Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
   /// Get MapExtractor for fsi <-> full map
-  LINALG::MapExtractor& FSIInterface() { return fsiinterface_;  }
+  Teuchos::RCP<const LINALG::MapExtractor> FSIInterface() { return fsiinterface_;  }
 
   /// Get map of volume coupling dofs
   const Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
@@ -92,7 +101,7 @@ private:
   /// this is needed since otherwise "OtherMap" contains only dofs
   /// which are not part of a condition. however, asi dofs are of
   /// course also "inner" dofs for the structural field.
-  LINALG::MapExtractor fsiinterface_;
+  Teuchos::RCP<LINALG::MapExtractor> fsiinterface_;
 };
 
 }

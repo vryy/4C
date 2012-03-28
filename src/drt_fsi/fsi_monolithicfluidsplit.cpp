@@ -35,6 +35,8 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface().FSICondMap()));
   fmgipre_ = Teuchos::null;
@@ -66,7 +68,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                 "FSICoupling",
@@ -75,11 +77,20 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling",
                                 genprob.ndim);
+
+  // fluid to ale at the interface
+
+  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                   FluidField().Interface().FSICondMap(),
+                                   *AleField().Discretization(),
+                                   AleField().Interface().FSICondMap(),
+                                   "FSICoupling",
+                                   genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -278,7 +289,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs->Scale(scale*timescale*Dt());
 
     rhs = FluidToStruct(rhs);
-    rhs = StructureField().Interface().InsertFSICondVector(rhs);
+    rhs = StructureField().Interface()->InsertFSICondVector(rhs);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
@@ -807,7 +818,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(FluidToStruct(fcv));
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, (1.0-stiparam)/dd*fluidscale);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
@@ -1000,7 +1011,7 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
   // right translation.)
 
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractFSICondVector(sx);
+  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface()->ExtractFSICondVector(sx);
 
   // process fluid unknowns
 
@@ -1077,7 +1088,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI:
   double dd = 1.0;
 
   // store the prodcut F_{\Gamma I}^{G,n+1} \Delta d_I^{G,n+1} in here
-  Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface().OtherMap(),true);
+  Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
   // compute the above mentioned product
   if (fmgipre_ != Teuchos::null)
     (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
@@ -1106,8 +1117,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI:
    *                          - F_{\Gamma I} \Delta u_I - F_{\Gamma I}^G \Delta d_I^G]
    */
   lambda_->Update(1.0, *fgpre_, -cc);
-  lambda_->Update(-1.0, *AleToFluid(fgialeddi), -1.0, *fgidui, 1.0);
-  lambda_->Update(-1.0, *fggddg, -1.0, *AleToFluid(fggaleddg), 1.0);
+  lambda_->Update(-1.0, *icoupfa_->SlaveToMaster(fgialeddi), -1.0, *fgidui, 1.0);
+  lambda_->Update(-1.0, *fggddg, -1.0, *icoupfa_->SlaveToMaster(fggaleddg), 1.0);
   lambda_->Scale(1/dd); // entire Lagrange multiplier is divided by (1.-fldtimintparam)
 
   return;

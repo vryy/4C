@@ -188,7 +188,7 @@ namespace UTILS
 
     /// Do the setup
     void SetupExtractor(const DRT::Discretization& dis,
-                        Epetra_Map fullmap,
+                        const Epetra_Map& fullmap,
                         LINALG::MultiMapExtractor& extractor);
 
   private:

@@ -63,7 +63,7 @@ ADAPTER::StructureBio::StructureBio(
 	 // set up ale-structure couplings
         icoupsa_ = Teuchos::rcp(new Coupling());
 	 icoupsa_->SetupConditionCoupling(*structure_->Discretization(),
-									 structure_->Interface().FSICondMap(),
+									 structure_->Interface()->FSICondMap(),
 									 *ale->AleField().Discretization(),
 									 ale->AleField().Interface().FSICondMap(),
 									 condname,

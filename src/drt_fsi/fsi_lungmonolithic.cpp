@@ -24,6 +24,7 @@ Maintainer: Lena Yoshihara
 #include "fsi_monolithic_linearsystem.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_constraint/constraintdofset.H"
+#include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -60,7 +61,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
   // SetupSystemMatrix, we rely on this information!
-  const Teuchos::RCP<const Epetra_Map> asimap = StructureField().Interface().LungASICondMap();
+  const Teuchos::RCP<const Epetra_Map> asimap = StructureField().Interface()->LungASICondMap();
   for (int i=0; i<asimap->NumMyElements(); ++i)
   {
     if (structfield.LungConstrMap()->LID(asimap->GID(i)) == -1)
@@ -205,7 +206,7 @@ void FSI::LungMonolithic::GeneralSetup()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                 "FSICoupling",
@@ -214,7 +215,7 @@ void FSI::LungMonolithic::GeneralSetup()
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
@@ -259,7 +260,7 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // coupling of structure and ale dofs at airway outflow
   coupsaout_->SetupConstrainedConditionCoupling(*StructureField().Discretization(),
-                                                StructureField().Interface().LungASICondMap(),
+                                                StructureField().Interface()->LungASICondMap(),
                                                 *AleField().Discretization(),
                                                 AleField().Interface().LungASICondMap(),
                                                 "StructAleCoupling",
@@ -272,7 +273,7 @@ void FSI::LungMonolithic::GeneralSetup()
   coupfsout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
                                                 FluidField().Interface().LungASICondMap(),
                                                 *StructureField().Discretization(),
-                                                StructureField().Interface().LungASICondMap(),
+                                                StructureField().Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
                                                 genprob.ndim);

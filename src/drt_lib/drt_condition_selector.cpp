@@ -115,7 +115,7 @@ bool DRT::UTILS::DirichletSelector::SelectDofs( DRT::Node* node, std::set<int> &
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
-                                                        Epetra_Map fullmap,
+                                                        const Epetra_Map& fullmap,
                                                         LINALG::MultiMapExtractor& extractor)
 {
   SetupCondDofSets(dis);

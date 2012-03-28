@@ -30,14 +30,28 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
-#include "../drt_structure/stru_aux.H"
+
 
 #include "../drt_structure/strtimint_impl.H"
 #include "adapter_structure.H"
 
 #include "FSIStructureWrapper.H"
 
-//using namespace Teuchos;
+
+// forward declarations
+namespace STR
+{
+  namespace AUX
+  {
+    class MapExtractor;
+  }
+}
+
+namespace LINALG
+{
+  class MapExtractor;
+}
+
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
 namespace ADAPTER {
@@ -92,7 +106,7 @@ namespace ADAPTER {
     );
 
     /// communication object at the interface
-    virtual const STR::AUX::MapExtractor& Interface() const
+    virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
     {
       return interface_;
     }
@@ -147,10 +161,10 @@ namespace ADAPTER {
   private:
 
     /// the interface map setup for interface <-> full translation
-    STR::AUX::MapExtractor interface_;
+    Teuchos::RCP<STR::AUX::MapExtractor> interface_;
 
     /// the constraint map setup for full <-> stuct+constr transition
-    LINALG::MapExtractor conmerger_;
+    Teuchos::RCP<LINALG::MapExtractor> conmerger_;
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers
     RCP<Epetra_Map> dofrowmap_;

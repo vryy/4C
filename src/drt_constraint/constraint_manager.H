@@ -301,8 +301,8 @@ namespace UTILS
     }
     
     //! switch constraint matrix to block matrix
-    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                        const LINALG::MultiMapExtractor& rangemaps);
+    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+                        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
 
   private:

@@ -2252,14 +2252,14 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                 const LINALG::MultiMapExtractor& rangemaps)
+void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
-  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
-  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
+  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
   if (damping_ == INPAR::STR::damp_rayleigh)
-    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
 
   // recalculate mass and damping matrices
 

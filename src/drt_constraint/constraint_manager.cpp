@@ -485,11 +485,11 @@ void UTILS::ConstrManager::BuildMoniType()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                 const LINALG::MultiMapExtractor& rangemaps)
+void UTILS::ConstrManager::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
-  constrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  constrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
 
   return;
 }

@@ -66,7 +66,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   {
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface().FSICondMap(),
+                                   StructureField().Interface()->FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling",

@@ -514,7 +514,13 @@ void ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv,
   if (not mv->Map().SameAs(*masterdofmap_))
     dserror("master dof map vector expected");
   if (not sv->Map().SameAs(*slavedofmap_))
+  {
+    cout << "slavedofmap_" << endl;
+    cout << *slavedofmap_ << endl;
+    cout << "sv" << endl;
+    cout << sv->Map() << endl;
     dserror("slave dof map vector expected");
+  }
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
 #endif

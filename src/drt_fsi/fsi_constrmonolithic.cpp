@@ -65,7 +65,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
                                 "FSICoupling",
@@ -74,7 +74,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // structure to ale
 
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
+                                 StructureField().Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",

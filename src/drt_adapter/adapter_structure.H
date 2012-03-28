@@ -24,7 +24,6 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure/stru_aux.H"
 
 
 // forward declarations:
@@ -49,6 +48,7 @@ namespace LINALG
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
+  class MultiMapExtractor;
 }
 
 namespace MORTAR
@@ -148,8 +148,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// switch structure field to block matrix
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-        const LINALG::MultiMapExtractor& rangemaps) = 0;
+    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
 
     /// recalculate structural matrices for tsi simulations
     virtual void TSIMatrix() = 0;

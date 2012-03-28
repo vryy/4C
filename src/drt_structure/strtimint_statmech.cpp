@@ -31,6 +31,7 @@ Maintainer: Kei Müller
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
+#include "stru_aux.H"
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"

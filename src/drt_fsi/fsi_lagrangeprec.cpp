@@ -70,8 +70,8 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
   const LINALG::SparseMatrix& Sgg = blocks_->Matrix(1,1);
 
   std::vector<Teuchos::RCP<const Epetra_Map> > innerstruct;
-  innerstruct.push_back(structure_.Interface().FSICondMap());
-  innerstruct.push_back(structure_.Interface().OtherMap());
+  innerstruct.push_back(structure_.Interface()->FSICondMap());
+  innerstruct.push_back(structure_.Interface()->OtherMap());
   innerstruct.push_back(Teuchos::null);
   LINALG::MultiMapExtractor innerstructextract(FullRowMap(),innerstruct);
 
@@ -89,14 +89,14 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
   Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
   Teuchos::RCP<Epetra_Vector> ly = RangeExtractor().ExtractVector(y,3);
 
-  Teuchos::RCP<Epetra_Vector> sgy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().FSICondMap()));
-  Teuchos::RCP<Epetra_Vector> siy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().OtherMap()));
+  Teuchos::RCP<Epetra_Vector> sgy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface()->FSICondMap()));
+  Teuchos::RCP<Epetra_Vector> siy = Teuchos::rcp(new Epetra_Vector(*structure_.Interface()->OtherMap()));
 
   Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
   Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
   Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
 
-  Teuchos::RCP<Epetra_Vector> siz = Teuchos::rcp(new Epetra_Vector(*structure_.Interface().OtherMap()));
+  Teuchos::RCP<Epetra_Vector> siz = Teuchos::rcp(new Epetra_Vector(*structure_.Interface()->OtherMap()));
 
   Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
   Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
@@ -131,7 +131,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
       // semi-solve. Assume CSF==I
       CSF.Multiply(true,*lx,*sy);
-      structure_.Interface().ExtractFSICondVector(sy,sgy);
+      structure_.Interface()->ExtractFSICondVector(sy,sgy);
     }
 
     // structure
@@ -168,7 +168,7 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
     sgx->Update(-1.0,*tmpsgx,1.0);
 
     // semi-solve. Assume CSFT==I
-    structure_.Interface().InsertFSICondVector(sgx,tmpsx);
+    structure_.Interface()->InsertFSICondVector(sgx,tmpsx);
     CSFT.Multiply(true,*tmpsx,*ly);
 
     // ale
@@ -220,8 +220,8 @@ void FSI::LagrangianBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVe
 
   // build solution vector
 
-  structure_.Interface().InsertFSICondVector(sgy,sy);
-  structure_.Interface().InsertOtherVector(siy,sy);
+  structure_.Interface()->InsertFSICondVector(sgy,sy);
+  structure_.Interface()->InsertOtherVector(siy,sy);
 
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
@@ -249,8 +249,8 @@ void FSI::LagrangianBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  blocks_ = structInnerOp.Split<LINALG::DefaultBlockMatrixStrategy>(structure_.Interface(),
-                                                                    structure_.Interface());
+  blocks_ = structInnerOp.Split<LINALG::DefaultBlockMatrixStrategy>(*structure_.Interface(),
+                                                                    *structure_.Interface());
   blocks_->Complete();
 
   LINALG::SparseMatrix& sii = blocks_->Matrix(0,0);

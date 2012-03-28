@@ -22,12 +22,19 @@ Maintainer: Lena Wiechert
 #include <Teuchos_ParameterList.hpp>
 
 #include "adapter_fluid_fsi.H"
-#include "../linalg/linalg_mapextractor.H"
 
+
+// forward declarations
 namespace DRT
 {
   class Condition;
 }
+
+namespace LINALG
+{
+  class MapExtractor;
+}
+
 
 namespace ADAPTER {
 
@@ -68,10 +75,10 @@ namespace ADAPTER {
     void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
 
     /// Get map extractor for fsi <-> full map
-    LINALG::MapExtractor& FSIInterface() { return fsiinterface_;  }
+    Teuchos::RCP<LINALG::MapExtractor> FSIInterface() { return fsiinterface_;  }
 
     /// Get map extractor for asi, other <-> full inner map
-    LINALG::MapExtractor& InnerSplit() { return innersplit_; }
+    Teuchos::RCP<LINALG::MapExtractor> InnerSplit() { return innersplit_; }
 
   private:
 
@@ -82,13 +89,13 @@ namespace ADAPTER {
     /// this is needed since otherwise "OtherMap" contains only dofs
     /// which are not part of a condition. however, asi dofs are of
     /// course also "inner" dofs for the fluid field.
-    LINALG::MapExtractor fsiinterface_;
+    Teuchos::RCP<LINALG::MapExtractor> fsiinterface_;
 
     /// map extractor for asi, other <-> full inner map
-    LINALG::MapExtractor innersplit_;
+    Teuchos::RCP<LINALG::MapExtractor> innersplit_;
 
     /// map extractor for outflow fsi <-> full map
-    LINALG::MapExtractor outflowfsiinterface_;
+    Teuchos::RCP<LINALG::MapExtractor> outflowfsiinterface_;
 
   };
 }

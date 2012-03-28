@@ -137,8 +137,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimIntAda::BlockSy
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::StructureTimIntAda::UseBlockMatrix(
-    const LINALG::MultiMapExtractor& domainmaps,
-    const LINALG::MultiMapExtractor& rangemaps)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
 {
   dserror("not implemented");
 }

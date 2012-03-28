@@ -40,7 +40,6 @@ Maintainer: Thomas Klöppel
 #include "../drt_adapter/adapter_structure.H"
 #include "strtimint_mstep.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_structure/stru_aux.H"
 
 
 // forward declarations
@@ -590,8 +589,8 @@ namespace STR
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-        const LINALG::MultiMapExtractor& rangemaps) = 0;
+    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+                                Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
 
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();

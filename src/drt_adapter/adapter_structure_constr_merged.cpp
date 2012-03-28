@@ -13,10 +13,6 @@ Maintainer: Thomas Kloeppel
 */
 
 /*----------------------------------------------------------------------*/
-/* macros */
-#ifdef CCADISCRET
-
-/*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_structure/strtimint_create.H"
 #include "adapter_structure_constr_merged.H"
@@ -24,6 +20,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_structure/stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -50,12 +47,14 @@ ADAPTER::StructureConstrMerged::StructureConstrMerged
                                 false);
 
   // set up interface between merged and single maps
-  conmerger_.Setup(*dofrowmap_,
+  conmerger_ = Teuchos::rcp(new LINALG::MapExtractor);
+  conmerger_->Setup(*dofrowmap_,
                     structure_->DofRowMap(),
                     structure_->GetConstraintManager()->GetConstraintMap());
 
   //setup fsi-Interface
-  interface_.Setup(*Discretization(), *dofrowmap_);
+  interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
+  interface_->Setup(*Discretization(), *dofrowmap_);
 }
 
 
@@ -70,8 +69,8 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
 
   //merge stuff together
   RCP<Epetra_Vector> mergedGuess = rcp(new Epetra_Vector(*dofrowmap_,true));
-  conmerger_.AddCondVector(strucGuess,mergedGuess);
-  conmerger_.AddOtherVector(lagrGuess,mergedGuess);
+  conmerger_->AddCondVector(strucGuess,mergedGuess);
+  conmerger_->AddOtherVector(lagrGuess,mergedGuess);
 
   return mergedGuess;
 }
@@ -86,8 +85,8 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::RHS()
 
   //merge stuff together
   RCP<Epetra_Vector> mergedRHS = rcp(new Epetra_Vector(*dofrowmap_,true));
-  conmerger_.AddCondVector(struRHS,mergedRHS);
-  conmerger_.AddOtherVector(-1.0,lagrRHS,mergedRHS);
+  conmerger_->AddCondVector(struRHS,mergedRHS);
+  conmerger_->AddOtherVector(-1.0,lagrRHS,mergedRHS);
 
   return mergedRHS;
 }
@@ -103,8 +102,8 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp()
 
   //merge stuff together
   RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
-  conmerger_.AddCondVector(strudis,mergedstat);
-  conmerger_.AddOtherVector(lagrmult,mergedstat);
+  conmerger_->AddCondVector(strudis,mergedstat);
+  conmerger_->AddOtherVector(lagrmult,mergedstat);
 
   return mergedstat;
 }
@@ -120,8 +119,8 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
 
   //merge stuff together
    RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
-   conmerger_.AddCondVector(strudis,mergedstat);
-   conmerger_.AddOtherVector(lagrmult,mergedstat);
+   conmerger_->AddCondVector(strudis,mergedstat);
+   conmerger_->AddOtherVector(lagrmult,mergedstat);
 
   return mergedstat;
 }
@@ -182,9 +181,9 @@ void ADAPTER::StructureConstrMerged::Evaluate(
   if (dispstepinc != Teuchos::null)
   {
     // Extract increments for lagr multipliers and do update
-    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(dispstepinc);
+    RCP<Epetra_Vector> lagrincr = conmerger_->ExtractOtherVector(dispstepinc);
     structure_->UpdateIterIncrConstr(lagrincr);
-    dispstructstepinc = conmerger_.ExtractCondVector(dispstepinc);
+    dispstructstepinc = conmerger_->ExtractCondVector(dispstepinc);
   }
   // Hand down incremental displacements,
   // structure_ will compute the residual increments on its own
@@ -201,7 +200,3 @@ const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap()
                             *(structure_->GetConstraintManager()->GetConstraintMap()),
                             false));
 }
-
-
-/*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

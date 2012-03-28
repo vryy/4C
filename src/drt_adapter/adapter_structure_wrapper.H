@@ -33,7 +33,7 @@ namespace ADAPTER
     { return structure_->SystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     { return structure_->BlockSystemMatrix(); }
-    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps)
+    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps, Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
     { return structure_->UseBlockMatrix(domainmaps, rangemaps); }
     virtual void TSIMatrix()
     { return structure_->TSIMatrix(); }

@@ -50,7 +50,7 @@ namespace AUX
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis,  Epetra_Map fullmap);
+    void Setup(const DRT::Discretization& dis,  const Epetra_Map& fullmap);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;
