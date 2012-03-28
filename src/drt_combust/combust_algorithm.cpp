@@ -138,6 +138,17 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
 
+  //------------------------
+  // set initial fluid field
+  //------------------------
+  // read parameters for initial field
+  const INPAR::COMBUST::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(
+      combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD");
+  const int initfuncno = combustdyn_.sublist("COMBUSTION FLUID").get<int>("INITFUNCNO");
+
+  // set initial flow field based on standard dofs only
+  FluidField().SetInitialFlowField(initfield, initfuncno);
+
   /*----------------------------------------------------------------------------------------------*
    * initialize all data structures needed for the combustion algorithm
    *
@@ -149,6 +160,14 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField().PBCmap()));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
   flamefront_->UpdateOldInterfaceHandle();
+
+  // update fluid interface with flamefront
+  FluidField().ImportFlameFront(flamefront_,true);
+  // output fluid initial state
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    FluidField().Output();
+  // clear fluid's memory to flamefront
+  FluidField().ImportFlameFront(Teuchos::null,false);
 
   volume_start_ = ComputeVolume();
 
@@ -194,25 +213,6 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   {
     reinit_pde_ = rcp(new COMBUST::ReinitializationPDE());
   }
-
-  //------------------------
-  // set initial fluid field
-  //------------------------
-  const INPAR::COMBUST::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(
-      combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD");
-  const int initfuncno = combustdyn_.sublist("COMBUSTION FLUID").get<int>("INITFUNCNO");
-
-  // update fluid interface with flamefront
-  FluidField().ImportFlameFront(flamefront_,true);
-
-  FluidField().SetInitialFlowField(initfield, initfuncno);
-
-  // output fluid initial state
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
-    FluidField().Output();
-
-  // clear fluid's memory to flamefront
-  FluidField().ImportFlameFront(Teuchos::null,false);
 
   if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
   {
