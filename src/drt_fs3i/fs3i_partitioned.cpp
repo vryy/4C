@@ -760,7 +760,6 @@ void FS3I::PartFS3I::ScatraOutput()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Output();
-    scatra->ScaTraField().OutputMeanScalars();
   }
 }
 

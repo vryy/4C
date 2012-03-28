@@ -17,7 +17,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_fsi/fs_monolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
-#include "../drt_fsi/fsi_monolithiclagrange.H"
+//#include "../drt_fsi/fsi_monolithiclagrange.H"
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
 #include "../drt_fsi/fsi_utils.H"
 
@@ -287,7 +287,6 @@ void FS3I::FS3I_Base::ScatraOutput()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Output();
-    scatra->ScaTraField().OutputMeanScalars();
   }
 }
 

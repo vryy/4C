@@ -1414,9 +1414,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
     OutputState();
 
     // write output to Gmsh postprocessing files
-    //if (outputgmsh_ and step_ == 1 ) OutputToGmsh(step_, time_);
-    //if (outputgmsh_ and (step_ % 5 == 0)) OutputToGmsh(step_, time_);
-    if (outputgmsh_) OutputToGmsh(step_, time_); //(outputgmsh_ and (step_ % 50 == 0))
+    if (outputgmsh_) OutputToGmsh(step_, time_);
 
     // add restart data
     if (step_%uprestart_==0) OutputRestart();
@@ -1432,8 +1430,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
     }
 
     // write mean values of scalar(s)
-    if (outmean_)
-      OutputMeanScalars();
+    OutputMeanScalars();
 
     // output of electrode status to screen and file (only if existing)
     OutputElectrodeInfo();
