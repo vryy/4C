@@ -50,7 +50,6 @@ MAXTIME                         2.0
 DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1
-ITERATION                       full
 TOLDISP                         1.0E-08
 MAXITER                         50
 TIMEADAPT                       0

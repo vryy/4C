@@ -69,7 +69,6 @@ DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      Statics                         // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 EIGEN                           0
-ITERATION                       full
 ITERNORM                        L2
 ITWANT                          0
 K_DAMP                          0.5

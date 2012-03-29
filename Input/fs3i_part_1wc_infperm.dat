@@ -385,7 +385,6 @@ DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta
 EIGEN                           0
-ITERATION                       full
 ITERNORM                        L2
 ITWANT                          0
 K_DAMP                          0.5

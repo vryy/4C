@@ -49,7 +49,6 @@ MAXTIME                         1000.0
 DAMPING                         Yes
 M_DAMP                          100.0
 K_DAMP                          0.0
-ITERATION                       full
 PREDICT                         ConstDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs

@@ -63,7 +63,6 @@ PREDICT                         ConstDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
-ITERATION                       full
 TOLDISP                         1.0E-08
 MAXITER                         50
 //CET_flag                      1

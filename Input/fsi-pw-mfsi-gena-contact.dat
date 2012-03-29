@@ -52,7 +52,6 @@ MAXTIME                         5.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
-ITERATION                       full
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs

@@ -127,7 +127,6 @@ NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
-ITERATION                       full
 ITWANT                          0
 K_DAMP                          0.5
 MAXDT                           0
