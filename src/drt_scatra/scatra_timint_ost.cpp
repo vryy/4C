@@ -720,16 +720,5 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsSetOldPartOfRHS()
   return;
 }
 
-/*----------------------------------------------------------------------*
- | reset phi vector due to reinitialization                 henke 01/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn)
-{
-  if (phireinitn != Teuchos::null)
-    *phin_ = *phireinitn;
-  else
-    dserror("reinitialized phi vector at time step n does not exist");
-  return;
-}
 
 

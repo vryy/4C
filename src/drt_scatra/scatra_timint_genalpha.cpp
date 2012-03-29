@@ -725,14 +725,3 @@ void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
 }
 
 
-/*--------------------------------------------------------------------------*
- | calculate time derivative of phi after reinitialization   rasthofer 02/10|
- *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::CalcPhidtReinit()
-{
-  if (myrank_ == 0)
-    std::cout<<"SCATRA: calculating time derivative of reinitialized phi"<<endl;
-
-  CalcInitialPhidt();
-}
-

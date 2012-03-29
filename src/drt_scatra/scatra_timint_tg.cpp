@@ -355,13 +355,5 @@ void SCATRA::TimIntTaylorGalerkin::ElectrodeKineticsSetOldPartOfRHS()
   return;
 }
 
-/*----------------------------------------------------------------------*
- | reset phi vector due to reinitialization                 henke 01/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntTaylorGalerkin::SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn)
-{
-	dserror("do not call this function");
-  return;
-}
 
 

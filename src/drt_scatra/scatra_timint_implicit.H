@@ -277,21 +277,6 @@ public:
     const int                          startfuncno //!< number of spatial function
   );
 
-  //! reset phi vector due to reinitialization for OST scheme
-  virtual void SetPhin(
-    Teuchos::RCP<Epetra_Vector> phireinitn //!< ?
-  ) = 0;
-
-  //! set phi vectors due to reinitialization
-/*  void SetPhinp(
-    Teuchos::RCP<Epetra_Vector> phinp //!< ?
-  );
-
-  //! set phi vectors due to reinitialization
-/*  void SetPhiReinit(
-    Teuchos::RCP<Epetra_Vector> phi //!< ?
-  );
-
   /*--- calculate and update -----------------------------------------------*/
 
   //! calculate initial value for phidtn_ (only necessary for OnestepTheta and GenAlpha)

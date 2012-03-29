@@ -157,12 +157,6 @@ protected:
     /// set old part of RHS for galvanostatic equation
     void ElectrodeKineticsSetOldPartOfRHS();
 
-    /// routine to reset phi vector due to reinitialization for OST scheme
-    void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);
-
-    /// calcuate phidt after reinitialization for OST scheme
-    void CalcPhidtReinit();
-
 private:
 
     /// fine-scale solution vector at time n+1
