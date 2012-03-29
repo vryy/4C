@@ -174,7 +174,7 @@ public:
   \brief Read input for this element
   */
   bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
+                   const std::string& eledistype,
                    DRT::INPUT::LineDefinition* linedef) = 0 ;
 
   //@}

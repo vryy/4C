@@ -10,8 +10,6 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 
 #include "so3_poro.H"
 #include "../drt_lib/drt_discret.H"
@@ -126,4 +124,3 @@ bool DRT::ELEMENTS::So3_Poro<distype>::ReadElement(const std::string& eletype,
 
 #include "so3_poro_fwd.hpp"
 
-#endif  // #ifdef CCADISCRET

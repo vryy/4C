@@ -184,10 +184,10 @@ void DRT::ELEMENTS::So_hex8_poro::Print(ostream& os) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_hex8_poro::ReadElement(const std::string& eletype,
-                                             const std::string& distype,
+                                             const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
-  return So_hex8::ReadElement(eletype, distype, linedef);
+  return So_hex8::ReadElement(eletype, eledistype, linedef);
 }
 
 /*----------------------------------------------------------------------*/
