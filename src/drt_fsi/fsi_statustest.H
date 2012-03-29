@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../linalg/linalg_mapextractor.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class CouplingConverter;
