@@ -10,8 +10,8 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_dserror.H"
+
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
@@ -36,18 +36,20 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+  int restart = DRT::Problem::Instance()->Restart();
+
   // choose the entry-routine depending on the problem type
-  switch (genprob.probtyp)
+  switch (DRT::Problem::Instance()->ProblemType())
   {
     case prb_structure:
       caldyn_drt();
       break;
     case prb_fluid_pm:
     case prb_fluid:
-      dyn_fluid_drt(genprob.restart);
+      dyn_fluid_drt(restart);
       break;
     case prb_scatra:
-      scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+      scatra_dyn(genprob.numff,genprob.numscatra,restart);
       break;
     case prb_fluid_xfem2:
       fluid_xfem2_drt();
@@ -96,11 +98,11 @@ void ntacal()
       break;
 
     case prb_loma:
-      loma_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+      loma_dyn(genprob.numff,genprob.numscatra,restart);
       break;
 
     case prb_elch:
-      elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,genprob.restart);
+      elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,restart);
       break;
 
     case prb_combust:
@@ -124,7 +126,7 @@ void ntacal()
 #endif /* D_RED_AIRWAYS */
 
     case prb_struct_ale:
-      stru_ale_dyn_drt(genprob.numsf,genprob.numaf,genprob.restart);
+      stru_ale_dyn_drt(genprob.numsf,genprob.numaf,restart);
       break;
       
     case prb_poroelast:
@@ -132,7 +134,7 @@ void ntacal()
       break;
 
     default:
-      dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
+      dserror("solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());
       break;
   }
 
