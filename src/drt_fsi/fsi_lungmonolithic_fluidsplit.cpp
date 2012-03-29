@@ -11,9 +11,6 @@ Maintainer: Lena Yoshihara
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
-#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_lungmonolithic_fluidsplit.H"
@@ -341,7 +338,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   mat.Matrix(1,1).Add(fGG, false, 1.0, 1.0);
 
 #ifdef FLUIDSPLITAMG
-  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface().FSICondMap());
+  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface()->FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.0,1.0);
 #endif
 
@@ -601,7 +598,7 @@ void FSI::LungMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
+    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
@@ -647,7 +644,7 @@ void FSI::LungMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   FluidField().DisplacementToVelocity(fcx);
 
   Teuchos::RCP<Epetra_Vector> f = fluidfield.FSIInterface()->InsertOtherVector(fox);
-  FluidField().Interface().InsertFSICondVector(fcx, f);
+  FluidField().Interface()->InsertFSICondVector(fcx, f);
   fx = f;
 
   // process ale unknowns
@@ -663,6 +660,3 @@ void FSI::LungMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 
   ax = a;
 }
-
-
-#endif

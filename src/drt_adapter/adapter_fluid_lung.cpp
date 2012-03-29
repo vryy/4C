@@ -1,7 +1,3 @@
-/*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
-/*----------------------------------------------------------------------*/
 #include "adapter_fluid_lung.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
@@ -48,15 +44,15 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
 
   // build map extractor for fsi <-> full map
 
-  fsiinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap()));
+  fsiinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
 
   // build map extractor for asi, other <-> full inner map
 
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(Interface().OtherMap());
-  maps.push_back(Interface().LungASICondMap());
+  maps.push_back(Interface()->OtherMap());
+  maps.push_back(Interface()->LungASICondMap());
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-  innersplit_ = Teuchos::rcp(new LINALG::MapExtractor(*fullmap, Interface().LungASICondMap()));
+  innersplit_ = Teuchos::rcp(new LINALG::MapExtractor(*fullmap, Interface()->LungASICondMap()));
 
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
@@ -92,7 +88,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
 
   Teuchos::RCP<Epetra_Map> outflowfsidofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
 
-  outflowfsiinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*Interface().FullMap(), outflowfsidofmap));
+  outflowfsiinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));
 }
 
 
@@ -313,7 +309,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   AleConstrMatrix->Complete();
 
   // transposed "ale" constraint matrix -> linearization of constraint equation
-  for (int i=0; i<Interface().NumMaps(); ++i)
+  for (int i=0; i<Interface()->NumMaps(); ++i)
     ConstrAleMatrix->Matrix(0,i).Add(AleConstrMatrix->Matrix(i,0), true, 1.0, 0.0);
   ConstrAleMatrix->Complete();
 
@@ -350,7 +346,3 @@ void ADAPTER::FluidLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
   const Teuchos::RCP<IO::DiscretizationWriter>& output = DiscWriter();
   output->WriteVector("Add_Forces", Forces);
 }
-
-
-/*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

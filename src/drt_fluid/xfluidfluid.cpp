@@ -165,7 +165,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   maps.push_back(fluiddofrowmap);
   maps.push_back(alefluiddofrowmap);
   fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-  fluidfluidsplitter_.Setup(*fluidfluiddofrowmap_,alefluiddofrowmap,fluiddofrowmap);
+  fluidfluidsplitter_ = Teuchos::rcp(new FLD::UTILS::FluidXFluidMapExtractor());
+  fluidfluidsplitter_->Setup(*fluidfluiddofrowmap_,alefluiddofrowmap,fluiddofrowmap);
 
   FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluid.bgdis_,xfluid.numdim_,*xfluid.embdis_,fluidfluidvelpressplitter_,
                                           fluidfluiddofrowmap_);
@@ -2244,8 +2245,8 @@ void FLD::XFluidFluid::NonlinearSolve()
   while (stopnonliniter==false)
   {
     // Insert fluid and xfluid vectors to fluidxfluid
-    state_->fluidfluidsplitter_.InsertXFluidVector(state_->velnp_,state_->fluidfluidvelnp_);
-    state_->fluidfluidsplitter_.InsertFluidVector(alevelnp_,state_->fluidfluidvelnp_);
+    state_->fluidfluidsplitter_->InsertXFluidVector(state_->velnp_,state_->fluidfluidvelnp_);
+    state_->fluidfluidsplitter_->InsertFluidVector(alevelnp_,state_->fluidfluidvelnp_);
 
     itnum++;
 
@@ -2327,8 +2328,8 @@ void FLD::XFluidFluid::NonlinearSolve()
     }
 
     // insert fluid and alefluid residuals to fluidfluidresidual
-    state_->fluidfluidsplitter_.InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
-    state_->fluidfluidsplitter_.InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
+    state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
+    state_->fluidfluidsplitter_->InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
 
     double incvelnorm_L2;
     double incprenorm_L2;
@@ -2513,12 +2514,12 @@ void FLD::XFluidFluid::NonlinearSolve()
     // -------------------------------------------------------------------
     state_->fluidfluidvelnp_->Update(1.0,*state_->fluidfluidincvel_,1.0);
     // extract velnp_
-    state_->velnp_ = state_->fluidfluidsplitter_.ExtractXFluidVector(state_->fluidfluidvelnp_);
-    alevelnp_ = state_->fluidfluidsplitter_.ExtractFluidVector(state_->fluidfluidvelnp_);
+    state_->velnp_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidvelnp_);
+    alevelnp_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidvelnp_);
 
     // extract residual
-    state_->residual_ = state_->fluidfluidsplitter_.ExtractXFluidVector(state_->fluidfluidresidual_);
-    aleresidual_ = state_->fluidfluidsplitter_.ExtractFluidVector(state_->fluidfluidresidual_);
+    state_->residual_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidresidual_);
+    aleresidual_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidresidual_);
 
     // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
     LINALG::Export(*(alevelnp_),*(ivelnp_));
@@ -2580,8 +2581,8 @@ void FLD::XFluidFluid::Evaluate(
     Teuchos::RCP<Epetra_Vector> stepinc_bg = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
     Teuchos::RCP<Epetra_Vector> stepinc_emb = LINALG::CreateVector(*aledofrowmap_,true);
 
-    stepinc_bg = state_->fluidfluidsplitter_.ExtractXFluidVector(stepinc);
-    stepinc_emb = state_->fluidfluidsplitter_.ExtractFluidVector(stepinc);
+    stepinc_bg = state_->fluidfluidsplitter_->ExtractXFluidVector(stepinc);
+    stepinc_emb = state_->fluidfluidsplitter_->ExtractFluidVector(stepinc);
 
     Teuchos::RCP<Epetra_Vector> stepinc_bg_tmp = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
     Teuchos::RCP<Epetra_Vector> stepinc_emb_tmp = LINALG::CreateVector(*aledofrowmap_,true);
@@ -2608,26 +2609,26 @@ void FLD::XFluidFluid::Evaluate(
       stepinc_bg->Update(1.0,*state_->velnp_,-1.0,*state_->veln_,0.0);
       stepinc_emb->Update(1.0,*alevelnp_,-1.0,*aleveln_,0.0);
 
-      state_->fluidfluidsplitter_.InsertXFluidVector(stepinc_bg,state_->stepinc_);
-      state_->fluidfluidsplitter_.InsertFluidVector(stepinc_emb,state_->stepinc_);
+      state_->fluidfluidsplitter_->InsertXFluidVector(stepinc_bg,state_->stepinc_);
+      state_->fluidfluidsplitter_->InsertFluidVector(stepinc_emb,state_->stepinc_);
     }
 
-    state_->fluidfluidsplitter_.InsertXFluidVector(state_->velnp_,state_->fluidfluidvelnp_);
-    state_->fluidfluidsplitter_.InsertFluidVector(alevelnp_,state_->fluidfluidvelnp_);
+    state_->fluidfluidsplitter_->InsertXFluidVector(state_->velnp_,state_->fluidfluidvelnp_);
+    state_->fluidfluidsplitter_->InsertFluidVector(alevelnp_,state_->fluidfluidvelnp_);
 
     // mit iterinc--------------------------------------
 //     state_->fluidfluidvelnp_->Update(1.0,*stepinc,1.0);
 //     // extract velnp_
-//     state_->velnp_ = state_->fluidfluidsplitter_.ExtractXFluidVector(state_->fluidfluidvelnp_);
-//     alevelnp_ = state_->fluidfluidsplitter_.ExtractFluidVector(state_->fluidfluidvelnp_);
+//     state_->velnp_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidvelnp_);
+//     alevelnp_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidvelnp_);
 
     ParameterList eleparams;
     bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
     embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
 
     // extract residual
-    state_->residual_ = state_->fluidfluidsplitter_.ExtractXFluidVector(state_->fluidfluidresidual_);
-    aleresidual_ = state_->fluidfluidsplitter_.ExtractFluidVector(state_->fluidfluidresidual_);
+    state_->residual_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidresidual_);
+    aleresidual_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidresidual_);
 
     // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
     LINALG::Export(*(alevelnp_),*(ivelnp_));
@@ -2678,8 +2679,8 @@ void FLD::XFluidFluid::Evaluate(
   aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alezeros_), aleresidual_);
 
   // insert fluid and alefluid residuals to fluidfluidresidual
-  state_->fluidfluidsplitter_.InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
-  state_->fluidfluidsplitter_.InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
+  state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
+  state_->fluidfluidsplitter_->InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
 
   //build a merged map from fluid-fluid dbc-maps
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;

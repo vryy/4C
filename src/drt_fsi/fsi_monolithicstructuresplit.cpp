@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_monolithicstructuresplit.H"
@@ -12,6 +10,7 @@
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "fsi_nox_group.H"
 
@@ -77,7 +76,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+                                 FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                  genprob.ndim);
 
@@ -93,17 +92,17 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // fluid to ale at the interface
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
+                                   FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    "FSICoupling",
                                    genprob.ndim);
 
   // we might have a free surface
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
     fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                       FluidField().Interface().FSCondMap(),
+                                       FluidField().Interface()->FSCondMap(),
                                       *AleField().Discretization(),
                                        AleField().Interface().FSCondMap(),
                                       "FREESURFCoupling",
@@ -311,7 +310,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*veln,0,f); // add inner structure contributions to 'f'
 
     veln = StructureField().Interface()->ExtractFSICondVector(rhs); // only DOFs on interface
-    veln = FluidField().Interface().InsertFSICondVector(StructToFluid(veln)); // convert to fluid map
+    veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln)); // convert to fluid map
 
     double scale     = FluidField().ResidualScaling();
 
@@ -328,11 +327,11 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      veln = FluidField().Interface().InsertOtherVector(rhs);
+      veln = FluidField().Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertFSICondVector(rhs,veln);
+      FluidField().Interface()->InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -340,7 +339,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     }
 
     // if there is a free surface
-    if (FluidField().Interface().FSCondRelevant())
+    if (FluidField().Interface()->FSCondRelevant())
     {
       // here we extract the free surface submatrices from position 2
       LINALG::SparseMatrix& aig = a->Matrix(0,2);
@@ -366,11 +365,11 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
         rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
         fmig.Apply(*fveln,*rhs);
-        Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
+        Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface()->InsertOtherVector(rhs);
 
         rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
         fmgg.Apply(*fveln,*rhs);
-        FluidField().Interface().InsertFSCondVector(rhs,veln);
+        FluidField().Interface()->InsertFSCondVector(rhs,veln);
 
         veln->Scale(-1.*Dt());
 
@@ -513,7 +512,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   }
 
   // if there is a free surface
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
     // here we extract the free surface submatrices from position 2
     LINALG::SparseMatrix& aig = a->Matrix(0,2);
@@ -743,7 +742,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface()->ExtractFSICondVector(sv);
-    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
     modfv->Update(1.0, *fv, (1.0-ftiparam)/((1.0-stiparam)*fluidscale));
 
     // add contribution of Lagrange multiplier from previous time step
@@ -858,7 +857,7 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface().FSICondMap());
+  interface.push_back(FluidField().Interface()->FSICondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -956,7 +955,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   fx = Extractor().ExtractVector(x,1);
 
   // process structure unknowns
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
@@ -973,9 +972,9 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   AleField().Interface().InsertFSICondVector(acx, a);
 
   // if there is a free surface
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
-    Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSCondVector(fx);
+    Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSCondVector(fx);
     FluidField().FreeSurfVelocityToDisplacement(fcx);
 
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
@@ -1028,6 +1027,3 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 
   return;
 }
-
-
-#endif

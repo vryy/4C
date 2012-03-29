@@ -123,7 +123,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidFSI::ExtractInterfaceVeln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::UTILS::FluidXFluidMapExtractor ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
+Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
 {
   return xfluidfluid_->XFluidFluidMapExtractor();
 }
@@ -170,7 +170,7 @@ void ADAPTER::FluidFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> 
 {
   cout << " DisplacementToVelocity " << endl;
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
   /// We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   double timescale = TimeScaling();
@@ -185,7 +185,7 @@ void ADAPTER::FluidFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> 
 void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -200,6 +200,6 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> 
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
-  xfluidfluid_->UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
+  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+  xfluidfluid_->UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
 }

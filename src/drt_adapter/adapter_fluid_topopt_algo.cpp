@@ -11,11 +11,9 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
-
 #include "adapter_fluid_topopt_algo.H"
 
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -42,9 +40,8 @@ ADAPTER::FluidTopOptCouplingAlgorithm::~FluidTopOptCouplingAlgorithm()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidTopOptCouplingAlgorithm::ReadRestart(int step)
-{dserror("change");
+{
+  dserror("change");
   FluidField().ReadRestart(step);
   return;
 }
-
-#endif  // #ifdef CCADISCRET

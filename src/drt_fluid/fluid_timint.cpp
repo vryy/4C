@@ -54,10 +54,3 @@ Teuchos::RCP<const Epetra_Map> FLD::TimInt::DofRowMap(unsigned nds)
 {
   return Teuchos::rcp(Discretization()->DofRowMap(nds), false);
 }
-
-FLD::UTILS::FluidXFluidMapExtractor FLD::TimInt::XFluidFluidMapExtractor()
-{
-  dserror("Not implemented in the base class, may be overridden by a subclass.");
-  FLD::UTILS::FluidXFluidMapExtractor compilerBeQuiet;
-  return compilerBeQuiet;
-}

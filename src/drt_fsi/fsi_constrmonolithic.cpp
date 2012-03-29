@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include "fsi_constrmonolithic.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
@@ -67,7 +65,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+                                 FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                 genprob.ndim);
 
@@ -83,7 +81,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // fluid to ale at the interface
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
+                                   FluidField().Interface()->FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                   "FSICoupling",
@@ -388,7 +386,7 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 //  // setup tests for interface
 //
 //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-//  interface.push_back(FluidField().Interface().FSICondMap());
+//  interface.push_back(FluidField().Interface()->FSICondMap());
 //  interface.push_back(Teuchos::null);
 //  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 //
@@ -499,6 +497,3 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   return combo;
 }
-
-
-#endif

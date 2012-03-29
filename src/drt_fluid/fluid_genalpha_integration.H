@@ -54,7 +54,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/dyn_smag.H"
-
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/fluid_timint.H"
 #include "../drt_fluid/fluidresulttest.H"
 
@@ -849,7 +849,7 @@ public:
     double gamma = Gamma();
 
     // get interface velocity at t(n)
-    Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+    Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
     // reduce to Delta u(n+1,i+1)
     fcx->Update(-1.,*veln,1./dt);
@@ -863,7 +863,7 @@ public:
     double gamma = Gamma();
 
     // get interface velocity at t(n)
-    Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+    Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
     fcx->Update(1.,*veln,dt*gamma);
     fcx->Scale(dt);
@@ -874,8 +874,8 @@ public:
   }
   void UseBlockMatrix(bool splitmatrix)
   {
-    Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
-    UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
+    Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+    UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
   }
   Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
   {
@@ -904,7 +904,7 @@ public:
       return;
   };
   void Integrate() { GenAlphaTimeloop(); }
-  virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
+  virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return Teuchos::rcp(&interface_, false); }
   virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; }
   virtual void PrepareSolve()        { return; }
 

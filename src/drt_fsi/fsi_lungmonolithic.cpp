@@ -11,8 +11,6 @@ Maintainer: Lena Yoshihara
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "fsi_lungmonolithic.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_adapter/adapter_structure_lung.H"
@@ -135,7 +133,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
 
   AddStructConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(StructConstrExtractor,StructConstrExtractor,81,false,true));
 
-  AddFluidShapeDerivMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),FluidField().Interface(),108,false,true));
+  AddFluidShapeDerivMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),*FluidField().Interface(),108,false,true));
   FluidConstrMatrix_ = rcp(new LINALG::SparseMatrix(*FluidField().Discretization()->DofRowMap(), NumConstrID_, false, true));
   ConstrFluidMatrix_ = rcp(new LINALG::SparseMatrix(*ConstrMap_, FluidField().Discretization()->DofRowMap()->NumGlobalElements(),false,true));
 
@@ -143,8 +141,8 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,FluidField().Discretization()->Comm()));
   LINALG::MapExtractor constrextractor;
   constrextractor.Setup(*ConstrMap_,emptymap,ConstrMap_);
-  AleConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(constrextractor, FluidField().Interface(),108,false, true));
-  ConstrAleMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),constrextractor,108,false, true));
+  AleConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(constrextractor, *FluidField().Interface(),108,false, true));
+  ConstrAleMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),constrextractor,108,false, true));
 
   AddStructRHS_ = rcp(new Epetra_Vector(*StructureField().Discretization()->DofRowMap(),true));
   AddFluidRHS_ = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap(),true));
@@ -208,7 +206,7 @@ void FSI::LungMonolithic::GeneralSetup()
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+                                 FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                 genprob.ndim);
 
@@ -224,7 +222,7 @@ void FSI::LungMonolithic::GeneralSetup()
   // fluid to ale at the interface
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().Interface().FSICondMap(),
+                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    "FSICoupling",
@@ -271,7 +269,7 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // coupling of fluid and structure dofs at airway outflow
   coupfsout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
-                                                FluidField().Interface().LungASICondMap(),
+                                                FluidField().Interface()->LungASICondMap(),
                                                 *StructureField().Discretization(),
                                                 StructureField().Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
@@ -282,7 +280,7 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // coupling of fluid and ale dofs at airway outflow
   coupfaout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
-                                                FluidField().Interface().LungASICondMap(),
+                                                FluidField().Interface()->LungASICondMap(),
                                                 *AleField().Discretization(),
                                                 AleField().Interface().LungASICondMap(),
                                                 "StructAleCoupling",
@@ -699,7 +697,7 @@ FSI::LungMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface().FSICondMap());
+  interface.push_back(FluidField().Interface()->FSICondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -959,4 +957,3 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMatrix() 
 {
   return systemmatrix_;
 }
-#endif

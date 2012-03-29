@@ -22,12 +22,9 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 #include <Epetra_CrsGraph.h>
 
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace LINALG
 {
@@ -55,6 +52,7 @@ namespace FLD
   namespace UTILS
   {
     class MapExtractor;
+    class FluidXFluidMapExtractor;
   }
 }
 
@@ -369,7 +367,7 @@ namespace ADAPTER {
     virtual double TimIntParam() const = 0;
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
+    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const = 0;
 
     /// return type of time integration scheme
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
@@ -386,33 +384,20 @@ namespace ADAPTER {
     //! @name Transfer the porosity field used in the topology optimization to the fluid
 
     /// set pseudo-porosity field in the fluid
-    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer) = 0;
+    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer> optimizer) = 0;
     //@}
 
     //! @name Import geometrical coupling information about an implicitely defined interface from a different field
-
-    /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
-    /// methods, might need to access a second discretization.
-    virtual void ImportDiscretization(Teuchos::RCP<const DRT::Discretization> importdis)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
 
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to know the interface geometry
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) = 0;
 
     /// set initial flow field for combustion problem
-    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
+    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno) = 0;
 
-	/// clear time integration data for XFEM problems
-    virtual void ClearTimeInt()
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    }
+    /// clear time integration data for XFEM problems
+    virtual void ClearTimeInt() = 0;
 
     //@}
 
@@ -438,7 +423,7 @@ namespace ADAPTER {
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
-    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() = 0;
+    virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() = 0;
 
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
 

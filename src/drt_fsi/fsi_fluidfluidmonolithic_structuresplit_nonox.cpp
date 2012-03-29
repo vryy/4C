@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "fsi_matrixtransform.H"
@@ -79,7 +77,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+                                 FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                  genprob.ndim);
 
@@ -93,7 +91,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
 
   // fluid to ale at the interface
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().Interface().FSICondMap(),
+                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    "FSICoupling",
@@ -216,7 +214,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
     Extractor().AddVector(*veln,0,f); // add inner structure contributions to 'f'
 
     veln = StructureField().Interface()->ExtractFSICondVector(rhs); // only DOFs on interface
-    veln = FluidField().Interface().InsertFSICondVector(StructToFluid(veln)); // convert to fluid map
+    veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln)); // convert to fluid map
 
     double scale     = FluidField().ResidualScaling();
 
@@ -225,7 +223,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
     // we need a temporary vector with the whole fluid dofs where we
     // can insert veln which has the embedded dofrowmap into it
     Teuchos::RCP<Epetra_Vector> fluidfluidtmp = LINALG::CreateVector(*FluidField().DofRowMap(),true);
-    xfluidfluidsplitter_.InsertFluidVector(veln,fluidfluidtmp);
+    xfluidfluidsplitter_->InsertFluidVector(veln,fluidfluidtmp);
 
     Extractor().AddVector(*fluidfluidtmp,1,f);
 
@@ -239,11 +237,11 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      veln = FluidField().Interface().InsertOtherVector(rhs);
+      veln = FluidField().Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertFSICondVector(rhs,veln);
+      FluidField().Interface()->InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -251,7 +249,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
       // whole fluidfluid dofs
 
       fluidfluidtmp->PutScalar(0.0);
-      xfluidfluidsplitter_.InsertFluidVector(veln,fluidfluidtmp);
+      xfluidfluidsplitter_->InsertFluidVector(veln,fluidfluidtmp);
       Extractor().AddVector(*fluidfluidtmp,1,f);
 
     }
@@ -568,7 +566,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface()->ExtractFSICondVector(sv);
 
     // modfv: whole embedded fluid map but entries at fsi dofs
-    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
 
     // modfv = modfv * 1/fluidscale * (1.0-ftiparam)/(1.0-stiparam)
     modfv->Scale( 1./fluidscale*(1.0-ftiparam)/(1.0-stiparam));
@@ -580,7 +578,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
     // we need a temporary vector with the whole fluid dofs where we
     // can insert veln which has the embedded dofrowmap into it
     Teuchos::RCP<Epetra_Vector> fluidfluidtmp = LINALG::CreateVector(*FluidField().DofRowMap(),true);
-    xfluidfluidsplitter_.InsertFluidVector(modfv,fluidfluidtmp);
+    xfluidfluidsplitter_->InsertFluidVector(modfv,fluidfluidtmp);
 
     // all fluid dofs
     Teuchos::RCP<Epetra_Vector> fvfluidfluid = Teuchos::rcp_const_cast< Epetra_Vector >(fv);
@@ -612,10 +610,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
   fx = Extractor().ExtractVector(x,1);
 
   // extract embedded fluid vector
-  Teuchos::RCP<Epetra_Vector> fx_emb = xfluidfluidsplitter_.ExtractFluidVector(fx);
+  Teuchos::RCP<Epetra_Vector> fx_emb = xfluidfluidsplitter_->ExtractFluidVector(fx);
 
   // process structure unknowns
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx_emb);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx_emb);
 
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
@@ -883,8 +881,3 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 
    return;
 }
-
-
-#endif
-
-

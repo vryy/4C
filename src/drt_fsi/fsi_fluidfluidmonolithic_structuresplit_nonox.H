@@ -154,7 +154,7 @@ namespace FSI
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 
-    FLD::UTILS::FluidXFluidMapExtractor xfluidfluidsplitter_;
+    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> xfluidfluidsplitter_;
 
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
 

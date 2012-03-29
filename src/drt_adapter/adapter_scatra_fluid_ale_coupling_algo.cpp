@@ -42,7 +42,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
    // set up couplings
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
+                                   FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    condname,
@@ -50,7 +50,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().Interface().FSCondMap(),
+                                    FluidField().Interface()->FSCondMap(),
                                     *AleField().Discretization(),
                                     AleField().Interface().FSCondMap(),
                                     "FREESURFCoupling",
@@ -100,11 +100,11 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
     }
   }
 
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
     dserror("free surface code in combination with scatra has to be checked");
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 

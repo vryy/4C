@@ -15,6 +15,10 @@
 
 #include "../drt_fluid/fluid_timint.H"
 
+#include "../linalg/linalg_mapextractor.H"
+
+#include "../drt_lib/drt_element.H"
+
 namespace DRT
 {
   class Discretization;
@@ -175,7 +179,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    stepinc_;
 
       // Extractor used for splitting fluid and ale_fluid
-      FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
+      Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> fluidfluidsplitter_;
 
       LINALG::MapExtractor      fluidfluidvelpressplitter_;
 
@@ -347,7 +351,7 @@ namespace FLD
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
 
-    FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor(){ return state_->fluidfluidsplitter_; }
+    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->fluidfluidsplitter_; }
 
     /// provide access to the Dirichlet maps
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }

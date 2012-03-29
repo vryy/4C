@@ -13,13 +13,12 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifndef LOMA_ALGORITHM_H
 #define LOMA_ALGORITHM_H
 
 #include <Epetra_Comm.h>
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 /*!
@@ -163,4 +162,3 @@ namespace LOMA
 } // namespace LOMA
 
 #endif // LOMA_ALGORITHM_H
-#endif // CCADISCRET

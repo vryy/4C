@@ -57,7 +57,7 @@ Maintainer: Florian Henke
 FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     const Teuchos::RCP<DRT::Discretization>&      actdis,
     const Teuchos::RCP<LINALG::Solver>&           solver,
-    const Teuchos::RCP<ParameterList>&            params,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output
 ):TimInt(actdis, solver, params, output),
   // call constructor for "nontrivial" objects

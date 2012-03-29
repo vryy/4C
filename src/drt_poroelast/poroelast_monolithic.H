@@ -12,7 +12,6 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef POROELAST_MONOLITHIC_H_
 #define POROELAST_MONOLITHIC_H_
 
@@ -24,11 +23,16 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-
+#include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
+namespace DRT
+{
+  class Condition;
+}
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -363,4 +367,3 @@ namespace POROELAST
 
 /*----------------------------------------------------------------------*/
 #endif /* POROELAST_MONOLITHIC_H_ */
-#endif  // CCADISCRET

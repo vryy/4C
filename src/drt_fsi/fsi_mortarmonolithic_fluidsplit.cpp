@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_adapter/adapter_coupling_mortar.H"
@@ -72,17 +70,17 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // fluid to ale at the interface
 
     icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                     FluidField().Interface().FSICondMap(),
+                                     FluidField().Interface()->FSICondMap(),
                                      *AleField().Discretization(),
                                      AleField().Interface().FSICondMap(),
                                      "FSICoupling",
                                      genprob.ndim);
 
     // we might have a free surface
-    if (FluidField().Interface().FSCondRelevant())
+    if (FluidField().Interface()->FSCondRelevant())
     {
       fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                        FluidField().Interface().FSCondMap(),
+                                        FluidField().Interface()->FSCondMap(),
                                         *AleField().Discretization(),
                                         AleField().Interface().FSCondMap(),
                                         "FREESURFCoupling",
@@ -304,7 +302,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         fmig.Apply(*iprojdispinc_,*rhs);
 
         #ifdef FLUIDSPLITAMG
-          rhs = FluidField().Interface().InsertOtherVector(rhs);
+          rhs = FluidField().Interface()->InsertOtherVector(rhs);
         #endif
 
         zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
@@ -328,7 +326,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs->Scale(timescale*Dt());
 
 #ifdef FLUIDSPLITAMG
-    rhs = FluidField().Interface().InsertOtherVector(rhs);
+    rhs = FluidField().Interface()->InsertOtherVector(rhs);
 #endif
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
@@ -458,7 +456,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).UnComplete();
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
-  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface().FSICondMap());
+  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface()->FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.,1.0);
 #else
   mat.Assign(1,1,View,fii);
@@ -772,16 +770,16 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
   // extract the inner and boundary dofs of all three fields
 
-  Teuchos::RCP<Epetra_Vector> fov = FluidField()    .Interface().ExtractOtherVector(fv);
+  Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
 #ifdef FLUIDSPLITAMG
-  fov = FluidField().Interface().InsertOtherVector(fov);
+  fov = FluidField().Interface()->InsertOtherVector(fov);
 #endif
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
+    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField().Interface()->FSICondMap());
 
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
@@ -985,10 +983,10 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
 #ifdef FLUIDSPLITAMG
-  fox = FluidField().Interface().ExtractOtherVector(fox);
+  fox = FluidField().Interface()->ExtractOtherVector(fox);
 #endif
   Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
-  Teuchos::RCP<Epetra_Vector> fcx = LINALG::CreateVector(*FluidField().Interface().FSICondMap());
+  Teuchos::RCP<Epetra_Vector> fcx = LINALG::CreateVector(*FluidField().Interface()->FSICondMap());
   mortar->Apply(*scx,*fcx);
 
   // process ale unknowns based on fluid displacements
@@ -1003,8 +1001,8 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // process fluid unknowns
   FluidField().DisplacementToVelocity(fcx);
 
-  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
-  FluidField().Interface().InsertFSICondVector(fcx, f);
+  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface()->InsertOtherVector(fox);
+  FluidField().Interface()->InsertFSICondVector(fcx, f);
   fx = f;
 
 }
@@ -1115,5 +1113,3 @@ void FSI::MortarMonolithicFluidSplit::PrepareTimeStep()
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
 }
-
-#endif

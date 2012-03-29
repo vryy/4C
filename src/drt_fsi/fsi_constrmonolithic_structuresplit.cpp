@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_structuresplit.H"
@@ -208,7 +206,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     Extractor().AddVector(*veln,0,f);
 
     veln = StructureField().Interface()->ExtractFSICondVector(rhs);
-    veln = FluidField().Interface().InsertFSICondVector(StructToFluid(veln));
+    veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln));
 
     double scale     = FluidField().ResidualScaling();
 
@@ -225,11 +223,11 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      veln = FluidField().Interface().InsertOtherVector(rhs);
+      veln = FluidField().Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertFSICondVector(rhs,veln);
+      FluidField().Interface()->InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -444,7 +442,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface()->ExtractFSICondVector(sv);
-    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
     modfv->Update(1.0, *fv, 1./fluidscale);
 
     Extractor().InsertVector(*modfv,1,f);
@@ -476,7 +474,7 @@ void FSI::ConstrMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
     // process structure unknowns
 
-    Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
+    Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx);
     FluidField().VelocityToDisplacement(fcx);
     Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
     Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
@@ -495,6 +493,3 @@ void FSI::ConstrMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
     ax = a;
 }
-
-
-#endif

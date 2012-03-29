@@ -109,7 +109,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  // set up ale-fluid couplings
           icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 	  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
-                                           (fsi_->FluidField().Interface().FSICondMap()),
+                                           (fsi_->FluidField().Interface()->FSICondMap()),
                                            *(fsi_->AleField().Discretization()),
                                            (fsi_->AleField().Interface().FSICondMap()),
                                            condname,

@@ -28,11 +28,8 @@ namespace ADAPTER
     { return fluid_->Veln(); }
     virtual Teuchos::RCP<const Epetra_Vector> Velnm()
     { dserror("not implemented"); return Teuchos::null; };
-    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() {dserror("not implemented");
-      // this is a hack to compile the code! danger of dangling reference!
-      FLD::UTILS::FluidXFluidMapExtractor  object;
-      FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
-      return reftoobject;}
+    virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor()
+    { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()
@@ -83,6 +80,9 @@ namespace ADAPTER
     { return fluid_->GetDBCMapExtractor(); }
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialFlowField(initfield, startfuncno); }
+    /// clear time integration data for XFEM problems
+    virtual void ClearTimeInt()
+    { dserror("not implemented"); }
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
@@ -178,25 +178,19 @@ namespace ADAPTER
     { return fluid_->TimeScaling(); }
     virtual double TimIntParam() const
     { return fluid_->TimIntParam(); }
-    virtual const FLD::UTILS::MapExtractor& Interface() const
-    { dserror("Not implemented in the base class, may be overridden by a subclass."); return fluid_->Interface(); }
+    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractVelocityPart(velpres); }
     virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer){ dserror("not implemented!"); };
-    virtual void ImportDiscretization(Teuchos::RCP<const DRT::Discretization> importdis)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
     virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
-    {
-      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
-    };
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()

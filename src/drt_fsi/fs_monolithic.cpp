@@ -1,6 +1,4 @@
 
-#ifdef CCADISCRET
-
 #include "fs_monolithic.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "fsi_matrixtransform.H"
@@ -30,9 +28,7 @@
 #include "../drt_lib/drt_colors.H"
 
 
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -479,7 +475,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
 
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSCondMap(),
+                                   FluidField().Interface()->FSCondMap(),
                                    *AleField().Discretization(),
                                    AleField().Interface().FSCondMap(),
                                    "FREESURFCoupling",
@@ -634,11 +630,11 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface().InsertFSCondVector(rhs,veln);
+      FluidField().Interface()->InsertFSCondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -905,7 +901,7 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface().FSCondMap());
+  interface.push_back(FluidField().Interface()->FSCondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -1000,7 +996,7 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
   fx = Extractor().ExtractVector(x,0);
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSCondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSCondVector(fx);
   FluidField().FreeSurfVelocityToDisplacement(fcx);
 
   // process ale unknowns
@@ -1397,6 +1393,3 @@ const char* FSI::OverlappingBlockMatrixFS::Label() const
 {
   return "FSI::OverlappingBlockMatrixFS";
 }
-
-
-#endif

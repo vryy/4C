@@ -13,12 +13,11 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "elch_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_fluid/turbulence_statistic_manager.H"
+#include "../linalg/linalg_mapextractor.H"
 // Output after each Outer Iteration step
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -645,5 +644,3 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
 
   return stopnonliniter;
 }
-
-#endif // CCADISCRET

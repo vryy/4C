@@ -73,7 +73,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor& Interface() const { return *interface_; }
+    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
@@ -83,7 +83,7 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
-    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor();
+    virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor();
 
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 

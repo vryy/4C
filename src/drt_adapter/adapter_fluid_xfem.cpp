@@ -12,8 +12,6 @@ Maintainer:  Benedikt Schott
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -50,7 +48,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
 /*----------------------------------------------------------------------*/
 const FLD::UTILS::MapExtractor& ADAPTER::FluidXFEM::Interface() const
 {
-  return FluidField().Interface();
+  return *FluidField().Interface();
 }
 
 
@@ -163,6 +161,3 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
 {
   return FluidField().CreateFieldTest();
 }
-
-
-#endif

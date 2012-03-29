@@ -11,8 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifndef ADAPTER_FLUID_TOPOPT_ALGO_H_
 #define ADAPTER_FLUID_TOPOPT_ALGO_H_
 
@@ -74,4 +72,3 @@ namespace ADAPTER
 } // namespace ADAPTER
 
 #endif /* ADAPTER_FLUID_TOPOPT_ALGO_H_ */
-#endif  // #ifdef CCADISCRET

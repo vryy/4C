@@ -63,7 +63,7 @@ namespace ADAPTER {
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor& Interface() const;
+    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
@@ -75,7 +75,7 @@ namespace ADAPTER {
 
   protected:
     /// A castet pointer to the fluid itself
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    Teuchos::RCP<FLD::XFluid>              xfluid_;
 
     /// the interface map setup for fsi interface, free surface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;

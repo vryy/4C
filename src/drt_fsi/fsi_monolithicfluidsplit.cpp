@@ -1,5 +1,3 @@
-#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_monolithicfluidsplit.H"
@@ -12,6 +10,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #define FLUIDSPLITAMG
 
@@ -38,7 +37,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface().FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap()));
   fmgipre_ = Teuchos::null;
   fmgicur_ = Teuchos::null;
   fmggpre_ = Teuchos::null;
@@ -70,7 +69,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+                                 FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                 genprob.ndim);
 
@@ -86,7 +85,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   // fluid to ale at the interface
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
+                                   FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    "FSICoupling",
@@ -273,7 +272,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs->Scale(timescale*Dt());
 
 #ifdef FLUIDSPLITAMG
-    rhs = FluidField().Interface().InsertOtherVector(rhs);
+    rhs = FluidField().Interface()->InsertOtherVector(rhs);
 #endif
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
@@ -301,11 +300,11 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,0,f); // add structure contributions to 'f'
 
     // Reset quantities for previous iteration step since they still store values from the last time step
-    duiinc_ = LINALG::CreateVector(*FluidField().Interface().OtherMap(),true);
+    duiinc_ = LINALG::CreateVector(*FluidField().Interface()->OtherMap(),true);
     solipre_ = Teuchos::null;
     ddgaleinc_ = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
     solgpre_ = Teuchos::null;
-    fgcur_ = LINALG::CreateVector(*FluidField().Interface().FSICondMap(),true);
+    fgcur_ = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
     fgicur_ = Teuchos::null;
     fggcur_ = Teuchos::null;
   }
@@ -316,7 +315,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   // store interface force onto the fluid to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
   fgpre_ = fgcur_;
-  fgcur_ = FluidField().Interface().ExtractFSICondVector(FluidField().RHS());
+  fgcur_ = FluidField().Interface()->ExtractFSICondVector(FluidField().RHS());
 }
 
 
@@ -440,7 +439,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
-  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface().FSICondMap());
+  Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface()->FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.,1.0);
 #else
   mat.Assign(1,1,View,fii);
@@ -805,16 +804,16 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
   // extract the inner and boundary dofs of all three fields
 
-  Teuchos::RCP<Epetra_Vector> fov = FluidField()    .Interface().ExtractOtherVector(fv);
+  Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
 #ifdef FLUIDSPLITAMG
-  fov = FluidField().Interface().InsertOtherVector(fov);
+  fov = FluidField().Interface()->InsertOtherVector(fov);
 #endif
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
+    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
@@ -1014,14 +1013,14 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
 
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
 #ifdef FLUIDSPLITAMG
-  fox = FluidField().Interface().ExtractOtherVector(fox);
+  fox = FluidField().Interface()->ExtractOtherVector(fox);
 #endif
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
   FluidField().DisplacementToVelocity(fcx);
 
-  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
-  FluidField().Interface().InsertFSICondVector(fcx, f);
+  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface()->InsertOtherVector(fox);
+  FluidField().Interface()->InsertFSICondVector(fcx, f);
   fx = f;
 
   // process ale unknowns
@@ -1090,13 +1089,13 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
     (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
 
   // store the prodcut F_{\Gamma I}^{n+1} \Delta u_I^{n+1} in here
-  Teuchos::RCP<Epetra_Vector> fgidui = LINALG::CreateVector(*FluidField().Interface().FSICondMap(),true);
+  Teuchos::RCP<Epetra_Vector> fgidui = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   (fgipre_->EpetraMatrix())->Multiply(false, *duiinc_, *fgidui);
 
 
   // store the prodcut F_{\Gamma\Gamma}^{n+1} \Delta d_Gamma^{n+1} in here
-  Teuchos::RCP<Epetra_Vector> fggddg = LINALG::CreateVector(*FluidField().Interface().FSICondMap(),true);
+  Teuchos::RCP<Epetra_Vector> fggddg = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   (fggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggddg);
 
@@ -1119,4 +1118,3 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 
   return;
 }
-#endif

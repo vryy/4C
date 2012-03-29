@@ -50,11 +50,6 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const FLD::UTILS::MapExtractor& ADAPTER::XFluidFSI::Interface() const { return *interface_; }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 {
 

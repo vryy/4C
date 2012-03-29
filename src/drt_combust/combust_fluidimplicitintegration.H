@@ -22,6 +22,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/xfem_utils.H"
 #include "../drt_io/io_ostream0.H"
 
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 class Epetra_CrsGraph;
@@ -97,7 +98,7 @@ public:
   explicit CombustFluidImplicitTimeInt(
       const Teuchos::RCP<DRT::Discretization>&      actdis,
       const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<ParameterList>&            params,
+      const Teuchos::RCP<Teuchos::ParameterList>&   params,
       const Teuchos::RCP<IO::DiscretizationWriter>& output
     );
 
@@ -490,7 +491,7 @@ protected:
   void GenAlphaUpdateAcceleration();
 
   //! @name general algorithm parameters
-  const ParameterList&                          xparams_;
+  const Teuchos::ParameterList&                 xparams_;
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
   Teuchos::RCP<Epetra_Vector>                   phinp_;
 

@@ -14,9 +14,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
-
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
@@ -3438,11 +3435,10 @@ double FLD::FluidGenAlphaIntegration::TimIntParam() const
   case INPAR::FLUID::timeint_bdf2:
   case INPAR::FLUID::timeint_stationary:
     dserror("OST, BDF2 and stationary time integration parameters are not defined in gen-alpha.");
+  break;
   default:
     dserror("Unknown time integration scheme");
   break;
   }
   return retval;
 }
-
-#endif

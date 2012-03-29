@@ -12,8 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -38,7 +36,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
 {
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().Interface().FSICondMap(),
+                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    condname,
@@ -46,7 +44,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                     FluidField().Interface().FSCondMap(),
+                                     FluidField().Interface()->FSCondMap(),
                                     *AleField().Discretization(),
                                      AleField().Interface().FSCondMap(),
                                     "FREESURFCoupling",
@@ -82,7 +80,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAle::Discretization()
 /*----------------------------------------------------------------------*/
 const FLD::UTILS::MapExtractor& ADAPTER::FluidAle::Interface() const
 {
-  return FluidField().Interface();
+  return *FluidField().Interface();
 }
 
 
@@ -140,10 +138,10 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     }
   }
 
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
@@ -181,10 +179,10 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
     }
   }
 
-  if (FluidField().Interface().FSCondRelevant())
+  if (FluidField().Interface()->FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
@@ -291,6 +289,3 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(Teuchos::RCP<const Epe
 {
   return icoupfa_->MasterToSlave(iv);
 }
-
-
-#endif

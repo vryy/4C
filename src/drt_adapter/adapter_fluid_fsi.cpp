@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
 {
-  return Interface().ExtractFSCondVector(fluidimpl_->Veln());
+  return Interface()->ExtractFSCondVector(fluidimpl_->Veln());
 }
 
 
@@ -190,7 +190,7 @@ void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -206,7 +206,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -222,7 +222,7 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -238,7 +238,7 @@ void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vecto
 void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSCondVector(Veln());
 
   // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
   //
@@ -261,6 +261,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::IntegrateInterfaceShape()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
+  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+  fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
 }

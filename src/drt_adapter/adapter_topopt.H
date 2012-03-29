@@ -11,8 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #ifndef ADAPTER_TOPOPT_H_
 #define ADAPTER_TOPOPT_H_
 
@@ -54,7 +52,7 @@ namespace ADAPTER {
     virtual ~TopOptBaseAlgorithm();
 
     /// access to the scalar transport field solver
-    RCP<TOPOPT::Optimizer> Optimizer();
+    Teuchos::RCP<TOPOPT::Optimizer> Optimizer();
 
   private:
 
@@ -66,4 +64,3 @@ namespace ADAPTER {
 } // namespace ADAPTER
 
 #endif /* ADAPTER_FLUID_TOPOPT_H_ */
-#endif  // #ifdef CCADISCRET
