@@ -91,7 +91,7 @@ wear_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (DRT::Problem::Instance()->ProblemType()=="tsi")
+  if (DRT::Problem::Instance()->ProblemName()=="tsi")
     tsi_ = true;
 
   // call setup method with flag redistributed=FALSE, init=TRUE
@@ -901,7 +901,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   }
 
   // modify gap vector towards wear, only if no structure with ale is applied
-  if (wear_ and DRT::Problem::Instance()->ProblemType()!="structure_ale")
+  if (wear_ and DRT::Problem::Instance()->ProblemName()!="structure_ale")
     g_->Update(1.0,*wearvector_,1.0);
 
   // FillComplete() global Mortar matrices
@@ -1299,7 +1299,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               FriNode* frinode = static_cast<FriNode*>(cnode);
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
               
-              if(DRT::Problem::Instance()->ProblemType()!="structure_ale")
+              if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
                 frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear();
               else
                 frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear();
@@ -1589,7 +1589,7 @@ void CONTACT::CoAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
   // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
   // not for thermo-structure-interaction because of partitioned scheme
   // so long
-  std::string probtype = DRT::Problem::Instance()->ProblemType();
+  std::string probtype = DRT::Problem::Instance()->ProblemName();
   if (!tsi_ and (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged()))
     dserror("ERROR: Active set not fully converged!");
   

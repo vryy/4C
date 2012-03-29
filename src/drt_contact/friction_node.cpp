@@ -512,7 +512,7 @@ void CONTACT::FriNode::InitializeDataContainer()
   }
   
   // initialize data container for wear and tsi problems 
-  if (DRT::Problem::Instance()->ProblemType()=="tsi" or 
+  if (DRT::Problem::Instance()->ProblemName()=="tsi" or
      (DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
   {
      if (fridataplus_==Teuchos::null)

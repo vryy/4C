@@ -60,7 +60,7 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation( DRT::Element * dwele, 
   dimns = numdf;
   nv = numdf;
 
-  if (DRT::Problem::Instance(0)->ProblemType() == "elch")
+  if (DRT::Problem::Instance(0)->ProblemName() == "elch")
   {
     if (nv > 1) // only when we have more than 1 dof per node!
     {
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
     // for problem type ELCH we have one additional degree of freedom per node
     // for the electric potential
-    if (DRT::Problem::Instance()->ProblemType()=="elch")
+    if (DRT::Problem::Instance()->ProblemName()=="elch")
     {
       numdofpernode_ += 1;
       dsassert(numdofpernode_>2,"numdofpernode_ is not > 2 for ELCH problem");

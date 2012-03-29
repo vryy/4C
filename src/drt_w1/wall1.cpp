@@ -164,7 +164,7 @@ eastype_(eas_vague),
 structale_(false),
 distype_(dis_none)
 {
-  if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
+  if(DRT::Problem::Instance()->ProblemName() == "structure_ale")
     structale_ = true;
   return;
 }

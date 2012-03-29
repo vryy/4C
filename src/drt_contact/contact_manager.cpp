@@ -421,7 +421,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // read parameter list and problemtype from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  std::string problemtype = DRT::Problem::Instance()->ProblemType();
+  std::string problemtype = DRT::Problem::Instance()->ProblemName();
   int dim = psize.get<int>("DIM");
 
   // *********************************************************************

@@ -314,7 +314,7 @@ STR::TimInt::TimInt
   }
 
   // check for structural problem with ale
-  if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
+  if(DRT::Problem::Instance()->ProblemName() == "structure_ale")
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
 
 
@@ -451,7 +451,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
 
     // print messages for multifield problems (e.g FSI)
-    const string probtype = DRT::Problem::Instance()->ProblemType();
+    const string probtype = DRT::Problem::Instance()->ProblemName();
     if (probtype != "structure" && !myrank_)
     {
       // warnings
@@ -1792,7 +1792,7 @@ void STR::TimInt::ApplyForceInternal
   ParameterList p;
   // action for elements
   std::string action = "calc_struct_internalforce";
-  const std::string prbtype = DRT::Problem::Instance()->ProblemType();
+  const std::string prbtype = DRT::Problem::Instance()->ProblemName();
   if( prbtype == "poroelast")
   {
 	  action = "calc_poroelast_internalforce";

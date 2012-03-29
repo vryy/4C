@@ -281,7 +281,7 @@ void ALE::AleLaplace::EvaluateElements()
 void ALE::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   // applying interface displacements
-  if(DRT::Problem::Instance()->ProblemType()!="structure_ale")
+  if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
     interface_.InsertFSICondVector(idisp,dispnp_);
   else
     interface_.InsertAleWearCondVector(idisp,dispnp_);

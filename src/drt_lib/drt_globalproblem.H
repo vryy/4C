@@ -176,7 +176,7 @@ public:
   /// read global parameters
   void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
-  /// input of not mesh or time based problem data
+  /// input of not mesh or time based problem data (fill old CCARAT struct genprob)
   void InputControl();
 
   /// setup the discretizations
@@ -205,8 +205,17 @@ public:
   /// @name General query methods
   /// Once and for all definitions
 
+  /// give enum of my problem type
+  PROBLEM_TYP ProblemType() const;
+
   /// give string name of my problem type
-  std::string ProblemType() const;
+  std::string ProblemName() const;
+
+  /// return restart step
+  int Restart() const;
+
+  /// number of space dimensions (as specified in the input file)
+  int NDim() const;
 
   // give string name of my basis function type (polynomial/nurbs)
   std::string SpatialApproximation() const;
@@ -374,6 +383,9 @@ private:
 
   /// the single instance
   static vector<RCP<Problem> > instances_;
+
+  /// the problem type
+  PROBLEM_TYP probtype_;
 
   /// discretizations of this problem
   vector<vector<RCP<Discretization> > > discretizations_;

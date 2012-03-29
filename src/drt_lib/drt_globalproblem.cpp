@@ -115,10 +115,35 @@ DRT::Problem::~Problem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string DRT::Problem::ProblemType() const
+PROBLEM_TYP DRT::Problem::ProblemType() const
+{
+  return probtype_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::string DRT::Problem::ProblemName() const
 {
   static const char* problemnames[] = PROBLEMNAMES;
-  return problemnames[genprob.probtyp];
+  return problemnames[probtype_];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::Problem::Restart() const
+{
+  return genprob.restart;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::Problem::NDim() const
+{
+  const Teuchos::ParameterList& sizeparams = ProblemSizeParams();
+  return sizeparams.get<int>("DIM");
 }
 
 
@@ -176,7 +201,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
-  //reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/LEVELSET", *list);
   reader.ReadGidSection("--FS3I CONTROL", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
@@ -220,6 +244,14 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONDITION NAMES", *list);
 
   setParameterList(list);
+
+
+  // Now we have successfully read the whole input file. It's time to access some data
+  // 1) get the problem type
+  const Teuchos::ParameterList& type = ProblemTypeParams();
+  probtype_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
+  // 2) more to come here ...
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -272,15 +304,10 @@ void DRT::Problem::InputControl()
 {
   // Play it save and fill the old C structures here.
   // We have to get rid of them eventually.
-
-  const Teuchos::ParameterList& size = ProblemSizeParams();
-
-  genprob.ndim  = size.get<int>("DIM");
+  genprob.ndim    = NDim();
+  genprob.probtyp = ProblemType();
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
-
-  genprob.probtyp        = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
-
   // If there is a restart flag on the command line, ignore the input file.
   if ( genprob.restart==0 )
   {
@@ -296,7 +323,7 @@ void DRT::Problem::InputControl()
   }
 
   // set field numbers depending on problem type and numfld
-  switch (genprob.probtyp)
+  switch (ProblemType())
   {
   case prb_fsi:
   case prb_fsi_lung:
@@ -429,12 +456,12 @@ void DRT::Problem::InputControl()
     break;
   }
   default:
-    dserror("problem type %d unknown", genprob.probtyp);
+    dserror("problem type %d unknown", ProblemType());
   }
 
   // set field ARTNET and RED_AIRWAY numbers
   // this is the numbering used for such fields coupled to higher dimensional fields
-  switch (genprob.probtyp)
+  switch (ProblemType())
   {
   case prb_fsi:
   case prb_fsi_lung:
@@ -708,7 +735,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
           actdis->Comm().SumAll(&foundit,&found,1);
           if (found)
           {
-	    // Insert a copy since we might insert the same condition in many discretizations.
+            // Insert a copy since we might insert the same condition in many discretizations.
             actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
           }
         }
@@ -815,7 +842,7 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
     inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
 
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm,
-                                                      ProblemType(),
+                                                      ProblemName(),
                                                       SpatialApproximation(),
                                                       inputfile,
                                                       restartkenner,
@@ -879,7 +906,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   // the basic node reader. now add desired element readers to it!
   DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
-  switch (genprob.probtyp)
+  switch (ProblemType())
   {
   case prb_fsi:
   case prb_fsi_lung:
@@ -1276,23 +1303,23 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_poroelast:
   {
     // create empty discretizations
-	  structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-	  fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
 
-	  AddDis(genprob.numsf, structdis);
-	  AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numff, fluiddis);
 
-	  nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
-	  break;
+    break;
   }// end of else if (genprob.probtyp==prb_poroelast)
 
   default:
-    dserror("Unknown problem type: %d",genprob.probtyp);
+    dserror("Unknown problem type: %d",ProblemType());
   }
 
   // add artery or airways discretizations only for the following problem types
-  switch (genprob.probtyp)
+  switch (ProblemType())
   {
   case prb_fsi:
   case prb_fsi_lung:
@@ -1330,7 +1357,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.Read();
 
     // care for special applications
-    switch (genprob.probtyp)
+    switch (ProblemType())
     {
     case prb_fsi:
     case prb_fsi_lung:
