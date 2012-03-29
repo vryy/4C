@@ -1002,7 +1002,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface   mayr.mt (03/2012) */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp)
+void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 {
   // get time integration parameter of structural time integrator
   // to enable consistent time integration among the fields

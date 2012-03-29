@@ -75,7 +75,7 @@ namespace FSI
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp);
+    virtual void RecoverLagrangeMultiplier();
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);

@@ -1077,7 +1077,7 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface   mayr.mt (03/2012) */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp)
+void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 {
   // get time integration parameter of fluid time integrator
   // to enable consistent time integration among the fields

@@ -82,7 +82,7 @@ namespace FSI
 
     /// recover Lagrange multiplier at the interface (i.e. condensed forces onto the structure)
     /// needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){};
+    virtual void RecoverLagrangeMultiplier(){};
 
   protected:
 

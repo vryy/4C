@@ -201,7 +201,7 @@ namespace UTILS
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp){return;};
+    virtual void RecoverLagrangeMultiplier(){return;};
 
     //! @name NOX methods
 
@@ -392,9 +392,6 @@ namespace UTILS
 
     /// start a new time step
     virtual void PrepareTimeStep();
-
-    /// recover Lagrange multiplier at the interface which is needed for rhs in next time step
-//    virtual void RecoverLagrangeMultiplier(Teuchos::RCP<NOX::FSI::Group> grp);
 
   protected:
 
