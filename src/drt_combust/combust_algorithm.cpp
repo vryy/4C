@@ -27,6 +27,7 @@ Maintainer: Florian Henke
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*------------------------------------------------------------------------------------------------*

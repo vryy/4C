@@ -17,7 +17,7 @@ Maintainer: Georg Bauer
 #define ADAPTER_SCATRA_BASE_ALGORITHM_H
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_lib/drt_globalproblem.H"
+
 
 // forward declarations
 namespace DRT

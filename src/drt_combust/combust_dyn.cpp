@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

@@ -16,6 +16,7 @@ Maintainer: Benedikt Schott
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_scatra/scatra_ele_action.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

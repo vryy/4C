@@ -23,6 +23,7 @@ Maintainer: Volker Gravemeier
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
