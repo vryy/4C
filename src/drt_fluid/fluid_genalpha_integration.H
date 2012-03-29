@@ -47,7 +47,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FLUID_GENALPHA_INTEGRATION_H
 #define FLUID_GENALPHA_INTEGRATION_H
 
@@ -971,9 +970,6 @@ private:
   //are pressure dofs
   int                         numdim_ ;
 
-  //! parallelism --- my processor id
-  int                         myrank_ ;
-
   //! fluid density
   double                      density_;
 
@@ -1010,9 +1006,6 @@ private:
 
   //! parameters governing the nonlinear iteration --- iteration counter
   int                         itenum_      ;
-  //! parameters governing the nonlinear iteration --- upper bound for
-  //! number of nonlinear iterations
-  int                         itemax_      ;
   //! parameters governing the nonlinear iteration --- convergence criterion
   double                      ittol_       ;
 
@@ -1037,10 +1030,6 @@ private:
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose
 
-  //! write restart every uprestart_ steps
-  int                         uprestart_;
-  //! write result every upres_ steps
-  int                         upres_;
   //! compute and write traction vector
   int                         writestresses_;
 
@@ -1273,14 +1262,9 @@ private:
   //! count cpu time for filtering (in case of a dynamic Smagorinsky model) on proc
   double                    dtfilter_;
   //@}
-
-  //! flag for type of fluid flow (standard: incompressible; else: Boussinesq approximation, varying denstiy, loma)
-  INPAR::FLUID::PhysicalType	physicaltype_;
-
 };
 
 }
 
 #endif  // not FLUID_GENALPHA_INTEGRATION_H
 
-#endif  // #ifdef CCADISCRET
