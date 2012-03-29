@@ -14,11 +14,10 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
 #include "adapter_coupling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -38,6 +37,8 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
 :  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true, 0, solverparams), // yes, we need the ALE formulation
    AleBaseAlgorithm(prbdyn) // construct ale base algorithm as well
 {
+  const int ndim = DRT::Problem::Instance()->NDim();
+
    // set up couplings
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
@@ -45,7 +46,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    condname,
-                                   genprob.ndim);
+                                   ndim);
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
@@ -53,7 +54,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
                                     *AleField().Discretization(),
                                     AleField().Interface().FSCondMap(),
                                     "FREESURFCoupling",
-                                    genprob.ndim);
+                                    ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -64,7 +65,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
                          *AleField().Discretization(),
                          *fluidnodemap,
                          *alenodemap,
-                         genprob.ndim);
+                         ndim);
 
   FluidField().SetMeshMap(coupfa_->MasterDofMap());
 
@@ -157,4 +158,3 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidToAle
   return icoupfa_->MasterToSlave(iv);
 }
 
-#endif // CCADISCRET

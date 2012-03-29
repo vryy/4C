@@ -283,12 +283,12 @@ public:
   ) = 0;
 
   //! set phi vectors due to reinitialization
-  void SetPhinp(
+/*  void SetPhinp(
     Teuchos::RCP<Epetra_Vector> phinp //!< ?
   );
 
   //! set phi vectors due to reinitialization
-  void SetPhiReinit(
+/*  void SetPhiReinit(
     Teuchos::RCP<Epetra_Vector> phi //!< ?
   );
 
@@ -1051,9 +1051,6 @@ protected:
 
   //! boolian if scatra object is used for level set reinitialization
   bool reinitswitch_;
-
-  //! boolian if a reinitialization step is accepted or not
- // bool reinitialization_accepted_;
 
   /*========================================================================*/
   //! @name not classified variables - to be kept clean!!!

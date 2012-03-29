@@ -64,13 +64,6 @@ Maintainer: Georg Bauer
 //only if VISUALIZE_ELEDATA_GMSH
 //#include "../drt_io/io_gmsh.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 
 /*==========================================================================*/
 // Constructors and destructors and related methods
@@ -807,7 +800,7 @@ Teuchos::RCP<DRT::Discretization> dis)
     else                         nodedofs = (*dofset).Dof(lnode);
 
     // determine number of space dimensions
-    const int numdim = genprob.ndim;
+    const int numdim = DRT::Problem::Instance()->NDim();
 
     //-------------------------------------------------------------------------
     // transfer of velocity dofs
@@ -1307,7 +1300,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
       vector<int> nodedofs = dis->Dof(0,lnode);
 
       // determine number of space dimensions
-      const int numdim = genprob.ndim;
+      const int numdim = DRT::Problem::Instance()->NDim();
 
       for (int index=0;index < numdim; ++index)
       {
