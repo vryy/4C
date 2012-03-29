@@ -1545,24 +1545,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   return;
 } // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
-/*----------------------------------------------------------------------*
- | return dof row map                                          vg 09/11 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap()
-{
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  return Teuchos::rcp(dofrowmap, false);
-} // SCATRA::ScaTraTimIntImpl::DofRowMap
-
-/*----------------------------------------------------------------------*
- | return dof row map for multiple discretizations             vg 09/11 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
-{
-  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
-  return Teuchos::rcp(dofrowmap, false);
-} // SCATRA::ScaTraTimIntImpl::DofRowMap
-
 
 /*==========================================================================*
  |                                                                          |

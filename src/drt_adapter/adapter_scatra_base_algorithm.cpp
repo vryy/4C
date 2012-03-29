@@ -29,12 +29,6 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_timint_tg.H"
 #include "../drt_scatra/scatra_resulttest.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -161,7 +155,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // --------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
-  if (genprob.probtyp == prb_combust)
+  if (DRT::Problem::Instance()->ProblemType() == prb_combust)
   {
     extraparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
 
@@ -173,7 +167,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   }
 
   // -------------------sublist for electrochemistry-specific parameters
-  if (genprob.probtyp == prb_elch)
+  if (DRT::Problem::Instance()->ProblemType() == prb_elch)
   {
     // temperature of electrolyte solution
     extraparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
@@ -326,7 +320,4 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
   return Teuchos::rcp(new SCATRA::ScaTraResultTest(*scatra_));
 }
 
-// to be removed
-SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraReinitField()
-{dserror("Dont use this anymore"); return *scatra_;};
 

@@ -60,9 +60,6 @@ namespace ADAPTER {
     /// access to the scalar transport field solver
     SCATRA::ScaTraTimIntImpl& ScaTraField();
 
-    /// access to the reinitialization field solver
-    SCATRA::ScaTraTimIntImpl& ScaTraReinitField();
-
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
 

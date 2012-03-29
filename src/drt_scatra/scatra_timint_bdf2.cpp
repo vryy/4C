@@ -102,13 +102,12 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
   */
   if (step_>1)
   {
-    double omega = dta_/dtp_;
-    double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
-    double fact2 = -(omega*omega)/(1+ (2.0*omega));
+    double fact1 = 4.0/3.0;
+    double fact2 = -1.0/3.0;
     hist_->Update(fact1, *phin_, fact2, *phinm_, 0.0);
 
-    // for BDF2 theta is set by the timestepsizes, 2/3 for const. dt
-    theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    // for BDF2 theta is set to 2/3 for constant time-step length dt
+    theta_ = 2.0/3.0;
   }
   else
   {
@@ -229,9 +228,8 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   double hist = 0.0;
   if (step_>1)
   {
-    double omega = dta_/dtp_;
-    double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
-    double fact2 = -(omega*omega)/(1+ (2.0*omega));
+    double fact1 = 4.0/3.0;
+    double fact2 = -1.0/3.0;
 
     hist = fact1*thermpressn_ + fact2*thermpressnm_;
   }
@@ -661,9 +659,8 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
         double potnm = cond[i]->GetDouble("potnm");
         if (step_>1)
         {
-          double omega = dta_/dtp_;
-          double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
-          double fact2 = -(omega*omega)/(1+ (2.0*omega));
+          double fact1 = 4.0/3.0;
+          double fact2 = -1.0/3.0;
           pothist= fact1*potn + fact2*potnm;
         }
         else

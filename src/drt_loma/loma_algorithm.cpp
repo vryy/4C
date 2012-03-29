@@ -111,8 +111,11 @@ LOMA::Algorithm::Algorithm(
     std::vector<Teuchos::RCP<const Epetra_Map> > dofrowmaps;
 
     // insert actual (zeroth) map of the discretization: first fluid, then scatra
-    dofrowmaps.push_back(FluidField().DofRowMap(0));
-    dofrowmaps.push_back(ScaTraField().DofRowMap(0));
+    {
+      dofrowmaps.push_back(FluidField().DofRowMap(0));
+      const Epetra_Map* dofrowmapscatra = (ScaTraField().Discretization())->DofRowMap(0);
+      dofrowmaps.push_back(Teuchos::rcp(dofrowmapscatra, false));
+    }
 
     // check existence of elements
     if (dofrowmaps[0]->NumGlobalElements()==0) dserror("No fluid elements!");

@@ -126,8 +126,8 @@ public:
 
   //! set time and step value
   void SetTimeStep(
-    double time = 0.0, //!< new time value
-    int step = 0       //!< new step value
+    double time, //!< new time value
+    int step     //!< new step value
     )
   {
     time_ = time;
@@ -377,8 +377,8 @@ public:
 
   //! output of all electrode information to screen and/or file (default: 2x true)
   void OutputElectrodeInfo(
-    bool printtoscreen = true,  //!< ?
-    bool printtofile = true     //!< ?
+    bool printtoscreen = true,  //!< flag for printing information to screen
+    bool printtofile = true     //!< flag for printing information to file
   );
 
   //! output of electrode information for a single boundary condition
@@ -465,44 +465,11 @@ public:
   //! @name functions used for reinitialization of level sets
   /*========================================================================*/
 
-  //! call different reinitialization techniques based on solving the sussman equation
-  bool CallReinitialization();
-
-  //! do time integration for reinitialization (time loop)
-  void TimeLoop_Reinit();
-
   //! update the solution after reinitialization
   virtual void UpdateReinit() = 0;
 
   /// routine to return scalar field phi at time step n
   Teuchos::RCP<Epetra_Vector> PhiReinitStart() { return phistart_; }
-
-//<<<<<<< .mine
-////  /// routine to set phi vectors due to reinitialization
-////  void SetPhinp(Teuchos::RCP<Epetra_Vector> phinp);
-//
-//  /// routine to set phi vectors due to reinitialization
-//  void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
-//
-
-//
-//  /// routine to check for steady state due to reinitialization
-//=======
-//  //! check for steady state due to reinitialization
-//>>>>>>> .r15878
-//  void CheckSteadyState(
-//    double&    Gradient_Error_old, //!< gradient error at old time step
-//    bool&      STOP                //!< has the reinit procedure to be stopped
-//  );
-
-  //! evaluate integrated error norm for reinitialization stop criterion
-  double EvaluateGradientNormError();
-
-  //! output to file for reinitialized scatra field
-  void OutputReinit(
-    const int    globalstep, //!< ?
-    const double globaltime  //!< ?
-  );
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
@@ -518,13 +485,7 @@ public:
   //! @name  obsolete or unused methods - to be deleted soon (at noon)!!!
   /*========================================================================*/
 
-  //! return dof map of vector of unknowns
-  Teuchos::RCP<const Epetra_Map> DofRowMap();
-
-  //! return dof map of vector of unknowns for multiple dofsets
-  Teuchos::RCP<const Epetra_Map> DofRowMap(
-    unsigned nds //!< ?
-  );
+  // nothing here at the moment
 
   /*========================================================================*/
 
@@ -1092,7 +1053,7 @@ protected:
   bool reinitswitch_;
 
   //! boolian if a reinitialization step is accepted or not
-  bool reinitialization_accepted_;
+ // bool reinitialization_accepted_;
 
   /*========================================================================*/
   //! @name not classified variables - to be kept clean!!!
@@ -1117,9 +1078,6 @@ protected:
   /*========================================================================*/
   //! @name obsolete or unused variables - to be deleted soon (at noon)!!!
   /*========================================================================*/
-
-  //! time step size
-  double dtp_;
 
   //! flag for potential Neumann inflow boundary condition
   bool neumanninflow_;

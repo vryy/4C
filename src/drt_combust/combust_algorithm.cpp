@@ -2959,8 +2959,7 @@ void COMBUST::Algorithm::Redistribute()
       {
         if(Comm().MyPID()==0)
           cout << "done\nRedistributing ScaTra Reinit Discretization                         ... " << flush;
-
-        ScaTraReinitField().Redistribute(newnodegraph);
+        dserror("Implement a reinit_pde_->Redistribute() method for pde_reinitialization class if necessary");
       }
 
       if(Comm().MyPID()==0)

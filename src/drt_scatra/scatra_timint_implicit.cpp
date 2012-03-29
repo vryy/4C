@@ -134,7 +134,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   c_(Teuchos::null),
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
-  dtp_      (params->get<double>("TIMESTEP")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
@@ -1244,11 +1243,6 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     Output();
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
 
   } // while
 
