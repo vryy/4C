@@ -3603,25 +3603,26 @@ void FLD::XFluidFluid::SetElementTimeParameter()
 /// return time integration factor
 double FLD::XFluidFluid::TimIntParam() const
 {
-  double retval = 1.0;
+  double retval = 0.0;
   switch (TimIntScheme())
   {
   case INPAR::FLUID::timeint_afgenalpha:
   case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_npgenalpha:
-    retval = alphaF_;
+    // this is the interpolation weight for quantities from last time step
+    retval = 1.0 - alphaF_;
   break;
   case INPAR::FLUID::timeint_one_step_theta:
-    // this is the point where OST is evaluated
-    retval = 1.0;
+    // this is the interpolation weight for quantities from last time step
+    retval = 0.0;
   break;
   case INPAR::FLUID::timeint_bdf2:
-    // this is the point where bdf2 is evaluated
-    retval = 1.0;
+    // this is the interpolation weight for quantities from last time step
+    retval = 0.0;
   break;
   case INPAR::FLUID::timeint_stationary:
-    // this is the point where stat. is evaluated
-    retval = 1.0;
+    // this is the interpolation weight for quantities from last time step
+    retval = 0.0;
   break;
   default:
     dserror("Unknown time integration scheme");

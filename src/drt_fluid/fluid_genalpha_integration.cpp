@@ -3420,4 +3420,29 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::ExtrapolateEndPoint
   return vecnp;
 }
 
+// -------------------------------------------------------------------
+// return time integration factor                    (mayr.mt 03/2012)
+// -------------------------------------------------------------------
+double FLD::FluidGenAlphaIntegration::TimIntParam() const
+{
+  double retval = 0.0;
+  switch (TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+    // this is the interpolation weight for quantities from last time step
+    retval = 1.0 - alphaF_;
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
+  case INPAR::FLUID::timeint_stationary:
+    dserror("OST, BDF2 and stationary time integration parameters are not defined in gen-alpha.");
+  default:
+    dserror("Unknown time integration scheme");
+  break;
+  }
+  return retval;
+}
+
 #endif

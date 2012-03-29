@@ -610,35 +610,10 @@ public:
   for this generalized alpha implementation
   */
   double ResidualScaling() const { return density_; }
+
   /// return time integration factor
-  double TimIntParam() const
-  {
-    double retval = 1.0;
-    switch (TimIntScheme())
-    {
-    case INPAR::FLUID::timeint_afgenalpha:
-    case INPAR::FLUID::timeint_gen_alpha:
-    case INPAR::FLUID::timeint_npgenalpha:
-      retval = alphaF_;
-    break;
-    case INPAR::FLUID::timeint_one_step_theta:
-      // this is the point where OST is evaluated
-      retval = 1.0;
-    break;
-    case INPAR::FLUID::timeint_bdf2:
-      // this is the point where bdf2 is evaluated
-      retval = 1.0;
-    break;
-    case INPAR::FLUID::timeint_stationary:
-      // this is the point where stat. is evaluated
-      retval = 1.0;
-    break;
-    default:
-      dserror("Unknown time integration scheme");
-    break;
-    }
-    return retval;
-  }
+  double TimIntParam() const;
+
   /*!
   \brief return current time
   */
