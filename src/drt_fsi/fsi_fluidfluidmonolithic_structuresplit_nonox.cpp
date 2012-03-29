@@ -165,12 +165,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupRHS");
 
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
-  double cc = 0.0;
-  double dd = 1.0;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
+  double ftiparam = FluidField().TimIntParam();
 
   SetupVector(f,
               StructureField().RHS(),
@@ -222,7 +220,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 
     double scale     = FluidField().ResidualScaling();
 
-    veln->Scale((dd/bb)*(1./scale));
+    veln->Scale(((1.0-ftiparam)/(1.0-stiparam))*(1./scale));
 
     // we need a temporary vector with the whole fluid dofs where we
     // can insert veln which has the embedded dofrowmap into it
@@ -304,12 +302,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
-  double cc = 0.0;
-  double dd = 1.0;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
+  double ftiparam = FluidField().TimIntParam();
 
   // Uncomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
@@ -324,14 +320,14 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
                    ADAPTER::CouplingMasterConverter(coupsf),
                    systemmatrix_->Matrix(0,1));
   (*sggtransform_)(s->Matrix(1,1),
-                   (dd/bb)*1./(scale*timescale),
+                   ((1.0-ftiparam)/(1.0-stiparam))*1./(scale*timescale),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    *f,
                    true,
                    true);
   (*sgitransform_)(s->Matrix(1,0),
-                   (dd/bb)*(1./scale),
+                   ((1.0-ftiparam)/(1.0-stiparam))*(1./scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    systemmatrix_->Matrix(1,0));
 
@@ -554,12 +550,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
                                                           Teuchos::RCP<const Epetra_Vector> av,
                                                           double fluidscale)
 {
-  // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-  // as soon as the 'new' adapter is working.
-  double aa = 0.0;//0.444444444444;
-  double bb = 1.0-aa;
-  double cc = 0.0;
-  double dd = 1.0;
+  // get time integration parameters of structure an fluid time integrators
+  // to enable consistent time integration among the fields
+  double stiparam = StructureField().TimIntParam();
+  double ftiparam = FluidField().TimIntParam();
 
   // structure inner
   Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface()->ExtractOtherVector(sv);
@@ -576,12 +570,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
     // modfv: whole embedded fluid map but entries at fsi dofs
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
 
-    // modfv = modfv * 1/fluidscale * dd/bb
-    modfv->Scale( 1./fluidscale*dd/bb);
+    // modfv = modfv * 1/fluidscale * (1.0-ftiparam)/(1.0-stiparam)
+    modfv->Scale( 1./fluidscale*(1.0-ftiparam)/(1.0-stiparam));
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modfv->Update(-cc+aa*dd/bb, *StructToFluid(lambda_), 1.0);
+      modfv->Update(-ftiparam+stiparam*(1.0-ftiparam)/(1.0-stiparam), *StructToFluid(lambda_), 1.0);
 
     // we need a temporary vector with the whole fluid dofs where we
     // can insert veln which has the embedded dofrowmap into it
@@ -867,12 +861,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 /*----------------------------------------------------------------------*/
  void FSI::FluidFluidMonolithicStructureSplitNoNOX::RecoverLagrangeMultiplier()
  {
-   // Set interpolation parameters here (only temporarily --> there will be an automated procedure
-   // as soon as the 'new' adapter is working.
-   double aa = 0.0;//0.444444444444;
-   double bb = 1.0-aa;
-   double cc = 0.0;
-   double dd = 1.0;
+   // get time integration parameters of structural time integrator
+   // to enable consistent time integration among the fields
+   double stiparam = StructureField().TimIntParam();
 
    // compute the product S_{\Gamma I} \Delta d_I
    Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField().Interface()->OtherMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
@@ -886,9 +877,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
    /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
     *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
     */
-   lambda_->Update(1.0, *fgcur_, -aa/bb);
+   lambda_->Update(1.0, *fgcur_, -stiparam/(1.0-stiparam));
    lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
-   lambda_->Scale(1/bb); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
+   lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
 
    return;
 }
