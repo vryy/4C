@@ -878,11 +878,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &sdyn);
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
-  // Iteration
-  setStringToIntegralParameter<int>("ITERATION","full","unused",
-                               tuple<std::string>("full","Full","FULL"),
-                               tuple<int>(1,1,1),
-                               &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
                   "tolerance in the displacement norm for the newton iteration",
