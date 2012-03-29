@@ -201,8 +201,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   // extra parameters for poroelasticity
   if (genprob.probtyp == prb_poroelast)
   {
-	  //set parameters for poroelasticity
-	  sdyn->set<double>("INITPOROSITY", prbdyn.get<double>("INITPOROSITY"));
+    //set parameters for poroelasticity
+    sdyn->set<double>("INITPOROSITY", prbdyn.get<double>("INITPOROSITY"));
   }
 
   // create a solver

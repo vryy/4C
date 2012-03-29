@@ -46,10 +46,11 @@ namespace MAT
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+        //! actual material
+        Teuchos::RCP<MAT::Material> mat_;
+
         /// @name material parameters
         //@{
-
-        Teuchos::RCP<MAT::Material> mat_;
 
         int matid_;
 

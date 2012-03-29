@@ -1792,13 +1792,6 @@ void STR::TimInt::ApplyForceInternal
   ParameterList p;
   // action for elements
   std::string action = "calc_struct_internalforce";
-  const std::string prbtype = DRT::Problem::Instance()->ProblemName();
-  if( prbtype == "poroelast")
-  {
-	  action = "calc_poroelast_internalforce";
-	  //porelasticity specific parameters
-	  p.set("initporosity", initporosity_);
-  }
 
   p.set("action", action);
   // other parameters that might be needed by the elements
@@ -1807,14 +1800,12 @@ void STR::TimInt::ApplyForceInternal
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
-  if( prbtype == "poroelast")
+  if(fluidveln_!=Teuchos::null) //porelasticity specific parameters
   {
-	  discret_->SetState("velocity", vel);
-	  if(fluidveln_!=Teuchos::null)
-	    discret_->SetState(1,"fluidvel",fluidveln_);
-	  else
-		  dserror("no fluid velocity given!");
+      discret_->SetState(1,"fluidvel",fluidveln_);
+      p.set("initporosity", initporosity_);
   }
+
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
   // set the temperature for the coupled problem
@@ -2008,14 +1999,14 @@ void STR::TimInt::PoroApplyForceStiffInternal
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  const std::string action = "calc_poroelast_nlnstiff";
+  const std::string action = "calc_struct_nlnstiff";
   //const std::string action = "calc_struct_nlnstiff";
   p.set("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
-  //porelasticity specific parameters
   p.set("initporosity", initporosity_);
+
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
@@ -2029,8 +2020,10 @@ void STR::TimInt::PoroApplyForceStiffInternal
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
     discret_->SetState(1,"temperature",tempn_);
-  if(fluidveln_!=Teuchos::null)
+  if(fluidveln_!=Teuchos::null)    //porelasticity specific parameters
+  {
     discret_->SetState(1,"fluidvel",fluidveln_);
+  }
   if(dismatn_!=null)
     discret_->SetState(0,"material displacement",dismatn_);
   discret_->Evaluate(p, stiff, stiff_rea, fint, Teuchos::null, Teuchos::null);

@@ -58,11 +58,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const string elet
                                                             const int id,
                                                             const int owner )
 {
-  if ( eletype=="SOLIDH8" )
+  if (eletype == "SOLIDH8")
   {
     Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
     return ele;
   }
+
   return Teuchos::null;
 }
 
@@ -103,6 +104,41 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
     ;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (protected)                                            maf 04/07|
+ |                                                                       |
+ *----------------------------------------------------------------------*/
+/*
+DRT::ELEMENTS::So_hex8::So_hex8():
+data_(),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
+time_(0.0)
+{
+  kintype_ = soh8_totlag;
+  eastype_ = soh8_easnone;
+  neas_ = 0;
+  invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
+  detJ_.resize(NUMGPT_SOH8, 0.0);
+  app_=structure;
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params!=Teuchos::null)
+  {
+    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    pstime_ = pslist.get<double>("PRESTRESSTIME");
+  }
+
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
+
+  return;
+}
+*/
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|

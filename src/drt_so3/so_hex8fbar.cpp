@@ -84,6 +84,7 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition( std::map<std::strin
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) :
+DRT::Element(id,owner),
 DRT::ELEMENTS::So_hex8(id,owner)
 {
   if (pstype_==INPAR::STR::prestress_mulf)
@@ -96,6 +97,7 @@ DRT::ELEMENTS::So_hex8(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(const DRT::ELEMENTS::So_hex8fbar& old) :
+DRT::Element(old),
 DRT::ELEMENTS::So_hex8(old)
 {
   return;

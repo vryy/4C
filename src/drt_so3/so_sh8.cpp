@@ -88,6 +88,7 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner) :
+DRT::Element(id,owner),
 DRT::ELEMENTS::So_hex8(id,owner)
 {
   thickdir_ = globx;
@@ -102,6 +103,7 @@ DRT::ELEMENTS::So_hex8(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old) :
+DRT::Element(old),
 DRT::ELEMENTS::So_hex8(old)
 {
   return;

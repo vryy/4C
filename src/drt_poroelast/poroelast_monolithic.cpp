@@ -1092,7 +1092,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<
     }
   } // end of switch(strmethodname_)
 
-  const std::string action = "calc_poroelast_structurecoupling";
+  const std::string action = "calc_struct_multidofsetcoupling";
   sparams.set("action", action);
   // other parameters that might be needed by the elements
   sparams.set("delta time", Dt());
