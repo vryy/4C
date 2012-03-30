@@ -4,17 +4,11 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15262
 //
-// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE
-//
-// Monolithic FSI test. Both fluid and structure use
-// backward Euler time integration. The fluid field is solved using
-// one-step-theta algorithm.
-//
-==================================================================
-General Data File C_CARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-Ueberstroemter_Hohlraum_iNPUT_tESTING
+Monolithic Mortar FSI: 2D Driven cavity with flexible bottom
+FSI:        iter_mortar_monolithicfluidsplit
+Fluid:      One_Step_Theta
+Structure:  GenAlpha
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2080
 NODES                           2244
@@ -27,6 +21,7 @@ NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDisVelAcc
@@ -45,7 +40,6 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-10
 TOLRES                          1.0E-10
 MAXITER                         50
-LINEAR_SOLVER                   2
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          ImrLike
 BETA                            0.5
@@ -53,6 +47,7 @@ GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
 ---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1
@@ -69,7 +64,6 @@ NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-LINEAR_SOLVER                   3
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent
@@ -82,12 +76,12 @@ CSTAB                           cstab_qs                        // no_cstab csta
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 -----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         41
 MAXTIME                         4.0
 ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
-LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.1
@@ -95,13 +89,7 @@ NUMSTEP                         10
 IALE                            Pseudo_Structure
 UPRES                           1
 RESTARTEVRY                     1
-// COUPALGO iter_mortar_monolithicstructuresplit
-COUPALGO                        iter_monolithicfluidsplit
-//COUPALGO                      iter_stagg_AITKEN_rel_param
-//COUPALGO                      iter_stagg_steep_desc
-//PREDICTOR                     d(n)
-//PREDICTOR                     d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-//PREDICTOR                     d(n)+dt*v(n)
+COUPALGO                        iter_mortar_monolithicfluidsplit
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0
