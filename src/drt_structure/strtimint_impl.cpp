@@ -1616,12 +1616,9 @@ void STR::TimIntImpl::PTC()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->ResetStartTime();
   
-  double fresmnorm = normfres_;
-  double disinorm  = normdisi_;
   double ptcdt     = ptcdt_;
   double nc; fres_->NormInf(&nc);
   double dti = 1/ptcdt;
-  printf("fresmnorm %10.5e disinorm %10.5e nc %10.5e\n",fresmnorm,disinorm,nc);
 
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
