@@ -9,7 +9,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "fsi_monolithicinterface.H"
 #include "fsi_monolithic.H"
 
 #include "../drt_inpar/inpar_fsi.H"

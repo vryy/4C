@@ -23,7 +23,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-//#include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/FSIStructureWrapper.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
