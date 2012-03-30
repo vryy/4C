@@ -271,4 +271,45 @@ int COMM_UTILS::NestedParGroup::LPID(int GPID)
 }
 
 
+/*----------------------------------------------------------------------*
+ | broadcast all discretizations from bcast to all other groups gee 03/12 |
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
+{
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  int group = problem->GetNPGroup()->GroupId();
+  int ngroups = problem->GetNPGroup()->NumGroups();
+  NP_TYPE npType = problem->GetNPGroup()->NpType();
+  
+  int sbcaster = -1;
+  int bcaster = -1;
+  int numfield = 0;
+  vector<int> numdis;
+  if (group==bgroup && lcomm->MyPID()==0) // only proc 0 of group bgroup
+  {
+    sbcaster = problem->GetNPGroup()->GPID(0);
+    numfield = problem->NumFields();
+    numdis.resize(numfield);
+    for (int i=0; i<numfield; ++i) 
+    {
+      numdis[i] = problem->NumDis(i);
+      if (!lcomm->MyPID()) printf("bcaster %d bgroup %d numfield %d numdis %d\n",sbcaster,bgroup,numfield,numdis[i]);
+    }
+  }
+  gcomm->MaxAll(&sbcaster,&bcaster,1);
+  gcomm->Broadcast(&numfield,1,bcaster);
+  numdis.resize(numfield);
+  gcomm->Broadcast(&numdis[0],numfield,bcaster);
+  printf("gpid %d numfield %d numdis %d\n",gcomm->MyPID(),numfield,numdis[0]);
+
+  
+
+
+  
+  return;
+}
+
+
 /*----------------------------------------------------------------------*/

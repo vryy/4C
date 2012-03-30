@@ -42,6 +42,9 @@ namespace COMM_UTILS
 {
   //! create a local and a global communicator for the problem
   void CreateComm(int argc, char** argv);
+  
+  //! distribute discretizations from one group to the others
+  void BroadcastDiscretizations(const int bgroup);
 
   //! transform Epetra_Comm to Teuchos::Comm, RCP version
   template<class datatype>
