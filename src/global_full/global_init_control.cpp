@@ -99,8 +99,8 @@ void ntaini_ccadiscret(
   case copy_dat_file:
   {
     // TODO: to be removed after implementation has been done
-    if(npType == copy_dat_file)
-      dserror("copyDatFile is not yet available for -nptype=");
+    //if(npType == copy_dat_file)
+    //  dserror("copyDatFile is not yet available for -nptype=");
     if(inoutargs > 4)
       dserror("You specified too many arguments (%d). A maximum of four args is allowed",inoutargs);
 

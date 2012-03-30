@@ -37,7 +37,7 @@ void ntam(
     char               *argv[]
     )
 {
-  Teuchos::RCP<Epetra_Comm> lcomm = DRT::Problem::Instance()->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = DRT::Problem::Instance()->GetNPGroup()->GlobalComm();
 
   double   t0,ti,tc;
 
@@ -55,7 +55,7 @@ void ntam(
   ntainp_ccadiscret(inputfile_name,outputfile_kenner,restartfile_kenner);
 
   ti=cputime()-t0;
-  if (lcomm->MyPID()==0)
+  if (gcomm->MyPID()==0)
   {
     printf("\nTotal CPU Time for INPUT:       %10.3E sec \n\n",ti);
   }
@@ -66,7 +66,7 @@ void ntam(
   ntacal();
 
   tc=cputime()-t0;
-  if (lcomm->MyPID()==0)
+  if (gcomm->MyPID()==0)
   {
     printf("\nTotal CPU Time for CALCULATION: %10.3E sec \n\n",tc);
   }

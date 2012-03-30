@@ -28,6 +28,9 @@ void ntainp_ccadiscret(
 
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  int group = problem->GetNPGroup()->GroupId();
+  NP_TYPE npType = problem->GetNPGroup()->NpType();
 
   // create error files
   problem->OpenErrorFile(*lcomm,outputfile_kenner);
@@ -44,20 +47,52 @@ void ntainp_ccadiscret(
   // input of materials
   problem->ReadMaterials(reader);
 
-  // input of fields
-  problem->ReadFields(reader);
+  switch(npType)	
+  {
+  case no_nested_parallelism:
+  case every_group_read_dat_file:
+  case separate_dat_files:
+    // input of fields
+    problem->ReadFields(reader);
 
-  // input of materials of cloned fields (if needed)
-  problem->ReadClonedMaterials(reader);
+    // input of materials of cloned fields (if needed)
+    problem->ReadClonedMaterials(reader);
 
-  // read all types of geometry related conditions (e.g. boundary conditions)
-  // Also read time and space functions and local coord systems
-  problem->ReadConditions(reader);
+    // read all types of geometry related conditions (e.g. boundary conditions)
+    // Also read time and space functions and local coord systems
+    problem->ReadConditions(reader);
 
-  // read all knot information for isogeometric analysis
-  // and add it to the (derived) nurbs discretization
-  problem->ReadKnots(reader);
+    // read all knot information for isogeometric analysis
+    // and add it to the (derived) nurbs discretization
+    problem->ReadKnots(reader);
+  break;
+  case copy_dat_file:
+    // group 0 only reads discretization etc
+    if (group==0) 
+    {
+      // input of fields
+      problem->ReadFields(reader);
 
+      // input of materials of cloned fields (if needed)
+      problem->ReadClonedMaterials(reader);
+
+      // read all types of geometry related conditions (e.g. boundary conditions)
+      // Also read time and space functions and local coord systems
+      problem->ReadConditions(reader);
+
+      // read all knot information for isogeometric analysis
+      // and add it to the (derived) nurbs discretization
+      problem->ReadKnots(reader);
+    }
+    gcomm->Barrier();
+    COMM_UTILS::BroadcastDiscretizations(0); // group 0 broadcasts the discretizations
+    
+    dserror("not completely implemented");
+  break;
+  default:
+    dserror("nptype (nested parallelity type) not recognized");
+  }
+  
   // all reading is done at this point!
 
   // create control file for output and read restart data if required
