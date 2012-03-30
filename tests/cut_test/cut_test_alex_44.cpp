@@ -10,6 +10,7 @@
 #include "../../src/drt_cut/cut_meshintersection.H"
 #include "../../src/drt_cut/cut_tetmeshintersection.H"
 #include "../../src/drt_cut/cut_options.H"
+#include "../../src/drt_cut/cut_volumecell.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -162,7 +163,34 @@ void test_alex44()
 
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.Cut( true, "Tessellation" );
+
+  std::vector<double> tessVol,momFitVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    tessVol.push_back(vc->Volume());
+  }
+
   intersection.Status();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+              i!=other_cells.end();
+              ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,"Tessellation");
+    momFitVol.push_back(vc->Volume());
+  }
+
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    if(fabs(tessVol[i]-momFitVol[i])>1e-5)
+      dserror("The volumes calculated by momentFitting and Tessellation are not the same");
+  }
 }
 

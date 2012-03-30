@@ -9,6 +9,8 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
   std::vector<plain_facet_set::const_iterator> facetIterator;
   plain_facet_set::const_iterator IteratorRefFacet;
 
+  ListFacets(facetIterator,RefPlaneEqn,IteratorRefFacet);
+
   //Try to call the new function instead, and if necessary delete the unused variables
 
   /*bool IsRefFacet = false;
@@ -62,6 +64,12 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 
   /*std::cout<<"the equation of the reference plane is "<<RefPlaneEqn[0]<<"x+"<<
       RefPlaneEqn[1]<<"y+"<<RefPlaneEqn[2]<<"z = "<<RefPlaneEqn[3]<<"\n";*/
+
+#ifdef DEBUGCUTLIBRARY
+  DivengenceCellsGMSH(IteratorRefFacet,facetIterator );
+#endif
+
+
   dserror("one volumecell done");
 
   Teuchos::RCP<DRT::UTILS::GaussPoints> gp1;
@@ -70,11 +78,11 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 
 //Identify the list of facets which need to be triangulated, and also get the reference facet that will be used in xfluid part
 void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_iterator>& facetIterator,
-                                             std::vector<double>& RefPlaneEqn )
+                                             std::vector<double>& RefPlaneEqn,
+                                             plain_facet_set::const_iterator& IteratorRefFacet )
 {
   const plain_facet_set & facete = volcell_->Facets();
 
-  plain_facet_set::const_iterator IteratorRefFacet;
   bool IsRefFacet = false;
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
@@ -107,4 +115,20 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     else
       continue;
   }
+}
+
+void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
+                                                      std::vector<plain_facet_set::const_iterator>& facetIterator )
+{
+  std::string filename="side";
+  std::ofstream file;
+
+  static int sideno = 0;
+  sideno++;
+  std::stringstream out;
+  out <<"divergenceCells"<<sideno<<".pos";
+  filename = out.str();
+  file.open(filename.c_str());
+
+  volcell_->DumpGmsh(file);
 }

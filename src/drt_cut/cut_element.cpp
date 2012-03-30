@@ -462,6 +462,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
     VolumeCell * vc = *cells_.begin();
     if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
     {
+      CalculateVolumeOfCells();
       return;
     }
   }
@@ -470,6 +471,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   {
     if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
     {
+      CalculateVolumeOfCells();
       return;
     }
   }
@@ -523,6 +525,8 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
 
   TetMesh tetmesh( points, facets_, false );
   tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );
+
+  CalculateVolumeOfCells();
 }
 
 void GEO::CUT::Element::RemoveEmptyVolumeCells()
@@ -707,11 +711,32 @@ void GEO::CUT::Element::DumpFacets()
   }
 }
 
+void GEO::CUT::Element::CalculateVolumeOfCells()
+{
+  const plain_volumecell_set& volcells = VolumeCells();
+  for(plain_volumecell_set::const_iterator i=volcells.begin();i!=volcells.end();i++)
+  {
+    VolumeCell *vc1 = *i;
+    plain_integrationcell_set ics;
+    vc1->GetIntegrationCells(ics);
+
+    double volume = 0;
+    for ( plain_integrationcell_set::iterator j=ics.begin(); j!=ics.end(); ++j )
+    {
+      IntegrationCell * ic = *j;
+      volume += ic->Volume();
+    }
+
+    vc1->SetVolume(volume);
+  }
+}
+
 void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype )
 {
   if ( not active_ )
     return;
 
+  //When the cut side touches the element the shape of the element is retained
   if(cells_.size()==1)
   {
 	  VolumeCell * vc = *cells_.begin();

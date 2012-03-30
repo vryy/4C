@@ -293,7 +293,7 @@ void GEO::CUT::VolumeCell::NewArbitraryCell( Mesh & mesh, Facet * f, const std::
   f->NewArbitraryCell( mesh, this, x, bcells_, gp, normal );
 }
 
-double GEO::CUT::VolumeCell::Volume()
+/*double GEO::CUT::VolumeCell::Volume()
 {
   double volume = 0;
   for ( plain_integrationcell_set::iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
@@ -302,7 +302,7 @@ double GEO::CUT::VolumeCell::Volume()
     volume += ic->Volume();
   }
   return volume;
-}
+}*/
 
 int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape )
 {
@@ -923,7 +923,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 	int BaseNos=84;// number of base functions to be used in the integration
   VolumeIntegration vc_inte(this,elem,posi,BaseNos); //change the number of equations
 
-  std::cout<<"volume"<<"\n";
+  /*std::cout<<"volume"<<"\n";
   const plain_facet_set & facete = Facets();
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
@@ -935,7 +935,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
           vector<double> coords = *k;
           std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
       }
-  }
+  }*/
 
   weights_ = vc_inte.compute_weights();
   gausPts_ = vc_inte.getGaussPointLocation();

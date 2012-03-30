@@ -44,7 +44,6 @@ double LineIntegration::integrate_line()
       LINALG::Matrix<2,1>normaltemp,actCoord;
       double drs=0.0;
       Transform<DRT::Element::line2>(end_pts_,eta(0,0),actCoord,normaltemp,drs);
-      std::cout<<"the integration coordinates are= "<<actCoord(0,0)<<"\t"<<actCoord(1,0)<<"\t"<<weight*drs<<"\n";
 
       if(bcellInt_==false)
       {

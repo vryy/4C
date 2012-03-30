@@ -47,7 +47,37 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
   }
 
-    return rhs_mom;
+  //set the volume of this volumecell
+  //the volume from local coordinates is converted in terms of global coordinates
+  double volGlobal=0.0;
+  switch ( elem1_->Shape() )
+  {
+    case DRT::Element::hex8:
+    {
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex8>(rhs_mom(0),"LocalToGlobal");
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::tet4>(rhs_mom(0),"LocalToGlobal");
+      break;
+    }
+    case DRT::Element::wedge6:
+    {
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::wedge6>(rhs_mom(0),"LocalToGlobal");
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::pyramid5>(rhs_mom(0),"LocalToGlobal");
+      break;
+    }
+    default:
+      throw std::runtime_error( "unsupported integration cell type" );
+  }
+  volcell_->SetVolume(volGlobal);
+
+  return rhs_mom;
 }
 
 /*-------------------------------------------------------------------------------------------------*

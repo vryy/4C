@@ -2,6 +2,7 @@
 #define CUT_ELEMENT_H
 
 #include "cut_side.H"
+#include "cut_integrationcell.H"
 
 namespace GEO
 {
@@ -72,7 +73,11 @@ public:
    */
   virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz ) = 0;
 
-  //virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
+  /*!
+  \brief Find the scalar value at a particular point inside the element specified by its local coordinates rst. ns
+  contains the value of the scalar at the corner nodes of the element
+   */
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
 
   /*!
   \brief Cutting the element with the given cut side
@@ -183,6 +188,40 @@ public:
   \brief Inset this volumecell to this element
    */
   void AssignOtherVolumeCell( VolumeCell * vc ) { cells_.insert( vc ); }
+
+  /*!
+  \brief Calculate the volume of all the volumecells associated with this element
+   */
+  void CalculateVolumeOfCells();
+
+  /*!
+  \brief Transform the scalar variable either from local coordinates to the global coordinates or the other way specified by
+  TransformType which can be "LocalToGlobal" or "GlobalToLocal"
+   */
+  template <DRT::Element::DiscretizationType distype>
+  double ScalarFromLocalToGlobal(double scalar, std::string transformType)
+  {
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    LINALG::Matrix<3,nen> xyze;
+    LINALG::Matrix<3,1> xei (0.0); //the determinant of the Jacobian is independent of the considered point
+    Coordinates(xyze.A());
+
+    LINALG::Matrix<3,nen> deriv;
+    LINALG::Matrix<3,3> xjm;
+    DRT::UTILS::shape_function_deriv1<distype>(xei,deriv);
+
+    xjm.MultiplyNT( deriv, xyze );
+    double det = xjm.Determinant();
+
+    double VarReturn=0.0;
+    if(transformType=="LocalToGlobal")
+      VarReturn = scalar*det;
+    else if(transformType=="GlobalToLocal")
+      VarReturn = scalar/det;
+    else
+      dserror("Undefined transformation option");
+    return VarReturn;
+  }
 
 protected:
 

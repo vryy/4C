@@ -152,9 +152,9 @@ public:
   void SimplifyIntegrationCells( Mesh & mesh );
 
   /*!
-  \brief Calculate the cell volume from integrationcells. Works only with tessellation
+  \brief Return the volume of the cell
    */
-  double Volume();
+  double Volume(){return volume_;};
 
   void TestSurface();
 
@@ -183,6 +183,12 @@ public:
   */
   Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();
  // void GaussPointsFitting();
+
+  /*!
+  \brief Set the volume of this cell
+   */
+  void SetVolume(double vol){volume_=vol;}
+
 private:
 
   void SetTetPoints( const int * totet4,
@@ -216,6 +222,9 @@ private:
   static int hex8totet4[5][4];
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
+
+  //volume of this volumecell
+  double volume_;
 
  //store the Gauss point weights and location for volumecells when moment fitting equations are
  //used to arrive at them

@@ -540,14 +540,15 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(Mesh &mesh)
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
-  std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
+  //std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
   //DRT::UTILS::GaussIntegration gi_temp;
   for(plain_boundarycell_set::iterator i=divCells.begin();i!=divCells.end();i++)
   {
     BoundaryCell* bcell = *i;
-    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 12 );
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 9 );
+
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi_temp.begin(); iquad!=gi_temp.end(); ++iquad )
     {
       double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
@@ -572,6 +573,10 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(Mesh &mesh)
       }
       double wei = iquad.Weight()*drs;
 
+      cgp->Append(x_gp_glo,wei);
+
+
+
       elem1_->LocalCoordinates(x_gp_glo,x_gp_loc);
 
       FacetIntegration bcellLocal(face1_,elem1_,position_,true,false);
@@ -588,6 +593,9 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(Mesh &mesh)
       cgp->Append(x_gp_loc,weiActual);
     }
   }
+
+  DRT::UTILS::GaussIntegration gi (cgp);
+  std::cout<<"num pts = "<<gi.NumPoints();
 }
 
 //generates integration rule for the considered facet
@@ -620,8 +628,8 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
     if(corners.size()==3)
       TemporaryTri3(corners, divCells);
 
-    else if(corners.size()==4)
-      TemporaryQuad4(corners, divCells);
+   /* else if(corners.size()==4)
+      TemporaryQuad4(corners, divCells);*/
 
     else
     {
