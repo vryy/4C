@@ -758,7 +758,7 @@ public:
   }
   void Update()
   {
-    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(TrueResidual());
+    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_->ExtractFSICondVector(TrueResidual());
 
     interfaceforcen_ = ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
 
@@ -792,23 +792,23 @@ public:
   }
   Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
   {
-    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_.ExtractFSICondVector(TrueResidual());
+    Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_->ExtractFSICondVector(TrueResidual());
 
     return ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
   }
   Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
   {
-    return interface_.ExtractFSICondVector(Velnp());
+    return interface_->ExtractFSICondVector(Velnp());
   }
   Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
   {
-    return interface_.ExtractFSICondVector(Veln());
+    return interface_->ExtractFSICondVector(Veln());
   }
   void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
   {
     // --------------------------------------------------
     // apply new Dirichlet values to velnp according to interface velocity
-    interface_.InsertFSICondVector(ivel,velnp_);
+    interface_->InsertFSICondVector(ivel,velnp_);
 
     // adjust accnp according to new Dirichlet values of velnp
     //
@@ -823,7 +823,7 @@ public:
     // this is very easy, but there are two dangers:
     // - We change ivel here. It must not be used afterwards.
     // - The algorithm must support the change of Dirichlet DOFs
-    AddDirichCond(interface_.FSICondMap());
+    AddDirichCond(interface_->FSICondMap());
   }
   void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
   {
@@ -870,7 +870,7 @@ public:
   }
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape()
   {
-    return interface_.ExtractFSICondVector(IntegrateInterfaceShape("FSICoupling"));
+    return interface_->ExtractFSICondVector(IntegrateInterfaceShape("FSICoupling"));
   }
   void UseBlockMatrix(bool splitmatrix)
   {
@@ -881,7 +881,7 @@ public:
   {
     const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
     Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
-    interface_.InsertFSICondVector(ivel,relax);
+    interface_->InsertFSICondVector(ivel,relax);
     LinearRelaxationSolve(relax);
     return ExtractInterfaceForces();
   }
@@ -904,11 +904,11 @@ public:
       return;
   };
   void Integrate() { GenAlphaTimeloop(); }
-  virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return Teuchos::rcp(&interface_, false); }
+  virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
   virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; }
   virtual void PrepareSolve()        { return; }
 
-  FLD::UTILS::MapExtractor               interface_;
+  Teuchos::RCP<FLD::UTILS::MapExtractor>               interface_;
   Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
   LINALG::MapExtractor                   meshmap_;
   Teuchos::RCP<DRT::Discretization>      dis_;

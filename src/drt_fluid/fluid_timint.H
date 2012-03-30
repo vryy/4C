@@ -137,7 +137,7 @@ public:
   virtual double TimIntParam() const = 0;
 
   /// communication object at the interface
-  virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes"); return Teuchos::null; }
+  virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes"); return Teuchos::null; }
 
   virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) {dserror("Not implemented in the base class, may be overridden by a subclass."); }
 

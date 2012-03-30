@@ -367,7 +367,7 @@ namespace ADAPTER {
     virtual double TimIntParam() const = 0;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
 
     /// return type of time integration scheme
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;

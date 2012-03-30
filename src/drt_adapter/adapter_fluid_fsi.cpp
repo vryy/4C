@@ -25,7 +25,9 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   dis_(dis),
   solver_(solver),
   params_(params),
-  output_(output)
+  output_(output),
+  interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+  meshmap_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
   // make sure
   if (fluid_ == null)
@@ -35,9 +37,6 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
-
-  interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
-  meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
 
   interface_->Setup(*dis);
   fluidimpl_->SetSurfaceSplitter(&(*interface_));

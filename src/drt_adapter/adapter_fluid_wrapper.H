@@ -178,7 +178,7 @@ namespace ADAPTER
     { return fluid_->TimeScaling(); }
     virtual double TimIntParam() const
     { return fluid_->TimIntParam(); }
-    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
     { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
     { return fluid_->TimIntScheme(); }

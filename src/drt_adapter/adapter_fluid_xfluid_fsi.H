@@ -63,7 +63,7 @@ namespace ADAPTER {
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();

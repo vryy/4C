@@ -73,7 +73,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 

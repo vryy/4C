@@ -77,7 +77,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 

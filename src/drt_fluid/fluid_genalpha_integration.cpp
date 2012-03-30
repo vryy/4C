@@ -345,19 +345,20 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // extra discretisation for mixed/hybrid Dirichlet conditions
   MHD_evaluator_=rcp(new FluidMHDEvaluate(discret_));
 
+  interface_ = rcp(new FLD::UTILS::MapExtractor());
   {
-    interface_.Setup(*actdis);
+    interface_->Setup(*actdis);
 
     // build inner velocity map
     // dofs at the interface are excluded
     // we use only velocity dofs and only those without Dirichlet constraint
     const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = DirichMaps();
     std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-    maps.push_back(interface_.OtherMap());
+    maps.push_back(interface_->OtherMap());
     maps.push_back(dbcmaps->OtherMap());
     innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
 
-    interfaceforcen_ = rcp(new Epetra_Vector(*(interface_.FSICondMap())));
+    interfaceforcen_ = rcp(new Epetra_Vector(*(interface_->FSICondMap())));
   }
 
 
@@ -2576,6 +2577,7 @@ void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
   break;
   default:
     dserror("Cannot calculate error. Unknown type of analytical test problem");
+  break;
   }
 
   return;
