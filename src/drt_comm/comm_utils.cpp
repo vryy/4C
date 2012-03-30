@@ -15,8 +15,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 01/12 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include <Epetra_MpiComm.h>
 #include <mpi.h>
 
@@ -274,4 +272,3 @@ int COMM_UTILS::NestedParGroup::LPID(int GPID)
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
