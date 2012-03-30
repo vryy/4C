@@ -42,7 +42,7 @@ TOLDISP                         1.0E-10
 TOLRES                          1.0E-10
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike                         // ImrLike TrLike
+GENAVG                          ImrLike
 BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.5

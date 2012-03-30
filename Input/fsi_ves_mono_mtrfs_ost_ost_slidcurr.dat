@@ -76,12 +76,6 @@ UZAWATOL                        5E-07
 NLNSOL                          fullnewton
 STC_LAYER                       2
 STC_SCALING                     No
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-GENAVG                          ImrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 ---------------------------------------------------------------FLUID DYNAMIC
