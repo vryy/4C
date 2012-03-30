@@ -220,8 +220,8 @@ public:
   //! return trueresidual
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  //! return flag for incremental solver ? rename to is_incremental_
-  bool Incremental() { return incremental_; }
+  //! return flag indicating if an incremental solution approach is used
+  bool IsIncremental() { return incremental_; }
 
   //! return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
@@ -576,11 +576,11 @@ protected:
 
   //! check convergence (or divergence) of nonlinear iteration
   bool AbortNonlinIter(
-    const int itnum,        //!< ?
-    const int itmax,        //!< ?
-    const double ittol,     //!< ?
-    const double abstolres, //!< ?
-    double& actresidual     //!< ?
+    const int itnum,        //!< current value of iteration step counter
+    const int itmax,        //!< maximum number of iteration steps
+    const double ittol,     //!< relative tolerance for increments
+    const double abstolres, //!< absolute tolerance for the residual norm
+    double& actresidual     //!< return value of the current residual
   );
 
   /*--- query and output ---------------------------------------------------*/
@@ -617,7 +617,7 @@ protected:
 
   //! write flux vectors to BINIO
   void OutputFlux(
-    Teuchos::RCP<Epetra_MultiVector> flux //!< ?
+    Teuchos::RCP<Epetra_MultiVector> flux //!< flux vector
   );
 
   /*========================================================================*/
@@ -670,20 +670,20 @@ protected:
 
   //! compute contribution of electrode kinetics to eq. system
   void EvaluateElectrodeKinetics(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< ?
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< ?
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
 
   //! update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate(
-    const bool init = false  //!< ?
+    const bool init = false  //!< initialization flag
   ) = 0;
 
   /*--- query and output ---------------------------------------------------*/
 
   //! check for negative values of concentrations (ELCH)
   void CheckConcentrationValues(
-    Teuchos::RCP<Epetra_Vector> vec //!< ?
+    Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
   );
 
   /*========================================================================*/
@@ -711,7 +711,9 @@ protected:
   /*--- calculate and update -----------------------------------------------*/
 
   //! scaling of AVM3-based subgrid-diffusivity matrix
-  void AVM3Scaling(Teuchos::ParameterList& eleparams);
+  void AVM3Scaling(
+      Teuchos::ParameterList& eleparams //!< parameter list
+  );
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -843,7 +845,7 @@ protected:
   //! maximum number of nonlinear iterations
   int itemax_;
 
-  //! time step size (for reinitialization methods this is a pseudo time step factor)
+  //! time step size (for reinitialization methods this is a pseudo time step length)
   double dta_;
 
   //! time measurement element

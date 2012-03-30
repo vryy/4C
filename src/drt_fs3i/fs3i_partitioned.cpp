@@ -237,7 +237,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
   // check that incremental formulation is used for scalar transport field,
   // according to structure and fluid field
-  if (scatravec_[0]->ScaTraField().Incremental() == false)
+  if (scatravec_[0]->ScaTraField().IsIncremental() == false)
     dserror("Incremental formulation required for partitioned FS3I computations!");
 
   // ensure that initial time derivative of scalar is not calculated

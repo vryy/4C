@@ -55,7 +55,7 @@ LOMA::Algorithm::Algorithm(
   samstart_     = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being
-  if (ScaTraField().Incremental() == false)
+  if (ScaTraField().IsIncremental() == false)
     dserror("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow

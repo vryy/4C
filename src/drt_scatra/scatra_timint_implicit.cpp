@@ -369,7 +369,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // subgrid-diffusivity(-scaling) vector
   // (used either for AVM3 approach or temperature equation
   //  with all-scale subgrid-diffusivity model)
-  subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
@@ -1884,17 +1885,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   return;
 } // ScaTraTimIntImpl::SetInitialField
 
-/*----------------------------------------------------------------------*
- | set phi vector due to reinitialization                  schott 05/11 |
- *----------------------------------------------------------------------*/
-// void SCATRA::ScaTraTimIntImpl::SetPhinp(Teuchos::RCP<Epetra_Vector> phinp)
-// defined in scalar_timint_reinitialization.cpp
-
-/*----------------------------------------------------------------------*
- | set phi vector due to reinitialization                  schott 05/11 |
- *----------------------------------------------------------------------*/
-// void SCATRA::ScaTraTimIntImpl::SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi)
-// defined in scalar_timint_reinitialization.cpp
 
 /*----------------------------------------------------------------------*
  | iterative update of concentrations                                   |
@@ -2309,8 +2299,12 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // add reinitialization specific time-integration parameters
   if (reinitswitch_) AddReinitializationParameters(eleparams);
 
-  // call loop over elements with subgrid-diffusivity(-scaling) vector
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
+  // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,subgrdiff_,Teuchos::null);
+  else
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+
   discret_->ClearState();
 
   //----------------------------------------------------------------------
