@@ -4,14 +4,11 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15257
 //
-// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE
-//
-==================================================================
-General Data File C_CARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-Ueberstroemter_Hohlraum_iNPUT_tESTING
-Conforming Meshes with mortar coupling
+Partitioned Mortar FSI: 2D Driven cavity with flexible bottom
+FSI:        iter_stagg_AITKEN_rel_param
+Fluid:      One_Step_Theta
+Structure:  GenAlpha
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2080
 NODES                           2244
@@ -92,17 +89,13 @@ IALE                            Pseudo_Structure
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_AITKEN_rel_param
-//COUPALGO                      iter_stagg_steep_desc
+COUPMETHOD                      mtr
 PREDICTOR                       d(n)
-//PREDICTOR                     d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-//PREDICTOR                     d(n)+dt*v(n)
-//PREDICTOR                     d(n)+dt*v(n)+0.5*dt^2*a(n)
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-7
-COUPMETHOD                      mtr
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK
@@ -113,23 +106,7 @@ SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-//SOLVER                        Amesos_KLU_nonsym
 SOLVER                          UMFPACK
-//SOLVER                        Aztec_MSR
-//SOLVER                        SPOOLES_nonsym
-//SOLVER                        Superlu
-AZSOLVE                         BiCGSTAB
-AZPREC                          ILU
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
-IFPACKGFILL                     1
-AZTOL                           1.0E-15
-AZITER                          2500
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
 PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         14

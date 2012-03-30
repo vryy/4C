@@ -34,6 +34,7 @@ Maintainer: Ulrich Kuettler
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
+#include "fsi_nox_linearsystem_gcr.H"
 #include "fsi_nox_mpe.H"
 
 #include <string>
@@ -593,7 +594,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
     }
     else
     {
-      dserror("No preconditioner chosen!");
+	    linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
     }
   }
 
