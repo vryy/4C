@@ -3,6 +3,8 @@
 //
 // necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
 //
+// Both volumecell and boundarycell Gauss points by Tessellation
+//
 ==================================================================
 General Data File CCARAT
 ==================================================================
