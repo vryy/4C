@@ -33,6 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*
  * Some functions and global variables, most of them are only
@@ -577,6 +578,20 @@ void PostProblem::read_meshes()
         }
       }
 
+      if (currfield.problem()->Problemtype() == prb_combust)
+      {
+        cout << "Name = " << currfield.discretization()->Name();
+        if (currfield.discretization()->Name() == "fluid")
+        {
+          cout << " ->set output mode for xfem elements" << endl;
+          currfield.discretization()->FillComplete(false,false,false);
+          ParameterList eleparams;
+          eleparams.set("action","set_standard_mode");
+          eleparams.set("standard_mode",true);
+          currfield.discretization()->Evaluate(eleparams);
+        }
+        cout << endl;
+      }
 
       // read knot vectors for nurbs discretisations
       if(spatial_approx_=="Nurbs")
@@ -705,8 +720,15 @@ PostField PostProblem::getfield(MAP* field_info)
 
   if(spatial_approx_=="Polynomial")
   {
-    dis=rcp(new DRT::Discretization(field_name,comm_));
-    //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+    if(problemtype_==prb_combust)
+    {
+      dis=rcp(new DRT::DiscretizationXFEM(field_name,comm_));
+    }
+    else
+    {
+      dis=rcp(new DRT::Discretization(field_name,comm_));
+      //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+    }
   }
   else if(spatial_approx_=="Nurbs")
   {
