@@ -36,7 +36,7 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
   {
     DRT::Node* node = dis.lRowNode(i);
 
-    std::vector<int> dof = dis.Dof(node);
+    std::vector<int> dof = dis.Dof(0,node);
     for (unsigned j=0; j<dof.size(); ++j)
     {
       // test for dof position

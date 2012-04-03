@@ -209,7 +209,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  numscal_ = discret_->NumDof(discret_->lRowNode(0));
+  numscal_ = discret_->NumDof(0,discret_->lRowNode(0));
   if (IsElch(scatratype_))
   {
     if (numscal_ > 1) // we have at least two ion species + el. potential
@@ -1465,7 +1465,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      vector<int> nodedofset = discret_->Dof(0,lnode);
 
       int numdofs = nodedofset.size();
       for (int k=0;k< numdofs;++k)

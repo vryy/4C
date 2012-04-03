@@ -570,7 +570,7 @@ void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector
     for (int i=0; i<dis.NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-      vector<int> dofs = dis.Dof(actnode);
+      vector<int> dofs = dis.Dof(0,actnode);
       const unsigned int ndof = dofs.size();
       for (unsigned j=0; j<ndof; ++j)
       {

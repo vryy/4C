@@ -395,7 +395,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         DRT::Node* actnode = discret_->lRowNode(lnodid);
         for (int idof = 0; idof < numscal_; ++idof)
         {
-          int dofgid = discret_->Dof(actnode,idof);
+          int dofgid = discret_->Dof(0,actnode,idof);
           int doflid = dofrowmap->LID(dofgid);
 
           if ((*integratedshapefunc)[doflid] != 0.0)
@@ -1810,7 +1810,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k-1);
+      int dofgid = discret_->Dof(0,actnode,k-1);
       // get value for each component of flux vector
       double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
       double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];

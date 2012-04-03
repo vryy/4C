@@ -59,27 +59,27 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
 
     // test result value of single scalar field
     if (position=="phi")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
     // test result values for a system of scalars
     else if (position=="phi1")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,0))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
     else if (position=="phi2")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,1))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,1))];
     else if (position=="phi3")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,2))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,2))];
     else if (position=="phi4")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,3))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,3))];
     else if (position=="phi5")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,4))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,4))];
     else if (position=="phi6")
-      result = (*mysol_)[phinpmap.LID(dis_->Dof(actnode,5))];
+      result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,5))];
     // we support only testing of fluxes for the first scalar
     else if (position=="fluxx")
-      result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];
     else if (position=="fluxy")
-      result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(0,actnode,0))];
     else if (position=="fluxz")
-      result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(actnode,0))];
+      result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(0,actnode,0))];
     else
     {
       dserror("position '%s' not supported in result-test of scalar transport problems", position.c_str());

@@ -4329,7 +4329,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = discret_->Dof(lnode);
+      const vector<int> nodedofset = discret_->Dof(0,lnode);
 
       for(int index=0;index<numdim_+1;++index)
       {
@@ -4742,8 +4742,8 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
-    const int numscatradof = scatradis->NumDof(lscatranode);
-    const int globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    const int numscatradof = scatradis->NumDof(0,lscatranode);
+    const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
     const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
     if (localscatradofid < 0)
       dserror("localdofid not found in map for given globaldofid");
@@ -4751,10 +4751,10 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     // get the processor's local fluid node
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
     // get the global ids of degrees of freedom associated with this node
-    nodedofs = discret_->Dof(lnode);
+    nodedofs = discret_->Dof(0,lnode);
     // get global and processor's local pressure dof id (using the map!)
-    const int numdof = discret_->NumDof(lnode);
-    const int globaldofid = discret_->Dof(lnode,numdof-1);
+    const int numdof = discret_->NumDof(0,lnode);
+    const int globaldofid = discret_->Dof(0,lnode,numdof-1);
     const int localdofid = scaam_->Map().LID(globaldofid);
     if (localscatradofid < 0)
       dserror("localdofid not found in map for given globaldofid");
@@ -4830,17 +4830,17 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
     DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
-    const int numscatradof = scatradis->NumDof(lscatranode);
+    const int numscatradof = scatradis->NumDof(0,lscatranode);
     int globalscatradofid(-1);
     if (whichscalar == (-1))
     {
       // default: always take the LAST scatra dof at each node
-      globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+      globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
     }
     else
     {
       // respect the explicit wish of the user
-      globalscatradofid = scatradis->Dof(lscatranode,whichscalar);
+      globalscatradofid = scatradis->Dof(0,lscatranode,whichscalar);
     }
     const int localscatradofid = scalarnp->Map().LID(globalscatradofid);
     if (localscatradofid < 0)
@@ -4849,7 +4849,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
     // get the processor's local fluid node
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
     // get the global ids of degrees of freedom associated with this node
-    nodedofs = discret_->Dof(lnode);
+    nodedofs = discret_->Dof(0,lnode);
     // get global and processor's local pressure dof id (using the map!)
     const int globaldofid = nodedofs[numdim_];
     const int localdofid = scaam_->Map().LID(globaldofid);

@@ -979,7 +979,7 @@ void THR::TimInt::SetInitialField(
       // get the processor local node
       DRT::Node* lnode = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       int numdofs = nodedofset.size();
       for (int k=0;k< numdofs;++k)

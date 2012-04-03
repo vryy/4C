@@ -77,42 +77,42 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
     res.ExtractString("POSITION",position);
         if (position=="velx")
         {
-            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];
+            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,0))];
         }
         else if (position=="vely")
         {
-            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,1))];
+            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,1))];
         }
         else if (position=="velz")
         {
             if (numdim==2)
                 dserror("Cannot test result for velz in 2D case.");
-            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
+            result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
         }
         else if (position=="pressure")
         {
             if (numdim==2)
             {
-                if (fluiddis_->NumDof(actnode)<3)
+                if (fluiddis_->NumDof(0,actnode)<3)
                     dserror("too few dofs at node %d for pressure testing",actnode->Id());
-                result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
+                result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
             }
             else
             {
-                if (fluiddis_->NumDof(actnode)<4)
+                if (fluiddis_->NumDof(0,actnode)<4)
                     dserror("too few dofs at node %d for pressure testing",actnode->Id());
-                result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,3))];
+                result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,3))];
             }
         }
         else if (position=="tractionx")
-            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,0))];
+            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,0))];
         else if (position=="tractiony")
-            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,1))];
+            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,1))];
         else if (position=="tractionz")
         {
             if (numdim==2)
                 dserror("Cannot test result for tractionz in 2D case.");
-            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,2))];
+            result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,2))];
         }
         else
         {
