@@ -349,7 +349,12 @@ void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim, RCP<CONTACT::Beam3cmanager> beamcmanager, bool rebuildoctree)
+void STATMECH::StatMechManager::Update(const int& istep,
+                                       const double& dt,
+                                       Epetra_Vector& disrow,
+                                       Teuchos::RCP<LINALG::SparseOperator>& stiff,
+                                       int& ndim, RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                       bool rebuildoctree)
 {
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
@@ -2119,6 +2124,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers, const double meanvalue, const double standarddeviation)
 {
+  randomnumbers->PutScalar(0.0);
+
   //multivector for stochastic forces evaluated by each element based on row map
   Epetra_MultiVector randomnumbersrow(*(discret_.ElementRowMap()), randomnumbers->NumVectors());
 
@@ -2127,8 +2134,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVe
       randomnumbersrow[j][i] = standarddeviation*normalgen_.random() + meanvalue;
 
   //export stochastic forces from row map to column map
-  Epetra_Export exporter(*discret_.ElementRowMap(), *discret_.ElementColMap());
-  randomnumbers->Export(randomnumbersrow, exporter, Add);
+  CommunicateMultiVector(randomnumbersrow,*randomnumbers,true,false);
 
   return;
 } // StatMechManager::SynchronizeRandomForces()
@@ -2317,11 +2323,15 @@ void STATMECH::StatMechManager::CommunicateVector(Epetra_Vector& InVec, Epetra_V
 /*-----------------------------------------------------------------------*
  | communicate MultiVector to all Processors               mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport, bool doimport)
+void STATMECH::StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec,
+                                                       Epetra_MultiVector& OutVec,
+                                                       bool doexport,
+                                                       bool doimport)
 {
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
   Epetra_Export exporter(OutVec.Map(), InVec.Map());
   Epetra_Import importer(OutVec.Map(), InVec.Map());
+
   if(doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.

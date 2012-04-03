@@ -177,6 +177,11 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   discret_->Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
+  /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
+   *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
+   *for synchrinisation of these random numbers in parallel computing*/
+  randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_) );
+
   return;
 }
 
@@ -309,7 +314,7 @@ void STR::TimIntStatMech::UpdateAndOutput()
   // print info about finished time step
   PrintStep();
   return;
-}
+}//UpdateAndOutput()
 
 /*----------------------------------------------------------------------*
  |do consistent predictor step for Brownian dynamics (public)cyron 10/09|
@@ -385,7 +390,7 @@ void STR::TimIntStatMech::PredictConstDisConsistVel()
 //                -(1.0-theta_)/theta_, *(*acc_)(0),
 //                1.0);
   return;
-}
+}//STR::TimIntStatMech::PredictConstDisConsistVel()
 
 /*----------------------------------------------------------------------*
  | apply Dirichlet Boundary Conditions            (public) mueller 03/12|
@@ -495,37 +500,6 @@ void STR::TimIntStatMech::EvaluateMidState()
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  apply external forces @ t_<n+1>               (public) mueller 03/12|
- *----------------------------------------------------------------------*/
-//void STR::TimIntStatMech::ApplyForceExternal(const double time,  //!< evaluation time
-//                                             const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-//                                             const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
-//                                             Teuchos::RCP<Epetra_Vector>& fext)  //!< external force
-//{
-//  ParameterList p;
-//  // action for elements
-//  p.set("action","calc_struct_eleload");
-//  // other parameters needed by the elements
-//  p.set("total time",time);
-//  p.set("delta time",(*dt_)[0]);
-//  p.set("alpha f",1-theta_);
-//
-//  // set vector values needed by elements
-//  discret_->ClearState();
-//
-//  discret_->SetState("displacement",dis);
-//  discret_->SetState("velocity",vel);
-//
-//  fext->PutScalar(0.0);  // initialize external force vector (load vector)
-//
-//  discret_->EvaluateNeumann(p,*fext);
-//
-//  discret_->ClearState();
-//
-//  return;
-//}
 
 /*----------------------------------------------------------------------*
  | internal forces and stiffness (public)                  mueller 03/12|
@@ -1718,10 +1692,6 @@ void STR::TimIntStatMech::StatMechUpdate()
     // print to screen
     StatMechPrintUpdate(t_admin);
 
-    /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
-     *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
-     *for synchrinisation of these random numbers in parallel computing*/
-    randomnumbers_ = rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_) );
     /*pay attention: for a constant predictor an incremental velocity update is necessary, which has been deleted out of the code in oder to simplify it*/
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
     statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
@@ -1752,10 +1722,11 @@ void STR::TimIntStatMech::StatMechOutput()
 {
   if(HaveStatMech())
   {
+    // note: "step_-1
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(params_,ndim_,(*time_)[0],step_ ,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_);
+      statmechman_->Output(params_,ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_);
     else
-      statmechman_->Output(params_,ndim_,(*time_)[0],step_ ,(*dt_)[0],*((*dis_)(0)),*fint_);
+      statmechman_->Output(params_,ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_);
   }
   return;
 }// StatMechOutput()

@@ -45,9 +45,9 @@ Maintainer: Kei Müller
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
-                             const double& time, const int& istep, const double& dt,
-                             const Epetra_Vector& dis, const Epetra_Vector& fint,
-                             RCP<CONTACT::Beam3cmanager> beamcmanager)
+                                       const double& time, const int& istep, const double& dt,
+                                       const Epetra_Vector& dis, const Epetra_Vector& fint,
+                                       RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
@@ -1036,7 +1036,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
 
     //special visualization for crosslink molecules with one/two bond(s); going through the Procs
 
-    fp = fopen(filename->str().c_str(), "a");
+    //fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilebonds;
 
     // first, just update positions: redundant information on all procs

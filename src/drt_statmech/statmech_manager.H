@@ -61,6 +61,8 @@ namespace LINALG
   class MapExtractor;
 }
 
+class Beam3ContactOctree;
+
 namespace STATMECH
 {
 
@@ -109,7 +111,7 @@ public:
    *  \param stiff    (in)
    *  \param ndim     (in)
    */
-  void Update(const int& istep, const double dt, Epetra_Vector& disrow, Teuchos::RCP<LINALG::SparseOperator>& stiff, int ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null, bool rebuildoctree=false);
+  void Update(const int& istep, const double& dt, Epetra_Vector& disrow, Teuchos::RCP<LINALG::SparseOperator>& stiff, int& ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null, bool rebuildoctree=false);
 
   //! \brief update time and time step size of statmechmanager
   void UpdateTimeAndStepSize(double& dt, double& time);
@@ -494,6 +496,9 @@ protected:
 
   //! \brief vector holding the spatial resolution of the search algorithm binding spots x crosslinkers
   Teuchos::RCP<std::vector<int> > searchres_;
+
+  //! \brief octree
+  Teuchos::RCP<Beam3ContactOctree> octree_;
 
   //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
   int basisnodes_;
