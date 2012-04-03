@@ -694,7 +694,7 @@ namespace STR
 
     //! Check if statistical mechanics is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
-    void PrepareStatMech(const Teuchos::ParameterList& sdynparams);
+    void PrepareStatMech();
 
     //@}
 

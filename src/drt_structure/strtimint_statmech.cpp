@@ -54,7 +54,6 @@ STR::TimIntStatMech::TimIntStatMech(const Teuchos::ParameterList& params,
                                     Teuchos::RCP<LINALG::Solver> contactsolver,
                                     Teuchos::RCP<IO::DiscretizationWriter> output) :
 TimIntOneStepTheta(params,sdynparams, xparams, actdis,solver,contactsolver,output),
-params_(sdynparams),
 isconverged_(false)
 {
   // create StatMechManager object
@@ -300,7 +299,9 @@ void STR::TimIntStatMech::UpdateAndOutput()
 
   // update beam contact
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+  {
     UpdateStepBeamContact();
+  }
 
   // update time and step
   UpdateStepTime();
@@ -1680,12 +1681,7 @@ void STR::TimIntStatMech::StatMechUpdate()
 
     const double t_admin = Teuchos::Time::wallTime();
     if(DRT::INPUT::IntegralValue<int>(statmechparams,"BEAMCONTACT"))
-    {
-      if(buildoctree_)
-        statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_);
-      else
-        statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_);
-    }
+      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_);
     else
       statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_);
 
@@ -1724,9 +1720,9 @@ void STR::TimIntStatMech::StatMechOutput()
   {
     // note: "step_-1
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(params_,ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_);
     else
-      statmechman_->Output(params_,ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_);
   }
   return;
 }// StatMechOutput()

@@ -254,7 +254,7 @@ STR::TimInt::TimInt
 
   // check for statistical mechanics
   {
-    PrepareStatMech(sdynparams);
+    PrepareStatMech();
   }
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
@@ -577,7 +577,7 @@ void STR::TimInt::PrepareStepContact()
 
 /*----------------------------------------------------------------------*/
 /* Check for contact or meshtying and do preparations */
-void STR::TimInt::PrepareStatMech(const Teuchos::ParameterList& sdynparams)
+void STR::TimInt::PrepareStatMech()
 {
   // some parameters
   const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
@@ -586,7 +586,7 @@ void STR::TimInt::PrepareStatMech(const Teuchos::ParameterList& sdynparams)
   if(tbtype != INPAR::STATMECH::thermalbath_none)
   {
     // note: "0.0" for alpha_f (originally, statmech time integration derived from strugenalpha.cpp
-    statmechman_ = rcp(new STATMECH::StatMechManager(sdynparams,*discret_));
+    statmechman_ = rcp(new STATMECH::StatMechManager(discret_));
   }
 
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
@@ -1108,7 +1108,7 @@ void STR::TimInt::OutputRestart
   // statistical mechanics
   if (HaveStatMech())
   {
-    statmechman_->WriteRestart(*output_);
+    statmechman_->WriteRestart(output_);
   }
 
   // info dedicated to user's eyes staring at standard out

@@ -44,7 +44,7 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
+void STATMECH::StatMechManager::Output(const int ndim,
                                        const double& time, const int& istep, const double& dt,
                                        const Epetra_Vector& dis, const Epetra_Vector& fint,
                                        RCP<CONTACT::Beam3cmanager> beamcmanager)
@@ -52,6 +52,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
    * does not increase after the first time step any longer*/
+  Teuchos::ParameterList params = DRT::Problem::Instance()->StructuralDynamicParams();
   bool printerr = params.get<bool> ("print to err", false);
   FILE* errfile = params.get<FILE*> ("err file", NULL);
   if (printerr)
@@ -91,7 +92,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
         {
 
           //proc 0 write complete output into file, all other proc inactive
-          if(!discret_.Comm().MyPID())
+          if(!discret_->Comm().MyPID())
           {
             FILE* fp = NULL; //file pointer for statistical output file
 
@@ -121,7 +122,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
        *value on either filament length; we get the absolute value of the first one of these two conditions */
       double neumannforce;
       vector<DRT::Condition*> pointneumannconditions(0);
-      discret_.GetCondition("PointNeumann", pointneumannconditions);
+      discret_->GetCondition("PointNeumann", pointneumannconditions);
       if (pointneumannconditions.size() > 0)
       {
         const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
@@ -145,8 +146,8 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
         LINALG::Matrix<3, 1> endtoendvector(true);
         for (int i = 0; i < ndim; i++)
         {
-          endtoendvector(i) -= (discret_.gNode(0))->X()[i] + dis[i];
-          endtoendvector(i) += (discret_.gNode(discret_.NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
+          endtoendvector(i) -= (discret_->gNode(0))->X()[i] + dis[i];
+          endtoendvector(i) += (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_->NumDof(discret_->gNode(discret_->NumMyRowNodes() - 1)) + i];
         }
 
         endtoend = endtoendvector.Norm2();
@@ -156,21 +157,21 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
         {
 
           //proc 0 write complete output into file, all other proc inactive
-          if(!discret_.Comm().MyPID())
+          if(!discret_->Comm().MyPID())
           {
             FILE* fp = NULL; //file pointer for statistical output file
 
             //name of output file
             std::ostringstream outputfilename;
-            outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+            outputfilename << "E2E_" << discret_->NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
 
             // open file and append new data line
             fp = fopen(outputfilename.str().c_str(), "a");
             //defining temporary stringstream variable
             std::stringstream filecontent;
             filecontent << scientific << setprecision(15) << time << "  "
-                        << endtoend << " " << fint[num_dof - discret_.NumDof(
-                           discret_.gNode(discret_.NumMyRowNodes() - 1))] << endl;
+                        << endtoend << " " << fint[num_dof - discret_->NumDof(
+                           discret_->gNode(discret_->NumMyRowNodes() - 1))] << endl;
             // move temporary stringstream to file and close it
             fprintf(fp, filecontent.str().c_str());
             fclose(fp);
@@ -185,24 +186,24 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
     {
 
       //we need displacements also of ghost nodes and hence export displacment vector to column map format
-      Epetra_Vector discol(*(discret_.DofColMap()), true);
+      Epetra_Vector discol(*(discret_->DofColMap()), true);
       LINALG::Export(dis, discol);
 
-      vector<double> arclength(discret_.NumMyColNodes() - 1, 0);
-      vector<double> cosdiffer(discret_.NumMyColNodes() - 1, 0);
+      vector<double> arclength(discret_->NumMyColNodes() - 1, 0);
+      vector<double> cosdiffer(discret_->NumMyColNodes() - 1, 0);
 
       //after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps,
-      //when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
+      //when discret_->NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
       if ((time > starttime && fabs(time-starttime)>dt/1e4) && (istep% statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
       {
         Epetra_SerialDenseMatrix coord;
-        coord.Shape(discret_.NumMyColNodes(), ndim);
+        coord.Shape(discret_->NumMyColNodes(), ndim);
 
-        for (int id=0; id<discret_.NumMyColNodes(); id++)
+        for (int id=0; id<discret_->NumMyColNodes(); id++)
           for (int j=0; j<ndim; j++)
-            coord(id, j) = (discret_.lColNode(id))->X()[j] + (discol)[(id) * (ndim - 1) * 3 + j];
+            coord(id, j) = (discret_->lColNode(id))->X()[j] + (discol)[(id) * (ndim - 1) * 3 + j];
 
-        for (int id=0; id < discret_.NumMyColNodes() - 1; id++)
+        for (int id=0; id < discret_->NumMyColNodes() - 1; id++)
         {
 
           //calculate the deformed length of every element
@@ -219,7 +220,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
         }
 
         //proc 0 write complete output into file, all other proc inactive
-        if(!discret_.Comm().MyPID())
+        if(!discret_->Comm().MyPID())
         {
           FILE* fp = NULL; //file pointer for statistical output file
 
@@ -233,7 +234,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
           filecontent << istep;
           filecontent << scientific << setprecision(10);
 
-          for (int id = 0; id < discret_.NumMyColNodes() - 1; id++)
+          for (int id = 0; id < discret_->NumMyColNodes() - 1; id++)
             filecontent << " " << cosdiffer[id];
 
           filecontent << endl;
@@ -263,8 +264,8 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
 
         for (int i = 0; i < ndim; i++)
         {
-          beginnew(i) = (discret_.gNode(0))->X()[i] + dis[i];
-          endnew(i) = (discret_.gNode(discret_.NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
+          beginnew(i) = (discret_->gNode(0))->X()[i] + dis[i];
+          endnew(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_->NumDof(discret_->gNode(discret_->NumMyRowNodes() - 1)) + i];
         }
 
         //unit direction vector for filament axis in last time step
@@ -343,7 +344,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
         }
 
         //proc 0 write complete output into file, all other proc inactive
-        if(!discret_.Comm().MyPID())
+        if(!discret_->Comm().MyPID())
         {
           FILE* fp = NULL; //file pointer for statistical output file
 
@@ -389,17 +390,17 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
           if((*forcesensor_)[i]>0.9)
           {
           	// translate i to DofRowMap LID
-          	int dofgid = discret_.DofColMap()->GID(i);
-          	int rowid = discret_.DofRowMap()->LID(dofgid);
+          	int dofgid = discret_->DofColMap()->GID(i);
+          	int rowid = discret_->DofRowMap()->LID(dofgid);
             f += fint[rowid];
             d = dis[rowid];
           }
 
         //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
         double fglob = 0;
-        discret_.Comm().SumAll(&f,&fglob,1);
+        discret_->Comm().SumAll(&f,&fglob,1);
 
-        if(!discret_.Comm().MyPID())
+        if(!discret_->Comm().MyPID())
         {
           //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
           FILE* fp = NULL;
@@ -419,7 +420,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
           filecontent << scientific << setprecision(10) << time;//changed
 
           //Putting time, displacement, meanforce  in Filestream
-          filecontent << "   "<< d << "   " << fglob << "   " << discret_.NumGlobalElements() << endl; //changed
+          filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << endl; //changed
           //writing filecontent into output file and closing it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
@@ -451,7 +452,7 @@ void STATMECH::StatMechManager::Output(ParameterList& params, const int ndim,
       {
         std::map<int, LINALG::Matrix<3, 1> > currentpositions;
         std::map<int, LINALG::Matrix<3, 1> > currentrotations;
-        Epetra_Vector discol(*discret_.DofColMap(), true);
+        Epetra_Vector discol(*discret_->DofColMap(), true);
         LINALG::Export(dis, discol);
         GetNodePositions(discol, currentpositions, currentrotations, true);
         beamcmanager->OcTree()->OctTreeSearch(currentpositions, istep);
@@ -515,7 +516,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
 	GmshPrepareVisualization(disrow);
 
   //we need displacements also of ghost nodes and hence export displacement vector to column map format
-  Epetra_Vector discol(*(discret_.DofColMap()), true);
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
 
   // do output to file in c-style
@@ -525,7 +526,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   const int nline = 16;
 
   // first processor starts by opening the file and writing the header, other processors have to wait
-  if (discret_.Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0)
   {
     //open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
@@ -569,12 +570,12 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   }
 
   // wait for all processors to arrive at this point
-  discret_.Comm().Barrier();
+  discret_->Comm().Barrier();
 
   // loop over the participating processors each of which appends its part of the output to one output file
-  for (int proc = 0; proc < discret_.Comm().NumProc(); proc++)
+  for (int proc = 0; proc < discret_->Comm().NumProc(); proc++)
   {
-    if (discret_.Comm().MyPID() == proc)
+    if (discret_->Comm().MyPID() == proc)
     {
       //open file again to append ("a") output data into
       fp = fopen(filename.str().c_str(), "a");
@@ -582,10 +583,10 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
       std::stringstream gmshfilecontent;
 
       //looping through all elements on the processor
-      for (int i=0; i<discret_.NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         //getting pointer to current element
-        DRT::Element* element = discret_.lColElement(i);
+        DRT::Element* element = discret_->lColElement(i);
 
         //getting number of nodes of current element
         //if( element->NumNode() > 2)
@@ -597,8 +598,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           for (int jd=0; jd<element->NumNode(); jd++)
           {
             double referenceposition = ((element->Nodes())[jd])->X()[id];
-            vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
-            double displacement = discol[discret_.DofColMap()->LID(dofnode[id])];
+            vector<int> dofnode = discret_->Dof((element->Nodes())[jd]);
+            double displacement = discol[discret_->DofColMap()->LID(dofnode[id])];
             coord(id, jd) = referenceposition + displacement;
           }
 
@@ -680,7 +681,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
       fprintf(fp, gmshfilecontent.str().c_str());
       fclose(fp);
     }
-    discret_.Comm().Barrier();
+    discret_->Comm().Barrier();
   }
   // plot the periodic boundary box
   LINALG::Matrix<3,1> center;
@@ -690,7 +691,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
-  if (discret_.Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0)
   {
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream gmshfileend;
@@ -707,7 +708,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           coord(j,0) = cog_(j);
           coord(j,1) = cog_(j)+0.5*(*trafo_)(i,j);
         }
-        GmshWedge(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
+        GmshWedge(1,coord,discret_->lRowElement(0),gmshfileend,0.0,true,true);
       }
       // plot the cog
       std::vector<double> dimension(3,0.05);
@@ -726,7 +727,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   }
 
   // return simultaneously (not sure if really needed)
-  discret_.Comm().Barrier();
+  discret_->Comm().Barrier();
 
   return;
 } // STATMECH::StatMechManager::GmshOutput()
@@ -744,7 +745,7 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
   //number of spatial dimensions
   const int ndim = 3;
   // get Element Type of the first Element to determine the graphics output
-  DRT::Element* element = discret_.gElement(eleid);
+  DRT::Element* element = discret_->gElement(eleid);
 
   bool dotline = false;
   bool kinked = false;
@@ -937,7 +938,7 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
 void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename)
 {
   // plot the periodic box in case of periodic boundary conditions (first processor)
-  if (periodlength_->at(0) > 0.0 && discret_.Comm().MyPID() == 0)
+  if (periodlength_->at(0) > 0.0 && discret_->Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilefooter;
@@ -1003,7 +1004,7 @@ void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matr
     fclose(fp);
   }
   // wait for Proc 0 to catch up to the others
-  discret_.Comm().Barrier();
+  discret_->Comm().Barrier();
 }// STATMECH::StatMechManager::GmshOutputBoundaryBox
 
 /*----------------------------------------------------------------------*
@@ -1012,10 +1013,10 @@ void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matr
 void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow)
 {
   // export row displacement to column map format
-  Epetra_Vector discol(*(discret_.DofColMap()), true);
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
 
-  if (discret_.Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     /*/ visualization of crosslink molecule positions by spheres on Proc 0
@@ -1057,11 +1058,11 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             }
           int nodeGID = (int) (*crosslinkerbond_)[occupied][i];
 
-          DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+          DRT::Node *node = discret_->lColNode(discret_->NodeColMap()->LID(nodeGID));
           LINALG::SerialDenseMatrix coord(3, 2, true);
           for (int j=0; j<coord.M(); j++)
           {
-            int dofgid = discret_.Dof(node)[j];
+            int dofgid = discret_->Dof(node)[j];
             coord(j, 0) = node->X()[j] + discol[dofgid];
             coord(j, 1) = (*visualizepositions_)[j][i];
             //length += (coord(j,1)-coord(j,0))*(coord(j,1)-coord(j,0));
@@ -1072,7 +1073,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           if (periodlength_->at(0) > 0.0)
           {
             // get arbitrary element (we just need it to properly visualize)
-            DRT::Element* tmpelement=discret_.lRowElement(0);
+            DRT::Element* tmpelement=discret_->lRowElement(0);
             GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, tmpelement->Id(), true);
             // visualization of "real" crosslink molecule positions
             //beadcolor = 0.0; //black
@@ -1117,11 +1118,11 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
               }
             int nodeGID = (int) (*crosslinkerbond_)[occupied][i];
 
-            DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+            DRT::Node *node = discret_->lColNode(discret_->NodeColMap()->LID(nodeGID));
             LINALG::SerialDenseMatrix coord(3, 2, true);
             for (int j=0; j<coord.M(); j++)
             {
-              int dofgid = discret_.Dof(node)[j];
+              int dofgid = discret_->Dof(node)[j];
               coord(j, 0) = node->X()[j] + discol[dofgid];
               coord(j, 1) = (*visualizepositions_)[j][i];
             }
@@ -1131,7 +1132,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             if (periodlength_->at(0) > 0.0)
             {
               // get arbitrary element (we just need it to properly visualize)
-              DRT::Element* tmpelement=discret_.lRowElement(0);
+              DRT::Element* tmpelement=discret_->lRowElement(0);
               GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
               // visualization of "real" crosslink molecule positions
               //beadcolor = 0.0; //black
@@ -1159,7 +1160,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
     fclose(fp);
   }
 
-  discret_.Comm().Barrier();
+  discret_->Comm().Barrier();
 }// GmshOutputCrosslinkDiffusion
 
 /*----------------------------------------------------------------------*
@@ -1173,7 +1174,7 @@ void STATMECH::StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix
    */
   std::vector<double> thirdpoint(3,0.0);
   // get the element
-  DRT::Element* element = discret_.gElement(eleid);
+  DRT::Element* element = discret_->gElement(eleid);
 
   // calculate tangent
   double ltan = 0.0;
@@ -1256,7 +1257,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
 
   // column map displacement and displacement increment
 
-  Epetra_Vector discol(*(discret_.DofColMap()), true);
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(dis, discol);
 
   // get binding spot triads
@@ -1264,7 +1265,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
 	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
 		GetBindingSpotTriads(&bspottriadscol);
 
-  if (discret_.Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0)
   {
     for (int i=0; i<numbond_->MyLength(); i++)
     {
@@ -1289,16 +1290,16 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
               break;
             }
 
-          int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
-          const DRT::Node *node0 = discret_.lColNode(nodeLID);
+          int nodeLID = discret_->NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
+          const DRT::Node *node0 = discret_->lColNode(nodeLID);
 
           //calculate unit tangent
           LINALG::Matrix<3,1> nodepos0;
 
           for (int j=0; j<3; j++)
           {
-            int dofgid0 = discret_.Dof(node0)[j];
-            nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
+            int dofgid0 = discret_->Dof(node0)[j];
+            nodepos0(j,0) = node0->X()[j] + discol[discret_->DofColMap()->LID(dofgid0)];
           }
 
           // first and second vector of the nodal triad
@@ -1333,18 +1334,18 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             int currfilament = (int)(*filamentnumber_)[nodeLID];
             if(nodeLID < basisnodes_-1)
               if((*filamentnumber_)[nodeLID+1]==currfilament)
-                node1 = discret_.lColNode(nodeLID+1);
+                node1 = discret_->lColNode(nodeLID+1);
               else
-                node1 = discret_.lColNode(nodeLID-1);
+                node1 = discret_->lColNode(nodeLID-1);
             if(nodeLID == basisnodes_-1)
               if((*filamentnumber_)[nodeLID-1]==currfilament)
-                node1 = discret_.lColNode(nodeLID-1);
+                node1 = discret_->lColNode(nodeLID-1);
 
             //calculate unit tangent
             for (int j=0; j<3; j++)
             {
-              int dofgid1 = discret_.Dof(node1)[j];
-              double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
+              int dofgid1 = discret_->Dof(node1)[j];
+              double nodeposj1 = node1->X()[j] + discol[discret_->DofColMap()->LID(dofgid1)];
               tangent(j) = nodeposj1 - nodepos0(j,0);
             }
             tangent.Scale(1 / tangent.Norm2());
@@ -1381,8 +1382,8 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
               for (int k=0; k<crosslinkerbond_->NumVectors(); k++)
               {
                 int nodeGID = (int) (*crosslinkerbond_)[k][i];
-                DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
-                int dofgid = discret_.Dof(node)[j];
+                DRT::Node *node = discret_->lColNode(discret_->NodeColMap()->LID(nodeGID));
+                int dofgid = discret_->Dof(node)[j];
                 dofnodepositions.at(k) = node->X()[j] + discol[dofgid];
               }
               /* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
@@ -1418,16 +1419,16 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
                 break;
               }
 
-            int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
-            const DRT::Node *node0 = discret_.lColNode(nodeLID);
+            int nodeLID = discret_->NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
+            const DRT::Node *node0 = discret_->lColNode(nodeLID);
 
             //calculate unit tangent
             LINALG::Matrix<3,1> nodepos0;
 
             for (int j=0; j<3; j++)
             {
-              int dofgid0 = discret_.Dof(node0)[j];
-              nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
+              int dofgid0 = discret_->Dof(node0)[j];
+              nodepos0(j,0) = node0->X()[j] + discol[discret_->DofColMap()->LID(dofgid0)];
             }
 
             // first and second vector of the nodal triad
@@ -1462,18 +1463,18 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
               int currfilament = (int)(*filamentnumber_)[nodeLID];
               if(nodeLID < basisnodes_-1)
                 if((*filamentnumber_)[nodeLID+1]==currfilament)
-                  node1 = discret_.lColNode(nodeLID+1);
+                  node1 = discret_->lColNode(nodeLID+1);
                 else
-                  node1 = discret_.lColNode(nodeLID-1);
+                  node1 = discret_->lColNode(nodeLID-1);
               if(nodeLID == basisnodes_-1)
                 if((*filamentnumber_)[nodeLID-1]==currfilament)
-                  node1 = discret_.lColNode(nodeLID-1);
+                  node1 = discret_->lColNode(nodeLID-1);
 
               //calculate unit tangent
               for (int j=0; j<3; j++)
               {
-                int dofgid1 = discret_.Dof(node1)[j];
-                double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
+                int dofgid1 = discret_->Dof(node1)[j];
+                double nodeposj1 = node1->X()[j] + discol[discret_->DofColMap()->LID(dofgid1)];
                 tangent(j) = nodeposj1 - nodepos0(j,0);
               }
               tangent.Scale(1 / tangent.Norm2());
@@ -1778,7 +1779,7 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
                         edgeshift(l,m) += periodlength_->at(l);
                     }
                   // write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-                  GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+                  GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_->lRowElement(0)->Id(),true);
 
                   // now the other edges will be computed
                   for (int sector=0;sector<n-1;++sector)
@@ -1810,7 +1811,7 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
                           edgeshift(l,m) += periodlength_->at(l);
                       }
 
-                    GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+                    GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_->lRowElement(0)->Id(),true);
                   }
                 }
       }
@@ -2111,7 +2112,7 @@ void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_Ser
       LINALG::SerialDenseMatrix coordout=linepart;
       for(int l=0 ;l<coordout.M(); l++)
         coordout(l,1) = linepart(l,0) + lambda0*dir(l);
-      GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+      GmshWedge(1,coordout,discret_->lRowElement(0),gmshfilecontent,color,true);
 
       //define output coordinates for broken elements, second segment
       for(int l=0; l<coordout.M(); l++)
@@ -2119,10 +2120,10 @@ void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_Ser
         coordout(l,0) = linepart(l,1);
         coordout(l,1) = linepart(l,1)+lambda1*dir(l);
       }
-      GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+      GmshWedge(1,coordout,discret_->lRowElement(0),gmshfilecontent,color,true);
     }
     else // output for continuous elements
-      GmshWedge(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
+      GmshWedge(1,linepart,discret_->lRowElement(0),gmshfilecontent,color,true,false);
   }
 }//GmshNetworkStructVolumePeriodic()
 
@@ -2139,7 +2140,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     {
 
       //output is written on proc 0 only
-      if(!discret_.Comm().MyPID())
+      if(!discret_->Comm().MyPID())
       {
 
         FILE* fp = NULL; //file pointer for statistical output file
@@ -2210,7 +2211,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     case INPAR::STATMECH::statout_endtoendconst:
     {
       //output is written on proc 0 only
-      if(!discret_.Comm().MyPID())
+      if(!discret_->Comm().MyPID())
       {
 
         FILE* fp = NULL; //file pointer for statistical output file
@@ -2232,7 +2233,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
          *value on either filament length; we get the absolute value of the first one of these two conditions */
         double neumannforce;
         vector<DRT::Condition*> pointneumannconditions(0);
-        discret_.GetCondition("PointNeumann", pointneumannconditions);
+        discret_->GetCondition("PointNeumann", pointneumannconditions);
         if (pointneumannconditions.size() > 0)
         {
           const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
@@ -2249,7 +2250,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
             //defining name of output file
             outputfilenumber_++;
             outputfilename.str("");
-            outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+            outputfilename << "E2E_" << discret_->NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
             fp = fopen(outputfilename.str().c_str(), "r");
           }
           while (fp != NULL);
@@ -2279,7 +2280,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
           //defining outputfilename by means of new testnumber
           outputfilename.str("");
-          outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+          outputfilename << "E2E_" << discret_->NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
 
           //set up new file with name "outputfilename" without writing anything into this file
           fp = fopen(outputfilename.str().c_str(), "w");
@@ -2303,7 +2304,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     case INPAR::STATMECH::statout_orientationcorrelation:
     {
       //output is written on proc 0 only
-      if(!discret_.Comm().MyPID())
+      if(!discret_->Comm().MyPID())
       {
 
         FILE* fp = NULL; //file pointer for statistical output file
@@ -2380,7 +2381,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     case INPAR::STATMECH::statout_anisotropic:
     {
       //output is written on proc 0 only
-      if(!discret_.Comm().MyPID())
+      if(!discret_->Comm().MyPID())
       {
 
         FILE* fp = NULL; //file pointer for statistical output file
@@ -2457,8 +2458,8 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
         endold_.PutScalar(0);
         for (int i=0; i<ndim; i++)
         {
-          beginold_(i) = (discret_.gNode(0))->X()[i];
-          endold_(i) = (discret_.gNode(discret_.NumMyRowNodes() - 1))->X()[i];
+          beginold_(i) = (discret_->gNode(0))->X()[i];
+          endold_(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i];
         }
 
         for (int i=0; i<3; i++)
@@ -2474,7 +2475,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
     {
-      if(!discret_.Comm().MyPID())
+      if(!discret_->Comm().MyPID())
       {
         //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
         FILE* fp = NULL;
@@ -2489,7 +2490,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
         fp = fopen(outputfilename.str().c_str(), "w");
 
-        //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
+        //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_->Comm().MyPID() << endl;
 
         // move temporary stringstream to file and close it
         fprintf(fp, filecontent.str().c_str());
@@ -2518,7 +2519,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
    * (4) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
    * (5) radial density distribution
    */
-  if(!discret_.Comm().MyPID())
+  if(!discret_->Comm().MyPID())
     cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
 
   if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
@@ -2532,7 +2533,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   // determine the new center point of the periodic volume
   DDCorrShift(&boxcenter, &centershift, &crosslinkerentries);
 
-  if(!discret_.Comm().MyPID())
+  if(!discret_->Comm().MyPID())
     cout<<crosslinkerentries.size()<<" crosslinker elements found...\n"<<endl;
 
   // Determine current network structure
@@ -2597,7 +2598,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   std::vector<int> radialdistbins(numbins, 0);
   //int total = 0;
   for(int i=0; i<numbins; i++)
-    for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+    for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
     {
       for(int col=0; col<crosslinksperbincol.NumVectors(); col++)
         crosslinksperbin[i][col] += (int)crosslinksperbincol[col][pid*numbins+i];
@@ -2611,7 +2612,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
 
 
   // write data to file
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
@@ -2631,7 +2632,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
   }
-  if(!discret_.Comm().MyPID())
+  if(!discret_->Comm().MyPID())
     cout<<"================================================================================="<<endl;
 }//STATMECH::StatMechManager::DDCorrOutput()
 
@@ -2710,7 +2711,7 @@ void STATMECH::StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINA
     boxcenter->PutScalar(periodlength/2.0);
     centershift->PutScalar(0.0);
   }
-  //if(!discret_.Comm().MyPID())
+  //if(!discret_->Comm().MyPID())
     //cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
   return;
 }//STATMECH::StatMechManager::DDCorrShift()
@@ -2737,7 +2738,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
   std::vector<int> crosslinksinvolume(3,0);
 
   // get column map displacements
-  Epetra_Vector discol(*(discret_.DofColMap()), true);
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
 
   /// calculate center of gravity with respect to shiftedpositions for bound crosslinkers
@@ -2756,7 +2757,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
         currposition(j) += periodlength;
     }
     (*cog) += currposition;
-    if(discret_.Comm().MyPID()==0)
+    if(discret_->Comm().MyPID()==0)
       shiftedpositions.push_back(currposition);
   }
   if(numcrossele != 0)
@@ -2766,7 +2767,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
   trafo_->Zero();
 
   // calculations done by Proc 0 only
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     // number indicating structure type
     int structurenumber = 0;
@@ -3585,7 +3586,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
     for(int j=0; j<trafo_->N(); j++)
     {
       localtrafo.at(3*i+j) = (*trafo_)(i,j);
-      discret_.Comm().SumAll(&localtrafo[3*i+j], &globaltrafo[3*i+j], 1);
+      discret_->Comm().SumAll(&localtrafo[3*i+j], &globaltrafo[3*i+j], 1);
       (*trafo_)(i,j) = globaltrafo.at(3*i+j);
     }
   //cout<<*trafo_<<endl;
@@ -3601,7 +3602,7 @@ void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol,
 
   // get filament number conditions
   vector<DRT::Condition*> filaments(0);
-  discret_.GetCondition("FilamentNumber", filaments);
+  discret_->GetCondition("FilamentNumber", filaments);
   bool vectorconverged = false;
   int iteration = 0;
   double periodlength = periodlength_->at(0);
@@ -3622,19 +3623,19 @@ void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol,
           // obtain column map LIDs
           int gid0 = currfilament->Nodes()->at(node-1);
           int gid1 = currfilament->Nodes()->at(node);
-          int nodelid0 = discret_.NodeColMap()->LID(gid0);
-          int nodelid1 = discret_.NodeColMap()->LID(gid1);
-          DRT::Node* node0 = discret_.lColNode(nodelid0);
-          DRT::Node* node1 = discret_.lColNode(nodelid1);
+          int nodelid0 = discret_->NodeColMap()->LID(gid0);
+          int nodelid1 = discret_->NodeColMap()->LID(gid1);
+          DRT::Node* node0 = discret_->lColNode(nodelid0);
+          DRT::Node* node1 = discret_->lColNode(nodelid1);
 
           // calculate directional vector between nodes
           LINALG::Matrix<3, 1> dirvec;
           for(int dof=0; dof<3; dof++)
           {
-            int dofgid0 = discret_.Dof(node0)[dof];
-            int dofgid1 = discret_.Dof(node1)[dof];
-            double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
-            double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
+            int dofgid0 = discret_->Dof(node0)[dof];
+            int dofgid1 = discret_->Dof(node1)[dof];
+            double poscomponent0 = node0->X()[dof]+discol[discret_->DofColMap()->LID(dofgid0)];
+            double poscomponent1 = node1->X()[dof]+discol[discret_->DofColMap()->LID(dofgid1)];
             // check for periodic boundary shift and correct accordingly
             if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
               poscomponent1 -= periodlength;
@@ -3688,7 +3689,7 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
   // tranfer map format of crosslinkerbond_ and crosslinkerpositions_
   Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
   Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
-  if(discret_.Comm().MyPID()!=0)
+  if(discret_->Comm().MyPID()!=0)
   {
     crosslinkerbond_->PutScalar(0.0);
     crosslinkerpositions_->PutScalar(0.0);
@@ -3847,7 +3848,7 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
-  Epetra_Vector discol(*discret_.DofColMap(),true);
+  Epetra_Vector discol(*discret_->DofColMap(),true);
   LINALG::Export(disrow,discol);
   std::map<int, LINALG::Matrix<3, 1> > currentpositions;
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
@@ -3856,7 +3857,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
   // We assume in the following that the horizontal filament more or less stays horizontal without tilting too much.
   // Also, we assume that the vertical filaments are discretized in the same manner, i.e. same element lengths
 
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
@@ -3873,19 +3874,19 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
       {
         if((int)nodeIDs.size()==0 && (*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
         {
-          nodeIDs.push_back(discret_.NodeColMap()->GID(i));
+          nodeIDs.push_back(discret_->NodeColMap()->GID(i));
           int currlink = (int)(*bspotstatus_)[i];
           for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
             if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs.at(0))
             {
               nodeIDs.push_back((int)(*crosslinkerbond_)[j][currlink]);
-              firstvfil = (int)(*filamentnumber_)[discret_.NodeColMap()->LID(nodeIDs.at(1))];
+              firstvfil = (int)(*filamentnumber_)[discret_->NodeColMap()->LID(nodeIDs.at(1))];
               break;
             }
         }
       }
       else if((int)(*filamentnumber_)[i] == (int)evalnodes.size()+1)
-        evalnodes.push_back(discret_.NodeColMap()->GID(i));
+        evalnodes.push_back(discret_->NodeColMap()->GID(i));
     }
 
     // do the following stuff only if we have actual crosslinker elements along the horizontal filament
@@ -3948,7 +3949,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 {
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     int free = 0;
     int onebond = 0;
@@ -4013,55 +4014,55 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     std::map<int, LINALG::Matrix<3, 1> > currentpositions;
     currentpositions.clear();
 
-    Epetra_Vector discol(*discret_.DofColMap(), true);
+    Epetra_Vector discol(*discret_->DofColMap(), true);
 
     LINALG::Export(disrow, discol);
 
-    for (int i=0; i<discret_.NumMyColNodes(); ++i)
+    for (int i=0; i<discret_->NumMyColNodes(); ++i)
     {
       //get pointer at a node
-      const DRT::Node* node = discret_.lColNode(i);
+      const DRT::Node* node = discret_->lColNode(i);
 
       //get GIDs of this node's degrees of freedom
-      std::vector<int> dofnode = discret_.Dof(node);
+      std::vector<int> dofnode = discret_->Dof(node);
 
       LINALG::Matrix<3, 1> currpos;
 
       for(int j=0; j<(int)currpos.M(); j++)
-        currpos(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofnode[j])];
+        currpos(j) = node->X()[j] + discol[discret_->DofColMap()->LID(dofnode[j])];
 
       currentpositions[node->LID()] = currpos;
     }
 
     // NODAL TRIAD UPDATE
     //first get triads at all row nodes
-    Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()), 4, true);
-    Epetra_MultiVector nodaltriadscol(*(discret_.NodeColMap()),4,true);
-    Epetra_Import importer(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
+    Epetra_MultiVector nodaltriadsrow(*(discret_->NodeRowMap()), 4, true);
+    Epetra_MultiVector nodaltriadscol(*(discret_->NodeColMap()),4,true);
+    Epetra_Import importer(*(discret_->NodeColMap()),*(discret_->NodeRowMap()));
 
-    for (int i=0; i<discret_.NodeRowMap()->NumMyElements(); i++)
+    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
     {
       //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-      int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
+      int lowestid(((discret_->lRowNode(i)->Elements())[0])->Id());
       int lowestidele(0);
-      for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
-        if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
+      for (int j=0; j<discret_->lRowNode(i)->NumElement(); j++)
+        if (((discret_->lRowNode(i)->Elements())[j])->Id() < lowestid)
         {
-          lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
+          lowestid = ((discret_->lRowNode(i)->Elements())[j])->Id();
           lowestidele = j;
         }
 
       //check type of element (orientation triads are not for all elements available in the same way
-      DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+      DRT::ElementType & eot = ((discret_->lRowNode(i)->Elements())[lowestidele])->ElementType();
       //if element is of type beam3ii get nodal triad
       if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
       {
         DRT::ELEMENTS::Beam3ii* filele = NULL;
-        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->lRowNode(i)->Elements()[lowestidele]);
 
         //check whether crosslinker is connected to first or second node of that element
         int nodenumber = 0;
-        if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+        if(discret_->lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
           nodenumber = 1;
 
         //save nodal triad of this node in nodaltriadrow
@@ -4071,7 +4072,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
       else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
         DRT::ELEMENTS::Beam3* filele = NULL;
-        filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_->lRowNode(i)->Elements()[lowestidele]);
 
         //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
         for(int j=0; j<4; j++)
@@ -4093,10 +4094,10 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     double rmin = statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0);
     double rmax = statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0);
     // number of overall independent combinations
-    int numnodes = discret_.NodeColMap()->NumMyElements();
+    int numnodes = discret_->NodeColMap()->NumMyElements();
     int numcombinations = (numnodes*numnodes-numnodes)/2;
     // combinations on each processor
-    int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+    int combinationsperproc = (int)floor((double)numcombinations/(double)discret_->Comm().NumProc());
     int remainder = numcombinations%combinationsperproc;
 
     int bindingspots = 0;
@@ -4104,19 +4105,19 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     Epetra_Vector anglesrow(*ddcorrrowmap_, true);
     Epetra_MultiVector orderparameterbinsrow(*ddcorrrowmap_,2, true);
     // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
-    for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+    for(int mypid=0; mypid<discret_->Comm().NumProc(); mypid++)
     {
       bool quitloop = false;
-      if(mypid==discret_.Comm().MyPID())
+      if(mypid==discret_->Comm().MyPID())
       {
         bool continueloop = false;
         int appendix = 0;
-        if(mypid==discret_.Comm().NumProc()-1)
+        if(mypid==discret_->Comm().NumProc()-1)
           appendix = remainder;
 
-        for(int i=0; i<discret_.NodeColMap()->NumMyElements(); i++)
+        for(int i=0; i<discret_->NodeColMap()->NumMyElements(); i++)
         {
-          for(int j=0; j<discret_.NodeColMap()->NumMyElements(); j++)
+          for(int j=0; j<discret_->NodeColMap()->NumMyElements(); j++)
           {
             // start adding crosslink from here
             if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
@@ -4184,7 +4185,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     // Export
     // add up binding spots
     int bspotsglob = 0;
-    discret_.Comm().SumAll(&bindingspots,&bspotsglob,1);
+    discret_->Comm().SumAll(&bindingspots,&bspotsglob,1);
 
     Epetra_Vector anglescol(*ddcorrcolmap_, true);
     Epetra_MultiVector orderparameterbinscol(*ddcorrcolmap_,2, true);
@@ -4196,7 +4197,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     std::vector<int> angles(numbins, 0);
     std::vector<std::vector<double> > orderparameter(numbins, std::vector<double>(2,0.0));
     for(int i=0; i<numbins; i++)
-      for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+      for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
       {
         angles[i] += (int)anglescol[pid*numbins+i];
         orderparameter[i][0] += orderparameterbinscol[0][pid*numbins+i];
@@ -4211,7 +4212,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
         orderparameter[i][1] = -99.0;
 
     // write data to file
-    if(!discret_.Comm().MyPID())
+    if(!discret_->Comm().MyPID())
     {
       std::ostringstream orientfilename;
       orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
@@ -4250,12 +4251,12 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
   // 1. set up of a row map vector containing the global node positions
   std::vector<LINALG::Matrix<3,1> > xrelnodes;
   xrelnodes.clear();
-  for (int i=0; i<discret_.NumMyRowNodes(); i++)
+  for (int i=0; i<discret_->NumMyRowNodes(); i++)
   {
     //get pointer at a node
-    const DRT::Node* node = discret_.lRowNode(i);
+    const DRT::Node* node = discret_->lRowNode(i);
     //get GIDs of this node's degrees of freedom
-    std::vector<int> dofnode = discret_.Dof(node);
+    std::vector<int> dofnode = discret_->Dof(node);
     // global position and shift according to new centershift
     LINALG::Matrix<3, 1> xglob;
 
@@ -4263,7 +4264,7 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
     for(int j=0; j<(int)xglob.M(); j++)
     {
       // get the global node position
-      xglob(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
+      xglob(j) = node->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode[j])];
       // shift the j-th component according to new center
       if (xglob(j) > periodlength+centershift(j))
         xglob(j) -= periodlength;
@@ -4276,13 +4277,13 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
 
   Epetra_Vector fillengthrow(*ddcorrrowmap_, true);
   // calculate sqrt(DV/DL)
-  for(int i=1; i<discret_.NumMyRowNodes(); i++)
+  for(int i=1; i<discret_->NumMyRowNodes(); i++)
   {
     // column map LID of the two nodes in question
-    int gid0 = discret_.NodeRowMap()->GID(i-1);
-    int gid1 = discret_.NodeRowMap()->GID(i);
-    int collid0 = discret_.NodeColMap()->LID(gid0);
-    int collid1 = discret_.NodeColMap()->LID(gid1);
+    int gid0 = discret_->NodeRowMap()->GID(i-1);
+    int gid1 = discret_->NodeRowMap()->GID(i);
+    int collid0 = discret_->NodeColMap()->LID(gid0);
+    int collid1 = discret_->NodeColMap()->LID(gid1);
 
     // make sure both nodes lie on the same filament
     if((*filamentnumber_)[collid0] == (*filamentnumber_)[collid1])
@@ -4399,11 +4400,11 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
   // Add the processor-specific data up
   std::vector<double> fillength(numbins, 0.0);
   for(int i=0; i<numbins; i++)
-    for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+    for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
       fillength[i] += fillengthcol[pid*numbins+i];
 
   // Proc 0 section
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     std::ostringstream filename;
     filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
@@ -4435,28 +4436,28 @@ void STATMECH::StatMechManager::SphericalCoordsDistribution(const Epetra_Vector&
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
   double periodlength = periodlength_->at(0);
 
-  for(int i=0; i<discret_.NumMyRowElements(); i++)
+  for(int i=0; i<discret_->NumMyRowElements(); i++)
   {
-    DRT::Element* element = discret_.lRowElement(i);
+    DRT::Element* element = discret_->lRowElement(i);
     // consider filament elements only
     if(element->Id()<basisnodes_)
     {
       int gid0 = element->Nodes()[0]->Id();
       int gid1 = element->Nodes()[1]->Id();
-      int lid0 = discret_.NodeRowMap()->LID(gid0);
-      int lid1 = discret_.NodeRowMap()->LID(gid1);
-      DRT::Node* node0 = discret_.lRowNode(lid0);
-      DRT::Node* node1 = discret_.lRowNode(lid1);
+      int lid0 = discret_->NodeRowMap()->LID(gid0);
+      int lid1 = discret_->NodeRowMap()->LID(gid1);
+      DRT::Node* node0 = discret_->lRowNode(lid0);
+      DRT::Node* node1 = discret_->lRowNode(lid1);
 
       // calculate directional vector between nodes
       double dirlength = 0.0;
       Epetra_SerialDenseMatrix dirvec(3,1);
       for(int dof=0; dof<dirvec.M(); dof++)
       {
-        int dofgid0 = discret_.Dof(node0)[dof];
-        int dofgid1 = discret_.Dof(node1)[dof];
-        double poscomponent0 = node0->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid0)];
-        double poscomponent1 = node1->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid1)];
+        int dofgid0 = discret_->Dof(node0)[dof];
+        int dofgid1 = discret_->Dof(node1)[dof];
+        double poscomponent0 = node0->X()[dof]+disrow[discret_->DofRowMap()->LID(dofgid0)];
+        double poscomponent1 = node1->X()[dof]+disrow[discret_->DofRowMap()->LID(dofgid1)];
         // check for periodic boundary shift and correct accordingly
         if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
           poscomponent1 -= periodlength;
@@ -4521,7 +4522,7 @@ void STATMECH::StatMechManager::RadialDensityDistribution(Epetra_Vector& radiald
   // note: it seems to be necessary to clear all vectors other than on Proc 0.
   // otherwise, i.e. using method "Insert" on Export, from time to time (no clear pattern has emerged so far)
   // incorrect data is written to transfer vectors. Odd!
-  if(discret_.Comm().MyPID()!=0)
+  if(discret_->Comm().MyPID()!=0)
   {
     crosslinkerbond_->PutScalar(0.0);
     crosslinkerpositions_->PutScalar(0.0);
@@ -4566,7 +4567,7 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
    * format: filamentnumber    d_x  d_y  d_z
    */
 
-  if(discret_.Comm().MyPID()==0)
+  if(discret_->Comm().MyPID()==0)
   {
     if(periodlength_->at(0) != periodlength_->at(1) || periodlength_->at(0) != periodlength_->at(2))
       dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
@@ -4580,7 +4581,7 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
 
     // get filament number conditions
     vector<DRT::Condition*> filaments(0);
-    discret_.GetCondition("FilamentNumber", filaments);
+    discret_->GetCondition("FilamentNumber", filaments);
 
     for(int fil=0; fil<(int)filaments.size(); fil++)
     {
@@ -4591,19 +4592,19 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
         // obtain column map LIDs
         int gid0 = currfilament->Nodes()->at(node-1);
         int gid1 = currfilament->Nodes()->at(node);
-        int nodelid0 = discret_.NodeColMap()->LID(gid0);
-        int nodelid1 = discret_.NodeColMap()->LID(gid1);
-        DRT::Node* node0 = discret_.lColNode(nodelid0);
-        DRT::Node* node1 = discret_.lColNode(nodelid1);
+        int nodelid0 = discret_->NodeColMap()->LID(gid0);
+        int nodelid1 = discret_->NodeColMap()->LID(gid1);
+        DRT::Node* node0 = discret_->lColNode(nodelid0);
+        DRT::Node* node1 = discret_->lColNode(nodelid1);
 
         // calculate directional vector between nodes
         LINALG::Matrix<3, 1> dirvec;
         for(int dof=0; dof<3; dof++)
         {
-          int dofgid0 = discret_.Dof(node0)[dof];
-          int dofgid1 = discret_.Dof(node1)[dof];
-          double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
-          double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
+          int dofgid0 = discret_->Dof(node0)[dof];
+          int dofgid1 = discret_->Dof(node1)[dof];
+          double poscomponent0 = node0->X()[dof]+discol[discret_->DofColMap()->LID(dofgid0)];
+          double poscomponent1 = node1->X()[dof]+discol[discret_->DofColMap()->LID(dofgid1)];
           // check for periodic boundary shift and correct accordingly
           if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
             poscomponent1 -= periodlength;
@@ -4651,8 +4652,8 @@ bool STATMECH::StatMechManager::CheckForKinkedVisual(int eleid)
   // if element is a crosslinker
   if(eleid>basisnodes_)
   {
-    DRT::Element *element = discret_.gElement(eleid);
-    int lid = discret_.NodeColMap()->LID(element->NodeIds()[0]);
+    DRT::Element *element = discret_->gElement(eleid);
+    int lid = discret_->NodeColMap()->LID(element->NodeIds()[0]);
     for(int i=0; i<element->NumNode(); i++)
       if((*filamentnumber_)[lid]!=(*filamentnumber_)[element->NodeIds()[i]])
         kinked = false;

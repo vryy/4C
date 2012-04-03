@@ -38,7 +38,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io_control.H"
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimada_create.H"
-#include "../drt_statmech/statmech_time.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"

@@ -70,7 +70,7 @@ class StatMechManager
 {
 public:
   //! \brief Standard Constructor
-  explicit StatMechManager(const Teuchos::ParameterList& params, DRT::Discretization& discret);
+  explicit StatMechManager(Teuchos::RCP<DRT::Discretization> discret);
 
   //! \brief Destructor
   virtual ~StatMechManager() {};
@@ -85,13 +85,13 @@ public:
    *  \param fint           (in) internal force vector
    *  \param beamcmanager   (in) beam contact manager
    */
-  void Output(Teuchos::ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
+  void Output(const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief saving all necessary class variables for restart
-  void WriteRestart(IO::DiscretizationWriter& output);
+  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
 
   //! \brief write restart information for fully overlapping Epetra_Multivector with name "name"
-  void WriteRestartRedundantMultivector(IO::DiscretizationWriter& output,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
+  void WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
 
   //! \brief read restart information for fully overlapping Epetra_Multivector with name "name"
   void ReadRestartRedundantMultivector(IO::DiscretizationReader& reader,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
@@ -165,10 +165,17 @@ public:
 	void OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
 
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks=false);
+  void AddNewCrosslinkerElement(const int& crossgid,
+                                int* globalnodeids,
+                                const std::vector<double>& xrefe,
+                                const std::vector<double>& rotrefe,
+                                DRT::Discretization& mydiscret,
+                                bool addinitlinks=false);
 
   //! \brief remove crosslinker element from a chosen discretization
-  void RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements);
+  void RemoveCrosslinkerElements(DRT::Discretization& mydiscret,
+                                 Epetra_Vector& delcrosselement,
+                                 std::vector<std::vector<char> >* deletedelements);
 
   /*! \brief adjusted DBC evaluation for StatMech
    *  \param params          (in)     a parameter list
@@ -454,7 +461,11 @@ protected:
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag
    */
-  void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport=true, bool doimport=true);
+  void CommunicateVector(Epetra_Vector& InVec,
+                         Epetra_Vector& OutVec,
+                         bool doexport=true,
+                         bool doimport=true,
+                         bool zerofy=true);
 
   /*! \brief comunicate MultiVector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -462,7 +473,11 @@ protected:
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag
    */
-  void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport=true, bool doimport=true);
+  void CommunicateMultiVector(Epetra_MultiVector& InVec,
+                              Epetra_MultiVector& OutVec,
+                              bool doexport=true,
+                              bool doimport=true,
+                              bool zerofy=true);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -519,7 +534,7 @@ protected:
   ranlib::UniformClosedOpen<double> uniformclosedopengen_;
 
   //! \brief reference to current discretization
-  DRT::Discretization& discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! \brief storing for each node column map LID number of filament to which it belongs
   Teuchos::RCP<Epetra_Vector> filamentnumber_;

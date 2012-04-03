@@ -192,9 +192,6 @@ namespace STR
     //! \brief set PTC status to unconverged
     void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
 
-    //! \brief integration scheme parameters
-    Teuchos::ParameterList params_;
-
     //! \brief manager for administration of statistical mechanics stuff
     Teuchos::RCP<STATMECH::StatMechManager> statmechmanager_;
 
