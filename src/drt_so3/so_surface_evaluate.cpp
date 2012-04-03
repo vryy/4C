@@ -22,7 +22,6 @@ Maintainer: Michael Gee
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
-#include "../drt_statmech/bromotion_manager.H"
 #include "Sacado.hpp"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
