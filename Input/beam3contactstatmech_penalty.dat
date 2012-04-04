@@ -43,7 +43,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      StatMech
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -64,12 +64,14 @@ TOLCONSTR                       1.0E-03
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         25
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-ALPHA_F                         0
-ALPHA_M                         0
-BETA                            0.5
-GAMMA                           1
+//-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+//GENAVG                          ImrLike
+//ALPHA_F                         0
+//ALPHA_M                         0
+//BETA                            0.5
+//GAMMA                           1
+-------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1
 -------------------------------------------------------MESHTYING AND CONTACT
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
@@ -241,8 +243,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.353331026e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE 8.037719828e-02 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.641466813e+00 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.35320636690075496e-01 TOLERANCE 1e-6 
+STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE 8.03793046908431036e-02 TOLERANCE 1e-6 
+STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.64147761604003817e+00 TOLERANCE 1e-6 
 -------------------------------------------------------------------------END
 //                              END

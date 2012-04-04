@@ -43,7 +43,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      StatMech
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -64,12 +64,14 @@ TOLCONSTR                       1.0E-03
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         25
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
-ALPHA_F                         0
-ALPHA_M                         0
-BETA                            0.5
-GAMMA                           1
+//-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+//GENAVG                          ImrLike
+//ALPHA_F                         0
+//ALPHA_M                         0
+//BETA                            0.5
+//GAMMA                           1
+-------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1
 -------------------------------------------------------MESHTYING AND CONTACT
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
