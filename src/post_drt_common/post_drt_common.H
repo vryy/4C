@@ -237,12 +237,12 @@ class PostField
 public:
   // @{ \name Constructors and destructors
 
-  PostField(string name, RCP<Epetra_Comm> comm, PostProblem* problem,
-            string field_name, FIELDTYP type,
-            const int numnd, const int numele);
-  PostField(RCP<DRT::Discretization> dis, PostProblem* problem,
-            string field_name, FIELDTYP type,
-            const int numnd, const int numele);
+  PostField(
+      RCP<DRT::Discretization> dis,
+      PostProblem* problem,
+      string field_name,
+      const int numnd,
+      const int numele);
 
   ~PostField();
 
@@ -286,7 +286,6 @@ private:
   PostProblem* problem_;
   int num_output_procs_;
   string field_name_;
-  FIELDTYP type_;
   int numnd_;
   int numele_;
 };

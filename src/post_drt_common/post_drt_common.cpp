@@ -713,8 +713,6 @@ PostField PostProblem::getfield(MAP* field_info)
   const char* field_name = map_read_string(field_info, "field");
   const int numnd = map_read_int(field_info, "num_nd");
   const int numele = map_read_int(field_info, "num_ele");
-  int type=0;
-
 
   RCP<DRT::Discretization> dis;
 
@@ -739,38 +737,47 @@ PostField PostProblem::getfield(MAP* field_info)
     dserror("Unknown type of spatial approximation\n");
   }
 
-  return PostField(dis, this, field_name, (FIELDTYP)type, numnd, numele);
+  return PostField(dis, this, field_name, numnd, numele);
+  //return PostField(dis, this, field_name, (FIELDTYP)type, numnd, numele);
 }
 
 
 /*----------------------------------------------------------------------*
  * The Constructor of PostField
  *----------------------------------------------------------------------*/
-PostField::PostField(string name, RCP<Epetra_Comm> comm,
-                     PostProblem* problem, string field_name,
-                     FIELDTYP type, const int numnd, const int numele):
+/*
+PostField::PostField(string name,
+                     RCP<Epetra_Comm> comm,
+                     PostProblem* problem,
+                     string field_name,
+                     const int numnd,
+                     const int numele):
   dis_(rcp(new DRT::Discretization(name,comm))),
   problem_(problem),
   field_name_(field_name),
-  type_(type),
+//  type_(type),
   numnd_(numnd),
   numele_(numele)
 {
 }
+*/
 
 /*----------------------------------------------------------------------*
  * Another Constructor of PostField. This one takes the discretization
  * directly
  *----------------------------------------------------------------------*/
-PostField::PostField(RCP<DRT::Discretization> dis, PostProblem* problem,
-                     string field_name, FIELDTYP type,
-                     const int numnd, const int numele)
-  : dis_(dis),
-    problem_(problem),
-    field_name_(field_name),
-    type_(type),
-    numnd_(numnd),
-    numele_(numele)
+PostField::PostField(
+    RCP<DRT::Discretization> dis,
+    PostProblem* problem,
+    string field_name,
+    const int numnd,
+    const int numele)
+: dis_(dis),
+  problem_(problem),
+  field_name_(field_name),
+  //    type_(type),
+  numnd_(numnd),
+  numele_(numele)
 {
 }
 

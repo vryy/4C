@@ -55,29 +55,7 @@ typedef enum _PROBLEM_TYP
 #define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt",NULL }
 
 
-/*----------------------------------------------------------------------*
- | FIELD TYPES                                            m.gee 7/01    |
- *----------------------------------------------------------------------*/
-typedef enum _FIELDTYP
-{
-                       none,        /* unknown type of mechanical field */
-                       fluid,       /* fluid field */
-                       xfluid,       /* xfluid field */
-                       ale,         /* pseudo structural field */
-                       structure,   /* structural field */
-                       thermal,     /* thermal field */
-                       pressure,    /* pure pressure field */
-                       boundary,    /* boundary field */
-                       scatra,      /* scalar transport field */
-                       scatra1,     /* scalar transport field in case of multiple fields */
-                       scatra2,     /* scalar transport field in case of multiple fields */
-                       artery,      /* artery field*/
-                       thermo,      /* thermal field */
-                       fluidfluidboundary,  /*fluidfluidboundary field*/
-                       red_airway  /* reduced dimensional airways */
-} FIELDTYP;
-/* Mapping from fieldtyp numbers to printable names. To be used to
- * initialize static variables. Keep in sync! */
+/* valid discretization names for output. Why don't we allow all type of names? */
 #define FIELDNAMES {"none", "fluid", "xfluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "scatra1", "scatra2", "artery", "thermo", "FluidFluidboundary", "red_airway", "inflow", NULL}
 
 
