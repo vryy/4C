@@ -132,6 +132,7 @@ steps 25 nnodes 5
     string filename = iap.get<string>("MONITORFILE");
     if (filename=="none.monitor") dserror("No monitor file provided");
     FILE* file = fopen(filename.c_str(),"rb");
+    if (file==NULL) dserror("Could not open monitor file %s",filename.c_str());
     char buffer[150000];
     fgets(buffer,150000,file);
     // read steps
