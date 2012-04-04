@@ -510,53 +510,6 @@ void DRT::UTILS::ComputeXFluid3DNullSpace( DRT::Discretization & dis, std::vecto
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeFluid2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
-{
-  const Epetra_Map* rowmap = dis.DofRowMap();
-  const int lrows = rowmap->NumMyElements();
-  double* mode[6];
-  for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
-
-//   else if (ele->Type() == DRT::Element::element_fluid2)
-  {
-    for (int i=0; i<dis.NumMyRowNodes(); ++i)
-    {
-      DRT::Node* actnode = dis.lRowNode(i);
-      vector<int> dofs = dis.Dof(actnode);
-      for (unsigned j=0; j<dofs.size(); ++j)
-      {
-        const int dof = dofs[j];
-        const int lid = rowmap->LID(dof);
-        if (lid<0) dserror("Cannot find dof");
-        switch (j) // j is degree of freedom
-        {
-        case 0:
-          mode[0][lid] = 1.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
-        break;
-        case 1:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
-        break;
-        case 2:
-          mode[0][lid] = 0.0;
-          mode[1][lid] = 0.0;
-          mode[2][lid] = 1.0;
-        break;
-        default:
-          dserror("Only dofs 0 - 2 supported");
-        break;
-        } // switch (j)
-      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-    } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_fluid2)
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   const Epetra_Map* rowmap = dis.DofRowMap();
@@ -572,6 +525,7 @@ void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector
       DRT::Node* actnode = dis.lRowNode(i);
       vector<int> dofs = dis.Dof(0,actnode);
       const unsigned int ndof = dofs.size();
+      if (ndof>6) dserror("Cannot define more than 6 modes");
       for (unsigned j=0; j<ndof; ++j)
       {
         const int dof = dofs[j];
