@@ -1667,18 +1667,6 @@ macro (baci_test_Nested_Par arg restart)
   set_tests_properties ( ${arg}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
-# Run the test but ignore any complaints. Can be used to silence tests that
-# are known to fail for a good reason.  
-macro (passive_baci_test arg nproc restart)
-  add_test(NAME ${arg}-p${nproc}
-    COMMAND bash -c "${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx || true")
-
-  if (${restart})
-    add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND bash -c "${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart} || true")
-  endif (${restart})
-endmacro (passive_baci_test)
-
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
 baci_test(artaneurysm_hex 1 "")
