@@ -86,10 +86,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------
+  // what's the current problem type?
+  // -------------------------------------------------------------------
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
+  // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = null;
-  if (genprob.probtyp == prb_fluid_fluid_fsi)
+  if (probtype == prb_fluid_fluid_fsi)
     actdis = DRT::Problem::Instance()->Dis(genprob.numff,1);
   else
     actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
@@ -102,8 +107,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     =
     Teuchos::rcp(new map<int,vector<int> > ());
 
-  if((genprob.probtyp != prb_fsi) and
-     (genprob.probtyp != prb_combust))
+  if((probtype != prb_fsi) and
+     (probtype != prb_combust))
   {
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -116,10 +121,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   if (!actdis->HaveDofs())
   {
-    if (genprob.probtyp == prb_fsi_xfem or
-        genprob.probtyp == prb_fluid_xfem or
-        genprob.probtyp == prb_fluid_xfem2 or
-        genprob.probtyp == prb_combust)
+    if (probtype == prb_fsi_xfem or
+        probtype == prb_fluid_xfem or
+        probtype == prb_fluid_xfem2 or
+        probtype == prb_combust)
     {
       actdis->FillComplete(false,false,false);
     }
@@ -134,13 +139,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  if (genprob.probtyp != prb_fsi_xfem and
-      genprob.probtyp != prb_fluid_xfem and
-      //genprob.probtyp != prb_fluid_xfem2 and
-      genprob.probtyp != prb_combust and
-      genprob.probtyp != prb_fluid_fluid and
-      genprob.probtyp != prb_fluid_fluid_ale and
-      genprob.probtyp != prb_fluid_fluid_fsi)
+  if (probtype != prb_fsi_xfem and
+      probtype != prb_fluid_xfem and
+      //probtype != prb_fluid_xfem2 and
+      probtype != prb_combust and
+      probtype != prb_fluid_fluid and
+      probtype != prb_fluid_fluid_ale and
+      probtype != prb_fluid_fluid_fsi)
   {
     output->WriteMesh(0,0.0);
   }
@@ -268,10 +273,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // compute null space information
-  if (genprob.probtyp != prb_fsi_xfem and
-      genprob.probtyp != prb_fluid_xfem and
-      genprob.probtyp != prb_fluid_xfem2 and
-      genprob.probtyp != prb_combust)
+  if (probtype != prb_fsi_xfem and
+      probtype != prb_fluid_xfem and
+      probtype != prb_fluid_xfem2 and
+      probtype != prb_combust)
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
@@ -339,11 +344,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
   // check correct setting
-  if ((genprob.probtyp == prb_thermo_fsi or genprob.probtyp == prb_loma) and
+  if ((probtype == prb_thermo_fsi or probtype == prb_loma) and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") 
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
-  if (genprob.probtyp == prb_poroelast and
+  if (probtype == prb_poroelast and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::poro)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Poro' for poro-elasticity!");
@@ -498,26 +503,26 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("RELAXING_ALE", xdyn.get<int>("RELAXING_ALE"));
   }
 
-  if( genprob.probtyp == prb_fluid_xfem2 or
-      genprob.probtyp == prb_fsi_xfem      )
+  if( probtype == prb_fluid_xfem2 or
+      probtype == prb_fsi_xfem      )
   {
     // check some input configurations
     INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(fluidtimeparams->sublist("XFEM"), "XFLUID_BOUNDARY");
     INPAR::XFEM::InterfaceVel   interf_vel       = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(fluidtimeparams->sublist("XFEM"),"INTERFACE_VEL");
     INPAR::XFEM::InterfaceDisplacement interf_disp    = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(fluidtimeparams->sublist("XFEM"),"INTERFACE_DISP");
 
-    if(genprob.probtyp == prb_fsi_xfem and xfluid_mov_bound!= INPAR::XFEM::XFSIMovingBoundary) dserror("choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-    if(genprob.probtyp == prb_fluid_xfem2 and xfluid_mov_bound== INPAR::XFEM::XFSIMovingBoundary) dserror("do not choose xfsi_moving_boundary!!! for prb_fluid_xfem2");
-    if(genprob.probtyp == prb_fsi_xfem and interf_disp != INPAR::XFEM::interface_disp_by_fsi) dserror("choose interface_disp_by_fsi for prb_fsi_xfem");
-    if(genprob.probtyp == prb_fluid_xfem2 and interf_disp == INPAR::XFEM::interface_disp_by_fsi ) dserror("do not choose interface_disp_by_fsi for prb_fluid_xfem2");
-    if(genprob.probtyp == prb_fsi_xfem and interf_vel != INPAR::XFEM::interface_vel_by_disp ) dserror("do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
+    if(probtype == prb_fsi_xfem and xfluid_mov_bound!= INPAR::XFEM::XFSIMovingBoundary) dserror("choose xfsi_moving_boundary!!! for prb_fsi_xfem");
+    if(probtype == prb_fluid_xfem2 and xfluid_mov_bound== INPAR::XFEM::XFSIMovingBoundary) dserror("do not choose xfsi_moving_boundary!!! for prb_fluid_xfem2");
+    if(probtype == prb_fsi_xfem and interf_disp != INPAR::XFEM::interface_disp_by_fsi) dserror("choose interface_disp_by_fsi for prb_fsi_xfem");
+    if(probtype == prb_fluid_xfem2 and interf_disp == INPAR::XFEM::interface_disp_by_fsi ) dserror("do not choose interface_disp_by_fsi for prb_fluid_xfem2");
+    if(probtype == prb_fsi_xfem and interf_vel != INPAR::XFEM::interface_vel_by_disp ) dserror("do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
   }
 
 
   // --------------------------sublist for combustion-specific fluid parameters
   /* This sublist COMBUSTION FLUID contains parameters for the fluid field
    * which are only relevant for a combustion problem.                 07/08 henke */
-  if (genprob.probtyp == prb_combust)
+  if (probtype == prb_combust)
   {
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
@@ -532,12 +537,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   INPAR::FLUID::TimeIntegrationScheme timeint = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or
-      genprob.probtyp == prb_fsi_lung or
-      genprob.probtyp == prb_gas_fsi or
-      genprob.probtyp == prb_biofilm_fsi or
-      genprob.probtyp == prb_thermo_fsi or
-      genprob.probtyp == prb_fluid_fluid_fsi)
+  if (probtype == prb_fsi or
+      probtype == prb_fsi_lung or
+      probtype == prb_gas_fsi or
+      probtype == prb_biofilm_fsi or
+      probtype == prb_thermo_fsi or
+      probtype == prb_fluid_fluid_fsi)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
@@ -565,7 +570,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }
   }
-  if (genprob.probtyp == prb_freesurf)
+  if (probtype == prb_freesurf)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
@@ -586,9 +591,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
   }
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi_xfem or
-      genprob.probtyp == prb_fluid_xfem or
-      genprob.probtyp == prb_fluid_xfem2)
+  if (probtype == prb_fsi_xfem or
+      probtype == prb_fluid_xfem or
+      probtype == prb_fluid_xfem2)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
@@ -607,13 +612,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
   }
 
-  if (genprob.probtyp == prb_elch)
+  if (probtype == prb_elch)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
 
-  if (genprob.probtyp == prb_poroelast)
+  if (probtype == prb_poroelast)
   {
     fluidtimeparams->set<double>("initporosity",prbdyn.get<double>("INITPOROSITY"));
     fluidtimeparams->set<bool>("poroelast",true);
@@ -646,12 +651,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
-    if (genprob.probtyp == prb_fsi or
-        genprob.probtyp == prb_fsi_lung or
-        genprob.probtyp == prb_gas_fsi or
-        genprob.probtyp == prb_biofilm_fsi or
-        genprob.probtyp == prb_thermo_fsi or
-        genprob.probtyp == prb_fluid_fluid_fsi)
+    if (probtype == prb_fsi or
+        probtype == prb_fsi_lung or
+        probtype == prb_gas_fsi or
+        probtype == prb_biofilm_fsi or
+        probtype == prb_thermo_fsi or
+        probtype == prb_fluid_fluid_fsi)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -681,7 +686,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
 
-    switch (genprob.probtyp)
+    switch (probtype)
     {
     case prb_fsi_xfem:
     case prb_fluid_xfem2:
@@ -763,7 +768,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
     }
     break;
-    } // end switch (genprob.probtyp)
+    } // end switch (probtype)
   }
   else if (timeint == INPAR::FLUID::timeint_gen_alpha)
   {
@@ -779,7 +784,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     //------------------------------------------------------------------
     RCP<Fluid> tmpfluid;
     tmpfluid = rcp(new FLD::FluidGenAlphaIntegration(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
-//    if (genprob.probtyp == prb_fsi_lung)
+//    if (probtype == prb_fsi_lung)
 //      fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
 //    else
     fluid_ = tmpfluid;
@@ -802,7 +807,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
 
-  if (genprob.probtyp == prb_fluid_topopt)
+  if (probtype == prb_fluid_topopt)
     fluid_->Output();
 
   return;
@@ -818,11 +823,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
 
+  // -------------------------------------------------------------------
+  // what's the current problem type?
+  // -------------------------------------------------------------------
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
   // the inflow computation can only deal with standard fluid problems so far
   // extensions for xfluid, fsi or combust problems have to be added if necessary
   // they should not pose any additional problem
   // meshtying or xfem related parameters are not supported, yet
-  if (genprob.probtyp != prb_fluid)
+  if (probtype != prb_fluid)
      dserror("Only fluid problems supported! Read comment and add your problem type!");
 
   // -------------------------------------------------------------------

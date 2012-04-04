@@ -50,7 +50,8 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 typedef struct _GENPROB
 {
-  enum _PROBLEM_TYP probtyp;       /* type of problem, see enum.h */
+  /* obsolete. functionality moved to globalproblem */
+  /*enum _PROBLEM_TYP probtyp;  */     /* type of problem, see enum.h */
 
   INT               ndim;          /* dimension of problem (2 or 3) */
 

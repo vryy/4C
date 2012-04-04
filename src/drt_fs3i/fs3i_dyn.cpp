@@ -38,7 +38,10 @@ void fs3i_dyn()
 
   Teuchos::RCP<FS3I::FS3I_Base> fs3i;
 
-  switch (genprob.probtyp)
+  // what's the current problem type?
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
+  switch (probtype)
   {
     case prb_gas_fsi:
     {
@@ -61,7 +64,7 @@ void fs3i_dyn()
     }
     break;
     default:
-      dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
+      dserror("solution of unknown problemtyp %d requested", probtype);
     break;
   }
 

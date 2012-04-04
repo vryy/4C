@@ -355,6 +355,34 @@ DRT::ELEMENTS::So_hex8::~So_hex8()
 
 
 /*----------------------------------------------------------------------*
+ |  Get number of degrees of freedom (public)                  maf 04/07|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex8::NumDofPerNode(const unsigned nds,const DRT::Node& node) const
+{
+  if (nds==1)
+  {
+    // what's the current problem type?
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    switch (probtype)
+    {
+    // in case of TSI/TFSI_Aero: nds=1 (second discretization) temperature: 1Dof/Node
+    case prb_tsi:
+    case prb_tfsi_aero:
+    case prb_thermo_fsi:
+      return 1;
+      break;
+    default:
+      dserror("Unknown problem type with a second dofset!");
+    break;
+    }
+  }
+  // structure, 3D: 3 Dofs per node
+  //    return 3;
+  return NumDofPerNode(node);
+};
+
+
+/*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::Print(ostream& os) const

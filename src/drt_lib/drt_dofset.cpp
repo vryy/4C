@@ -52,8 +52,6 @@ Maintainer: Ulrrich Kuettler
 
 #include "../linalg/linalg_utils.H"
 
-#include "../headers/define_sizes.h"
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

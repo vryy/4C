@@ -107,6 +107,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
+  // what's the current problem type?
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
@@ -155,7 +158,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_structure)
+  if(probtype == prb_struct_ale || probtype == prb_structure)
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -164,12 +167,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or
-      genprob.probtyp == prb_fsi_lung or
-      genprob.probtyp == prb_gas_fsi or
-      genprob.probtyp == prb_biofilm_fsi or
-      genprob.probtyp == prb_thermo_fsi or
-      genprob.probtyp == prb_fluid_fluid_fsi)
+  if (probtype == prb_fsi or
+      probtype == prb_fsi_lung or
+      probtype == prb_gas_fsi or
+      probtype == prb_biofilm_fsi or
+      probtype == prb_thermo_fsi or
+      probtype == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn
@@ -198,7 +201,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   }
 
   // extra parameters for poroelasticity
-  if (genprob.probtyp == prb_poroelast)
+  if (probtype == prb_poroelast)
   {
     //set parameters for poroelasticity
     sdyn->set<double>("INITPOROSITY", prbdyn.get<double>("INITPOROSITY"));
@@ -344,12 +347,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 //
 //  if (sta!=Teuchos::null)
 //  {
-//    if (genprob.probtyp == prb_fsi or
-//        genprob.probtyp == prb_fsi_lung or
-//        genprob.probtyp == prb_gas_fsi or
-//        genprob.probtyp == prb_biofilm_fsi or
-//        genprob.probtyp == prb_thermo_fsi or
-//        genprob.probtyp == prb_fluid_fluid_fsi)
+//    if (probtype == prb_fsi or
+//        probtype == prb_fsi_lung or
+//        probtype == prb_gas_fsi or
+//        probtype == prb_biofilm_fsi or
+//        probtype == prb_thermo_fsi or
+//        probtype == prb_fluid_fluid_fsi)
 //    {
 //      dserror("no adaptive time integration with fsi");
 //    }
@@ -360,7 +363,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 
   if (tmpstr != Teuchos::null)
   {
-    switch(genprob.probtyp)
+    switch(probtype)
     {
     case prb_fsi:
     case prb_fsi_lung:

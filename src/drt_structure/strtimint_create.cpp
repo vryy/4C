@@ -165,12 +165,15 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
 {
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;
 
-  if (genprob.probtyp == prb_fsi or
-      genprob.probtyp == prb_fsi_lung or
-      genprob.probtyp == prb_gas_fsi or
-      genprob.probtyp == prb_biofilm_fsi or
-      genprob.probtyp == prb_thermo_fsi or
-      genprob.probtyp == prb_fluid_fluid_fsi)
+  // what's the current problem type?
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
+  if (probtype == prb_fsi or
+      probtype == prb_fsi_lung or
+      probtype == prb_gas_fsi or
+      probtype == prb_biofilm_fsi or
+      probtype == prb_thermo_fsi or
+      probtype == prb_fluid_fluid_fsi)
   {
     dserror("no explicit time integration with fsi");
   }

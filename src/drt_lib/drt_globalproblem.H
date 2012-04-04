@@ -200,6 +200,9 @@ public:
   /// input of knots for isogeometric analysis
   void ReadKnots(DRT::INPUT::DatFileReader& reader);
 
+  /// set restart step which was read from command line
+  void SetRestartStep(int r);
+
   //@}
 
   /// @name General query methods
@@ -386,6 +389,9 @@ private:
 
   /// the problem type
   PROBLEM_TYP probtype_;
+
+  /// the restart step (given by command line or input file)
+  int restartstep_;
 
   /// discretizations of this problem
   vector<vector<RCP<Discretization> > > discretizations_;

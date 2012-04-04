@@ -15,10 +15,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/standardtypes_cpp.H"
-
-
-extern struct _GENPROB     genprob;
+#include "../drt_lib/drt_globalproblem.H"
 
 
 DRT::ELEMENTS::Fluid3Type DRT::ELEMENTS::Fluid3Type::instance_;
@@ -570,11 +567,14 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
 int DRT::ELEMENTS::Fluid3::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
 {
   if (nds==1)
-    switch (genprob.probtyp)
+  {
+    // what's the current problem type?
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    switch (probtype)
     {
       case prb_poroelast:
       {
-        return genprob.ndim;
+        return DRT::Problem::Instance()->NDim();
         break;
       }
       default: // scalar transport
@@ -583,6 +583,7 @@ int DRT::ELEMENTS::Fluid3::NumDofPerNode(const unsigned nds, const DRT::Node& no
         break;
       }
     }
+  }
   else if(nds==0)
     return NumDofPerNode(node);
   else

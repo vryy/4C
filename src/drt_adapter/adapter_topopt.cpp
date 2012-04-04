@@ -17,7 +17,6 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
-#include "../headers/standardtypes.h"
 
 #include "adapter_topopt.H"
 

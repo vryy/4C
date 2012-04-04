@@ -16,8 +16,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-extern struct _GENPROB     genprob;
-
 using namespace DRT::UTILS;
 
 

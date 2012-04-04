@@ -217,27 +217,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-  {
-    if (nds==1)
-    {
-      switch (genprob.probtyp)
-      {
-      // in case of TSI/TFSI_Aero: nds=1 (second discretization) temperature: 1Dof/Node
-      case prb_tsi:
-      case prb_tfsi_aero:
-      case prb_thermo_fsi:
-        return 1;
-        break;
-      default:
-        dserror("Unknown problem type with a second dofset!");
-      break;
-      }
-    }
-    // structure, 3D: 3 Dofs per node
-    //    return 3;
-    return NumDofPerNode(node);
-  };
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const ;
 
 
   /*!

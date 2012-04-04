@@ -123,7 +123,9 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
 
 
   bool dirichletcond = true;
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fluid_fluid_fsi)
+  // what's the current problem type?
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  if (probtype == prb_fsi or probtype == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -142,7 +144,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     }
   }
 
-  if (genprob.probtyp == prb_freesurf)
+  if (probtype == prb_freesurf)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

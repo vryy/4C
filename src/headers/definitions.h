@@ -22,7 +22,7 @@ Maintainer: Malte Neumann
  | - always use strict upper case letters                               |
  |                                                                      |
  *----------------------------------------------------------------------*/
-#include "define_sizes.h"
+/*#include "define_sizes.h"*/
 
 /*----------------------------------------------------------------------*
  | some definitions that are important for dynamic memory management    |
@@ -349,15 +349,15 @@ static INT iminarg1,iminarg2;
 /*----------------------------------------------------------------------*
  | maximum number columns in input file                                 |
  *----------------------------------------------------------------------*/
-#define MAXNUMCOL        (500)
+/*#define MAXNUMCOL        (500)*/
 
 
-#define MAXFILESIZE     (2000000)
+/*#define MAXFILESIZE     (2000000)*/
 
 /*----------------------------------------------------------------------*
  | maximum number of dofs to an element                                 |
  *----------------------------------------------------------------------*/
-#define MAXDOFPERELE     (MAXNOD*MAXDOFPERNODE)
+/*#define MAXDOFPERELE     (MAXNOD*MAXDOFPERNODE)*/
 
 /*----------------------------------------------------------------------*
  | maximum number nonzero entries in a row of a sparse system matrix    |
@@ -366,12 +366,12 @@ static INT iminarg1,iminarg2;
  | number of elements to a node (8) *                                   |
  | 2 (unsymmetric case)                                                 |
  *----------------------------------------------------------------------*/
-#define MAX_NNZPERROW     (MAXNOD*MAXDOFPERNODE*8*2)
+/*#define MAX_NNZPERROW     (MAXNOD*MAXDOFPERNODE*8*2)*/
 
 /*----------------------------------------------------------------------*
  | numbers                                                              |
  *----------------------------------------------------------------------*/
-#define ZERO              (0.0)
+/*#define ZERO              (0.0)
 #define ONE               (1.0)
 #define TWO               (2.0)
 #define THREE             (3.0)
@@ -383,7 +383,7 @@ static INT iminarg1,iminarg2;
 #define NINE              (9.0)
 #define TEN              (10.0)
 #define ELEVEN           (11.0)
-#define TWELVE           (12.0)
+#define TWELVE           (12.0)*/
 /*----------------------------------------------------------------------*
  | a set of different tolerances                                        |
  *----------------------------------------------------------------------*/
@@ -403,7 +403,7 @@ static INT iminarg1,iminarg2;
 #define EPS14            (1.0E-14)
 #define EPS15            (1.0E-15)
 /*----------------------------------------------------------------------*
- | a set of numbers                                                     |
+ | a set of numbers (still used in shell8)                              |
  *----------------------------------------------------------------------*/
 #define VERYLARGEINT     (1000000000)
 #define VERYLARGEREAL    (1000000000.0)

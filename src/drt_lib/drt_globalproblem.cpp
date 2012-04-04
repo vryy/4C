@@ -100,7 +100,9 @@ void DRT::Problem::Done()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Problem::Problem()
+DRT::Problem::Problem() :
+  probtype_(prb_none),
+  restartstep_(0)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
 }
@@ -134,7 +136,7 @@ std::string DRT::Problem::ProblemName() const
 /*----------------------------------------------------------------------*/
 int DRT::Problem::Restart() const
 {
-  return genprob.restart;
+  return restartstep_;
 }
 
 
@@ -302,25 +304,26 @@ void DRT::Problem::NPGroup(
 /*----------------------------------------------------------------------*/
 void DRT::Problem::InputControl()
 {
-  // Play it save and fill the old C structures here.
-  // We have to get rid of them eventually.
+  // Play it save and fill the old C structure genprob here.
+  // We have to get rid of it soon!
   genprob.ndim    = NDim();
-  genprob.probtyp = ProblemType();
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
-  // If there is a restart flag on the command line, ignore the input file.
-  if ( genprob.restart==0 )
+  if (restartstep_==0 )
   {
-    genprob.restart        = type.get<int>("RESTART");
+    // no restart flag on the command line, so check the restart flag from the input file
+    restartstep_ = type.get<int>("RESTART");
   }
   else
   {
-    // If there is a non-zero restart flag on the command line, the
-    // RESTART flag in the input file should be zero or have the same value!
+    // There is a non-zero restart flag on the command line, so we ignore the input file.
+    // The RESTART flag in the input file should be zero or have the same value!
     const int restartflaginfile = type.get<int>("RESTART");
-    if ((restartflaginfile > 0) and (restartflaginfile != genprob.restart))
+    if ((restartflaginfile > 0) and (restartflaginfile != restartstep_))
       dserror("Restart flags in input file and command line are non-zero and different!");
   }
+  // fill genprob.restart as well
+  genprob.restart = Restart();
 
   // set field numbers depending on problem type and numfld
   switch (ProblemType())
@@ -838,7 +841,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner)
 {
-  if (genprob.restart)
+  if (Restart())
     inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
 
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm,
@@ -847,8 +850,8 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
                                                       inputfile,
                                                       restartkenner,
                                                       prefix,
-                                                      genprob.ndim,
-                                                      genprob.restart,
+                                                      NDim(),
+                                                      Restart(),
                                                       IOParams().get<int>("FILESTEPS")));
 
 }
@@ -1181,7 +1184,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
 
       break;
-    } // end of else if (genprob.probtyp==prb_thermo)
+    }
   }
 
   case prb_structure:
@@ -1200,7 +1203,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_structure)
+  }
 
   case prb_loma:
   {
@@ -1215,7 +1218,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_loma)
+  }
 
   case prb_elch:
   {
@@ -1242,7 +1245,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis,   reader, "--ALE ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_elch)
+  }
 
   case prb_combust:
   {
@@ -1256,7 +1259,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_combust)
+  }
 
   case prb_art_net: // _1D_ARTERY_
   {
@@ -1267,7 +1270,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_art_net)
+  }
   case prb_red_airways: // _reduced D airways
   {
     // create empty discretizations
@@ -1277,7 +1280,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_red_airways)
+  }
   case prb_struct_ale: // structure with ale
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
@@ -1289,7 +1292,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_struct_ale)
+  }
   case prb_fluid_topopt:
   {
     // create empty discretizations
@@ -1299,7 +1302,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     break;
-  } // end of else if (genprob.probtyp==prb_combust)
+  }
   case prb_poroelast:
   {
     // create empty discretizations
@@ -1312,7 +1315,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
-  }// end of else if (genprob.probtyp==prb_poroelast)
+  }
 
   default:
     dserror("Unknown problem type: %d",ProblemType());
@@ -1631,6 +1634,15 @@ DRT::UTILS::Function& DRT::Problem::Funct(int num)
 DRT::UTILS::TimeCurve& DRT::Problem::Curve(int num)
 {
   return timecurvemanager_.Curve(num);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::SetRestartStep(int r)
+{
+  if (r<0) dserror("Negative restart step not allowed");
+  restartstep_ = r;
 }
 
 
