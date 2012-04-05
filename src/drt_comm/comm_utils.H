@@ -33,6 +33,10 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
+namespace DRT
+{
+  class Discretization;
+}
 
 /*----------------------------------------------------------------------*
  |                                                          ghamm 01/12 |
@@ -40,11 +44,19 @@ Maintainer: Georg Hammerl
 /// COMM_UTILS
 namespace COMM_UTILS
 {
+  class NestedParGroup;
+  
   //! create a local and a global communicator for the problem
   void CreateComm(int argc, char** argv);
   
   //! distribute discretizations from one group to the others
   void BroadcastDiscretizations(const int bgroup);
+  //! distribute a discretization from one group to one other
+  void NPDuplicateDiscretization(const int sgroup, 
+                                 const int rgroup,
+                                 Teuchos::RCP<NestedParGroup> group,
+                                 Teuchos::RCP<DRT::Discretization> dis,
+                                 Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! transform Epetra_Comm to Teuchos::Comm, RCP version
   template<class datatype>

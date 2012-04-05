@@ -25,8 +25,12 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
-#include "comm_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_parobject.H"
+#include "comm_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -277,39 +281,256 @@ int COMM_UTILS::NestedParGroup::LPID(int GPID)
 void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
 {
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
-  int group = problem->GetNPGroup()->GroupId();
-  int ngroups = problem->GetNPGroup()->NumGroups();
-  NP_TYPE npType = problem->GetNPGroup()->NpType();
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
   
   int sbcaster = -1;
   int bcaster = -1;
   int numfield = 0;
   vector<int> numdis;
-  if (group==bgroup && lcomm->MyPID()==0) // only proc 0 of group bgroup
+  // only proc 0 of group bgroup
+  if (group->GroupId()==bgroup && lcomm->MyPID()==0) 
   {
-    sbcaster = problem->GetNPGroup()->GPID(0);
+    sbcaster = group->GPID(0);
     numfield = problem->NumFields();
     numdis.resize(numfield);
     for (int i=0; i<numfield; ++i) 
-    {
       numdis[i] = problem->NumDis(i);
-      if (!lcomm->MyPID()) printf("bcaster %d bgroup %d numfield %d numdis %d\n",sbcaster,bgroup,numfield,numdis[i]);
-    }
   }
   gcomm->MaxAll(&sbcaster,&bcaster,1);
   gcomm->Broadcast(&numfield,1,bcaster);
   numdis.resize(numfield);
   gcomm->Broadcast(&numdis[0],numfield,bcaster);
+
+  for (int i=0; i<numfield; ++i)
+  {
+    for (int j=0; j<numdis[i]; ++j)
+    {
+      RCP<DRT::Discretization> dis = Teuchos::null;
+      string name;
+      string distype;
+      vector<char> data;
+      if (gcomm->MyPID()==bcaster) 
+      {
+        DRT::Container cont;
+        dis = problem->Dis(i,j);
+        name = dis->Name();
+        distype = problem->SpatialApproximation();
+        cont.Add("disname",name);
+        cont.Add("distype",distype);
+        DRT::PackBuffer buffer;
+        cont.Pack(buffer);
+        buffer.StartPacking();
+        cont.Pack(buffer);
+        std::swap(data,buffer());
+      }
+      // create map to export from proc 0 of group bgroup to all
+      {
+        int snummyelements = 0;
+        int rnummyelements = 1;
+        int myelements = 0;
+        if (gcomm->MyPID()==bcaster) snummyelements = 1;
+        Epetra_Map source(-1,snummyelements,&myelements,0,*gcomm);
+        Epetra_Map target(-1,rnummyelements,&myelements,0,*gcomm);
+        DRT::Exporter exporter(source,target,*gcomm);
+        map<int,vector<char> > smap;
+        if (gcomm->MyPID()==bcaster) smap[0] = data;
+        exporter.Export<char>(smap);
+        data = smap[0];
+      }
+      DRT::Container cont;
+      vector<char> singledata;
+      vector<char>::size_type index = 0;
+      cont.ExtractfromPack(index,data,singledata);
+      cont.Unpack(singledata);
+      const string* rname = cont.Get<string>("disname");
+      name = *rname;
+      const string* rdistype = cont.Get<string>("distype");
+      distype = *rdistype;
+      // allocate or get the discretization
+      if (group->GroupId()==bgroup) dis = problem->Dis(i,j);
+      else
+      {
+        if (distype=="Nurbs")
+          dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,lcomm));
+        else
+          dis = Teuchos::rcp(new DRT::Discretization(name,lcomm));
+      }
+      // copy the discretization to the other groups
+      for (int k=0; k<group->NumGroups(); ++k)
+      {
+        if (k==bgroup) continue; // broadcasting group does not copy to itself
+        int color = MPI_UNDEFINED;
+        if (group->GroupId()==k || bgroup==group->GroupId())
+          color = 1;
+        MPI_Comm intercomm;
+        Epetra_MpiComm* mpicomm = dynamic_cast<Epetra_MpiComm*>(gcomm.get());
+        if (!mpicomm) dserror("dyncast failed");
+        MPI_Comm_split(mpicomm->Comm(),color,gcomm->MyPID(),&intercomm);
+        
+        
+        if (group->GroupId()==k || bgroup==group->GroupId())
+        {
+          Teuchos::RCP<Epetra_MpiComm> icomm = Teuchos::rcp(new Epetra_MpiComm(intercomm));
+          NPDuplicateDiscretization(bgroup,k,group,dis,icomm);
+          icomm = Teuchos::null;
+          MPI_Comm_free(&intercomm);
+        }
+        fflush(stdout);
+        gcomm->Barrier();
+      }
+
+
+    } // for (int j=0; j<numdis[i]; ++j)
+  } // for (int i=0; i<numfield; ++i)
+
+  fflush(stdout);
+  gcomm->Barrier();
   printf("gpid %d numfield %d numdis %d\n",gcomm->MyPID(),numfield,numdis[0]);
-
-  
-
-
-  
   return;
 }
 
 
+
+/*----------------------------------------------------------------------*
+ | distribute a discretization from one group to one other    gee 03/12 |
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::NPDuplicateDiscretization(
+                                 const int sgroup, 
+                                 const int rgroup,
+                                 Teuchos::RCP<NestedParGroup> group,
+                                 Teuchos::RCP<DRT::Discretization> dis,
+                                 Teuchos::RCP<Epetra_MpiComm> icomm)
+{
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+#if 0
+  vector<int> sbcaster(2,-1);
+  vector<int> bcaster(2,-1);
+  vector<int> sgsize(2,-1);
+  vector<int> gsize(2,-1);
+  if (group->GroupId()==sgroup && lcomm->MyPID()==0)
+  {
+    sbcaster[0] = icomm->MyPID();
+    sgsize[0] = group->GroupSize();
+  }
+  if (group->GroupId()==rgroup && lcomm->MyPID()==0)
+  {
+    sbcaster[1] = icomm->MyPID();
+    sgsize[1] = group->GroupSize();
+  }
+  icomm->MaxAll(&sbcaster[0],&bcaster[0],2);
+  icomm->MaxAll(&sgsize[0],&gsize[0],2);
+  printf("proc %d sgroup %d rgroup %d bcaster %d %d gsize %d %d\n",icomm->MyPID(),sgroup,rgroup,bcaster[0],bcaster[1],gsize[0],gsize[1]);
+#endif
+
+  // create a common discretization that we then fill with all stuff from sender group
+  string name = dis->Name();  
+  string type = DRT::Problem::Instance()->SpatialApproximation();
+  RCP<DRT::Discretization> commondis;
+  if (type=="Nurbs")
+    commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,icomm));
+  else
+    commondis = Teuchos::rcp(new DRT::Discretization(name,icomm));
+
+  // sender group fills commondis with elements and nodes and conditions
+  // note that conditions are fully redundant
+  map<int,vector<char> >        condmap;
+  map<int,RCP<DRT::Container> > condnamemap;
+  vector<int>                   myrowelements;
+  if (group->GroupId()==sgroup)
+  {
+    if (!dis->Filled()) dis->FillComplete(false,false,false);
+    
+    myrowelements.resize(dis->ElementRowMap()->NumMyElements(),-1);
+    
+    // loop all my elements
+    for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
+    {
+      myrowelements[i] = dis->ElementRowMap()->GID(i);
+      DRT::Element* ele = dis->lRowElement(i);
+      if (myrowelements[i] != ele->Id()) dserror("Element global id mismatch");
+      RCP<DRT::Element> newele = rcp(ele->Clone());
+      newele->SetOwner(icomm->MyPID());
+      commondis->AddElement(newele);
+    }
+    // loop all my nodes
+    for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
+    {
+      DRT::Node* node = dis->lRowNode(i);
+      RCP<DRT::Node> newnode = rcp(node->Clone());
+      newnode->SetOwner(icomm->MyPID());
+      commondis->AddNode(newnode);
+    }
+    // loop conditions
+    vector<string> condnames;
+    dis->GetConditionNames(condnames);
+    for (int i=0; i<(int)condnames.size(); ++i)
+    {
+      vector<DRT::Condition*> conds;
+      dis->GetCondition(condnames[i],conds);
+      RCP<vector<char> > data = dis->PackCondition(condnames[i]);
+      if (lcomm->MyPID()==0) 
+      {
+        condmap[i] = *data;
+        condnamemap[i] = rcp(new DRT::Container());
+        condnamemap[i]->Add("condname",condnames[i]);
+      }
+      commondis->UnPackCondition(data,condnames[i]);
+    }
+  } // if (group->GroupId()==sgroup)
+  
+  // conditions have to be fully redundant, need to copy to all procs in intercomm
+  {
+    int nummyelements = (int)condmap.size();
+    vector<int> myelements(nummyelements,-1);
+    for (int i=0; i<nummyelements; ++i) myelements[i] = i;
+    Epetra_Map smap(-1,nummyelements,&myelements[0],0,*icomm);
+    nummyelements = smap.NumGlobalElements();
+    myelements.resize(nummyelements);  
+    for (int i=0; i<nummyelements; ++i) myelements[i] = i;
+    Epetra_Map rmap(-1,nummyelements,&myelements[0],0,*icomm);
+    DRT::Exporter exporter(smap,rmap,*icomm);
+    exporter.Export<char>(condmap);
+    exporter.Export<DRT::Container>(condnamemap);
+  }
+
+  // all rgroup procs loop and add condition
+  if (group->GroupId()==rgroup)
+  {
+    map<int,vector<char> >::iterator fool1 = condmap.begin();
+    map<int,RCP<DRT::Container> >::iterator fool2 = condnamemap.begin();
+    for ( ; fool1 != condmap.end(); ++fool1)
+    {
+      const string* name = fool2->second->Get<string>("condname");
+      commondis->UnPackCondition(rcp(&(fool1->second),false),*name);
+      ++fool2;
+    }
+  }
+  
+  // finalize the commondis
+  {
+    RCP<Epetra_Map> roweles = rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
+    RCP<Epetra_Map> coleles;
+    RCP<Epetra_Map> rownodes;
+    RCP<Epetra_Map> colnodes;
+    DRT::UTILS::PartUsingParMetis(commondis,roweles,rownodes,colnodes,icomm,false);
+    commondis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+    commondis->ExportRowNodes(*rownodes);
+    commondis->ExportRowElements(*roweles);
+    commondis->ExportColumnNodes(*colnodes);
+    commondis->ExportColumnElements(*coleles);
+    commondis->FillComplete(false,false,false);
+  }
+  
+  // move everything from sender group to receiver group
+  // build a target rowmap for nodes and elements
+  
+  
+  // receiving group build its own discretization
+    
+
+  icomm->Barrier();
+  return;
+}
 /*----------------------------------------------------------------------*/
