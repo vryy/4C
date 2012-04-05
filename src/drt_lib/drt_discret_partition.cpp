@@ -719,8 +719,10 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
 
 
 /*----------------------------------------------------------------------*
+// this is to go away!!!!
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetupGhosting(bool assigndegreesoffreedom ,
+void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
+                                        bool assigndegreesoffreedom ,
                                         bool initelements           ,
                                         bool doboundaryconditions   )
 {

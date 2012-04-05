@@ -63,7 +63,7 @@ namespace LINALG
   class SparseOperator;
   class MapExtractor;
 }
-
+class PostProblem;
 
 /*!
 \brief DRT: namespace of the baci discretization module
@@ -976,8 +976,19 @@ public:
                             bool initelements          =true,
                             bool doboundaryconditions  =true);
 
+//-----------------------------------------------------------------------------------
+// this is temporary to hide away this method SetupGhosting and only give access to the
+// class PostProblem. It is supposed to go away and PostProblem currently is the only place
+// where it is used.
+// Naming "SetupGhosting" is misleading, implementation duplicates functionality that
+// can be build using some of the other methods
+// mwgee 4/12
+private:
+  friend class PostProblem;
   /// Distribute to proper ghosting after the discretization has been read
   /*!
+    This is a very misleading function name! It does a repartitioning as well!!
+    
     After a discretization has been read (via restart or inside a filter),
     only row elements and nodes are available. Yet the ghosting information in
     the current distribution is already there. One just needs to use it.
@@ -1000,10 +1011,13 @@ public:
                                        present.
 
    */
-  virtual void SetupGhosting(bool assigndegreesoffreedom=true,
-                             bool initelements          =true,
-                             bool doboundaryconditions  =true);
+  virtual void SetupGhostingWrongNameDoNotUse(bool assigndegreesoffreedom=true,
+                                              bool initelements          =true,
+                                              bool doboundaryconditions  =true);
 
+
+public:
+//-----------------------------------------------------------------------------------
   /*!
   \brief Build element row and column map from nodal row and column maps
          (Filled()==true NOT prerequisite)

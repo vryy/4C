@@ -117,6 +117,7 @@ namespace UTILS
   /*!
     Actually, only the \p rownodes and \p colnodes maps are created.
    */
+#if 0
   void PartUsingParMetis(RCP<DRT::Discretization> dis,
                          RCP<Epetra_Map> roweles,
                          RCP<Epetra_Map>& rownodes,
@@ -127,7 +128,7 @@ namespace UTILS
                          RCP<Epetra_Comm> comm,
                          Epetra_Time& time,
                          bool outflag);
-
+#endif
   void PartUsingParMetis(RCP<DRT::Discretization> dis,
                          RCP<Epetra_Map> roweles,
                          RCP<Epetra_Map>& rownodes,
@@ -136,6 +137,7 @@ namespace UTILS
                          bool outflag);
 #else
 
+#if 0 // this is out of date, we don't support non-parmetis anymore mmwgee 4/12
   /// redistribute a discretization using metis
   /*!
     Actually, only the \p rownodes and \p colnodes maps are created.
@@ -144,7 +146,7 @@ namespace UTILS
                       RCP<Epetra_Map>& colnodes,
                       list<vector<int> >& elementnodes,
                       RCP<Epetra_Comm> comm);
-
+#endif
 #endif
 
 

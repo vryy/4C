@@ -188,7 +188,7 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::Container::Unpack(const vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
