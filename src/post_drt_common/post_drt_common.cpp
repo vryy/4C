@@ -648,8 +648,8 @@ void PostProblem::read_meshes()
           dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
         }
 
-        if (currfield.discretization()->Comm().NumProc() != 1)
-          currfield.discretization()->SetupGhosting(false,false,false);
+        if (nurbsdis->Comm().NumProc() != 1)
+          nurbsdis->SetupGhostingWrongNameDoNotUse(false,false,false);
         else
           nurbsdis->FillComplete(false,false,false);
 
@@ -672,7 +672,7 @@ void PostProblem::read_meshes()
       {
         // setup of parallel layout: create ghosting of already distributed nodes+elems
         if (currfield.discretization()->Comm().NumProc() != 1)
-          currfield.discretization()->SetupGhosting();
+          currfield.discretization()->SetupGhostingWrongNameDoNotUse();
         else
           currfield.discretization()->FillComplete();
       }
