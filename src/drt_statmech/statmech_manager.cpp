@@ -3032,11 +3032,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       // difference angle to fit position of first nodes of two filaments
       double deltatheta = 0.0;
       int bspotgid = 0;
+
       for(int i=0; i<(int)filaments.size(); i++)
       {
         // vector between first nodes of consecutive filament PAIRS (0-1; 2-3; ...)
         double angularoffset = 0.0;
-        if(i%2==0)
+        if(i%2==0 && (int)filaments.size()>1)
         {
           // vector from first node of filament i to the first one of i+1
           node0 = discret_->lColNode(discret_->NodeColMap()->LID((*filaments[i]->Nodes())[0]));
@@ -3044,6 +3045,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
             node1 = discret_->lColNode(discret_->NodeColMap()->LID((*filaments[i+1]->Nodes())[0]));
           else
             node1 = discret_->lColNode(discret_->NodeColMap()->LID((*filaments[i-1]->Nodes())[0]));
+
           for(int j=0; j<(int)vectonfil.M(); j++)
             vectonfil(j) = node1->X()[j]-node0->X()[j];
           vectonfil.Scale(1.0/vectonfil.Norm2());

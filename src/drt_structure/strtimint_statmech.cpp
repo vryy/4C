@@ -1283,10 +1283,12 @@ void STR::TimIntStatMech::PTC()
   //-------------------------------- test whether max iterations was hit
   PTCConvergenceStatus(iter_, itermax_, fresnormdivergent);
 
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
+  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
   if(!isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
-  if(isconverged_)
+  if(isconverged_  and !myrank_ and printscreen_)
     PrintNewtonIter();
 
   if(!myrank_ and printscreen_)
@@ -1382,6 +1384,11 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
 //      else if(fresnormdivergent)
 //        ConvergenceStatusUpdate(false,false);
 //    }
+  }
+  else
+  {
+    if(!myrank_)
+      cout<<"PTC converged with..."<<endl;
   }
   return;
 }//STR::TimIntStatMech::PTCConvergenceStatus()
