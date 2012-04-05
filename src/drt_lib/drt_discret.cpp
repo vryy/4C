@@ -430,13 +430,12 @@ void DRT::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      if ((int)element_.size())
-        os << "-------------------------- Proc " << proc << " :\n";
+      os << "-------------------------- Proc " << proc << " :\n";
       map<int,RCP<DRT::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
       {
         os << *(curr->second);
-        if (Filled())
+        if (Filled() && HaveDofs())
         {
           vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
@@ -456,13 +455,12 @@ void DRT::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      if ((int)node_.size())
-        os << "-------------------------- Proc " << proc << " :\n";
+      os << "-------------------------- Proc " << proc << " :\n";
       map<int,RCP<DRT::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
       {
         os << *(curr->second);
-        if (Filled())
+        if (Filled() && HaveDofs())
         {
           vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
