@@ -11,7 +11,7 @@
 #include <Epetra_Time.h>
 #include <iterator>
 
-
+#if 0 // we are not using metis anymore, use parmetis instead
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
@@ -146,7 +146,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
 
     graph = null;
 }
-
+#endif
 #endif
 
 #endif

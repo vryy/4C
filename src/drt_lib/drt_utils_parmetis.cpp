@@ -130,7 +130,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
   return;
 }
 
-
+#if 0 // this is out of date and replaced by the next function mwgee 4/12
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
@@ -772,7 +772,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     }
 
 }
-
+#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
