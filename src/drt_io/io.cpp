@@ -153,8 +153,6 @@ void IO::DiscretizationReader::ReadMesh(int step)
   dis_->UnPackMyElements(elementdata);
   dis_->Redistribute(*noderowmap,*nodecolmap);
 
-  // consider dis_->SetupGhosting(); here instead of reusing the old
-  // maps. This would allow for adaptive meshes.
 #endif
   return;
 }
