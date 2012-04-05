@@ -36,18 +36,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*
- * Some functions and global variables, most of them are only
- * important for linking.
- *----------------------------------------------------------------------*/
-
-
-/* There are some global variables in ccarat that are needed by the
- * service functions. We need to specify them here and set them up
- * properly. */
-extern struct _GENPROB genprob;
-
-
-/*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
  * PostProblem, PostField and PostResult are defined here.
  *----------------------------------------------------------------------*/
@@ -743,28 +731,7 @@ PostField PostProblem::getfield(MAP* field_info)
 
 
 /*----------------------------------------------------------------------*
- * The Constructor of PostField
- *----------------------------------------------------------------------*/
-/*
-PostField::PostField(string name,
-                     RCP<Epetra_Comm> comm,
-                     PostProblem* problem,
-                     string field_name,
-                     const int numnd,
-                     const int numele):
-  dis_(rcp(new DRT::Discretization(name,comm))),
-  problem_(problem),
-  field_name_(field_name),
-//  type_(type),
-  numnd_(numnd),
-  numele_(numele)
-{
-}
-*/
-
-/*----------------------------------------------------------------------*
- * Another Constructor of PostField. This one takes the discretization
- * directly
+ * Constructor of PostField.
  *----------------------------------------------------------------------*/
 PostField::PostField(
     RCP<DRT::Discretization> dis,
@@ -775,7 +742,6 @@ PostField::PostField(
 : dis_(dis),
   problem_(problem),
   field_name_(field_name),
-  //    type_(type),
   numnd_(numnd),
   numele_(numele)
 {
@@ -787,9 +753,6 @@ PostField::PostField(
 PostField::~PostField()
 {
 }
-
-
-
 
 
 /*----------------------------------------------------------------------*

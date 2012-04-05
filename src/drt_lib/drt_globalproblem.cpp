@@ -880,15 +880,6 @@ void DRT::Problem::WriteInputParameters()
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh)
 {
-  // read elements the first time to create graph object
-  // row distribution of nodes
-  // column distribution of nodes
-  // graph of problem
-  RCP<Epetra_Map> rownodes   = null;
-  RCP<Epetra_Map> colnodes   = null;
-  RCP<Epetra_Map> roweles    = null;
-  RCP<Epetra_Map> coleles    = null;
-  RCP<Epetra_CrsGraph> graph = null;
 
   RCP<DRT::Discretization> structdis       = null;
   RCP<DRT::Discretization> fluiddis        = null;
@@ -900,7 +891,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   RCP<DRT::Discretization> fluidscatradis  = null;
   RCP<DRT::Discretization> structscatradis = null;
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
-  RCP<DRT::Discretization> airwaydis       = null; //
+  RCP<DRT::Discretization> airwaydis       = null;
   RCP<DRT::Discretization> optidis         = null;
 
   // decide which kind of spatial representation is required

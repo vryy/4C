@@ -477,11 +477,16 @@ void IO::DiscretizationWriter::Check()
   // restrict the names that can be given to a discretization.
   //
   // If you want to create a dummy discretization choose the name 'none'.
+  /*
   const char* names[] = FIELDNAMES;
   for (int i=0; names[i]!=NULL; ++i)
     if (dis_->Name()==names[i])
       return;
   dserror("illegal discretization name '%s'",dis_->Name().c_str());
+  */
+
+  // We do not restrict the discretization names anymore. The postfilters
+  // do not care about the actual field names.          gjb 04/12
 }
 
 

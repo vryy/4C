@@ -22,7 +22,6 @@ Maintainer: Malte Neumann
  | - always use strict upper case letters                               |
  |                                                                      |
  *----------------------------------------------------------------------*/
-/*#include "define_sizes.h"*/
 
 /*----------------------------------------------------------------------*
  | some definitions that are important for dynamic memory management    |

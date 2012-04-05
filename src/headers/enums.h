@@ -55,10 +55,6 @@ typedef enum _PROBLEM_TYP
 #define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt",NULL }
 
 
-/* valid discretization names for output. Why don't we allow all type of names? */
-#define FIELDNAMES {"none", "fluid", "xfluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "scatra1", "scatra2", "artery", "thermo", "FluidFluidboundary", "red_airway", "inflow", NULL}
-
-
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
  | material laws                                                        |

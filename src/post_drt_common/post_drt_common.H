@@ -82,6 +82,8 @@ public:
   // \param argc (in) : number of command line arguments
   // \param argv (in) : command line arguments
   PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv);
+
+  //! destructor
   ~PostProblem();
 
   //@}
