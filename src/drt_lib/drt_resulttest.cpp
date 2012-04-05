@@ -23,8 +23,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 
 
-//using namespace DRT;
-
 DRT::ResultTest::ResultTest()
 {
 }
@@ -108,8 +106,8 @@ void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  INT nerr = 0;
-  INT test_count = 0;
+  int nerr = 0;
+  int test_count = 0;
 
   if (comm.MyPID()==0)
     cout << "\nChecking results ...\n";

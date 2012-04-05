@@ -686,9 +686,9 @@ void DRT::ELEMENTS::Ale2::static_ke(
 //=======================================================================
 //=======================================================================
 
-static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_SerialDenseMatrix xyz, DOUBLE *min_detF)
+static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_SerialDenseMatrix xyz, double *min_detF)
 {
-DOUBLE           detF[4];          /* Jacobian determinant at nodes */
+double  detF[4];          /* Jacobian determinant at nodes */
 
 switch (distyp)
 {
@@ -794,7 +794,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   // gaussian points
   const GaussRule2D gaussrule = getOptimalGaussrule(distype);
   const IntegrationPoints2D  intpoints(gaussrule);
-  DOUBLE              min_detF;         /* minimal Jacobian determinant   */
+  double             min_detF;         /* minimal Jacobian determinant   */
   ale2_min_jaco(Shape(),xyze,&min_detF);
 
   // integration loops
