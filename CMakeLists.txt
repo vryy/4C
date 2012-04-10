@@ -462,6 +462,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/protein.cpp
   src/drt_mat/scatra_mat.cpp
+  src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp

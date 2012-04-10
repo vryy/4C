@@ -131,6 +131,7 @@ namespace INPAR
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
       m_fluidporo,       ///< darcy fluid for poroelasticity problems
       m_structporo,		//< wrapper material for poroelasticity (structure)
+      m_spring,       ///< elastic spring (translational or rotational)
       m_none          ///< undefined
     };
 

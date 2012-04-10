@@ -70,6 +70,7 @@ Maintainer: Lena Wiechert
 #include "biofilm.H"
 #include "fluidporo.H"
 #include "structporo.H"
+#include "spring.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -476,6 +477,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Biofilm(curmat));
     MAT::PAR::Biofilm* params = static_cast<MAT::PAR::Biofilm*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_spring:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Spring(curmat));
+    MAT::PAR::Spring* params = static_cast<MAT::PAR::Spring*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pl_mises_3D:

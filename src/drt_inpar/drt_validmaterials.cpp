@@ -1713,6 +1713,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  
+  /*----------------------------------------------------------------------*/
+  // elastic spring
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Spring",
+                                            "elastic spring",
+                                            INPAR::MAT::m_spring));
+
+    AddNamedReal(m,"STIFFNESS","spring constant");
+    AddNamedReal(m,"DENS","density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // deliver
