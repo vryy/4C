@@ -585,33 +585,28 @@ void STR::TimInt::PrepareStatMech()
 
   if(tbtype != INPAR::STATMECH::thermalbath_none)
   {
-    // note: "0.0" for alpha_f (originally, statmech time integration derived from strugenalpha.cpp
     statmechman_ = rcp(new STATMECH::StatMechManager(discret_));
-  }
 
-  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
-  temp->PutScalar(1.0);
-  LINALG::Export(*temp,*dirichtoggle_);
+    dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+    RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+    temp->PutScalar(1.0);
+    LINALG::Export(*temp,*dirichtoggle_);
 
-  // output
-  if (!discret_->Comm().MyPID())
-  {
-    switch(tbtype)
+    // output
+    if (!discret_->Comm().MyPID())
     {
-      case INPAR::STATMECH::thermalbath_none:
-        cout << "===== Statistical Mechanics without Statistical Mechanics ======\n" << endl;
-        break;
-      case INPAR::STATMECH::thermalbath_uniform:
-        cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << endl;
-        break;
-      case INPAR::STATMECH::thermalbath_shearflow:
-        cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << endl;
-        break;
-      default: dserror("Undefined thermalbath type!");
+      switch(tbtype)
+      {
+        case INPAR::STATMECH::thermalbath_uniform:
+          cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << endl;
+          break;
+        case INPAR::STATMECH::thermalbath_shearflow:
+          cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << endl;
+          break;
+        default: dserror("Undefined thermalbath type!");
+      }
     }
   }
-
   return;
 }
 
