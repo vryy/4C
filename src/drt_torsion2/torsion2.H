@@ -325,9 +325,6 @@ private:
   //!reference angle
   double theta_;
 
-  //! springconstant
-  double springconstant_;
-
   //! Bending potential
   BendingPotential bendingpotential_;
 

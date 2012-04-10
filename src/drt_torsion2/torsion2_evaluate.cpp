@@ -15,6 +15,7 @@ Maintainer: Christian Cyron
 #include "torsion2.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_mat/spring.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                cyron 02/10|
@@ -309,6 +310,23 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
   
   deltatheta=thetacurr - theta_;
   
+  // spring constant from material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double spring = 0.0;
+
+  // assignment of material parameters; only spring material is accepted for this element
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_spring: // only elastic spring supported
+    {
+      const MAT::Spring* actmat = static_cast<const MAT::Spring*>(currmat.get());
+      spring = actmat->Stiffness();
+    }
+    break;
+    default:
+    dserror("unknown or improper type of material law");
+  }
+  
   //__________________________________________________________________________________________
   // bending potential quadratic
   
@@ -318,7 +336,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 	  //global internal forces (equation 2.12)
 	  if (force != NULL)
 	    for (int i=0; i<6; ++i)
-	      (*force)(i) =  springconstant_*deltatheta*grtheta(i);
+	      (*force)(i) =  spring*deltatheta*grtheta(i);
 	  
 	  //stiffness matrix (equation 2.15)
 	  if (stiffmatrix != NULL)
@@ -326,7 +344,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 	    for (int i=0; i<6; ++i)
 	    {
 	      for (int j=0; j<6; ++j)
-	        (*stiffmatrix)(i,j)=springconstant_*grtheta(i)*grtheta(j);    //first part of the stiffness matrix
+	        (*stiffmatrix)(i,j)=spring*grtheta(i)*grtheta(j);    //first part of the stiffness matrix
 	    }
 	    
 	    LINALG::Matrix<2,2> tmp;
@@ -341,8 +359,8 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 	    {
 	      for (int j=0;j<2;++j)
 	      {
-	        A(i,j)=springconstant_*deltatheta/pow(lcurr(0),2)*( tmp(i,j)-2*perp(  i)*unit(  j) );
-	        B(i,j)=springconstant_*deltatheta/pow(lcurr(1),2)*( tmp(i,j)-2*perp(2+i)*unit(2+j) );
+	        A(i,j)=spring*deltatheta/pow(lcurr(0),2)*( tmp(i,j)-2*perp(  i)*unit(  j) );
+	        B(i,j)=spring*deltatheta/pow(lcurr(1),2)*( tmp(i,j)-2*perp(2+i)*unit(2+j) );
 	      }
 	    }
 	    
@@ -424,7 +442,7 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 			    if (force != NULL)
 			    {
 			      for (int j=0; j<6; ++j)
-			        (*force)(j) = -springconstant_*grtheta2(j);      //-
+			        (*force)(j) = -spring*grtheta2(j);      //-
 			    }
 			    
 			    
@@ -435,15 +453,15 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 			      { 
 			        for (int i=0; i<2; ++i)
 			        {
-			          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
-			          (*stiffmatrix)(  j,2+i) =-springconstant_*(  A(j  ,i)+B(j+2,i) );
-			          (*stiffmatrix)(  j,4+i) =-springconstant_*( -B(j+2,i) );
-			          (*stiffmatrix)(2+j,  i) =-springconstant_*(  A(j  ,i)+B(j  ,i) );
-			          (*stiffmatrix)(2+j,2+i) =-springconstant_*( -A(j  ,i)-A(j+2,i)-B(j ,i)-B(j+2,i) );
-			          (*stiffmatrix)(2+j,4+i) =-springconstant_*(  A(j+2,i)+B(j+2,i) );
-			          (*stiffmatrix)(4+j,  i) =-springconstant_*( -B(j  ,i) );
-			          (*stiffmatrix)(4+j,2+i) =-springconstant_*(  A(j+2,i)+B(j  ,i) );
-			          (*stiffmatrix)(4+j,4+i) =-springconstant_*( -A(j+2,i) );
+			          (*stiffmatrix)(  j,  i) =-spring*( -A(j  ,i) );
+			          (*stiffmatrix)(  j,2+i) =-spring*(  A(j  ,i)+B(j+2,i) );
+			          (*stiffmatrix)(  j,4+i) =-spring*( -B(j+2,i) );
+			          (*stiffmatrix)(2+j,  i) =-spring*(  A(j  ,i)+B(j  ,i) );
+			          (*stiffmatrix)(2+j,2+i) =-spring*( -A(j  ,i)-A(j+2,i)-B(j ,i)-B(j+2,i) );
+			          (*stiffmatrix)(2+j,4+i) =-spring*(  A(j+2,i)+B(j+2,i) );
+			          (*stiffmatrix)(4+j,  i) =-spring*( -B(j  ,i) );
+			          (*stiffmatrix)(4+j,2+i) =-spring*(  A(j+2,i)+B(j  ,i) );
+			          (*stiffmatrix)(4+j,4+i) =-spring*( -A(j+2,i) );
 			        }
 			      }
 			    }

@@ -66,13 +66,13 @@ void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition( std::map<std::string,s
 
   defs["LINE3"]
     .AddIntVector("LINE3",3)
-    .AddNamedDouble("SPRING")
+    .AddNamedInt("MAT")
     .AddNamedString("BENDINGPOTENTIAL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
-    .AddNamedDouble("SPRING")
+    .AddNamedInt("MAT")
     .AddNamedString("BENDINGPOTENTIAL")
     ;
 }
@@ -83,8 +83,7 @@ void DRT::ELEMENTS::Torsion3Type::SetupElementDefinition( std::map<std::string,s
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) :
 DRT::Element(id,owner),
-data_(),
-springconstant_(0.0)
+data_()
 {
   return;
 }
@@ -93,8 +92,7 @@ springconstant_(0.0)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) :
  DRT::Element(old),
- data_(old.data_),
- springconstant_(old.springconstant_)
+ data_(old.data_)
 {
   return;
 }
@@ -149,7 +147,6 @@ void DRT::ELEMENTS::Torsion3::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   Element::Pack(data);
-  AddtoPack(data,springconstant_);
   AddtoPack(data,bendingpotential_);
   AddtoPack(data,data_);
 
@@ -171,7 +168,6 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  ExtractfromPack(position,data,springconstant_);
   bendingpotential_ = static_cast<BendingPotential>( ExtractInt(position,data) );
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

@@ -65,13 +65,13 @@ void DRT::ELEMENTS::Torsion2Type::SetupElementDefinition( std::map<std::string,s
 
   defs["LINE3"]
     .AddIntVector("LINE3",3)
-    .AddNamedDouble("SPRING")
+    .AddNamedInt("MAT")
     .AddNamedString("BENDINGPOTENTIAL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
-    .AddNamedDouble("SPRING")
+    .AddNamedInt("MAT")
     .AddNamedString("BENDINGPOTENTIAL")
     ;
 }
@@ -83,8 +83,7 @@ DRT::ELEMENTS::Torsion2::Torsion2(int id, int owner) :
 DRT::Element(id,owner),
 data_(),
 isinit_(false),
-theta_(0.0),
-springconstant_(0.0)
+theta_(0.0)
 {
   return;
 }
@@ -95,8 +94,7 @@ DRT::ELEMENTS::Torsion2::Torsion2(const DRT::ELEMENTS::Torsion2& old) :
  DRT::Element(old),
  data_(old.data_),
  isinit_(old.isinit_),
- theta_(old.theta_),
- springconstant_(old.springconstant_)
+ theta_(old.theta_)
 {
   return;
 }
@@ -152,7 +150,6 @@ void DRT::ELEMENTS::Torsion2::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   AddtoPack(data,isinit_);
    AddtoPack(data,theta_);
-  AddtoPack(data,springconstant_);
   AddtoPack(data,bendingpotential_);
   AddtoPack(data,data_);
 
@@ -176,7 +173,6 @@ void DRT::ELEMENTS::Torsion2::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,theta_);
-  ExtractfromPack(position,data,springconstant_);
   bendingpotential_ = static_cast<BendingPotential>( ExtractInt(position,data) );
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

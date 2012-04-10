@@ -301,9 +301,6 @@ private:
   //container containing all kind of Torsion3 thisandthat
   DRT::Container data_;
 
-  //springconstant
-  double springconstant_;
-
   //! Bending potential
   BendingPotential bendingpotential_;
 
