@@ -313,6 +313,20 @@ STR::TimInt::TimInt
     }
   }
 
+  // check if we have elements with a micro-material
+  havemicromat_ = false;
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele = discret_->lRowElement(i);
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      havemicromat_ = true;
+      break;
+    }
+  }
+
+
   // check for structural problem with ale
   if(DRT::Problem::Instance()->ProblemName() == "structure_ale")
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
@@ -935,7 +949,7 @@ void STR::TimInt::ReadRestartStatMech()
     IO::DiscretizationReader reader(discret_,step_);
     statmechman_->ReadRestart(reader);
   }
-  
+
   return;
 }
 
@@ -977,7 +991,7 @@ void STR::TimInt::PrepareOutput()
 {
   DetermineStressStrain();
   DetermineEnergy();
-  PrepareOutputMicro();
+  if (havemicromat_) PrepareOutputMicro();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1031,7 +1045,7 @@ void STR::TimInt::OutputStep()
   OutputNodalPositions();
 
   // write output on micro-scale (multi-scale analysis)
-  OutputMicro();
+  if (havemicromat_) OutputMicro();
 
   // write patient specific output
   if (writeresultsevery_ and (step_%writeresultsevery_ == 0))

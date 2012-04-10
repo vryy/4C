@@ -797,6 +797,9 @@ namespace STR
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
+    //! elements with micro-materials
+    bool havemicromat_;
+
     //@}
 
     //! @name General control parameters
