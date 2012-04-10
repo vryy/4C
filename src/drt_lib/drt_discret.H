@@ -983,7 +983,8 @@ public:
 // Naming "SetupGhosting" is misleading, implementation duplicates functionality that
 // can be build using some of the other methods
 // mwgee 4/12
-private:
+//private:
+public: // TAW: fix compile problem TODO FIXME TODO
   friend class PostProblem;
   /// Distribute to proper ghosting after the discretization has been read
   /*!
