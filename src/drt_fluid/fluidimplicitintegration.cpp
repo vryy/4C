@@ -204,6 +204,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
   FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  // if the pressure map is empty, the user obviously specified a wrong
+  // number of space dimensions in the input file
+  if (velpressplitter_.CondMap()->NumGlobalElements()<1)
+    dserror("Pressure map empty. Wrong DIM value in input file?");
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
