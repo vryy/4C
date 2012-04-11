@@ -126,6 +126,10 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
       cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << endl;
     if (nodecount != 4)
       cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
+#ifdef COMBUST_SXFEM
+    if (nodecount != 8)
+      dserror("Enrichment function probably not evaluated correctly if not all nodes of the element are enriched");
+#endif
 
   return skipped_element;
 }

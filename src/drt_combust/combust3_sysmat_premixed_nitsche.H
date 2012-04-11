@@ -144,8 +144,9 @@ void SysmatDomainNitsche(
     //-----------------------------------------------------------
     // evaluate the enrichment function for this integration cell
     //-----------------------------------------------------------
+#ifndef COMBUST_SXFEM
     const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
-
+#endif
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
@@ -220,6 +221,11 @@ void SysmatDomainNitsche(
       {
         derxy2.Clear();
       }
+
+#ifdef COMBUST_SXFEM
+      const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,ephi,*cell,funct,derxy,derxy2);
+      //const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
+#endif
 
       //--------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
@@ -1638,8 +1644,13 @@ void Nitsche_SysmatBoundaryCell(
     const double                   dens_plus,
     const double&                  timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+#ifndef COMBUST_SXFEM
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
     const XFEM::ElementEnrichmentValues&       enrvals_minus,
+#else
+    const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
+    const V2&                      ephi,         ///< nodal G-function values for this element
+#endif
     const double&                              kappa_plus,          ///< weights of average in plus domain
     const double&                              kappa_minus,         ///< weights of average in minus domain
     const double&                              visc_plus,           ///< viscosity in plus domain
@@ -1687,10 +1698,14 @@ void Nitsche_SysmatBoundaryCell(
            surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
   ) // only for laplace_beltrami approximation
   {
+#ifndef COMBUST_SXFEM
     COMBUST::RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche<DISTYPE,CELLDISTYPE,ASSTYPE,NUMDOF>(
         cellXiDomain, xyze, grad_ephi_smoothed,
         enrvals_plus,enrvals_minus,
         kappa_plus,kappa_minus,numparamvelx,timefac,surftensapprox,surftenscoeff,assembler);
+#else
+    cout << "RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche deactivated - dont do two-phase flow intersecting the boundary!" << endl;
+#endif
   }
 
   //--------------------------------------
@@ -2007,6 +2022,12 @@ void Nitsche_SysmatBoundaryCell(
       derxy2.Clear();
     }
 
+#ifdef COMBUST_SXFEM
+    const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi,funct,derxy,derxy2);
+    const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi,funct,derxy,derxy2);
+    //const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi);
+    //const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi);
+#endif
     //--------------------------------------------------------------------------------
     // rearrange (enriched) shape functions and derivatives as approximation functions
     //--------------------------------------------------------------------------------
@@ -2870,7 +2891,7 @@ void SysmatBoundaryNitsche(
 
   // the input parameter alphap is used for the stabilization term for convection dominated flows
   // convective stabilization parameter
-  const double alpha_conv = 1.0/hk_eleDiam * nitschepres;
+  const double alpha_conv = 1.0/hk_eleDiam * nitschevel;
 
   //-----------------------------------------------------------------------------------------
   // get weights for average operators { () } = kappa_plus * ()_plus + kappa_minus * ()_minus
@@ -2900,8 +2921,10 @@ void SysmatBoundaryNitsche(
   //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)
   //-------------------------------------------------------------------------------
+#ifndef COMBUST_SXFEM
   const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi);
   const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi);
+#endif
 
   //-------------------------------------
   // loop over boundary integration cells
@@ -2917,7 +2940,12 @@ void SysmatBoundaryNitsche(
           evelnp, eprenp, egradphi, ecurv,
           flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
+#ifndef COMBUST_SXFEM
+          enrvals_plus, enrvals_minus,
+#else
+          dofman, ephi,
+#endif
+          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
           numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
@@ -2929,7 +2957,12 @@ void SysmatBoundaryNitsche(
           evelnp, eprenp, egradphi, ecurv,
           flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
+#ifndef COMBUST_SXFEM
+          enrvals_plus, enrvals_minus,
+#else
+          dofman, ephi,
+#endif
+          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
           numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration

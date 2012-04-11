@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 //#define COMBUST_NORMAL_ENRICHMENT // turn on/off normal velocity enrichment approach
 //#define COMBUST_HEX20
 #define COMBUST_CUT
+//#define COMBUST_MYBACI
 //-----------------------------
 // combustion algorithm options
 //-----------------------------
@@ -30,6 +31,7 @@ Maintainer: Florian Henke
 //#define COMBUST_EPSPRES_BASED  // turn on/off epsilon stress-based method
 //#define COMBUST_SIGMA_BASED  // turn on/off sigma stress-based method
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
+//#define COMBUST_SXFEM
 //------------------------------------------
 // combustion domain integral terms standard
 //------------------------------------------

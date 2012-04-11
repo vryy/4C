@@ -1865,7 +1865,7 @@ void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::Parameter
       // use 1/h as the maximum admissible curvature
       if (fabs(curvature) > (5.0/elesize) )
       {
-        if (curvature < 0.0)
+        if (curvature > 0.0)
           curvature = -5.0/elesize;
         else
           curvature = 5.0/elesize;

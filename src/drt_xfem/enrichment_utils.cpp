@@ -87,11 +87,16 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
   const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
 
   // compute enrichment values based on a level set field 'phi'
+#ifndef COMBUST_SXFEM
   const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi);
-
   LINALG::SerialDenseVector enr_funct(numparam);
   LINALG::SerialDenseVector funct(numnode);
-
+#else
+  LINALG::SerialDenseVector enr_funct(numparam);
+  LINALG::Matrix<8,1> funct(true);
+  LINALG::Matrix<3,8> derxy(true);
+  LINALG::Matrix<6,8> derxy2(true);
+#endif
   cellvalues.Zero();
   for (int inode = 0; inode < cell.NumNode(); ++inode)
   {
@@ -100,6 +105,10 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
     DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
 #else
     DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex20);
+#endif
+
+#ifdef COMBUST_SXFEM
+    const XFEM::ElementEnrichmentValues enrvals(ele,dofman,phi,cell,funct,derxy,derxy2);
 #endif
     // evaluate enriched shape functions
     enrvals.ComputeModifiedEnrichedNodalShapefunction(field, funct, enr_funct);
@@ -230,7 +239,6 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
           }
         }
       }
-      // TODO @Florian remove this from release version
       if (velncounter != dofman.NumDofPerField(XFEM::PHYSICS::Veln)) dserror("Alles falsch, du Depp!");
       dsassert(velncounter == dofman.NumDofPerField(XFEM::PHYSICS::Veln), "mismatch in information from eledofmanager!");
 

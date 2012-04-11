@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "field_enriched.H"
 #include "xfem_element_utils.H"
 #include "../drt_geometry/integrationcell.H"
+#include "../drt_combust/combust_defines.H"
 
 
 namespace COMBUST
@@ -151,73 +152,6 @@ namespace XFEM
 
       return;
     }
-
-//    template<class V1>
-//    explicit ElementEnrichmentValues(
-//            const DRT::Element&             ele,    ///< pointer to element
-//            const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
-//            const V1&                       phi,    ///< vector of level set values
-//            const bool                      domainplus
-//     ) :
-//       ele_(ele),
-//       dofman_(dofman)
-//    {
-//      enrvals_.clear();
-//      enrvalnodes_.clear();
-//      enrvalderxy_.clear();  // not used for jump enrichment (Heaviside function)
-//      enrvalderxy2_.clear(); // not used for jump enrichment (Heaviside function)
-//
-//      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
-//      const int numnode = ele_.NumNode();
-//
-//      //--------------------------------------------------
-//      // prepare temporary variables for enrichment values
-//      //--------------------------------------------------
-//      // enrichment values at nodes
-//      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
-//      // first derivatives of enrichment function
-//      std::vector<double> enrvalderxy(3);
-//      enrvalderxy[0] = 0.0;
-//      enrvalderxy[1] = 0.0; // zero for Heaviside function
-//      enrvalderxy[2] = 0.0;
-//      // second derivatives of enrichment function
-//      std::vector<double> enrvalderxy2(6);
-//      for (int isd=0; isd<6; isd++)
-//      {
-//        enrvalderxy2[isd] = 0.0; // zero for Heaviside function
-//      }
-//
-//      //------------------------------------------------------
-//      // evaluate enrichment values for this integration cell
-//      //------------------------------------------------------
-//      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
-//      {
-//        enrvals_[*enriter] = 0.0;
-//        enrvalderxy_[*enriter] = enrvalderxy;
-//        enrvalderxy2_[*enriter] = enrvalderxy2;
-//      }
-//
-//      //------------------------------------------------------------
-//      // loop over nodes to evaluate enrichment values at the nodes
-//      //------------------------------------------------------------
-//      for(int inode=0; inode < numnode; inode++)
-//      {
-//        std::map<XFEM::Enrichment, double> enrvalstmp;
-//        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
-//        {
-//          double enrvalnode = 1.0;
-//          if (enriter->Type()==XFEM::Enrichment::typeJump)
-//          {
-//            enrvalnode = enriter->EnrValueNodeLevelSetStab(inode,phi,domainplus);
-//          }
-//          enrvalstmp[*enriter] = enrvalnode;
-//        }
-//        enrvalnodes_[inode] = enrvalstmp;
-//        enrvalstmp.clear();
-//      }
-//
-//      return;
-//    }
 
     /*!
      * \brief compute enrichment value at one side of an embedded interface based on level set function
@@ -362,7 +296,14 @@ namespace XFEM
           // Psi(xGauss)-Psi(xNode)
           if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
           {
+#ifndef COMBUST_SXFEM
             enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+#else
+            for(int jnode=0; jnode<numnode; jnode++)
+            {
+              enrvalnode += funct(jnode) * enriter->EnrValueNodeLevelSet(jnode,phi);
+            }
+#endif
           }
           enrvalues[*enriter] = enrval - enrvalnode;
         }
@@ -433,15 +374,22 @@ namespace XFEM
           enrvalderxy2[isd] = 0.0;
         }
 
-        if(enriter->Type() != XFEM::Enrichment::typeKink){
-          enrvalside = enriter->EnrValueAtInterface(approachdirection);       //version Flo
-          //enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct); //version Ursula
-          // no derivatives needed for not kink enrichments
-        }
-        else{ // kink enrichment
-          enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
-          enrvalderxy = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
+        // kink enrichments
+        if(enriter->Type() == XFEM::Enrichment::typeKink)
+        {
+          enrvalside   = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
+          enrvalderxy  = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
           enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
+        }
+        // everything but kink enrichments (jump, void)
+        else
+        {
+          enrvalside = enriter->EnrValueAtInterface(approachdirection);
+          // no derivatives needed for jump or void enrichments
+#ifdef COMBUST_SXFEM
+          enrvalderxy  = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
+          enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
+#endif
         }
 
         enrvals_[*enriter] = enrvalside;
@@ -460,7 +408,14 @@ namespace XFEM
           double enrvalnode = 0.0;
           if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
           {
+#ifndef COMBUST_SXFEM
             enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+#else
+            for(int jnode=0; jnode<numnode; jnode++)
+            {
+              enrvalnode += funct(jnode) * enriter->EnrValueNodeLevelSet(jnode,phi);
+            }
+#endif
           }
           // enrvalnode = 0.0 for kink enrichment
           enrvalstmp[*enriter] = enrvalnode;
@@ -1025,7 +980,7 @@ namespace XFEM
       term(0) = gp(0)*dergp(0,0)+gp(1)*dergp(1,0)+gp(2)*dergp(2,0); // grad\phi * d grad\phi/dx
       term(1) = gp(0)*dergp(0,1)+gp(1)*dergp(1,1)+gp(2)*dergp(2,1); // grad\phi * d grad\phi/dy
       term(2) = gp(0)*dergp(0,2)+gp(1)*dergp(1,2)+gp(2)*dergp(2,2); // grad\phi * d grad\phi/dz
-      // TODO@Florian: use these variables to accelerate loop
+      // use these variables to accelerate loop
       //               const double normgp2 = normgp*normgp;
       //               const double normgp3 = normgp*normgp*normgp;
       //               replace terms which do not have 'idim' in them by pre-computed variables
@@ -1174,7 +1129,7 @@ namespace XFEM
     *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
-    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    * remark: if enrichment function has derivatives not equal to zero, we need the chain rule here
     */
     template<class VI, class VO>
     void ComputeEnrichedElementShapefunction(
@@ -1252,7 +1207,7 @@ namespace XFEM
     *
     * simplest case: jump or void enrichment
     * -> no chain rule, since enrichment function derivative is zero
-    * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+    * remark: if enrichment function has derivatives not equal to zero, we need the chain rule here
     */
     template<class VI, class MI1, class VO, class MO1>
     void ComputeEnrichedElementShapefunction(
@@ -1351,7 +1306,6 @@ namespace XFEM
         }
       }
     }
-    // TODO @Florian remove this from release version
     if (velncounter != dofman.NumDofPerField(XFEM::PHYSICS::Veln)) dserror("Alles falsch, du Depp!");
     dsassert(velncounter == dofman.NumDofPerField(XFEM::PHYSICS::Veln), "mismatch in information from eledofmanager!");
 
