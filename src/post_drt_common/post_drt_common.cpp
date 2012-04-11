@@ -16,18 +16,12 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include <algorithm>
-#include <stack>
 #include "post_drt_common.H"
 
-#include "../drt_io/io_hdf.H"
-#include <sstream>
-
-#include "../drt_lib/drt_globalproblem.H"
+#include <stack>
 #include "../drt_lib/drt_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
 #include "../drt_lib/drt_parobjectregister.H"
-
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"

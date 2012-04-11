@@ -20,73 +20,11 @@ filter. But to link the filter stubs of these functions are needed.
 
 #ifdef CCADISCRET
 
-#include "../drt_s8/shell8.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-
 #include "../drt_mat/micromaterial.H"
 
 struct _GENPROB genprob;
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 
-#if 0
-#ifdef D_SHELL8
-int ELEMENTS::Shell8Type::Initialize(Discretization&)
-{
-  return 0;
-}
-
-bool DRT::ELEMENTS::Shell8::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
-                                        DRT::INPUT::LineDefinition* linedef)
-{
-  dserror("ELEMENTS::Shell8::ReadElement undefined");
-  return false;
-}
-
-int ELEMENTS::Shell8::Evaluate(ParameterList&,
-                               Discretization&,
-                               vector<int>&,
-                               Epetra_SerialDenseMatrix&,
-                               Epetra_SerialDenseMatrix&,
-                               Epetra_SerialDenseVector&,
-                               Epetra_SerialDenseVector&,
-                               Epetra_SerialDenseVector&)
-{
-  dserror("ELEMENTS::Shell8::Evaluate undefined");
-  return 0;
-}
-
-int ELEMENTS::Shell8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&, Epetra_SerialDenseMatrix*)
-{
-  dserror("ELEMENTS::Shell8::EvaluateNeumann undefined");
-  return 0;
-}
-
-int ELEMENTS::Shell8Line::EvaluateNeumann(ParameterList& params,
-                                          Discretization&      discretization,
-                                          Condition&           condition,
-                                          vector<int>&              lm,
-                                          Epetra_SerialDenseVector& elevec1,
-                                          Epetra_SerialDenseMatrix* elemat1)
-{
-  dserror("ELEMENTS::Shell8Line::EvaluateNeumann undefined");
-  return 0;
-}
-
-void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
-{
-}
-
-bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
-{
-  return false;
-}
-
-#endif
-#endif
 
 namespace MAT
 {
