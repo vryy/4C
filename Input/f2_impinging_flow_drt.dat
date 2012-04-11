@@ -49,17 +49,8 @@ ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
--------------------------------------------------------MESHTYING AND CONTACT
--------------------------------------------------------STATISTICAL MECHANICS
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-SIMPLER_SOLVER                  3
-SIMPLER_SOLVER                  2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 TIMEINTEGR                      Stationary
