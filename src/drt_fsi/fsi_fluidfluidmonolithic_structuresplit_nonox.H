@@ -104,6 +104,8 @@ namespace FSI
 
     virtual void RecoverLagrangeMultiplier();
 
+    virtual void BuildCovergenceNorms();
+
 
   private:
 

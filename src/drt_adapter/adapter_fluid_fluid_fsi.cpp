@@ -65,10 +65,16 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
 
   // now the not-dbc map of background fluid and merge it with the
   // inner map of embedded fluid
+  std::vector<Teuchos::RCP<const Epetra_Map> > bgembmaps;
+  bgembmaps.push_back(bgdbcmaps->OtherMap());
+  bgembmaps.push_back(innervelmap_emb);
+  Teuchos::RefCountPtr<Epetra_Map> innermap_bgemb = LINALG::MultiMapExtractor::MergeMaps(bgembmaps);
+
+  //now throw out the pressure dofs
   std::vector<Teuchos::RCP<const Epetra_Map> > finalmaps;
-  finalmaps.push_back(bgdbcmaps->OtherMap());
-  finalmaps.push_back(innervelmap_emb);
-  innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(finalmaps);
+  finalmaps.push_back(innermap_bgemb);
+  finalmaps.push_back(VelocityRowMap());
+  innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(finalmaps);
 
   if (dirichletcond)
   {

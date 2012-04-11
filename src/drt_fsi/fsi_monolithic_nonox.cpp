@@ -72,19 +72,8 @@ void FSI::MonolithicNoNOX::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::Newton()
 {
-  cout << " FSI::MonolithicNoNOX::Newton()" << endl;
   // initialise equilibrium loop
   iter_ = 1;
-  normrhs_ = 0.0;
-  normstrrhs_ = 0.0;
-  normflrhs_ = 0.0;
-  normalerhs_ = 0.0;
-  norminc_ = 0.0;
-
-  // get length of the structural, fluid and ale vector
-  ns_ = (*(StructureField().RHS())).GlobalLength();
-  nf_ = (*(FluidField().RHS())).GlobalLength();
-  na_ = (*(AleField().RHS())).GlobalLength();
 
   x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
   x_sum_->PutScalar(0.0);
@@ -99,7 +88,6 @@ void FSI::MonolithicNoNOX::Newton()
   // residual vector with length of all FSI dofs
   rhs_ = LINALG::CreateVector(*DofRowMap(), true);
   rhs_->PutScalar(0.0);
-  nall_ = (*rhs_).GlobalLength();
 
   firstcall_ = true;
 
@@ -130,15 +118,9 @@ void FSI::MonolithicNoNOX::Newton()
     // reset solver tolerance
     solver_->ResetTolerance();
 
-    // build residual force norm
+    // build residual and incremental norms
     // for now use for simplicity only L2/Euclidian norm
-    rhs_->Norm2(&normrhs_);
-    StructureField().RHS()->Norm2(&normstrrhs_);
-    FluidField().RHS()->Norm2(&normflrhs_);
-    AleField().RHS()->Norm2(&normalerhs_);
-
-    // build residual increment norm
-    iterinc_->Norm2(&norminc_);
+    BuildCovergenceNorms();
 
     // print stuff
     PrintNewtonIter();
@@ -168,6 +150,7 @@ void FSI::MonolithicNoNOX::Newton()
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicNoNOX::Converged()
@@ -182,10 +165,15 @@ bool FSI::MonolithicNoNOX::Converged()
     case INPAR::FSI::convnorm_abs:
       convinc = norminc_ < tolinc_;
       break;
-      //case INPAR::FSI::convnorm_rel:
-
-      //break;
-    default:
+    case INPAR::FSI::convnorm_rel:
+      convinc = (((normstrinc_/ns_)<tolinc_) and ((norminterfacerhs_/ni_)<tolinc_) and ((normflvelinc_/nfv_)<tolinc_) and
+                ((normflpresinc_/nfp_)<tolinc_) and ((normaleinc_/na_)<tolinc_));
+      break;
+    case INPAR::FSI::convnorm_mix:
+      convinc = ((normstrinc_<tolinc_) and ((norminterfacerhs_/ni_)<tolinc_) and ((normflvelinc_/nfv_)<tolinc_) and
+                 (normflpresinc_/nfp_<tolinc_) and (normaleinc_/na_<tolinc_));
+      break;
+  default:
       dserror("Cannot check for convergence of residual values!");
   }
 
@@ -194,14 +182,14 @@ bool FSI::MonolithicNoNOX::Converged()
   {
   case INPAR::FSI::convnorm_abs:
     convfres = normrhs_ < tolfres_;
-    //convfres = (normrhs_/nall_) < tolfres_;
     break;
   case INPAR::FSI::convnorm_rel:
-    convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normflrhs_/nf_) < tolfres_) and ((normalerhs_/na_) < tolfres_));
-    //convfres = ( (normstrrhs_) and (normflrhs_)  and (normalerhs_));
+    convfres = (((normstrrhs_/ns_)<tolfres_) and ((norminterfacerhs_/ni_)<tolfres_) and ((normflvelrhs_/nfv_)<tolfres_) and
+                ((normflpresrhs_/nfp_)<tolfres_) and ((normalerhs_/na_)<tolfres_));
     break;
   case INPAR::FSI::convnorm_mix:
-    convfres = ( (normstrrhs_ < tolfres_) and (normflrhs_ < tolfres_) and (normalerhs_ < tolfres_) );
+    convfres = ((normstrrhs_<tolfres_) and (norminterfacerhs_<tolfres_) and (normflvelrhs_<tolfres_) and
+                (normflpresrhs_<tolfres_) and (normalerhs_<tolfres_));
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -310,7 +298,6 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      //cout0_ << "fluid time : " << tf.ElapsedTime() << endl;
    }
 
-   //cout0_ << endl;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -345,7 +332,6 @@ void FSI::MonolithicNoNOX::SetDefaultParameters(const Teuchos::ParameterList& fs
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
-
 
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
@@ -434,6 +420,12 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
   case INPAR::FSI::convnorm_abs :
     oss <<std::setw(18)<< "abs-inc-norm |";
     break;
+  case INPAR::FSI::convnorm_rel :
+    oss <<std::setw(18)<< "rel-inc-norm  |";
+    break;
+  case INPAR::FSI::convnorm_mix :
+    oss <<std::setw(18)<< "mix-inc-norm";
+    break;
   default:
     dserror("You should not turn up here.");
   }
@@ -471,13 +463,17 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_/nall_);
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_);
     break;
   case INPAR::FSI::convnorm_rel :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
+    //oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "interf " << (norminterfacerhs_/ni_) <<
+      "flv " << (normflvelrhs_/nfv_) << "flp " << (normflpresrhs_/nfp_) << "ale " << (normalerhs_/na_);
     break;
   case INPAR::FSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
+    //oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "interf " << (norminterfacerhs_/ni_) <<
+      "flv " << (normflvelrhs_/nfv_) << "flp " << (normflpresrhs_/nfp_) << "ale " << (normalerhs_/na_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -488,6 +484,14 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   case INPAR::FSI::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << norminc_;
     printf("\n");
+    break;
+  case INPAR::FSI::convnorm_rel :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str inc " << (normstrinc_/ns_) << "interf inc" << (norminterfaceinc_/ni_) <<
+      "flv inc" << (normflvelinc_/nfv_) << "flp inc" << (normflpresinc_/nfp_) << "ale inc " << (normaleinc_/na_);
+    break;
+  case INPAR::FSI::convnorm_mix :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str inc " << (normstrinc_/ns_) << "interf inc" << (norminterfaceinc_/ni_) <<
+      "flv inc" << (normflvelinc_/nfv_) << "flp inc" << (normflpresinc_/nfp_) << "ale inc " << (normaleinc_/na_);
     break;
   default:
     dserror("You should not turn up here.");

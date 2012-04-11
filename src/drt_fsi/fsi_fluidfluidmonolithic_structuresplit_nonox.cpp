@@ -733,16 +733,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 {
   // initialise equilibrium loop
   iter_ = 1;
-  normrhs_ = 0.0;
-  normstrrhs_ = 0.0;
-  normflrhs_ = 0.0;
-  normalerhs_ = 0.0;
-  norminc_ = 0.0;
-
-  // get length of the structural, fluid and ale vector
-  ns_ = (*(StructureField().RHS())).GlobalLength();
-  nf_ = (*(FluidField().RHS())).GlobalLength();
-  na_ = (*(AleField().RHS())).GlobalLength();
 
   x_sum_ = LINALG::CreateVector(*DofRowMap(),true);
   x_sum_->PutScalar(0.0);
@@ -757,7 +747,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
   // residual vector with length of all FSI dofs
   rhs_ = LINALG::CreateVector(*DofRowMap(), true);
   rhs_->PutScalar(0.0);
-  nall_ = (*rhs_).GlobalLength();
 
   firstcall_ = true;
 
@@ -810,20 +799,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 
     LinearSolve();
 
-
     // reset solver tolerance
     solver_->ResetTolerance();
 
-    // build residual force norm
+    // build residual and incremental norms
     // for now use for simplicity only L2/Euclidian norm
-    rhs_->Norm2(&normrhs_);
-    StructureField().RHS()->Norm2(&normstrrhs_);
-    FluidField().RHS()->Norm2(&normflrhs_);
-    AleField().RHS()->Norm2(&normalerhs_);
-
-    // build residual increment norm
-    iterinc_->Norm2(&norminc_);
-
+    BuildCovergenceNorms();
 
     // print stuff
     PrintNewtonIter();
@@ -854,6 +835,78 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 
   }
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
+{
+  /////////////////////////////
+  // build residual norms
+  rhs_->Norm2(&normrhs_);
+
+  // structural Dofs
+  StructureField().RHS()->Norm2(&normstrrhs_);
+
+  // interface
+
+  // extract embedded fluid vector
+  Teuchos::RCP<Epetra_Vector> rhs_emb = xfluidfluidsplitter_->ExtractFluidVector(FluidField().RHS());
+  FluidField().Interface()->ExtractFSICondVector(rhs_emb)->Norm2(&norminterfacerhs_);
+
+  // inner fluid velocity Dofs
+  std::vector<Teuchos::RCP<const Epetra_Map> > innerfluidvel;
+  innerfluidvel.push_back(FluidField().InnerVelocityRowMap());
+  innerfluidvel.push_back(Teuchos::null);
+  LINALG::MultiMapExtractor fluidvelextract(*(FluidField().DofRowMap()),innerfluidvel);
+  fluidvelextract.ExtractVector(FluidField().RHS(),0)->Norm2(&normflvelrhs_);
+
+  // fluid pressure Dofs
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidpres;
+  fluidpres.push_back(FluidField().PressureRowMap());
+  fluidpres.push_back(Teuchos::null);
+  LINALG::MultiMapExtractor fluidpresextract(*(FluidField().DofRowMap()),fluidpres);
+  fluidpresextract.ExtractVector(FluidField().RHS(),0)->Norm2(&normflpresrhs_);
+
+  // fluid
+  FluidField().RHS()->Norm2(&normflrhs_);
+
+  // ale
+  AleField().RHS()->Norm2(&normalerhs_);
+
+  ///////////////////////////////////
+  // build solution increment norms
+
+  // build increment norm
+  iterinc_->Norm2(&norminc_);
+
+  // structural Dofs
+  Extractor().ExtractVector(iterinc_,0)->Norm2(&normstrinc_);
+
+  // interface
+  // extract embedded fluid vector
+  Teuchos::RCP<Epetra_Vector> inc_emb = xfluidfluidsplitter_->ExtractFluidVector(Extractor().ExtractVector(iterinc_,1));
+  FluidField().Interface()->ExtractFSICondVector(inc_emb)->Norm2(&norminterfaceinc_);
+
+  // inner fluid velocity Dofs
+  fluidvelextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),0)->Norm2(&normflvelinc_);
+
+  // fluid pressure Dofs
+  fluidpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),0)->Norm2(&normflpresinc_);
+
+  // ale
+  Extractor().ExtractVector(iterinc_,2)->Norm2(&normaleinc_);
+
+  //get length of the structural, fluid and ale vector
+  ns_ = (*(StructureField().RHS())).GlobalLength(); //structure
+  ni_ = (*(FluidField().Interface()->ExtractFSICondVector(rhs_emb))).GlobalLength(); //fluid fsi
+  nf_ = (*(FluidField().RHS())).GlobalLength(); //fluid inner
+  nfv_ = (*(fluidvelextract.ExtractVector(FluidField().RHS(),0))).GlobalLength(); //fluid velocity
+  nfp_ = (*(fluidpresextract.ExtractVector(FluidField().RHS(),0))).GlobalLength();//fluid pressure
+  na_ = (*(AleField().RHS())).GlobalLength(); //ale
+  nall_ = (*rhs_).GlobalLength(); //all
+
+}
+
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface                     */
 /*----------------------------------------------------------------------*/

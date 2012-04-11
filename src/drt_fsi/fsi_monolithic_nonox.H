@@ -5,7 +5,6 @@
 
 #include "../drt_io/io_ostream0.H"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
@@ -13,12 +12,12 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 
-// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
 }
+
 
 namespace FSI
 {
@@ -61,6 +60,8 @@ namespace FSI
     virtual void Newton();
 
     bool Converged();
+
+    virtual void BuildCovergenceNorms() = 0;
 
     void LinearSolve();
 
@@ -166,16 +167,30 @@ namespace FSI
     int iter_;  //!< iteration step
     int itermax_;  //!< maximally permitted iterations
 
-    int ns_;  //!< length of structural residual forces
-    int nf_;  //!< length of fluid residual forces
-    int na_;  //!< length of ale residual forces
+    int ns_;  //!< length of structural dofs
+    int nf_;  //!< length of fluid dofs
+    int ni_;  //!< length of fsi interface dofs
+    int nfv_; //!< length of fluid velocity dofs
+    int nfp_; //!< length of fluid pressure dofs
+    int na_;  //!< length of ale dofs
     int nall_;
 
     double normrhs_;  //!< norm of residual forces
     double normstrrhs_;  //!< norm of structural residual forces
+    double norminterfacerhs_; //!< norm of interface residual forces
     double normflrhs_;  //!< norm of fluid residual forces
+    double normflvelrhs_;  //!< norm of inner fluid velocity residual forces
+    double normflpresrhs_;  //!< norm of fluid pressure residual forces
     double normalerhs_;  //!< norm of ale residual forces
-    double norminc_;  //!< norm of residual unknowns
+
+    double norminc_;  //!< norm of solution increment
+    double normstrinc_;  //!< norm of inner structural increment
+    double norminterfaceinc_; //!< norm of interface residual forces
+    double normflinc_;  //!< norm of fluid residual forces
+    double normflvelinc_;  //!< norm of inner fluid velocity residual forces
+    double normflpresinc_;  //!< norm of fluid pressure residual forces
+    double normaleinc_;  //!< norm of ale residual forces
+
 
     //!< a singular stream to stdout in parallel environment
     IO::Ostream0 cout0_;

@@ -46,6 +46,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   // we use only velocity dofs and only those without Dirichlet constraint
   const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = fluidimpl_->DirichMaps();
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back(VelocityRowMap());
   maps.push_back(interface_->OtherMap());
   maps.push_back(dbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
