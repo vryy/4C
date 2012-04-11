@@ -354,7 +354,8 @@ void STATMECH::StatMechManager::Update(const int& istep,
                                        Epetra_Vector& disrow,
                                        Teuchos::RCP<LINALG::SparseOperator>& stiff,
                                        int& ndim, RCP<CONTACT::Beam3cmanager> beamcmanager,
-                                       bool rebuildoctree)
+                                       bool rebuildoctree,
+                                       bool printscreen)
 {
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
@@ -394,12 +395,12 @@ void STATMECH::StatMechManager::Update(const int& istep,
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
 
-      SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager);
+      SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager,printscreen);
 
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->ResetPairs();
 
-      SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager);
+      SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager,printscreen);
     }
 
     // reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
@@ -1086,7 +1087,8 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
 void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                                const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
-                                               RCP<CONTACT::Beam3cmanager> beamcmanager)
+                                               RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                               bool printscreen)
 {
   double t_search = Teuchos::Time::wallTime();
   /*preliminaries*/
@@ -1309,7 +1311,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
         }// for(int j=0; j<(int)neighboursLID.size(); j++)
       }//if((*numbond_)[irandom]<1.9)
     }// for(int i=0; i<numbond_->MyLength(); i++)
-    cout << "\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds";
+    if(printscreen)
+      cout << "\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds";
   }// if(discret_->Comm().MypPID==0)
 
   /* note: searchforneighbours_ and crosslinkonsamefilament_ are not being communicated
@@ -1437,7 +1440,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
     beamcmanager->ContactDiscret().FillComplete(true, false, false);
   }
   //couts
-  if(!discret_->Comm().MyPID())
+  if(!discret_->Comm().MyPID() && printscreen)
     cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
 }//void StatMechManager::SearchAndSetCrosslinkers
 
@@ -1591,9 +1594,13 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
  | searches crosslinkers and deletes them if probability check is passed|
  | (public) 																							mueller (7/10)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-                                                  const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_Vector& discol,
-                                                  RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
+                                                            const Epetra_Map& noderowmap,
+                                                            const Epetra_Map& nodecolmap,
+                                                            const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
+                                                            Epetra_Vector& discol,
+                                                            RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                                            bool printscreen)
 {
 //get current off-rate for crosslinkers
   double koff = 0;
@@ -1735,7 +1742,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, co
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
     RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),delcrosselement,&deletedcelements_);
 
-  if(!discret_->Comm().MyPID())
+  if(!discret_->Comm().MyPID() && printscreen)
     cout<<numdelelements<<" crosslinker element(s) deleted!"<<endl;
   return;
 } //StatMechManager::SearchAndDeleteCrosslinkers()

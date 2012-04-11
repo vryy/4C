@@ -84,8 +84,16 @@ public:
    *  \param dis            (in) displacement vector
    *  \param fint           (in) internal force vector
    *  \param beamcmanager   (in) beam contact manager
+   *  \param printscreen    (in) toggle output to console / log file
    */
-  void Output(const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
+  void Output(const int                            ndim,
+              const double&                        time,
+              const int&                           istep,
+              const double&                        dt,
+              const Epetra_Vector&                 dis,
+              const Epetra_Vector&                 fint,
+              Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
+              bool                                 printscreen=true);
 
   //! \brief saving all necessary class variables for restart
   void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -111,7 +119,14 @@ public:
    *  \param stiff    (in)
    *  \param ndim     (in)
    */
-  void Update(const int& istep, const double& dt, Epetra_Vector& disrow, Teuchos::RCP<LINALG::SparseOperator>& stiff, int& ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null, bool rebuildoctree=false);
+  void Update(const int& istep,
+              const double& dt,
+              Epetra_Vector& disrow,
+              Teuchos::RCP<LINALG::SparseOperator>& stiff,
+              int& ndim,
+              Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
+              bool rebuildoctree=false,
+              bool printscreen=true);
 
   //! \brief update time and time step size of statmechmanager
   void UpdateTimeAndStepSize(double& dt, double& time);
@@ -262,7 +277,8 @@ protected:
                                 const Epetra_Map&                         nodecolmap,
                                 const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                 const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
-                                Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
+                                Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager,
+                                bool                                      printscreen=true);
 
   /*! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
    *  \param dt               (in) step size
@@ -277,7 +293,8 @@ protected:
                                    const Epetra_Map&                         nodecolmap,
                                    const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
                                    Epetra_Vector&                            discol,
-                                   Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager);
+                                   Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager,
+                                   bool                                      printscreen=true);
 
   /*! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
    *  \param LID              (in) local Ids of nodes

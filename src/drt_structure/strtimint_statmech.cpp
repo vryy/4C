@@ -1286,7 +1286,7 @@ void STR::TimIntStatMech::PTC()
   INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
     soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
-  if(!isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
   if(isconverged_  and !myrank_ and printscreen_)
     PrintNewtonIter();
@@ -1387,7 +1387,7 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
   }
   else
   {
-    if(!myrank_)
+    if(!myrank_ && printscreen_)
       cout<<"PTC converged with..."<<endl;
   }
   return;
@@ -1688,9 +1688,9 @@ void STR::TimIntStatMech::StatMechUpdate()
 
     const double t_admin = Teuchos::Time::wallTime();
     if(DRT::INPUT::IntegralValue<int>(statmechparams,"BEAMCONTACT"))
-      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_);
+      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
     else
-      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_);
+      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
 
     // print to screen
     StatMechPrintUpdate(t_admin);
@@ -1727,9 +1727,9 @@ void STR::TimIntStatMech::StatMechOutput()
   {
     // note: "step_-1
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
   }
   return;
 }// StatMechOutput()

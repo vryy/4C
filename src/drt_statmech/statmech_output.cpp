@@ -45,9 +45,13 @@ Maintainer: Kei Müller
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::Output(const int ndim,
-                                       const double& time, const int& istep, const double& dt,
-                                       const Epetra_Vector& dis, const Epetra_Vector& fint,
-                                       RCP<CONTACT::Beam3cmanager> beamcmanager)
+                                       const double& time,
+                                       const int& istep,
+                                       const double& dt,
+                                       const Epetra_Vector& dis,
+                                       const Epetra_Vector& fint,
+                                       RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                       bool printscreen)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
@@ -260,7 +264,8 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
         beginnew.PutScalar(0);
         endnew.PutScalar(0);
-        std::cout << "ndim: " << ndim << "\n";
+        if(printscreen)
+          std::cout << "ndim: " << ndim << "\n";
 
         for (int i = 0; i < ndim; i++)
         {
