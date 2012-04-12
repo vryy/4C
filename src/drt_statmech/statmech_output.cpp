@@ -161,7 +161,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
         {
 
           //proc 0 write complete output into file, all other proc inactive
-          if(!discret_->Comm().MyPID())
+          if(discret_->Comm().MyPID()==0)
           {
             FILE* fp = NULL; //file pointer for statistical output file
 
@@ -370,6 +370,24 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
           // move temporary stringstream to file and close it
           fprintf(fp, filecontent.str().c_str());
+          fclose(fp);
+
+          //write position
+          LINALG::Matrix<3,1> midpoint(beginnew);
+          midpoint += endnew;
+          midpoint.Scale(0.5);
+          std::ostringstream outputfilename2;
+          outputfilename2 << "AnisotropicMidPosition" << outputfilenumber_ << ".dat";
+
+          // open file and append new data line
+          fp = fopen(outputfilename2.str().c_str(), "a");
+
+          //defining temporary stringstream variable
+          std::stringstream filecontent2;
+          filecontent2 << scientific << setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< endl;
+
+          // move temporary stringstream to file and close it
+          fprintf(fp, filecontent2.str().c_str());
           fclose(fp);
         }
 
