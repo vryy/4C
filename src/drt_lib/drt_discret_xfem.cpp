@@ -41,10 +41,19 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 #include "drt_discret_xfem.H"
 #include "drt_globalproblem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_combust/combust_defines.H"
+
+#include "drt_exporter.H"
+
+#include "drt_utils.H"
+#include "../linalg/linalg_utils.H"
+
 
 /*!
 \brief this is a modified copy of the original version DoDirchletCondition() for XFEM problems
@@ -96,7 +105,7 @@ Maintainer: Michael Gee
 
 \author henke 07/09
 */
-static void DoDirichletCondition(DRT::Condition&             cond,
+static void DoDirichletConditionCombust(DRT::Condition&             cond,
                                  DRT::DiscretizationXFEM&    dis,
                                  const bool                  usetime,
                                  const double                time,
@@ -112,7 +121,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |
  *----------------------------------------------------------------------*/
-void DoDirichletCondition(DRT::Condition&             cond,
+void DoDirichletConditionCombust(DRT::Condition&             cond,
                           DRT::DiscretizationXFEM&    dis,
                           const bool                  usetime,
                           const double                time,
@@ -645,7 +654,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet conditions (public)                   henke 07/09 |
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
+void DRT::DiscretizationXFEM::EvaluateDirichletCombust(ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvector,
                                             Teuchos::RCP<Epetra_Vector> systemvectord,
                                             Teuchos::RCP<Epetra_Vector> systemvectordd,
@@ -684,7 +693,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -693,7 +702,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -702,7 +711,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -711,7 +720,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -738,3 +747,525 @@ void DRT::DiscretizationXFEM::EvaluateDirichlet(ParameterList& params,
 
   return;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  Finalize construction (public)                          schott 03/12|
+ *----------------------------------------------------------------------*/
+int DRT::DiscretizationXFEM::FillCompleteXFEM(bool assigndegreesoffreedom,
+                                              bool initelements,
+                                              bool doboundaryconditions,
+                                              bool createinternalfaces)
+{
+  // call standard FillComlete of base class
+  FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+
+  if(createinternalfaces)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::CreateInternalFaces" );
+
+    // create internal faces for stabilization along edges
+    BuildInternalFaces();
+
+    // (re)build map of internal faces
+    BuildIntFaceRowMap();
+    BuildIntFaceColMap();
+
+  }
+
+  return 0;
+}
+
+
+/*
+ *  A helper function for BuildInternalFaces and
+ *  BuildSurfacesinCondition, below.
+ *  Gets a map (vector_of_nodes)->Element that maps
+ *
+ *  (A map with globally unique ids.)
+ *
+ *  \param comm (i) communicator
+ *  \param elementmap (i) map (vector_of_nodes_ids)->(element) that maps
+ *  the nodes of an element to the element itself.
+ *
+ *  \param finalelements (o) map (global_id)->(element) that can be
+ *  added to a condition.
+ *
+ *  h.kue 09/07
+ */
+static void AssignGlobalIDs( const Epetra_Comm& comm,
+                             const map< vector<int>, RefCountPtr<DRT::Element> >& elementmap,
+                             map< int, RefCountPtr<DRT::Element> >& finalelements )
+{
+
+  // The point here is to make sure the element gid are the same on any
+  // parallel distribution of the elements. Thus we allreduce thing to
+  // processor 0 and sort the element descriptions (vectors of nodal ids)
+  // there.
+  //
+  // This routine has not been optimized for efficiency. I don't think that is
+  // needed.
+  //
+  // pack elements on all processors
+
+  int size = 0;
+  std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator elemsiter;
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    size += elemsiter->first.size()+1;
+  }
+  std::vector<int> sendblock;
+  sendblock.reserve(size);
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    sendblock.push_back(elemsiter->first.size());
+    std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
+  }
+
+  // communicate elements to processor 0
+
+  int mysize = sendblock.size();
+  comm.SumAll(&mysize,&size,1);
+  int mypos = LINALG::FindMyPos(sendblock.size(),comm);
+
+  std::vector<int> send(size);
+  std::fill(send.begin(),send.end(),0);
+  std::copy(sendblock.begin(),sendblock.end(),&send[mypos]);
+  sendblock.clear();
+  std::vector<int> recv(size);
+  comm.SumAll(&send[0],&recv[0],size);
+
+  send.clear();
+
+  // unpack, unify and sort elements on processor 0
+
+  if (comm.MyPID()==0)
+  {
+    std::set<std::vector<int> > elements;
+    int index = 0;
+    while (index < static_cast<int>(recv.size()))
+    {
+      int esize = recv[index];
+      index += 1;
+      std::vector<int> element;
+      element.reserve(esize);
+      std::copy(&recv[index], &recv[index+esize], std::back_inserter(element));
+      index += esize;
+      elements.insert(element);
+    }
+    recv.clear();
+
+    // pack again to distribute pack to all processors
+
+    send.reserve(index);
+    for (std::set<std::vector<int> >::iterator i=elements.begin();
+         i!=elements.end();
+         ++i)
+    {
+      send.push_back(i->size());
+      std::copy(i->begin(), i->end(), std::back_inserter(send));
+    }
+    size = send.size();
+  }
+  else
+  {
+    recv.clear();
+  }
+
+  // broadcast sorted elements to all processors
+
+  comm.Broadcast(&size,1,0);
+  send.resize(size);
+  comm.Broadcast(&send[0],send.size(),0);
+
+  // Unpack sorted elements. Take element position for gid.
+
+  int index = 0;
+  int gid = 0;
+  while (index < static_cast<int>(send.size()))
+  {
+    int esize = send[index];
+    index += 1;
+    std::vector<int> element;
+    element.reserve(esize);
+    std::copy(&send[index], &send[index+esize], std::back_inserter(element));
+    index += esize;
+
+    // set gid to my elements
+    std::map<std::vector<int>, RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
+    if (iter!=elementmap.end())
+    {
+      iter->second->SetId(gid);
+      finalelements[gid] = iter->second;
+    }
+
+    gid += 1;
+  }
+
+} // AssignGlobalIDs
+
+
+/*----------------------------------------------------------------------*
+ |  Build internal faces geometry (public)                  schott 03/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::BuildInternalFaces()
+{
+
+  //----------------------------------------------------------------------
+  /* First: Create the surface objects between to elements . */
+
+  // map of surfaces in this cloud: (sorted node_ids) -> (surface)
+  map< vector<int>, InternalFacesData > surfmapdata;
+
+  // loop col elements and find all surfaces attached to them
+  //
+  // REMARK: in a first step: find all surfaces and adjacent elements and fill InternalFacesData
+  //         without creating the internal faces elements
+
+  vector<DRT::Element*>::iterator fool;
+  for(fool=elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
+  {
+    DRT::Element * ele = *fool;
+
+
+    //-------------------------------------------
+    // create
+
+    DRT::UTILS::BoundaryBuildType buildtype = DRT::UTILS::buildNothing;
+
+    // 3D elements
+    if (ele->NumSurface() > 1)   // 2D boundary element and 3D parent element
+    {
+      buildtype = DRT::UTILS::buildSurfaces;
+    }
+    else if (ele->NumSurface() == 1) // 2D boundary element and 2D parent element
+    {
+      buildtype = DRT::UTILS::buildLines;
+    }
+    else dserror("creating internal faces for 1D elements (would be points) not implemented yet");
+
+
+    // get node connectivity for specific distype of parent element
+    unsigned int nele=0;
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    vector< vector<int> > connectivity;
+    switch (buildtype)
+    {
+    case DRT::UTILS::buildSurfaces:
+    {
+      nele = ele->NumSurface();
+      connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+      break;
+    }
+    case DRT::UTILS::buildLines:
+    {
+      nele = ele->NumLine();
+      connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+      break;
+    }
+    default: dserror("DRT::UTILS::build... not supported");
+    }
+
+
+    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
+    if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
+
+    // now, get the nodal information for the new surface/line faces
+    for (unsigned int iele = 0; iele < nele; iele++)
+    {
+      // allocate node vectors
+      unsigned int nnode = connectivity[iele].size(); // this number changes for pyramids or wedges
+      vector<int> nodeids(nnode);
+      vector<DRT::Node*> nodes(nnode);
+
+      // get connectivity infos
+      for (unsigned int inode=0;inode<nnode;inode++)
+      {
+        nodeids[inode] = ele->NodeIds()[connectivity[iele][inode]];
+        nodes  [inode] = ele->Nodes  ()[connectivity[iele][inode]];
+      }
+
+      // sort the nodes. Used to identify surfaces that are created multiple
+      sort( nodeids.begin(), nodeids.end() );
+
+      // find existing InternalFacesData
+      map<vector<int>, InternalFacesData>::iterator surf_it = surfmapdata.find( nodeids );
+      if ( surf_it == surfmapdata.end() )
+      {
+        // not found -> generate new Data
+        // add the faces information to the map (key is the sorted vector of nodeids)
+        surfmapdata.insert(pair<vector<int>, InternalFacesData >(nodeids, InternalFacesData(ele->Id(),nodes, iele)));
+      }
+      else
+      {
+        if(surf_it->second.GetSlavePeid()!= -1) dserror("slave peid should not be set!!!");
+        // if found -> add second neighbor data to existing data
+        surf_it->second.SetSlavePeid(ele->Id());
+      }
+
+    } // loop iele
+
+  } // loop elecolptr_
+
+
+
+  //----------------------------------------------------------------------
+  // in a second step: create the internal faces elements ( sorted nids -> surface element)
+  // REMARK: internal faces are created and distributed on procs as following:
+  // * faces are created whenever two adjacent elements are available on this proc (sometimes faces are created multiply on more procs)
+  // * each face is created at least once (at least one node of the surface is on a proc a row node and a 1-ring of elements around
+  //   this node is available as col elements)
+  // * how to set the owner for this face on all procs equally?
+  //    -> if one set has been created on a proc, there are both parent elements available as row or col elements
+  //    -> therefore for each node of this surface both parent elements are available
+  //    -> choose the node with smallest global id
+  //    -> the owner of this node will be the owner for the face
+  //       (this criterion is working in the same way on all procs holding this face)
+
+  map< vector<int>, RCP<DRT::Element> >  faces;
+
+  map<vector<int>, InternalFacesData >::iterator face_it;
+  for (face_it=surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)
+  {
+    int master_peid = face_it->second.GetMasterPeid();
+    int slave_peid  = face_it->second.GetSlavePeid();
+
+    // decide which internal faces elements have to be build and create them
+    // create a face when there are both parent elements available as column elements
+    if((master_peid != -1) and (slave_peid != -1))
+    {
+      DRT::Element* parent_master = gElement(master_peid);
+      DRT::Element* parent_slave  = gElement(slave_peid);
+
+      // get the unsorted nodes
+      vector<DRT::Node*> nodes = face_it->second.GetNodes();
+
+      // get corresponding nodeids
+      vector<int> nodeids(nodes.size());
+      transform( nodes.begin(), nodes.end(), nodeids.begin(), mem_fun( &DRT::Node::Id ) );
+
+      // create the internal face element
+      RCP<DRT::Element> surf = parent_master->CreateInternalFaces(parent_slave,
+                                                                  nodeids.size(),
+                                                                  &nodeids[0],
+                                                                  &nodes[0],
+                                                                  face_it->second.GetLSurfaceMaster() );
+
+      // create a clone (the internally created element does not exist anymore when all RCP's finished)
+      RCP<DRT::Element> surf_clone = rcp( surf->Clone() );
+
+      // Set owning process of surface to node with smallest gid
+      // REMARK: see below
+      sort(nodeids.begin(), nodeids.end());
+      int owner = gNode( nodeids[0] )->Owner();
+
+      // set the owner
+      surf_clone->SetOwner( owner );
+
+      // insert the newly created element
+      faces.insert(pair<vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
+
+    }
+  }
+
+  // Surfaces be added to the faces_-map: (line_id) -> (surface).
+  AssignGlobalIDs( Comm(), faces, faces_ );
+
+  return;
+} // DRT::DiscretizationXFEM::BuildInternalFaces
+
+
+/*----------------------------------------------------------------------*
+ |  Build intfacerowmap_ (private)                          schott 03/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::BuildIntFaceRowMap()
+{
+  const int myrank = Comm().MyPID();
+  int nummyeles = 0;
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  for (curr=faces_.begin(); curr != faces_.end(); ++curr)
+    if (curr->second->Owner()==myrank)
+      nummyeles++;
+  vector<int> eleids(nummyeles);
+  intfacerowptr_.resize(nummyeles);
+  int count=0;
+  for (curr=faces_.begin(); curr != faces_.end(); ++curr)
+    if (curr->second->Owner()==myrank)
+    {
+      eleids[count] = curr->second->Id();
+      intfacerowptr_[count] = curr->second.get();
+      ++count;
+    }
+  if (count != nummyeles) dserror("Mismatch in no. of internal faces");
+  intfacerowmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Build intfacecolmap_ (private)                          schott 03/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::BuildIntFaceColMap()
+{
+  int nummyeles = (int)faces_.size();
+  vector<int> eleids(nummyeles);
+  intfacecolptr_.resize(nummyeles);
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  int count=0;
+  for (curr=faces_.begin(); curr != faces_.end(); ++curr)
+  {
+    eleids[count] = curr->second->Id();
+    intfacecolptr_[count] = curr->second.get();
+    curr->second->SetLID(count);
+    ++count;
+  }
+  if (count != nummyeles) dserror("Mismatch in no. of elements");
+  intfacecolmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get internal faces row map (public)                     schott 03/12|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DiscretizationXFEM::IntFacesRowMap() const
+{
+#ifdef DEBUG
+  if (Filled()) return intfacerowmap_.get();
+  else dserror("FillCompleteXFEM() must be called before call to IntFacesRowMap()");
+  return NULL;
+#else
+  return intfacerowmap_.get();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get internal faces col map (public)                     schott 03/12|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::DiscretizationXFEM::IntFacesColMap() const
+{
+#ifdef DEBUG
+  if (Filled()) return intfacecolmap_.get();
+  else dserror("FillCompleteXFEM() must be called before call to IntFacesColMap()");
+  return NULL;
+#else
+  return intfacecolmap_.get();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get global no of internal faces (public)                schott 03/12|
+ *----------------------------------------------------------------------*/
+int DRT::DiscretizationXFEM::NumGlobalIntFaces() const
+{
+#ifdef DEBUG
+  if (Filled()) return IntFacesRowMap()->NumGlobalElements();
+  else dserror("FillCompleteXFEM() must be called before call to NumGlobalElements()");
+  return -1;
+#else
+  return IntFacesRowMap()->NumGlobalElements();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get no of my row internal faces (public)                schott 03/12|
+ *----------------------------------------------------------------------*/
+int DRT::DiscretizationXFEM::NumMyRowIntFaces() const
+{
+#ifdef DEBUG
+  if (Filled()) return IntFacesRowMap()->NumMyElements();
+  else dserror("FillCompleteXFEM() must be called before call to NumMyRowIntFaces()");
+  return -1;
+#else
+  return IntFacesRowMap()->NumMyElements();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get no of my column internal faces (public)             schott 03/12|
+ *----------------------------------------------------------------------*/
+int DRT::DiscretizationXFEM::NumMyColIntFaces() const
+{
+  if (Filled()) return IntFacesColMap()->NumMyElements();
+  else return (int)faces_.size();
+}
+
+
+/*----------------------------------------------------------------------*
+ |  << operator                                             schott 03/12|
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const DRT::DiscretizationXFEM& dis)
+{
+  // print standard discretization info
+  dis.Print(os);
+  // print additional info about internal faces
+  dis.PrintIntFaces(os);
+
+  return os;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Print internal faces discretization (public)            schott 03/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::PrintIntFaces(ostream& os) const
+{
+  int numglobalfaces = 0;
+  if (Filled())
+  {
+    numglobalfaces = NumGlobalIntFaces();
+  }
+  else
+  {
+    int nummyfaces   = 0;
+    map<int,RCP<DRT::Element> >::const_iterator ecurr;
+    for (ecurr=faces_.begin(); ecurr != faces_.end(); ++ecurr)
+      if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
+
+    Comm().SumAll(&nummyfaces,&numglobalfaces,1);
+  }
+
+  // print head
+  if (Comm().MyPID()==0)
+  {
+    os << "--------------------------------------------------\n";
+    os << "Discretization: " << Name() << endl;
+    os << "--------------------------------------------------\n";
+    os << numglobalfaces << " Faces (global)\n";
+    os << "--------------------------------------------------\n";
+    if (Filled())
+    os << "Filled() = true\n";
+    else
+    os << "Filled() = false\n";
+    os << "--------------------------------------------------\n";
+  }
+  // print elements
+  for (int proc=0; proc < Comm().NumProc(); ++proc)
+  {
+    if (proc == Comm().MyPID())
+    {
+      if ((int)faces_.size())
+        os << "-------------------------- Proc " << proc << " :\n";
+      map<int,RCP<DRT::Element> >:: const_iterator curr;
+      for (curr = faces_.begin(); curr != faces_.end(); ++curr)
+      {
+        os << *(curr->second);
+        os << endl;
+      }
+      os << endl;
+    }
+    Comm().Barrier();
+  }
+
+  return;
+}
+

@@ -58,7 +58,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
                              LINALG::SparseOperator* systemmatrix)
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumann" );
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann" );
 
 
   if (!discret.Filled()) dserror("FillComplete() was not called");
@@ -181,7 +181,7 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
                                     Epetra_Vector&                        systemvector,
                                     LINALG::SparseOperator*               systemmatrix)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
+  //TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
   multimap<string,DRT::Condition* >::iterator fool;
 
@@ -285,7 +285,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
                                 Epetra_Vector&                       systemvector,
                                 LINALG::SparseOperator*              systemmatrix)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannXFEM" );
+  //TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannXFEM" );
 
   multimap<string,DRT::Condition* >::iterator fool;
 

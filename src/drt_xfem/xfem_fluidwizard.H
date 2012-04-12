@@ -36,6 +36,8 @@ namespace GEO
   namespace CUT
   {
     class ElementHandle;
+    class SideHandle;
+    class Side;
     class Node;
   }
 }
@@ -84,6 +86,12 @@ public:
 
   //! get the elementhandle created within the cut
   GEO::CUT::ElementHandle* GetElement( DRT::Element * ele );
+
+  //! get the sidehandle created within the cut
+  GEO::CUT::Side* GetSide( std::vector<int>& nodeids );
+
+  //! get the sidehandle created within the cut
+  GEO::CUT::SideHandle* GetSideHandle( int sid );
 
   //! get the node created within the cut
   GEO::CUT::Node * GetNode( int nid );

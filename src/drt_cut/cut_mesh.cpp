@@ -313,9 +313,17 @@ const std::vector<GEO::CUT::Side*> & GEO::CUT::Mesh::GetSides( int sid )
   throw std::runtime_error( "no side with given id" );
 }
 
-GEO::CUT::Side* GEO::CUT::Mesh::GetSide( const plain_int_set & nids )
+GEO::CUT::Side* GEO::CUT::Mesh::GetSide( std::vector<int>& nids ) const
 {
-  std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
+  // create a sorted vector
+  plain_int_set node_ids;
+
+  for(unsigned int i=0; i< nids.size(); i++)
+  {
+    node_ids.insert(nids[i]);
+  }
+
+  std::map<plain_int_set, Teuchos::RCP<Side> >::const_iterator i = sides_.find( node_ids );
   if ( i != sides_.end() )
   {
     return &*i->second;

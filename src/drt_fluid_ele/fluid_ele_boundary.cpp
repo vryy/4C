@@ -14,9 +14,14 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 #include "fluid_ele.H"
 
-using namespace DRT::UTILS;
-
 DRT::ELEMENTS::Fluid3BoundaryType DRT::ELEMENTS::Fluid3BoundaryType::instance_;
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int id, const int owner )
+{
+  return Teuchos::null;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

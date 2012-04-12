@@ -1035,7 +1035,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid_xfem2:
   {
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis(genprob.numsf, structdis);

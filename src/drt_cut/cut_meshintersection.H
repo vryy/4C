@@ -175,6 +175,10 @@ public:
 
   Node * GetNode( int nid ) const;
 
+  Side * GetSide( std::vector<int>& nodeids ) const;
+
+  SideHandle * GetSide( int sid ) const;
+
   ElementHandle * GetElement( int eid ) const;
 
   SideHandle * GetCutSide( int sid, int mi=0 ) const;

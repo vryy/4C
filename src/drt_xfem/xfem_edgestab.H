@@ -19,16 +19,20 @@ Maintainer: Benedikt Schott
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
+#include <Epetra_Vector.h>
+
 
 namespace DRT
 {
   class AssembleStrategy;
   class Discretization;
+  class DiscretizationXFEM;
   class Element;
 
   namespace ELEMENTS
   {
     class Fluid3;
+    class FluidIntFace;
   }
 }
 
@@ -38,6 +42,11 @@ namespace GEO
   {
     class Side;
   }
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
 }
 
 
@@ -54,7 +63,9 @@ class XFEM_EdgeStab
 public:
 
   //! constructor
-  explicit XFEM_EdgeStab(Teuchos::RCP<XFEM::FluidWizard>              wizard);
+  explicit XFEM_EdgeStab(Teuchos::RCP<XFEM::FluidWizard>              wizard, ///< fluid wizard
+                         Teuchos::RCP<DRT::Discretization>            discret ///< discretization
+                         );
 
   //! destructor
   ~XFEM_EdgeStab()
@@ -62,44 +73,45 @@ public:
     return;
   }
 
-  void findSurface(std::vector<int>                nodeids,
-                   DRT::ELEMENTS::Fluid3 *         actele,
-                   std::vector<Teuchos::RCP<DRT::Element> > surfaces,
-                   int & surfid);
 
+  //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate routine
+  void EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
+                                     DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
+                                     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
+                                     Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
+                                     bool                                   gmsh_discret_out = true ///< stabilization gmsh output
+                                     );
 
-  void findSide   ( std::vector<int>                nodeids, // node ids of surface
-                    DRT::ELEMENTS::Fluid3 *         actele,
-                    const std::vector<GEO::CUT::Side*> & sides,
-                    int & side_index);
+  //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the XFEM
+  void AssembleEdgeStabGhostPenalty( const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
+                                     const bool                             ghost_penalty,    ///< boolian for XFEM ghost penalty stabilization
+                                     DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
+                                     std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
+                                     std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
+                                     DRT::DiscretizationXFEM &              xdiscret,         ///< XFEM discretization
+                                     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+                                     Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
+                                     );
 
-  void findNeighborElement(DRT::ELEMENTS::Fluid3 * actele,
-                           Teuchos::RCP<DRT::Element> surface,
-                           bool & neighbor_found,
-                           int & neighbor_id);
+  //! returns a map containing the ghost penalty stabilized internal face elements
+  std::map<int,bool> GetGhostPenaltyMap(){return ghost_penalty_stab_;}
 
+  //! returns a map containing the edge based stabilized internal face elements
+  std::map<int,bool> GetEdgeBasedMap(){return edge_based_stab_;}
 
-  void stabilizeStandardElement     ( DRT::AssembleStrategy& strategy,
-                                      DRT::ELEMENTS::Fluid3 *actele,
-                                      DRT::Discretization & discret);
-
-  void EvaluateEdgeStabandGhostPenalty( DRT::Discretization &  discret,
-                                       DRT::AssembleStrategy&  strategy,
-                                       DRT::ELEMENTS::Fluid3 * ele);
-
-  void callEdgeStabandGhostPenalty(                           bool & edge_based_stab,
-                                                              bool & ghost_penalty,
-                                                              Teuchos::RCP<DRT::Element>       surface,
-                                                              DRT::Element * fele_1,
-                                                              DRT::Element * fele_2,
-                                                              std::vector<int> & nds_1,
-                                                              std::vector<int> & nds_2,
-                                                              DRT::Discretization &   discret,
-                                                              DRT::AssembleStrategy&  strategy);
 
   private:
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard_;
+  //! get the cut side id for the face's element using the sorted node ids
+  GEO::CUT::Side* GetCutSide(DRT::Element* faceele);
+
+
+  Teuchos::RCP<XFEM::FluidWizard> wizard_;    ///< fluid wizard
+  Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
+
+  std::map<int, bool> ghost_penalty_stab_;    /// map of face elements stabilized with ghost penalty
+  std::map<int, bool> edge_based_stab_;       /// map of face elements stabilized with edge based fluid stabilization
+
 
 };
 

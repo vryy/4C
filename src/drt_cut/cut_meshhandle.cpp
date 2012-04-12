@@ -154,19 +154,24 @@ GEO::CUT::Node * GEO::CUT::MeshHandle::GetNode( int nid ) const
   return mesh_.GetNode( nid );
 }
 
-GEO::CUT::SideHandle * GEO::CUT::MeshHandle::GetSide( int eid ) const
+GEO::CUT::SideHandle * GEO::CUT::MeshHandle::GetSide( int sid ) const
 {
-  std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find( eid );
+  std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find( sid );
   if ( i!=linearsides_.end() )
   {
     return const_cast<LinearSideHandle*>( &i->second );
   }
-  std::map<int, Teuchos::RCP<QuadraticSideHandle> >::const_iterator j = quadraticsides_.find( eid );
+  std::map<int, Teuchos::RCP<QuadraticSideHandle> >::const_iterator j = quadraticsides_.find( sid );
   if ( j!=quadraticsides_.end() )
   {
     return &*j->second;
   }
   return NULL;
+}
+
+GEO::CUT::Side * GEO::CUT::MeshHandle::GetSide(std::vector<int>& nodeids) const
+{
+  return mesh_.GetSide( nodeids );
 }
 
 GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::GetElement( int eid ) const

@@ -525,7 +525,7 @@ void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector
       DRT::Node* actnode = dis.lRowNode(i);
       vector<int> dofs = dis.Dof(0,actnode);
       const unsigned int ndof = dofs.size();
-      if (ndof>6) dserror("Cannot define more than 6 modes");
+      if (numdf>6) dserror("Cannot define more than 6 modes");
       for (unsigned j=0; j<ndof; ++j)
       {
         const int dof = dofs[j];
@@ -534,10 +534,10 @@ void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector
 
         for (unsigned k=0; k<ndof; ++k)
         {
-          if (k == j)
-            mode[k][lid] = 1.0;
+          if (k%numdf == j)
+            mode[k%numdf][lid] = 1.0;
           else
-            mode[k][lid] = 0.0;
+            mode[k%numdf][lid] = 0.0;
         }
 
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)

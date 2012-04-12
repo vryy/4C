@@ -18,7 +18,6 @@ Maintainer: Benedikt Schott
 #include <Teuchos_RCP.hpp>
 
 
-
 class Epetra_Map;
 class Epetra_SerialDenseMatrix;
 
@@ -33,7 +32,9 @@ namespace GEO
   namespace CUT
   {
     class MeshIntersection;
+    class SideHandle;
     class ElementHandle;
+    class Side;
     class Node;
   }
 
@@ -61,6 +62,16 @@ namespace GEO
     \brief Add this background mesh element to the cut libraries
     */
     void AddElement( DRT::Element * ele );
+
+    /*!
+    \brief Get this side (not from cut meshes) from the cut libraries
+     */
+    GEO::CUT::Side * GetSide( std::vector<int>& nodeids );
+
+    /*!
+    \brief Get this side (not from cut meshes) from the cut libraries
+     */
+    GEO::CUT::SideHandle * GetSide( int sid );
 
     /*!
     \brief Get this element from the cut libraries

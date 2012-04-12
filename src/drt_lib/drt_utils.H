@@ -267,7 +267,8 @@ namespace UTILS
   enum BoundaryBuildType
   {
     buildSurfaces,  ///< build surfaces
-    buildLines      ///< build lines
+    buildLines,     ///< build lines
+    buildNothing    ///< build nothing
   };
 
   /*!
@@ -314,6 +315,7 @@ namespace UTILS
         connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
         break;
       }
+      default: dserror("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
     vector<RCP<DRT::Element> > boundaryeles(nele);
@@ -348,6 +350,49 @@ namespace UTILS
     }
 
     return boundaryeles;
+  }
+
+  /*!
+   * create new instances of volume / surface / line elements for a given parent element
+   *
+   * template version
+   *
+   * \tparam IntFaceEle  class name of desired volume/surface/line element, e.g. Fluid3Surface
+   * \tparam ParentEle   class name of parent element, e.g. Fluid3
+   *
+   * this templated function creates an internal face element for two given parent elements
+   * and fills an RCP and raw pointers of this internal faces elements
+   * This method is a very powerful helper function for implementing the necessary
+   * Surfaces() and Lines() methods for every element class (especially in 3D)
+   * using the BACI conventions for element connectivity
+   *
+   * \return intface   RCP of allocated internal face element
+   *
+   * \author schott
+   * \date 03/12
+   */
+  template <class IntFaceEle, class ParentEle>
+  RCP<DRT::Element> ElementIntFaceFactory(
+      int id,                                  ///< element id
+      int owner,                               ///< owner (= owner of parent element with smallest gid)
+      int nnode,                               ///< number of nodes
+      const int* nodeids,                      ///< node ids
+      DRT::Node** nodes,                       ///< nodes of surface
+      ParentEle*  master_ele,                  ///< pointer on the master parent element
+      ParentEle*  slave_ele,                   ///< pointer on the slave parent element
+      const int   lsurface_master              ///< local surface index with respect to master parent element
+      )
+  {
+
+    // create a new internal face element
+    return rcp(new IntFaceEle(id,
+                              owner,
+                              nnode,
+                              nodeids,
+                              nodes,
+                              master_ele,
+                              slave_ele,
+                              lsurface_master) );
   }
 
   //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and call FillComplete()

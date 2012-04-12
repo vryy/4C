@@ -643,7 +643,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->SetState("velnp",state_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    xdiscret->EvaluateDirichletCombust(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+
     discret_->ClearState();
 
     // Transfer of boundary data if necessary
@@ -1003,8 +1005,9 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-        Teuchos::null, dbcmaps_);
+
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    xdiscret->EvaluateDirichletCombust(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
 

@@ -412,6 +412,28 @@ public:
   }
 
   /*!
+  \brief Get vector of RCPs to the internal faces for which this element is the master element
+
+  This is a base class dummy routine that always returns NULL.
+  The derived element class is expected to allocate and store
+  an surface/line element that represents the internal face between this element (master element)
+  and parent_slave element.
+  This element is then used to create and evaluate edge stabilizations.
+
+  \author schott 03/12
+  */
+  virtual RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave, //!< parent slave element
+                                                 int nnode,                  //!< number of nodes
+                                                 const int* nodeids,         //!< node ids
+                                                 DRT::Node** nodes,          //!< nodeids
+                                                 const int lsurface_master   //!< local index of surface w.r.t master element
+                                                 )
+  {
+   RCP<DRT::Element> intface;
+   return intface;
+  }
+
+  /*!
   \brief Get number of degrees of freedom of a certain node
 
   The element decides how many degrees of freedom its nodes must have.

@@ -42,6 +42,7 @@ class FluidEleParameter;
 template<DRT::Element::DiscretizationType distype> class FluidEleCalc;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
 class Fluid3Boundary;
+class FluidIntFace;
 
 class Fluid3Type : public DRT::ElementType
 {
@@ -89,6 +90,7 @@ public:
 
   //! @name friends
   friend class Fluid3Boundary;
+  friend class FluidIntFace;
 
   friend class Fluid3SystemEvaluator;
 
@@ -182,6 +184,16 @@ public:
   \brief Get vector of RefCountPtrs to the volume of this element
   */
   virtual vector<RCP<DRT::Element> > Volumes();
+
+  /*!
+  \brief Get RefCountPtr to the internal face adjacent to this element as master element and the parent_slave element
+  */
+  virtual RCP<DRT::Element> CreateInternalFaces(DRT::Element* parent_slave,   //!< parent slave fluid3 element
+                                                int nnode,                    //!< number of surface nodes
+                                                const int* nodeids,           //!< node ids of surface element
+                                                DRT::Node** nodes,            //!< nodes of surface element
+                                                const int lsurface_master     //!< local surface number w.r.t master parent element
+      );
 
   /*!
   \brief Return unique ParObject id
@@ -1028,9 +1040,7 @@ public:
     center_of_mass_calc,
     traction_velocity_component,
     traction_Uv_integral_component,
-    no_penetration,
-    edge_based_stabilization,
-    ghost_penalty
+    no_penetration
   };
 
 private:
@@ -1046,6 +1056,331 @@ private:
 
 
 }; // class Fluid3Boundary
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+
+/*!
+\brief An element representing an internal face element between two fluid elements
+
+\note It's only purpose is to evaluate edge based stabilizations for XFEM.
+*/
+class FluidIntFaceType : public DRT::ElementType
+{
+public:
+
+  std::string Name() const { return "FluidIntFaceType"; }
+
+  static FluidIntFaceType & Instance() { return instance_; };
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+
+private:
+
+  static FluidIntFaceType instance_;
+};
+
+
+// class FluidIntFace
+
+class FluidIntFace : public DRT::Element
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  //! number of space dimensions
+  /*!
+  \brief Standard Constructor
+
+  \param id: A unique global id
+  \param owner: Processor owning this surface
+  \param nnode: Number of nodes attached to this element
+  \param nodeids: global ids of nodes attached to this element
+  \param nodes: the discretizations map of nodes to build ptrs to nodes from
+  \param master_parent: The master parent fluid element of this surface
+  \param slave_parent: The slave parent fluid element of this surface
+  \param lsurface_master: the local surface number of this surface w.r.t. the master parent element
+  */
+  FluidIntFace(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::ELEMENTS::Fluid3* parent_master, DRT::ELEMENTS::Fluid3* parent_slave, const int lsurface_master);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+  */
+  FluidIntFace(const FluidIntFace& old);
+
+  /*!
+  \brief Deep copy this instance of an element and return pointer to the copy
+
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+
+  */
+  DRT::Element* Clone() const;
+
+  /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+  /*!
+  \brief Return number of lines of this element
+  */
+  virtual int NumLine() const
+  {
+    return DRT::UTILS::getNumberOfElementLines(Shape());
+  }
+
+  /*!
+  \brief Return number of surfaces of this element
+  */
+  virtual int NumSurface() const
+  {
+    return DRT::UTILS::getNumberOfElementSurfaces(Shape());
+  }
+
+  /*!
+  \brief Get vector of RefCountPtrs to the lines of this element
+  */
+  virtual vector<RCP<DRT::Element> > Lines();
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of the drt_parobject.H file.
+  */
+  virtual vector<RCP<DRT::Element> > Surfaces();
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of the drt_parobject.H file.
+  */
+  virtual int UniqueParObjectId() const { return FluidIntFaceType::Instance().UniqueParObjectId(); }
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~FluidIntFace();
+
+  //@}
+
+  //! @name Acess methods
+
+
+  /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    return max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+  }
+
+  /*!
+  \brief Get number of degrees of freedom of a certain node in case of multiple
+         dofsets (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    return max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per element
+         (implements pure virtual DRT::Element)
+
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+
+  \note Element degrees of freedom mentioned here are dofs that are visible
+        at the level of the total system of equations. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+  */
+  virtual int NumDofPerElement() const { return 0; }
+
+  /*!
+  \brief create the location vector for patch of master and slave element
+
+  \note All dofs shared by master and slave element are contained only once. Dofs from interface nodes are also included.
+  */
+  void PatchLocationVector(
+      DRT::Discretization & discretization,       ///< discretization
+      std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
+      std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
+      std::vector<int>&     patchlm,              ///< local map for gdof ids for patch of elements
+      std::vector<int>&     master_lm,            ///< local map for gdof ids for master element
+      std::vector<int>&     slave_lm,             ///< local map for gdof ids for slave element
+      std::vector<int>&     face_lm,              ///< local map for gdof ids for face element
+      std::vector<int>&     lm_masterToPatch,     ///< local map between lm_master and lm_patch
+      std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
+      std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
+      std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+      std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      );
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const;
+
+  virtual DRT::ElementType & ElementType() const
+  { return FluidIntFaceType::Instance(); }
+
+  //@}
+
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate element
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(ParameterList&            params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+  //@}
+
+  //! @name Evaluate methods
+
+  /*!
+  \brief Evaluate Neumann boundary condition
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): reference to the underlying discretization
+  \param condition (in)     : condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList&            params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+
+  /*!
+  \brief return the master parent fluid element
+  */
+  virtual DRT::ELEMENTS::Fluid3* ParentMasterElement()
+  {
+    return parent_master_;
+  }
+
+  /*!
+  \brief return the slave parent fluid element
+  */
+  virtual DRT::ELEMENTS::Fluid3* ParentSlaveElement()
+  {
+    return parent_slave_;
+  }
+
+  /*!
+  \brief return the local surface number w.r.t. the master parent fluid element
+  */
+  virtual int SurfaceMasterNumber()
+  {
+    return lsurface_master_;
+  }
+
+  //@}
+
+
+  enum ActionType
+  {
+    none,
+    EOS_and_GhostPenalty_stabilization
+  };
+
+private:
+
+  // don't want = operator
+  FluidIntFace& operator = (const FluidIntFace& old);
+
+  //! The master parent element of this surface
+  DRT::ELEMENTS::Fluid3* parent_master_;
+
+  //! The parent slave element of this surface
+  DRT::ELEMENTS::Fluid3* parent_slave_;
+
+  //! The local surface number of this surface w.r.t to the parent_master_ element
+  int lsurface_master_;
+
+
+}; // class FluidIntFace
+
+
 
 } // namespace ELEMENTS
 } // namespace DRT

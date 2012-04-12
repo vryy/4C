@@ -1200,8 +1200,10 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_general_service.cpp
-  src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma.cpp
+  src/drt_fluid_ele/fluid_ele_intfaces.cpp
+  src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
+  src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_stabilization.cpp
@@ -2323,11 +2325,11 @@ baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 2 "")
 baci_test(xfluid_multibody_hex8 1 "")
 baci_test(xfluid_multibody_hex8 2 "")
+baci_test(xfluid_multibody_hex8_EOS_itsolver_MLprec 2 "")
 baci_test(xfluid_stat_sliver_cut_instat 1 "")
 baci_test(xfluid_stat_sliver_cut_instat 2 "")
 baci_test(xfsi_fluid_pusher_instat_OST_1_Nitsche 1 "")
 baci_test(xfsi_fluid_pusher_instat_OST_1 1 "")
-baci_test(xfsi_fluid_pusher_stat 1 "")
 baci_test(one_d_3_artery_network 1 9999)
 baci_test(trachea 2 100)
 baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 1 599)

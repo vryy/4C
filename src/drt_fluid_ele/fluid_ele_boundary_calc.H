@@ -65,34 +65,6 @@ public:
                        Epetra_SerialDenseVector&  elevec3_epetra
                        ) = 0;
 
-  virtual void EvaluateInternalFacesUsingNeighborData(DRT::ELEMENTS::Fluid3Boundary* bele,
-                       DRT::ELEMENTS::Fluid3*               ele1,
-                       DRT::ELEMENTS::Fluid3*               ele2,
-                       std::vector<int>&                    nds1,
-                       std::vector<int>&                    nds2,
-                       ParameterList&                       params       ,
-                       DRT::Discretization&                 discretization,
-                       RCP<LINALG::SparseOperator>          systemmatrix1,
-                       RCP<LINALG::SparseOperator>          systemmatrix2,
-                       RCP<Epetra_Vector>                   systemvector1,
-                       RCP<Epetra_Vector>                   systemvector2,
-                       RCP<Epetra_Vector>                   systemvector3) = 0;
-
-  virtual int EvaluateInternalFaces(DRT::ELEMENTS::Fluid3Boundary* bele,
-                                    DRT::ELEMENTS::Fluid3*                      ele1,
-                                    DRT::ELEMENTS::Fluid3*                      ele2,
-                                    std::vector<int>&                           nds1,
-                                    std::vector<int>&                           nds2,
-                                    ParameterList&                              params,
-                                    DRT::Discretization&                        discretization,
-                                    vector<int>&                                lm,
-                                    vector<int>&                                lm1,
-                                    vector<int>&                                lm2,
-                                    Epetra_SerialDenseMatrix&                   elemat1,
-                                    Epetra_SerialDenseVector&                   elevec1) = 0;
-
-
-
 
   /// Evaluate a Neumann boundary condition
   /*!
@@ -196,32 +168,6 @@ public:
                               Epetra_SerialDenseMatrix*  elemat1
                               );
 
-  virtual void EvaluateInternalFacesUsingNeighborData(DRT::ELEMENTS::Fluid3Boundary* bele,
-                       DRT::ELEMENTS::Fluid3*               ele1,
-                       DRT::ELEMENTS::Fluid3*               ele2,
-                       std::vector<int>&                    nds1,
-                       std::vector<int>&                    nds2,
-                       ParameterList&                       params       ,
-                       DRT::Discretization&                 discretization,
-                       RCP<LINALG::SparseOperator>          systemmatrix1,
-                       RCP<LINALG::SparseOperator>          systemmatrix2,
-                       RCP<Epetra_Vector>                   systemvector1,
-                       RCP<Epetra_Vector>                   systemvector2,
-                       RCP<Epetra_Vector>                   systemvector3);
-
-  virtual int EvaluateInternalFaces(DRT::ELEMENTS::Fluid3Boundary* bele,
-                       DRT::ELEMENTS::Fluid3*                      ele1,
-                       DRT::ELEMENTS::Fluid3*                      ele2,
-                       std::vector<int>&                           nds1,
-                       std::vector<int>&                           nds2,
-                       ParameterList&                              params,
-                       DRT::Discretization&                        discretization,
-                       vector<int>&                                lm,
-                       vector<int>&                                lm1,
-                       vector<int>&                                lm2,
-                       Epetra_SerialDenseMatrix&                   elemat1,
-                       Epetra_SerialDenseVector&                   elevec1
-                       );
 
 private:
 

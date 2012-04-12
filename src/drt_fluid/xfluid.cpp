@@ -17,6 +17,7 @@ Maintainer:  Benedikt Schott
 #include "fluid_utils.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 
 #include "../drt_lib/drt_element.H"
@@ -96,10 +97,18 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   dofset_->MinGID(xfluid.minnumdofsets_); // set the minimal GID of xfem dis
   xfluid.discret_->ReplaceDofSet( dofset_, true );
-  xfluid.discret_->FillComplete();
+
+  RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid.discret_, true);
+
+  actdis->FillCompleteXFEM(true, true, true, true);
 
   //print all dofsets
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
+
+  //--------------------------------------------------------------------------------------
+  // recompute nullspace based on new number of dofs per node
+  // REMARK: this has to be done after replacing the discret_' dofset (via xfluid.discret_->ReplaceDofSet)
+  xfluid_.discret_->ComputeNullSpaceIfNecessary(xfluid_.solver_->Params(),true);
 
   //--------------------------------------------------------------------------------------
   if(xfluid_.myrank_ == 0) cout << "\n" << endl;
@@ -118,7 +127,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //                                * savegraph = false ( the matrix graph (pattern for non-zero entries) can change ) do not store this graph
   //                                * with FE_MATRIX flag
   //TODO: for edgebased approaches the number of connections between rows and cols should be increased
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,300,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
 
   // Vectors passed to the element
@@ -182,7 +191,11 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   }
 
 
-  edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_));
+  //--------------------------------------------------------------------------------------
+  // create object for edgebased stabilization
+  if(xfluid_.fluid_stab_type_ == "edge_based")
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_, xfluid.discret_));
+  //--------------------------------------------------------------------------------------
 
 }
 
@@ -194,7 +207,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                          DRT::Discretization & cutdiscret,
                                          int itnum )
 {
-#ifdef D_FLUID3
+
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate" );
 
@@ -321,7 +334,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               //------------------------------------------------------------
               // Evaluate domain integrals
               {
-                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
 
                   // call the element evaluate method
                   int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
@@ -357,7 +370,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
               if ( bcells.size() > 0 )
               {
-                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
 
                   // Attention: switch also the flag in fluid3_impl.cpp
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
@@ -414,8 +427,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                 myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
               }
 
-              // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-              sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+              {
+                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
+                // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+                sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+              }
 
               // REMARK:: call Assemble without lmowner
               // to assemble the residual_col vector on only row elements also column nodes have to be assembled
@@ -445,12 +461,12 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
             const std::vector<int> & nds = vc->NodalDofSet();
 
             // one set of dofs
-//            std::vector<int>  ndstest;
-//            for (int t=0;t<8; ++t)
-//            ndstest.push_back(0);
+            std::vector<int>  ndstest;
+            for (int t=0;t<8; ++t)
+            ndstest.push_back(0);
 
             // get element location vector, dirichlet flags and ownerships
-            actele->LocationVector(discret,nds,la,false);
+            actele->LocationVector(discret,ndstest,la,false);
 
             // get dimension of element matrices and vectors
             // Reshape element matrices and vectors and init to zero
@@ -555,7 +571,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       } // end of if(e!=NULL) // assembly for cut elements
       else
       {
-        TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate normal" );
+        TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 3) standard domain" );
 
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(discret,la,false);
@@ -584,8 +600,12 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
           myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
         }
 
-        // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-        sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+        {
+          TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
+
+          // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+          sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+        }
 
         // REMARK:: call Assemble without lmowner
         // to assemble the residual_col vector on only row elements also column nodes have to be assembled
@@ -597,18 +617,38 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       }
 
 
-      // call edge stabilization
-      // REMARK: the current implementation of internal edges integration belongs to the elements
-      // at the moment each side is integrated twice
-      if(xfluid_.fluid_stab_type_ == "edge_based")
-      {
-        edgestab_->EvaluateEdgeStabandGhostPenalty(discret, strategy, ele);
-      }
-
     }
 
-    discret.ClearState();
+    // call edge stabilization
+    // REMARK: the current implementation of internal edges integration belongs to the elements
+    // at the moment each side is integrated twice
+    if(xfluid_.fluid_stab_type_ == "edge_based")
+    {
+      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
+      //------------------------------------------------------------
+      // loop over row faces
+
+      RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.discret_, true);
+
+      const int numrowintfaces = xdiscret->NumMyRowIntFaces();
+
+      // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
+      // and assembles into EpetraFECrs matrix
+      // this is baci-unusual but more efficient in all XFEM applications
+      for (int i=0; i<numrowintfaces; ++i)
+      {
+        DRT::Element* actface = xdiscret->lRowIntFace(i);
+
+        DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
+        if ( ele==NULL ) dserror( "expect FluidIntFace element" );
+
+        edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.discret_, ele, sysmat_, strategy.Systemvector1(), xfluid_.gmsh_discret_out_);
+      }
+    }
+
+
+    discret.ClearState();
 
 
     //-------------------------------------------------------------------------------
@@ -642,9 +682,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
 }
 
-#else
-  dserror("D_FLUID3 required");
-#endif
+
 }
 
 /*----------------------------------------------------------------------*
@@ -1359,8 +1397,6 @@ FLD::XFluid::XFluid(
   else                                      omtheta_ = 0.0;
 
 
-//  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
-
   // -------------------------------------------------------------------
   // create boundary dis
   // -------------------------------------------------------------------
@@ -1369,7 +1405,16 @@ FLD::XFluid::XFluid(
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
-    discret_->FillComplete();
+  {
+//    discret_->FillComplete();
+
+    RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
+    if (actdis == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+    actdis->FillCompleteXFEM(true, true, true, true);
+  }
+
 
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
@@ -2860,44 +2905,44 @@ void FLD::XFluid::Output()
     {
       // draw bg elements with associated gid
       gmshfilecontent << "View \" " << "fluid Element->Id() \" {\n";
-      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lColElement(i);
+        const DRT::Element* actele = discret_->lRowElement(i);
         IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
       };
       gmshfilecontent << "};\n";
-  }
+    }
     {
       gmshfilecontent << "View \" " << "fluid Node->Id() \" {\n";
-      for (int i=0; i<discret_->NumMyColNodes(); ++i)
+      for (int i=0; i<discret_->NumMyRowNodes(); ++i)
       {
-        const DRT::Node* actnode = discret_->lColNode(i);
+        const DRT::Node* actnode = discret_->lRowNode(i);
         const LINALG::Matrix<3,1> pos(actnode->X());
         IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
       }
       gmshfilecontent << "};\n";
-  }
-    {
-    // draw structure elements with associated gid
-    gmshfilecontent << "View \" " << "structure Element->Id() \" {\n";
-    for (int i=0; i<soliddis_->NumMyColElements(); ++i)
-    {
-      const DRT::Element* actele = soliddis_->lColElement(i);
-      //                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-      IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, currsolidpositions, gmshfilecontent);
-    };
-    gmshfilecontent << "};\n";
     }
     {
-    gmshfilecontent << "View \" " << "structure Node->Id() \" {\n";
-    for (int i=0; i<soliddis_->NumMyColNodes(); ++i)
-    {
-      const DRT::Node* actnode = soliddis_->lColNode(i);
-      const LINALG::Matrix<3,1> pos(actnode->X());
-      IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+      // draw structure elements with associated gid
+      gmshfilecontent << "View \" " << "structure Element->Id() \" {\n";
+      for (int i=0; i<soliddis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = soliddis_->lColElement(i);
+        //                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+        IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, currsolidpositions, gmshfilecontent);
+      };
+      gmshfilecontent << "};\n";
     }
-    gmshfilecontent << "};\n";
-  }
+    {
+      gmshfilecontent << "View \" " << "structure Node->Id() \" {\n";
+      for (int i=0; i<soliddis_->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = soliddis_->lColNode(i);
+        const LINALG::Matrix<3,1> pos(actnode->X());
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+    }
     {
       // draw cut elements with associated gid
       gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
@@ -2909,11 +2954,71 @@ void FLD::XFluid::Output()
       };
       gmshfilecontent << "};\n";
     }
+    // EOS/GHOST-PENALTY stabilization output
+    {
+      // draw internal faces elements with associated face's gid
+      gmshfilecontent << "View \" " << "intern.faces Element->Id() \" {\n";
 
-        gmshfilecontent.close();
+      RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
+      if (actdis == Teuchos::null)
+        dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
 
-        cout << endl;
-    } // end if gmsh_discret_out_
+      for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+      {
+        const DRT::Element* actele = actdis->lRowIntFace(i);
+        //                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+      };
+      gmshfilecontent << "};\n";
+    }
+    if( (state_->EdgeStab()) != Teuchos::null ) // stabilization output
+    {
+      RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
+      if (actdis == Teuchos::null)
+        dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+      {
+        // draw internal faces elements with associated face's gid
+        gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
+
+        for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+        {
+          const DRT::Element* actele = actdis->lRowIntFace(i);
+          map<int,bool>::iterator it = (state_->EdgeStab()->GetGhostPenaltyMap()).find(actele->Id());
+          if(it != state_->EdgeStab()->GetGhostPenaltyMap().end())
+          {
+            bool ghost_penalty = it->second;
+            if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double((int)ghost_penalty),
+                actele,
+                gmshfilecontent);
+          }
+        };
+        gmshfilecontent << "};\n";
+      }
+      {
+        // draw internal faces elements with associated face's gid
+        gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
+
+        for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+        {
+          const DRT::Element* actele = actdis->lRowIntFace(i);
+          map<int,bool>::iterator it = (state_->EdgeStab()->GetEdgeBasedMap()).find(actele->Id());
+          if(it != state_->EdgeStab()->GetEdgeBasedMap().end())
+          {
+            bool edge_stab =it->second;
+            if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double((int)edge_stab),
+                actele,
+                gmshfilecontent);
+          }
+        };
+        gmshfilecontent << "};\n";
+      }
+    } // end stabilization output
+
+    gmshfilecontent.close();
+
+    cout << endl;
+  } // end if gmsh_discret_out_
 
 
     //---------------------------------- GMSH SOLUTION OUTPUT (solution fields for pressure, velocity) ------------------------
@@ -3474,7 +3579,6 @@ void FLD::XFluid::SetInterfaceFields()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetDirichletNeumannBC()
 {
-#ifdef D_FLUID3
 
     ParameterList eleparams;
 
@@ -3500,7 +3604,6 @@ void FLD::XFluid::SetDirichletNeumannBC()
 
     discret_->ClearState();
 
-#endif
 }
 
 
@@ -3509,7 +3612,7 @@ void FLD::XFluid::SetDirichletNeumannBC()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementGeneralFluidParameter()
 {
-#ifdef D_FLUID3
+
   ParameterList eleparams;
 
   eleparams.set("action","set_general_fluid_parameter");
@@ -3529,9 +3632,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
-#else
-  dserror("D_FLUID3 required");
-#endif
+
 }
 
 // -------------------------------------------------------------------
@@ -3539,7 +3640,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementTurbulenceParameter()
 {
-#ifdef D_FLUID3
+
   ParameterList eleparams;
 
   eleparams.set("action","set_turbulence_parameter");
@@ -3553,9 +3654,7 @@ void FLD::XFluid::SetElementTurbulenceParameter()
 
   // call standard loop over elements
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
-#else
-  dserror("D_FLUID3 required");
-#endif
+
   return;
 }
 
@@ -3564,7 +3663,7 @@ void FLD::XFluid::SetElementTurbulenceParameter()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementTimeParameter()
 {
-#ifdef D_FLUID3
+
   ParameterList eleparams;
 
   eleparams.set("action","set_time_parameter");
@@ -3595,9 +3694,6 @@ void FLD::XFluid::SetElementTimeParameter()
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
-#else
-  dserror("D_FLUID3 required");
-#endif
 }
 
 void FLD::XFluid::GenAlphaIntermediateValues()

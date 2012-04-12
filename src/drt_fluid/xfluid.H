@@ -210,6 +210,9 @@ namespace FLD
       /// return the wizard
       Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
 
+      /// return edgestab object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
+
       /// XFluid object
       XFluid & xfluid_;
 

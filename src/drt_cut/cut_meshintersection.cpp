@@ -690,6 +690,16 @@ GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
   return mesh_.GetNode( nid );
 }
 
+GEO::CUT::Side * GEO::CUT::MeshIntersection::GetSide( std::vector<int>& nodeids ) const
+{
+  return mesh_.GetSide( nodeids );
+}
+
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetSide( int sid ) const
+{
+  return mesh_.GetSide( sid );
+}
+
 GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid ) const
 {
   return mesh_.GetElement( eid );

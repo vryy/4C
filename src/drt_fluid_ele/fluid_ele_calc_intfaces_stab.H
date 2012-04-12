@@ -55,13 +55,13 @@ namespace DRT
     \author schott (schott@lnm.mw.tum.de), 02/12
 
     -----------------------------------------------------------------*/
-    class Fluid3InternalFacesStabilization
+    class FluidIntFaceStab
     {
     public:
       //! Empty constructor
-      Fluid3InternalFacesStabilization() {}
+      FluidIntFaceStab() {}
       //! Empty destructor
-      virtual ~Fluid3InternalFacesStabilization() {}
+      virtual ~FluidIntFaceStab() {}
 
       /*!
         \brief Evaluate the surface elements edge-oriented stabilization and ghost penalty
@@ -73,16 +73,17 @@ namespace DRT
 
       */
       virtual int EvaluateEdgeBasedStabilization(
-        Fluid3Boundary*             surfele,            ///< surface Fluid3Boundary element)
-        Fluid3*                     ele1,               ///< parent Fluid3 element)
-        Fluid3*                     ele2,               ///< neighbor Fluid3 element)
-        ParameterList&              params,             ///< parameter list )
-        DRT::Discretization&        discretization,     ///< reference to discretization)
-        vector<int>&                lm,                 ///< local map for surface element)
-        vector<int>&                lm1,                ///< local map for parent element)
-        vector<int>&                lm2,                ///< local map for neighbor element)
-        Epetra_SerialDenseMatrix&   elemat_epetra,      ///< element matrix combined for parent and neighbor element)
-        Epetra_SerialDenseVector&   elevec_epetra       ///< element vector combined for parent and neighbor element)
+          DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
+          Teuchos::ParameterList&            params,               ///< parameter list
+          DRT::Discretization&               discretization,       ///< discretization
+          vector<int>&                       patchlm,              ///< patch local map
+          vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
+          vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+          vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+          std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+          vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+          vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
         ) = 0;
 
 
@@ -93,11 +94,10 @@ namespace DRT
 
         \author schott (schott@lnm.mw.tum.de), 02/12
 
-        \param f3surf (in):   fluid surface element
-        \param neighbor (in): fluid3 neighbor element
+        \param surfele (in):   fluid internal surface element
 
       */
-      static Fluid3InternalFacesStabilization* Impl(DRT::ELEMENTS::Fluid3Boundary* f3surf, DRT::ELEMENTS::Fluid3* neighbor);
+      static FluidIntFaceStab* Impl(DRT::ELEMENTS::FluidIntFace* surfele);
 
     };
 
@@ -111,7 +111,7 @@ namespace DRT
     //-----------------------------------------------------------------
 
     /*!
-    \brief Internal Fluid3Surface EOS-implementation
+    \brief Internal FluidInternalSurfaceStab EOS-implementation
            (surface and parent/neighbor element specific)
     */
 
@@ -121,14 +121,23 @@ namespace DRT
     template<DRT::Element::DiscretizationType distype ,
              DRT::Element::DiscretizationType pdistype,
              DRT::Element::DiscretizationType ndistype>
-    class Fluid3InternalSurfaceStabilization: public Fluid3InternalFacesStabilization
+    class FluidInternalSurfaceStab: public FluidIntFaceStab
     {
     public:
       /// Constructor with number of nodes
-      Fluid3InternalSurfaceStabilization();
+      FluidInternalSurfaceStab();
 
       /// empty destructor
-      ~Fluid3InternalSurfaceStabilization(){return;};
+      ~FluidInternalSurfaceStab(){return;};
+
+      /// number of space dimensions of the FluidIntFace element
+      static const int facensd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+      /// number of space dimensions of the parent element
+      static const int nsd_ = facensd_+1;
+
+      /// number of dof's per node
+      static const int numdofpernode_ = nsd_ + 1;
 
       /// number of nodes
       static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
@@ -137,7 +146,8 @@ namespace DRT
       static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
       /// number of parentnodes of neighbor element
-      static const int niel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+      static const int niel = DRT::UTILS::DisTypeToNumNodePerEle<ndistype>::numNodePerElement;
+
 
 
       /*!
@@ -152,25 +162,76 @@ namespace DRT
 
       */
       virtual int EvaluateEdgeBasedStabilization(
-        Fluid3Boundary*            surfele,            ///< surface Fluid3Boundary element)
-        Fluid3*                    pele,               ///< parent Fluid3 element)
-        Fluid3*                    nele,               ///< neighbor Fluid3 element)
-        ParameterList&             params,             ///< parameter list )
-        DRT::Discretization&       discretization,     ///< reference to discretization)
-        vector<int>&               lm,                 ///< local map for surface element)
-        vector<int>&               plm,                ///< local map for parent element)
-        vector<int>&               nlm,                ///< local map for neighbor element)
-        Epetra_SerialDenseMatrix&  elemat_epetra,      ///< element matrix combined for parent and neighbor element)
-        Epetra_SerialDenseVector&  elevec_epetra       ///< element vector combined for parent and neighbor element)
+          DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
+          Teuchos::ParameterList&            params,               ///< parameter list
+          DRT::Discretization&               discretization,       ///< discretization
+          vector<int>&                       patchlm,              ///< patch local map
+          vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
+          vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+          vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+          std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+          vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+          vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
       );
 
     private:
 
+      //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
+      void ReassembleMATBlock(
+          int                                               row_block,     ///< row block
+          int                                               col_block,     ///< column block
+          Epetra_SerialDenseMatrix&                         mat_block,     ///< matrix block
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          std::vector<int>&                                 lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                                 lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      );
+
+      //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
+      void ReassembleRHSBlock(
+          int                            row_block,            ///< row block
+          Epetra_SerialDenseVector&      rhs_block,            ///< rhs block
+          LINALG::Matrix<4*piel, 1>&     elevector_m,          ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&     elevector_s,          ///< element vector slave block
+          std::vector<int>&              lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&              lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      );
+
+      //! fill element vectors with extracted data
+      void GetElementData(
+          FluidIntFace*              surfele,          ///< surface FluidIntFace element
+          Fluid3*                    master_ele,       ///< master parent element
+          Fluid3*                    slave_ele,        ///< slave  parent element
+          double &                   kinvisc,          ///< patch kinematic viscosity
+          double &                   dens,             ///< patch density
+          vector<double>&            mypvelaf,         ///< master velaf
+          vector<double>&            mypvelnp,         ///< master velnp
+          vector<double>&            mypedispnp,       ///< master dispnp
+          vector<double>&            myedispnp,        ///< surfele dispnp
+          vector<double>&            mynvelaf,         ///< slave velaf
+          vector<double>&            mynvelnp,         ///< slave velnp
+          vector<double>&            mynedispnp        ///< slave dispnp
+      );
+
+      //! evaluate shape functions and derivatives at integr. point
+      double EvalShapeFuncAndDerivsAtIntPoint(
+          DRT::UTILS::IntegrationPoints2D&  intpoints,     ///< reference to 2D integration points
+          int                               iquad,         ///< actual integration point
+          int                               master_eid,    ///< master parent element
+          int                               slave_eid      ///< slave parent element
+      );
+
       //! Provide ghost penalty assembly for xfluid case
       void GhostPenalty(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,        ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,        ///< element vector combined for parent and neighbor element)
-          int                                               noffset,       ///< offset for neighbor element in element matrix and vector
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                    timefacfac,    ///< (time factor) x (integration factor)
           double &                                          tau_grad,      ///< penalty parameter for ghost penalty terms
           bool &                                            ghost_penalty  ///< boolian if ghost penalty terms has to be assembled
@@ -178,18 +239,24 @@ namespace DRT
 
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,        ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,        ///< element vector combined for parent and neighbor element)
-          int                                               noffset,       ///< offset for neighbor element in element matrix and vector
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                    timefacfacpre, ///< (time factor pressure) x (integration factor)
           double &                                          tau_p          ///< penalty parameter for pressure stabilization terms
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
       void div_streamline_EOS(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,              ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,              ///< element vector combined for parent and neighbor element)
-          int                                               noffset,             ///< offset for neighbor element in element matrix and vector
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                    timefacfac,          ///< (time factor ) x (integration factor)
           double &                                          tau_div_streamline,  ///< combined penalty parameter for divergence and streamline stabilization terms
           LINALG::Matrix<3,3>&                              vderxyaf_diff        ///< velocity derivatives (neighbor-parent) element
@@ -198,9 +265,12 @@ namespace DRT
 
       //! Provide pressure (EOS) stabilization assembly for fluid (gradients in normal direction)
       void pressureEOSnormal(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,        ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,        ///< element vector combined for parent and neighbor element)
-          int                                               noffset,       ///< offset for neighbor element in element matrix and vector
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                    timefacfacpre, ///< (time factor pressure) x (integration factor)
           double &                                          tau_p          ///< penalty parameter for pressure stabilization terms
       );
@@ -208,25 +278,139 @@ namespace DRT
 
       //! Provide divergence (EOS) stabilization assembly for fluid
       void div_EOS(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,              ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,              ///< element vector combined for parent and neighbor element)
-          int                                               noffset,             ///< offset for neighbor element in element matrix and vector
-          const double &                                    timefacfac,          ///< (time factor ) x (integration factor)
-          double &                                          tau_div,             ///< penalty parameter for divergence stabilization terms
-          LINALG::Matrix<3,3>&                              vderxyaf_diff        ///< velocity derivatives (neighbor-parent) element
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                    timefacfac,    ///< (time factor ) x (integration factor)
+          double &                                          tau_div,       ///< penalty parameter for divergence stabilization terms
+          LINALG::Matrix<3,3>&                              vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
       );
 
 
       //! Provide streamline (EOS) stabilization assembly for fluid
       void streamline_EOS(
-          LINALG::Matrix<4*piel + 4*niel,4*piel + 4*niel>&  elemat,              ///< element matrix combined for parent and neighbor element)
-          LINALG::Matrix<4*piel + 4*niel,     1>&           elevec,              ///< element vector combined for parent and neighbor element)
-          int                                               noffset,             ///< offset for neighbor element in element matrix and vector
-          const double &                                    timefacfac,          ///< (time factor ) x (integration factor)
-          double &                                          tau_streamline,      ///< combined penalty parameter for streamline stabilization terms
-          LINALG::Matrix<3,3>&                              vderxyaf_diff,       ///< velocity derivatives (neighbor-parent) element
-          LINALG::Matrix<3,1>&                              conv_diff            ///< convective velocity (neighbor-parent) element
+          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                    timefacfac,    ///< (time factor ) x (integration factor)
+          double &                                          tau_streamline,///< combined penalty parameter for streamline stabilization terms
+          LINALG::Matrix<3,3>&                              vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
+          LINALG::Matrix<3,1>&                              conv_diff      ///< convective velocity (neighbor-parent) element
       );
+
+
+      //! compute h_k w.r.t master and slave element
+      void compute_patch_hk ( double &   patch_hk,   ///< patch h_k
+                              Fluid3*    master,     ///< master fluid element
+                              Fluid3*    slave       ///< slave fluid element
+      );
+
+      //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
+      template <int numnode>
+      void diameter(     bool                master,           ///< master or slave parent element
+                         std::vector<int> &  connectivity,     ///< connectivity vector for parent element
+                         double &            h_e               ///< element length w.r.t parent element
+      )
+      {
+        LINALG::Matrix<3,numnode> xyz_surf(true);
+
+        if(connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
+
+        if(master == true) // is parent element the master element?
+        {
+          // extract node coords
+          for(int i=0;i<(int)numnode;++i)
+          {
+            int col = connectivity[i];
+            xyz_surf(0,i)=pxyze_(0, col);
+            xyz_surf(1,i)=pxyze_(1, col);
+            xyz_surf(2,i)=pxyze_(2, col);
+          }
+        }
+        else // parent element is the slave element
+        {
+          // extract node coords
+          for(int i=0;i<(int)numnode;++i)
+          {
+            int col = connectivity[i];
+            xyz_surf(0,i)=nxyze_(0, col);
+            xyz_surf(1,i)=nxyze_(1, col);
+            xyz_surf(2,i)=nxyze_(2, col);
+          }
+        }
+
+
+        if(numnode == 4) // quad4 surface
+        {
+          double diam1 = 0.0;
+          double diam2 = 0.0;
+          double line0 = 0.0;
+          double line1 = 0.0;
+          double line2 = 0.0;
+          double line3 = 0.0;
+
+          for(int i=0; i<3; i++)
+          {
+
+            // diagonals
+            // line nodes (0,2)
+            diam1 += (xyz_surf(i,2) - xyz_surf(i,0))*(xyz_surf(i,2) - xyz_surf(i,0));
+
+            // line nodes (1,3)
+            diam2 += (xyz_surf(i,3) - xyz_surf(i,1))*(xyz_surf(i,3) - xyz_surf(i,1));
+
+            // lines
+            line0 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
+            line1 += (xyz_surf(i,2) - xyz_surf(i,1))*(xyz_surf(i,2) - xyz_surf(i,1));
+            line2 += (xyz_surf(i,3) - xyz_surf(i,2))*(xyz_surf(i,3) - xyz_surf(i,2));
+            line3 += (xyz_surf(i,0) - xyz_surf(i,3))*(xyz_surf(i,0) - xyz_surf(i,3));
+          }
+          diam1 = sqrt(diam1);
+          diam2 = sqrt(diam2);
+          line0 = sqrt(line0);
+          line1 = sqrt(line1);
+          line2 = sqrt(line2);
+          line3 = sqrt(line3);
+
+
+          h_e = max(diam1, max(diam2, max(line0, max(line1, max(line2, line3)))));
+        }
+        else if(numnode == 3) // tri3 surface
+        {
+          double line0 = 0.0;
+          double line1 = 0.0;
+          double line2 = 0.0;
+
+          for(int i=0; i<3; i++)
+          {
+            // no diagonals
+
+            // lines
+            line0 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
+            line1 += (xyz_surf(i,2) - xyz_surf(i,1))*(xyz_surf(i,2) - xyz_surf(i,1));
+            line2 += (xyz_surf(i,0) - xyz_surf(i,3))*(xyz_surf(i,0) - xyz_surf(i,3));
+          }
+
+          line0 = sqrt(line0);
+          line1 = sqrt(line1);
+          line2 = sqrt(line2);
+
+
+          h_e = max(line0, max(line1, line2));
+        }
+        else dserror("unknown number of nodes");
+
+        if(h_e <= 0.0) dserror("negative or zero diameter for current face!");
+
+        return;
+       }
+
 
 
       //! pointer to parameter list
@@ -234,7 +418,7 @@ namespace DRT
 
       // nodal arrays
       // ------------
-      //! node coordinates of parent element
+      //! node coordinates of parent (master) element
       LINALG::Matrix<3,piel> pxyze_;
       //! array of nodal velocities, intermediate time level
       LINALG::Matrix<3,piel> pevelaf_;
@@ -247,6 +431,7 @@ namespace DRT
       //! array of nodal grid displacements, surface element, new time level
       LINALG::Matrix<3,piel> edispnp_;
 
+      //! node coordinates of neighbor (slave) element
       LINALG::Matrix<3,niel> nxyze_;
       //! array of nodal velocities, intermediate time level
       LINALG::Matrix<3,niel> nevelaf_;
@@ -348,193 +533,17 @@ namespace DRT
       and references therein
 
     */
-    class Fluid3EdgeBasedStabilization
+    class FluidEdgeBasedStab
     {
     public:
 
 
       /*! \brief constructor
       */
-      Fluid3EdgeBasedStabilization();
+      FluidEdgeBasedStab( double patch_hk );
 
       /// Empty destructor
-      virtual ~Fluid3EdgeBasedStabilization() {}
-
-
-
-
-      template <DRT::Element::DiscretizationType surf_distype>
-       void diameter(    RCP<DRT::Element>                     actsurf,
-                         Fluid3Boundary*                       surfele,
-                         double &                              h_e,
-                         vector<int> &                         lm,
-                         DRT::Discretization&                  discretization)
-       {
-         const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<surf_distype>::numNodePerElement;
-
-         vector<double> mysurfdispnp ((lm ).size());
-         if (surfele->ParentElement()->IsAle())
-         {
-           // mesh displacements, new time step, n+1
-           RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-           if (dispnp==null)
-           {
-             dserror("Cannot get state vector 'dispnp'");
-           }
-
-           DRT::UTILS::ExtractMyValues(*dispnp,mysurfdispnp ,lm  );
-         }
-
-
-         LINALG::Matrix<3,numnode> xyz_surf(true);
-         LINALG::Matrix<3,numnode> psurfdispnp (true);
-
-         // extract node coords
-         for(int i=0;i<(int)numnode;++i)
-         {
-           xyz_surf(0,i)=actsurf->Nodes()[i]->X()[0];
-           xyz_surf(1,i)=actsurf->Nodes()[i]->X()[1];
-           xyz_surf(2,i)=actsurf->Nodes()[i]->X()[2];
-         }
-
-         if (surfele->ParentElement()->IsAle())
-         {
-           for (int i=0;i<(int)numnode;++i)
-           {
-             const int fi=4*i;
-
-             psurfdispnp(0,i) = mysurfdispnp[  fi];
-             psurfdispnp(1,i) = mysurfdispnp[1+fi];
-             psurfdispnp(2,i) = mysurfdispnp[2+fi];
-           }
-         }
-
-
-         if (surfele->ParentElement()->IsAle())
-         {
-           for (size_t i=0;i<numnode;++i)
-           {
-             xyz_surf(0,i) += psurfdispnp(0,i);
-             xyz_surf(1,i) += psurfdispnp(1,i);
-             xyz_surf(2,i) += psurfdispnp(2,i);
-           }
-         }
-
-         double diam1 = 0.0;
-         double diam2 = 0.0;
-
-         if(numnode == 4)
-         {
-           for(int i=0; i<3; i++)
-           {
-             // line nodes (0,2)
-             diam1 += (xyz_surf(i,2) - xyz_surf(i,0))*(xyz_surf(i,2) - xyz_surf(i,0));
-
-             // line nodes (1,3)
-             diam2 += (xyz_surf(i,3) - xyz_surf(i,1))*(xyz_surf(i,3) - xyz_surf(i,1));
-           }
-           diam1 = sqrt(diam1);
-           diam2 = sqrt(diam2);
-         }
-         else dserror("wrong number of nodes");
-
-         h_e = max(diam1, diam2);
-
-         if(h_e <= 0.0) dserror("negative or zero diameter for current face!");
-
-         return;
-       }
-
-
-
-
-//      template <DRT::Element::DiscretizationType line_distype>
-//       void line_length( RCP<DRT::Element>          actline,
-//                         Fluid3Boundary*            surfele,
-//                         double &                   length,
-//                         vector<int> &              lm,
-//                         DRT::Discretization&       discretization)
-//       {
-//         const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
-//
-//         vector<double> mylinedispnp ((lm ).size());
-//         if (surfele->ParentElement()->IsAle())
-//         {
-//           // mesh displacements, new time step, n+1
-//           RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-//           if (dispnp==null)
-//           {
-//             dserror("Cannot get state vector 'dispnp'");
-//           }
-//
-//           DRT::UTILS::ExtractMyValues(*dispnp,mylinedispnp ,lm  );
-//         }
-//
-//
-//         LINALG::Matrix<3,numnode> xyz_line (true);
-//         LINALG::Matrix<3,numnode> plinedispnp (true);
-//
-//         // extract node coords
-//         for(int i=0;i<(int)numnode;++i)
-//         {
-//           xyz_line(0,i)=actline->Nodes()[i]->X()[0];
-//           xyz_line(1,i)=actline->Nodes()[i]->X()[1];
-//           xyz_line(2,i)=actline->Nodes()[i]->X()[2];
-//         }
-//
-//         if (surfele->ParentElement()->IsAle())
-//         {
-//           for (int i=0;i<(int)numnode;++i)
-//           {
-//             const int fi=4*i;
-//
-//             plinedispnp(0,i) = mylinedispnp[  fi];
-//             plinedispnp(1,i) = mylinedispnp[1+fi];
-//             plinedispnp(2,i) = mylinedispnp[2+fi];
-//           }
-//         }
-//
-//
-//         if (surfele->ParentElement()->IsAle())
-//         {
-//           for (int i=0;i<numnode;++i)
-//           {
-//             xyz_line(0,i) += plinedispnp(0,i);
-//             xyz_line(1,i) += plinedispnp(1,i);
-//             xyz_line(2,i) += plinedispnp(2,i);
-//           }
-//         }
-//
-//         if(numnode == 2)
-//         {
-//           for(int i=0; i<3; i++)
-//           {
-//             length += (xyz_line(i,1) - xyz_line(i,0))*(xyz_line(i,1) - xyz_line(i,0));
-//           }
-//           length = sqrt(length);
-//         }
-//         else if(numnode == 3)
-//         {
-//           for(int i=0; i<3; i++)
-//           {
-//             length += (xyz_line(i,2) - xyz_line(i,0))*(xyz_line(i,2) - xyz_line(i,0));
-//           }
-//           length = sqrt(length);
-//         }
-//         else dserror("this number of points of lines is not 2 or 3");
-//
-//         return;
-//       }
-
-
-
-      /*!
-       \brief computation of longest diameter of all faces in the parent element
-      */
-      void h_k(
-          DRT::Discretization &      discretization,
-          Fluid3Boundary*            surfele);
-
+      virtual ~FluidEdgeBasedStab() {}
 
 
       /*!
@@ -564,296 +573,7 @@ namespace DRT
     };
 
 
-
-#if(0)
-    /*!
-     \brief Internal Fluid2Line weak Dirichlet implementation
-            (line and parent element specific)
-     */
-
-     //-----------------------------------------------------------------
-     ///
-     //-----------------------------------------------------------------
-     template<DRT::Element::DiscretizationType distype ,
-              DRT::Element::DiscretizationType pdistype>
-     class Fluid3LineWeakDBC: public Fluid3BoundaryWeakDBCInterface
-     {
-     public:
-       /// empty constructor
-       Fluid3LineWeakDBC();
-
-       /// empty destructor
-       ~Fluid3LineWeakDBC(){return;};
-
-       /// number of nodes
-       static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
-
-       /// number of parentnodes
-       static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
-
-
-       /*!
-         \brief Evaluate weakly imposed Dirichlet conditions
-
-         This method calculates the contributions to rhs and matrix of
-         weak Dirichlet boundary conditions for a generalized alpha
-         system.
-
-         Literature:
-         Weak imposition of Dirichlet boundary conditions in fluid mechanics
-         Y. Bazilevs, T.J.R. Hughes
-         Computers & Fluids 36 (2007) 12–26
-
-       */
-       virtual int EvaluateWeakDBC(
-         Fluid3Boundary*                lineele       ,
-         ParameterList&             params        ,
-         DRT::Discretization&       discretization,
-         vector<int>&               lm            ,
-         Epetra_SerialDenseMatrix&  elemat_epetra ,
-         Epetra_SerialDenseVector&  elevec_epetra );
-
-     private:
-
-        //! pointer to parameter list
-        DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
-
-       // nodal arrays
-       // ------------
-       //! node coordinates of parent element
-       LINALG::Matrix<2,piel> pxyze_;
-       //! array of nodal velocities, intermediate time level
-       LINALG::Matrix<2,piel> pevelaf_;
-       //! array of nodal velocities, new time level
-       LINALG::Matrix<2,piel> pevelnp_;
-       //! array of nodal pressure, new time level
-       LINALG::Matrix<piel,1> peprenp_;
-       //! array of nodal grid displacements, parent element, new time level
-       LINALG::Matrix<2,piel> pedispnp_;
-       //! array of nodal grid displacements, surface element, new time level
-       LINALG::Matrix<2,piel> edispnp_;
-       //! node coordinates of boundary element
-       LINALG::Matrix<2, iel> xyze_;
-
-
-
-       // shape functions and derivatives, mapping from reference element to actual geometry
-       // ----------------------------------------------------------------------------------
-       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-       LINALG::Matrix<2,2>    pxjm_;
-       //! its inverse
-       LINALG::Matrix<2,2>    pxji_;
-       //! vector of shape functions, parent element
-       LINALG::Matrix<piel,1> pfunct_;
-       //! vector of shape function derivatives in reference coordinate system, parent element
-       LINALG::Matrix<2,piel> pderiv_;
-       //! vector of shape function derivatives in global coordinate system
-       LINALG::Matrix<2,piel> pderxy_;
-
-
-       //! vector of shape functions, boundary element
-       LINALG::Matrix<iel ,1> funct_;
-       //! vector of shape function derivatives in reference coordinate system, boundary element
-       LINALG::Matrix<iel, 1> deriv_;
-       //! vector for outward normal, boundary element
-       LINALG::Matrix<2,   1> n_;
-       //! derivatives of surface in reference direction
-       LINALG::Matrix<2,   1> dxydr_;
-       //! the length of an infintesimal line element
-       double                 dr_;
-
-
-
-       // values of non geometrical quantities in gausspoints
-       // ---------------------------------------------------
-
-       //! velocity in gausspoint, time n+af
-       LINALG::Matrix<2,1>    velintaf_;
-       //! velocity in gausspoint, time n+1
-       LINALG::Matrix<2,1>    velintnp_;
-       //! velocity derivatives in gausspoint, time n+af
-       LINALG::Matrix<2,2>    vderxyaf_;
-       //! pressure in gausspoint, time n+1
-       double                 prenp_;
-
-     };
-#endif
-
-#if(0)
-    //-----------------------------------------------------------------
-    //-----------------------------------------------------------------
-    //
-    //                    SPALDINGS LAW OF THE WALL
-    //
-    //-----------------------------------------------------------------
-    //-----------------------------------------------------------------
-
-    /*!
-      \brief a class providing a method for the dynamic computation of
-             the penalty parameter tauB for the weak Dirichlet boundary
-             condition. It is computed such that the resulting traction
-             corresponds to Spaldings formulation of the law of the
-             wall
-
-      Literature:
-      Weak Dirichlet Boundary Conditions for Wall-Bounded Turbulent Flows
-      Y. Bazilevs, C. Michler, V.M. Calo, and T.J.R. Hughes
-      Computer Methods in Applied Mechanics and Engineering
-      Volume 196, Issues 49-52, 1 November 2007, Pages 4853-4862
-
-      and references therein
-
-    */
-    class Fluid3SurfaceWeakDBCSpaldingsLaw
-    {
-    public:
-      /*! \brief constructor
-
-      \param chi_in (in) empirical paramter of Spaldings law, usually 0.4
-      \param B_in   (in) empirical paramter of Spaldings law, usually 5.5
-
-      */
-      Fluid3SurfaceWeakDBCSpaldingsLaw(const double chi_in,
-                                       const double B_in  );
-
-      /// Empty destructor
-      virtual ~Fluid3SurfaceWeakDBCSpaldingsLaw() {}
-
-      /*! \brief dynamic computation of the penalty paramter using Spaldings
-                 law
-
-
-      \param  tau_B (in/out) start/final value for penalty parameter tau_B
-      \param  normu (in)     norm velocity in this point on surface
-      \param  h     (in)     cell size in wall normal direction
-      \param  Cb    (in)     constant originating from weak Dirichlet
-                             framework
-      \param  visc  (in)     kinematic viscosity
-
-      */
-      void ComputeTauBUsingSpaldingsLaw(
-        double&       tau_B,
-        const double& normu,
-        const double& h    ,
-        const double& Cb   ,
-        const double& visc );
-
-    private:
-      //! first parameter of the Spalding model
-      double chi_;
-
-      //! second parameter of the Spalding model
-      double B_;
-
-      /*! \brief evaluate the residual of Spaldings law of the wall
-
-
-
-      <pre>
-
-                               +      / +\
-                        res = y  - f | u  |
-                                      \  /
-
-                                  /                                                  \
-                                 |                           /     +\ 2    /     +\ 3 |
-                                 |       +                  | chi*u  |    | chi*u  |  |
-    +     / +\     +    -chi*B   |  chi*u               +    \      /      \      /   |
-   y = f | u  | = u  + e       * | e       - 1.0 - chi*u  - ----------- - ----------- |
-          \  /                   |                              2.0           6.0     |
-                                 |                                                    |
-                                  \                                                  /
-
-
-      </pre>
-
-      \param  y     (in)     thickness of modeled boundary layer
-      \param  nu    (in)     kinematic viscosity
-      \param  tau_B (in)     value for penalty parameter tau_B
-      \param  normu (in)     norm velocity in this point on surface
-
-      \return residual of Spaldings equation
-      */
-      double SpaldingResidual(
-        const double y     ,
-        const double nu    ,
-        const double tau_B ,
-        const double normu
-        );
-
-      /*! \brief evaluate the residuals Jacobian of Spaldings law of the wall
-
-      \param  y     (in)     thickness of modeled boundary layer
-      \param  nu    (in)     kinematic viscosity
-      \param  tau_B (in)     value for penalty parameter tau_B
-      \param  normu (in)     norm velocity in this point on surface
-
-      \return derivative of residual of Spaldings equation w.r.t. tau_B
-
-      */
-      double JacobianSpaldingResidual(
-        const double y    ,
-        const double nu   ,
-        const double tau_B,
-        const double normu);
-
-      /*! \brief compute dimensionless velocity u+
-
-      <pre>
-
-                                               +-------------+
-                     ||  n+af ||              /  ||  n+af||
-           +         || u     ||             /   || u    ||
-          u  = ---------------------- =     /   -------------
-                 +------------------+    \ /        tau
-                / tau  * ||  n+af ||      v            B
-               v     B   || u     ||
-
-      </pre>
-
-      \param  tau_B (in)     value for penalty parameter tau_B
-      \param  normu (in)     norm velocity in this point on surface
-
-      \return u+
-
-       */
-      double Uplus(const double normu,
-                   const double tau_B);
-
-      /*! \brief compute dimensionless thickness of modeled layer y+
-
-      <pre>
-                   +-------------+              +-------------+
-                  / tau  * ||u||          h *  / tau  * ||u||
-           +     v     B                   b  v     B
-          y  =  ------------------- * y = ---------------------- =
-                        nu                      C  * nu
-                                                 b
-                  +-------------+
-                 / tau  * ||u||
-                v     B
-             = -------------------
-                     tau
-                        B,0
-
-      </pre>
-
-      \param  normu (in)     norm velocity in this point on surface
-      \param  tau_B (in)     value for penalty parameter tau_B
-      \param  visc  (in)     kinematic viscosity
-      \param  y     (in)     thickness of modeled boundary layer
-
-      \return y+
-       */
-      double Yplus(const double normu,
-                   const double tau_B,
-                   const double visc ,
-                   const double y    );
-
-    };
-#endif
-
-  }
-}
+  } // namespace ELEMENTS
+} // namespace DRT
 
 #endif

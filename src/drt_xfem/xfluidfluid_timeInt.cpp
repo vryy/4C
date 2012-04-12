@@ -1492,7 +1492,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 
 
           // call element method
-          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->CalculateContinuityXFEM(ele,
+          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
                                                                                              *bgdis,
                                                                                              la[0].lm_,
                                                                                              C_elevec,
@@ -1519,7 +1519,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 
 
           // call element method
-          DRT::ELEMENTS::Fluid3ImplInterface::Impl(actele->Shape())->CalculateContinuityXFEM(ele,
+          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
                                                                                              *bgdis,
                                                                                              la[0].lm_,
                                                                                              C_elevec);

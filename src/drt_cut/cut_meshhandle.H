@@ -54,7 +54,9 @@ public:
 
   Node * GetNode( int nid ) const;
 
-  SideHandle * GetSide( int eid ) const;
+  Side * GetSide( std::vector<int>& nodeids ) const;
+
+  SideHandle * GetSide( int sid ) const;
 
   ElementHandle * GetElement( int eid ) const;
 

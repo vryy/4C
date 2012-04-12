@@ -73,6 +73,16 @@ void GEO::CutWizard::AddElement( DRT::Element * ele )
   mesh_->AddElement( ele->Id(), nids, xyze, ele->Shape() );
 }
 
+GEO::CUT::Side * GEO::CutWizard::GetSide( std::vector<int>& nodeids )
+{
+  return mesh_->GetSide( nodeids );
+}
+
+GEO::CUT::SideHandle * GEO::CutWizard::GetSide( int sid )
+{
+  return mesh_->GetSide( sid );
+}
+
 GEO::CUT::ElementHandle * GEO::CutWizard::GetElement( DRT::Element * ele )
 {
   return mesh_->GetElement( ele->Id() );

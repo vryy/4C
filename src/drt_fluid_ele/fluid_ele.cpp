@@ -230,13 +230,6 @@ void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std
 
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int id, const int owner )
-{
-  //return Teuchos::rcp( new Fluid3Boundary( id, owner ) );
-  return Teuchos::null;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
@@ -463,6 +456,34 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
     dserror("Volumes() does not exist for 1D/2D-elements");
     return DRT::Element::Surfaces();
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get internal faces element (public)                     schott 03/12|
+ *----------------------------------------------------------------------*/
+RCP<DRT::Element> DRT::ELEMENTS::Fluid3::CreateInternalFaces( DRT::Element* parent_slave,   //!< parent slave fluid3 element
+                                                              int nnode,                    //!< number of surface nodes
+                                                              const int* nodeids,           //!< node ids of surface element
+                                                              DRT::Node** nodes,            //!< nodes of surface element
+                                                              const int lsurface_master     //!< local surface number w.r.t master parent element
+                                                             )
+{
+  // dynamic cast for slave parent element
+  DRT::ELEMENTS::Fluid3 * slave_pele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( parent_slave );
+
+
+  // insert both parent elements
+  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace,Fluid3>(-1,             // internal face element id
+                                                                -1,             // owner of internal face element
+                                                                nnode,
+                                                                nodeids,
+                                                                nodes,
+                                                                this,           // master parent element
+                                                                slave_pele,     // slave parent element
+                                                                lsurface_master // local surface number w.r.t master parent element
+                                                                );
+
 }
 
 
