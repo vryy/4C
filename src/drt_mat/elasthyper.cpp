@@ -180,6 +180,16 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
+    // make sure the referenced materials in material list have quick access parameters
+    std::vector<int>::const_iterator m;
+    for (m=params_->matids_->begin(); m!=params_->matids_->end(); ++m)
+    {
+      const int matid = *m;
+      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+      if (sum == Teuchos::null) dserror("Failed to allocate");
+      potsum_.push_back(sum);
+    }
+
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
     {
