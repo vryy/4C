@@ -21,7 +21,7 @@
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
+#include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../linalg/linalg_mapextractor.H"
 

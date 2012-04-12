@@ -4,7 +4,7 @@
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/ad_fld_fluid.H"
 
 #include "../drt_structure/stru_aux.H"
 

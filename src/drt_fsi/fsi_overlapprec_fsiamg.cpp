@@ -2,7 +2,7 @@
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "../drt_adapter/FSIStructureWrapper.H"
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/ad_fld_fluid.H"
 
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>

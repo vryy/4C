@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_moving_boundary.cpp
+\file ad_fld_moving_boundary.cpp
 
 \brief
 
@@ -18,8 +18,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "adapter_fluid_ale.H"
-#include "adapter_fluid_xfem.H"
+#include "ad_fld_fluid_ale.H"
+#include "ad_fld_fluid_xfem.H"
 
 
 /*----------------------------------------------------------------------*/

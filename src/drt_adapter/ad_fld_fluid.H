@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid.H
+\file ad_fld_fluid.H
 
 \brief Fluid field adapter
 

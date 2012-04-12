@@ -3,7 +3,7 @@
 #ifndef FSI_FLUID_ALE_H
 #define FSI_FLUID_ALE_H
 
-#include "../drt_adapter/adapter_fluid_ale.H"
+#include "../drt_adapter/ad_fld_fluid_ale.H"
 
 namespace FSI
 {

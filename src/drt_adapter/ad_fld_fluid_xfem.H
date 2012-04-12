@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_xfem.H
+\file ad_fld_fluid_xfem.H
 
 \brief
 
@@ -17,8 +17,8 @@ Maintainer:  Benedikt Schott
 #ifndef ADAPTER_FLUID_XFEM_H
 #define ADAPTER_FLUID_XFEM_H
 
-#include "adapter_fluid_moving_boundary.H"
-#include "adapter_fluid_base_algorithm.H"
+#include "ad_fld_moving_boundary.H"
+#include "ad_fld_base_algorithm.H"
 
 namespace ADAPTER
 {

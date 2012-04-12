@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_xfem.cpp
+\file ad_fld_fluid_xfem.cpp
 
 \brief
 
@@ -17,7 +17,7 @@ Maintainer:  Benedikt Schott
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_coupling.H"
-#include "adapter_fluid_xfem.H"
+#include "ad_fld_fluid_xfem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

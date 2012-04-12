@@ -45,7 +45,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_adapter/adapter_fluid_poro.H"
+#include "../drt_adapter/ad_fld_poro.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_fsi.H
+\file ad_fld_fluid_fsi.H
 
 \brief Fluid field adapter for fsi
 
@@ -19,7 +19,7 @@ Maintainer:
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "adapter_fluid_wrapper.H"
+#include "ad_fld_wrapper.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 

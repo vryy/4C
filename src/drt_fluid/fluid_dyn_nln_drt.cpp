@@ -34,7 +34,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_dyn_nln_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
+#include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../linalg/linalg_utils.H"

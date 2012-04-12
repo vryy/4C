@@ -14,7 +14,7 @@ Maintainer: Lena Yoshihara
 #include "fsi_lungmonolithic.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_adapter/adapter_structure_lung.H"
-#include "../drt_adapter/adapter_fluid_lung.H"
+#include "../drt_adapter/ad_fld_lung.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "fsi_statustest.H"

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_moving_boundary.H
+\file ad_fld_moving_boundary.H
 
 \brief
 
@@ -80,7 +80,7 @@ namespace ADAPTER
     /// nonlinear solve
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
                                 Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null) = 0;
-    
+
     /// nonlinear solve
     virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
                                 Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null)

@@ -8,7 +8,7 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/ad_fld_fluid.H"
 
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"

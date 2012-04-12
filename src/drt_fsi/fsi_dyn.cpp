@@ -57,8 +57,8 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/adapter_fluid.H"
-#include "../drt_adapter/adapter_fluid_moving_boundary.H"
+#include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_fld_moving_boundary.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -959,7 +959,7 @@ void fsi_ale_drt()
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     else
       dserror("unsupported partitioned FSI scheme");
-    
+
     if (genprob.restart)
     {
       // read the restart information, set vectors and variables

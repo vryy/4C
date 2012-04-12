@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt_algo.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -14,7 +14,7 @@ Maintainer: Martin Winklmaier
 #ifndef ADAPTER_FLUID_TOPOPT_ALGO_H_
 #define ADAPTER_FLUID_TOPOPT_ALGO_H_
 
-#include "adapter_fluid_base_algorithm.H"
+#include "ad_fld_base_algorithm.H"
 #include "adapter_topopt.H"
 #include "adapter_topopt_fluid_adjoint_base.H"
 

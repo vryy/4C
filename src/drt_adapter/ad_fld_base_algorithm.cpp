@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_base_algorithm.cpp
+\file ad_fld_base_algorithm.cpp
 
 \brief Fluid Base Algorithm
 
@@ -14,7 +14,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 
-#include "adapter_fluid_base_algorithm.H"
+#include "ad_fld_base_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -38,11 +38,11 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "adapter_fluid_fluid_fsi.H"
-#include "adapter_fluid_fsi.H"
-#include "adapter_fluid_lung.H"
-#include "adapter_fluid_poro.H"
-#include "adapter_fluid_xfluid_fsi.H"
+#include "ad_fld_fluid_fluid_fsi.H"
+#include "ad_fld_fluid_fsi.H"
+#include "ad_fld_lung.H"
+#include "ad_fld_poro.H"
+#include "ad_fld_xfluid_fsi.H"
 
 // TODO remove
 #include "../drt_fluid/fluid_genalpha_integration.H"
@@ -345,7 +345,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // check correct setting
   if ((probtype == prb_thermo_fsi or probtype == prb_loma) and
-      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") 
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
   if (probtype == prb_poroelast and

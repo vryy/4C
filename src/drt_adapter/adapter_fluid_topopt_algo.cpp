@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt_algo.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Martin Winklmaier

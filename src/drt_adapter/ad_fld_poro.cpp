@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------*
- \file adapter_fluid_poro.cpp
+ \file ad_fld_poro.cpp
 
  \brief Fluid field adapter for poroelasticity
 
@@ -13,7 +13,7 @@
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
-#include "adapter_fluid_poro.H"
+#include "ad_fld_poro.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_condition_utils.H"

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_ale.cpp
+\file ad_fld_fluid_ale.cpp
 
 \brief
 
@@ -16,7 +16,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "adapter_fluid_ale.H"
+#include "ad_fld_fluid_ale.H"
 #include "adapter_coupling.H"
 
 /*----------------------------------------------------------------------*

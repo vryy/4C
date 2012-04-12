@@ -509,17 +509,17 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
   src/drt_adapter/adapter_coupling.cpp
   src/drt_adapter/adapter_coupling_mortar.cpp
-  src/drt_adapter/adapter_fluid.cpp
-  src/drt_adapter/adapter_fluid_ale.cpp
-  src/drt_adapter/adapter_fluid_base_algorithm.cpp
-  src/drt_adapter/adapter_fluid_lung.cpp
-  src/drt_adapter/adapter_fluid_moving_boundary.cpp
-  src/drt_adapter/adapter_fluid_poro.cpp
-  src/drt_adapter/adapter_fluid_fsi.cpp
-  src/drt_adapter/adapter_fluid_fluid_fsi.cpp
+  src/drt_adapter/ad_fld_fluid.cpp
+  src/drt_adapter/ad_fld_fluid_ale.cpp
+  src/drt_adapter/ad_fld_base_algorithm.cpp
+  src/drt_adapter/ad_fld_lung.cpp
+  src/drt_adapter/ad_fld_moving_boundary.cpp
+  src/drt_adapter/ad_fld_poro.cpp
+  src/drt_adapter/ad_fld_fluid_fsi.cpp
+  src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/adapter_fluid_topopt_algo.cpp
-  src/drt_adapter/adapter_fluid_xfem.cpp
-  src/drt_adapter/adapter_fluid_xfluid_fsi.cpp
+  src/drt_adapter/ad_fld_fluid_xfem.cpp
+  src/drt_adapter/ad_fld_xfluid_fsi.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp

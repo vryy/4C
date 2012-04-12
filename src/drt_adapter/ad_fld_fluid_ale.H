@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_ale.H
+\file ad_fld_fluid_ale.H
 
 \brief
 
@@ -22,8 +22,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "adapter_fluid_moving_boundary.H"
-#include "adapter_fluid_base_algorithm.H"
+#include "ad_fld_moving_boundary.H"
+#include "ad_fld_base_algorithm.H"
 #include "../drt_ale/ale.H"
 
 namespace ADAPTER

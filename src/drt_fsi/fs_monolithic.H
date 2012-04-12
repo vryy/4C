@@ -5,7 +5,7 @@
 
 #include "fsi_overlapprec.H"
 
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
+#include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include <NOX.H>

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_base_algorithm.H
+\file ad_fld_base_algorithm.H
 
 \brief Fluid Base Algorithm
 
@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "adapter_fluid.H"
+#include "ad_fld_fluid.H"
 
 
 // Algorithm adapter classes for use in multi-field problems

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_fluid_lung.H
+\file ad_fld_lung.H
 
 \brief Fluid field adapter for fsi airway simulations with attached
 parenchyma balloon
@@ -21,7 +21,7 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "adapter_fluid_fsi.H"
+#include "ad_fld_fluid_fsi.H"
 
 
 // forward declarations

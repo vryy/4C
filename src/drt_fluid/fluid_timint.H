@@ -14,7 +14,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #ifndef FLUID_TIMINT_H
 #define FLUID_TIMINT_H
 
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/ad_fld_fluid.H"
 
 #include "../drt_lib/drt_dserror.H"
 

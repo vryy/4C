@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file adapter_fluid_poro.H
+ \file ad_fld_poro.H
 
  \brief Fluid field adapter for poroelasticity
 
@@ -18,7 +18,7 @@
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "adapter_fluid_fsi.H"
+#include "ad_fld_fluid_fsi.H"
 #include "../linalg/linalg_mapextractor.H"
 
 namespace DRT
