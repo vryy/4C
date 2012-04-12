@@ -322,8 +322,6 @@ private:
   //! @name flags and enums
   /*========================================================================*/
 
-  //! flag for electrochemistry problems (ELCH)
-  const bool is_elch_;
   //! flag for using ALE formulation
   bool is_ale_;
   //! flag for inclusion of reactive terms
@@ -340,9 +338,6 @@ private:
   //! flag for conservative form of convective term
   bool is_conservative_;
 
-  //! flag for inclusion of subgrid-scale velocity
-  bool sgvel_;
-
   //! flag for material evaluation at Gaussian integration points
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
@@ -350,20 +345,8 @@ private:
   //! flag for improvement of consistency of stabilized method
   bool betterconsistency_;
 
-  //! flag for migration velocity in formula for stabilization parameter (ELCH)
-  bool migrationintau_;
-  //! flag for migration velocity in the stabilization operator (ELCH)
-  bool migrationstab_;
-  //! flag for migration velocity in residual of strong form (ELCH)
-  bool migrationinresidual_;
-
-  //! update material with subgrid-scale temperature (loma specific)
-  bool update_mat_;
-
   //! stabilization parameter definition
   enum INPAR::SCATRA::TauType whichtau_;
-  //! turbulence model
-  enum INPAR::FLUID::TurbModelAction turbmodel_;
 
   /*========================================================================*/
   //! @name scalar degrees of freedom and related
@@ -371,17 +354,9 @@ private:
 
   // ? scalar
   // double phi_
-  //! subgrid-scale part of scalar
-  vector<double> sgphi_;
-  //! multifractal subgrid-scale part of scalar
-  vector<double> mfssgphi_;
 
   //! (global) gradient of transported scalar at integration point
   LINALG::Matrix<nsd_,1> gradphi_;
-  //! (global) gradient of fine-scale part of scalar at integration point
-  LINALG::Matrix<nsd_,1> fsgradphi_;
-  //! (global) gradient of multifractal subgrid-scale scalar at integration point
-  LINALG::Matrix<nsd_,1> mfsggradphi_;
 
   //! scalar at t_(n)
   vector<LINALG::Matrix<nen_,1> > ephin_;
@@ -446,12 +421,6 @@ private:
 
   //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<nen_,1> eprenp_;
-  //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
-  double thermpressnp_;
-  //! thermodynamic pressure at t_(n+alpha_M) (LOMA specific)
-  double thermpressam_;
-  //! time derivative of thermodynamic pressure (LOMA specific)
-  double thermpressdt_;
 
   /*========================================================================*/
   //! @name coefficients and related
@@ -474,11 +443,6 @@ private:
   vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
   vector<double> reacoeffderiv_;
-
-  //! charge numbers of all ion species (ELCH specific)
-  vector<double> valence_;
-  //! diffusivity times valence for each ion species (ELCH specific)
-  vector<double> diffusvalence_;
 
   //! specific heat capacity (either at constant pressure or at constant volume)
   double shc_;
@@ -543,11 +507,6 @@ private:
 
   //! reconstructed flux values via L2 projection
   vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
-
-  //! weights for nurbs elements
-  LINALG::Matrix<nen_,1> weights_;
-  //! knot vector for nurbs elements
-  std::vector<Epetra_SerialDenseVector> myknots_;
 
   /*========================================================================*/
   //! @name Miscellaneous - to be done!!!

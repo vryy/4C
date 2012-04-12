@@ -84,7 +84,6 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
-    is_elch_((numdofpernode_ - numscal_) == 1),  // bool set implicitely
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
     diffreastafac_(0.0),
@@ -92,19 +91,9 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     is_genalpha_(false),      // bool set
     is_incremental_(false),   // bool set
     is_conservative_(false),  // bool set
-    // sgvel_ not initialized
     betterconsistency_(false), // bool set
-    migrationintau_(true),     // bool set
-    migrationstab_(true),      // bool set
-    migrationinresidual_(true),// bool set
-    update_mat_(false),        // bool set
     // whichtau_ not initialized
-    // turnmodel_ not initialized
-    sgphi_(numscal_),   // size of vector
-    mfssgphi_(numscal_),// size of vector
     gradphi_(true),     // initialized to zero
-    fsgradphi_(true),   // initialized to zero
-    mfsggradphi_(true), // initialized to zero
     ephin_(numscal_),   // size of vector
     ephinp_(numscal_),  // size of vector
     ephiam_(numscal_),  // size of vector
@@ -128,9 +117,6 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     sgconv_(true),      // initialized to zero
     vdiv_(0.0),         // set double
     eprenp_(true),      // initialized to zero
-    thermpressnp_(0.0), // set double
-    thermpressam_(0.0), // set double
-    thermpressdt_(0.0), // set double
     densn_(numscal_),        // size of vector
     densnp_(numscal_),       // size of vector
     densam_(numscal_),       // size of vector
@@ -139,8 +125,6 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     sgdiff_(numscal_),       // size of vector
     reacoeff_(numscal_),     // size of vector
     reacoeffderiv_(numscal_),// size of vector
-    valence_(numscal_),      // size of vector
-    diffusvalence_(numscal_),// size of vector
     shc_(0.0),      // set double
     visc_(0.0),     // set double
     diff_(true),    // initialized to zero
@@ -166,9 +150,7 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     rea_phi_(numscal_),    // size of vector
     tau_(numscal_),             // size of vector
     tauderpot_(numscal_),       // size of vector
-    efluxreconstr_(numscal_),   // size of vector
-    weights_(true),      // initialized to zero
-    myknots_(nsd_)       // size of vector
+    efluxreconstr_(numscal_)   // size of vector
 {
   return;
 }
@@ -233,17 +215,6 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
     xyze_ += edispnp_;
   }
   else edispnp_.Clear();
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
 
   // the type of scalar transport problem has to be provided for all actions!
   const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
@@ -396,52 +367,17 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
         dserror("unknown definition for stabilization parameter");
       }
 
-      // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
-      // (default: "false" for both flags)
-      const bool sgvel(false);
-      sgvel_ = sgvel;
-      const bool assgd =false;
-
-
       // set flags for potential evaluation of tau and material law at int. point
       const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
       tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
       const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
       mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
-      // set flag for fine-scale subgrid diffusivity and perform some checks
-      bool fssgd = false; //default
-
-      // check for combination of all-scale and fine-scale subgrid diffusivity
-      if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
-
       // get velocity at nodes
       const RCP<Epetra_MultiVector> reinit_velocity = params.get< RCP<Epetra_MultiVector> >("reinit velocity field",null);
       DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,reinit_velocity,nsd_);
       const RCP<Epetra_MultiVector> reinit_convelocity = params.get< RCP<Epetra_MultiVector> >("reinit convective velocity field",null);
       DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,reinit_convelocity,nsd_);
-
-      // get data required for subgrid-scale velocity: acceleration and pressure
-      if (sgvel_)
-      {
-        // check for matching flags
-        if (not mat_gp_ or not tau_gp_) dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
-
-        const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field",null);
-        LINALG::Matrix<nsd_+1,nen_> eaccprenp;
-        DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
-
-        // split acceleration and pressure values
-        for (int i=0;i<nen_;++i)
-        {
-          for (int j=0;j<nsd_;++j)
-          {
-            eaccnp_(j,i) = eaccprenp(j,i);
-          }
-          eprenp_(i) = eaccprenp(nsd_,i);
-        }
-      }
-
 
       // calculate element coefficient matrix and rhs
       Sysmat_Reinit_OST(
@@ -763,13 +699,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::GetMaterialParams(
     densnp_[0]      = 1.0;
     densam_[0]      = 1.0;
     densgradfac_[0] = 0.0;
-
-    // in case of multifrcatal subgrid-scales, read Schmidt number
-    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_)
-    {
-      double scnum = actmat->ScNum();
-      visc_ = scnum * diffus_[0];
-    }
   }
 /*  else if (material->MaterialType() == INPAR::MAT::m_ion)
   {
@@ -1217,10 +1146,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     // effective velocity at element center:
     // (weighted) convective velocity + individual migration velocity
     LINALG::Matrix<nsd_,1> veleff(convelint_,false);
-    if (is_elch_)
-    {
-      if (migrationintau) veleff.Update(diffusvalence_[k],migvelint_,1.0);
-    }
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -1244,15 +1169,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
         }
         normG+=G*G;
         Gnormu+=dens_sqr*veleff(nn,0)*G*veleff(rr,0);
-        if (is_elch_) // ELCH
-        {
-          if (migrationintau)
-          {
-            // for calculation of partial derivative of tau
-            for (int jj=0;jj < nen_; jj++)
-              (tauderpot_[k])(jj,0) += dens_sqr*frt*diffusvalence_[k]*((derxy_(nn,jj)*G*veleff(rr,0))+(veleff(nn,0)*G*derxy_(rr,jj)));
-          }
-        } // ELCH
       }
     }
 
@@ -1266,11 +1182,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     // computation of stabilization parameter tau
     tau_[k] = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gdiff));
 
-    // finalize derivative of present tau w.r.t electric potential
-    if (is_elch_)
-    {
-      if (migrationintau) tauderpot_[k].Scale(0.5*tau_[k]*tau_[k]*tau_[k]);
-    }
   }
   break;
   case INPAR::SCATRA::tau_franca_valentin:
@@ -1297,7 +1208,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     */
     // get Euclidean norm of (weighted) velocity at element center
     double vel_norm;
-    if (is_elch_ and migrationintau) migrationstab_=false;
     // dserror("FrancaValentin with migrationintau not available at the moment");
     /*
     // get Euclidean norm of effective velocity at element center:
@@ -1369,7 +1279,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     */
     // get Euclidean norm of (weighted) velocity at element center
     double vel_norm;
-    if (is_elch_ and migrationintau) migrationstab_=false;
     // dserror("FrancaValentin with migrationintau not available at the moment");
     /*
     // get Euclidean norm of effective velocity at element center:
@@ -1463,7 +1372,6 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     */
     // get Euclidean norm of velocity
     const double vel_norm = convelint_.Norm2();
-    if (is_elch_ and migrationintau) migrationstab_=false;
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -1585,13 +1493,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
 
     // get Euclidean norm of (weighted) velocity at element center
     double vel_norm(0.0);
-
-    if (is_elch_ and migrationintau) // ELCH
-    {
-      dserror("Migration in tau not considered in Tau_Exact_1d");
-    }
-    else
-      vel_norm = convelint_.Norm2();
+    vel_norm = convelint_.Norm2();
 
     if (diffus < EPS14) dserror("Invalid diffusion coefficent");
     double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
@@ -1700,41 +1602,14 @@ double DRT::ELEMENTS::ReInitImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   for (int idim=0;idim<nsd_;idim++)
   {xsi_(idim) = gpcoord[idim];}
 
-  if (not DRT::NURBS::IsNurbs(distype))
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if (use2ndderiv_)
   {
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-    if (use2ndderiv_)
-    {
-      // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-    }
+    // get the second derivatives of standard element at current GP
+    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
   }
-  else // nurbs elements are always somewhat special...
-  {
-    if (use2ndderiv_)
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
-        (funct_  ,
-         deriv_  ,
-         deriv2_ ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-    else
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv
-        (funct_  ,
-         deriv_  ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-  } // IsNurbs()
 
   // compute Jacobian matrix and determinant
   // actually compute its transpose....
