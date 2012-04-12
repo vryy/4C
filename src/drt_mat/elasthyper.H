@@ -61,10 +61,10 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// provide access to material/summand by its ID
-      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-        const int id  ///< ID to look for in collection of summands
-        ) const;
+//       /// provide access to material/summand by its ID
+//       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
+//         const int id  ///< ID to look for in collection of summands
+//         ) const;
 
       /// length of material list
       const int nummat_;
@@ -77,11 +77,6 @@ namespace MAT
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-   protected:
-
-      /// map to materials/potential summands
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
       //@}
 
@@ -192,7 +187,7 @@ private:
       ) const;
 
     /// provide access to material by its ID
-    virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
+//     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
 
     /// material mass density
     virtual double Density() const { return params_->density_; }
@@ -424,6 +419,9 @@ private:
     static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
                                      ///< by [3*i+j] for any i,j=0,1,2
     //@}
+
+    /// map to materials/potential summands
+    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
   };
 

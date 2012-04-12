@@ -40,16 +40,6 @@ MAT::PAR::ElastHyper::ElastHyper(
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
     dserror("number of materials %d does not fit to size of material vector %d", nummat_, matids_->size());
-
-  // make sure the referenced materials in material list have quick access parameters
-  std::vector<int>::const_iterator m;
-  for (m=matids_->begin(); m!=matids_->end(); ++m)
-  {
-    const int matid = *m;
-    Teuchos::RCP<MAT::ELASTIC::Summand> potsum = MAT::ELASTIC::Summand::Factory(matid);
-    if (potsum == Teuchos::null) dserror("Failed to allocate");
-    potsum_.insert(std::pair<int,Teuchos::RCP<MAT::ELASTIC::Summand> >(matid,potsum));
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -57,23 +47,6 @@ MAT::PAR::ElastHyper::ElastHyper(
 Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ElastHyper(this));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ElastHyper::MaterialById(const int id) const
-{
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::const_iterator m = potsum_.find(id);
-  if (m == potsum_.end())
-  {
-    dserror("Material %d could not be found", id);
-    return Teuchos::null;
-  }
-  else
-  {
-    return m->second;
-  }
 }
 
 
@@ -116,6 +89,15 @@ MAT::ElastHyper::ElastHyper()
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
   : params_(params)
 {
+  // make sure the referenced materials in material list have quick access parameters
+  std::vector<int>::const_iterator m;
+  for (m=params_->matids_->begin(); m!=params_->matids_->end(); ++m)
+  {
+    const int matid = *m;
+    Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+    if (sum == Teuchos::null) dserror("Failed to allocate");
+    potsum_.push_back(sum);
+  }
 }
 
 
@@ -141,11 +123,9 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      p->second->PackSummand(data);
+     potsum_[p]->PackSummand(data);
     }
   }
 }
@@ -169,7 +149,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ElastHyper*>(mat);
@@ -201,11 +181,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      p->second->UnpackSummand(data,position);
+     potsum_[p]->UnpackSummand(data,position);
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
@@ -238,11 +216,9 @@ double MAT::ElastHyper::ShearMod() const
   double shearmod = 0.0;
   {
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      p->second->AddShearMod(haveshearmod,shearmod);
+     potsum_[p]->AddShearMod(haveshearmod,shearmod);
     }
   }
 
@@ -262,11 +238,9 @@ double MAT::ElastHyper::ShearMod() const
 void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 {
   // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->SetupAAA(params);
+    potsum_[p]->SetupAAA(params);
   }
 
   return;
@@ -277,11 +251,9 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   // Setup summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->Setup(linedef);
+    potsum_[p]->Setup(linedef);
   }
 
   // find out which formulations are used
@@ -291,9 +263,9 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   anisoprinc_ = false ;
   anisomod_ = false;
 
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_);
   }
 
   return;
@@ -303,11 +275,9 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
 {
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->GetFiberVecs(fibervecs);
+    potsum_[p]->GetFiberVecs(fibervecs);
   }
 }
 
@@ -401,11 +371,9 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesPrincipal()
 
   // loop map of associated potential summands and see
   {
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      havecoeff = havecoeff or p->second->HaveCoefficientsStretchesPrincipal();
+     havecoeff = havecoeff or potsum_[p]->HaveCoefficientsStretchesPrincipal();
     }
   }
 
@@ -422,11 +390,9 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 
   // loop map of associated potential summands and see
   {
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      havecoeff = havecoeff or p->second->HaveCoefficientsStretchesModified();
+      havecoeff = havecoeff or potsum_[p]->HaveCoefficientsStretchesModified();
     }
   }
 
@@ -600,11 +566,9 @@ void MAT::ElastHyper::EvaluateGammaDelta(
   if (isoprinc_)
   {
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      p->second->AddCoefficientsPrincipal(gamma,delta,prinv);
+      potsum_[p]->AddCoefficientsPrincipal(gamma,delta,prinv);
     }
   }
 
@@ -613,13 +577,10 @@ void MAT::ElastHyper::EvaluateGammaDelta(
   {
 
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
+    for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      p->second->AddCoefficientsModified(modgamma,moddelta,modinv);
+      potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
     }
-
   }
 }
 
@@ -756,11 +717,9 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     )
 {
   // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc);
+    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc);
   }
 
   return ;
@@ -778,11 +737,9 @@ void MAT::ElastHyper::EvaluateAnisotropicMod(
 {
 
   // loop map of associated potential summands
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-  std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-  for (p=pot.begin(); p!=pot.end(); ++p)
+  for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    p->second->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2));
+    potsum_[p]->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2));
   }
 
   return ;
@@ -813,10 +770,9 @@ void MAT::ElastHyper::ResponseStretches(
   LINALG::Matrix<6,1> delta_(true);
   if (havecoeffstrpr) {
     // loop map of associated potential summands
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p) {
-      p->second->AddCoefficientsStretchesPrincipal(gamma_,delta_,prstr);
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+    {
+      potsum_[p]->AddCoefficientsStretchesPrincipal(gamma_,delta_,prstr);
     }
   }
   if (havecoeffstrmod) {
@@ -827,10 +783,9 @@ void MAT::ElastHyper::ResponseStretches(
     LINALG::Matrix<6,1> moddelta(true);
     {
       // loop map of associated potential summands
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-      std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-      for (p=pot.begin(); p!=pot.end(); ++p) {
-        p->second->AddCoefficientsStretchesModified(modgamma,moddelta,modstr);
+      for (unsigned int p=0; p<potsum_.size(); ++p)
+      {
+        potsum_[p]->AddCoefficientsStretchesModified(modgamma,moddelta,modstr);
       }
     }
     // convert modified coefficients to oridinary counterparts
@@ -942,13 +897,6 @@ void MAT::ElastHyper::ResponseStretches(
       cmat(ij,kl) += c_ijkl;
     }
   }
-
-//  cout << "rcg=" << rcg << endl;
-//  cout << "stress=" << stress << endl;
-//  cout << "cmat=" << cmat << endl;
-//  exit(0);
-
-
   // ready
   return;
 }
