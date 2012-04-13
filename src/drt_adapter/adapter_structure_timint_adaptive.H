@@ -13,28 +13,21 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-/* macros */
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_STRUCTURE_TIMINT_ADAPT_H
 #define ADAPTER_STRUCTURE_TIMINT_ADAPT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "FSIStructureWrapper.H"
 
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_structure/stru_resulttest.H"
-
-#include "../drt_structure/strtimada.H"
-#include "../drt_structure/strtimint.H"
-#include "../drt_structure/stru_aux.H"
-#include "adapter_structure.H"
+// forward declarations:
+namespace STR
+{
+  class TimInt;
+  class TimAda;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -47,66 +40,24 @@ namespace ADAPTER {
    *
    * \date 08/08
    */
-  class StructureTimIntAda : public Structure
+  class StructureTimIntAda : public FSIStructureWrapper
   {
   public:
 
     /// Constructor
     StructureTimIntAda(
       Teuchos::RCP<STR::TimAda> sta,
-      Teuchos::RCP<STR::TimInt> sti,
-      Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
-      Teuchos::RCP<Teuchos::ParameterList> sdynparams,  ///< input parameters
-      Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
-      Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,  ///< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
+      Teuchos::RCP<STR::TimInt> sti
     );
 
-    /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
-
-    /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS();
-
-    /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp();
-
-    /// unknown displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn();
-
-    /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
-
-    /// dof map of vector of unknowns
-    // new method for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
-
-    /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
-
-    /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
-
-    /// switch structure field to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
-
     /// recalculate structural matrices for tsi simulations
-    void TSIMatrix();
-
-    /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> Discretization();
+    virtual void TSIMatrix() { dserror("not implemented"); return; }
 
     // access to contact/meshtying manager
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager();
+    virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {dserror("not implemented"); return Teuchos::null; }
 
     // access to locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
-
-    /// External force at t_{n+1}
-//    Teuchos::RCP<const Epetra_Vector> FExtn();
+    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {dserror("not implemented"); return Teuchos::null; }
 
     /// @name Time step helpers
     //@{
@@ -114,122 +65,35 @@ namespace ADAPTER {
     /// Integrate from t1 to t2
     virtual void Integrate();
 
-    /// Get the current time
-    virtual double GetTime() const { dserror("not implemented"); return 0; }
-
-    /// Get upper limit of time range of interest
-    virtual double GetTimeEnd() const { dserror("not implemented"); return 0; }
-
-    /// Get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const { dserror("not implemented"); return 0; }
-
-    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { dserror("not implemented"); return 0; }
-
-    /// Get number of time steps
-    virtual int GetTimeNumStep() const { dserror("not implemented"); return 0; }
-
     /// set time step size
     virtual void SetTimeStepSize(double timestepsize){ dserror("not implemented"); return; }
 
-    /// set time step size and time
-    virtual void SetInitialTimeStepAndTime(double timestepsize){ dserror("not implemented"); return; }
-
     /// poroelasticity specific method
-    virtual void PoroInitForceStiffResidual(){ dserror("not implemented"); return; }
-
-    // to be removed by Anh-Tu
-    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
-    { dserror("not implemented"); return; }
-    virtual void PrepareSystemForNewtonSolve(){ dserror("not implemented"); return; }
-    virtual void PoroEvaluateForceStiffResidual(bool predict = false){ dserror("not implemented"); return; }
-    // to be removed by Anh-Tu ; END
+    virtual void PoroInitForceStiffResidual() { dserror("not implemented"); return; }
 
     /// start new time step
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep() { dserror("not implemented"); return; }
 
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) { dserror("not implemented"); return; }
 
     /// update at time step end
-    void Update();
-
-    /// Update iteration
-    /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr
-    (
-      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    )
-    {
-      dserror("not implemented");
-    }
-
-    /// Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
-    {
-      dserror("not implemented"); return Teuchos::null;
-    }
-
-    /// Access to output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
-    {
-      return output_;
-    }
+    virtual void Update() { dserror("not implemented"); return; }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
-    void PrepareOutput()
-    {
-      structure_->PrepareOutputPeriod();
-    }
+    virtual void PrepareOutput();
 
     /// output results
-    void Output();
+    virtual void Output();
 
     //@}
 
-    /// communication object at the interface
-    virtual const STR::AUX::MapExtractor& Interface() const
-    {
-      return interface_;
-    }
-
-    /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap();
-
-    /// read restart information for given time step
-    virtual void ReadRestart
-    (
-      int step  ///< given time step
-    );
 
     /// evaluate reference state (for frictional contact)
-    virtual void EvaluateReferenceState()
-    {
-      dserror("not implemented");
-    }
-
-    /// are there any algebraic constraints?
-    virtual bool HaveConstraint()
-    {
-      dserror("not implemented"); return false;
-    };
+    virtual void EvaluateReferenceState() { dserror("not implemented"); return; }
 
     /// get constraint manager defined in the structure
-    virtual const RCP<UTILS::ConstrManager> GetConstraintManager()
-    {
-      dserror("not implemented"); return Teuchos::null;
-    };
+    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() { dserror("not implemented"); return Teuchos::null; }
 
-    virtual INPAR::STR::STC_Scale GetSTCAlgo()
-    {
-      dserror("not implemented");
-      return INPAR::STR::stc_none;
-    }
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
-    {
-      dserror("not implemented");
-      return Teuchos::null;
-    }
 
     /// @name Solver calls
     //@{
@@ -238,47 +102,8 @@ namespace ADAPTER {
     ///
     /// Do the nonlinear solve for the time step. All boundary conditions have
     /// been set.
-    virtual void Solve();
+    virtual void Solve() { dserror("not implemented"); return; }
 
-    /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
-    {
-      if (!structure_->UseContactSolver())
-        return solver_;
-      else
-        return contactsolver_;
-    }
-
-
-    /// linear structure solve with just a interface load
-    ///
-    /// The very special solve done in steepest descent relaxation
-    /// calculation (and matrix free Newton Krylov).
-    ///
-    /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-      Teuchos::RCP<Epetra_Vector> iforce
-    );
-
-    //@}
-
-    //! @name Extract methods
-    //@{
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp();
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln();
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf();
 
     //@}
 
@@ -293,23 +118,10 @@ namespace ADAPTER {
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp);
+    virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp) { dserror("not implemented"); return; }
 
     // poroelasticity specific method
-    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) {dserror("not implemented");}
-
-    //! Set forces due to interface with fluid
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce){dserror("not implemented");}
-
-    //! specific method for iterative staggered partitioned TSI
-
-    /// Identify residual
-    /// This method does not predict the target solution but
-    /// evaluates the residual and the stiffness matrix.
-    /// In partitioned solution schemes, it is better to keep the current
-    /// solution instead of evaluating the initial guess (as the predictor)
-    /// does.
-    virtual void PreparePartitionStep();
+    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) { dserror("not implemented"); return; }
 
     //@}
 
@@ -317,43 +129,19 @@ namespace ADAPTER {
     //@{
 
     /// material displacements (structure with ale)
-    virtual Teuchos::RCP<Epetra_Vector> DispMat();
-
-    /// apply material displacements to structure field (structure with ale)
-    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
+    virtual Teuchos::RCP<Epetra_Vector> DispMat() {dserror("not implemented"); return Teuchos::null; }
 
     //@}
 
-
-    /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   private:
 
     /// the actual structure algorithm
     Teuchos::RCP<STR::TimAda> structure_;
 
-    Teuchos::RCP<STR::TimInt> sti_;
-
-    /// the interface map setup for interface <-> full translation
-    STR::AUX::MapExtractor interface_;
-
-    /// @name local copies of input parameters
-    //{@
-    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
-    Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used,
-                                                       ///< but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
-    Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
-    Teuchos::RCP<LINALG::Solver> contactsolver_;  ///< the contact solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
-    //@}
-
   };  // class StructureTimIntAda
 
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif
 #endif

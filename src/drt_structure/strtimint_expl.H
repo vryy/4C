@@ -257,12 +257,14 @@ namespace STR
       return Teuchos::null;
     };
 
+    //! Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo()
     {
       dserror("GetSTCAlgo() has not been tested for explicit time integrators");
       return INPAR::STR::stc_none;
     };
 
+    //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
       dserror("GetSTCMat() has not been tested for explicit time integrators");

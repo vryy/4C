@@ -5,10 +5,10 @@
 \brief Structure field adapter
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15237
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -335,33 +335,28 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     }
   }
 
+
   // create marching time integrator
-  Teuchos::RCP<Structure> tmpstr = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
+  Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
 
+  // create auxiliar time integrator, can be seen as a wrapper for tmpstr
+  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, tmpstr);
 
-//  /* TODO: the following method is still needed and will be reactivated as soon as possible!!! 13.03.2012 Georg Hammerl
-
-  // still needed
-  // create auxiliar time integrator
-//  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, tmpstr);
-//
-//  if (sta!=Teuchos::null)
-//  {
-//    if (probtype == prb_fsi or
-//        probtype == prb_fsi_lung or
-//        probtype == prb_gas_fsi or
-//        probtype == prb_biofilm_fsi or
-//        probtype == prb_thermo_fsi or
-//        probtype == prb_fluid_fluid_fsi)
-//    {
-//      dserror("no adaptive time integration with fsi");
-//    }
-//    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr, ioflags, sdyn, xparams,
-//                                                     actdis, solver, contactsolver, output));
-//  }
-//  else if (structure_ != Teuchos::null)
-
-  if (tmpstr != Teuchos::null)
+  if (sta!=Teuchos::null)
+  {
+    if (probtype == prb_fsi or
+        probtype == prb_fsi_lung or
+        probtype == prb_gas_fsi or
+        probtype == prb_biofilm_fsi or
+        probtype == prb_thermo_fsi or
+        probtype == prb_fsi_xfem or
+        probtype == prb_fluid_fluid_fsi)
+    {
+      dserror("no adaptive time integration with fsi");
+    }
+    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
+  }
+  else if (tmpstr != Teuchos::null)
   {
     switch(probtype)
     {
@@ -399,11 +394,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     break;
     case prb_poroelast:
     {
-      tmpstr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
-      if (tmpstr->HaveConstraint())
-        structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
+      Teuchos::RCP<StructureTimIntImplPoro> tmpporostr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
+      if (tmpporostr->HaveConstraint())
+        structure_ = Teuchos::rcp(new StructureConstrMerged(tmpporostr));
       else
-        structure_ = tmpstr;
+        structure_ = tmpporostr;
     }
     break;
     default:
@@ -422,6 +417,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis)
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;

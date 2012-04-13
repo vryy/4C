@@ -5,10 +5,10 @@
 \brief Structure field adapter
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15237
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -169,11 +169,13 @@ namespace ADAPTER {
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
+    /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
+    /// Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
 
-    //! Return MapExtractor for Dirichlet boundary conditions
+    /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     //@}
@@ -181,7 +183,7 @@ namespace ADAPTER {
     //! @name Time step helpers
     //@{
 
-    //! return time integration factor
+    /// return time integration factor
     virtual double TimIntParam() = 0;
 
     /// Get the current time
@@ -228,11 +230,11 @@ namespace ADAPTER {
     /// update at time step end
     virtual void Update() = 0;
 
-    //! Update iteration
-    //! Add residual increment to Lagrange multipliers stored in Constraint manager
+    /// Update iteration
+    /// Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
 
-    //! Access to output object
+    /// Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
@@ -313,7 +315,7 @@ namespace ADAPTER {
 
     virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
 
-    //! Set forces due to interface with fluid, the force is expected external-force-like
+    /// Set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
     //! specific method for iterative staggered partitioned TSI
@@ -339,7 +341,7 @@ namespace ADAPTER {
 
     //@}
 
-    /// create result test for encapulated structure algorithm
+    /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
     /// poroelasticity specific method

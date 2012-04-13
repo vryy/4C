@@ -1,5 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_structure_wrapper.cpp
 
-#ifdef CCADISCRET
+\brief Wrapper for the structural time integration
+
+<pre>
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include "adapter_structure_wrapper.H"
 
@@ -53,5 +65,3 @@ void ADAPTER::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_
     StructureWrapper::Evaluate(Teuchos::null);
   }
 }
-
-#endif

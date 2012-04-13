@@ -945,7 +945,7 @@ namespace STR
     /// get constraint manager defined in the structure
     virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
-
+    /// get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
 

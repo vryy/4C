@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
       if(ngroups > 1)
       {
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",gcomm->MyPID());
-        MPI_Barrier(MPI_COMM_WORLD);
+        gcomm->Barrier();
       }
 
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
@@ -234,11 +234,11 @@ int main(int argc, char *argv[])
 /*----------------------------------------------------------------------*/
   }
 
-  MPI_Barrier(rcp_dynamic_cast<Epetra_MpiComm>(lcomm,true)->GetMpiComm());
+  lcomm->Barrier();
   if(ngroups > 1)
   {
     printf("Global processor %d with local rank %d finished normally\n",gcomm->MyPID(),lcomm->MyPID());
-    MPI_Barrier(MPI_COMM_WORLD);
+    gcomm->Barrier();
   }
   else
   {

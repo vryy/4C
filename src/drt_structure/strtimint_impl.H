@@ -580,11 +580,13 @@ namespace STR
       return conman_;
     }
 
+    //! Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo()
     {
       return stcscale_;
     }
 
+    //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
       if (!stccompl_)
