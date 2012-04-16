@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_wrapper.H
+\file ad_str_wrapper.H
 
 \brief Wrapper for the structural time integration
 
@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
 #ifndef ADAPTER_STRUCTURE_WRAPPER_H
 #define ADAPTER_STRUCTURE_WRAPPER_H
 
-#include "adapter_structure.H"
+#include "ad_str_structure.H"
 
 namespace ADAPTER
 {

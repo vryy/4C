@@ -37,7 +37,7 @@ Maintainer: Thomas Klöppel
 #include <nlnml_linearsystem.H>
 #include <nlnml_finelevelnoxinterface.H>
 
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "strtimint_mstep.H"
 #include "../drt_inpar/inpar_structure.H"
 

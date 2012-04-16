@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_constr_merged.H
+\file ad_str_constr_merged.H
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 
@@ -33,9 +33,9 @@ Maintainer: Thomas Kloeppel
 
 
 #include "../drt_structure/strtimint_impl.H"
-#include "adapter_structure.H"
+#include "ad_str_structure.H"
 
-#include "FSIStructureWrapper.H"
+#include "ad_str_fsiwrapper.H"
 
 
 // forward declarations

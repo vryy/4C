@@ -13,14 +13,14 @@ Maintainer: Mirella Coroneo
 
 #ifdef CCADISCRET
 
-#include "adapter_structure_bio.H"
+#include "ad_str_bio.H"
 #include "adapter_coupling.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_stru_ale/stru_ale_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_adapter/FSIStructureWrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 
 extern struct _GENPROB     genprob;

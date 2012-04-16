@@ -30,7 +30,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_thermo/thermo_element.H"

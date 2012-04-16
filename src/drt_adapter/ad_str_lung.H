@@ -24,7 +24,7 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Vector.h>
 
-#include "FSIStructureWrapper.H"
+#include "ad_str_fsiwrapper.H"
 
 
 // forward declarations

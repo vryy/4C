@@ -13,12 +13,12 @@ Maintainer: Georg Hammerl
 */
 /*----------------------------------------------------------------------*/
 
-#include "adapter_structure.H"
-#include "adapter_structure_timint_adaptive.H"
-#include "adapter_structure_constr_merged.H"
-#include "adapter_structure_wrapper.H"
-#include "adapter_structure_lung.H"
-#include "adapter_structure_timint_poroelast.H"
+#include "ad_str_structure.H"
+#include "ad_str_timint_adaptive.H"
+#include "ad_str_constr_merged.H"
+#include "ad_str_wrapper.H"
+#include "ad_str_lung.H"
+#include "ad_str_timint_poroelast.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"

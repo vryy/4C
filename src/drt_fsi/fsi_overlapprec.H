@@ -7,7 +7,7 @@
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_adapter/FSIStructureWrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_ale/ale.H"
 #include "../drt_inpar/inpar_fsi.H"
 

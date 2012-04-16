@@ -6,7 +6,7 @@
 #include "fsi_statustest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"

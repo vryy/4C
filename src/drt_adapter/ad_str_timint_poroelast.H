@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file adapter_structure_timint_poroelast.cpp
+ \file ad_str_timint_poroelast.H
 
  \brief Structure field adapter for poroelasticity
 
@@ -12,23 +12,42 @@
  *------------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
+/* macros */
 #ifdef CCADISCRET
 
-/*----------------------------------------------------------------------*/
-#include "adapter_structure_timint_poroelast.H"
+#ifndef ADAPTER_STRUCTURE_TIMINT_POROELAST_H_
+#define ADAPTER_STRUCTURE_TIMINT_POROELAST_H_
 
+/*----------------------------------------------------------------------*/
+/* headers */
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
+
+#include "ad_str_wrapper.H"
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntImplPoro::Evaluate(Teuchos::RCP<
-    const Epetra_Vector> disiterinc)
+namespace ADAPTER
 {
-  structure_->UpdateIterIncrementally(disiterinc);
 
-  // builds tangent, residual and applies DBC
-  structure_->PoroEvaluateForceStiffResidual();
-  structure_->PrepareSystemForNewtonSolve();
-}
+  class StructureTimIntImplPoro : public StructureWrapper
+  {
+    public:
+
+    explicit StructureTimIntImplPoro(Teuchos::RCP<Structure> structure)
+      : StructureWrapper(structure)
+    {
+      structure_->PoroInitForceStiffResidual();
+    }
+
+
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+
+
+  };//class StructureTimIntImplPoro
+
+} // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET
+#endif
+
+#endif /* ADAPTER_STRUCTURE_TIMINT_POROELAST_H_ */

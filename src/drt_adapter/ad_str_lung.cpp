@@ -2,7 +2,7 @@
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
-#include "adapter_structure_lung.H"
+#include "ad_str_lung.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_structure/stru_aux.H"

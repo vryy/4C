@@ -33,7 +33,7 @@ Maintainer: Jonas Biehler
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include <math.h>
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 
 #include <cmath>
 #include <ctime>

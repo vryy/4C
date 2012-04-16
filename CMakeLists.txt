@@ -523,14 +523,14 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-  src/drt_adapter/adapter_structure.cpp
-  src/drt_adapter/adapter_structure_bio.cpp
-  src/drt_adapter/adapter_structure_constr_merged.cpp
-  src/drt_adapter/adapter_structure_lung.cpp
-  src/drt_adapter/adapter_structure_timint_poroelast.cpp
-  src/drt_adapter/adapter_structure_timint_adaptive.cpp
-  src/drt_adapter/adapter_structure_wrapper.cpp
-  src/drt_adapter/FSIStructureWrapper.cpp
+  src/drt_adapter/ad_str_structure.cpp
+  src/drt_adapter/ad_str_bio.cpp
+  src/drt_adapter/ad_str_constr_merged.cpp
+  src/drt_adapter/ad_str_lung.cpp
+  src/drt_adapter/ad_str_timint_poroelast.cpp
+  src/drt_adapter/ad_str_timint_adaptive.cpp
+  src/drt_adapter/ad_str_wrapper.cpp
+  src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_thermo_timint_expl.cpp

@@ -7,7 +7,7 @@
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 
-#include "../drt_adapter/FSIStructureWrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"

@@ -12,7 +12,7 @@ Maintainer: Jonas Biehler
  *!----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifdef CCADISCRET
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "mlmc.H"
 #include <ctime>

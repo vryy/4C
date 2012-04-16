@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_timint_adaptive.H
+\file ad_str_timint_adaptive.H
 
 \brief Structural time integration field adapter
 
@@ -19,7 +19,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "FSIStructureWrapper.H"
+#include "ad_str_fsiwrapper.H"
 
 
 // forward declarations:

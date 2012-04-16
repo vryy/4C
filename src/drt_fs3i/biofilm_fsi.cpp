@@ -43,7 +43,7 @@
 #endif
 
 #include "biofilm_fsi.H"
-#include "../drt_adapter/adapter_structure_bio.H"
+#include "../drt_adapter/ad_str_bio.H"
 #include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*

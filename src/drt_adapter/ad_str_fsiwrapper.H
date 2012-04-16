@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file FSIStructureWrapper.H
+\file ad_str_fsiwrapper.H
 
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface
@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
 #ifndef FSI_STRUCTURE_WRAPPER_H
 #define FSI_STRUCTURE_WRAPPER_H
 
-#include "adapter_structure_wrapper.H"
+#include "ad_str_wrapper.H"
 
 
 // forward declarations

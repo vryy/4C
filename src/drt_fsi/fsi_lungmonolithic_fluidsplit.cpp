@@ -17,7 +17,7 @@ Maintainer: Lena Yoshihara
 #include "fsi_matrixtransform.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/adapter_structure_lung.H"
+#include "../drt_adapter/ad_str_lung.H"
 #include "../drt_adapter/ad_fld_lung.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_io/io_control.H"

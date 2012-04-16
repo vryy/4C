@@ -67,14 +67,15 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   bool nptypeisset = false;
   for(int i=0; i<int(conf.size()); i++)
   {
+    // fill string with current argument
+    std::string argument(conf[i]);
     //----------------------------------------------------------------
     // determine number of groups and the proc distribution
     //----------------------------------------------------------------
-    std::string numgroup(conf[i]);
-    if (numgroup.substr( 0, 8 ) == "-ngroup=")
+    if (argument.substr( 0, 8 ) == "-ngroup=")
     {
       ngroupisset = true;
-      ngroup = atoi( numgroup.substr( 8, std::string::npos ).c_str() );
+      ngroup = atoi( argument.substr( 8, std::string::npos ).c_str() );
 
       // read out argument after ngroup=
       std::string glayout;
@@ -121,7 +122,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
         }
         if ((size % ngroup) != 0 and myrank == (size-1))
         {
-          printf("\n\nNumber of processors (%d) cannot be divided by the number of groups (%d)!",size,ngroup);
+          printf("\n\nNumber of processors (%d) cannot be divided by the number of groups (%d)!\n",size,ngroup);
           printf("Try again!\n");
           MPI_Finalize();
           exit(1);
@@ -144,24 +145,24 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
       }
       while(gsum <= myrank);
 
+#ifdef DEBUG
       cout << "Nested parallelism layout: Global rank: " << myrank <<" is in group: "<< color << endl;
+#endif
 
-    } // end if (numgroup.substr( 0, 8 ) == "-ngroup=")
-
+    } // end if (argument.substr( 0, 8 ) == "-ngroup=")
 
     //----------------------------------------------------------------
     // nested parallelism type
     //----------------------------------------------------------------
-    std::string nptype(conf[i]);
-    if (nptype.substr( 0, 8 ) == "-nptype=")
+    else if (argument.substr( 0, 8 ) == "-nptype=")
     {
       nptypeisset = true;
-      nptype = nptype.substr( 8, std::string::npos ).c_str();
-      if(nptype == "copyDatFile")
+      argument = argument.substr( 8, std::string::npos ).c_str();
+      if(argument == "copyDatFile")
         npType = copy_dat_file;
-      else if(nptype == "everyGroupReadDatFile")
+      else if(argument == "everyGroupReadDatFile")
         npType = every_group_read_dat_file;
-      else if(nptype == "separateDatFiles")
+      else if(argument == "separateDatFiles")
         npType = separate_dat_files;
       else
       {
@@ -173,6 +174,24 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
         MPI_Finalize();
         exit(1);
       }
+    }
+
+    //----------------------------------------------------------------
+    // check for valid arguments that can be used in baci.cpp
+    //----------------------------------------------------------------
+    else if( (argument.substr( 0, 9 ) != "-glayout=") and
+             (argument.substr( 0, 2 ) != "-v") and
+             (argument.substr( 0, 2 ) != "-h") and
+             (argument.substr( 0, 6 ) != "--help") and
+             (argument.substr( 0, 2 ) != "-p") and
+             (argument.substr( 0, 12 ) != "--parameters") and
+             (argument.substr( 0, 2 ) != "-d") and
+             (argument.substr( 0, 9 ) != "--datfile") )
+    {
+      printf("\n\n You have specified an argument ( %s ) for BACI starting with a \"-\" that is not valid!\n",argument.c_str());
+      printf("Please refer to ./baci-release --help and try again!\n");
+      MPI_Finalize();
+      exit(1);
     }
 
   } // end for(int i=0; i<int(conf.size()); i++)
@@ -227,6 +246,14 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
 
   // nested parallelism group is given to the global problem
   DRT::Problem::Instance()->NPGroup(color, ngroup, lpidgpid, lcomm, gcomm, npType);
+
+  // info for the nested parallelism user
+  if(lcomm->MyPID() == 0 && ngroup > 1)
+    printf("Nested parallelism layout: Group %d has %d processors.\n ",color,lcomm->NumProc());
+
+  // for sync of output
+  gcomm->Barrier();
+  gcomm->Barrier();
 
   return;
 }

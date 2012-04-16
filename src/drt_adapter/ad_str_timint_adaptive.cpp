@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimada.H"
 #include "../drt_structure/strtimint.H"
-#include "adapter_structure_timint_adaptive.H"
+#include "ad_str_timint_adaptive.H"
 
 
 /*======================================================================*/

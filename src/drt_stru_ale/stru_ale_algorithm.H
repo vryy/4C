@@ -28,7 +28,7 @@ Maintainer: Markus Gitterle
 //#include <Teuchos_RCP.hpp>
 //#include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_ale/ale.H"

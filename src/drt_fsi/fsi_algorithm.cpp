@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_adapter/FSIStructureWrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

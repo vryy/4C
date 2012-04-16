@@ -13,7 +13,7 @@
 #include "../drt_io/io_control.H"
 
 #include "../drt_constraint/constraint_manager.H"
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*

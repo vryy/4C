@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_bio.H
+\file ad_str_bio.H
 
 <pre>
 Maintainer: Mirella Coroneo
@@ -16,7 +16,7 @@ Maintainer: Mirella Coroneo
 #ifndef ADAPTER_STRUCTURE_BIO_H
 #define ADAPTER_STRUCTURE_BIO_H
 
-#include "adapter_structure.H"
+#include "ad_str_structure.H"
 #include "../drt_ale/ale.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "adapter_algorithmbase.H"

@@ -15,7 +15,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_structure/strtimint_create.H"
-#include "adapter_structure_constr_merged.H"
+#include "ad_str_constr_merged.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"

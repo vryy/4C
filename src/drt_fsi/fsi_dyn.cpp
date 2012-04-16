@@ -54,7 +54,7 @@
 
 #include "../drt_lib/drt_dofset_fixed_size.H"
 
-#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_fld_fluid.H"
