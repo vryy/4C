@@ -362,11 +362,11 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
           //defining temporary stringstream variable
           std::stringstream filecontent;
-          filecontent << scientific << setprecision(15) << dt << " "
-              << sumsquareincmid_ << " " << sumsquareincpar_ << " "
-              << sumsquareincort_ << " " << sumsquareincrot_ << " "
-              << sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() << " "
-              << sumrotmiddle_ * sumrotmiddle_ << endl;
+          filecontent << scientific << setprecision(15) << dt << " "<< sumsquareincmid_ << " "<< sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() <<endl;
+//              << sumsquareincmid_ << " " << sumsquareincpar_ << " "
+//              << sumsquareincort_ << " " << sumsquareincrot_ << " "
+//              << sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() << " "
+//              << sumrotmiddle_ * sumrotmiddle_ << endl;
 
           // move temporary stringstream to file and close it
           fprintf(fp, filecontent.str().c_str());

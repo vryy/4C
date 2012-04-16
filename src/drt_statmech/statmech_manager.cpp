@@ -297,6 +297,9 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Set Period Length and Search Resolution       mueller (public)  04/12|
+ *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
 {
   periodlength_ = Teuchos::rcp(new std::vector<double>);
