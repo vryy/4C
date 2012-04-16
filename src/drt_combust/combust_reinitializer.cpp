@@ -27,47 +27,8 @@ COMBUST::Reinitializer::Reinitializer(
     const Teuchos::ParameterList&              combustdyn,
     SCATRA::ScaTraTimIntImpl&                  scatra,
     const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
-    Teuchos::RCP<Epetra_Vector>                phivector
-  ) :
-    combustdyn_(combustdyn),
-    reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
-    reinitband_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
-    reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
-    scatra_(scatra),
-    flamefront_(boundaryintcells)
-{
-  switch (reinitaction_)
-  {
-  case INPAR::COMBUST::reinitaction_none:
-    // do nothing
-    break;
-  case INPAR::COMBUST::reinitaction_byfunction:
-    // read a FUNCTION from the input file and reinitialize the G-function by evaluating it
-    scatra_.SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
-    break;
-  case INPAR::COMBUST::reinitaction_signeddistancefunction:
-    SignedDistanceFunction(phivector);
-    break;
-  case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
-    FastSignedDistanceFunction(phivector);
-    break;
-  default:
-    dserror ("unknown option to reinitialize the G-function");
-  }
-
-  return;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | constructor (overloaded for restart with level-set field from input file)          henke 10/11 |
- *------------------------------------------------------------------------------------------------*/
-COMBUST::Reinitializer::Reinitializer(
-    const Teuchos::ParameterList&              combustdyn,
-    SCATRA::ScaTraTimIntImpl&                  scatra,
-    const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
     Teuchos::RCP<Epetra_Vector>                phivector,
-    const bool                                 compdist  // flag for initial computation of signed distance function
+    const bool                                 compdist // flag for initial computation of signed distance function
   ) :
     combustdyn_(combustdyn),
     reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
@@ -76,9 +37,27 @@ COMBUST::Reinitializer::Reinitializer(
     scatra_(scatra),
     flamefront_(boundaryintcells)
 {
-  // special action if reinitializer is called from Algorithm::Restart()
-  if(compdist)
-    FastSignedDistanceFunction(phivector);
+  if (compdist)
+  {
+    switch (reinitaction_)
+    {
+    case INPAR::COMBUST::reinitaction_none:
+      // do nothing
+      break;
+    case INPAR::COMBUST::reinitaction_byfunction:
+      // read a FUNCTION from the input file and reinitialize the G-function by evaluating it
+      scatra_.SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
+      break;
+    case INPAR::COMBUST::reinitaction_signeddistancefunction:
+      SignedDistanceFunction(phivector);
+      break;
+    case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
+      FastSignedDistanceFunction(phivector);
+      break;
+    default:
+      dserror ("unknown option to reinitialize the G-function");
+  }
+  }
 
   return;
 }
@@ -727,31 +706,15 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         eledistance.push_back( thispair );
       }
     }
+    if (eledistance.empty())
+      dserror("No intersected elements available! G-function correct?");
 
 
     //==================================================================
     // sort the the vector in ascending order by the estimated distance
     //==================================================================
-#if 0
-    // this is bubble sort and needs to be optimized
-    {
-      for (size_t i = 0; i < eledistance.size(); ++i)
-      {
-        for (size_t j = 1; j < eledistance.size(); ++j)
-        {
-          if (eledistance[j-1].second > eledistance[j].second)
-          {
-            pair< int, double> tmp = eledistance[j-1];
-            eledistance[j-1] = eledistance[j];
-            eledistance[j] = tmp;
-          }
-        }
-      }
-    }
-#else
     // this is the STL sorting, which is pretty fast
     eledistance.sort(MyComparePairs);
-#endif
 
     //--------------------------------------------------------------------------------
     // if a reinitbandwith is used the nodes not within the band will be set to the
@@ -929,26 +892,6 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         //==============================================================
         // sort the the vector in ascending order by the distance
         //==============================================================
-  #if 0
-        // this is bubble sort and needs to be optimized
-        {
-          for (size_t i = 0; i < eledistance.size(); ++i)
-          {
-            for (size_t j = 1; j < eledistance.size(); ++j)
-            {
-              if (fabs(eledistance[j-1].second) > fabs(eledistance[j].second))
-              {
-                pair< int, double> tmp = eledistance[j-1];
-                eledistance[j-1] = eledistance[j];
-                eledistance[j] = tmp;
-              }
-            }
-          }
-        }
-  #elif 0
-        // this is the STL sorting, which is pretty fast
-        eledistance.sort(MyComparePairs);
-  #else
         // here we use the fact, that everything is already sorted but the first list item
         pair<int,double> tmppair = eledistance.front();
         list<pair<int,double> >::iterator insertiter = eledistance.begin();
@@ -969,7 +912,6 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         // possible and we can stop checking the other elements' distances
         if (loopcount == 0)
           break;
-  #endif
 
       } // loop over eledistance
     }

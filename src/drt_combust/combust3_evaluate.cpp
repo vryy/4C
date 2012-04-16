@@ -305,6 +305,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
+      const double variablesurftens = params.get<double>("variablesurftens");
 
       // stabilization terms
       bool pstab = true;
@@ -383,8 +384,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
-          genalpha,combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
+          genalpha,combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -425,8 +426,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -442,7 +443,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
     }

@@ -91,6 +91,7 @@ namespace COMBUST
       const double                            nitschevel,
       const double                            nitschepres,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
+      const double                            variablesurftens,
       const bool                              connected_interface,
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
       const INPAR::COMBUST::FluxJumpType      fluxjumptype,

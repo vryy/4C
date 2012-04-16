@@ -1661,11 +1661,13 @@ void Nitsche_SysmatBoundaryCell(
     const size_t&                              numparamvelx,
     const size_t&                              numparampres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,      ///<
+    const double                               variablesurftens,
     const double                               surftenscoeff,       ///<
     const bool                                 connected_interface, ///<
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
     const bool                                 smoothed_boundary_integration
+
 )
 {
   const size_t nsd =3;
@@ -2593,7 +2595,7 @@ void Nitsche_SysmatBoundaryCell(
       // assemble boundary integrals for surface tension
       //------------------------------------------------
       COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
-          xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, surftenscoeff, assembler);
+          xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
     }
     else
     {
@@ -2786,6 +2788,7 @@ void SysmatBoundaryNitsche(
     const double                               ele_meas_plus,  ///< measure of element in plus domain
     const double                               ele_meas_minus, ///< measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
+    const double                               variablesurftens,
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
@@ -2947,7 +2950,7 @@ void SysmatBoundaryNitsche(
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
-          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
+          numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );
       break;
@@ -2964,7 +2967,7 @@ void SysmatBoundaryNitsche(
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv, wallfac,
-          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
+          numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );
       break;

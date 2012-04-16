@@ -163,6 +163,17 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     //                                        version surface_tension_approx_divgrad_normal simply uses the normal vector of the boundary
     //                                        integration cell, while surface_tension_approx_divgrad uses a smoothed one based on phi
     // surface_tension_approx_laplacebeltrami_smoothed: here, we need a smoothed and a non-smoothed normal, hence, SMOOTHGRADPHI = Yes
+    if (params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS")!=0.0)
+    {
+      if (myrank_ == 0)
+      {
+        std::cout << "-> location-dependent surface tension coefficient:" << std::endl;
+        std::cout << "only coefficient linear in x available for the time being" << std::endl;
+        if (surftensapprox_ == INPAR::COMBUST::surface_tension_approx_laplacebeltrami or
+            surftensapprox_ == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
+           std::cout << "currently only connected interface possible for laplace-beltrami" << std::endl;
+      }
+    }
   }
   if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump
       and (veljumptype_ != INPAR::COMBUST::vel_jump_none or fluxjumptype_ != INPAR::COMBUST::flux_jump_surface_tension))
@@ -1325,6 +1336,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // parameters for two-phase flow problems with surface tension
         eleparams.set<int>("surftensapprox",surftensapprox_);
+        eleparams.set("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
         eleparams.set("connected_interface",connected_interface_);
 
         // smoothed normal vectors for boundary integration
@@ -1406,6 +1418,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
             // parameters for two-phase flow problems with surface tension
             condparams.set<int>("surftensapprox",surftensapprox_);
+            eleparams.set("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
             condparams.set("connected_interface",connected_interface_);
 
             // smoothed normal vectors for boundary integration
@@ -2455,6 +2468,7 @@ void FLD::CombustFluidImplicitTimeInt::AssembleMatAndRHS()
 
   // parameters for two-phase flow problems with surface tension
   eleparams.set<int>("surftensapprox",surftensapprox_);
+  eleparams.set("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
   eleparams.set("connected_interface",connected_interface_);
 
   // smoothed normal vectors for boundary integration

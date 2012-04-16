@@ -3818,6 +3818,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
+  DoubleParameter("VARIABLESURFTENS",0.0,"Variable surface tension coefficient",&combustcontrolfluid);
   setStringToIntegralParameter<int>("SMOOTHGRADPHI","smooth_grad_phi_none","Type of smoothing for grad(phi)",
       tuple<std::string>(
           "smooth_grad_phi_none",

@@ -383,7 +383,8 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   //}
 
   // update field vectors
-  UpdateInterface();
+  // unnecessary for stationary problems
+  //UpdateInterface();
 
   //-------
   // output

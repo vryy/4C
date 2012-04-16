@@ -747,10 +747,16 @@ void RHS_SurfaceTension2DIntegrals(
     M4&                                        normal,
     const double&                              timefacfac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff,   ///<
+    const double                               variablesurftens,
+    const double                               surftenscoeff,   ///<,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 )
 {
+  // get derivative of surface tension coefficient
+  // for the time being only linear in x available
+  double surftenscoeffx=variablesurftens;
+  double surftenscoeffy=0.0;
+  double surftenscoeffz=0.0;
   // number space dimensions for 3d combustion element
   const size_t nsd = 3;
 
@@ -776,6 +782,7 @@ void RHS_SurfaceTension2DIntegrals(
     assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(1.0 - normal(2)*normal(2)));
 
   }
+
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
   {
 
@@ -864,14 +871,14 @@ void RHS_SurfaceTension2DIntegrals(
     //----------------------------------------   |                                 |
     // surface tension (constant jump) term      |  < v > , surftens*Curv*n >      |
     //----------------------------------------   |                                 |
-    double rad_1 = 0.4;
-    double rad_2 = 0.4;
+    double rad_1 = 0.25;
+    double rad_2 = 0.25;
 
     // 2D
-    rad_2 = 0.0; // not needed; in fact, rad_2 is infinity
-    double curvature = 1.0/rad_1;
+    //rad_2 = 0.0; // not needed; in fact, rad_2 is infinity
+    //double curvature = 1.0/rad_1;
     // 3D
-    //double curvature = 1.0/rad_1 + 1.0/rad_2;
+    double curvature = 1.0/rad_1 + 1.0/rad_2;
 
     assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
     assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
@@ -915,6 +922,22 @@ void RHS_SurfaceTension2DIntegrals(
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_none){;}
   else dserror("warning: wrong type of surface tension approximation");
 
+  //add term for variable surface tension coefficient
+ if (variablesurftens != 0.0)
+ {
+   assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, - timefacfac*surftenscoeffx*(1.0 - normal(0)*normal(0)));
+   assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, - timefacfac*surftenscoeffy*(    - normal(1)*normal(0)));
+   assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, - timefacfac*surftenscoeffz*(    - normal(2)*normal(0)));
+
+   assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, - timefacfac*surftenscoeffx*(    - normal(0)*normal(1)));
+   assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, - timefacfac*surftenscoeffy*(1.0 - normal(1)*normal(1)));
+   assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, - timefacfac*surftenscoeffz*(    - normal(2)*normal(1)));
+
+   assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, - timefacfac*surftenscoeffx*(    - normal(0)*normal(2)));
+   assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, - timefacfac*surftenscoeffy*(    - normal(1)*normal(2)));
+   assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, - timefacfac*surftenscoeffz*(1.0 - normal(2)*normal(2)));
+ }
+
   return;
 }
 
@@ -944,6 +967,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     const size_t&                              numparamvelx,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
+    const double                               variablesurftens, ///<
     const bool                                 connected_interface,
     const bool                                  smoothed_boundary_integration
 )
@@ -994,7 +1018,7 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
 
-    //	  cout << "gpinEta2D" << gpinEta2D << endl;
+    //  cout << "numnode" << numnode << endl;
 
     // jacobian for coupled transformation
     // get derivatives dxi_3D/deta_2D
@@ -1009,7 +1033,7 @@ void SysmatBoundarySurfaceTensionIntCell(
         for (int k = 0; k < (int)numvertices; k++)
           dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
 
-    //	    cout << "dXi3Ddeta2D: " << dXi3Ddeta2D << endl;
+    //    cout << "dXi3Ddeta2D: " << dXi3Ddeta2D << endl;
 
     // transform Gauss point to xi3D space (element parameter space)
     static LINALG::Matrix<nsd,1> gpinXi3D;
@@ -1022,7 +1046,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     static LINALG::Matrix<3,numnode> deriv_xi3D;
     DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
 
-    //	    cout << "deriv_xi3D" << deriv_xi3D << endl;
+    //    cout << "deriv_xi3D" << deriv_xi3D << endl;
 
     // calculate dx3Ddxi3D
     static LINALG::Matrix<3,3> dX3DdXi3D;
@@ -1031,7 +1055,7 @@ void SysmatBoundarySurfaceTensionIntCell(
       for (int j = 0; j < 3; j++) // derivatives
         for (int k = 0; k < (int)numnode; k++)
           dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
-    //	    cout << "dX3DdXi3D: " << dX3DdXi3D << endl;
+    //    cout << "dX3DdXi3D: " << dX3DdXi3D << endl;
 
     // get the couped Jacobian dx3Ddeta2D
     static LINALG::Matrix<3,2> dx3Ddeta2D;
@@ -1040,14 +1064,14 @@ void SysmatBoundarySurfaceTensionIntCell(
       for (int j = 0; j < 2; j++) // derivatives
         for (int k = 0; k < 3; k++)
           dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
-    //	    cout << "dx3Ddeta2D: " << dx3Ddeta2D << endl;
+    //    cout << "dx3Ddeta2D: " << dx3Ddeta2D << endl;
     // get deformation factor
     static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
     Jac_tmp.Clear();
     Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
 
     if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
-    //	    cout << "jac_det" << Jac_tmp.Determinant() << endl;
+    //    cout << "jac_det" << Jac_tmp.Determinant() << endl;
     const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
     const double fac = intpoints.qwgt[iquad]*deform_factor;
@@ -1158,6 +1182,16 @@ void SysmatBoundarySurfaceTensionIntCell(
     {
       derxy2.Clear();
     }
+
+    // get global coordinates to compute location dependent surface tension coefficient
+    // for the time being only linear in x available
+    LINALG::Matrix<3,1> xgp(true);
+    for (size_t i = 0; i < nsd; ++i)
+      for (size_t j = 0; j < numnode; ++j)
+        xgp(i,0)+=funct(j,0)*xyze(i,j);
+    // gamma(x) = gamma - dgamma/dx*x
+    double complete_surftenscoeff = surftenscoeff - variablesurftens*xgp(0,0);
+
     //==========================================================================================
     //------------------------------------------------------------------------------------------
     // evaluate the enrichment function at the interface (boundary integration cells)
@@ -1189,7 +1223,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     enrderxy2_vel.Clear();
 
     // shape functions for nodal parameters (dofs) on plus and minus side
-    // XFEM::PHYSICS::Velx okay, all shapefunctions for XFEM::PHYSICS::Velx, XFEM::PHYSICS::Vely, XFEM::PHYSICS::Velz are the same (kink enriched)
+    // Velx okay, all shapefunctions for Velx, Vely, Velz are the same (kink enriched)
     enrvals.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
         enrfunct_vel, enrderxy_vel, enrderxy2_vel);
 
@@ -1224,7 +1258,11 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     //================================ SURFACE TENSION ASSEMBLY =================================
     //---------------------assemble 2D surface integrals -------------------------
-    COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,ecurv,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
+    COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(
+    posXiDomain,shp_mean_inv,ele,xyze,
+    grad_ephi_smoothed,ecurv,normal,timefacfac,
+    surftensapprox,variablesurftens, complete_surftenscoeff,
+    assembler);
 
     //===========================================================================================
   }// loop Gaussian points
@@ -1262,6 +1300,7 @@ void SysmatBoundarySurfaceTension(
     const double                      nitschevel,
     const double                      nitschepres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
+    const double                               variablesurftens,
     const bool                                 connected_interface,
     const bool                                 smoothed_boundary_integration
 )
@@ -1325,7 +1364,8 @@ void SysmatBoundarySurfaceTension(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
+          numparamvelx, surftensapprox, surftenscoeff, variablesurftens,
+          connected_interface, smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
@@ -1334,7 +1374,8 @@ void SysmatBoundarySurfaceTension(
           *cell, DRT::UTILS::intrule_quad_36point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
+          numparamvelx, surftensapprox, surftenscoeff, variablesurftens,
+          connected_interface, smoothed_boundary_integration
       );
       break;
     default:
