@@ -344,15 +344,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 
   if (sta!=Teuchos::null)
   {
-    if (probtype == prb_fsi or
-        probtype == prb_fsi_lung or
-        probtype == prb_gas_fsi or
-        probtype == prb_biofilm_fsi or
-        probtype == prb_thermo_fsi or
-        probtype == prb_fsi_xfem or
-        probtype == prb_fluid_fluid_fsi)
+    if (probtype != prb_structure)
     {
-      dserror("no adaptive time integration with fsi");
+      dserror("adaptive time integration for the structure only tested for problem type prb_structure");
     }
     structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
   }
