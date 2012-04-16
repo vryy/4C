@@ -1,11 +1,23 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid_ele_calc_xfem.H
 
+\brief Internal implementation of XFluid element interface coupling
+
+<pre>
+Maintainer: Shadan Shahmiri /Benedikt Schott
+            shahmiri@lnm.mw.tum.de
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
 #include "fluid_ele_calc.H"
-
-#include "../drt_lib/drt_discret.H"
 
 
 namespace DRT

@@ -1211,6 +1211,8 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_weak_dbc.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
+  src/drt_fluid_ele/fluid_ele_calc_xfem_coupling.cpp
+  src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl.cpp
   src/drt_fluid_ele/fluid_ele_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_factory.cpp
   src/drt_fluid_ele/fluid_ele_input.cpp
