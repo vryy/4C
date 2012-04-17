@@ -216,11 +216,6 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
         elementalBoundaryIntCells,
         elementcutstatus);
 
-    interfacehandle_->UpdateInterfaceHandle(
-        elementalDomainIntCells,
-        elementalBoundaryIntCells,
-        elementcutstatus);
-
     // should not be necessary
 #if 0
     // delete all refinement cells of root cell
@@ -231,15 +226,10 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
 #endif
   }
 
-  //TEST
-  //int cells = 0;
-  //for (std::map<int, GEO::DomainIntCells>::iterator it=myelementintcells_.begin(); it!=myelementintcells_.end(); it++)
-  //{
-  //   GEO::DomainIntCells IntCells = it->second;
-  //   //std::cout << IntCells.size() << std::endl;
-  //   cells = cells + IntCells.size();
-  //}
-  //std::cout << "Anzahl Integrationszellen: " << cells << std::endl;
+  interfacehandle_->UpdateInterfaceHandle(
+      elementalDomainIntCells,
+      elementalBoundaryIntCells,
+      elementcutstatus);
 
   if (fluiddis_->Comm().MyPID()==0)
     std::cout << "done" << std::endl;
