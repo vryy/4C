@@ -2,6 +2,7 @@
 #include "cut_test_utils.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
+#include "../../src/drt_cut/cut_volumecell.H"
 #include "../../src/drt_cut/cut_meshintersection.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -265,14 +266,56 @@ void cutmesh( GEO::CUT::Mesh & mesh )
     mesh.FindNodalDOFSets( true );
   }
   mesh.CreateIntegrationCells( 0, false );
-  mesh.MomentFitGaussWeights(true, "Tessellation");
+  /*mesh.MomentFitGaussWeights(true, "Tessellation");
+  mesh.DirectDivergenceGaussRule(true, "Tessellation");
   //mesh.RemoveEmptyVolumeCells();
 
   //mesh.DumpGmshVolumeCells( "volumecells" );
-  mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
+  mesh.DumpGmshIntegrationCells( "integrationcells.pos" );*/
 #ifdef DEBUGCUTLIBRARY
   mesh.TestElementVolume( false );
 #endif
+
+
+  std::vector<double> tessVol,momFitVol,dirDivVol;
+
+    //GEO::CUT::Mesh mesh = intersection.NormalMesh();
+    const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+    for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+          i!=other_cells.end();
+          ++i )
+    {
+      GEO::CUT::VolumeCell * vc = &**i;
+      tessVol.push_back(vc->Volume());
+    }
+
+    //intersection.Status();
+
+    for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+          i!=other_cells.end();
+          ++i )
+    {
+      GEO::CUT::VolumeCell * vc = &**i;
+      vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,"Tessellation");
+      momFitVol.push_back(vc->Volume());
+    }
+
+    for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+             i!=other_cells.end();
+             ++i )
+     {
+       GEO::CUT::VolumeCell * vc = &**i;
+       vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,"DirectDivergence");
+       dirDivVol.push_back(vc->Volume());
+     }
+
+    std::cout<<"the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
+    for(unsigned i=0;i<tessVol.size();i++)
+    {
+      std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
+      if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-5 )
+        dserror("volume predicted by either one of the method is wrong");
+    }
 }
 
 

@@ -54,6 +54,8 @@ void test_hex8_quad4_touch7();
 void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 void test_position2d();
+void test_facet_split();
+
 
 void test_quad4_line2();
 void test_hex8_quad4_qhull1();
@@ -299,6 +301,7 @@ int main( int argc, char ** argv )
   functable["hex8_hex8_onside"] = test_hex8_hex8_onside;
   functable["hex8_hex8_internal"] = test_hex8_hex8_internal;
   functable["hex8_hex8_sideintersection"] = test_hex8_hex8_sideintersection;
+  functable["facet_split"] = test_facet_split;
 
   // Cells within cells without contact to any surface are not supported.
   //
