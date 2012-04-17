@@ -2516,3 +2516,45 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, std::string Bcell
 #endif
   }
 }
+
+void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, std::string Bcellgausstype)
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.DirectDivergenceGaussRule( *this, include_inner, Bcellgausstype );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.DirectDivergenceGaussRule( *this, include_inner, Bcellgausstype );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+}

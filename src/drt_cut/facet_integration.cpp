@@ -2,9 +2,11 @@
 #include "boundarycell_integration.H"
 
 #include "cut_boundarycell.H"
+#include "cut_triangulateFacet.H"
 
-
-//compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
+/*-----------------------------------------------------------------------------------------------------*
+      compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
+*------------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector<std::vector<double> > cornersLocal)
 {
   std::vector<double> eqn_plane(4);
@@ -31,10 +33,10 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
       cross[0] = fabs(pt1pt2[1]*pt1pt3[2]-pt1pt2[2]*pt1pt3[1]);
       cross[1] = fabs(pt1pt2[0]*pt1pt3[2]-pt1pt2[2]*pt1pt3[0]);
       cross[2] = fabs(pt1pt2[1]*pt1pt3[0]-pt1pt2[0]*pt1pt3[1]);
-        if(cross[0]<0.000001 && cross[1]<0.000001 && cross[2]<0.000001)
-          continue;
-        else
-          mm++;
+      if(cross[0]<0.000001 && cross[1]<0.000001 && cross[2]<0.000001)
+        continue;
+      else
+        mm++;
       }
       else
         mm++;
@@ -52,8 +54,10 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
   return eqn_plane;
 }
 
-//compute only the x-component of unit-normal vector which is used in further computations
-//also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
+/*---------------------------------------------------------------------------------------------------------------------*
+          compute only the x-component of unit-normal vector which is used in further computations
+    also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
+*----------------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plane,
                                               const std::vector<std::vector<double> > cornersLocal )
 {
@@ -250,8 +254,10 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 
 }
 
-//computes x=a1+a2y+a3z from the plane equation
-//equation of this form is used to replace x in the line integral
+/*-----------------------------------------------------------------------------------------------*
+                            computes x=f(y,z) from the plane equation
+                  equation of this form is used to replace x in the line integral
+*------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<double> eqn_plane,
                                                                std::string intType )
 {
@@ -288,7 +294,9 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<doubl
   return alfa;
 }
 
-//return the absolute normal of the facet in a particular direction
+/*---------------------------------------------------------------------------------*
+      return the absolute normal of the facet in a particular direction
+*----------------------------------------------------------------------------------*/
 double GEO::CUT::FacetIntegration::getNormal(std::string intType)
 {
   double normalScale=0.0;
@@ -309,7 +317,9 @@ double GEO::CUT::FacetIntegration::getNormal(std::string intType)
   }
 }
 
-//perform integration over the facet
+/*-------------------------------------------------------------------------------------*
+                      perform integration over the facet
+*--------------------------------------------------------------------------------------*/
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
 		std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
@@ -440,7 +450,9 @@ double GEO::CUT::FacetIntegration::integrate_facet()
     return facet_integ;
 }
 
-//Performs integration over the boundarycell
+/*-----------------------------------------------------------------------------------------------*
+                            Performs integration over the boundarycell
+*------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std::vector<double> > cornersLocal,
                                                            double &facet_integ,
                                                            std::string intType )
@@ -527,81 +539,72 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
 	facet_integ = facet_integ/abs_normal;
 }
 
-//Generate integration rule for the facet if the divergence theorem is used
-//directly to generate Gauss integration rule for the facet
-void GEO::CUT::FacetIntegration::DivergenceIntegrationRule(Mesh &mesh)
+/*-------------------------------------------------------------------------------------------------*
+      Generate integration rule for the facet if the divergence theorem is used      Sudhakar 03/12
+      directly to generate Gauss integration rule for the facet
+*--------------------------------------------------------------------------------------------------*/
+void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
+                                                            Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp )
 {
   plain_boundarycell_set divCells;
 
-  //the last two parameter has no influence when called from the first parameter is set to true
+  //the last two parameters has no influence when called from the first parameter is set to true
   GenerateIntegrationRuleDivergence(true, mesh, divCells);
 
   double normalX = getNormal("x");//make sure eqn of plane is available before calling this
+
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
-  //std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
+  std::cout<<"isclockwise = "<<clockwise_<<"\n";
+
+  std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
+  //Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
   //DRT::UTILS::GaussIntegration gi_temp;
   for(plain_boundarycell_set::iterator i=divCells.begin();i!=divCells.end();i++)
   {
     BoundaryCell* bcell = *i;
-    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 9 );
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 2 ); /*blockkk change 2*/
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi_temp.begin(); iquad!=gi_temp.end(); ++iquad )
     {
-      double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
-      LINALG::Matrix<3,1> x_gp_glo(true), x_gp_loc(true), normal(true); // gp in xyz-system on linearized interface
-      const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+      double drs = 0.0;
+      LINALG::Matrix<3,1> x_gp_glo(true), x_gp_loc(true), normal(true);
+      const LINALG::Matrix<2,1> eta( iquad.Point() );
 
-      //get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
       switch ( bcell->Shape() )
       {
         case DRT::Element::tri3:
         {
-          bcell->Transform<DRT::Element::tri3>(eta, x_gp_glo, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_glo, normal, drs);
           break;
         }
         case DRT::Element::quad4:
         {
-          bcell->Transform<DRT::Element::quad4>(eta, x_gp_glo, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_glo, normal, drs);
           break;
         }
         default:
           throw std::runtime_error( "unsupported integration cell type" );
       }
-      double wei = iquad.Weight()*drs;
+      double wei = iquad.Weight()*drs*normalX;
 
       cgp->Append(x_gp_glo,wei);
 
-
-
-      elem1_->LocalCoordinates(x_gp_glo,x_gp_loc);
-
-      FacetIntegration bcellLocal(face1_,elem1_,position_,true,false);
-      bcellLocal.set_integ_number(1);
-      double areaLocal = bcellLocal.integrate_facet();
-
-      FacetIntegration bcellGlobal(face1_,elem1_,position_,true,true);
-      bcellGlobal.set_integ_number(1);
-      double areaGlobal = bcellGlobal.integrate_facet();
-      double jaco = areaLocal/areaGlobal;
-
-      double weiActual = wei*jaco*normalX;
-
-      cgp->Append(x_gp_loc,weiActual);
+      //std::cout<<x_gp_glo(0,0)<<"\t"<<x_gp_glo(1,0)<<"\t"<<x_gp_glo(2,0)<<"\t"<<wei<<"\n";
     }
   }
-
-  DRT::UTILS::GaussIntegration gi (cgp);
-  std::cout<<"num pts = "<<gi.NumPoints();
 }
 
-//generates integration rule for the considered facet
+/*-----------------------------------------------------------------------------------------------------*
+          Generate temporary boundarycells for the considered facet                       Sudhakar 03/12
+          if the number of corners of the facet is 3 or 4 this is straightforward
+          Else triangulation is performed
+*------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool divergenceRule, //if called to generate direct divergence rule
                                                                     Mesh &mesh,
-                                                                    plain_boundarycell_set & divCells)
+                                                                    plain_boundarycell_set & divCells )
 {
   std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
 
@@ -628,32 +631,77 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
     if(corners.size()==3)
       TemporaryTri3(corners, divCells);
 
-   /* else if(corners.size()==4)
-      TemporaryQuad4(corners, divCells);*/
+    else if(corners.size()==4)
+      TemporaryQuad4(corners, divCells);
 
+#if 0 //triangulating the arbitrary noded shape
     else
     {
       if(!face1_->IsTriangulated())
+      {
         face1_->DoTriangulation( mesh, corners );
+      }
       const std::vector<std::vector<Point*> > & triangulation = face1_->Triangulation();
       for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
-                        j!=triangulation.end(); ++j )
+                                                              j!=triangulation.end(); ++j )
       {
         std::vector<Point*> tri = *j;
         if(clockwise_)
           std::reverse(tri.begin(),tri.end());
         if(tri.size()==3)
-          TemporaryTri3(corners, divCells);
+          TemporaryTri3(tri, divCells);
         else if(tri.size()==4)
-          TemporaryQuad4(corners, divCells);
+          TemporaryQuad4(tri, divCells);
         else
+        {
+          std::cout<<"number of sides = "<<tri.size();
           dserror("Triangulation created neither tri3 or quad4");
+        }
       }
     }
+#endif
+
+#if 1 //split the aribtrary noded facet into cells
+    else
+    {
+      std::vector<std::vector<GEO::CUT::Point*> > split;
+  /*    std::cout<<"number of corners = "<<corners.size()<<"\n";
+      for( std::vector<Point*>::iterator nn=corners.begin();nn!=corners.end();nn++ )
+      {
+        Point* pt1 = *nn;
+        double xx[3];
+        pt1->Coordinates(xx);
+        std::cout<<xx[0]<<"\t"<<xx[1]<<"\t"<<xx[2]<<"\n";
+      }*/
+//      face1_->SplitFacet( mesh, corners, split );
+
+      TriangulateFacet tf( face1_, mesh, corners );
+      tf.SplitFacet();
+      split = tf.GetSplitCells();
+
+      for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
+                                                              j!=split.end(); ++j )
+      {
+        std::vector<Point*> tri = *j;
+        if(clockwise_)
+          std::reverse(tri.begin(),tri.end());
+        if(tri.size()==3)
+          TemporaryTri3(tri, divCells);
+        else if(tri.size()==4)
+          TemporaryQuad4(tri, divCells);
+        else
+        {
+          std::cout<<"number of sides = "<<tri.size();
+          dserror("Splitting created neither tri3 or quad4");
+        }
+      }
+    }
+#endif
   }
 }
 
 //temporarily create a tri3 cell
+//this is temporary because this is not stored for the volumecell
 void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
                                                 plain_boundarycell_set& divCells )
 {
@@ -665,6 +713,7 @@ void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
 }
 
 //temporarily create a quad4 cell
+//this is temporary because this is not stored for the volumecell
 void GEO::CUT::FacetIntegration::TemporaryQuad4( std::vector<Point*>& corners,
                                                  plain_boundarycell_set& divCells )
 {

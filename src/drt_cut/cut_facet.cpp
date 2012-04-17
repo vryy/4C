@@ -246,11 +246,24 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   return true;
 }
 
-//The triangulation works only when the facet is convex
-//Find the middle point in the facet and connect the middle point with every line of the facet
-//to create triangles
+/*-------------------------------------------------------------------------------------------------------*
+      Find the middle point (M) and join them with the corners of the facet to create triangles
+      Works only for convex facets, because of the middle point calculation
+
+                                           4   ________ 3
+                                              /.     . \
+                                             /  .   .   \
+                                            /    . .     \
+                                        5  /      . M     \ 2
+                                           \     . .      /
+                                            \   .   .    /
+                                             \._______./
+                                            0            1
+      Whenever possible call SplitFacet() instead of triangulation as it is very effective
+*--------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points )
 {
+#if 0 //old implementation of Ulli -- failed when --test=alex55 when called for directDivergence
   LINALG::Matrix<3,1> x1;
   LINALG::Matrix<3,1> x2;
   LINALG::Matrix<3,1> x3;
@@ -339,6 +352,36 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     //std::copy( line.begin(), line.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
     //std::cout << "\n";
   }
+#endif
+#if 1 //new simpler triangulation implementation (Sudhakar 04/12)
+  std::vector<Point*> pts( points );
+
+  //Find the middle point
+  LINALG::Matrix<3,1> avg,cur;
+  avg.Scale(0.0);
+  for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+  {
+    Point* p1 = *i;
+    p1->Coordinates(cur.A());
+    avg.Update(1,cur,1);
+  }
+  avg.Scale(1.0/pts.size());
+  Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide() );
+
+  //form triangles and store them in triangulation_
+  triangulation_.clear();
+  std::vector<Point*> newtri(3);
+  newtri[2] = p_mid;
+  for( unsigned i=0;i<pts.size();i++ )
+  {
+    Point* pt1 = pts[i];
+    Point* pt2 = pts[(i+1)%pts.size()];
+
+    newtri[0] = pt1;
+    newtri[1] = pt2;
+    triangulation_.push_back(newtri);
+  }
+#endif
 }
 
 void GEO::CUT::Facet::GetNodalIds( Mesh & mesh, const std::vector<Point*> & points, std::vector<int> & nids )
@@ -1008,31 +1051,33 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
   return result;
 }
 
-//return the local coordinates of corner points with respect to the given element
+/*-----------------------------------------------------------------------------------------------------------*
+            return the local coordinates of corner points with respect to the given element
+*------------------------------------------------------------------------------------------------------------*/
 const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Element *elem1)
 {
-        const std::vector<Point*> & corners = CornerPoints();
-        int mm=0;
-        std::vector<std::vector<double> >cornersLocal;
-        for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
-        {
-            std::vector<double> pt_local;
-            const Point* po = *k;
-            const double * coords = po->X();
-            LINALG::Matrix<3,1> glo,loc;
-//          std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
-            glo(0,0) = coords[0];
-            glo(1,0) = coords[1];
-            glo(2,0) = coords[2];
+  const std::vector<Point*> & corners = CornerPoints();
+  int mm=0;
+  std::vector<std::vector<double> >cornersLocal;
+  for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+  {
+      std::vector<double> pt_local;
+      const Point* po = *k;
+      const double * coords = po->X();
+      LINALG::Matrix<3,1> glo,loc;
 
-            elem1->LocalCoordinates(glo,loc);
+      glo(0,0) = coords[0];
+      glo(1,0) = coords[1];
+      glo(2,0) = coords[2];
 
-            pt_local.push_back(loc(0,0));
-            pt_local.push_back(loc(1,0));
-            pt_local.push_back(loc(2,0));
+      elem1->LocalCoordinates(glo,loc);
 
-            cornersLocal.push_back(pt_local);
-            mm++;
-        }
-        return cornersLocal;
+      pt_local.push_back(loc(0,0));
+      pt_local.push_back(loc(1,0));
+      pt_local.push_back(loc(2,0));
+
+      cornersLocal.push_back(pt_local);
+      mm++;
+  }
+  return cornersLocal;
 }

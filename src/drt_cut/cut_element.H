@@ -100,6 +100,11 @@ public:
    */
   void MomentFitGaussWeights( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
 
+  /*!
+  \brief Construct quadrature rules for the volumecells by triangulating the facets and applying divergence theorem
+   */
+  void DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, std::string Bcellgausstype );
+
   /// After the integration and boundary cells have been created, there might
   /// still be some empty volume cells. Those are artificial cells with zero
   /// volume and need to be removed from their elements, before we count nodal
@@ -203,7 +208,7 @@ public:
   {
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     LINALG::Matrix<3,nen> xyze;
-    LINALG::Matrix<3,1> xei (0.0); //the determinant of the Jacobian is independent of the considered point
+    LINALG::Matrix<3,1> xei (0.0); //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
     Coordinates(xyze.A());
 
     LINALG::Matrix<3,nen> deriv;

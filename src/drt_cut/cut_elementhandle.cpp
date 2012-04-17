@@ -53,7 +53,6 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
 
   if(gausstype == "Tessellation" || cells.size()==1)
   {
-
         for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
         {
             GEO::CUT::VolumeCell * vc = *i;

@@ -1296,6 +1296,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_sidehandle.cpp
   src/drt_cut/cut_tetmesh.cpp
   src/drt_cut/cut_tetmeshintersection.cpp
+  src/drt_cut/cut_triangulateFacet.cpp
   src/drt_cut/cut_volumecell.cpp
   src/drt_cut/cut_volumecellgenerator.cpp
   src/drt_cut/line_integration.cpp
@@ -1315,6 +1316,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_loader.cpp
   tests/cut_test/cut_test_main.cpp
   tests/cut_test/cut_test_simple.cpp
+  tests/cut_test/cut_test_triangulateFacet.cpp
   tests/cut_test/cut_test_units.cpp
   tests/cut_test/cut_test_utils.cpp
   tests/cut_test/cut_test_fluidfluid.cpp

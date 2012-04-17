@@ -195,11 +195,19 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
 #endif
   }
 
-  if(VCellgausstype=="MomentFitting")
+  else if(VCellgausstype=="MomentFitting")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::MomentFitting" );
     m.MomentFitGaussWeights(include_inner, BCellgausstype);
   }
+
+  else if(VCellgausstype=="DirectDivergence")
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
+    m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
+  }
+  else
+    dserror("Undefined option of volumecell gauss points generation");
 
 }
 

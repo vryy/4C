@@ -35,7 +35,7 @@ double LineIntegration::integrate_line()
       double inte = 0.0;
 
     //15 is the order of Gauss integration used in the line integration
-    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 9 );
+    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 8 );
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
     {

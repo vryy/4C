@@ -131,3 +131,172 @@ DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape( const std::ve
 
   return DRT::Element::dis_none;
 }
+
+/*-----------------------------------------------------------------------------------------------------*
+  Check whether three points are lying on the same line by checking whether the cross product is zero
+                                                                                          Sudhakar 04/12
+*------------------------------------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
+{
+  LINALG::Matrix<3,1> x1,x2,x3;
+  LINALG::Matrix<3,1> pt1pt2,pt1pt3,cross;
+  pt1->Coordinates(x1.A());
+  pt2->Coordinates(x2.A());
+  pt3->Coordinates(x3.A());
+
+  pt1pt2.Update(1,x2,-1,x1,0);
+  pt1pt3.Update(1,x3,-1,x1,0);
+
+  cross(0,0) = pt1pt2(1,0)*pt1pt3(2,0)-pt1pt2(2,0)*pt1pt3(1,0);
+  cross(1,0) = pt1pt2(0,0)*pt1pt3(2,0)-pt1pt2(2,0)*pt1pt3(0,0);
+  cross(2,0) = pt1pt2(1,0)*pt1pt3(0,0)-pt1pt2(0,0)*pt1pt3(1,0);
+
+  if(cross.NormInf()<1e-8)  //if the cross product is zero - on the same line
+    return true;
+  return false;
+}
+
+/*---------------------------------------------------------------------------------------------------------*
+      Check whether the list of points given forms a convex polygon                         Sudhakar 04/12
+      If any 3 points fall along the line, this will delete the middle point and return new pt
+      Intially the polygon is projected into the given plane
+*----------------------------------------------------------------------------------------------------------*/
+std::vector<int> GEO::CUT::KERNEL::CheckConvexity( std::vector<Point*>& ptlist, std::string& geomType )
+{
+  if( ptlist.size()<5 )
+    dserror( "The number of points < 5. Is it called for appropriate facet?" );
+
+  std::string projPlane;
+
+  for( unsigned i=0;i<ptlist.size();i++ )
+  {
+    Point* pt2 = ptlist[i];
+    Point* pt3 = ptlist[(i+1)%ptlist.size()];
+    unsigned ind = i-1;
+    if( i==0 )
+      ind = ptlist.size()-1;
+    Point* pt1 = ptlist[ind];
+
+    bool isline = IsOnLine( pt1, pt2, pt3 );
+    if( isline==false )
+    {
+      std::vector<double> eqn;
+      eqn = EqnPlane( pt1, pt2, pt3 );
+      if( fabs(eqn[0])>fabs(eqn[1]) && fabs(eqn[0])>fabs(eqn[2]) )
+        projPlane = "x";
+      else if( fabs(eqn[1])>fabs(eqn[2]) && fabs(eqn[1])>fabs(eqn[0]) )
+        projPlane = "y";
+      else
+        projPlane = "z";
+      break;
+    }
+    else
+      dserror( "Inline checking for facets not done before calling this" );
+  }
+
+  int ind1=0,ind2=0;
+  if( projPlane=="x" )
+  {
+    ind1 = 1;
+    ind2 = 2;
+  }
+  else if( projPlane=="y" )
+  {
+    ind1 = 2;
+    ind2 = 0;
+  }
+  else if( projPlane=="z" )
+  {
+    ind1 = 0;
+    ind2 = 1;
+  }
+  else
+    dserror( "unspecified projection type" );
+
+  double x1[3],x2[3],x3[3],xtemp[3];
+  std::vector<std::string> dirMove;
+  for( unsigned i=0;i<ptlist.size();i++ )
+  {
+    Point* pt2 = ptlist[i];
+    Point* pt3 = ptlist[(i+1)%ptlist.size()];
+    unsigned ind = i-1;
+    if(i==0)
+      ind = ptlist.size()-1;
+    Point* pt1 = ptlist[ind];
+
+    pt1->Coordinates(x1);
+    pt2->Coordinates(x2);
+    pt3->Coordinates(x3);
+
+    for( unsigned j=0;j<3;j++ )
+      xtemp[j] = x2[j]-x1[j];
+
+    double res = x3[ind1]*xtemp[ind2]-x3[ind2]*xtemp[ind1]+
+                 xtemp[ind1]*x1[ind2]-xtemp[ind2]*x1[ind1];
+
+    if(res<0.0)
+      dirMove.push_back("left");
+    else
+      dirMove.push_back("right");
+  }
+
+  std::vector<int> leftind,rightind;
+  for( unsigned i=0;i<dirMove.size();i++ )
+  {
+    if(dirMove[i]=="left")
+      leftind.push_back(i);
+    else
+      rightind.push_back(i);
+  }
+
+  if( leftind.size()==0 )
+  {
+    geomType = "convex";
+    return leftind;
+  }
+  else if( rightind.size()==0 )
+  {
+    geomType = "convex";
+    return rightind;
+  }
+  else if( leftind.size()==1 )
+  {
+    geomType = "1ptConcave";
+    return leftind;
+  }
+  else if( rightind.size()==1 )
+  {
+    geomType = "1ptConcave";
+    return rightind;
+  }
+  else
+  {
+    geomType = "concave";
+    if( leftind.size() < rightind.size() )
+      return leftind;
+    else
+      return rightind;
+  }
+  return leftind;
+}
+
+/*-----------------------------------------------------------------------------------------------------*
+            Find the equation of plane that contains these non-collinear points
+                                                                                          Sudhakar 04/12
+*------------------------------------------------------------------------------------------------------*/
+std::vector<double> GEO::CUT::KERNEL::EqnPlane( Point* & pt1, Point* & pt2, Point* & pt3 )
+{
+  std::vector<double> eqn_plane(4);
+  double x1[3],x2[3],x3[3];
+
+  pt1->Coordinates(x1);
+  pt2->Coordinates(x2);
+  pt3->Coordinates(x3);
+
+  eqn_plane[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
+  eqn_plane[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
+  eqn_plane[2] = x1[0]*(x2[1]-x3[1])+x2[0]*(x3[1]-x1[1])+x3[0]*(x1[1]-x2[1]);
+  eqn_plane[3] = x1[0]*(x2[1]*x3[2]-x3[1]*x2[2])+x2[0]*(x3[1]*x1[2]-x1[1]*x3[2])+x3[0]*(x1[1]*x2[2]-x2[1]*x1[2]);
+
+  return eqn_plane;
+}

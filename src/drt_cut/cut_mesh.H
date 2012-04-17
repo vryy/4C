@@ -169,6 +169,11 @@ public:
    */
   void MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype);
 
+  /*!
+  \brief Call the DirectDivergence method for each element to generate the Gaussian integration rule
+   */
+  void DirectDivergenceGaussRule(bool include_inner, std::string Bcellgausstype);
+
   void RemoveEmptyVolumeCells();
 
   /*!

@@ -146,6 +146,21 @@ namespace GEO
         return false;
       }
 
+      /*!
+      \brief Check whether three points are on the same line
+       */
+      bool IsOnLine( Point*& pt1, Point*& pt2, Point*& pt3 );
+
+      /*!
+      \brief Check whether the polygon defined by the set of points is convex
+       */
+      std::vector<int> CheckConvexity( std::vector<Point*>& ptlist, std::string& geoType );
+
+      /*!
+      \brief Find the equation of plane that contains these non-collinear points
+       */
+      std::vector<double> EqnPlane( Point* & pt1, Point* & pt2, Point* & pt3 );
+
 
       /// generic Newton algorithm
       template <class Strategy, int maxiter=20>

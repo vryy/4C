@@ -230,8 +230,10 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     return wei;
 }
 
-/*  Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
-    point lies inside the volume or not   */
+/*-------------------------------------------------------------------------------------------------------------------*
+    Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
+    point lies inside the volume or not
+*--------------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoord,
                 vector<vector<double> >& ycoord)
 {
@@ -265,8 +267,10 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
     }
 }
 
-//check whether the generated ray intersect any of the facets
-//if so generate gauss points along the ray
+/*-----------------------------------------------------------------------------------------*
+              check whether the generated ray intersect any of the facets
+              if so generate gauss points along the ray
+*------------------------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
                 vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
 {
@@ -460,7 +464,10 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
         return intersect;
 }
 
-/* Check whether the intersection point, which is in the plane containing the facet, actually lies with in the facet area */
+/*-------------------------------------------------------------------------------------------------------------------*
+         Check whether the intersection point, which is in the plane containing the facet, actually
+         lies with in the facet area
+*--------------------------------------------------------------------------------------------------------------------*/
 int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y)
 {
   int i, j, c = 0;
@@ -526,7 +533,6 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
        break;
      }
    }
-
 
 //generate points in between the topmost and lowest line
   int num = numeach;

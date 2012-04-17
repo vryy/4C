@@ -69,6 +69,11 @@ public:
   void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner, std::string BCellgausstype );
 
   /*!
+  \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and applying divergence theorem
+   */
+  void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, std::string BCellgausstype );
+
+  /*!
   \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by momentfitting and boundarycells
   are by tessellation
    */
@@ -223,18 +228,19 @@ private:
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
 
-  //volume of this volumecell
+  /// volume of this volumecell
   double volume_;
 
- //store the Gauss point weights and location for volumecells when moment fitting equations are
- //used to arrive at them
+ /// store the Gauss point weights and location for volumecells when moment fitting equations are used to arrive at them
   Epetra_SerialDenseVector weights_;
   std::vector<std::vector<double> > gausPts_;
 
-  //store the Gauss point weights and location for boundarycells when moment fitting equations are
-  //used to arrive at them
+  /// store the Gauss point weights and location for boundarycells when moment fitting equations are used to arrive at them
   Epetra_SerialDenseVector Bcellweights_;
   std::vector<std::vector<double> > BcellgausPts_;
+
+  /// Equation of plane which contains the reference facet when using DirectDivergence
+  std::vector<double> RefEqnPlane_;
 
 };
 

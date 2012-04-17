@@ -59,7 +59,8 @@ namespace GEO
         \brief Generate Gaussian points over the considered facet by triangulating it. This is used when
         DirectDivergence option is used for Gauss point generation
         */
-        void DivergenceIntegrationRule(Mesh &mesh);
+        void DivergenceIntegrationRule( Mesh &mesh,
+            Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp );
 
       private:
         /*!
@@ -84,7 +85,7 @@ namespace GEO
                                       std::string intType);
 
         /*!
-        \brief Generate integration rule over the considered facet by triangulating it
+        \brief Generate boundary cells for the considered facet. May need to perform triangulatio
         */
         void GenerateIntegrationRuleDivergence(bool divergenceRule,Mesh &mesh,plain_boundarycell_set & divCells);
 

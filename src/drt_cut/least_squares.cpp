@@ -107,9 +107,9 @@ Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
       "conditioned matrix in least square");
 
 
-/*  Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());//blockkk
-  Epetra_SerialDenseVector unn(sqr.size());//blockkk
-  Epetra_SerialDenseVector rrr(sqr.size());//blockkk
+/*  Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());
+  Epetra_SerialDenseVector unn(sqr.size());
+  Epetra_SerialDenseVector rrr(sqr.size());
   for(unsigned i=0;i<sqr.size();i++)
   {
     for(unsigned j=0;j<sqr.size();j++)

@@ -47,6 +47,18 @@ namespace GEO
         void DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
                                   std::vector<plain_facet_set::const_iterator>& facetIterator );
 
+        /*!
+        \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence
+        */
+        void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
+                                        const std::vector<double> &RefPlaneEqn  );
+
+        /*!
+        \brief Compute and set correspondingly the volume of the considered volumecell
+         */
+        void ComputeVolume( const DRT::UTILS::GaussIntegration & gpv,
+                            const std::vector<double> &RefPlaneEqn   );
+
         VolumeCell* volcell_;
         Element* elem1_;
         const GEO::CUT::Point::PointPosition position_;

@@ -4,7 +4,7 @@
 #include<vector>
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H" //remove if old Gauss integration for line is used
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 /*!
 \brief Performs integration of  base functions along the line using the standard Gaussian rule
