@@ -4398,12 +4398,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
-                               tuple<int>(0,1),
+                               tuple<int>(0,1,2),
                                &xfem_general);
 
   setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the boundary cells",
                                  tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
-                                 tuple<int>(0,1),
+                                 tuple<int>(0,1,2),
                                  &xfem_general);
 
 
