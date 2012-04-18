@@ -157,7 +157,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              Or
+NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
 EIGEN                           0

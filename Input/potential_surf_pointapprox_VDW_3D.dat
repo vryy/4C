@@ -59,9 +59,6 @@ ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
@@ -77,7 +74,7 @@ MINITER                         0
 M_DAMP                          0.5
 NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFDISP              Or
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
