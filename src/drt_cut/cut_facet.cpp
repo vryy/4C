@@ -367,18 +367,20 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   }
   avg.Scale(1.0/pts.size());
   Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide() );
+  p_mid->Position( Position() );
+  p_mid->Register( this );
 
   //form triangles and store them in triangulation_
   triangulation_.clear();
   std::vector<Point*> newtri(3);
-  newtri[2] = p_mid;
+  newtri[0] = p_mid;
   for( unsigned i=0;i<pts.size();i++ )
   {
     Point* pt1 = pts[i];
     Point* pt2 = pts[(i+1)%pts.size()];
 
-    newtri[0] = pt1;
-    newtri[1] = pt2;
+    newtri[1] = pt1;
+    newtri[2] = pt2;
     triangulation_.push_back(newtri);
   }
 #endif

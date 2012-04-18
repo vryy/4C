@@ -277,7 +277,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
 #endif
 
 
-  std::vector<double> tessVol,momFitVol,dirDivVol;
+/*  std::vector<double> tessVol,momFitVol,dirDivVol;
 
     //GEO::CUT::Mesh mesh = intersection.NormalMesh();
     const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
@@ -315,7 +315,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
       std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
       if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-5 )
         dserror("volume predicted by either one of the method is wrong");
-    }
+    }*/
 }
 
 
