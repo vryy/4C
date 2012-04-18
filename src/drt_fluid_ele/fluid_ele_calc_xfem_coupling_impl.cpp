@@ -29,15 +29,95 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 
 
-using namespace DRT::ELEMENTS::XFLUID;
+
+namespace DRT
+{
+namespace ELEMENTS
+{
+namespace XFLUID
+{
+
+/*--------------------------------------------------------------------------------
+ * add side's interface displacements and set current side node coordiantes
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
+void SideImpl<distype, side_distype, numdof>::addeidisp(
+    const DRT::Discretization &  cutdis,
+    const std::string            state,
+    const vector<int>&           lm,
+    Epetra_SerialDenseMatrix  &  side_xyze)
+{
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
+  if(matrix_state == null)
+    dserror("Cannot get state vector %s", state.c_str());
+
+  // extract local values of the global vectors
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+  for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
+  {
+    for(int idim=0; idim<3; ++idim) // number of dimensions
+    {
+      (eidisp_)(idim,inode) = mymatrix[idim+(inode*numdof)]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
+    }
+  }
+
+  // add the displacement of the interface
+  for (int inode = 0; inode < side_nen_; ++inode)
+  {
+    xyze_(0,inode) += eidisp_(0, inode);
+    xyze_(1,inode) += eidisp_(1, inode);
+    xyze_(2,inode) += eidisp_(2, inode);
+  }
+
+  return;
+} // addeidisp
 
 
+/*--------------------------------------------------------------------------------
+ * extract/set side's interface velocity
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
+void SideImpl<distype, side_distype, numdof>::eivel(
+    const DRT::Discretization &  cutdis,  ///< cut discretization
+    const std::string            state,   ///< state
+    const vector<int>&           lm       ///< local map
+    )
+{
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
+  if(matrix_state == null)
+    dserror("Cannot get state vector %s", state.c_str());
+
+  // extract local values of the global vectors
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+  for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
+  {
+    for(int idim=0; idim<3; ++idim) // number of dimensions
+    {
+      (eivel_)(idim,inode) = mymatrix[idim+(inode*numdof)];  // state vector includes velocity and pressure
+    }
+    if(numdof == 4) (eipres_)(inode,0) = mymatrix[3+(inode*numdof)];
+  }
+
+  return;
+} // eivel
+
+
+/*--------------------------------------------------------------------------------
+ * evaluate shape function, derivatives, normal and transformation w.r.t
+ * side element at gaussian point
+ *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
 void SideImpl<distype, side_distype, numdof>::Evaluate(
-    const LINALG::Matrix<nsd_-1,1>  & eta,
-    LINALG::Matrix<nsd_,1>          & x,
-    LINALG::Matrix<nsd_,1>          & normal,
-    double                          & drs
+    const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element
+    LINALG::Matrix<nsd_,1>          & x,       ///< global coordinates of gaussian point
+    LINALG::Matrix<nsd_,1>          & normal,  ///< normal vector
+    double                          & drs      ///< transformation factor
 )
 {
 
@@ -48,22 +128,51 @@ void SideImpl<distype, side_distype, numdof>::Evaluate(
   x.Multiply( xyze_,side_funct_ );
 
   return;
+} // Evaluate
+
+
+/*--------------------------------------------------------------------------------
+ * compute interface force for side nodes
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
+void SideImpl<distype, side_distype, numdof>::InterfaceForce(
+    Epetra_SerialDenseVector &   iforce,     ///< interface force vector
+    LINALG::Matrix<nsd_,1> &     traction,   ///< traction vector at gaussian point
+    const double &               fac         ///< integration factor
+    )
+{
+
+  if(numdof != nsd_) dserror(" pay attention in buildInterfaceForce: numdof != nsd_");
+
+  for (int inode = 0; inode < side_nen_; ++inode)
+  {
+    for(int idim=0; idim<nsd_; ++idim )
+    {
+      // f^i = ( N^i, t ) = ( N^i, (-pI+2mu*eps(u))*n )
+      iforce[idim+(inode*numdof)] += side_funct_(inode) * traction(idim) * fac;
+    }
+  }
+
+  return;
 }
 
 
-
+/*--------------------------------------------------------------------------------
+ * project gaussian point from linearized interfac in normal direction onto
+ * corresponding side
+ *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
 void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
-    LINALG::Matrix<3,1> & x_gp_lin,
-    LINALG::Matrix<3,1> & x_side,
-    LINALG::Matrix<2,1> & xi_side
+    LINALG::Matrix<3,1> & x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
+    LINALG::Matrix<3,1> & x_side,    ///< projected gaussian point on side
+    LINALG::Matrix<2,1> & xi_side    ///< local coordinates of projected gaussian point w.r.t side
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
   // Initialization
-  LINALG::Matrix<side_nen_,1> funct(true);          // shape functions
-  LINALG::Matrix<2,side_nen_> deriv(true);          // derivatives dr, ds
-  LINALG::Matrix<3,side_nen_> deriv2(true);          // 2nd derivatives drdr, dsds, drds
+  LINALG::Matrix<side_nen_,1> funct(true);      // shape functions
+  LINALG::Matrix<2,side_nen_> deriv(true);      // derivatives dr, ds
+  LINALG::Matrix<3,side_nen_> deriv2(true);     // 2nd derivatives drdr, dsds, drds
 
 
   LINALG::Matrix<3,1> x(true);
@@ -84,14 +193,14 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
   LINALG::Matrix<3,1> sol(true); // sol carries xi_1, xi_2, d (distance)
 
   if(side_distype == DRT::Element::tri3 or
-      side_distype == DRT::Element::tri6)
+     side_distype == DRT::Element::tri6)
   {
     sol(0) = 0.333333333333333;
     sol(1) = 0.333333333333333;
   }
   else if( side_distype == DRT::Element::quad4 or
-      side_distype == DRT::Element::quad8 or
-      side_distype == DRT::Element::quad9)
+           side_distype == DRT::Element::quad8 or
+           side_distype == DRT::Element::quad9)
   {
 
     sol(0) = 0.0;
@@ -249,119 +358,32 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
   // get projected gauss point
   x_side.Multiply(xyze_, side_funct_);
 
+  // set local coordinates w.r.t side
   xi_side(0) = sol(0);
   xi_side(1) = sol(1);
 
   return;
-}
+} // ProjectOnSide
 
 
 
+
+
+
+
+
+
+
+
+/*--------------------------------------------------------------------------------
+ * build coupling matrices for Mixed/Stress/Hybrid (MSH) method
+ *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::eivel(
-    const DRT::Discretization &  cutdis,
-    const std::string            state,
-    const vector<int>&           lm)
-{
-  // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if(matrix_state == null)
-    dserror("Cannot get state vector %s", state.c_str());
-
-  // extract local values of the global vectors
-  std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
-
-  for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
-  {
-    for(int idim=0; idim<3; ++idim) // number of dimensions
-    {
-      (eivel_)(idim,inode) = mymatrix[idim+(inode*numdof)];  // state vector includes velocity and pressure
-    }
-    if(numdof == 4) (eipres_)(inode,0) = mymatrix[3+(inode*numdof)];
-  }
-
-  return;
-}
-
-
-
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::addeidisp(
-    const DRT::Discretization &  cutdis,
-    const std::string            state,
-    const vector<int>&           lm,
-    Epetra_SerialDenseMatrix  &  side_xyze)
-{
-  // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if(matrix_state == null)
-    dserror("Cannot get state vector %s", state.c_str());
-
-  // extract local values of the global vectors
-  std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
-
-  for (int inode=0; inode<side_nen_; ++inode)  // number of nodes
-  {
-    for(int idim=0; idim<3; ++idim) // number of dimensions
-    {
-      (eidisp_)(idim,inode) = mymatrix[idim+(inode*numdof)]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
-    }
-  }
-
-  // add the displacement of the interface
-  for (int inode = 0; inode < side_nen_; ++inode)
-  {
-    xyze_(0,inode) += eidisp_(0, inode);
-    xyze_(1,inode) += eidisp_(1, inode);
-    xyze_(2,inode) += eidisp_(2, inode);
-  }
-
-  return;
-}
-
-
-
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::buildInterfaceForce(
-    const Teuchos::RCP<Epetra_Vector> &   iforcecol,
-    const DRT::Discretization &           cutdis,
-    const vector<int>&                    lm,
-    LINALG::Matrix<nsd_,1> &              traction,
-    double &                              fac )
-{
-
-  if(numdof != nsd_) dserror(" pay attention in buildInterfaceForce: numdof != nsd_");
-
-  const Epetra_Map* dofcolmap = cutdis.DofColMap();
-
-  if((int) lm.size() != side_nen_*numdof) dserror("mismatch between number of side nodes and lm.size()");
-
-  for (int inode = 0; inode < side_nen_; ++inode)
-  {
-
-    for(int idim=0; idim<3; ++idim )
-    {
-      int gdof = lm[idim+(inode*numdof)];
-
-      // f^i = ( N^i, t ) = ( N^i, (-pI+2mu*eps(u))*n )
-      (*iforcecol)[dofcolmap->LID(gdof)] += side_funct_(inode) * traction(idim) * fac;
-    }
-
-  }
-
-  return;
-}
-
-
-
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::buildCouplingMatrices(
-    LINALG::Matrix<nsd_,1>        & normal,
-    const double                fac,
-    LINALG::Matrix<nen_,1>     & funct,
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &  rhs
+void SideImpl<distype, side_distype, numdof>::MSH_buildCouplingMatrices(
+    LINALG::Matrix<nsd_,1> &                             normal,     ///< normal vector
+    const double                                         fac,        ///< integration factor
+    LINALG::Matrix<nen_,1> &                             funct,      ///< shape function
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &  rhs         ///< rhs block matrix
 )
 {
   LINALG::Matrix<nen_,side_nen_> bKi_ss;
@@ -433,29 +455,32 @@ void SideImpl<distype, side_distype, numdof>::buildCouplingMatrices(
   BK_uis_( Velzi, Sigmazz )->Update( fac*normal(2), bKiT_ss, 1.0 );
 
   return;
-}
+}// MSH_buildCouplingMatrices
 
 
+/*--------------------------------------------------------------------------------
+ * build final coupling matrices for Mixed/Stress/Hybrid (MSH) method
+ *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::buildFinalCouplingMatrices(
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> &  BinvK_ss,
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,4,6> &  K_iK,
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,4> &  K_su,
-    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &  rhs
+void SideImpl<distype, side_distype, numdof>::MSH_buildFinalCouplingMatrices(
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> &  BinvK_ss,     ///< block inverse K_sigma_sigma matrix
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,4,6> &  K_iK,         ///< block K_iK matrix
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,4> &  K_su,         ///< block K_su matrix
+    LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
 )
 {
   LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,6>      BKi_iK;   //G_uis*Inv(K_ss)
   LINALG::BlockMatrix<LINALG::Matrix<nen_,side_nen_>,4,3>      BCuui;    //K_iK*G_sui
   LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,4>      BCuiu;    //Ki_iK*K_su
   LINALG::BlockMatrix<LINALG::Matrix<side_nen_,side_nen_>,3,3> BCuiui;   //Ki_iK*G_sui
-  LINALG::BlockMatrix<LINALG::Matrix<side_nen_, 1>,3,1>       extrhsi;  //G_uis*Inv(K_ss)*rhs
+  LINALG::BlockMatrix<LINALG::Matrix<side_nen_, 1>,3,1>       extrhsi;   //G_uis*Inv(K_ss)*rhs
 
 
-  BCuui  .Multiply( K_iK, BK_sui_ );
-  BKi_iK  .Multiply( BK_uis_, BinvK_ss );
-  BCuiu  .Multiply( BKi_iK, K_su );
-  BCuiui .Multiply( BKi_iK, BK_sui_ );
-  extrhsi.Multiply( BKi_iK, rhs );
+  BCuui  .Multiply( K_iK   , BK_sui_  );
+  BKi_iK .Multiply( BK_uis_, BinvK_ss );
+  BCuiu  .Multiply( BKi_iK , K_su     );
+  BCuiui .Multiply( BKi_iK , BK_sui_  );
+  extrhsi.Multiply( BKi_iK , rhs      );
 
 
 
@@ -606,12 +631,14 @@ void SideImpl<distype, side_distype, numdof>::buildFinalCouplingMatrices(
   }
 
   return;
-}
+}// MSH_buildFinalCouplingMatrices
 
 
-
+/*--------------------------------------------------------------------------------
+ * build coupling matrices and assemble terms for Nitsche's (NIT) method
+ *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::buildCouplingMatricesNitsche(
+void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
     Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
     Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
     bool &                        coupling,       // assemble coupling terms (yes/no)
@@ -1409,7 +1436,7 @@ void EmbImpl<distype, emb_distype>::element_length( double & hk_emb )
 
 
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
-void EmbImpl<distype, emb_distype>::buildCouplingMatricesNitscheTwoSided(
+void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
     Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
     bool &                        coupling,       // assemble coupling terms (yes/no)
@@ -2604,8 +2631,12 @@ void EmbImpl<distype, emb_distype>::buildCouplingMatricesNitscheTwoSided(
 }
 
 
+} // namespace XFLUID
+} // namespace ELEMENTS
+} // namespace DRT
 
-// create template class objects for the following template pairs
+
+
 
 // pairs with numdof=3
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad4,3>;

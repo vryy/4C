@@ -312,7 +312,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       dserror( "expect fluid element" );
     }
 
-    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem");
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     // Evaluate xfem
@@ -457,46 +457,46 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           Epetra_SerialDenseMatrix  Cuiui(nui,nui);
 
           if (xfluid_.action_ == "coupling stress based")
-            impl->ElementXfemInterface( ele,
-                                        discret,
-                                        la[0].lm_,
-                                        intpoints_sets[set_counter],
-                                        cutdiscret,
-                                        bcells,
-                                        bintpoints,
-                                        side_coupling,
-                                        eleparams,
-                                        strategy.Elematrix1(),
-                                        strategy.Elevector1(),
-                                        Cuiui);
+            impl->ElementXfemInterfaceMSH(    ele,
+                                              discret,
+                                              la[0].lm_,
+                                              intpoints_sets[set_counter],
+                                              cutdiscret,
+                                              bcells,
+                                              bintpoints,
+                                              side_coupling,
+                                              eleparams,
+                                              strategy.Elematrix1(),
+                                              strategy.Elevector1(),
+                                              Cuiui);
           else if (xfluid_.action_ == "coupling nitsche xfluid sided")
-            impl->ElementXfemInterfaceNitsche( ele,
-                                               discret,
-                                               la[0].lm_,
-                                               intpoints_sets[set_counter],
-                                               cutdiscret,
-                                               bcells,
-                                               bintpoints,
-                                               side_coupling,
-                                               eleparams,
-                                               strategy.Elematrix1(),
-                                               strategy.Elevector1(),
-                                               Cuiui);
+            impl->ElementXfemInterfaceNIT(    ele,
+                                              discret,
+                                              la[0].lm_,
+                                              intpoints_sets[set_counter],
+                                              cutdiscret,
+                                              bcells,
+                                              bintpoints,
+                                              side_coupling,
+                                              eleparams,
+                                              strategy.Elematrix1(),
+                                              strategy.Elevector1(),
+                                              Cuiui);
           else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
-            impl->ElementXfemInterfaceNitscheTwoSided( ele,
-                                                       discret,
-                                                       la[0].lm_,
-                                                       intpoints_sets[set_counter],
-                                                       cutdiscret,
-                                                       bcells,
-                                                       bintpoints,
-                                                       side_coupling,
-                                                       eleparams,
-                                                       alediscret,
-                                                       xfluid_.boundary_emb_gid_map_,
-                                                       strategy.Elematrix1(),
-                                                       strategy.Elevector1(),
-                                                       Cuiui);
+            impl->ElementXfemInterfaceNIT2(   ele,
+                                              discret,
+                                              la[0].lm_,
+                                              intpoints_sets[set_counter],
+                                              cutdiscret,
+                                              bcells,
+                                              bintpoints,
+                                              side_coupling,
+                                              eleparams,
+                                              alediscret,
+                                              xfluid_.boundary_emb_gid_map_,
+                                              strategy.Elematrix1(),
+                                              strategy.Elevector1(),
+                                              Cuiui);
 
 
           for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
@@ -680,18 +680,18 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             Epetra_SerialDenseMatrix  Cuiui(nui,nui);
 
             // all boundary cells that belong to one cut element
-            impl->ElementXfemInterface( ele,
-                                        discret,
-                                        la[0].lm_,
-                                        intpoints[count],
-                                        cutdiscret,
-                                        bcells,
-                                        bintpoints,
-                                        side_coupling,
-                                        eleparams,
-                                        strategy.Elematrix1(),
-                                        strategy.Elevector1(),
-                                        Cuiui);
+            impl->ElementXfemInterfaceMSH(    ele,
+                                              discret,
+                                              la[0].lm_,
+                                              intpoints_sets[set_counter],
+                                              cutdiscret,
+                                              bcells,
+                                              bintpoints,
+                                              side_coupling,
+                                              eleparams,
+                                              strategy.Elematrix1(),
+                                              strategy.Elevector1(),
+                                              Cuiui);
 
             for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                   sc!=side_coupling.end(); ++sc )
@@ -885,7 +885,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       dserror( "expect fluid element" );
     }
 
-    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl(actaleele->Shape(), "xfem");
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actaleele->Shape(), "xfem");
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actaleele );
     if ( e!=NULL )
@@ -3907,7 +3907,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*bgdis_,nds,la,false);
 
-          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
+          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
                                                                                       elescalars,intpoints_sets[set_counter]);
 
           // sum up (on each processor)
@@ -3934,7 +3934,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
             //actele->LocationVector(discret,nds,la,false);
             actele->LocationVector(*bgdis_,ndstest,la,false);
 
-            DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
                                                                                       elescalars,intpoints[count]);
 
             // sum up (on each processor)
@@ -3951,7 +3951,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*bgdis_,la,false);
-         DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *bgdis_, la[0].lm_,
+         DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *bgdis_, la[0].lm_,
                                                                                      elescalars);
          // sum up (on each processor)
          cpuscalars += elescalars;
@@ -3979,7 +3979,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*embdis_,alela,false);
-      DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *embdis_, alela[0].lm_,
+      DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *embdis_, alela[0].lm_,
                                                                                   elescalars);
       // sum up (on each processor)
       cpuscalars += elescalars;

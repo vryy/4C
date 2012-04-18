@@ -178,7 +178,7 @@ namespace ELEMENTS
                          const double&                                       Cs_delta_sq,
                          const double&                                       l_tau);
 
-    virtual void ElementXfemInterface( DRT::ELEMENTS::Fluid3 *                                           ele,
+    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid3 *                                           ele,
                                        DRT::Discretization &                                             dis,
                                        const std::vector<int> &                                          lm,
                                        const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -186,14 +186,13 @@ namespace ELEMENTS
                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
-                                       //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > >       side_coupling,
                                        Teuchos::ParameterList&                                           params,
                                        Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                        Epetra_SerialDenseVector&                                         elevec1_epetra,
                                        Epetra_SerialDenseMatrix&                                         Cuiui
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void ElementXfemInterfaceNitsche(DRT::ELEMENTS::Fluid3 *                                           ele,
+    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid3 *                                           ele,
                                              DRT::Discretization &                                             dis,
                                              const std::vector<int> &                                          lm,
                                              const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -201,14 +200,14 @@ namespace ELEMENTS
                                              const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                              const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                              std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
-                                             //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > >       side_coupling,
                                              Teuchos::ParameterList&                                           params,
                                              Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                              Epetra_SerialDenseVector&                                         elevec1_epetra,
                                              Epetra_SerialDenseMatrix&                                         Cuiui
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void ElementXfemInterfaceNitscheTwoSided( DRT::ELEMENTS::Fluid3 * ele,
+    virtual void ElementXfemInterfaceNIT2(
+                                       DRT::ELEMENTS::Fluid3 * ele,
                                        DRT::Discretization & dis,
                                        const std::vector<int> & lm,
                                        const DRT::UTILS::GaussIntegration & intpoints,
@@ -216,7 +215,6 @@ namespace ELEMENTS
                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
-                                       //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
                                        Teuchos::ParameterList&    params,
                                        DRT::Discretization & alediscret,
                                        map<int,int> & boundary_emb_gid_map,

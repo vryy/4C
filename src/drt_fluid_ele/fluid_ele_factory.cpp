@@ -97,11 +97,68 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "poro")
     return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
-  else if (problem == "xfem")
-    return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 
   return NULL;
 }
 
+//----------------------------------------------------------------------------------
+// special implementation of ProvideImpl for XFEM problems                         |
+// to reduce created template combinations                                 schott  |
+//----------------------------------------------------------------------------------
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(DRT::Element::DiscretizationType distype, string problem)
+{
+  if(problem != "xfem") dserror("call ProvideImplXFEM just for xfem problems");
+
+  switch(distype)
+  {
+    // only 3D elements
+    case DRT::Element::hex8:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::hex8>(problem);
+    }
+    case DRT::Element::hex20:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::hex20>(problem);
+    }
+//    case DRT::Element::hex27:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::hex27>(problem);
+//    }
+//    case DRT::Element::tet4:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::tet4>(problem);
+//    }
+//    case DRT::Element::tet10:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::tet10>(problem);
+//    }
+//    case DRT::Element::wedge6:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
+//    }
+//    case DRT::Element::pyramid5:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
+//    }
+    default:
+      dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
+    }
+  return NULL;
+}
+
+
+//----------------------------------------------------------------------------------
+// create FluidEleCalcXFEM instance for problem type xfem                    schott
+//----------------------------------------------------------------------------------
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(string problem)
+{
+  if (problem == "xfem")
+    return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
+  else
+    dserror("Defined problem type does not exist!!");
+
+  return NULL;
+}

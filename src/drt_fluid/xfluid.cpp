@@ -292,7 +292,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
         dserror( "expect fluid element" );
       }
 
-      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem");
+      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
 
       GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
       if ( e!=NULL )
@@ -387,32 +387,32 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                   Epetra_SerialDenseMatrix  Cuiui(1,1);
 
                   if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
-                      impl->ElementXfemInterface( ele,
-                                                  discret,
-                                                  la[0].lm_,
-                                                  intpoints_sets[set_counter],
-                                                  cutdiscret,
-                                                  bcells,
-                                                  bintpoints,
-                                                  side_coupling,
-                                                  eleparams,
-                                                  strategy.Elematrix1(),
-                                                  strategy.Elevector1(),
-                                                  Cuiui);
+                      impl->ElementXfemInterfaceMSH(   ele,
+                                                       discret,
+                                                       la[0].lm_,
+                                                       intpoints_sets[set_counter],
+                                                       cutdiscret,
+                                                       bcells,
+                                                       bintpoints,
+                                                       side_coupling,
+                                                       eleparams,
+                                                       strategy.Elematrix1(),
+                                                       strategy.Elevector1(),
+                                                       Cuiui);
 
                   if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
-                      impl->ElementXfemInterfaceNitsche( ele,
-                                                         discret,
-                                                         la[0].lm_,
-                                                         intpoints_sets[set_counter],
-                                                         cutdiscret,
-                                                         bcells,
-                                                         bintpoints,
-                                                         side_coupling,
-                                                         eleparams,
-                                                         strategy.Elematrix1(),
-                                                         strategy.Elevector1(),
-                                                         Cuiui);
+                      impl->ElementXfemInterfaceNIT(   ele,
+                                                       discret,
+                                                       la[0].lm_,
+                                                       intpoints_sets[set_counter],
+                                                       cutdiscret,
+                                                       bcells,
+                                                       bintpoints,
+                                                       side_coupling,
+                                                       eleparams,
+                                                       strategy.Elematrix1(),
+                                                       strategy.Elevector1(),
+                                                       Cuiui);
 
               }
               //------------------------------------------------------------
@@ -515,32 +515,32 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               Epetra_SerialDenseMatrix  Cuiui(1,1);
 
               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
-                 impl->ElementXfemInterface( ele,
-                                             discret,
-                                             la[0].lm_,
-                                             intpoints[count],
-                                             cutdiscret,
-                                             bcells,
-                                             bintpoints,
-                                             side_coupling,
-                                             eleparams,
-                                             strategy.Elematrix1(),
-                                             strategy.Elevector1(),
-                                             Cuiui);
+                 impl->ElementXfemInterfaceMSH( ele,
+                                                discret,
+                                                la[0].lm_,
+                                                intpoints[count],
+                                                cutdiscret,
+                                                bcells,
+                                                bintpoints,
+                                                side_coupling,
+                                                eleparams,
+                                                strategy.Elematrix1(),
+                                                strategy.Elevector1(),
+                                                Cuiui);
 
               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
-                  impl->ElementXfemInterfaceNitsche( ele,
-                                              discret,
-                                              la[0].lm_,
-                                              intpoints[count],
-                                              cutdiscret,
-                                              bcells,
-                                              bintpoints,
-                                              side_coupling,
-                                              eleparams,
-                                              strategy.Elematrix1(),
-                                              strategy.Elevector1(),
-                                              Cuiui);
+                  impl->ElementXfemInterfaceNIT( ele,
+                                                 discret,
+                                                 la[0].lm_,
+                                                 intpoints[count],
+                                                 cutdiscret,
+                                                 bcells,
+                                                 bintpoints,
+                                                 side_coupling,
+                                                 eleparams,
+                                                 strategy.Elematrix1(),
+                                                 strategy.Elevector1(),
+                                                 Cuiui);
 
 
             }
@@ -1625,7 +1625,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*discret_,nds,la,false);
 
-          DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
+          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
                                                                                       elescalars,intpoints_sets[set_counter]);
 
           // sum up (on each processor)
@@ -1653,7 +1653,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
             actele->LocationVector(*discret_,nds,la,false);
             //actele->LocationVector(*discret_,ndstest,la,false);
 
-            DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
                                                                                              elescalars,intpoints[count]);
 
             // sum up (on each processor)
@@ -1670,7 +1670,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*discret_,la,false);
-         DRT::ELEMENTS::FluidFactory::ProvideImpl( actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *discret_, la[0].lm_,
+         DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *discret_, la[0].lm_,
                                                                                      elescalars);
          // sum up (on each processor)
          cpuscalars += elescalars;
