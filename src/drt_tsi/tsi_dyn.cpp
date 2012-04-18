@@ -95,10 +95,11 @@ void tsi_dyn_drt()
      dserror("Unknown solutiontype for thermo-structure interaction: %d",coupling);
   }  // end switch
 
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
     // read the restart information, set vectors and variables
-    tsi->ReadRestart(genprob.restart);
+    tsi->ReadRestart(restart);
   }
 
   // now do the coupling setup and create the combined dofmap

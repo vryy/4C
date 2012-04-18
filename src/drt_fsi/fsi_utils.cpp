@@ -772,7 +772,8 @@ aletype_(aleproj)
 
   iprojhist_=Teuchos::rcp(new Epetra_Vector(*fluiddofrowmap_,true));
 
-  centerdisptotal_.resize(genprob.ndim);
+
+  centerdisptotal_.resize(DRT::Problem::Instance()->NDim());
 
   RedundantElements(coupsf,structdis->Comm());
 
@@ -795,7 +796,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
 {
 
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
-  const int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   //project sliding fluid nodes onto struct interface surface
   SlideProjection(structure,
@@ -908,7 +909,7 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 
   idispstep->Update(-1.0, *idispn, 1.0);
 
-  const int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
   // get structure and fluid discretizations  and set stated for element evaluation
 
   const Teuchos::RCP<Epetra_Vector> idisptotalcol = LINALG::CreateVector(*structdis->DofColMap(),false);
@@ -1040,7 +1041,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
 )
 {
-  const int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   Teuchos::RCP<Epetra_Vector> idispnp = structure.ExtractInterfaceDispnp();
 
@@ -1200,7 +1201,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
   map<int, map<int, Teuchos::RCP<DRT::Element> > >::iterator mapit;
   // build redundant version istructslideles_;
   map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
-  int dim = genprob.ndim;
+  int dim = DRT::Problem::Instance()->NDim();
 
   for (int i = 0; i<= maxid_; ++i)
   {

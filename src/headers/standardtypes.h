@@ -33,11 +33,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  | structure types used by the array management           m.gee 8/00    |
  *----------------------------------------------------------------------*/
-#include "am.h"
-/*----------------------------------------------------------------------*
- | various types of enums                                 m.gee 8/00    |
- *----------------------------------------------------------------------*/
-#include "enums.h"
+ #include "am.h"
 
 /*!
 \addtogroup FRSYSTEM
@@ -50,13 +46,6 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 typedef struct _GENPROB
 {
-  /* obsolete. functionality moved to globalproblem */
-  /*enum _PROBLEM_TYP probtyp;  */     /* type of problem, see enum.h */
-
-  INT               ndim;          /* dimension of problem (2 or 3) */
-
-  INT               restart;       /* is restart or not */
-
   INT               numsf;         /* actual number of struct-field */
   INT               numff;         /* actual number of fluid field */
   INT               numaf;         /* actual number of ale field */

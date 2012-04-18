@@ -61,7 +61,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
 
          const Epetra_BlockMap& velnpmap = bgfluidsol_->Map();
 
-         const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+         const int numdim = DRT::Problem::Instance()->NDim();
 
      std::string position;
      res.ExtractString("POSITION",position);
@@ -127,7 +127,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
 
        const Epetra_BlockMap& velnpmap = embfluidsol_->Map();
 
-       const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+       const int numdim = DRT::Problem::Instance()->NDim();
 
        std::string position;
        res.ExtractString("POSITION",position);

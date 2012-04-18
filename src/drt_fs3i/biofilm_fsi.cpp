@@ -107,13 +107,14 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  const string condname = "FSICoupling";
 
 	  // set up ale-fluid couplings
+	  const int ndim = DRT::Problem::Instance()->NDim();
           icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 	  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
                                            (fsi_->FluidField().Interface()->FSICondMap()),
                                            *(fsi_->AleField().Discretization()),
                                            (fsi_->AleField().Interface().FSICondMap()),
                                            condname,
-                                           genprob.ndim);
+                                           ndim);
 
 	  // the fluid-ale coupling always matches
 	  const Epetra_Map* fluidnodemap = fsi_->FluidField().Discretization()->NodeRowMap();
@@ -124,7 +125,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
                                  *(fsi_->AleField().Discretization()),
                                  *fluidnodemap,
                                  *alenodemap,
-                                 genprob.ndim);
+                                 ndim);
 
 	  /// do we need this. What's for???
 	  fsi_->FluidField().SetMeshMap(coupfa_->MasterDofMap());

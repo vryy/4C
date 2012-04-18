@@ -4,6 +4,7 @@
 #include "fsi_matrixtransform.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/ad_str_structure.H"
@@ -71,6 +72,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   ADAPTER::Coupling& coupsa = StructureAleCoupling();
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+  const int ndim = DRT::Problem::Instance()->NDim();
+
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
@@ -78,7 +81,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
-                                 genprob.ndim);
+                                 ndim);
 
   // structure to ale
 
@@ -87,7 +90,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
-                                 genprob.ndim);
+                                 ndim);
 
   // fluid to ale at the interface
 
@@ -96,7 +99,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    "FSICoupling",
-                                   genprob.ndim);
+                                   ndim);
 
   // we might have a free surface
   if (FluidField().Interface()->FSCondRelevant())
@@ -106,7 +109,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                       *AleField().Discretization(),
                                        AleField().Interface().FSCondMap(),
                                       "FREESURFCoupling",
-                                       genprob.ndim);
+                                       ndim);
   }
 
   // In the following we assume that both couplings find the same dof
@@ -127,7 +130,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                        *AleField().Discretization(),
                        *fluidnodemap,
                        *alenodemap,
-                        genprob.ndim);
+                        ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

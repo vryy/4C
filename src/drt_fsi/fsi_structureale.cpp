@@ -53,12 +53,13 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
+    const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface()->FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling",
-                                   genprob.ndim);
+                                   ndim);
 
     // In the following we assume that both couplings find the same dof
     // map at the structural side. This enables us to use just one

@@ -109,9 +109,10 @@ FS3I::AeroTFSI::AeroTFSI(
 void FS3I::AeroTFSI::Timeloop()
 {
   // in case of restart, initial interface data must be send at this position
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
-    tsi_->ReadRestart(genprob.restart);
+    tsi_->ReadRestart(restart);
 
     // interface data has to be send to INCA in case of restart at the very beginning
     // of the time loop
@@ -443,9 +444,10 @@ void FS3I::AeroTFSI::SendAeroData(
 void FS3I::AeroTFSI::ReadRestart()
 {
   // read the restart information, set vectors and variables ---
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
-    tsi_->ReadRestart(genprob.restart);
+    tsi_->ReadRestart(restart);
   }
 
   return;

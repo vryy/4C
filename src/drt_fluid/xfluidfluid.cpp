@@ -11,6 +11,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -1578,7 +1579,7 @@ FLD::XFluidFluid::XFluidFluid(
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_          = params_->get<string>("form of convective term","convective");
 
-  numdim_            = genprob.ndim; //params_->get<int>("DIM");
+  numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
 
   maxnumdofsets_     = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
   VolumeCellGaussPointBy_    = params_->sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");

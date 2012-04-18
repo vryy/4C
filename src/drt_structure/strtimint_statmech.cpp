@@ -60,8 +60,7 @@ isconverged_(false)
   //statmechmanager_ = Teuchos::rcp(new STATMECH::StatMechManager(params_,*actdis));
 
   //getting number of dimensions for diffusion coefficient calculation
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  ndim_=psize.get<int>("DIM");
+  ndim_= DRT::Problem::Instance()->NDim();
 
   // print dbc type for this simulation to screen
   StatMechPrintDBCType();
@@ -74,7 +73,7 @@ isconverged_(false)
 
   // Initial Statistical Mechanics Output
   //getting number of dimensions for diffusion coefficient calculation
-  statmechman_->InitOutput(DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM"),(*dt_)[0]);
+  statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),(*dt_)[0]);
 
   // set up inverted dirichlet toggle vector (old dbc way)
   if(dirichtoggle_!=Teuchos::null)

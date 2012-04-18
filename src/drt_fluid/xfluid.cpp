@@ -26,6 +26,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_resulttest.H"
 
@@ -1320,7 +1321,7 @@ FLD::XFluid::XFluid(
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_     = params_->get<string>("form of convective term","convective");
 
-  numdim_       = genprob.ndim;
+  numdim_       = DRT::Problem::Instance()->NDim();
 
   // get the maximal number of dofsets that are possible to use
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");

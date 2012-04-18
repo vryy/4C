@@ -70,7 +70,7 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     // get map of the standard fluid dofset (no XFEM dofs)
     const Epetra_Map& velnpmap = *fluidstddofset_->DofRowMap();
 
-    const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+    const int numdim = DRT::Problem::Instance()->NDim();
 
     std::string position;
     res.ExtractString("POSITION",position);

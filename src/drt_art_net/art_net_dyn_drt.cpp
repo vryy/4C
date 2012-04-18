@@ -110,8 +110,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& artdyn   = DRT::Problem::Instance()->ArterialDynamicParams();
 
@@ -138,7 +137,8 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  arterytimeparams.set<int>              ("number of degrees of freedom" ,2*probsize.get<int>("DIM"));
+  const int ndim = DRT::Problem::Instance()->NDim();
+  arterytimeparams.set<int>              ("number of degrees of freedom" ,2*ndim);
 
   // -------------------------------------------------- time integration
   // the default time step size
@@ -169,10 +169,11 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output),false);
   // initial field from restart or calculated by given function
 
-  if (probtype.get<int>("RESTART") && !CoupledTo3D)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
-    artnetexplicit->ReadRestart(probtype.get<int>("RESTART"));
+    artnetexplicit->ReadRestart(restart);
   }
   else
   {

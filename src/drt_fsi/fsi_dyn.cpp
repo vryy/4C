@@ -34,6 +34,7 @@
 #include "../drt_scatra/scatra_utils.H"
 
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
@@ -110,10 +111,11 @@ void fluid_ale_drt()
   }
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
     // read the restart information, set vectors and variables
-    fluid->ReadRestart(genprob.restart);
+    fluid->ReadRestart(restart);
   }
   fluid->Timeloop();
 
@@ -182,10 +184,12 @@ void fluid_xfem2_drt()
   {
     // create instance of fluid xfem algorithm, for moving interfaces
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
-    if (genprob.restart)
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
       // read the restart information, set vectors and variables
-      fluidalgo->ReadRestart(genprob.restart);
+      fluidalgo->ReadRestart(restart);
     }
 
     // run the simulation
@@ -725,10 +729,11 @@ void fluid_fluid_fsi_drt()
     else
       dserror("unsupported partitioned FSI scheme");
 
-    //     if (genprob.restart)
+    //   const int restart = DRT::Problem::Instance()->Restart();
+    //     if (restart)
 //     {
 //       // read the restart information, set vectors and variables
-//       fsi->ReadRestart(genprob.restart);
+//       fsi->ReadRestart(restart);
 //     }
     fsi->Timeloop(fsi);
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
@@ -794,10 +799,11 @@ void fluid_freesurf_drt()
 
     fsi = Teuchos::rcp(new FSI::MonolithicFS(comm,fsidyn));
 
-    if (genprob.restart)
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
       // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
+      fsi->ReadRestart(restart);
     }
 
     fsi->Timeloop(fsi);
@@ -871,10 +877,11 @@ void fsi_ale_drt()
 
     Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
 
-    if (genprob.restart)
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
       // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
+      fsi->ReadRestart(restart);
     }
 
     fsi->Timeloop();
@@ -936,9 +943,10 @@ void fsi_ale_drt()
 
     // read the restart information, set vectors and variables ---
     // be careful, dofmaps might be changed here in a Redistribute call
-    if (genprob.restart)
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
-      fsi->ReadRestart(genprob.restart);
+      fsi->ReadRestart(restart);
     }
 
     // now do the coupling setup an create the combined dofmap
@@ -968,10 +976,11 @@ void fsi_ale_drt()
     else
       dserror("unsupported partitioned FSI scheme");
 
-    if (genprob.restart)
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
       // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
+      fsi->ReadRestart(restart);
     }
 
     fsi->Timeloop(fsi);
@@ -1048,9 +1057,10 @@ void xfsi_drt()
 //
 //    // read the restart information, set vectors and variables ---
 //    // be careful, dofmaps might be changed here in a Redistribute call
-//    if (genprob.restart)
+//    const int restart = DRT::Problem::Instance()->Restart();
+//    if (restart)
 //    {
-//      fsi->ReadRestart(genprob.restart);
+//      fsi->ReadRestart(restart);
 //    }
 //
 //    // here we go...
@@ -1082,10 +1092,11 @@ void xfsi_drt()
     else
       dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
 
-    if (genprob.restart)
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
     {
       // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
+      fsi->ReadRestart(restart);
     }
 
     fsi->Timeloop(fsi);

@@ -111,7 +111,8 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // restart
   //------------------------------------------------------------------------------------------------
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
     // check if we restart from standard fluid problem
     const bool restartfromfluid = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_FROM_FLUID");
@@ -119,7 +120,7 @@ void combust_dyn()
     const bool restartscatrainput = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_SCATRA_INPUT");
 
     // read the restart information, set vectors and variables
-    combust_->Restart(genprob.restart, restartscatrainput, restartfromfluid);
+    combust_->Restart(restart, restartscatrainput, restartfromfluid);
   }
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes

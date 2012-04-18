@@ -18,14 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ad_fld_fluid_ale.H"
 #include "adapter_coupling.H"
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
+#include "../drt_inpar/inpar_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -34,13 +27,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
   : fluid_(prbdyn,true),
     ale_(prbdyn)
 {
+  const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    condname,
-                                   genprob.ndim);
+                                   ndim);
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
@@ -48,7 +42,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                     *AleField().Discretization(),
                                      AleField().Interface().FSCondMap(),
                                     "FREESURFCoupling",
-                                    genprob.ndim);
+                                    ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -59,7 +53,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                          *AleField().Discretization(),
                          *fluidnodemap,
                          *alenodemap,
-                         genprob.ndim);
+                         ndim);
 
   FluidField().SetMeshMap(coupfa_->MasterDofMap());
 

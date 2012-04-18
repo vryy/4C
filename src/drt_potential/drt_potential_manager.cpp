@@ -248,7 +248,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 {
   if( params_.get<string>("approximation type") == "None" )
   {	
-  	int prob_dim = genprob.ndim;
+  	int prob_dim = DRT::Problem::Instance()->NDim();
   	// due to the Gaussrule 2D
   	if(prob_dim == 2)
   	  volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);

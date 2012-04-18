@@ -15,10 +15,8 @@ Maintainer: Mahmoud Ismail
 
 #include "red_airway.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
-
-extern struct _GENPROB     genprob;
 
 using namespace DRT::UTILS;
 
@@ -29,8 +27,9 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
                                            const std::string& distype,
                                            DRT::INPUT::LineDefinition* linedef)
 {
-  if (genprob.ndim!=3)
-    dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.",genprob.ndim);
+  const int ndim = DRT::Problem::Instance()->NDim();
+  if (ndim!=3)
+    dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.",ndim);
 
   // read number of material model
   int material = 0;

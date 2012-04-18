@@ -6,6 +6,7 @@
 #include "fsi_statustest.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -64,6 +65,8 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   ADAPTER::Coupling& coupsa = StructureAleCoupling();
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+  const int ndim = DRT::Problem::Instance()->NDim();
+
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
@@ -71,7 +74,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // structure to ale
 
@@ -80,7 +83,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // fluid to ale at the interface
 
@@ -89,7 +92,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                                    *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                    "FSICoupling",
-                                   genprob.ndim);
+                                   ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -109,7 +112,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                        *AleField().Discretization(),
                        *fluidnodemap,
                        *alenodemap,
-                       genprob.ndim);
+                       ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

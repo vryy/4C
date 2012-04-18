@@ -18,6 +18,7 @@ Maintainer: Mirella Coroneo
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_stru_ale/stru_ale_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -61,13 +62,14 @@ ADAPTER::StructureBio::StructureBio(
 
 
 	 // set up ale-structure couplings
+	const int ndim = DRT::Problem::Instance()->NDim();
         icoupsa_ = Teuchos::rcp(new Coupling());
 	 icoupsa_->SetupConditionCoupling(*structure_->Discretization(),
 									 structure_->Interface()->FSICondMap(),
 									 *ale->AleField().Discretization(),
 									 ale->AleField().Interface().FSICondMap(),
 									 condname,
-		                             genprob.ndim);
+		               ndim);
 
 	  // the structure-ale coupling always matches
 	  const Epetra_Map* structurenodemap = structure_->Discretization()->NodeRowMap();
@@ -78,7 +80,7 @@ ADAPTER::StructureBio::StructureBio(
 							*ale->AleField().Discretization(),
 							*structurenodemap,
 							*alenodemap,
-	                        genprob.ndim);
+	                        ndim);
 
 	  /// do we need this ???
 	  //StructureField().SetMeshMap(coupsa_.MasterDofMap());

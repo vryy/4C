@@ -1,17 +1,11 @@
 #include "ad_fld_lung.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io.H"
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*======================================================================*/
@@ -77,9 +71,10 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
     DRT::Node* actnode = Discretization()->gNode(outflowfsinodes[i]);
     const vector<int> dof = Discretization()->Dof(actnode);
 
-    if (genprob.ndim > static_cast<int>(dof.size()))
-      dserror("got just %d dofs but expected %d",dof.size(),genprob.ndim);
-    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
+    const int ndim = DRT::Problem::Instance()->NDim();
+    if (ndim > static_cast<int>(dof.size()))
+      dserror("got just %d dofs but expected %d",dof.size(),ndim);
+    copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());

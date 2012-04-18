@@ -7,6 +7,7 @@
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
 
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -73,13 +74,15 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   ADAPTER::Coupling& coupsa = StructureAleCoupling();
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+  const int ndim = DRT::Problem::Instance()->NDim();
+
   // structure to fluid
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
-                                 genprob.ndim);
+                                 ndim);
 
   // structure to ale
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
@@ -87,7 +90,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
-                                 genprob.ndim);
+                                 ndim);
 
   // fluid to ale at the interface
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
@@ -95,7 +98,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    "FSICoupling",
-                                    genprob.ndim);
+                                    ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -115,7 +118,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
                        *AleField().Discretization(),
                        *embfluidnodemap,
                        *alenodemap,
-                       genprob.ndim);
+                       ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

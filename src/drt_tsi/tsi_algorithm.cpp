@@ -129,7 +129,7 @@ void  TSI::Algorithm::OutputDeformationInThr(
     // get the degrees of freedom associated with this structural node
     std::vector<int> structnodedofs = structdis->Dof(0,structlnode);
     // determine number of space dimensions
-    const int numdim = genprob.ndim;
+    const int numdim = DRT::Problem::Instance()->NDim();
 
     // now we transfer displacment dofs only
     for(int index=0; index<numdim; ++index)

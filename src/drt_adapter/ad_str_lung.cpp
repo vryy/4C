@@ -5,6 +5,7 @@
 #include "ad_str_lung.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_utils.H"
 
@@ -115,13 +116,14 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   DRT::UTILS::FindConditionedNodes(*Discretization(),"StructFluidSurfCoupling",nodes);
   const int numnode = nodes.size();
 
+  const int ndim = DRT::Problem::Instance()->NDim();
   for (int i=0; i<numnode; ++i)
   {
     const DRT::Node* actnode = Discretization()->gNode(nodes[i]);
     const vector<int> dof = Discretization()->Dof(actnode);
-    if (genprob.ndim > static_cast<int>(dof.size()))
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,genprob.ndim);
-    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
+    if (ndim > static_cast<int>(dof.size()))
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,ndim);
+    copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
   }
 
   lungconstraintmap_ = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));

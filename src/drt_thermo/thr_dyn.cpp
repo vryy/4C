@@ -64,7 +64,8 @@ void thr_dyn_drt()
     = rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn));
 
   // do restart if demanded from input file
-  if (genprob.restart){thermoonly->ThermoField().ReadRestart(genprob.restart);}
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart){thermoonly->ThermoField().ReadRestart(restart);}
 
   // enter time loop to solve problem
   (thermoonly->ThermoField()).Integrate();

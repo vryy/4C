@@ -256,9 +256,10 @@ void STR::MLMC::Integrate()
         ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
         // do restart
-        if (genprob.restart)
+        const int restart = DRT::Problem::Instance()->Restart();
+        if (restart)
         {
-          structadaptor.ReadRestart(genprob.restart);
+          structadaptor.ReadRestart(restart);
         }
         structadaptor.Integrate();
         //const Epetra_Vector* disp = structadaptor.Dispn().get();

@@ -248,6 +248,7 @@ void dveczero(DOUBLE *x, INT *n);
 void iveczero(INT *x, INT *n);
 void mydsyevx(char *jobz,char *range,char *uplo,INT *n,DOUBLE *a,INT *lda,DOUBLE *vl,DOUBLE *vu,INT *il,INT *iu,DOUBLE *abstol,INT *m,DOUBLE *w,DOUBLE *z,INT *ldz,DOUBLE *work,INT *lwork,INT *iwork,INT *ifail,INT *info);
 void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
+
 /*----------------------------------------------------------------------*
  | sign of an integer                                          |
  *----------------------------------------------------------------------*/
@@ -320,7 +321,7 @@ static INT iminarg1,iminarg2;
 #define IMIN MIN
 
 /* exchange two integers */
-#define SWAP_INT(a, b) { INT t; t = a; a = b; b = t; }
+/* #define SWAP_INT(a, b) { INT t; t = a; a = b; b = t; } */
 
 /*----------------------------------------------------------------------*
  | max number of processors                                             |
@@ -345,44 +346,7 @@ static INT iminarg1,iminarg2;
 /*#define PI               (asin(1.0)*2.0) */
 #define PI                 (3.1415926535897932)
 /*#define PI (3.141592653589793238462643383279502884197169399375)*/
-/*----------------------------------------------------------------------*
- | maximum number columns in input file                                 |
- *----------------------------------------------------------------------*/
-/*#define MAXNUMCOL        (500)*/
 
-
-/*#define MAXFILESIZE     (2000000)*/
-
-/*----------------------------------------------------------------------*
- | maximum number of dofs to an element                                 |
- *----------------------------------------------------------------------*/
-/*#define MAXDOFPERELE     (MAXNOD*MAXDOFPERNODE)*/
-
-/*----------------------------------------------------------------------*
- | maximum number nonzero entries in a row of a sparse system matrix    |
- | is number of nodes to an element *                                   |
- | number of dofs to a node *                                           |
- | number of elements to a node (8) *                                   |
- | 2 (unsymmetric case)                                                 |
- *----------------------------------------------------------------------*/
-/*#define MAX_NNZPERROW     (MAXNOD*MAXDOFPERNODE*8*2)*/
-
-/*----------------------------------------------------------------------*
- | numbers                                                              |
- *----------------------------------------------------------------------*/
-/*#define ZERO              (0.0)
-#define ONE               (1.0)
-#define TWO               (2.0)
-#define THREE             (3.0)
-#define FOUR              (4.0)
-#define FIVE              (5.0)
-#define SIX               (6.0)
-#define SEVEN             (7.0)
-#define EIGHT             (8.0)
-#define NINE              (9.0)
-#define TEN              (10.0)
-#define ELEVEN           (11.0)
-#define TWELVE           (12.0)*/
 /*----------------------------------------------------------------------*
  | a set of different tolerances                                        |
  *----------------------------------------------------------------------*/
@@ -401,47 +365,10 @@ static INT iminarg1,iminarg2;
 #define EPS13            (1.0E-13)
 #define EPS14            (1.0E-14)
 #define EPS15            (1.0E-15)
+
 /*----------------------------------------------------------------------*
  | a set of numbers (still used in shell8)                              |
  *----------------------------------------------------------------------*/
 #define VERYLARGEINT     (1000000000)
 #define VERYLARGEREAL    (1000000000.0)
 
-
-#ifdef COLOROUTPUT
-#define BLACK               "[30m"
-#define BLACK_LIGHT         "[30;1m"
-#define RED                 "[31m"
-#define RED_LIGHT           "[31;1m"
-#define GREEN               "[32m"
-#define GREEN_LIGHT         "[32;1m"
-#define YELLOW              "[33m"
-#define YELLOW_LIGHT        "[33;1m"
-#define BLUE                "[34m"
-#define BLUE_LIGHT          "[34;1m"
-#define MAGENTA             "[35m"
-#define MAGENTA_LIGHT       "[35;1m"
-#define BLUE2               "[36m"
-#define BLUE2_LIGHT         "[36;1m"
-#define GRAY                "[37m"
-#define GRAY_LIGHT          "[37;1m"
-#define END_COLOR           "[m"
-#else
-#define BLACK               ""
-#define BLACK_LIGHT         ""
-#define RED                 ""
-#define RED_LIGHT           ""
-#define GREEN               ""
-#define GREEN_LIGHT         ""
-#define YELLOW              ""
-#define YELLOW_LIGHT        ""
-#define BLUE                ""
-#define BLUE_LIGHT          ""
-#define MAGENTA             ""
-#define MAGENTA_LIGHT       ""
-#define BLUE2               ""
-#define BLUE2_LIGHT         ""
-#define GRAY                ""
-#define GRAY_LIGHT          ""
-#define END_COLOR           ""
-#endif

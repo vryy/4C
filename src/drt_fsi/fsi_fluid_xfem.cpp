@@ -2,8 +2,10 @@
 
 #include "fsi_fluid_xfem.H"
 
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 extern struct _GENPROB     genprob;

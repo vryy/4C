@@ -32,7 +32,7 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_lib/drt_dofset_transparent.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/searchtree.H"
@@ -57,7 +57,8 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   Teuchos::RCP<DRT::Discretization> thermodis
 )
 {
-  if(genprob.ndim != 3)
+  const int ndim = DRT::Problem::Instance()->NDim();
+  if(ndim != 3)
     dserror("Coupling with Aero code is only implemented for 3D problems!!");
 
   // declare struct objects in interface

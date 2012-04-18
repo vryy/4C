@@ -154,7 +154,6 @@ void ntaini_ccadiscret(
     {
       int r = atoi( restart.substr( 8, std::string::npos ).c_str() );
       // tell the global problem about the restart step given in the command line
-      // (sets also genprob.restart internally)
       problem->SetRestartStep(r);
     }
     else if(restart.substr( 0, 12 )=="restartfrom=")

@@ -474,12 +474,13 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   // fluid to ale at the free surface
 
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSCondMap(),
                                    *AleField().Discretization(),
                                    AleField().Interface().FSCondMap(),
                                    "FREESURFCoupling",
-                                   genprob.ndim);
+                                   ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -489,7 +490,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
                        *AleField().Discretization(),
                        *fluidnodemap,
                        *alenodemap,
-                        genprob.ndim);
+                        ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

@@ -44,6 +44,8 @@ http://www.lnm.mw.tum.de
 #ifndef STANDARDTYPES_CPP_H
 #define STANDARDTYPES_CPP_H
 
+
+
 /* This is just here to get the c++ mpi header, otherwise it would */
 /* use the c version included inside standardtypes.h */
 #ifdef PARALLEL

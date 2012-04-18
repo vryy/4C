@@ -69,8 +69,7 @@ discret_(discret)
 
   // create some local variables (later to be stored in strategy)
   Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  int dim = psize.get<int>("DIM");
+  int dim = DRT::Problem::Instance()->NDim();
   if (dim!= 2 && dim!=3) dserror("ERROR: Meshtying problem must be 2D or 3D");
   std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interfaces;
   Teuchos::ParameterList mtparams;
@@ -339,8 +338,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  int dim = psize.get<int>("DIM");
+  int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
   // this is mortar meshtying

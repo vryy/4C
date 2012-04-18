@@ -248,11 +248,26 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   setParameterList(list);
 
 
+  //---------------------------------------------------------------------
   // Now we have successfully read the whole input file. It's time to access some data
   // 1) get the problem type
   const Teuchos::ParameterList& type = ProblemTypeParams();
   probtype_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
-  // 2) more to come here ...
+
+  // 2) do the restart business with the two options we support
+  if (restartstep_==0 )
+  {
+    // no restart flag on the command line, so check the restart flag from the input file
+    restartstep_ = type.get<int>("RESTART");
+  }
+  else // SetRestartStep() has been called before!
+  {
+    // There is a non-zero restart flag on the command line, so we ignore the input file.
+    // The RESTART flag in the input file should be zero or have the same value!
+    const int restartflaginfile = type.get<int>("RESTART");
+    if ((restartflaginfile > 0) and (restartflaginfile != restartstep_))
+      dserror("Restart flags in input file and command line are non-zero and different!");
+  }
 
 }
 
@@ -306,26 +321,8 @@ void DRT::Problem::InputControl()
 {
   // Play it save and fill the old C structure genprob here.
   // We have to get rid of it soon!
-  genprob.ndim    = NDim();
 
-  const Teuchos::ParameterList& type = ProblemTypeParams();
-  if (restartstep_==0 )
-  {
-    // no restart flag on the command line, so check the restart flag from the input file
-    restartstep_ = type.get<int>("RESTART");
-  }
-  else
-  {
-    // There is a non-zero restart flag on the command line, so we ignore the input file.
-    // The RESTART flag in the input file should be zero or have the same value!
-    const int restartflaginfile = type.get<int>("RESTART");
-    if ((restartflaginfile > 0) and (restartflaginfile != restartstep_))
-      dserror("Restart flags in input file and command line are non-zero and different!");
-  }
-  // fill genprob.restart as well
-  genprob.restart = Restart();
-
-  // set field numbers depending on problem type and numfld
+  // set field numbers depending on the problem type
   switch (ProblemType())
   {
   case prb_fsi:
@@ -777,8 +774,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
   std::string distype = SpatialApproximation();
 
   // get problem dimension
-  const Teuchos::ParameterList& psize= ProblemSizeParams();
-  int dim = psize.get<int>("DIM");
+  int dim = NDim();
 
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
@@ -1633,6 +1629,7 @@ DRT::UTILS::TimeCurve& DRT::Problem::Curve(int num)
 void DRT::Problem::SetRestartStep(int r)
 {
   if (r<0) dserror("Negative restart step not allowed");
+
   restartstep_ = r;
 }
 

@@ -24,13 +24,6 @@ Maintainer: Lena Yoshihara
 #include "../drt_inpar/inpar_structure.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 
 std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic> > MAT::MicroMaterialGP::microstaticmap_;
 std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
@@ -119,7 +112,7 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 void MAT::MicroMaterialGP::ReadRestart()
 {
-  step_ = genprob.restart;
+  step_ = DRT::Problem::Instance()->Restart();
   microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, surf_stress_man_, restartname_);
   // both dism_ and disn_ equal dis_
   dism_->Update(1.0, *dis_, 0.0);
@@ -186,6 +179,9 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
   if (eleowner)
   {
+    const int ndim = DRT::Problem::Instance()->NDim();
+    const int restart = DRT::Problem::Instance()->Restart();
+
     Teuchos::RCP<IO::OutputControl> microcontrol =
       Teuchos::rcp(new IO::OutputControl(microdis->Comm(),
                             "structure",
@@ -193,8 +189,8 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
                             "micro-input-file-not-known",
                             restartname_,
                             newfilename,
-                            genprob.ndim,
-                            genprob.restart,
+                            ndim,
+                            restart,
                             macrocontrol->FileSteps()));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis,microcontrol));

@@ -154,7 +154,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // set some pointers and variables
   // -------------------------------------------------------------------
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  //const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
@@ -337,7 +337,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+  const int ndim = DRT::Problem::Instance()->NDim();
+  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,ndim);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
   fluidtimeparams->set<int>("Physical Type",
@@ -853,7 +854,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // set some pointers and variables
   // -------------------------------------------------------------------
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  //const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
@@ -910,7 +911,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 
   // -------------------------------------- number of degrees of freedom
   // number of space dimensions
-  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+  const int ndim = DRT::Problem::Instance()->NDim();
+  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,ndim);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<int>("Physical Type",

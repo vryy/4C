@@ -110,7 +110,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
@@ -138,7 +138,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  airwaystimeparams.set<int>              ("number of degrees of freedom" ,1*probsize.get<int>("DIM"));
+  const int ndim = DRT::Problem::Instance()->NDim();
+  airwaystimeparams.set<int>              ("number of degrees of freedom" ,1*ndim);
 
   // -------------------------------------------------- time integration
   // the default time step size
@@ -173,10 +174,11 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
   // initial field from restart or calculated by given function
 
-  if (genprob.restart && !CoupledTo3D)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
-    airwayimplicit->ReadRestart(genprob.restart);
+    airwayimplicit->ReadRestart(restart);
   }
   else
   {

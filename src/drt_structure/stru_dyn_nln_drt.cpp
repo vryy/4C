@@ -30,6 +30,7 @@ Maintainer: Thomas Klöppel
 #include "stru_dyn_nln_drt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_invanalysis.H"
@@ -117,9 +118,10 @@ void dyn_nlnstructural_drt()
   ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
   // do restart
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
-    structadaptor.ReadRestart(genprob.restart);
+    structadaptor.ReadRestart(restart);
   }
 
   // write output at beginnning of calc

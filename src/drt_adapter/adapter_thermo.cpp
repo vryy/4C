@@ -33,12 +33,6 @@ Maintainer: Caroline Danowski
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
- | general problem data                                     m.gee 06/01 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 ADAPTER::Thermo::~Thermo()
@@ -113,8 +107,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
   output->WriteMesh(0,0.0);
 
 //  // get input parameter lists and copy them, because a few parameters are overwritten
-//  //const Teuchos::ParameterList& probtype
-//  // = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::RCP<Teuchos::ParameterList> ioflags
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
   const Teuchos::RCP<Teuchos::ParameterList> tdyn

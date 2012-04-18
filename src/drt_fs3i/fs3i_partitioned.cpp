@@ -311,14 +311,15 @@ void FS3I::PartFS3I::ReadRestart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
-    fsi_->ReadRestart(genprob.restart);
+    fsi_->ReadRestart(restart);
 
     for (unsigned i=0; i<scatravec_.size(); ++i)
     {
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField().ReadRestart(genprob.restart);
+      currscatra->ScaTraField().ReadRestart(restart);
     }
 
     time_ = fsi_->FluidField().Time();
@@ -339,13 +340,14 @@ void FS3I::PartFS3I::SetupSystem()
   /*----------------------------------------------------------------------*/
 
   // create map extractors needed for scatra condition coupling
+  const int ndim = DRT::Problem::Instance()->NDim();
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField().Discretization();
     Teuchos::RCP<LINALG::MultiMapExtractor> mapex = rcp(new LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,genprob.ndim)));
+    mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,ndim)));
     mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),*mapex);
     scatrafieldexvec_.push_back(mapex);
   }

@@ -6,6 +6,7 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -61,13 +62,13 @@ void FSI::ConstrMonolithic::GeneralSetup()
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // structure to fluid
-
+  const int ndim = DRT::Problem::Instance()->NDim();
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // structure to ale
 
@@ -76,7 +77,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // fluid to ale at the interface
 
@@ -85,7 +86,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
                                   "FSICoupling",
-                                  genprob.ndim);
+                                  ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -105,7 +106,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
                        *AleField().Discretization(),
                        *fluidnodemap,
                        *alenodemap,
-                       genprob.ndim);
+                       ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

@@ -32,6 +32,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_mat/micromaterial.H"
 
 #include "../drt_lib/drt_locsys.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"

@@ -69,7 +69,7 @@ V0_(V0)
   const Teuchos::ParameterList& sdyn_macro  = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // we can use here the parameters of the macroscale input file
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
 
   // i/o options should be read from the corresponding micro-file
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance(microdisnum_)->IOParams();
@@ -126,7 +126,7 @@ V0_(V0)
   printscreen_=(ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = probtype.get<int>("RESTART");
+  restart_ = DRT::Problem::Instance()->Restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");

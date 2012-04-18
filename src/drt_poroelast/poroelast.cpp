@@ -73,10 +73,11 @@ void poroelast_drt()
       Teuchos::RCP<POROELAST::Monolithic> poroelast = Teuchos::rcp(
           new POROELAST::Monolithic(comm, sdynparams));
 
-      if (genprob.restart)
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
       {
         // read the restart information, set vectors and variables
-        poroelast->ReadRestart(genprob.restart);
+        poroelast->ReadRestart(restart);
       }
 
       // now do the coupling setup and create the combined dofmap

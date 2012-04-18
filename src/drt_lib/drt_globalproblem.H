@@ -23,10 +23,12 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
+#include "drt_globalproblem_enums.H"
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
-#include "standardtypes_cpp.H"
+#include "standardtypes_cpp.H" // for genprob struct
+
 
 using namespace std;
 using Teuchos::RCP;
@@ -115,7 +117,7 @@ class DatFileReader;
   The global problem class is still evolving.
 
   \note It is illegal to introduce new global variables in baci. It is
-  illegal to used global variables where other means to do the job are
+  illegal to use global variables where other means to do the job are
   available. We just did not get around to remove all of them yet.
 
   <h3>Singleton behavior</h3>
@@ -176,7 +178,7 @@ public:
   /// read global parameters
   void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
-  /// input of not mesh or time based problem data (fill old CCARAT struct genprob)
+  /// fill old CCARAT struct genprob
   void InputControl();
 
   /// setup the discretizations
@@ -200,7 +202,7 @@ public:
   /// input of knots for isogeometric analysis
   void ReadKnots(DRT::INPUT::DatFileReader& reader);
 
-  /// set restart step which was read from command line
+  /// set restart step which was read from the command line
   void SetRestartStep(int r);
 
   //@}
@@ -242,7 +244,7 @@ public:
   /// control error files
   Teuchos::RCP<IO::ErrorFileControl> ErrorFile() { return errorfilecontrol_; }
 
-  /// write parameters read from dat file for documentation
+  /// write parameters read from input file for documentation
   void WriteInputParameters();
 
   //@}
@@ -257,7 +259,7 @@ public:
 
   /// @name Nested parallelism group
 
-  /// nested parallelism group is initialised
+  /// nested parallelism group is initialized
   void NPGroup(
     int groupId,  //!< group id
     int ngroup, //!< number of groups in nested parallelism
@@ -277,8 +279,6 @@ public:
   /// @name Input parameter sections
   /// direct access to parameters from input file sections
 
-  const Teuchos::ParameterList& ProblemTypeParams() const { return getParameterList()->sublist("PROBLEM TYP"); }
-  const Teuchos::ParameterList& ProblemSizeParams() const { return getParameterList()->sublist("PROBLEM SIZE"); }
   const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
   const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
@@ -383,6 +383,15 @@ private:
 
   /// no copying
   Problem& operator=(const Problem&);
+
+  /// @name Private access to parameters from certain input file sections
+
+  /// for internal use only! Use Restart(), SpatialApproximation() etc. instead !!!
+  const Teuchos::ParameterList& ProblemTypeParams() const { return getParameterList()->sublist("PROBLEM TYP"); }
+
+  /// for internal use only! Use NDim() to access the number of space dimensions
+  const Teuchos::ParameterList& ProblemSizeParams() const { return getParameterList()->sublist("PROBLEM SIZE"); }
+  //@}
 
   /// the single instance
   static vector<RCP<Problem> > instances_;

@@ -20,14 +20,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -77,9 +70,10 @@ double STR::AUX::CalculateVectorNorm
 /*----------------------------------------------------------------------*/
 void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_Map& fullmap)
 {
+  const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,genprob.ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
   mcs.SetupExtractor(dis,fullmap,*this);
 }
 

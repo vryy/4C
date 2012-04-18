@@ -281,7 +281,7 @@ namespace ADAPTER
 
     /// build dof maps from node maps
     /*!
-      \note It is assumed that the first genprob.ndim dofs of each
+      \note It is assumed that the first ndim dofs of each
       node are of interest.
      */
     void BuildDofMaps(const DRT::Discretization& dis,

@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include "drt_condition_utils.H"
 #include "drt_condition_selector.H"
-#include "standardtypes_cpp.H"
+//#include "standardtypes_cpp.H"
 //#include "adapter_coupling_mortar.H"
 
 #include "drt_globalproblem.H"
@@ -28,13 +28,6 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <vector>
 #include <algorithm>
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
@@ -504,7 +497,8 @@ void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
                                     std::string condname,
                                     LINALG::MapExtractor& extractor)
 {
-  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+  const int ndim = DRT::Problem::Instance()->NDim();
+  SetupExtractor(dis,condname,0,ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
 }
 
 /*----------------------------------------------------------------------*/
@@ -514,7 +508,8 @@ void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
                                     Teuchos::RCP<Epetra_Map> fullmap,
                                     LINALG::MapExtractor& extractor)
 {
-  SetupExtractor(dis,condname,0,genprob.ndim,fullmap,extractor);
+  const int ndim = DRT::Problem::Instance()->NDim();
+  SetupExtractor(dis,condname,0,ndim,fullmap,extractor);
 }
 
 
@@ -526,7 +521,8 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                 unsigned enddim,
                                 LINALG::MapExtractor& extractor)
 {
-  SetupExtractor(dis,condname,0,genprob.ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+  const int ndim = DRT::Problem::Instance()->NDim();
+  SetupExtractor(dis,condname,0,ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
 }
 
 /*----------------------------------------------------------------------*/

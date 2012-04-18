@@ -59,7 +59,7 @@ void DRT::UTILS::LocsysManager::Setup()
   //   Multiply for the transformation of global vectors and matrices)
 
   // get problem dimension (2D or 3D) and store into dim_
-  dim_ = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+  dim_ = DRT::Problem::Instance()->NDim();
 
   if (Dim()!= 2 && Dim()!=3) dserror("ERROR: Locsys problem must be 2D or 3D");
 

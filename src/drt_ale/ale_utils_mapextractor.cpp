@@ -6,25 +6,18 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
 {
+  const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,genprob.ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,genprob.ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,genprob.ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
@@ -50,8 +43,9 @@ Teuchos::RCP<std::set<int> > ALE::UTILS::MapExtractor::ConditionedElementMap(con
 /*----------------------------------------------------------------------*/
 void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
 {
+  const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FluidFluidCoupling",0,genprob.ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FluidFluidCoupling",0,ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 

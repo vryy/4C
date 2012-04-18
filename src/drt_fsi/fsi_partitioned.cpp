@@ -66,12 +66,13 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
+    const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface()->FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling",
-                                  genprob.ndim);
+                                  ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");

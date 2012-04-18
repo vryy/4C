@@ -13,6 +13,7 @@
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -60,6 +61,8 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // we use non-matching meshes at the interface
     // mortar with: structure = master, fluid = slave
 
+    const int ndim = DRT::Problem::Instance()->NDim();
+
     // structure to fluid
 
     coupsfm_->Setup(*StructureField().Discretization(),
@@ -74,7 +77,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      *AleField().Discretization(),
                                      AleField().Interface().FSICondMap(),
                                      "FSICoupling",
-                                     genprob.ndim);
+                                     ndim);
 
     // we might have a free surface
     if (FluidField().Interface()->FSCondRelevant())
@@ -84,7 +87,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                         *AleField().Discretization(),
                                         AleField().Interface().FSCondMap(),
                                         "FREESURFCoupling",
-                                        genprob.ndim);
+                                        ndim);
     }
 
     ADAPTER::Coupling& coupfa = FluidAleCoupling();
@@ -97,7 +100,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                          *AleField().Discretization(),
                          *fluidnodemap,
                          *alenodemap,
-                          genprob.ndim);
+                          ndim);
 
     FluidField().SetMeshMap(coupfa.MasterDofMap());
 

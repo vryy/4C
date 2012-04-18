@@ -71,7 +71,7 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
 
         const Epetra_BlockMap& velnpmap = mysol_->Map();
 
-        const int numdim = DRT::Problem::Instance()->ProblemSizeParams().get<int>("DIM");
+        const int numdim = DRT::Problem::Instance()->NDim();
 
     std::string position;
     res.ExtractString("POSITION",position);

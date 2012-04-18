@@ -69,8 +69,7 @@ discret_(discret)
 
   // create some local variables (later to be stored in strategy)
   Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  int dim = psize.get<int>("DIM");
+  int dim = DRT::Problem::Instance()->NDim();
   if (dim!= 2 && dim!=3) dserror("ERROR: Contact problem must be 2D or 3D");
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
   Teuchos::ParameterList cparams;
@@ -420,9 +419,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list and problemtype from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   std::string problemtype = DRT::Problem::Instance()->ProblemName();
-  int dim = psize.get<int>("DIM");
+  int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
   // this is mortar contact
@@ -709,8 +707,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 #ifdef MASTERNODESINCONTACT
   //BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
   
-  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
-  int dim = psize.get<int>("DIM");
+  int dim = DRT::Problem::Instance()->NDim();
 
   if (dim == 2)
     dserror("Only working for 3D");

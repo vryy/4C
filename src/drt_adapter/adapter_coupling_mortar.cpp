@@ -20,7 +20,6 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -80,7 +79,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
   //            Possible pressure DoF are not transferred to MortarInterface.
-  const int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
   // (To be on the safe side we still store all interface nodes and elements
@@ -331,7 +330,7 @@ void ADAPTER::CouplingMortar::Setup
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
   //            Possible pressure DoF are not transferred to MortarInterface.
-  const int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
   // (To be on the safe side we still store all interface nodes and elements
@@ -580,7 +579,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
 
-  int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   // create an empty mortar interface
   // (To be on the safe side we still store all interface nodes and elements
@@ -884,7 +883,7 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
     const Epetra_Comm& comm, bool structslave)
 {
   // problem dimension
-  int dim = genprob.ndim;
+  const int dim = DRT::Problem::Instance()->NDim();
 
   //**********************************************************************
   // (0) check constraints in reference configuration

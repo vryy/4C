@@ -66,14 +66,15 @@ void FS3I::FS3I_Base::ReadRestart()
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
-    fsi_->ReadRestart(genprob.restart);
+    fsi_->ReadRestart(restart);
 
     for (unsigned i=0; i<scatravec_.size(); ++i)
     {
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField().ReadRestart(genprob.restart);
+      currscatra->ScaTraField().ReadRestart(restart);
     }
   }
 }

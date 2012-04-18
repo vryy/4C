@@ -102,10 +102,11 @@ void dyn_ale_drt()
   //int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
   ALE::AleLinear ale(actdis, solver, params, output, false, true);
 
-  if (genprob.restart)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
   {
     // read the restart information, set vectors and variables
-    ale.ReadRestart(genprob.restart);
+    ale.ReadRestart(restart);
   }
 
   ale.BuildSystemMatrix();

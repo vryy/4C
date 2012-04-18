@@ -31,6 +31,7 @@ The new filters can be used in parallel.
 #include <vector>
 #include <string>
 
+#include "../drt_lib/drt_globalproblem_enums.H"
 #include "../drt_io/io_hdf.H"
 
 #ifdef PARALLEL

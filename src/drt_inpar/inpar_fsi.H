@@ -17,6 +17,42 @@ Maintainer: Ulrich Kuettler
 #include "inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+/* The coupling methods for FSI. */
+/*----------------------------------------------------------------------*/
+// ToDo: put into the namespace INPAR::FSI ! No typedef?
+typedef enum _FSI_COUPLING
+{
+  fsi_coupling_freesurface=-1,
+  fsi_coupling_undefined=0,
+  fsi_basic_sequ_stagg=1,
+  fsi_iter_stagg_fixed_rel_param=4,
+  fsi_iter_stagg_AITKEN_rel_param=5,
+  fsi_iter_stagg_steep_desc=6,
+  fsi_iter_stagg_CHEB_rel_param=7,
+  fsi_iter_stagg_AITKEN_rel_force=8,
+  fsi_iter_stagg_steep_desc_force=9,
+  fsi_iter_stagg_Newton_FD=10,
+  fsi_iter_stagg_Newton_I=11,
+  fsi_iter_monolithicfluidsplit=13,
+  fsi_iter_monolithicstructuresplit,
+  fsi_iter_lung_monolithicstructuresplit,
+  fsi_iter_lung_monolithicfluidsplit,
+  fsi_iter_mortar_monolithicstructuresplit,
+  fsi_iter_mortar_monolithicfluidsplit,
+  fsi_iter_constr_monolithicstructuresplit,
+  fsi_iter_constr_monolithicfluidsplit,
+  fsi_iter_monolithicxfem,
+  fsi_iter_stagg_NLCG,
+  fsi_iter_stagg_MFNK_FD,
+  fsi_iter_stagg_MFNK_FSI,
+  fsi_iter_stagg_MPE,
+  fsi_iter_stagg_RRE,
+  fsi_pseudo_structureale,
+  fsi_iter_fluidfluid_monolithicstructuresplit,
+} FSI_COUPLING;
+
 namespace INPAR
 {
 

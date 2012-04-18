@@ -92,7 +92,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // set some pointers and variables
   // -------------------------------------------------------------------
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize    = DRT::Problem::Instance()->ProblemSizeParams();
+  //const Teuchos::ParameterList& probsize    = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& fdyn        = DRT::Problem::Instance()->FluidDynamicParams();
   const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
   const Teuchos::ParameterList& opti        = DRT::Problem::Instance()->OptimizationControlParams();
@@ -149,7 +149,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  fluidadjointtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+  const int ndim = DRT::Problem::Instance()->NDim();
+  fluidadjointtimeparams->set<int>("number of velocity degrees of freedom" ,ndim);
 
   // -------------------------------------------------- time integration
   // note: here, the values are taken out of the problem-dependent ParameterList prbdyn

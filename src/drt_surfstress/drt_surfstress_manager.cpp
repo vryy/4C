@@ -87,12 +87,13 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     surfdiscret_->FillComplete();
     std::string outfile = file_prefix + "_" + condname;
 
+    const int ndim = DRT::Problem::Instance()->NDim();
     Teuchos::RCP<IO::OutputControl> condcontrol = Teuchos::rcp(new IO::OutputControl(surfdiscret_->Comm(),
                                                                                      "none",                   // we do not have a problem type
                                                                                      "Polynomial",
                                                                                      "debug-output",           // no input file either
                                                                                      outfile,                  // an output file name is needed
-                                                                                     genprob.ndim,
+                                                                                     ndim,
                                                                                      0,                        // restart is meaningless here
                                                                                      1000));                   // we never expect to get 1000 iterations
 

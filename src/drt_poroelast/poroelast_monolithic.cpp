@@ -103,11 +103,12 @@ POROELAST::MonolithicBase::MonolithicBase(const Epetra_Comm& comm) :
   const Epetra_Map* structurenodemap = StructureField().Discretization()->NodeRowMap();
 
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  const int ndim = DRT::Problem::Instance()->NDim();
   coupfa_->SetupCoupling(*FluidField().Discretization(),
       *StructureField().Discretization(),
       *fluidnodemap,
       *structurenodemap,
-      genprob.ndim);
+      ndim);
 
   FluidField().SetMeshMap(coupfa_->MasterDofMap());
 

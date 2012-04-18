@@ -21,8 +21,10 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem_enums.H"
+//#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_ale.H"
+#include "../drt_inpar/inpar_artnet.H"
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
@@ -666,7 +668,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &type);
   }
 
-  IntParameter("NUMFIELD",1,"",&type);
+  IntParameter("NUMFIELD",1,"",&type); // unused. to be deleted
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
                                tuple<std::string>("Polynomial","Nurbs"),

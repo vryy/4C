@@ -41,10 +41,9 @@ POTENTIAL::Potential::Potential(
     DRT::Discretization&                discret):
     discretRCP_(discretRCP),
     discret_(discret),
-    searchTree_(rcp(new GEO::SearchTree(8))),
-    prob_dim_(genprob.ndim)
-
+    searchTree_(rcp(new GEO::SearchTree(8)))
 {
+  prob_dim_= DRT::Problem::Instance()->NDim();
   return;
 }
 

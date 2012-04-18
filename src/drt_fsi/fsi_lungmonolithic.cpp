@@ -20,6 +20,7 @@ Maintainer: Lena Yoshihara
 #include "fsi_statustest.H"
 #include "../drt_io/io_control.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_constraint/constraintdofset.H"
 #include "../drt_structure/stru_aux.H"
@@ -201,6 +202,8 @@ void FSI::LungMonolithic::GeneralSetup()
   ADAPTER::Coupling& coupsa = StructureAleCoupling();
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+  const int ndim = DRT::Problem::Instance()->NDim();
+
   // structure to fluid
 
   coupsf.SetupConditionCoupling(*StructureField().Discretization(),
@@ -208,7 +211,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // structure to ale
 
@@ -217,7 +220,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
-                                genprob.ndim);
+                                ndim);
 
   // fluid to ale at the interface
 
@@ -226,7 +229,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
                                    "FSICoupling",
-                                   genprob.ndim);
+                                   ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -246,7 +249,7 @@ void FSI::LungMonolithic::GeneralSetup()
                        *AleField().Discretization(),
                        *fluidnodemap,
                        *alenodemap,
-                       genprob.ndim);
+                       ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
@@ -263,7 +266,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                                 AleField().Interface().LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
-                                                genprob.ndim);
+                                                ndim);
   if (coupsaout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale interface. Empty coupling condition?");
 
@@ -274,7 +277,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                                 StructureField().Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
-                                                genprob.ndim);
+                                                ndim);
   if (coupfsout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
@@ -285,7 +288,7 @@ void FSI::LungMonolithic::GeneralSetup()
                                                 AleField().Interface().LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
-                                                genprob.ndim);
+                                                ndim);
   if (coupfaout_->MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
