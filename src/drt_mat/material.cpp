@@ -76,16 +76,16 @@ Maintainer: Lena Wiechert
  *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 {
-  // for the sake of safety
-  if (DRT::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("Sorry dude, cannot work out problem instance.");
-
-  // yet another safety check
-  if (DRT::Problem::Instance()->Materials()->Num() == 0)
-    dserror("Sorry dude, no materials defined.");
-
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
 

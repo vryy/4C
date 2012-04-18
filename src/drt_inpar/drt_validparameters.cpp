@@ -659,6 +659,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
     name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
     name.push_back("Poroelasticity");                              label.push_back(prb_poroelast);
+    name.push_back("NP_Supporting_Procs");                         label.push_back(prb_np_support);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",

@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 
 #include <Epetra_Time.h>
 #include <Epetra_Comm.h>
+#include <mpi.h>
 
 #include "drt_conditiondefinition.H"
 #include "drt_materialdefinition.H"
@@ -453,6 +454,11 @@ void DRT::Problem::InputControl()
   {
     genprob.numsf=0;  /* structural field index */
     genprob.numff=1;  /* fluid field index */
+    break;
+  }
+  case prb_np_support:
+  {
+    genprob.numsf=0;  /* structural field index */
     break;
   }
   default:
@@ -1301,6 +1307,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
+	  break;
+  }// end of else if (genprob.probtyp==prb_poroelast)
+  case prb_np_support:
+  {
+    // no discretizations and nodes needed for supporting procs
     break;
   }
 
@@ -1367,6 +1378,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       ReadMultiLevelDiscretization(reader);
       break;
     }
+    case prb_np_support:
+    {
+      // read microscale fields from second, third, ... inputfile for supportin processors
+      ReadMicrofields_NPsupport();
+      break;
+    }
     default:
       break;
     }
@@ -1379,44 +1396,91 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 {
-  // do we have micro materials at all?
+  // make sure that we read the micro discretizations only on the processors on
+  // which elements with the corresponding micro material are evaluated
 
-  bool foundmicromat = false;
+  Teuchos::RCP<Epetra_Comm> lcomm = npgroup_->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
-  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
-       i!=materials_->Map()->end();
-       ++i)
+  RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
+  RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
+
+  std::set<int> my_multimat_IDs;
+
+  // take care also of ghosted elements! -> ElementColMap!
+  for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
-    Teuchos::RCP<MAT::PAR::Material> material = i->second;
-    if (material->Type() == INPAR::MAT::m_struct_multiscale)
+    DRT::Element* actele = macro_dis->lColElement(i);
+    RCP<MAT::Material> actmat = actele->Material();
+
+    if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
-      foundmicromat = true;
-      break;
+      MAT::PAR::Parameter* actparams = actmat->Parameter();
+      my_multimat_IDs.insert(actparams->Id());
     }
   }
 
-  if (foundmicromat)
+  // check which macro procs have an element with micro material
+  int foundmicromat = 0;
+  int foundmicromatmyrank = -1;
+  if(my_multimat_IDs.size() != 0)
   {
-    // make sure that we read the micro discretizations only on the processors on
-    // which elements with the corresponding micro material are evaluated
+    foundmicromat = 1;
+    foundmicromatmyrank = lcomm->MyPID();
+  }
 
-    RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
-    RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
+  // find out how many procs have micro material
+  int nummicromat = 0;
+  lcomm->SumAll(&foundmicromat, &nummicromat, 1);
+  // broadcast number of procs that have micro material
+  gcomm->Broadcast(&nummicromat, 1, 0);
 
-    std::set<int> my_multimat_IDs;
+  // every proc needs to know which procs have micro material in order to distribute colors
+  // array is filled with either its local proc id or -1 when no micro mat was found
+  std::vector<int> foundmyranks;
+  foundmyranks.resize(lcomm->NumProc(), -1);
+  lcomm->GatherAll(&foundmicromatmyrank, &foundmyranks[0], 1);
 
-    // take care also of ghosted elements! -> ElementColMap!
-    for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
+  // determine color of macro procs with any contribution to micro material, only important for procs with micro material
+  // color starts with 0 and is incremented for each group
+  int color = -1;
+  if(foundmicromat == 1)
+  {
+    for(int t=0; t<(int)foundmyranks.size(); t++)
     {
-      DRT::Element* actele = macro_dis->lColElement(i);
-      RCP<MAT::Material> actmat = actele->Material();
-
-      if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::PAR::Parameter* actparams = actmat->Parameter();
-        my_multimat_IDs.insert(actparams->Id());
-      }
+      if(foundmyranks[t] != -1)
+        ++color;
+      if(foundmyranks[t] == foundmicromatmyrank)
+        break;
     }
+  }
+  else
+  {
+    color = MPI_UNDEFINED;
+  }
+
+  // do the splitting of the communicator
+  MPI_Comm  mpi_local_comm;
+  MPI_Comm_split((rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
+
+  // sort out macro procs that do not have micro material
+  if(foundmicromat == 1)
+  {
+    // sub communicator is created for each group
+    Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+
+    // find out how many micro problems have to be solved on this macro proc
+    int microcount = 0;
+    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
+         i!=materials_->Map()->end();
+         ++i)
+    {
+      int matid = i->first;
+      if (my_multimat_IDs.find(matid)!=my_multimat_IDs.end())
+        microcount++;
+    }
+    // and broadcast it to the corresponding group of procs
+    subgroupcomm->Broadcast(&microcount, 1, 0);
 
     for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
          i!=materials_->Map()->end();
@@ -1430,15 +1494,16 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
         int microdisnum = micromat->MicroDisNum();
 
-        RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+        // broadcast microdis number
+        subgroupcomm->Broadcast(&microdisnum, 1, 0);
 
-        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+        Teuchos::RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
 
-        string micro_inputfile_name = micromat->MicroInputFileName();
+        std::string micro_inputfile_name = micromat->MicroInputFileName();
 
         if (micro_inputfile_name[0]!='/')
         {
-          string filename = reader.MyInputfileName();
+          std::string filename = reader.MyInputfileName();
           string::size_type pos = filename.rfind('/');
           if (pos!=string::npos)
           {
@@ -1447,7 +1512,13 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
           }
         }
 
-        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+        // broadcast micro input file name
+        int length = micro_inputfile_name.length();
+        subgroupcomm->Broadcast(&length, 1, 0);
+        subgroupcomm->Broadcast((const_cast<char *>(micro_inputfile_name.c_str())), length, 0);
+
+        // start with actual reading
+        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
         RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis(genprob.numsf, structdis_micro);
@@ -1480,6 +1551,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // At this point, everything for the microscale is read,
         // subsequent reading is only for macroscale
         structdis_micro->FillComplete();
+        DRT::UTILS::PrintParallelDistribution(*structdis_micro);
 
         // set the problem number from which to call materials again to zero
         // (i.e. macro problem), cf. MAT::Material::Factory!
@@ -1488,6 +1560,116 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     }
     materials_->ResetReadFromProblem();
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadMicrofields_NPsupport()
+{
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+
+  // receive number of procs that have micro material
+  int nummicromat = 0;
+  gcomm->Broadcast(&nummicromat, 1, 0);
+
+  // prepare the supporting procs for a splitting of gcomm
+
+  // groups should be equally sized
+  // firstly: group layout is specified
+  int procpergroup = int(floor((lcomm->NumProc())/nummicromat));
+  std::vector<int> supgrouplayout;
+  for(int k=0; k<(nummicromat-1); k++)
+  {
+    supgrouplayout.push_back(procpergroup);
+  }
+  // last group can be slightly larger
+  int remainingProcs = lcomm->NumProc() - procpergroup*(nummicromat-1);
+  supgrouplayout.push_back(remainingProcs);
+  // secondly: colors are distributed
+  // color starts with 0 and is incremented for each group
+  int color = -1;
+  int gsum = 0;
+  do
+  {
+    color++;
+    gsum += supgrouplayout[color];
+  }
+  while( gsum <= lcomm->MyPID() );
+
+  // do the splitting of the communicator
+  MPI_Comm  mpi_local_comm;
+  MPI_Comm_split((rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
+
+  Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+
+  // number of micro problems for this sub group
+  int microcount = 0;
+  subgroupcomm->Broadcast(&microcount, 1, 0);
+
+  for(int n=0; n<microcount; n++)
+  {
+    // broadcast microdis number
+    int microdisnum = -1;
+    subgroupcomm->Broadcast(&microdisnum, 1, 0);
+
+    RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+
+    // broadcast micro input file name
+    int length = -1;
+    string micro_inputfile_name;
+    subgroupcomm->Broadcast(&length, 1, 0);
+    micro_inputfile_name.resize(length);
+    subgroupcomm->Broadcast((const_cast<char *>(micro_inputfile_name.c_str())), length, 0);
+
+    // start with actual reading
+    DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
+
+    RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+    micro_problem->AddDis(genprob.numsf, structdis_micro);
+
+    micro_problem->ReadParameter(micro_reader);
+
+    /* input of not mesh or time based problem data  */
+    micro_problem->InputControl();
+
+    // read materials of microscale
+    // CAUTION: materials for microscale cannot be read until
+    // micro_reader is activated, since else materials will again be
+    // read from macroscale inputfile. Besides, materials MUST be read
+    // before elements are read since elements establish a connection
+    // to the corresponding material! Thus do not change position of
+    // function calls!
+    materials_->SetReadFromProblem(microdisnum);
+
+    micro_problem->ReadMaterials(micro_reader);
+
+    DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+    micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+    micronodereader.Read();
+
+    // read conditions of microscale
+    // -> note that no time curves and spatial functions can be read!
+
+    micro_problem->ReadConditions(micro_reader);
+
+    // At this point, everything for the microscale is read,
+    // subsequent reading is only for macroscale
+    structdis_micro->FillComplete();
+    DRT::UTILS::PrintParallelDistribution(*structdis_micro);
+
+    // set the problem number from which to call materials again to zero
+    // (i.e. macro problem), cf. MAT::Material::Factory!
+    materials_->ResetReadFromProblem();
+
+  }
+
+  dserror("implementation not yet finished!");
+  return;
 }
 
 

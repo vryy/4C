@@ -28,6 +28,7 @@ Maintainer: Jonas Biehler
 #include "gen_randomfield.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

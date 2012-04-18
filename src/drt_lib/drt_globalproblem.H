@@ -187,6 +187,9 @@ public:
   /// set up micro-scale discretizations in case of structure multi-scale simulations
   void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
 
+  /// set up supporting processors for micro-scale discretizations
+  void ReadMicrofields_NPsupport();
+
   /// set up multilvel discetizations for mulit level monte carlo simulations
   void ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader);
 
