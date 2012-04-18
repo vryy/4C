@@ -42,20 +42,7 @@ Maintainer: Michael Gee
 #ifndef LINALG_SOLVER_H
 #define LINALG_SOLVER_H
 
-#include <vector>  // this can probably removed
 #include <string>  // this can probably removed
-
-// This is probably not the right place to include Epetra headers!!!!
-// REMOVE THIS
-/*#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_CrsMatrix.h"			// should be included by our LINALG::SparseMatrix! but not here!
-#include "Epetra_Vector.h"
-#include "Epetra_Export.h"       		// including Epetra_Export and Epetra_Import here seems to be very strange
-#include "Epetra_Import.h"
-#include "Epetra_SerialDenseMatrix.h"   // this should be included somewhere in the element code, but not here
-#include "Epetra_SerialDenseVector.h"*/
 
 #include <Ifpack.h> // for condest
 
@@ -345,11 +332,12 @@ public:
   The nullspace is looked for in the parameter list. If found, it is assumed that
   it matches the oldmap. Then it is fixed to match the new map
 
+  \param field (in): field name (just used for output)
   \param oldmap (in): row map of nullspace
   \param newmap (in): row map of nullspace upon exit
   \param solveparams (in): parameterlist including nullspace vector
   */
-  static void FixMLNullspace(char* field,
+  static void FixMLNullspace(std::string field,
                       const Epetra_Map& oldmap,
                       const Epetra_Map& newmap,
                       Teuchos::ParameterList& solveparams);

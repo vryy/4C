@@ -319,7 +319,7 @@ void LINALG::Solver::Solve(
 /*----------------------------------------------------------------------*
  |  fix an ML nullspace to match a new map  (public)          mwgee 5/11|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::FixMLNullspace(char* field,
+void LINALG::Solver::FixMLNullspace(std::string field,
                                     const Epetra_Map& oldmap,
                                     const Epetra_Map& newmap,
                                     Teuchos::ParameterList& solveparams)
@@ -367,7 +367,7 @@ void LINALG::Solver::FixMLNullspace(char* field,
   // put new nullspace in parameter list
   // this print message can go away at some point
   if (!oldmap.Comm().MyPID())
-    printf("Fixing %s ML Nullspace\n",field);
+    printf("Fixing %s ML Nullspace\n",field.c_str());
   params.set<Teuchos::RCP<vector<double> > >("nullspace",nsnew);
   params.set<double*>("null space: vectors",nns);
 
