@@ -539,9 +539,9 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       // store weight and id
       StoreInVector(all_nodes,funct,weights,colids);
     }
-    else if ((foundx == true) and (foundy == true) and (foundz == false)
-           or(foundx == true) and (foundy == false) and (foundz == true)
-           or(foundx == false) and (foundy == true) and (foundz == true))
+    else if (((foundx == true) and (foundy == true) and (foundz == false))
+           or((foundx == true) and (foundy == false) and (foundz == true))
+           or((foundx == false) and (foundy == true) and (foundz == true)))
     {
       // node on line between to coarse nodes
 
@@ -606,9 +606,9 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       // store weights and (col)ids of contributing nodes
       StoreInVector(all_nodes,funct,weights,colids);
     }
-    else if ((foundx == true) and (foundy == false) and (foundz == false)
-          or (foundx == false) and (foundy == true) and (foundz == false)
-          or (foundx == false) and (foundy == false) and (foundz == true))
+    else if (((foundx == true) and (foundy == false) and (foundz == false))
+          or ((foundx == false) and (foundy == true) and (foundz == false))
+          or ((foundx == false) and (foundy == false) and (foundz == true)))
     {
       // node on surface between to coarse nodes
 
