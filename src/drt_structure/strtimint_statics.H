@@ -126,10 +126,6 @@ namespace STR
     //! Create force residual #fres_ and ist stiffness #stiff_
     void EvaluateForceStiffResidual(bool predict = false);
 
-    void PoroEvaluateForceStiffResidual(bool predict = false){dserror("not implemented"); return;};
-
-    void PoroInitForceStiffResidual(Teuchos::RCP<Teuchos::ParameterList> sdynparams){dserror("not implemented"); return;};
-
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
     void EvaluateForceStiffResidualRelax();

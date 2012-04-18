@@ -344,18 +344,6 @@ namespace ADAPTER {
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
-    /// poroelasticity specific method
-    virtual void PoroInitForceStiffResidual() = 0;
-
-    // to be removed by Anh-Tu
-    virtual void UpdateIterIncrementally
-    (
-      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
-    ) = 0;
-    virtual void PrepareSystemForNewtonSolve() = 0;
-    virtual void PoroEvaluateForceStiffResidual(bool predict = false) = 0;
-    // to be removed by Anh-Tu ; END
-
   };
 
 

@@ -283,22 +283,8 @@ namespace ADAPTER
     //! @name Poroelasticity specific methods
     //@{
 
-    /// poroelasticity specific method
-    virtual void PoroInitForceStiffResidual()
-    { return structure_->PoroInitForceStiffResidual(); }
-
     virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp)
     { structure_->ApplyVelAndPress(velnp); }
-
-
-    // to be removed by Anh-Tu
-    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
-    { return structure_->UpdateIterIncrementally(disi); }
-    virtual void PrepareSystemForNewtonSolve()
-    { return structure_->PrepareSystemForNewtonSolve(); }
-    virtual void PoroEvaluateForceStiffResidual(bool predict = false)
-    { return structure_->PoroEvaluateForceStiffResidual(predict); }
-    // to be removed by Anh-Tu ; END
 
     //@}
 

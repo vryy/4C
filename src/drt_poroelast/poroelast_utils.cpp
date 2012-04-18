@@ -14,7 +14,6 @@
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -126,20 +125,25 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
 {
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  structdis = problem->Dis(genprob.numsf, 0);
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
     structdis->FillComplete();
 
   // access the fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff, 0);
+  fluiddis = problem->Dis(genprob.numff, 0);
   if (!fluiddis->Filled())
     fluiddis->FillComplete();
 
-  // we use the structure discretization as layout for the temperature discretization
+  //get the material map for cloning
+  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+
+  // we use the structure discretization as layout for the fluid discretization
   if (structdis->NumGlobalNodes() == 0)
     dserror("Structure discretization is empty!");
 
@@ -148,16 +152,14 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
     {
       Epetra_Time time(comm);
 
-      // fetch the desired material id for the fluid elements
-      const int matid = -1;
-
       // create the fluid discretization
-
       {
         Teuchos::RCP<DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy> > clonewizard
         = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy>() );
 
-        clonewizard->CreateMatchingDiscretization(structdis,fluiddis,matid);
+        std::pair<string,string> key("structure","fluid");
+        std::map<int,int> structmatmap = clonefieldmatmap[key];
+        clonewizard->CreateMatchingDiscretization(structdis,fluiddis,structmatmap);
       }
 
       if (comm.MyPID()==0)
@@ -169,4 +171,3 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
   }
 
   /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

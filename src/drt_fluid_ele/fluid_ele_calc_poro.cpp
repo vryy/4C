@@ -71,7 +71,8 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
     bulkmodulus_(0.0),
     penalty_(0.0),
-    initporosity_(0.0)
+    initporosity_(0.0),
+    visceff_(0.0)
 {
 
 }
@@ -383,7 +384,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   if (isale and my::f3Parameter_->is_stationary_)
     dserror("No ALE support within stationary fluid solver.");
 
-  initporosity_   = params.get<double>("initporosity");
+  //initporosity_   = params.get<double>("initporosity");
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -467,7 +468,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
         edispn,
         egridv,
         elemat1,
-        //	 elemat2,  // -> emesh
+        //   elemat2,  // -> emesh
         elevec1,
         mat,
         isale,
@@ -540,7 +541,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   // get material parameters at element center
   if (not my::f3Parameter_->mat_gp_ or not my::f3Parameter_->tau_gp_)
   {
-    //const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
     const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
     if(actmat->MaterialType() != INPAR::MAT::m_fluidporo)
      dserror("invalid fluid material for poroelasticity");
@@ -562,10 +562,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     //get fluid material
     const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
     if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-     dserror("invalid structure material for poroelasticity");
+      dserror("invalid structure material for poroelasticity");
 
-     bulkmodulus_   = structmat->Bulkmodulus();
-     penalty_       = structmat->Penaltyparameter();
+    initporosity_  = structmat->Initporosity();
+    bulkmodulus_   = structmat->Bulkmodulus();
+    penalty_       = structmat->Penaltyparameter();
+    visceff_       = actmat->EffectiveViscosity();
   }
 
   // calculate stabilization parameters at element center
@@ -693,8 +695,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       //get fluid material
       const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
 
+      initporosity_  = structmat->Initporosity();
        bulkmodulus_   = structmat->Bulkmodulus();
        penalty_       = structmat->Penaltyparameter();
+       visceff_       = actmat->EffectiveViscosity();
     }
 
     // calculate stabilization parameters at integration point
@@ -1011,7 +1015,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       for (int rr=0;rr<my::nsd_;++rr)
       {
         my::momres_old_(rr) = my::densam_*my::accint_(rr)+my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                         -2*my::visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr) + my::convvelint_(rr))-my::densaf_*my::bodyforce_(rr);
+                         -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr) + my::convvelint_(rr))-my::densaf_*my::bodyforce_(rr);
       }
 
   //    // modify integration factors for right-hand side such that they
@@ -1043,7 +1047,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
                              -2*visceff_*visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
           my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
                            +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                           -2*my::visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
+                           -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
   #ifdef TAU_SUBGRID_IN_RES_MOM
           if (my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
              or my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -1075,7 +1079,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
         // compute stationary momentum residual:
         for (int rr=0;rr<my::nsd_;++rr)
         {
-          my::momres_old_(rr) = my::densaf_*my::conv_old_(rr)+my::gradp_(rr)-2*my::visceff_*my::visc_old_(rr)
+          my::momres_old_(rr) = my::densaf_*my::conv_old_(rr)+my::gradp_(rr)-2*visceff_*my::visc_old_(rr)
                            +my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))-my::rhsmom_(rr);
         }
       }
@@ -1229,6 +1233,90 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       for(int idim = 0; idim <my::nsd_; ++idim)
       {
         velforce(idim,vi)-=resM_Du(idim)*my::funct_(vi);
+      }
+    }
+
+
+/************************************************************************/
+    /* Brinkman term: viscosity term */
+    /*
+                     /                        \
+                    |       /  \         / \   |
+              2 mu  |  eps | Du | , eps | v |  |
+                    |       \  /         \ /   |
+                     \                        /
+    */
+
+    if(visceff_)
+    {
+      LINALG::Matrix<my::nsd_,my::nsd_> viscstress(true);
+      const double visceff_timefacfac = visceff_*timefacfac;
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const int fvi   = my::nsd_*vi;
+
+        for (int jdim= 0; jdim<my::nsd_;++jdim)
+        {
+          const double temp=visceff_timefacfac*my::derxy_(jdim,vi);
+
+          for (int ui=0; ui<my::nen_; ++ui)
+          {
+            const int fui   = my::nsd_*ui;
+
+            for (int idim = 0; idim <my::nsd_; ++idim)
+            {
+              const int fvi_p_idim = fvi+idim;
+
+              estif_u(fvi_p_idim,fui+jdim) += temp*my::derxy_(idim, ui);
+            } // end for (jdim)
+          } // end for (idim)
+        } // ui
+      } //vi
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const int fvi   = my::nsd_*vi;
+
+        for (int jdim= 0; jdim<my::nsd_;++jdim)
+        {
+          const double temp=visceff_timefacfac*my::derxy_(jdim,vi);
+
+          for (int ui=0; ui<my::nen_; ++ui)
+          {
+            const int fui   = my::nsd_*ui;
+
+            for (int idim = 0; idim <my::nsd_; ++idim)
+            {
+              const int fvi_p_idim = fvi+idim;
+
+              estif_u(fvi_p_idim,fui+idim) += temp*my::derxy_(jdim, ui);
+            } // end for (jdim)
+          } // end for (idim)
+        } // ui
+      } //vi
+
+      const double v = visceff_*rhsfac;
+
+      for (int jdim = 0; jdim < my::nsd_; ++jdim)
+      {
+        for (int idim = 0; idim < my::nsd_; ++idim)
+        {
+          viscstress(idim,jdim)=v*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
+        }
+      }
+
+      // computation of right-hand-side viscosity term
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        for (int idim = 0; idim < my::nsd_; ++idim)
+        {
+          for (int jdim = 0; jdim < my::nsd_; ++jdim)
+          {
+            /* viscosity term on right-hand side */
+            velforce(idim,vi)-= viscstress(idim,jdim)*my::derxy_(jdim,vi);
+          }
+        }
       }
     }
 
@@ -1504,27 +1592,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
                0.0);
     }
 
-    /*
-    // linearization wrt mesh motion
-    if (emesh.IsInitialized())
-    {
-      if (my::nsd_ == 3)
-        LinMeshMotion_3D(emesh,
-                        evelaf,
-                        press,
-                        my::f3Parameter_->timefac_,
-                        timefacfac);
-      else if(my::nsd_ == 2)
-        LinMeshMotion_2D(emesh,
-                         evelaf,
-                         press,
-                         my::f3Parameter_->timefac_,
-                         timefacfac);
-      else
-        dserror("Linearization of the mesh motion is not available in 1D");
-    }
-    */
-
   }
   //------------------------------------------------------------------------
   //  end loop over integration points
@@ -1693,12 +1760,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
     DRT::Element* structele = structdis->gElement(eid);
     if (structele == NULL)
       dserror("Fluid element %i not on local processor", eid);
-      //get fluid material
-      const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
+    //get structure material
+    const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
 
-      bulkmodulus_ = structmat->Bulkmodulus();
-      penalty_ = structmat->Penaltyparameter();
-    }
+    initporosity_  = structmat->Initporosity();
+    bulkmodulus_ = structmat->Bulkmodulus();
+    penalty_ = structmat->Penaltyparameter();
+  }
 
     // calculate stabilization parameters at element center
     /*
@@ -1831,6 +1899,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
         //get fluid material
         const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
 
+        initporosity_  = structmat->Initporosity();
         bulkmodulus_ = structmat->Bulkmodulus();
         penalty_ = structmat->Penaltyparameter();
       }
@@ -1977,7 +2046,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       //! second my::derivatives  are orderd as followed: (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       //LINALG::Matrix<6,my::nen_> N_X_x;
 
-      //! second my::derivatives  are orderd as followed: (N,Xx ; N,Yy ; N,Zz ; N,Xy ; N,Xz ; N,Yx ; N,Yz;  N,Zx ; N,Zy)
+      //! second derivatives are orderd as followed: (N,Xx ; N,Yy ; N,Zz ; N,Xy ; N,Xz ; N,Yx ; N,Yz;  N,Zx ; N,Zy)
 
       LINALG::Matrix<9,my::nen_> N_X_x;
 
@@ -2044,7 +2113,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       // F^-T : N_X_x
       LINALG::Matrix<my::nsd_,my::nsd_*my::nen_> Finv_N_X_x(true);
 
-      //! second my::derivatives  are ordered as followed: (N,Xx ; N,Yy ; N,Zz ; N,Xy ; N,Xz ; N,Yx ; N,Yz;  N,Zx ; N,Zy)
+      //! second derivatives  are ordered as followed: (N,Xx ; N,Yy ; N,Zz ; N,Xy ; N,Xz ; N,Yx ; N,Yz;  N,Zx ; N,Zy)
       for (int n =0; n<my::nen_; n++)
       {
         int n_nsd=n*my::nsd_;
@@ -2157,7 +2226,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
         for (int rr=0;rr<my::nsd_;++rr)
         {
           my::momres_old_(rr) = my::densam_*my::accint_(rr)+my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-          -2*my::visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr) + my::convvelint_(rr))-my::densaf_*my::bodyforce_(rr);
+          -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr) + my::convvelint_(rr))-my::densaf_*my::bodyforce_(rr);
         }
 
         //    // modify integration factors for right-hand side such that they
@@ -2186,10 +2255,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
           {
             /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
              +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-             -2*my::visceff_*my::visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
+             -2*visceff_*my::visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
             my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
                     +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                        -2*my::visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
+                        -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
         }
 
         //      // modify residual integration factor for right-hand side in instat. case:
@@ -2207,7 +2276,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
         // compute stationary momentum residual:
         for (int rr=0;rr<my::nsd_;++rr)
         {
-          my::momres_old_(rr) = my::densaf_*my::conv_old_(rr)+my::gradp_(rr)-2*my::visceff_*my::visc_old_(rr)
+          my::momres_old_(rr) = my::densaf_*my::conv_old_(rr)+my::gradp_(rr)-2*visceff_*my::visc_old_(rr)
           +my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))-my::rhsmom_(rr);
         }
       }
@@ -2424,19 +2493,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
     //stationary
     /*  reaction */
     /*
-     /                                     \
-           |              			n+1	           |
+     /                                      \
+     |                    n+1                |
      |    sigma * dphi/dus * u    * Dus , v  |
      |                        (i)            |
      \                                     /
      */
     /*  reactive ALE term */
     /*
-     /                                \
-           |              	  n+1	          |
+     /                                  \
+     |                  n+1             |
      |    - rho * grad u     * Dus , v  |
      |                  (i)             |
-     \                                /
+     \                                 /
      */
 
     const double fac_reac= timefacfac*my::reacoeff_;
@@ -2464,11 +2533,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
     //transient terms
     /*  reaction */
     /*
-     /                            \	     /                                           \
-           |              			     |		|              			      n+1	          |
-     -  |    sigma * phi * D(v_s) , v |	- 	|    sigma * d(phi)/d(us) * vs *  D(u_s) , v  |
-     |                             |		|                             (i)             |
-     \                           /		 \                                           /
+     /                            \        /                                           \
+     |                             |      |                            n+1              |
+  -  |    sigma * phi * D(v_s) , v |  -   |    sigma * d(phi)/d(us) * vs *  D(u_s) , v  |
+     |                             |      |                             (i)             |
+     \                           /         \                                           /
      */
 
     if (not my::f3Parameter_->is_stationary_)
@@ -2504,11 +2573,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
     // structure coupling terms on left-hand side
     /*  stationary */
     /*
-     /                                 \		     /                                    \
-           |            	   n+1	          |			|                   	n+1	           |
-     |   dphi/dus * div u    * Dus , v  |		+	|   d(grad(phi))/dus * u    * Dus , v  |
-     |                  (i)             | 		|                       (i)            |
-     \                                / 		     \                                    /
+      /                                 \      /                                    \
+     |                 n+1	            |     |                        n+1           |
+     |   dphi/dus * div u    * Dus , v  |  +  |   d(grad(phi))/dus * u    * Dus , v  |
+     |                  (i)             |     |                       (i)            |
+      \                                /       \                                    /
      */
     for (int vi=0; vi<my::nen_; ++vi)
     {
@@ -2533,26 +2602,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       grad_porosity_us_gridvelint.MultiplyTN(gridvelint,dgradphi_dus);
 
       /*
-       /                            \		     /                                                      \
-                            	              |			|                   	               n+1	         |
-       |   dphi/dJ * J * div Dus , v  |		+	|   d^2(phi)/(dJ)^2 * dJ/dus  * J * div vs    * Dus , v  |
-       |                              | 		|                                        (i)             |
-       \                            / 		  \                                                      /
+        /                            \       /                                                      \
+       |                              |     |                                    n+1	               |
+       |   dphi/dJ * J * div Dus , v  |   + |   d^2(phi)/(dJ)^2 * dJ/dus  * J * div vs    * Dus , v  |
+       |                              |     |                                        (i)             |
+        \                            /      \                                                       /
 
-       /                                            \		     /                                        \
-               |            	           n+1         |			|                   	    n+1	             |
-       +  |   dphi/dJ * dJ/dus * div vs    * Dus, v  |		-	|   d(grad(phi))/d(us) *  vs    * Dus , v  |
-       |                           (i)               | 	  	|                           (i)            |
-       \                                            / 		   \                                        /
+       /                                            \        /                                        \
+       |                           n+1               |      |                           n+1            |
+    +  |   dphi/dJ * dJ/dus * div vs    * Dus, v     |    - |   d(grad(phi))/d(us) *  vs    * Dus , v  |
+       |                           (i)               |      |                           (i)            |
+       \                                            /        \                                        /
 
           /                       \
-         |              	         |
+         |                         |
        - |    grad phi * Dus , v   |
          |                         |
           \                       /
 
           /                                          \
-         |              	             n+1	          |
+         |                             n+1            |
        + |    dphi/(dpdJ) * dJ/dus  * p    * Dus , v  |
          |                             (i)            |
          \                                           /
@@ -2656,7 +2725,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
   ecoupl.Update(1.0,emesh,1.0);
 
   return;
-}    //PoroSysmatCoupl
+}    //SysmatOD
 
 
 template<DRT::Element::DiscretizationType distype>
@@ -2864,29 +2933,396 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     }
   }
 
-  //*************************** linearisation of mesh motion in continuity equation**********************************
-  // (porosity)*div u
+  // //---------viscous term (brinkman term)
+#define xji_00 my::xji_(0,0)
+#define xji_01 my::xji_(0,1)
+#define xji_02 my::xji_(0,2)
+#define xji_10 my::xji_(1,0)
+#define xji_11 my::xji_(1,1)
+#define xji_12 my::xji_(1,2)
+#define xji_20 my::xji_(2,0)
+#define xji_21 my::xji_(2,1)
+#define xji_22 my::xji_(2,2)
 
-  for (int vi = 0; vi < my::nen_; ++vi)
+#define xjm(i,j) my::xjm_(i,j)
+
+  if(visceff_)
   {
-    double v = timefacfac / my::det_ * my::funct_(vi, 0) * porosity;
-    for (int ui = 0; ui < my::nen_; ++ui)
+    // part 1: derivative of 1/det
+
+    double v = visceff_*timefac*my::fac_;
+    for (int ui=0; ui<my::nen_; ++ui)
     {
-      emesh(vi * 4 + 3, ui * 3 + 0) += v * (+my::vderiv_(1, 0) * derxjm_(0,0,1,ui)
-          + my::vderiv_(1, 1) * derxjm_(0,1,1,ui) + my::vderiv_(1, 2)
-          * derxjm_(0,2,1,ui) + my::vderiv_(2, 0) * derxjm_(0,0,2,ui) + my::vderiv_(2,
-          1) * derxjm_(0,1,2,ui) + my::vderiv_(2, 2) * derxjm_(0,2,2,ui));
+      double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 + my::deriv_(2,ui)*xji_02);
+      double derinvJ1 = -v*(my::deriv_(0,ui)*xji_10 + my::deriv_(1,ui)*xji_11 + my::deriv_(2,ui)*xji_12);
+      double derinvJ2 = -v*(my::deriv_(0,ui)*xji_20 + my::deriv_(1,ui)*xji_21 + my::deriv_(2,ui)*xji_22);
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        double visres0 =   2.0*my::derxy_(0, vi)* my::vderxy_(0, 0)
+                           +     my::derxy_(1, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+                           +     my::derxy_(2, vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0)) ;
+        double visres1 =         my::derxy_(0, vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+                           + 2.0*my::derxy_(1, vi)* my::vderxy_(1, 1)
+                           +     my::derxy_(2, vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1)) ;
+        double visres2 =         my::derxy_(0, vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
+                           +     my::derxy_(1, vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
+                           + 2.0*my::derxy_(2, vi)* my::vderxy_(2, 2) ;
+        emesh(vi*4 + 0, ui*3 + 0) += derinvJ0*visres0;
+        emesh(vi*4 + 1, ui*3 + 0) += derinvJ0*visres1;
+        emesh(vi*4 + 2, ui*3 + 0) += derinvJ0*visres2;
 
-      emesh(vi * 4 + 3, ui * 3 + 1) += v * (+my::vderiv_(0, 0) * derxjm_(1,0,0,ui)
-          + my::vderiv_(0, 1) * derxjm_(1,1,0,ui) + my::vderiv_(0, 2)
-          * derxjm_(1,2,0,ui) + my::vderiv_(2, 0) * derxjm_(1,0,2,ui) + my::vderiv_(2,
-          1) * derxjm_(1,1,2,ui) + my::vderiv_(2, 2) * derxjm_(1,2,2,ui));
+        emesh(vi*4 + 0, ui*3 + 1) += derinvJ1*visres0;
+        emesh(vi*4 + 1, ui*3 + 1) += derinvJ1*visres1;
+        emesh(vi*4 + 2, ui*3 + 1) += derinvJ1*visres2;
 
-      emesh(vi * 4 + 3, ui * 3 + 2) += v * (+my::vderiv_(0, 0) * derxjm_(2,0,0,ui)
-          + my::vderiv_(0, 1) * derxjm_(2,1,0,ui) + my::vderiv_(0, 2)
-          * derxjm_(2,2,0,ui) + my::vderiv_(1, 0) * derxjm_(2,0,1,ui) + my::vderiv_(1,
-          1) * derxjm_(2,1,1,ui) + my::vderiv_(1, 2) * derxjm_(2,2,1,ui));
+        emesh(vi*4 + 0, ui*3 + 2) += derinvJ2*visres0;
+        emesh(vi*4 + 1, ui*3 + 2) += derinvJ2*visres1;
+        emesh(vi*4 + 2, ui*3 + 2) += derinvJ2*visres2;
+      }
     }
+
+    // part 2: derivative of viscosity residual
+
+    v = timefacfac*visceff_/my::det_;
+    for (int ui=0; ui<my::nen_; ++ui)
+    {
+      double v0 = - my::vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+                  - my::vderiv_(0,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+                  - my::vderiv_(0,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+                  - my::vderiv_(1,0)*(derxjm_100(ui)*xji_00)
+                  - my::vderiv_(1,1)*(derxjm_100(ui)*xji_01)
+                  - my::vderiv_(1,2)*(derxjm_100(ui)*xji_02)
+                  - my::vderiv_(2,0)*(derxjm_200(ui)*xji_00)
+                  - my::vderiv_(2,1)*(derxjm_200(ui)*xji_01)
+                  - my::vderiv_(2,2)*(derxjm_200(ui)*xji_02);
+      double v1 = - my::vderiv_(0,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+                  - my::vderiv_(0,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+                  - my::vderiv_(0,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+                  - my::vderiv_(1,0)*(derxjm_110(ui)*xji_00)
+                  - my::vderiv_(1,1)*(derxjm_110(ui)*xji_01)
+                  - my::vderiv_(1,2)*(derxjm_110(ui)*xji_02)
+                  - my::vderiv_(2,0)*(derxjm_210(ui)*xji_00)
+                  - my::vderiv_(2,1)*(derxjm_210(ui)*xji_01)
+                  - my::vderiv_(2,2)*(derxjm_210(ui)*xji_02);
+      double v2 = - my::vderiv_(0,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+                  - my::vderiv_(0,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+                  - my::vderiv_(0,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+                  - my::vderiv_(1,0)*(derxjm_120(ui)*xji_00)
+                  - my::vderiv_(1,1)*(derxjm_120(ui)*xji_01)
+                  - my::vderiv_(1,2)*(derxjm_120(ui)*xji_02)
+                  - my::vderiv_(2,0)*(derxjm_220(ui)*xji_00)
+                  - my::vderiv_(2,1)*(derxjm_220(ui)*xji_01)
+                  - my::vderiv_(2,2)*(derxjm_220(ui)*xji_02);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 0, ui*3 + 0) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(2*derxjm_001(ui)*xji_00 + 2*derxjm_001(ui)*xji_00 + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+           - my::vderiv_(0,2)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_10)
+           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_10)
+           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_10)
+           - my::vderiv_(2,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+           - my::vderiv_(2,1)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+           - my::vderiv_(2,2)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20);
+      v1 = - my::vderiv_(0,0)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_01 + 2*derxjm_011(ui)*xji_01 + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+           - my::vderiv_(0,2)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_11)
+           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_11)
+           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_11)
+           - my::vderiv_(2,0)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+           - my::vderiv_(2,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+           - my::vderiv_(2,2)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21);
+      v2 = - my::vderiv_(0,0)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+           - my::vderiv_(0,1)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+           - my::vderiv_(0,2)*(2*derxjm_021(ui)*xji_02 + 2*derxjm_021(ui)*xji_02 + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+           - my::vderiv_(1,0)*(derxjm_001(ui)*xji_12)
+           - my::vderiv_(1,1)*(derxjm_011(ui)*xji_12)
+           - my::vderiv_(1,2)*(derxjm_021(ui)*xji_12)
+           - my::vderiv_(2,0)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+           - my::vderiv_(2,1)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+           - my::vderiv_(2,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 0, ui*3 + 1) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(2*derxjm_002(ui)*xji_00 + 2*derxjm_002(ui)*xji_00 + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+           - my::vderiv_(0,2)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_20)
+           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_20)
+           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_20);
+      v1 = - my::vderiv_(0,0)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_01 + 2*derxjm_012(ui)*xji_01 + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+           - my::vderiv_(0,2)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_21)
+           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_21)
+           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_21);
+      v2 = - my::vderiv_(0,0)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+           - my::vderiv_(0,1)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+           - my::vderiv_(0,2)*(2*derxjm_022(ui)*xji_02 + 2*derxjm_022(ui)*xji_02 + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
+           - my::vderiv_(1,0)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+           - my::vderiv_(1,1)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+           - my::vderiv_(1,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+           - my::vderiv_(2,0)*(derxjm_002(ui)*xji_22)
+           - my::vderiv_(2,1)*(derxjm_012(ui)*xji_22)
+           - my::vderiv_(2,2)*(derxjm_022(ui)*xji_22);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 0, ui*3 + 2) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_00)
+           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_00)
+           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_00)
+           - my::vderiv_(1,0)*(2*xji_10*derxjm_100(ui) + 2*xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+           - my::vderiv_(1,1)*(2*xji_11*derxjm_100(ui) + 2*xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+           - my::vderiv_(1,2)*(2*xji_12*derxjm_100(ui) + 2*xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+           - my::vderiv_(2,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+           - my::vderiv_(2,1)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+           - my::vderiv_(2,2)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20);
+      v1 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_01)
+           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_01)
+           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_01)
+           - my::vderiv_(1,0)*(2*xji_10*derxjm_110(ui) + 2*xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+           - my::vderiv_(1,1)*(2*xji_11*derxjm_110(ui) + 2*xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+           - my::vderiv_(1,2)*(2*xji_12*derxjm_110(ui) + 2*xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+           - my::vderiv_(2,0)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+           - my::vderiv_(2,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+           - my::vderiv_(2,2)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21);
+      v2 = - my::vderiv_(0,0)*(derxjm_100(ui)*xji_02)
+           - my::vderiv_(0,1)*(derxjm_110(ui)*xji_02)
+           - my::vderiv_(0,2)*(derxjm_120(ui)*xji_02)
+           - my::vderiv_(1,0)*(2*xji_10*derxjm_120(ui) + 2*xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+           - my::vderiv_(1,1)*(2*xji_11*derxjm_120(ui) + 2*xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+           - my::vderiv_(1,2)*(2*xji_12*derxjm_120(ui) + 2*xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+           - my::vderiv_(2,0)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+           - my::vderiv_(2,1)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+           - my::vderiv_(2,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 1, ui*3 + 0) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_001(ui)*xji_10)
+           - my::vderiv_(0,1)*(derxjm_001(ui)*xji_11)
+           - my::vderiv_(0,2)*(derxjm_001(ui)*xji_12)
+           - my::vderiv_(1,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+           - my::vderiv_(2,0)*(derxjm_201(ui)*xji_10)
+           - my::vderiv_(2,1)*(derxjm_201(ui)*xji_11)
+           - my::vderiv_(2,2)*(derxjm_201(ui)*xji_12);
+      v1 = - my::vderiv_(0,0)*(derxjm_011(ui)*xji_10)
+           - my::vderiv_(0,1)*(derxjm_011(ui)*xji_11)
+           - my::vderiv_(0,2)*(derxjm_011(ui)*xji_12)
+           - my::vderiv_(1,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + xji_20*derxjm_211(ui) + xji_21*derxjm_201(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + xji_22*derxjm_211(ui) + xji_21*derxjm_221(ui))
+           - my::vderiv_(2,0)*(derxjm_211(ui)*xji_10)
+           - my::vderiv_(2,1)*(derxjm_211(ui)*xji_11)
+           - my::vderiv_(2,2)*(derxjm_211(ui)*xji_12);
+      v2 = - my::vderiv_(0,0)*(derxjm_021(ui)*xji_10)
+           - my::vderiv_(0,1)*(derxjm_021(ui)*xji_11)
+           - my::vderiv_(0,2)*(derxjm_021(ui)*xji_12)
+           - my::vderiv_(1,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + xji_20*derxjm_221(ui) + xji_22*derxjm_201(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+           - my::vderiv_(2,0)*(derxjm_221(ui)*xji_10)
+           - my::vderiv_(2,1)*(derxjm_221(ui)*xji_11)
+           - my::vderiv_(2,2)*(derxjm_221(ui)*xji_12);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 1, ui*3 + 1) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+           - my::vderiv_(0,1)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+           - my::vderiv_(0,2)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+           - my::vderiv_(1,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + 2*xji_10*derxjm_102(ui) + 2*xji_10*derxjm_102(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + 2*xji_11*derxjm_102(ui) + 2*xji_10*derxjm_112(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + 2*xji_12*derxjm_102(ui) + 2*xji_10*derxjm_122(ui))
+           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_20)
+           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_20)
+           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_20);
+      v1 = - my::vderiv_(0,0)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+           - my::vderiv_(0,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+           - my::vderiv_(0,2)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+           - my::vderiv_(1,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + 2*xji_10*derxjm_112(ui) + 2*xji_11*derxjm_102(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + 2*xji_11*derxjm_112(ui) + 2*xji_11*derxjm_112(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + 2*xji_12*derxjm_112(ui) + 2*xji_11*derxjm_122(ui))
+           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_21)
+           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_21)
+           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_21);
+      v2 = - my::vderiv_(0,0)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+           - my::vderiv_(0,1)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+           - my::vderiv_(0,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+           - my::vderiv_(1,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + 2*xji_10*derxjm_122(ui) + 2*xji_12*derxjm_102(ui))
+           - my::vderiv_(1,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + 2*xji_11*derxjm_122(ui) + 2*xji_12*derxjm_112(ui))
+           - my::vderiv_(1,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + 2*xji_12*derxjm_122(ui) + 2*xji_12*derxjm_122(ui))
+           - my::vderiv_(2,0)*(derxjm_102(ui)*xji_22)
+           - my::vderiv_(2,1)*(derxjm_112(ui)*xji_22)
+           - my::vderiv_(2,2)*(derxjm_122(ui)*xji_22);
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 1, ui*3 + 2) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_00)
+           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_00)
+           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_00)
+           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + 2*xji_20*derxjm_200(ui) + 2*xji_20*derxjm_200(ui))
+           - my::vderiv_(2,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + 2*xji_21*derxjm_200(ui) + 2*xji_20*derxjm_210(ui))
+           - my::vderiv_(2,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + 2*xji_22*derxjm_200(ui) + 2*xji_20*derxjm_220(ui));
+      v1 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_01)
+           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_01)
+           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_01)
+           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + 2*xji_20*derxjm_210(ui) + 2*xji_21*derxjm_200(ui))
+           - my::vderiv_(2,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + 2*xji_21*derxjm_210(ui) + 2*xji_21*derxjm_210(ui))
+           - my::vderiv_(2,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + 2*xji_22*derxjm_210(ui) + 2*xji_21*derxjm_220(ui));
+      v2 = - my::vderiv_(0,0)*(derxjm_200(ui)*xji_02)
+           - my::vderiv_(0,1)*(derxjm_210(ui)*xji_02)
+           - my::vderiv_(0,2)*(derxjm_220(ui)*xji_02)
+           - my::vderiv_(1,0)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + 2*xji_20*derxjm_220(ui) + 2*xji_22*derxjm_200(ui))
+           - my::vderiv_(2,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + 2*xji_21*derxjm_220(ui) + 2*xji_22*derxjm_210(ui))
+           - my::vderiv_(2,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + 2*xji_22*derxjm_220(ui) + 2*xji_22*derxjm_220(ui));
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 2, ui*3 + 0) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_10)
+           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_10)
+           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_10)
+           - my::vderiv_(2,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + 2*xji_20*derxjm_201(ui) + 2*xji_20*derxjm_201(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + 2*xji_21*derxjm_201(ui) + 2*xji_20*derxjm_211(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + 2*xji_22*derxjm_201(ui) + 2*xji_20*derxjm_221(ui));
+      v1 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_11)
+           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_11)
+           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_11)
+           - my::vderiv_(2,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + 2*xji_20*derxjm_211(ui) + 2*xji_21*derxjm_201(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + 2*xji_21*derxjm_211(ui) + 2*xji_21*derxjm_211(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + 2*xji_22*derxjm_211(ui) + 2*xji_21*derxjm_221(ui));
+      v2 = - my::vderiv_(0,0)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_201(ui)*xji_12)
+           - my::vderiv_(1,1)*(derxjm_211(ui)*xji_12)
+           - my::vderiv_(1,2)*(derxjm_221(ui)*xji_12)
+           - my::vderiv_(2,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + 2*xji_20*derxjm_221(ui) + 2*xji_22*derxjm_201(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + 2*xji_21*derxjm_221(ui) + 2*xji_22*derxjm_211(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + 2*xji_22*derxjm_221(ui) + 2*xji_22*derxjm_221(ui));
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 2, ui*3 + 1) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+
+      ////////////////////////////////////////////////////////////////
+
+      v0 = - my::vderiv_(0,0)*(derxjm_002(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_002(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_002(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_102(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_102(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_102(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui));
+      v1 = - my::vderiv_(0,0)*(derxjm_012(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_012(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_012(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_112(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_112(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_112(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + xji_10*derxjm_112(ui) + xji_11*derxjm_102(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + xji_12*derxjm_112(ui) + xji_11*derxjm_122(ui));
+      v2 = - my::vderiv_(0,0)*(derxjm_022(ui)*xji_20)
+           - my::vderiv_(0,1)*(derxjm_022(ui)*xji_21)
+           - my::vderiv_(0,2)*(derxjm_022(ui)*xji_22)
+           - my::vderiv_(1,0)*(derxjm_122(ui)*xji_20)
+           - my::vderiv_(1,1)*(derxjm_122(ui)*xji_21)
+           - my::vderiv_(1,2)*(derxjm_122(ui)*xji_22)
+           - my::vderiv_(2,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + xji_10*derxjm_122(ui) + xji_12*derxjm_102(ui))
+           - my::vderiv_(2,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+           - my::vderiv_(2,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui));
+
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        emesh(vi*4 + 2, ui*3 + 2) += v*(my::deriv_(0,vi)*v0 + my::deriv_(1,vi)*v1 + my::deriv_(2,vi)*v2);
+      }
+    }
+  }
+    //*************************** linearisation of mesh motion in continuity equation**********************************
+    // (porosity)*div u
+
+    for (int vi = 0; vi < my::nen_; ++vi)
+    {
+      double v = timefacfac / my::det_ * my::funct_(vi, 0) * porosity;
+      for (int ui = 0; ui < my::nen_; ++ui)
+      {
+        emesh(vi * 4 + 3, ui * 3 + 0) += v * (+my::vderiv_(1, 0) * derxjm_(0,0,1,ui)
+            + my::vderiv_(1, 1) * derxjm_(0,1,1,ui) + my::vderiv_(1, 2)
+            * derxjm_(0,2,1,ui) + my::vderiv_(2, 0) * derxjm_(0,0,2,ui) + my::vderiv_(2,
+            1) * derxjm_(0,1,2,ui) + my::vderiv_(2, 2) * derxjm_(0,2,2,ui));
+
+        emesh(vi * 4 + 3, ui * 3 + 1) += v * (+my::vderiv_(0, 0) * derxjm_(1,0,0,ui)
+            + my::vderiv_(0, 1) * derxjm_(1,1,0,ui) + my::vderiv_(0, 2)
+            * derxjm_(1,2,0,ui) + my::vderiv_(2, 0) * derxjm_(1,0,2,ui) + my::vderiv_(2,
+            1) * derxjm_(1,1,2,ui) + my::vderiv_(2, 2) * derxjm_(1,2,2,ui));
+
+        emesh(vi * 4 + 3, ui * 3 + 2) += v * (+my::vderiv_(0, 0) * derxjm_(2,0,0,ui)
+            + my::vderiv_(0, 1) * derxjm_(2,1,0,ui) + my::vderiv_(0, 2)
+            * derxjm_(2,2,0,ui) + my::vderiv_(1, 0) * derxjm_(2,0,1,ui) + my::vderiv_(1,
+            1) * derxjm_(2,1,1,ui) + my::vderiv_(1, 2) * derxjm_(2,2,1,ui));
+      }
   }
 
   LINALG::Matrix<my::nsd_, my::nsd_> gridvderiv;

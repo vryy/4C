@@ -1692,7 +1692,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     //AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedInt(m,"MATID","ID of structure material");
-  //  AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+    AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
     AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
     AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
 
@@ -1709,6 +1709,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"VISCOSITY","kinematic viscosity");
     AddNamedReal(m,"DENSITY","density");
     AddNamedReal(m,"PERMEABILITY","permeability of medium");
+    AddNamedString(m,"TYPE","Problem type: Darcy or Darcy-Brinkman","Darcy");
   //  AddNamedReal(m,"BULKMODULUS","bulk modulus of medium");
 
     AppendMaterialDefinition(matlist,m);

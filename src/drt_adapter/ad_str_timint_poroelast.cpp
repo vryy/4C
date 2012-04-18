@@ -20,15 +20,10 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntImplPoro::Evaluate(Teuchos::RCP<
-    const Epetra_Vector> disiterinc)
-{
-  structure_->UpdateIterIncrementally(disiterinc);
-
-  // builds tangent, residual and applies DBC
-  structure_->PoroEvaluateForceStiffResidual();
-  structure_->PrepareSystemForNewtonSolve();
-}
+//void ADAPTER::StructureTimIntImplPoro::Evaluate(Teuchos::RCP<
+//    const Epetra_Vector> disiterinc)
+//{
+//}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

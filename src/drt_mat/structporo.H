@@ -12,7 +12,6 @@
 #ifndef STRUCTPORO_H_
 #define STRUCTPORO_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -57,6 +56,8 @@ namespace MAT
         double bulkmodulus_;
 
         double penaltyparameter_;
+
+        double initporosity_;
 
         //@}
 
@@ -160,7 +161,7 @@ namespace MAT
       }
 
       /// return porosity at gausspoints
-      RCP<vector<double> > Porosity() const
+      vector<double> Porosity() const
       {
         return porosity_;
       }
@@ -170,16 +171,22 @@ namespace MAT
       /// return porosity average
       double PorosityAv() const;
 
-      /// return porosity
+      /// return bulk modulus
       double Bulkmodulus() const
       {
         return params_->bulkmodulus_;
       }
 
-      /// return porosity
+      /// return prenalty parameter
       double Penaltyparameter() const
       {
         return params_->penaltyparameter_;
+      }
+
+      /// return initial porosity
+      double Initporosity() const
+      {
+        return params_->initporosity_;
       }
 
       /// compute current porosity (not used)
@@ -203,12 +210,11 @@ namespace MAT
       /// my material parameters
       MAT::PAR::StructPoro* params_;
 
-      RCP<vector<double> > porosity_;
+      vector<double> porosity_;
 
       void SetupPorosity(int numgp);
   };
 
 }
 
-#endif
 #endif /* STRUCTPORO_H_ */

@@ -378,20 +378,8 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator> stiff  //!< stiffness matrix
-    );
-
-    //! Evaluate ordinary internal force, its stiffness at state
-    void PoroApplyForceStiffInternal
-    (
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> stiff_rea // reacitve part of stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
     );
 
     //! Evaluate ordinary internal force
@@ -426,10 +414,14 @@ namespace STR
     );
     //@}
 
+    //! @name porous media specific methods
+    //@{
+    //! Apply the current fluid velocities and pressures to the structure problem
     void ApplyVelAndPress
     (
       Teuchos::RCP<const Epetra_Vector> veln  //!< current velocities and pressures
     );
+    //@}
 
     //! Set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface
@@ -859,7 +851,7 @@ namespace STR
     Teuchos::RCP<LINALG::SparseOperator> stiff_;
     //! mass matrix (constant)
     Teuchos::RCP<LINALG::SparseOperator> mass_;
-    //! Rayleigh damping matrix (constant)
+    //! damping matrix
     Teuchos::RCP<LINALG::SparseOperator> damp_;
     //@}
 
@@ -875,7 +867,7 @@ namespace STR
     //@{
     // global coupling variable of the fluid field (for poroelasticity problems only)
     Teuchos::RCP<const Epetra_Vector> fluidveln_; //!< global velocities and pressures at n+1
-    double initporosity_;
+    //double initporosity_;
 
     //@}
 
@@ -1011,18 +1003,6 @@ namespace STR
 
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
-
-    /// poroelasticity specific method
-    virtual void PoroInitForceStiffResidual() {dserror("not available for explicit time integrators"); }
-
-    // to be removed by Anh-Tu
-    virtual void UpdateIterIncrementally(const Teuchos::RCP<const Epetra_Vector> disi)
-    {dserror("not available for explicit time integrators"); }
-    virtual void PrepareSystemForNewtonSolve()
-    {dserror("not available for explicit time integrators"); }
-    virtual void PoroEvaluateForceStiffResidual(bool predict = false)
-    {dserror("not available for explicit time integrators"); }
-    // to be removed by Anh-Tu ; END
 
   };
 

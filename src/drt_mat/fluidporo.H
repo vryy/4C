@@ -42,8 +42,6 @@ namespace MAT
         /// @name material parameters
         //@{
 
-        /// problem type: Darcy or Darcy-Stokes
-        //const string* type_;
         /// kinematic or dynamic viscosity
         const double viscosity_;
         /// density
@@ -52,6 +50,8 @@ namespace MAT
         const double permeability_;
         // bulk modulus
         //   const double bulkmodulus_;
+        /// problem type: Darcy or Darcy-Brinkman
+        const string* type_;
 
         //@}
 
@@ -153,11 +153,11 @@ namespace MAT
       /// compute reaction coefficient
       double ComputeReactionCoeff() const;
 
-      /// set viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
-      double SetViscosity() const;
+      /// effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
+      double EffectiveViscosity() const;
 
       /// return type
-      // string Type() const { return *params_->type_; }
+      string Type() const { return *params_->type_; }
 
       /// return viscosity
       double Viscosity() const

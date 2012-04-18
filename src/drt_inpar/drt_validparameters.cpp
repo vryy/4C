@@ -1990,7 +1990,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroelastdyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroelastdyn);
   IntParameter("UPRES",1,"increment for writing solution",&poroelastdyn);
-  DoubleParameter("INITPOROSITY",0.5,"initial porosity",&poroelastdyn);
+  //DoubleParameter("INITPOROSITY",0.5,"initial porosity",&poroelastdyn);
 
   // Iterationparameters
   DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);
@@ -2023,6 +2023,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                        INPAR::POROELAST::bop_or),
                                &poroelastdyn);
 
+  /*
   setStringToIntegralParameter<int>("INITIALFIELD","field_by_function",
                                "Initial Field for thermal problem",
                                tuple<std::string>(
@@ -2037,6 +2038,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &poroelastdyn);
   IntParameter("INITFUNCNO",-1,"function number for porosity initial field",&poroelastdyn);
+  */
 
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);

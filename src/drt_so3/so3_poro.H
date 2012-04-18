@@ -29,9 +29,9 @@ namespace ELEMENTS
 {
 
 /*!
-\brief A C++ version of a 8-node hex solid element with modifications for porous media
+\brief A C++ version of a 3 dimensional solid element with modifications for porous media
 
-A structural 8-node hexahedral solid displacement element for large deformations
+A structural 3 dimensional solid displacement element for large deformations
 and (near)-incompressibility.
 
 */
@@ -280,7 +280,7 @@ protected:
       LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      LINALG::Matrix<numdof_,1>* forcerea, // element reactive force vector
+      //LINALG::Matrix<numdof_,1>* forcerea, // element reactive force vector
       //LINALG::Matrix<numgpt_,numstr_>* elestress, ///< stresses at GP
       //LINALG::Matrix<numgpt_,numstr_>* elestrain, ///< strains at GP
       ParameterList& params, ///< algorithmic parameters e.g. time
@@ -297,7 +297,7 @@ protected:
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      LINALG::Matrix<numdof_,1>* forcerea, //< element reactive force vector
+      //LINALG::Matrix<numdof_,1>* forcerea, //< element reactive force vector
       ParameterList& params); ///< algorithmic parameters e.g. time
 
 private:

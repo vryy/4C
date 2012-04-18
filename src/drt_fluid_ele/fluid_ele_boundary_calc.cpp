@@ -4425,7 +4425,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NoPenetration(
     //allocate convective velocity at node
     LINALG::Matrix<1,3> convvel(true);
 
-    elemat1.Shape(bdrynen_*numdofpernode_,bdrynen_*nsd_);
+    //elemat1.Shape(bdrynen_*numdofpernode_,bdrynen_*nsd_);
     //fill element matrix
     for (int inode=0;inode<bdrynen_;inode++)
     {

@@ -621,7 +621,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   if (probtype == prb_poroelast)
   {
-    fluidtimeparams->set<double>("initporosity",prbdyn.get<double>("INITPOROSITY"));
     fluidtimeparams->set<bool>("poroelast",true);
   }
   // -------------------------------------------------------------------

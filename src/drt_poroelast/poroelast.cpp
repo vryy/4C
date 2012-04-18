@@ -32,12 +32,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-/*----------------------------------------------------------------------*
- | general problem data                                     m.gee 06/01 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB genprob;
-
 /*------------------------------------------------------------------------------------------------*
  | main control routine for poroelasticity problems                                   vuong 01/12 |
  *------------------------------------------------------------------------------------------------*/
@@ -63,6 +57,10 @@ void poroelast_drt()
   const INPAR::POROELAST::SolutionSchemeOverFields coupling =
       DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
           poroelastdyn, "COUPALGO");
+
+  std::string damping = sdynparams.get<std::string>("DAMPING");
+  if(damping != "Material")
+    dserror("Material damping has to be used for poroelasticity! Set DAMPING to Material in the STRUCTURAL DYNAMIC section.");
 
   // choose algorithm depending on solution type (only monolithic type implemented)
   switch (coupling)

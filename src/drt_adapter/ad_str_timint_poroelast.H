@@ -36,11 +36,11 @@ namespace ADAPTER
     explicit StructureTimIntImplPoro(Teuchos::RCP<Structure> structure)
       : StructureWrapper(structure)
     {
-      structure_->PoroInitForceStiffResidual();
+      //structure_->PoroInitForceStiffResidual();
     }
 
 
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+   // virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
 
   };//class StructureTimIntImplPoro

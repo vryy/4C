@@ -19,9 +19,11 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
-  Parameter(matdata), matid_(matdata->GetInt("MATID")), bulkmodulus_(
-      matdata->GetDouble("BULKMODULUS")), penaltyparameter_(matdata->GetDouble(
-      "PENALTYPARAMETER"))
+  Parameter(matdata),
+  matid_(matdata->GetInt("MATID")),
+  bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
+  penaltyparameter_(matdata->GetDouble("PENALTYPARAMETER")),
+  initporosity_(matdata->GetDouble("INITPOROSITY"))
 {
   mat_ = MAT::Material::Factory(matid_);
 }
@@ -72,6 +74,13 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
   if (params_ != NULL)
     matid = params_->Id(); // in case we are in post-process mode
   AddtoPack(data, matid);
+
+  // porosity_
+  int size=0;
+  size = (int)porosity_.size();
+  AddtoPack(data,size);
+  for (int i=0; i<size; ++i)
+    AddtoPack(data,(porosity_)[i]);
 }
 
 /*----------------------------------------------------------------------*/
@@ -85,30 +94,39 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId())
     dserror("wrong instance type data");
 
-    // matid
-    int matid;
-    ExtractfromPack(position,data,matid);
-    params_ = NULL;
-    if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::PAR::StructPoro*>(mat);
+        params_ = static_cast<MAT::PAR::StructPoro*>(mat);
       else
-      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
-    if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-  }
+  // porosity_
+  int size = 0;
+  ExtractfromPack(position,data,size);
+  porosity_.resize(size);
+  for (int i=0; i<size; ++i)
+    ExtractfromPack(position,data,(porosity_)[i]);
+
+  if (position != data.size())
+  dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
 double MAT::StructPoro::ComputePorosity(double press, double J,
     const double initporosity, int gp) const
 {
+  // this function is not called yet!!
+
   const double bulkmodulus = Bulkmodulus();
   const double penalty = Penaltyparameter();
 
@@ -143,11 +161,11 @@ double MAT::StructPoro::PorosityAv() const
   double porosityav = 0.0;
 
   std::vector<double>::const_iterator m;
-  for (m = porosity_->begin(); m != porosity_->end(); ++m)
+  for (m = porosity_.begin(); m != porosity_.end(); ++m)
   {
     porosityav += *m;
   }
-  porosityav = porosityav / (porosity_->size());
+  porosityav = porosityav / (porosity_.size());
 
   return porosityav;
 }
@@ -158,14 +176,14 @@ void MAT::StructPoro::SetPorosityAtGP(std::vector<double> porosity_gp)
 {
   int numgp = porosity_gp.size();
 
-  porosity_ = rcp(new vector<double> (numgp));
+  porosity_.resize(numgp);
 
   //set porosity values
   std::vector<double>::iterator m = porosity_gp.begin();
   for (int i = 0; m != porosity_gp.end(); ++m, ++i)
   {
     double porosity = *m;
-    porosity_->at(i) = porosity;
+    porosity_[i]=porosity;
   }
 
   return;

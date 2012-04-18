@@ -196,6 +196,7 @@ private:
   double bulkmodulus_;
   double penalty_;
   double initporosity_;
+  double visceff_;
 
 
 };

@@ -8,7 +8,6 @@
                089 - 289-15264
  </pre>
  *-----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <vector>
 #include "fluidporo.H"
@@ -18,9 +17,11 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
-  Parameter(matdata), viscosity_(matdata->GetDouble("VISCOSITY")), density_(
-      matdata->GetDouble("DENSITY")), permeability_(matdata->GetDouble(
-      "PERMEABILITY"))
+  Parameter(matdata),
+  viscosity_(matdata->GetDouble("VISCOSITY")),
+  density_(matdata->GetDouble("DENSITY")),
+  permeability_(matdata->GetDouble("PERMEABILITY")),
+  type_(matdata->Get<string>("TYPE"))
 {
 }
 
@@ -126,12 +127,11 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-double MAT::FluidPoro::SetViscosity() const
+double MAT::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
   double viscosity = 0.0;
-  // if (Type() == "Darcy-Stokes") viscosity = Viscosity();
+   if (Type() == "Darcy-Brinkman") viscosity = Viscosity();
 
   return viscosity;
 }
-#endif

@@ -176,7 +176,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   poroelast_ = false;
   if (params_->get<bool>("poroelast",false))
   {
-	  poroelast_ = true;
+    poroelast_ = true;
   }
 
   // -------------------------------------------------------------------
@@ -3447,27 +3447,27 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   // compute accelerations
   {
-	  Teuchos::RCP<Epetra_Vector> onlyaccn  = Teuchos::null ;
-	  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::null;
-	  Teuchos::RCP<Epetra_Vector> onlyvelnm = Teuchos::null;
-	  Teuchos::RCP<Epetra_Vector> onlyveln  = Teuchos::null ;
-	  Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> onlyaccn = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> onlyvelnm = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> onlyveln = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
 
-    if(not poroelast_) //standard case
-	{
-		onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-		onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
-		onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
-		onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
-		onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
-	}
+    if (not poroelast_) //standard case
+    {
+      onlyaccn = velpressplitter_.ExtractOtherVector(accn_);
+      onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+      onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
+      onlyveln = velpressplitter_.ExtractOtherVector(veln_);
+      onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+    }
     else //poroelasticity case
     {
-		onlyaccn  = accn_ ;
-		onlyaccnp = accnp_;
-		onlyvelnm = velnm_;
-		onlyveln  = veln_ ;
-		onlyvelnp = velnp_;
+      onlyaccn = accn_;
+      onlyaccnp = accnp_;
+      onlyvelnm = velnm_;
+      onlyveln = veln_;
+      onlyvelnp = velnp_;
     }
 
     TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
@@ -3772,7 +3772,7 @@ void FLD::FluidImplicitTimeInt::Output()
       }
 
       if(poroelast_)
-      	output_->WriteVector("gridv", gridv_);
+        output_->WriteVector("gridv", gridv_);
 
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
@@ -3802,7 +3802,7 @@ void FLD::FluidImplicitTimeInt::Output()
     }
 
     if(poroelast_)
-    	output_->WriteVector("gridv", gridv_);
+      output_->WriteVector("gridv", gridv_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -4013,7 +4013,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispnm_,"dispnm");
 
     if(poroelast_)
-    	reader.ReadVector(gridv_,"gridv");
+      reader.ReadVector(gridv_,"gridv");
   }
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
