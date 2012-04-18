@@ -1947,6 +1947,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // compute temperature at n+1 or n+alpha_F
     const double tempnp = funct_.Dot(ephinp_[0]);
+    if (tempnp < 0.0)
+      dserror("Negative temperature occurred! Sutherland's law is defined for positive temperatures, only!");
 
     // compute diffusivity according to Sutherland law
     diffus_[0] = actmat->ComputeDiffusivity(tempnp);
@@ -4041,6 +4043,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
 
     // add subgrid-scale part to obtain complete temperature
     tempnp += sgphi;
+    if (tempnp < 0.0)
+      dserror("Negative temperature occurred! Sutherland's law is defined for positive temperatures, only!");
 
     // compute diffusivity according to Sutherland law
     diffus_[k] = actmat->ComputeDiffusivity(tempnp);
@@ -5473,7 +5477,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   LINALG::Matrix<nsd_,1> gradp;
   LINALG::Matrix<nsd_,1> visc;
   LINALG::Matrix<nsd_,1> bodyforce;
+  LINALG::Matrix<nsd_,1> pressuregrad;
   LINALG::Matrix<nsd_,nen_> nodebodyforce;
+  LINALG::Matrix<nsd_,nen_> nodepressuregrad;
 
   // get acceleration or momentum history data
   acc.Multiply(eaccnp_,funct_);
@@ -5513,6 +5519,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
 
   if (myfluidneumcond.size()==1)
   {
+    const string* condtype = myfluidneumcond[0]->Get<string>("type");
+
     // find out whether we will use a time curve
     const vector<int>* curve  = myfluidneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
@@ -5543,14 +5551,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     {
       for (int jnode=0; jnode<nen_; jnode++)
       {
-        nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        // get usual body force
+        if (*condtype == "neum_dead" or *condtype == "neum_live")
+          nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        else nodebodyforce.Clear();
+        // get prescribed pressure gradient
+        if (*condtype == "neum_pgrad")
+          nodepressuregrad(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        else nodepressuregrad.Clear();
       }
     }
   }
-  else nodebodyforce.Clear();
+  else
+  {
+    nodebodyforce.Clear();
+    nodepressuregrad.Clear();
+  }
 
   // get fluid body force
   bodyforce.Multiply(nodebodyforce,funct_);
+  // or prescribed pressure gradient
+  pressuregrad.Multiply(nodepressuregrad,funct_);
 
   // get viscous term
   if (use2ndderiv_)
@@ -5620,7 +5641,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     {
       sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)
                                 +gradp(rr)-2*visc_*visc(rr)
-                                -densnp_[k]*bodyforce(rr));
+                                -densnp_[k]*bodyforce(rr)-pressuregrad(rr));
     }
   }
   else
@@ -5629,7 +5650,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     {
       sgvelint_(rr) = -tau_[k]*(densnp_[k]*convelint_(rr)+timefac*(densnp_[k]*conv(rr)
                                                                    +gradp(rr)-2*visc_*visc(rr)
-                                                                   -densnp_[k]*bodyforce(rr))-densnp_[k]*acc(rr))/dt;
+                                                                   -densnp_[k]*bodyforce(rr)-pressuregrad(rr))
+                                                                   -densnp_[k]*acc(rr))/dt;
     }
   }
 
