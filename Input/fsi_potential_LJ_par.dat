@@ -113,6 +113,8 @@ STRUCTPCOMEGA                   1
 TIMESTEP                        0.01
 TOLENCHECK                      1e-06
 UPRES                           1
+NORM_INC                        Abs
+NORM_RESF                       Abs
 ------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 ALE_DISP                        No
@@ -153,9 +155,13 @@ WRITEFLUX                       No
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
 NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
@@ -176,7 +182,7 @@ TIMEADAPT                       0
 TIMESTEP                        0.01
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
-TOLRES                          1e-08
+TOLRES                          2e-07
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 -----------------------------------------------------STRUCTURAL DYNAMIC/GEMM
