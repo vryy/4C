@@ -29,11 +29,14 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Velnm()
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor()
-    { dserror("not implemented"); return Teuchos::null; };
+    { dserror("not implemented");
+      static Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> ret = Teuchos::null;
+      return ret;
+    };
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()
-    { fluid_->FluidDirichMaps();}
+    { return fluid_->FluidDirichMaps();}
     virtual Teuchos::RCP<const Epetra_Vector> Accnp()
     { return fluid_->Accnp(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
@@ -179,7 +182,10 @@ namespace ADAPTER
     virtual double TimIntParam() const
     { return fluid_->TimIntParam(); }
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
-    { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+    { dserror("Not implemented in the base class, may be overridden by a subclass.");
+      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      return ret;
+    }
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)

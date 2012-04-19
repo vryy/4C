@@ -94,11 +94,13 @@ public:
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual const Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
   virtual Teuchos::RCP<const DRT::DofSet> DofSet()          { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() { dserror("Not implemented in the base class, may be overridden by a subclass.");
+    static Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> ret = Teuchos::null; return ret; }
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc()       { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()   { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   /// Return dirichlet boundray condition (used for fluidfluid)
-  virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()  { dserror("Not implemented in the base class, may be overridden by a subclass.");
+    static Teuchos::RCP<const Epetra_Map> ret = Teuchos::null; return ret; }
 
   virtual void Integrate() = 0;
   virtual void PrepareTimeStep()     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
@@ -137,7 +139,8 @@ public:
   virtual double TimIntParam() const = 0;
 
   /// communication object at the interface
-  virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes"); return Teuchos::null; }
+  virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes");
+    static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
 
   virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) {dserror("Not implemented in the base class, may be overridden by a subclass."); }
 

@@ -115,19 +115,19 @@ namespace ADAPTER {
     /// A castet pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
-    /// the interface map setup for fsi interface, free surface, interior translation
-    Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
-    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
-
-    /// ALE dof map
-    Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
-
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
+
+    /// the interface map setup for fsi interface, free surface, interior translation
+    Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
+
+    /// ALE dof map
+    Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
 
     /// all velocity dofs not at the interface
     Teuchos::RCP<Epetra_Map>               innervelmap_;
