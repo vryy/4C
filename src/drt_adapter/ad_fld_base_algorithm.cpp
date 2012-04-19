@@ -673,12 +673,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {
         dirichletcond = false;
       }
-      else
-      {
-        // TODO: Shadan
-        //const INPAR::FSI::PartitionedCouplingMethod method =
-        //  DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-      }
     }
 
     //------------------------------------------------------------------
@@ -1048,8 +1042,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-    // TODO: Shadan
-    //bool dirichletcond = true;
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor);
