@@ -77,7 +77,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   nitschevel_(params_->sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_->sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
-  gmshoutput_(xparams_.get<bool>("GMSH_OUTPUT")),
+  gmshoutput_(params_->get<bool>("GMSH_OUTPUT")),
   surftensapprox_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_->sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
   connected_interface_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
   smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),

@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_FLUIDADJOINT3_IMPL_H_
 #define TOPOPT_FLUIDADJOINT3_IMPL_H_
@@ -45,26 +44,24 @@ class FluidAdjoint3ImplParameter;
     mathematical contents (this class). There are different implementations of
     the Fluid3 element, this is just one such implementation.
 
-    The Fluid3 will allocate exactly one object of this class for all
+    The FluidAdjoint3 will allocate exactly one object of this class for all
     fluid elements with the same number of nodes in the mesh. This
     allows us to use exactly matching working arrays (and keep them
     around.)
 
-    The code is meant to be as clean as possible. This is the only way
-    to keep it fast. The number of working arrays has to be reduced to
-    a minimum so that the element fits into the cache. (There might be
-    room for improvements.)
+    The instationary adjoint equations start at the endtime T and stop at time 0
+    Nevertheless in order to remain consistent, the variables at the new time
+    step end with "...np", the old ones with "...n"
 
-    <h3>Usability</h3>
-
-    The calculations are done by the Evaluate() method. The non-virtual
-    Evaluate() method must be callable without an actual Fluid3 object.
-
-    <h3>History</h3>
-
-    The implementation here is based on the work by Christiane
-    Foerster. The core element code has been linearized using MuPAD.
-    The reaction terms have been removed from the lhs.
+    <h3>Names</h3>
+    The adjoint equations contain one more variable compared to the primal equations:
+    - adjoint velocity v
+    - primal velocity u (out of the Navier-Stokes equations)
+    - adjoint pressure q
+    - primal pressure p (out of the Navier-Stokes equations, only used for
+      objective evaluations on the right-hand side)
+    - velocity test function w
+    - pressure test function r
 
     \author winklmaier
     \date 02/12
@@ -90,22 +87,11 @@ public:
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+  /// number of degrees of freedom per node
   static const int numdofpernode_ = nsd_+1;
 
   /// called upon destruction
   virtual void Done();
-
-  /// Evaluate element ERROR
-  /*!
-        general function to compute the error (analytical solution) for particular problem type
-   */
-  virtual int ComputeError(
-      DRT::ELEMENTS::Fluid3*          ele,
-      ParameterList&                  params,
-      Teuchos::RCP<MAT::Material>&    mat,
-      DRT::Discretization&            discretization,
-      vector<int>&                    lm,
-      Epetra_SerialDenseVector&       elevec1);
 
   /// Evaluate the element
   /*!
@@ -135,28 +121,10 @@ public:
       const DRT::UTILS::GaussIntegration & intpoints );
 
   /*!
-      \brief evaluate function for Fluid3 element
-
-      Specific evaluate function without any knowledge about DRT objects. This
-      way the element evaluation is independent of the specific mesh storage.
-   */
-  int Evaluate(
-      int                                           eid,
-      Teuchos::ParameterList&                       params,
-      LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elesysmat,
-      LINALG::Matrix<(nsd_+1)*nen_,            1> & elerhs,
-      const LINALG::Matrix<nsd_,nen_> &             eveln,
-      const LINALG::Matrix<nsd_,nen_> &             evelnp,
-      const LINALG::Matrix<nen_,1>    &             epren,
-      const LINALG::Matrix<nen_,1>    &             eprep,
-      const LINALG::Matrix<nsd_,nen_> &             efluidveln,
-      const LINALG::Matrix<nsd_,nen_> &             efluidvelnp,
-      const LINALG::Matrix<nen_,1> &                eporo,
-      Teuchos::RCP<MAT::Material>                   mat,
-      const DRT::UTILS::GaussIntegration &          intpoints);
-
-  /*!
       \brief calculate element matrix and rhs
+
+      Specific evaluate routine without any knowledge about DRT objects. This
+      way the element evaluation is independent of the specific mesh storage.
 
       \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
@@ -186,8 +154,6 @@ public:
       Teuchos::RCP<const MAT::Material>              material,
       const DRT::UTILS::GaussIntegration &           intpoints);
 
-  LINALG::Matrix<nsd_,nen_> & xyz() { return xyze_; }
-
 private:
 
   //! number of components necessary to store second derivatives
@@ -214,7 +180,7 @@ private:
 
   //! get material parameters
   void GetMaterialParams(Teuchos::RCP<const MAT::Material>       material,  ///< reference pointer to material
-      const LINALG::Matrix<nsd_,nen_>&        evelaf    ///< velocity at time n+alpha_f / n+1
+      const LINALG::Matrix<nsd_,nen_>&        evelnp    ///< velocity at time n+alpha_f / n+1
   );
 
   //! calculate stabilization parameter
@@ -226,6 +192,16 @@ private:
       double&       strle,     ///< streamlength (for tau_Mu)
       double&       hk);       ///< length for tau_Mp
 
+  /// calculate body force from nodal conditions
+  void BodyForce(
+      const LINALG::Matrix<nsd_,nen_>&           efluidveln,
+      const LINALG::Matrix<nsd_,nen_>&           efluidvelnp
+  );
+
+  /// compute force term of continuity equation
+  void ContForce();
+
+  /// compute element matrix and rhs entries: mass matrix and reaction terms of the Galerkin part
   void MassReactionGalPart(
       LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,       ///< block (test-vel x shp-vel)
       LINALG::Matrix<nsd_,nen_> &             velforce,      ///< rhs forces velocity
@@ -274,9 +250,17 @@ private:
       const double &                            timefacfacrhs
   );
 
+  /// compute element matrix entries: continuous force terms on rhs
+  void ContForceGalPart(
+      LINALG::Matrix<nen_,1> &                  preforce,
+      const double &                            timefacfacdiv,
+      const double &                            timefacfacdivrhs
+  );
+
+  /// compute momentum residuum
   void MomRes(
       LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
-      LINALG::Matrix<nsd_,1> &                  StrongResMomScaled,
+      LINALG::Matrix<nsd_,1> &                StrongResMomScaled,
       const double &                          timefacfac,     ///< = timefac x fac
       const double &                          timefacfacrhs,
       const double &                          timefacfacpre,
@@ -294,14 +278,6 @@ private:
       LINALG::Matrix<nsd_,1>&               viscs,
       LINALG::Matrix<nsd_,1>&               viscs_old,
       LINALG::Matrix<nsd_*nsd_,nen_>&       visc_shp
-  );
-
-  /// calculate body force from nodal conditions
-  void BodyForce(
-      const LINALG::Matrix<nsd_,nen_>&           efluidveln,
-      const LINALG::Matrix<nsd_,nen_>&           efluidvelnp,
-      LINALG::Matrix<nsd_,1>&                    bodyforce,
-      LINALG::Matrix<nsd_,1>&                    bodyforce_old
   );
 
   //! Compute element matrix entries: PSPG
@@ -330,17 +306,14 @@ private:
       const double &                            timefacfacprerhs///< = timefacprerhs x fac
   );
 
+  /// compute residuum of continuity equation
   void ContRes(
       double &                                  StrongResContScaled,
       const double &                            timefacfacdiv,  ///< = timefac x fac
       const double &                            timefacfacdivrhs///< = timefac x fac
   );
-  void ContForce(
-      double &                            contForce,  ///< = timefac x fac
-      double &                            contForce_old///< = timefac x fac
-  );
 
-      //! Compute element matrix entries: div-grad stabilization and the rhs of the viscous term
+  //! Compute element matrix entries: div-grad stabilization
   void ContStab(
       LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
       LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
@@ -398,6 +371,10 @@ private:
   LINALG::Matrix<nsd_,1> fluidvelint_;
   //! global fluid derivative of velocity w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_;
+  //! body force of adjoint momentum equation
+  LINALG::Matrix<nsd_,1> bodyforce_;
+  //! body force of adjoint continuity equation
+  double contforce_;
   //! velocity divergence
   double vdiv_;
   //! u_j v_i,j
@@ -418,6 +395,10 @@ private:
   LINALG::Matrix<nsd_,1> fluidvelint_old_;
   //! global fluid derivative of velocity w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_old_;
+  //! body force of adjoint momentum equation
+  LINALG::Matrix<nsd_,1> bodyforce_old_;
+  //! body force of adjoint continuity equation
+  double contforce_old_;
   //! velocity divergence
   double vdiv_old_;
   //! u_j v_i,j
@@ -466,4 +447,3 @@ private:
 }
 
 #endif /* TOPOPT_FLUIDADJOINT3_IMPL_H_ */
-#endif  // #ifdef CCADISCRET

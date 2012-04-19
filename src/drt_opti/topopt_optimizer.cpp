@@ -11,17 +11,16 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
-
+#include "topopt_optimizer.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "topopt_optimizer.H"
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 TOPOPT::Optimizer::Optimizer(
     RCP<DRT::Discretization> discret,
     const ParameterList& params
@@ -41,7 +40,7 @@ params_(params)
   adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // set initial density field if present
-  SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialField>(optimizer_params,"INITIALFIELD"),
+  SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
   // set parameters for the objective
@@ -65,6 +64,8 @@ params_(params)
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double TOPOPT::Optimizer::ComputeObjectiveValue(
     Teuchos::RCP<Epetra_Vector> porosity
 )
@@ -87,19 +88,21 @@ double TOPOPT::Optimizer::ComputeObjectiveValue(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::SetInitialDensityField(
-    const INPAR::TOPOPT::InitialField initfield,
+    const INPAR::TOPOPT::InitialDensityField initfield,
     const int startfuncno
 )
 {
   switch (initfield)
   {
-  case INPAR::TOPOPT::initfield_zero_field:
+  case INPAR::TOPOPT::initdensfield_zero_field:
   {
     dens_ip_->PutScalar(0.0);
     break;
   }
-  case INPAR::TOPOPT::initfield_field_by_function:
+  case INPAR::TOPOPT::initdensfield_field_by_function:
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -122,6 +125,8 @@ void TOPOPT::Optimizer::SetInitialDensityField(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ImportFluidData(
     RCP<Epetra_Vector> vel,
     int step)
@@ -131,6 +136,8 @@ void TOPOPT::Optimizer::ImportFluidData(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ImportAdjointFluidData(
     RCP<Epetra_Vector> vel,
     int step)
@@ -140,6 +147,8 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool TOPOPT::Optimizer::DataComplete() const
 {
   if (num_timesteps_!=vel_->size())
@@ -148,12 +157,13 @@ bool TOPOPT::Optimizer::DataComplete() const
   if (num_timesteps_!=adjointvel_->size())
     return false;
 
-  cout << "here" << endl;
   return true;
 }
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const Epetra_Map* TOPOPT::Optimizer::RowMap()
 {
   return discret_->NodeRowMap();
@@ -161,11 +171,10 @@ const Epetra_Map* TOPOPT::Optimizer::RowMap()
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const Epetra_Map* TOPOPT::Optimizer::ColMap()
 {
   return discret_->NodeColMap();
 }
 
-
-
-#endif  // #ifdef CCADISCRET

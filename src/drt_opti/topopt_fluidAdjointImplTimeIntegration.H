@@ -1,16 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjointImplTimeIntegration.H
 
-\brief Associated with control routine for adjoint fluid (in)stationary solvers,
-
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
-
-     and stationary solver.
+\brief fluid adjoint implicit time integration for topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -20,18 +11,19 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_FLUIDADJOINTIMPLTIMEINTEGRATION_H_
 #define TOPOPT_FLUIDADJOINTIMPLTIMEINTEGRATION_H_
 
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_topopt.H"
 
 
-//forward declarations
+/// forward declarations
 class Epetra_Map;
 class Epetra_Vector;
+
 namespace DRT
 {
   class Discretization;
@@ -44,7 +36,6 @@ namespace LINALG
 {
   class Solver;
   class SparseMatrix;
-  class MultiMapExtractor;
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
@@ -55,29 +46,21 @@ namespace TOPOPT
   class Optimizer;
 }
 
-/// fluid algorithms
-namespace FLD
-{
-  namespace UTILS
-  {
-    class MapExtractor;
-    class KSPMapExtractor;
-    class FluidImpedanceWrapper;
-    class FluidWkOptimizationWrapper;
-    class FluidVolumetricSurfaceFlowWrapper;
-    class TotalTractionCorrector;
-  }
-}
-
 namespace TOPOPT
 {
 namespace ADJOINT
 {
-/*!
-\brief time integration for adjoint fluid problems in topology optimization
+/*
+  \brief Associated with control routine for adjoint fluid (in)stationary solvers,
 
-\author gammi (gamnitzer@lnm.mw.tum.de)
-*/
+     including instationary solvers based on
+     - one-step-theta time-integration scheme
+
+     and stationary solver.
+
+    \author winklmaier
+    \date 02/12
+ */
 class ImplicitTimeInt
 {
 //  friend class FLD::FluidResultTest;
@@ -143,7 +126,10 @@ public:
   */
   void Output();
 
-  void OutputToGmsh(
+  /*!
+  \brief update configuration and output to gmsh file
+
+  */  void OutputToGmsh(
       const int step,
       const double time,
       const bool inflow
@@ -162,8 +148,8 @@ public:
   \brief set initial flow field for analytical test problems
 
   */
-  void SetInitialFlowField(
-    const INPAR::FLUID::InitialField initfield,
+  void SetInitialAdjointField(
+    const INPAR::TOPOPT::InitialAdjointField initfield,
     const int startfuncno
     );
 
@@ -177,34 +163,13 @@ public:
       Teuchos::RCP<TOPOPT::Optimizer> optimizer
   );
 
-  /*!
-  \brief calculate error between a analytical solution and the
-         numerical solution of a test problems
-
-  */
-  void EvaluateErrorComparedToAnalyticalSol();
-
-  /*!
-   * \brief calculate fluid volume (2d case: calculate fluid "surface")
-   */
-  double CalcFluidVolume();
+  void EvaluateDirichlet();
 
   /*!
   \brief read restart data
 
   */
   void ReadRestart(int step);
-  /*!
-  \brief get restart data in case of turbulent inflow computation
-
-  */
-  void SetRestart(const int step,
-                  const double time,
-                  Teuchos::RCP<const Epetra_Vector> readvelnp,
-                  Teuchos::RCP<const Epetra_Vector> readveln,
-                  Teuchos::RCP<const Epetra_Vector> readvelnm,
-                  Teuchos::RCP<const Epetra_Vector> readaccnp,
-                  Teuchos::RCP<const Epetra_Vector> readaccn);
 
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
@@ -242,7 +207,7 @@ public:
   \brief set velocity field obtained by separate computation
 
   */
-  void SetVelocityField(Teuchos::RCP<const Epetra_Vector> setvelnp);
+  void SetAdjointField(Teuchos::RCP<const Epetra_Vector> setvelnp);
 
 protected:
 
@@ -388,6 +353,4 @@ private:
 }
 
 
-
 #endif /* TOPOPT_FLUIDADJOINTIMPLTIMEINTEGRATION_H_ */
-#endif  // #ifdef CCADISCRET

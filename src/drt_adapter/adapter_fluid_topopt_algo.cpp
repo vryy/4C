@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt_algo.cpp
 
-\brief
+\brief fluid - topology optimization adapter
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,9 +11,10 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "adapter_fluid_topopt_algo.H"
 
+#include "adapter_fluid_topopt_algo.H"
 #include "../drt_lib/drt_dserror.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

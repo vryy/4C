@@ -25,9 +25,6 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 
 #undef WRITEOUTSTATISTICS
 
-// include Gmsh output
-//#define GMSHOUTPUT
-
 #include "fluidimplicitintegration.H"
 #include "time_integration_scheme.H"
 #include "../linalg/linalg_ana.H"
@@ -3650,9 +3647,8 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(*output_,step_,true);
 
-#ifdef GMSHOUTPUT
+  if (params_->get<bool>("GMSH_OUTPUT"))
     OutputToGmsh(step_, time_,true);
-#endif
 } // FluidImplicitTimeInt::StatisticsOutput
 
 
@@ -3683,9 +3679,8 @@ void FLD::FluidImplicitTimeInt::Output()
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
 
-#ifdef GMSHOUTPUT
-    OutputToGmsh(step_, time_,false);
-#endif
+    if (params_->get<bool>("GMSH_OUTPUT"))
+      OutputToGmsh(step_, time_,false);
 
     //output_->WriteVector("residual", trueresidual_);
     if (alefluid_) output_->WriteVector("dispnp", dispnp_);

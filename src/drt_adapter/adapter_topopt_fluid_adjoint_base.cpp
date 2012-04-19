@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_topopt_fluid_adjoint_base.cpp
 
-\brief 
+\brief base adapter of adjoint fluid equations for topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,10 +11,9 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
-
-
+#include "adapter_topopt_fluid_adjoint_base.H"
+#include "adapter_topopt_fluid_adjoint_impl.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io.H"
@@ -22,8 +21,6 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
 
-#include "adapter_topopt_fluid_adjoint_base.H"
-#include "adapter_topopt_fluid_adjoint_impl.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -197,7 +194,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   fluidadjointtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
 
   // -----------evaluate error for test flows with analytical solutions
-  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
 //  fluidadjointtimeparams->set<int>("eval err for analyt sol", initfield);
 
   // ------------------------------------ potential Neumann inflow terms
@@ -248,11 +245,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-
-    if (true) // what is this???
-    {
-      adjoint_ = rcp(new ADAPTER::FluidAdjointImpl(actdis,solver,fluidadjointtimeparams,output));
-    }
+    adjoint_ = rcp(new ADAPTER::FluidAdjointImpl(actdis,solver,fluidadjointtimeparams,output));
   }
   else
   {
@@ -261,15 +254,14 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // set initial field by given function
   // we do this here, since we have direct access to all necessary parameters
-  if(initfield != INPAR::FLUID::initfield_zero_field)
+  if(initfield != INPAR::TOPOPT::initadjointfield_zero_field)
   {
-    int startfuncno = fdyn.get<int>("STARTFUNCNO");
-    if (initfield != INPAR::FLUID::initfield_field_by_function and
-        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+    int startfuncno = adjointfdyn.get<int>("INITFUNCNO");
+    if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function)
     {
       startfuncno=-1;
     }
-    adjoint_->SetInitialFlowField(initfield,startfuncno);
+    adjoint_->SetInitialAdjointField(initfield,startfuncno);
   }
   // TODO activate when output is working
 //  adjoint_->Output();
@@ -291,6 +283,3 @@ const Teuchos::RCP<const ADAPTER::FluidAdjoint> ADAPTER::TopOptFluidAdjointAlgor
   return adjoint_;
 }
 
-
-
-#endif  // #ifdef CCADISCRET

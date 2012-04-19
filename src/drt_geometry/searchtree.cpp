@@ -11,7 +11,7 @@ Maintainer: Ursula Mayer
 </pre>
  */
 
-#ifdef CCADISCRET
+
 #include "searchtree.H"
 #include "searchtree_geometry_service.H"
 #include "intersection_service.H"
@@ -2417,6 +2417,4 @@ int GEO::SearchTree::TreeNode::getNumNodesInTree() const
   return numTreeNodes;
 }
 
-
-#endif  // #ifdef CCADISCRET
 

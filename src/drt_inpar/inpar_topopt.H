@@ -48,10 +48,17 @@ namespace INPAR
     };
 
     /// initial field for optimization variable
-    enum InitialField
+    enum InitialDensityField
     {
-      initfield_zero_field,
-      initfield_field_by_function
+      initdensfield_zero_field,
+      initdensfield_field_by_function
+    };
+
+    /// type of initial fluid field
+    enum InitialAdjointField
+    {
+      initadjointfield_zero_field,
+      initadjointfield_field_by_function
     };
   }
 }

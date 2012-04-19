@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjoint3_impl_parameter.cpp
 
-\brief 
+\brief general element parameter for fluid adjoint equations for topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -12,12 +12,8 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
-
-
-#include "../drt_lib/drt_dserror.H"
-
 #include "topopt_fluidAdjoint3_impl_parameter.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 //----------------------------------------------------------------------*/
@@ -296,7 +292,3 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter()
   std::cout << "|    time factor div rhs:    " << timefacdivrhs_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;
 }
-
-
-
-#endif  // #ifdef CCADISCRET

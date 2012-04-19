@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -109,4 +108,3 @@ cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restart
 
 } // fluid_topopt_dyn()
 
-#endif  // #ifdef CCADISCRET

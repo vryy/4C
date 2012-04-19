@@ -479,6 +479,7 @@ private:
     set_turbulence_parameter,
     set_loma_parameter,
     calc_adjoint_systemmat_and_residual,
+    calc_adjoint_neumann,
     set_general_adjoint_parameter,
     set_adjoint_time_parameter
   };
@@ -736,10 +737,8 @@ void f3_get_mf_params(ParameterList&      params,
                          Epetra_SerialDenseVector&  elevec1);
 
   /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
+   * \brief convert string to action type
    */
-
   ActionType convertStringToActionType(const string& action) const;
 
 }; // class Fluid3
@@ -1040,7 +1039,8 @@ public:
     center_of_mass_calc,
     traction_velocity_component,
     traction_Uv_integral_component,
-    no_penetration
+    no_penetration,
+    adjoint_neumann
   };
 
 private:
@@ -1054,6 +1054,10 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int lsurface_;
 
+  /*!
+   * \brief convert string to action type
+   */
+  ActionType convertStringToActionType(const string& action) const;
 
 }; // class Fluid3Boundary
 

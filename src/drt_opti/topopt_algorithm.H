@@ -11,7 +11,7 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef TOPOPT_ALGORITHM_H_
 #define TOPOPT_ALGORITHM_H_
 
@@ -55,7 +55,7 @@ namespace TOPOPT
     virtual ~Algorithm();
 
     /// unused time loop
-    void TimeLoop() {dserror("No time loop in main optimization routine!");}
+    void TimeLoop();
 
     /// perform the optimization
     void OptimizationLoop();
@@ -114,7 +114,7 @@ namespace TOPOPT
     INPAR::TOPOPT::ConvCheck conv_check_type_;
 
     /// pseudo-porosity function for topology optimization
-    RCP<Epetra_Vector> poro_;
+    Teuchos::RCP<Epetra_Vector> poro_;
 
     /// objective fields
     double objective_ip_; // objective at new iteration in row map
@@ -124,4 +124,3 @@ namespace TOPOPT
 } // namespace TOPOPT
 
 #endif /* TOPOPT_ALGORITHM_H_ */
-#endif // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_UTILS_H_
 #define TOPOPT_UTILS_H_
@@ -24,4 +23,3 @@ namespace TOPOPT
 }
 
 #endif /* TOPOPT_UTILS_H_ */
-#endif  // #ifdef CCADISCRET

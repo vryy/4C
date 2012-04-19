@@ -11,10 +11,12 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_FLUIDADJOINT3_INTERFACE_H_
 #define TOPOPT_FLUIDADJOINT3_INTERFACE_H_
+
+
+#include "../drt_lib/drt_element.H"
 
 
 namespace GEO
@@ -69,29 +71,6 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec3_epetra
       ) = 0;
 
-    /// Evaluate the element at specified gauss points
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
-                         DRT::Discretization & discretization,
-                         const std::vector<int> & lm,
-                         Teuchos::ParameterList&    params,
-                         Teuchos::RCP<MAT::Material> & mat,
-                         Epetra_SerialDenseMatrix&  elemat_epetra,
-                         Epetra_SerialDenseVector&  elevec_epetra,
-                         const DRT::UTILS::GaussIntegration & intpoints ) = 0;
-
-    /// Compute Error
-    /*!
-      This class does not provide a definition for this function, it
-      must be defined in Fluid3Impl.
-     */
-    virtual int ComputeError(
-        DRT::ELEMENTS::Fluid3*          ele,
-        Teuchos::ParameterList&                  params,
-        Teuchos::RCP<MAT::Material>&    mat,
-        DRT::Discretization&            discretization,
-        vector<int>&                    lm,
-        Epetra_SerialDenseVector&       elevec1) = 0;
-
     /// Internal implementation class for fluid element
     static FluidAdjoint3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
   };
@@ -99,4 +78,3 @@ namespace ELEMENTS
 }
 
 #endif /* TOPOPT_FLUIDADJOINT3_INTERFACE_H_ */
-#endif  // #ifdef CCADISCRET

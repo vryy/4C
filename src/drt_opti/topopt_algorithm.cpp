@@ -10,14 +10,12 @@ Maintainer: Martin Winklmaier
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "../drt_adapter/adapter_topopt_fluid_adjoint.H"
-#include "../linalg/linalg_utils.H"
 
 #include "topopt_algorithm.H"
+#include <Teuchos_TimeMonitor.hpp>
+#include "../drt_adapter/adapter_topopt_fluid_adjoint.H"
+#include "../linalg/linalg_utils.H"
 #include "topopt_optimizer.H"
 
 
@@ -51,6 +49,13 @@ TOPOPT::Algorithm::Algorithm(
 TOPOPT::Algorithm::~Algorithm()
 {
 }
+
+
+void TOPOPT::Algorithm::TimeLoop()
+{
+  dserror("No time loop in main optimization routine!");
+}
+
 
 /*------------------------------------------------------------------------------------------------*
  | public: unused time loop of the main algorithm                                winklmaier 12/11 |
@@ -291,4 +296,3 @@ void TOPOPT::Algorithm::Restart(int step, const int type)
 {dserror("not implemented");
   return;
 }
-#endif // #ifdef CCADISCRET

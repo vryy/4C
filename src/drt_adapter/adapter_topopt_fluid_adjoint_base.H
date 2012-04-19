@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_topopt_fluid_adjoint_base.H
 
-\brief 
+\brief base adapter of adjoint fluid equations for topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,50 +11,18 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
 
 
-//forward declarations
-namespace DRT
-{
-  class Discretization;
-}
-namespace IO
-{
-  class DiscretizationWriter;
-}
-namespace LINALG
-{
-  class Solver;
-  class SparseMatrix;
-  class MultiMapExtractor;
-  class MapExtractor;
-  class BlockSparseMatrixBase;
-  class SparseOperator;
-}
+#include <Teuchos_RCP.hpp>
 
-namespace TOPOPT
-{
-  class Optimizer;
-}
 
-/// fluid algorithms
-namespace FLD
+namespace Teuchos
 {
-  namespace UTILS
-  {
-    class MapExtractor;
-    class KSPMapExtractor;
-    class FluidImpedanceWrapper;
-    class FluidWkOptimizationWrapper;
-    class FluidVolumetricSurfaceFlowWrapper;
-    class TotalTractionCorrector;
-  }
+  class ParameterList;
 }
-
 
 namespace ADAPTER
 {
@@ -95,9 +63,9 @@ namespace ADAPTER
 
   private:
 
+    /// setup the adjoint fluid time integration data
     void SetupAdjointFluid(const Teuchos::ParameterList& prbdyn);
   };
 } // namespace ADAPTER
 
 #endif /* ADAPTER_TOPOPT_FLUID_ADJOINT_H_ */
-#endif  // #ifdef CCADISCRET

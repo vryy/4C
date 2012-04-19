@@ -44,8 +44,6 @@ RESTARTEVRY                     20
 TIMEINT                         One_Step_Theta
 TIMESTEP                        0.1
 UPRES                           1
-GMSH_OUTPUT                     no
-GMSH_OUTPUT                     yes
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE Two_Phase_Flow //_Surf
 XFEMINTEGRATION                 Cut

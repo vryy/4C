@@ -2284,6 +2284,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Scale blocks of matrix with row infnorm?",
                                yesnotuple,yesnovalue,&fdyn);
 
+  BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
@@ -3625,7 +3626,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::TOPOPT::res,
               INPAR::TOPOPT::inc_and_res),
               &topoptcontrol);
-  DoubleParameter("CONVTOL",1e-5,"Tolerance for iteration over fields",&topoptcontrol);
+
   DoubleParameter("RESTOL",1e-5,"Convergence tolerance of the objective function",&topoptcontrol);
   DoubleParameter("INCTOL",1e-5,"Convergence tolerance of the optimized variable",&topoptcontrol);
 
@@ -3650,14 +3651,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "zero_field",
                                  "field_by_function"),
                                tuple<int>(
-                                   INPAR::TOPOPT::initfield_zero_field,
-                                   INPAR::TOPOPT::initfield_field_by_function),
+                                   INPAR::TOPOPT::initdensfield_zero_field,
+                                   INPAR::TOPOPT::initdensfield_field_by_function),
                                &topoptoptimizer);
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");
+
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for fluid problem",
+      tuple<std::string>(
+          "zero_field",
+          "field_by_function",
+          "disturbed_function_by_function",
+          "flame_vortex_interaction",
+          "beltrami_flow"),
+          tuple<int>(
+              INPAR::TOPOPT::initadjointfield_zero_field,
+              INPAR::TOPOPT::initadjointfield_field_by_function),
+              &topoptadjointfluiddyn);
+
+  IntParameter("INITFUNCNO",-1,"Function for initial field",&topoptadjointfluiddyn);
 
   DoubleParameter("THETA_PRES",-1.0,"One-Step-Theta-factor for pressure terms",&topoptadjointfluiddyn);
   DoubleParameter("THETA_DIV",-1.0,"One-Step-Theta-factor for divergence terms",&topoptadjointfluiddyn);
@@ -3687,7 +3702,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
-  BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,

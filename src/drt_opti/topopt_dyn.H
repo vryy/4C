@@ -10,7 +10,8 @@ Maintainer: Martin Winklmaier
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
+
 #ifndef TOPOPT_DYN_H
 #define TOPOPT_DYN_H
 
@@ -49,4 +50,3 @@ void fluid_topopt_dyn();
 #endif
 
 #endif /* #ifndef TOPOPT_DYN_H */
-#endif /* #ifdef CCADISCRET */

@@ -98,6 +98,8 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // get the combustion parameter list
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  combustdyn.set<bool>("GMSH_OUTPUT",DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
 
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();

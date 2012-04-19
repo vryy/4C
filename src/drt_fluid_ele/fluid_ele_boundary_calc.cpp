@@ -17,7 +17,6 @@ Maintainer: Andreas Ehrl
 
 #include "fluid_ele.H"
 #include "fluid_ele_boundary_calc.H"
-#include "fluid_ele_calc_weak_dbc.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_inpar/inpar_fluid.H"
@@ -43,7 +42,6 @@ Maintainer: Andreas Ehrl
 
 #include <blitz/array.h>
 
-//#include <cstdlib>
 
 using namespace DRT::UTILS;
 
@@ -135,297 +133,6 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
 }
 
 
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                            g.bau 03/07|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Boundary* ele,
-                                                ParameterList&            params,
-                                                DRT::Discretization&      discretization,
-                                                vector<int>&              lm,
-                                                Epetra_SerialDenseMatrix& elemat1,
-                                                Epetra_SerialDenseMatrix& elemat2,
-                                                Epetra_SerialDenseVector& elevec1,
-                                                Epetra_SerialDenseVector& elevec2,
-                                                Epetra_SerialDenseVector& elevec3)
-{
-    DRT::ELEMENTS::Fluid3Boundary::ActionType act = Fluid3Boundary::none;
-    string action = params.get<string>("action","none");
-    if (action == "none") dserror("No action supplied");
-    else if (action == "integrate_Shapefunction")
-        act = Fluid3Boundary::integrate_Shapefunction;
-    else if (action == "area calculation")
-        act = Fluid3Boundary::areacalc;
-    else if (action == "calc_flowrate")
-      act = Fluid3Boundary::calc_flowrate;
-    else if (action == "flowrate_deriv")
-        act = Fluid3Boundary::flowratederiv;
-    else if (action == "Outlet impedance")
-        act = Fluid3Boundary::Outletimpedance;
-    else if (action == "calc_node_normal")
-        act = Fluid3Boundary::calc_node_normal;
-    else if (action == "calc_node_curvature")
-        act = Fluid3Boundary::calc_node_curvature;
-    else if (action == "calc_surface_tension")
-        act = Fluid3Boundary::calc_surface_tension;
-    else if (action == "enforce_weak_dbc")
-        act = Fluid3Boundary::enforce_weak_dbc;
-    else if (action == "MixedHybridDirichlet")
-        act = Fluid3Boundary::mixed_hybrid_dbc;
-    else if (action == "conservative_outflow_bc")
-        act = Fluid3Boundary::conservative_outflow_bc;
-    else if (action == "calc_Neumann_inflow")
-        act = Fluid3Boundary::calc_Neumann_inflow;
-    else if (action == "calculate integrated pressure")
-        act = Fluid3Boundary::integ_pressure_calc;
-    else if (action == "center of mass calculation")
-        act = Fluid3Boundary::center_of_mass_calc;
-    else if (action == "calculate traction velocity component")
-        act = Fluid3Boundary::traction_velocity_component;
-    else if (action == "calculate Uv integral component")
-        act = Fluid3Boundary::traction_Uv_integral_component;
-    else if (action == "no penetration")
-        act = Fluid3Boundary::no_penetration;
-    else dserror("Unknown type of action for Fluid3_Boundary: %s",action.c_str());
-
-    // get status of Ale
-    const bool isale = ele->ParentElement()->IsAle();
-
-    switch(act)
-    {
-    case integrate_Shapefunction:
-    {
-      RefCountPtr<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
-
-      if (isale)
-      {
-        dispnp = discretization.GetState("dispnp");
-        if (dispnp!=null)
-        {
-          mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-        }
-      }
-
-      IntegrateShapeFunction(ele,params,discretization,lm,elevec1,mydispnp);
-      break;
-    }
-    case areacalc:
-    {
-      if (ele->Owner() == discretization.Comm().MyPID())
-        AreaCaculation(ele, params, discretization,lm);
-      break;
-    }
-    case integ_pressure_calc:
-    {
-      if(ele->Owner() == discretization.Comm().MyPID())
-        IntegratedPressureParameterCalculation(ele, params,discretization,lm);
-      break;
-    }
-    // general action to calculate the flow rate
-    case calc_flowrate:
-    {
-        ComputeFlowRate(ele, params,discretization,lm, elevec1);
-        break;
-    }
-    case flowratederiv:
-    {
-      FlowRateDeriv(ele,params,discretization,lm,elemat1,elemat2,elevec1,elevec2,elevec3);
-      break;
-    }
-    case Outletimpedance:
-    {
-        ImpedanceIntegration(ele,params,discretization,lm,elevec1);
-        break;
-    }
-    case calc_node_normal:
-    {
-      RefCountPtr<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
-
-      if (isale)
-      {
-        dispnp = discretization.GetState("dispnp");
-        if (dispnp!=null)
-        {
-          mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-        }
-      }
-      ElementNodeNormal(ele,params,discretization,lm,elevec1,mydispnp);
-      break;
-    }
-    case calc_node_curvature:
-    {
-      RefCountPtr<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
-
-      if (isale)
-      {
-        dispnp = discretization.GetState("dispnp");
-        if (dispnp!=null)
-        {
-          mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-        }
-      }
-
-      RefCountPtr<const Epetra_Vector> normals;
-      vector<double> mynormals;
-
-      normals = discretization.GetState("normals");
-      if (normals!=null)
-      {
-        mynormals.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
-      }
-
-      // what happens, if the mynormals vector is empty? (ehrl)
-      dserror("the action calc_node_curvature has not been called by now. What happens, if the mynormal vector is empty");
-
-      ElementMeanCurvature(ele, params,discretization,lm,elevec1,mydispnp,mynormals);
-      break;
-    }
-    case enforce_weak_dbc:
-    {
-      return DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface::Impl(ele)->EvaluateWeakDBC(
-        ele,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-      break;
-    }
-    case mixed_hybrid_dbc:
-    {
-      switch (distype)
-      {
-      // 2D:
-      case DRT::Element::line2:
-      {
-        if(ele->ParentElement()->Shape()==DRT::Element::quad4)
-        {
-          MixHybDirichlet<DRT::Element::line2,DRT::Element::quad4>(ele,
-                                                                   params,
-                                                                   discretization,
-                                                                   lm,
-                                                                   elemat1,
-                                                                   elevec1);
-        }
-        else
-        {
-          dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-        }
-        break;
-      }
-      // 3D:
-      case DRT::Element::quad4:
-      {
-        if(ele->ParentElement()->Shape()==DRT::Element::hex8)
-        {
-          MixHybDirichlet<DRT::Element::quad4,DRT::Element::hex8>(ele,
-                                                                  params,
-                                                                  discretization,
-                                                                  lm,
-                                                                  elemat1,
-                                                                  elevec1);
-        }
-        else
-        {
-          dserror("expected combination quad4/hex8 for surface/parent pair");
-        }
-        break;
-      }
-      default:
-      {
-        dserror("not implemented yet\n");
-      }
-
-      }
-
-      break;
-    }
-    case conservative_outflow_bc:
-    {
-      ConservativeOutflowConsistency(
-        ele,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-      break;
-    }
-    case calc_Neumann_inflow:
-    {
-      NeumannInflow(
-        ele,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-      break;
-    }
-    case calc_surface_tension:
-    {
-      // employs the divergence theorem acc. to Saksono eq. (24) and does not
-      // require second derivatives.
-
-      RCP<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
-
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
-      {
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-      }
-
-      // mynormals and mycurvature are not used in the function
-      vector<double> mynormals;
-      vector<double> mycurvature;
-
-      ElementSurfaceTension(ele,params,discretization,lm,elevec1,mydispnp,mynormals,mycurvature);
-      break;
-    }
-    case center_of_mass_calc:
-    {
-      // evaluate center of mass
-      if(ele->Owner() == discretization.Comm().MyPID())
-        CenterOfMassCalculation(ele, params,discretization,lm);
-      break;
-    }
-    case traction_velocity_component:
-    {
-      CalcTractionVelocityComponent(ele,params,discretization,lm,elevec1);
-      break;
-    }
-    case traction_Uv_integral_component:
-    {
-      ComputeNeumannUvIntegral(ele, params,discretization,lm, elevec1);
-      break;
-    }
-    case no_penetration:
-    {
-      NoPenetration(
-        ele,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elemat2,
-        elevec1);
-      break;
-    }
-    default:
-        dserror("Unknown type of action for Fluid3_Surface");
-    } // end of switch(act)
-
-    return 0;
-}
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
@@ -2517,6 +2224,65 @@ if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
 return;
 } // Fluid3BoundaryImpl::GetMaterialParams
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+   void  DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::MixHybDirichlet(
+     DRT::ELEMENTS::Fluid3Boundary*  surfele,
+     ParameterList&                  params,
+     DRT::Discretization&            discretization,
+     vector<int>&                    lm,
+     Epetra_SerialDenseMatrix&       elemat,
+     Epetra_SerialDenseVector&       elevec)
+{
+  switch (surfele->Shape())
+  {
+  // 2D:
+  case DRT::Element::line2:
+  {
+    if(surfele->ParentElement()->Shape()==DRT::Element::quad4)
+    {
+      MixHybDirichlet<DRT::Element::line2,DRT::Element::quad4>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+    }
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad4:
+  {
+    if(surfele->ParentElement()->Shape()==DRT::Element::hex8)
+    {
+      MixHybDirichlet<DRT::Element::quad4,DRT::Element::hex8>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8 for surface/parent pair");
+    }
+    break;
+  }
+  default:
+  {
+    dserror("not implemented yet\n");
+  }
+
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

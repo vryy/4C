@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjoint3_impl_parameter.H
 
-\brief 
+\brief general element parameter for fluid adjoint equations for topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_
 #define TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_
@@ -128,4 +127,3 @@ private:
 }
 
 #endif /* TOPOPT_FLUIDADJOINT3_IMPL_PARAMETER_H_ */
-#endif  // #ifdef CCADISCRET

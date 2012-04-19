@@ -79,9 +79,9 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0
 ---------------------------------------------FUNCT2 // initial density field
 FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0 // 1=fluid,0=no fluid
 -----------------------------------------FUNCT3 // velocity field - x values
-FUNCT3 EXPR 0 0.0 0 FUNCTION x // 1=fluid,0=no fluid
+FUNCT3 EXPR 0 0.0 0 FUNCTION x
 -----------------------------------------FUNCT4 // velocity field - y values
-FUNCT4 EXPR 0 0.0 0 FUNCTION -y // 1=fluid,0=no fluid
+FUNCT4 EXPR 0 0.0 0 FUNCTION -y
 -------------------FUNCT5 // normal tension on right boundary in x-direction
 FUNCT5 EXPR 0 0.0 0 FUNCTION x*x+2 // 1=fluid,0=no fluid
 -------------------FUNCT6 // normal tension on upper boundary in y-direction

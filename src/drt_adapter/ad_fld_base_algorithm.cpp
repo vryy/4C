@@ -406,13 +406,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams->set ("write restart every", prbdyn.get<int>("RESTARTEVRY"));
+  fluidtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
+  fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("UPRES"));
   // flag for writing stresses
-  fluidtimeparams->set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
+  fluidtimeparams->set<int>("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
   // flag for writing wall shear stress
-  fluidtimeparams->set ("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
+  fluidtimeparams->set<int>("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
+  // flag for writing fluid field to gmsh
+  fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
 
   // ---------------------------------------------------- lift and
   // drag
@@ -528,7 +530,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
     fluidtimeparams->sublist("XFEM").set<int>("combusttype", DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
-    fluidtimeparams->sublist("XFEM").set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(prbdyn,"GMSH_OUTPUT"));
   }
 
   // -------------------------------------------------------------------

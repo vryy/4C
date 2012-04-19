@@ -11,8 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "integrationcell.H"
 #include "element_coordtrafo.H"
@@ -379,6 +377,3 @@ std::string GEO::BoundaryIntCell::toString() const
   return s.str();
 }
 
-
-
-#endif  // #ifdef CCADISCRET

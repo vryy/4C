@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_topopt_fluid_adjoint_impl.cpp
 
-\brief 
+\brief adapter for element routines of fluid adjoint equations in topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -12,13 +12,9 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
-
-
+#include "adapter_topopt_fluid_adjoint_impl.H"
 #include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
 #include "../drt_lib/drt_dserror.H"
-
-#include "adapter_topopt_fluid_adjoint_impl.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -63,14 +59,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAdjointImpl::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidAdjointImpl::GetDBCMapExtractor()
-{
-  return adjointTimeInt_->DirichMaps();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::FluidAdjointImpl::TimeLoop()
 {
    adjointTimeInt_->Integrate();
@@ -96,20 +84,6 @@ IO::DiscretizationWriter& ADAPTER::FluidAdjointImpl::DiscWriter()
 void ADAPTER::FluidAdjointImpl::ReadRestart(int step)
 {
   adjointTimeInt_->ReadRestart(step);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidAdjointImpl::SetRestart(const int step,
-                const double time,
-                Teuchos::RCP<const Epetra_Vector> readvelnp,
-                Teuchos::RCP<const Epetra_Vector> readveln,
-                Teuchos::RCP<const Epetra_Vector> readvelnm,
-                Teuchos::RCP<const Epetra_Vector> readaccnp,
-                Teuchos::RCP<const Epetra_Vector> readaccn)
-{
-  adjointTimeInt_->SetRestart(step,time,readvelnp,readveln,readvelnm,readaccnp,readaccn);
 }
 
 
@@ -145,10 +119,9 @@ void ADAPTER::FluidAdjointImpl::SetTopOptData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAdjointImpl::SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
+void ADAPTER::FluidAdjointImpl::SetInitialAdjointField(const INPAR::TOPOPT::InitialAdjointField initfield,const int startfuncno)
 {
-   adjointTimeInt_->SetInitialFlowField(initfield,startfuncno);
+   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
    return;
 }
 
-#endif  // #ifdef CCADISCRET

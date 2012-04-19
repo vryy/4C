@@ -11,8 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 
 #include "timeInt_std_extrapolation.H"
 
@@ -632,9 +630,5 @@ void XFEM::Extrapolation::interpolation(
     presValues[index] = pres(0);
   } // loop over vectors to be set
 }
-
-
-#endif // CCADISCRET
-
 
 

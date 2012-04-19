@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt.cpp
 
-\brief 
+\brief topology optimization adapter
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,14 +11,11 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
-
+#include "adapter_topopt.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
-
-#include "adapter_topopt.H"
 
 
 /// constructor
@@ -72,5 +69,3 @@ RCP<TOPOPT::Optimizer> ADAPTER::TopOptBaseAlgorithm::Optimizer()
 ADAPTER::TopOptBaseAlgorithm::~TopOptBaseAlgorithm()
 {
 }
-
-#endif  // #ifdef CCADISCRET

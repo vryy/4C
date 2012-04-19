@@ -38,7 +38,6 @@ RESTARTEVRY                     10
 TIMEINT                         Gen_Alpha
 TIMESTEP                        0.05
 UPRES                           8
-GMSH_OUTPUT                     no
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 VELOCITY_JUMP_TYPE              vel_jump_none

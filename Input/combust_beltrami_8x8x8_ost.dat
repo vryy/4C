@@ -39,7 +39,6 @@ RESTARTEVRY                     10
 TIMEINT                         One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           1
-GMSH_OUTPUT                     no
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 VELOCITY_JUMP_TYPE              vel_jump_none

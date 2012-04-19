@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
+
 
 #include <iostream>
 #include "physics.H"
@@ -73,4 +73,3 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   return text;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -114,6 +114,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::set_adjoint_time_parameter;
   else if (action == "calc_adjoint_systemmat_and_residual")
     act = Fluid3::calc_adjoint_systemmat_and_residual;
+  else if (action == "AdjointNeumannBoundaryCondition")
+    act = Fluid3::calc_adjoint_neumann;
   else
   dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
@@ -825,11 +827,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
     case set_loma_parameter:
     case set_general_adjoint_parameter:
     case set_adjoint_time_parameter:
+    case calc_adjoint_neumann: // this is done by the surface elements
       break;
-      //-----------------------------------------------------------------------
-      // adjoint implementation enabling time-integration schemes such as
-      // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
-      //-----------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------
+    // adjoint implementation enabling time-integration schemes such as
+    // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
+    //-----------------------------------------------------------------------
     case calc_adjoint_systemmat_and_residual:
     {
       return DRT::ELEMENTS::FluidAdjoint3ImplInterface::Impl(Shape())->Evaluate(

@@ -42,7 +42,7 @@ Maintainer: Ursula Mayer
 
  *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef INTERSECTION_TEMPLATES_H_
 #define INTERSECTION_TEMPLATES_H_
 
@@ -545,9 +545,5 @@ bool computeRecoveryPlane(
 
 
 #endif /*INTERSECTION_TEMPLATES_H_*/
-#endif /*CCADISCRET*/
-
-
-
 
 

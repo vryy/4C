@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_topopt_fluid_adjoint_impl.H
 
-\brief 
+\brief adapter for element routines of fluid adjoint equations in topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_TOPOPT_FLUID_ADJOINT_IMPL_H_
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_IMPL_H_
@@ -20,24 +19,23 @@ Maintainer: Martin Winklmaier
 #include "adapter_topopt_fluid_adjoint.H"
 
 
-//forward declarations
+/// forward declarations
 namespace DRT
 {
   class Discretization;
-  class DofSet;
   class ResultTest;
 }
+
 namespace IO
 {
   class DiscretizationWriter;
 }
+
 namespace LINALG
 {
   class Solver;
-  class SparseMatrix;
-  class MapExtractor;
-  class BlockSparseMatrixBase;
 }
+
 namespace TOPOPT
 {
   class Optimizer;
@@ -47,14 +45,14 @@ namespace TOPOPT
   }
 }
 
-
-
 // Algorithm adapter classes for use in topology optimization of fluid fields
 namespace ADAPTER {
 
   /// adapter to adjoint fluid algorithm
   /*!
-
+   *
+   * This adapter communicates the element level of the fluid adjoint equations
+   * when an implicit time integration scheme is used.
 
     \author winklmaier
     \date 01/12
@@ -62,29 +60,35 @@ namespace ADAPTER {
   class FluidAdjointImpl : public FluidAdjoint
   {
   public:
+
+    /// constructor
     FluidAdjointImpl(
         Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
+    //! @name Vector access
+
+    /// velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+
+    /// velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
+
+    /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+    /// set initial flow field
+    virtual void SetInitialAdjointField(const INPAR::TOPOPT::InitialAdjointField initfield,const int startfuncno);
+
+    //@}
 
     virtual void TimeLoop();
     virtual void Output();
     virtual IO::DiscretizationWriter& DiscWriter();
 
     virtual void ReadRestart(int step);
-    virtual void SetRestart(const int step,
-                    const double time,
-                    Teuchos::RCP<const Epetra_Vector> readvelnp,
-                    Teuchos::RCP<const Epetra_Vector> readveln,
-                    Teuchos::RCP<const Epetra_Vector> readvelnm,
-                    Teuchos::RCP<const Epetra_Vector> readaccnp,
-                    Teuchos::RCP<const Epetra_Vector> readaccn);
 
     /*!
     \brief return type of time integration scheme
@@ -106,8 +110,6 @@ namespace ADAPTER {
         Teuchos::RCP<Epetra_Vector> porosity,
         Teuchos::RCP<TOPOPT::Optimizer> optimizer);
 
-    /// set initial flow field
-    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 
   private:
 
@@ -125,4 +127,3 @@ namespace ADAPTER {
 }
 
 #endif /* ADAPTER_TOPOPT_FLUID_ADJOINT_IMPL_H_ */
-#endif  // #ifdef CCADISCRET

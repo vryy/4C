@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_utils.cpp
 
-\brief 
+\brief collection of functions in namespace topopt
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef TOPOPT_UTILS_CPP_
 #define TOPOPT_UTILS_CPP_
@@ -43,4 +42,3 @@ void TOPOPT::printTopOptLogo()
 }
 
 #endif /* TOPOPT_UTILS_CPP_ */
-#endif  // #ifdef CCADISCRET

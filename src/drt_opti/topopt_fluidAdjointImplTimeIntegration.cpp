@@ -1,16 +1,8 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjointImplTimeIntegration.cpp
 
-\brief Control routine for fluid adjoint (in)stationary solvers,
+\brief fluid adjoint implicit time integration for topology optimization
 
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
-
-     and stationary solver.
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -21,12 +13,7 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
-
-// include Gmsh output
-#define GMSHOUTPUT
-
-
+#include "topopt_fluidAdjointImplTimeIntegration.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_fluid/fluid_utils.H"
@@ -39,18 +26,10 @@ Maintainer: Martin Winklmaier
 #include "../drt_opti/topopt_optimizer.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "topopt_fluidAdjointImplTimeIntegration.H"
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                     gammi 04/07|
+ |  Constructor (public)                               winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
                                                 LINALG::Solver&       solver,
                                                 ParameterList&        params,
@@ -171,6 +150,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(RefCountPtr<DRT::Discretizatio
   }
   else
   {
+    dserror("understand this before using it :)");
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
@@ -201,6 +181,10 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(RefCountPtr<DRT::Discretizatio
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
+
+    // the dirichlet values of the standard fluid are contained in zeros_
+    // -> clear them since they are unused
+    zeros_->PutScalar(0.0);
   }
 
   // the vector containing body and surface forces
@@ -225,19 +209,9 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(RefCountPtr<DRT::Discretizatio
 } // ImplicitTimeInt::ImplicitTimeInt
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Start the time integration. Allows                                   |
- |                                                                      |
- |  o starting steps with different algorithms                          |
- |  o the "standard" time integration                                   |
- |                                                           gammi 04/07|
+ | Start the time integration                          winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::Integrate()
 {
   // output of stabilization details
@@ -270,7 +244,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Integrate()
     cout << "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
     cout << "\n";
   }
-
+//velnp_->PutScalar(0.0);
+//veln_->PutScalar(0.0);
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem();
   else                                             TimeLoop();
@@ -283,15 +258,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Integrate()
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | contains the time loop                                    gammi 04/07|
+ | contains the time loop                              winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::TimeLoop()
 {
   // time measurement: time loop
@@ -344,24 +313,114 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeLoop()
     //  output
     // -------------------------------------------------------------------
 //    Output(); TODO activate
-
-    // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
   } // end time loop
 } // ImplicitTimeInt::TimeLoop
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | setup the variables to do a new time step                 u.kue 06/07|
+ | solve the stationary problem                        winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void TOPOPT::ADJOINT::ImplicitTimeInt::SolveStationaryProblem()
+{
+  // time measurement: time loop (stationary) --- start TimeMonitor tm2
+  TEUCHOS_FUNC_TIME_MONITOR(" + adjoint time loop");
+
+  // -------------------------------------------------------------------
+  // pseudo time loop (continuation loop)
+  // -------------------------------------------------------------------
+  // slightly increasing b.c. values by given (pseudo-)timecurves to reach
+  // convergence also for higher Reynolds number flows
+  // as a side effect, you can do parameter studies for different Reynolds
+  // numbers within only ONE simulation when you apply a proper
+  // (pseudo-)timecurve
+
+  while (step_< stepmax_)
+  {
+    // -------------------------------------------------------------------
+    //              set (pseudo-)time-dependent parameters
+    // -------------------------------------------------------------------
+    IncrementTimeAndStep();
+
+   // -------------------------------------------------------------------
+   //                         out to screen
+   // -------------------------------------------------------------------
+   if (myrank_==0)
+   {
+    printf("Stationary Fluid Adjoint Solver - STEP = %4d/%4d \n",step_,stepmax_);
+   }
+
+    SetElementTimeParameter();
+
+    // -------------------------------------------------------------------
+    //         evaluate Dirichlet and Neumann boundary conditions
+    // -------------------------------------------------------------------
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + evaluate adjoint boundary conditions");
+
+      // we evaluate the Dirichlet boundary condition(s) without the
+      // discretization since the dirichlet values are NOT based on
+      // input functions (timecurve and function) instead the objective's
+      // data is required
+      EvaluateDirichlet();
+
+      // we evaluate the Neumann boundary condition(s) with the evaluate-condition
+      // function since the Neumann terms are different for the adjoints and
+      // usually the evaluateNeumann enters the fluid Neumann conditions where
+      // we want another condition
+      ParameterList nbcparams;
+
+      // set action for elements
+      nbcparams.set("action"    ,"AdjointNeumannBoundaryCondition");
+
+      // set fluid velocities of current and last time step
+      RCP<Epetra_Vector> fluidvelnp = fluid_vels_->find(1)->second;
+      discret_->SetState("fluidveln",fluidvelnp);
+      discret_->SetState("fluidvelnp",fluidvelnp);
+
+      discret_->SetState("veln",veln_);
+      discret_->SetState("velnp",velnp_);
+
+      neumann_loads_->PutScalar(0.0);
+
+      discret_->EvaluateConditionUsingParentData(
+          nbcparams            ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          neumann_loads_       ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          "LineNeumann");
+
+      discret_->EvaluateConditionUsingParentData(
+          nbcparams            ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          neumann_loads_       ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          "SurfaceNeumann");
+
+      // clear state
+      discret_->ClearState();
+    }
+
+    // -------------------------------------------------------------------
+    //                     solve nonlinear equation system
+    // -------------------------------------------------------------------
+    NonLinearSolve();
+
+    // -------------------------------------------------------------------
+    //                         output of solution
+    // -------------------------------------------------------------------
+//    Output(); TODO activate
+  } // end of time loop
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | prepare one time step of instationary simulation    winklmaier 03/12 |
+ *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
 {
 
@@ -375,41 +434,68 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   {
-    ParameterList eleparams;
+    // we evaluate the Dirichlet boundary condition(s) without the
+    // discretization since the dirichlet values are NOT based on
+    // input functions (timecurve and function) instead the objective's
+    // data is required
+    EvaluateDirichlet();
 
-    // total time required for Dirichlet conditions
-    eleparams.set("total time",time_);
+    // we evaluate the Neumann boundary condition(s) with the evaluate-condition
+    // function since the Neumann terms are different for the adjoints and
+    // usually the evaluateNeumann enters the fluid Neumann conditions where
+    // we want another condition
+    ParameterList nbcparams;
 
-    // set vector values needed by elements
-    discret_->ClearState();
+    // set action for elements
+    nbcparams.set("action"    ,"AdjointNeumannBoundaryCondition");
+
+    // set fluid velocities of current and last time step
+    RCP<Epetra_Vector> fluidveln = Teuchos::null;
+    RCP<Epetra_Vector> fluidvelnp = Teuchos::null;
+
+    // fluid starts at step 0 (=initial values), stops at stepmax
+    // adjoint starts at step stepmax (=initial values), stops at step 0
+    // evaluate fluid fields with according appropriate, reverse counted step
+    fluidveln = fluid_vels_->find(stepmax_-step_+1)->second;
+    fluidvelnp = fluid_vels_->find(stepmax_-step_)->second;
+
+    discret_->SetState("fluidveln",fluidveln);
+    discret_->SetState("fluidvelnp",fluidvelnp);
+
+    discret_->SetState("veln",veln_);
     discret_->SetState("velnp",velnp_);
 
-    // predicted dirichlet values
-    // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
+    neumann_loads_->PutScalar(0.0);
 
+    discret_->EvaluateConditionUsingParentData(
+        nbcparams            ,
+        Teuchos::null        ,
+        Teuchos::null        ,
+        neumann_loads_       ,
+        Teuchos::null        ,
+        Teuchos::null        ,
+        "LineNeumann");
+
+    discret_->EvaluateConditionUsingParentData(
+        nbcparams            ,
+        Teuchos::null        ,
+        Teuchos::null        ,
+        neumann_loads_       ,
+        Teuchos::null        ,
+        Teuchos::null        ,
+        "SurfaceNeumann");
+
+    // clear state
     discret_->ClearState();
-
-// TODO make this work
-//    // evaluate Neumann conditions
-//    neumann_loads_->PutScalar(0.0);
-//    discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-//    discret_->ClearState();
   }
 
   return;
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | contains the nonlinear iteration loop                     gammi 04/07|
+ | contains the nonlinear iteration loop               winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
 {
   // time measurement: nonlinear iteration
@@ -460,21 +546,21 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       // get cpu time
       const double tcpu=Teuchos::Time::wallTime();
 
+      // reset sysmat and residual and add neumann terms
       sysmat_->Zero();
+
+      residual_->Update(1.0,*neumann_loads_,0.0);
 
       // create the parameters for the discretization
       ParameterList eleparams;
-
-      // add Neumann loads
-      residual_->Update(1.0,*neumann_loads_,0.0);
-
-      discret_->ClearState();
 
       // set action type
       eleparams.set("action","calc_adjoint_systemmat_and_residual");
 
       //set additional pseudo-porosity field for topology optimization
       eleparams.set("topopt_porosity",topopt_porosity_);
+
+      discret_->ClearState();
 
       // set fluid velocities of current and last time step
       RCP<Epetra_Vector> fluidveln = Teuchos::null;
@@ -489,8 +575,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         // fluid starts at step 0 (=initial values), stops at stepmax
         // adjoint starts at step stepmax (=initial values), stops at step 0
         // evaluate fluid fields with according appropriate, reverse counted step
-        fluidveln = fluid_vels_->find(stepmax_-step_)->second;
-        fluidvelnp = fluid_vels_->find(stepmax_-step_+1)->second;
+        fluidveln = fluid_vels_->find(stepmax_-step_+1)->second;
+        fluidvelnp = fluid_vels_->find(stepmax_-step_)->second;
       }
       discret_->SetState("fluidveln",fluidveln);
       discret_->SetState("fluidvelnp",fluidvelnp);
@@ -616,6 +702,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         break;
       }
       else // if not yet converged
+      {
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
@@ -623,6 +710,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
               incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
           printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
         }
+      }
+//      dserror("stop here");
     }
 
     // warn if itemax is reached without convergence, but proceed to
@@ -675,6 +764,19 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
+//cout << "residual is " << *residual_ << endl;
+//cout << "adjoint vel is " << *velnp_ << endl;
+//cout << "fluidvel is " << *fluid_vels_->find(1)->second << endl;
+
+//      Epetra_Vector zerovec(*residual_);
+//      INPAR::TOPOPT::InitialAdjointField initfield = INPAR::TOPOPT::initadjointfield_field_by_function;
+//      SetInitialAdjointField(initfield,3);
+//      cout << "velnp is " << *velnp_ << endl;
+//      LINALG::ApplyDirichlettoSystem(velnp_,zeros_,*(dbcmaps_->CondMap()));
+//      cout << "velnp is " << *velnp_ << endl;
+//      sysmat_->Multiply(false,*velnp_,zerovec);
+//      zerovec.Update(-1.0,*residual_,1.0);
+//      cout << "sysmat*exactsol-residual = " << endl << zerovec << endl;
 
       solver_.Solve(
           sysmat_->EpetraOperator(),
@@ -697,24 +799,17 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
     // -------------------------------------------------------------------
     velnp_->Update(1.0,*incvel_,1.0);
   } // end iteration loop
-} // ImplicitTimeInt::LinearSolve
+} // ImplicitTimeInt::NonLinearSolve
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                                      |
  | One-step-Theta: (step>1)                                             |
- |  velnm_ =veln_                                                       |
  |  veln_  =velnp_                                                      |
- |                                                      winklmaier 03/12|
+ |                                                     winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::TimeUpdate()
 {
   // velocities/pressures of this step become most recent
@@ -726,15 +821,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeUpdate()
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | output of solution vector to binio                        gammi 04/07|
+ | output of solution vector to binio                   winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::Output()
 {
 
@@ -753,9 +842,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output()
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
     output_.WriteVector("pressure", pressure);
 
-#ifdef GMSHOUTPUT
-    OutputToGmsh(step_, time_,false);
-#endif
+    if (params_.get<bool>("GMSH_OUTPUT"))
+      OutputToGmsh(step_, time_,false);
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_.WriteElementData();
@@ -787,6 +875,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output()
 } // ImplicitTimeInt::Output
 
 
+
+/*----------------------------------------------------------------------*
+ | output of solution vector to gmsh                   winklmaier 03/12 |
+ *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::OutputToGmsh(
     const int step,
     const double time,
@@ -831,15 +923,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::OutputToGmsh(
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |                                                             kue 04/07|
+ | Read restart of instationary simulation             winklmaier 03/12 |
  -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TOPOPT::ADJOINT::ImplicitTimeInt::ReadRestart(int step)
 {
   //  ART_exp_timeInt_->ReadRestart(step);
@@ -856,53 +942,17 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::ReadRestart(int step)
 }
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |set restart values (turbulent inflow only)             rasthofer 06/11|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TOPOPT::ADJOINT::ImplicitTimeInt::SetRestart(
-  const int step,
-  const double time,
-  Teuchos::RCP<const Epetra_Vector> readvelnp,
-  Teuchos::RCP<const Epetra_Vector> readveln,
-  Teuchos::RCP<const Epetra_Vector> readvelnm,
-  Teuchos::RCP<const Epetra_Vector> readaccnp,
-  Teuchos::RCP<const Epetra_Vector> readaccn)
-{
-  time_ = time;
-  step_ = step;
-
-  velnp_->Update(1.0,*readvelnp,0.0);
-  veln_->Update(1.0,*readveln,0.0);
-
-  SetElementTimeParameter();
-}
-
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  set initial flow field for test cases                    gammi 04/07|
+ |  set initial flow field for test cases              winklmaier 03/12 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialFlowField(
-  const INPAR::FLUID::InitialField initfield,
+void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
+  const INPAR::TOPOPT::InitialAdjointField initfield,
   const int startfuncno
   )
 {
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
-  if (initfield == INPAR::FLUID::initfield_field_by_function or
-      initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
+  if (initfield == INPAR::TOPOPT::initadjointfield_field_by_function)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -924,102 +974,14 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialFlowField(
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0,*velnp_ ,0.0);
-
-    // add random perturbation of certain percentage to function
-    if (initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
-    {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-      int err =0;
-
-      // random noise is perc percent of the initial profile
-      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
-
-      // out to screen
-      if (myrank_==0)
-      {
-        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
-        cout << "\n\n";
-      }
-
-      double bmvel=0;
-      double mybmvel=0;
-      double thisvel=0;
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
-
-        for(int index=0;index<numdim_;++index)
-        {
-          int gid = nodedofset[index];
-          int lid = dofrowmap->LID(gid);
-
-          thisvel=(*velnp_)[lid];
-          if (mybmvel*mybmvel < thisvel*thisvel) mybmvel=thisvel;
-        }
-      }
-
-      // the noise is proportional to the bulk mean velocity of the
-      // undisturbed initial field (=2/3*maximum velocity)
-      mybmvel=2*mybmvel/3;
-      discret_->Comm().MaxAll(&mybmvel,&bmvel,1);
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
-
-        // check whether we have a pbc condition on this node
-        vector<DRT::Condition*> mypbc;
-
-        lnode->GetCondition("SurfacePeriodic",mypbc);
-
-        // check whether a periodic boundary condition is active on this node
-        if (mypbc.size()>0)
-        {
-          // yes, we have one
-
-          // get the list of all his slavenodes
-          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
-
-          // slavenodes are ignored
-          if(master == pbcmapmastertoslave_->end()) continue;
-        }
-
-        // add random noise on initial function field
-        for(int index=0;index<numdim_;++index)
-        {
-          int gid = nodedofset[index];
-
-          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-
-          double noise = perc * bmvel * randomnumber;
-
-          err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
-          err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
-        }
-
-        if(err!=0)
-        {
-          dserror("dof not on proc");
-        }
-      }
-    }
   }
   else
   {
-    dserror("Only initial fields by (un-)disturbed functions are available up to now!");
+    dserror("Only initial fields by undisturbed functions are available up to now!");
   }
 
   return;
-} // end SetInitialFlowField
+} // end SetInitialAdjointField
 
 
 
@@ -1039,220 +1001,57 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetTopOptData(
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | evaluate error for test cases with analytical solutions   gammi 04/07|
+ | evaluate dirichlet condition                         winklmaier 03/12|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
+void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
 {
+  DRT::Node* node = NULL;
 
-  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
 
-  switch(calcerr)
+  const Epetra_Map* map = discret_->DofRowMap();
+  for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
   {
-  case INPAR::FLUID::no_error_calculation:
-    // do nothing --- no analytical solution available
-    break;
-  case INPAR::FLUID::beltrami_flow:
-  case INPAR::FLUID::channel2D:
-  case INPAR::FLUID::gravitation:
-  case INPAR::FLUID::shear_flow:
-  {
-    // create the parameters for the discretization
-    ParameterList eleparams;
+    node = discret_->lRowNode(inode);
+    DRT::Condition* cond = node->GetCondition("Dirichlet");
+    if (cond==NULL) continue;
 
-    // action for elements
-    eleparams.set("action","calc_adjoint_error");
-    eleparams.set<int>("calculate error",calcerr);
+    const vector<int> dofs = discret_->Dof(node);
+    vector<double> vel;
+    DRT::UTILS::ExtractMyValues(*velnp_,vel,dofs);
 
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p at time n+1 (converged)",velnp_);
+    const int nsd = vel.size()-1;
+    double values[3] = {0.0}; // dimension is <= 3 so this is enough
 
-    // get (squared) error values
-    // 0: vel_mag
-    // 1: p
-    // 2: u_mag,analytical
-    // 3: p_analytic
-    // (4: vel_x)
-    // (5: vel_y)
-    // (6: vel_z)
-    Teuchos::RCP<Epetra_SerialDenseVector> errors
-      = Teuchos::rcp(new Epetra_SerialDenseVector(2+2));
-    //  = Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+2+2))
+    // TODO here an appropriate if will come which is true if objective contains
+    LINALG::Matrix<2,1> coords(node->X());
+    // dens 2, visc 3
+    values[0] = coords(0)*coords(0) + coords(0)*coords(1);
+    values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
+    // quadratic velocity, linear pressure, exact example
+//    values[0] = coords(0)*coords(0);
+//    values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
+    // quadratic exact example
+//    values[0] = 5.0*coords(0) + 2.0*coords(1);
+//    values[1] = 3.0*coords(0) + 7.0*coords(1);
+    // basic example : alpha = 0
+//    values[0] = 1.0;
+//    values[1] = 0.0;
+//    // most fully example
+//    values[0] = coords(0);
+//    values[1] = -coords(1);
+    // TODO this is just a dummy example inserting zeros
 
-    // call loop over elements (assemble nothing)
-    discret_->EvaluateScalars(eleparams, errors);
-    discret_->ClearState();
-
-    double velerr = 0.0;
-    double preerr = 0.0;
-
-    // integrated analytic solution in order to compute relative error
-    double velint = 0.0;
-    double pint = 0.0;
-
-    // error in the single velocity components
-    //double velerrx = 0.0;
-    //double velerry = 0.0;
-    //double velerrz = 0.0;
-
-    // for the L2 norm, we need the square root
-    velerr = sqrt((*errors)[0]);
-    preerr = sqrt((*errors)[1]);
-
-    // analytical vel_mag and p_mag
-    velint= sqrt((*errors)[2]);
-    pint = sqrt((*errors)[3]);
-
-    if (myrank_ == 0)
-    {
-      {
-        cout.precision(8);
-        cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
-          DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error") <<
-          " ----------" << endl;
-        cout << "| velocity:  " << velerr/velint << endl;
-        cout << "| pressure:  " << preerr/pint << endl;
-        cout << "--------------------------------------------------------------------" << endl << endl;
-      }
-
-      //velerrx = sqrt((*errors)[4]);
-      //velerry = sqrt((*errors)[5]);
-      //if (numdim_==3)
-      //  velerrz = sqrt((*errors)[6]);
-
-      // append error of the last time step to the error file
-      if ((step_==stepmax_) or (time_==maxtime_))// write results to file
-      {
-        ostringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-        const std::string fname = simulation+".relerror";
-
-        std::ofstream f;
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << "#| " << simulation << "\n";
-        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-        f.flush();
-        f.close();
-      }
-
-      ostringstream temp;
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      const std::string fname = simulation+"_time.relerror";
-
-      if(step_==1)
-      {
-        std::ofstream f;
-        f.open(fname.c_str());
-        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-        f.flush();
-        f.close();
-      }
-      else
-      {
-        std::ofstream f;
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-        f.flush();
-        f.close();
-      }
-    }
+    int ldofs[3];
+    for (int idim=0;idim<nsd;idim++) ldofs[idim] = map->LID(dofs[idim]);
+    velnp_->ReplaceMyValues(nsd,(double*)values,(int*)ldofs);
   }
-  break;
-  default:
-    dserror("Cannot calculate error. Unknown type of analytical test problem");
-  }
-  return;
-} // end EvaluateErrorComparedToAnalyticalSol
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | solve stationary fluid problem                              gjb 10/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TOPOPT::ADJOINT::ImplicitTimeInt::SolveStationaryProblem()
-{
-  // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  TEUCHOS_FUNC_TIME_MONITOR(" + adjoint time loop");
-
-  // -------------------------------------------------------------------
-  // pseudo time loop (continuation loop)
-  // -------------------------------------------------------------------
-  // slightly increasing b.c. values by given (pseudo-)timecurves to reach
-  // convergence also for higher Reynolds number flows
-  // as a side effect, you can do parameter studies for different Reynolds
-  // numbers within only ONE simulation when you apply a proper
-  // (pseudo-)timecurve
-
-  while (step_< stepmax_)
-  {
-    // -------------------------------------------------------------------
-    //              set (pseudo-)time-dependent parameters
-    // -------------------------------------------------------------------
-    IncrementTimeAndStep();
-
-   // -------------------------------------------------------------------
-   //                         out to screen
-   // -------------------------------------------------------------------
-   if (myrank_==0)
-   {
-    printf("Stationary Fluid Adjoint Solver - STEP = %4d/%4d \n",step_,stepmax_);
-   }
-
-    SetElementTimeParameter();
-
-    // -------------------------------------------------------------------
-    //         evaluate Dirichlet and Neumann boundary conditions
-    // -------------------------------------------------------------------
-    {
-      ParameterList eleparams;
-
-      // other parameters needed by the elements
-      eleparams.set("total time",time_);
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("velaf",velnp_);
-      // predicted dirichlet values
-      // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
-
-      discret_->ClearState();
-
-      // TODO make this work
-//      neumann_loads_->PutScalar(0.0);
-//      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-//      discret_->ClearState();
-    }
-
-    // -------------------------------------------------------------------
-    //                     solve nonlinear equation system
-    // -------------------------------------------------------------------
-    NonLinearSolve();
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-//    Output(); TODO activate
-  } // end of time loop
-} // ImplicitTimeInt::SolveStationaryProblem
+}
 
 
 
 /*----------------------------------------------------------------------*
- | Destructor dtor (public)                                  gammi 04/07|
+ | Destructor dtor (public)                            winklmaier 03/12 |
  *----------------------------------------------------------------------*/
 TOPOPT::ADJOINT::ImplicitTimeInt::~ImplicitTimeInt()
 {
@@ -1293,7 +1092,10 @@ double TOPOPT::ADJOINT::ImplicitTimeInt::ResidualScaling() const
 
 
 
-void TOPOPT::ADJOINT::ImplicitTimeInt::SetVelocityField(
+/*----------------------------------------------------------------------*
+ | set velocity field from outside (for tests)         winklmaier 03/12 |
+ *----------------------------------------------------------------------*/
+void TOPOPT::ADJOINT::ImplicitTimeInt::SetAdjointField(
     Teuchos::RCP<const Epetra_Vector> setvelnp
 )
 {
@@ -1383,4 +1185,3 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter()
   discret_->Evaluate(eleparams,null,null,null,null,null);
   return;
 }
-#endif  // #ifdef CCADISCRET

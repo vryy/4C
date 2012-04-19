@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer3.cpp
 
-\brief 
+\brief optimizer of the topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,22 +11,22 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
-
-#include "../drt_lib/drt_dserror.H"
 
 #include "topopt_optimizer.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 
-// TODO fill!
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double TOPOPT::Optimizer::EvaluateObjective(
     Teuchos::RCP<Epetra_Vector> porosity,
-    const string& action
+    const std::string& action
 )
 {
   double value = 0.0;
+  // TODO fill!
 
   if (action=="dissipation")
   {
@@ -45,7 +45,3 @@ double TOPOPT::Optimizer::EvaluateObjective(
 
   return value;
 }
-
-
-
-#endif  // #ifdef CCADISCRET

@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt_algo.H
 
-\brief
+\brief fluid - topology optimization adapter
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,12 +11,15 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
+
 #ifndef ADAPTER_FLUID_TOPOPT_ALGO_H_
 #define ADAPTER_FLUID_TOPOPT_ALGO_H_
+
 
 #include "ad_fld_base_algorithm.H"
 #include "adapter_topopt.H"
 #include "adapter_topopt_fluid_adjoint_base.H"
+
 
 namespace ADAPTER
 {
@@ -68,7 +71,6 @@ namespace ADAPTER
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
   };
-
 } // namespace ADAPTER
 
 #endif /* ADAPTER_FLUID_TOPOPT_ALGO_H_ */

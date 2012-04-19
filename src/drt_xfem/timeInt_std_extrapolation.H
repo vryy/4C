@@ -12,7 +12,6 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
 #ifndef TIMEINT_STD_EXTRAPOLATION_H_
 #define TIMEINT_STD_EXTRAPOLATION_H_
 
@@ -103,4 +102,4 @@ private:
 }; // class Startvalues
 } // namespace XFEM
 #endif /*STARTVALUES_H_*/
-#endif  // CCADISCRET
+

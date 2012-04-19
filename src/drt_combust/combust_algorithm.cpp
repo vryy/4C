@@ -67,7 +67,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   evaltimeratio_(1.0),
   extract_interface_vel_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"EXTRACT_INTERFACE_VEL")),
   convel_layers_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("NUM_CONVEL_LAYERS")),
-  gmshoutput_(DRT::INPUT::IntegralValue<int>(combustdyn,"GMSH_OUTPUT")),
+  gmshoutput_(combustdyn.get<bool>("GMSH_OUTPUT")),
   combustdyn_(combustdyn),
   flamefront_(Teuchos::null),
   reinit_pde_(Teuchos::null),

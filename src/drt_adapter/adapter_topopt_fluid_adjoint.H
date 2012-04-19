@@ -11,51 +11,32 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_TOPOPT_FLUID_ADJOINT_H_
 #define ADAPTER_TOPOPT_FLUID_ADJOINT_H_
 
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_topopt.H"
 
 
-// forward declarations
+/// forward declarations
 class Epetra_Vector;
 
 namespace LINALG
 {
-  class SparseMatrix;
-  class BlockSparseMatrixBase;
   class MapExtractor;
-  class Solver;
 }
 
 namespace DRT
 {
   class Discretization;
-  class DofSet;
   class ResultTest;
 }
 
 namespace IO
 {
   class DiscretizationWriter;
-}
-
-namespace FLD
-{
-  class TurbulenceStatisticManager;
-  namespace UTILS
-  {
-    class MapExtractor;
-  }
-}
-
-namespace COMBUST
-{
-  class InterfaceHandleCombust;
-  class FlameFront;
 }
 
 namespace TOPOPT
@@ -96,11 +77,8 @@ namespace ADAPTER {
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
-
     /// set initial flow field
-    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
+    virtual void SetInitialAdjointField(const INPAR::TOPOPT::InitialAdjointField initfield,const int startfuncno) = 0;
     //@}
 
     //! @name Time step helpers
@@ -116,14 +94,6 @@ namespace ADAPTER {
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
-    /// set restart
-    virtual void SetRestart(const int step,
-                    const double time,
-                    Teuchos::RCP<const Epetra_Vector> readvelnp,
-                    Teuchos::RCP<const Epetra_Vector> readveln,
-                    Teuchos::RCP<const Epetra_Vector> readvelnm,
-                    Teuchos::RCP<const Epetra_Vector> readaccnp,
-                    Teuchos::RCP<const Epetra_Vector> readaccn) = 0;
     //@}
 
     /// return type of time integration scheme
@@ -144,4 +114,3 @@ namespace ADAPTER {
 }
 
 #endif /* ADAPTER_TOPOPT_FLUID_ADJOINT_H_ */
-#endif  // #ifdef CCADISCRET

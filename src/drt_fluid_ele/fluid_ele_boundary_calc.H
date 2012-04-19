@@ -49,38 +49,163 @@ public:
   Fluid3BoundaryImplInterface() {}
   /// Empty destructor
   virtual ~Fluid3BoundaryImplInterface() {}
-  /// Evaluate the element
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in Fluid3BoundaryImpl.
-   */
-  virtual int Evaluate(DRT::ELEMENTS::Fluid3Boundary* ele,
-                       ParameterList&             params,
-                       DRT::Discretization&       discretization,
-                       vector<int>&               lm,
-                       Epetra_SerialDenseMatrix&  elemat1_epetra,
-                       Epetra_SerialDenseMatrix&  elemat2_epetra,
-                       Epetra_SerialDenseVector&  elevec1_epetra,
-                       Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra
-                       ) = 0;
-
-
+  
   /// Evaluate a Neumann boundary condition
   /*!
     This class does not provide a definition for this function, it
     must be defined in Fluid3BoundaryImpl.
    */
   virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*      ele,
-                              ParameterList&             params,
-                              DRT::Discretization&       discretization,
-                              DRT::Condition&            condition,
-                              vector<int>&               lm,
-                              Epetra_SerialDenseVector&  elevec1_epetra,
-                              Epetra_SerialDenseMatrix*  elemat1
-                              ) = 0;
+      ParameterList&             params,
+      DRT::Discretization&       discretization,
+      DRT::Condition&            condition,
+      vector<int>&               lm,
+      Epetra_SerialDenseVector&  elevec1_epetra,
+      Epetra_SerialDenseMatrix*  elemat1
+  ) = 0;
 
-  /// Internal implementation class for Fluid3Boundary elements
+  virtual void IntegrateShapeFunction(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1,
+      const vector<double>&           mydispnp
+  ) = 0;
+
+  virtual void AreaCaculation(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm
+  ) = 0;
+
+  virtual void IntegratedPressureParameterCalculation(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm
+  ) = 0;
+
+  virtual void ComputeFlowRate(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void FlowRateDeriv(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseMatrix&       elemat2,
+      Epetra_SerialDenseVector&       elevec1,
+      Epetra_SerialDenseVector&       elevec2,
+      Epetra_SerialDenseVector&       elevec3
+  ) = 0;
+
+  virtual void ImpedanceIntegration(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void ElementNodeNormal(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1,
+      const vector<double>&           mydispnp
+  ) = 0;
+
+  virtual void ElementMeanCurvature(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1,
+      const vector<double>&           mydispnp,
+      vector<double>&                 mynormals
+  ) = 0;
+
+  virtual void MixHybDirichlet(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void ConservativeOutflowConsistency(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void NeumannInflow(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void ElementSurfaceTension(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1,
+      const vector<double>&                 mydispnp,
+      vector<double>&                 mynormals,
+      vector<double>&                 mycurvature
+  ) = 0;
+
+  virtual void CenterOfMassCalculation(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm
+  ) = 0;
+
+  virtual void CalcTractionVelocityComponent(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void ComputeNeumannUvIntegral(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+  virtual void NoPenetration(
+      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseMatrix&       elemat2,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
+    /// Internal implementation class for Fluid3Boundary elements
   static Fluid3BoundaryImplInterface* Impl(const DRT::Element* ele);
 
 };
@@ -146,18 +271,6 @@ public:
   //! number of dof's per node
   static const int numdofpernode_ = nsd_ + 1;
 
-  //! Evaluate
-  virtual int Evaluate(DRT::ELEMENTS::Fluid3Boundary* ele,
-                       ParameterList&             params,
-                       DRT::Discretization&       discretization,
-                       vector<int>&               lm,
-                       Epetra_SerialDenseMatrix&  elemat1_epetra,
-                       Epetra_SerialDenseMatrix&  elemat2_epetra,
-                       Epetra_SerialDenseVector&  elevec1_epetra,
-                       Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra
-                       );
-
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*    ele,
                               ParameterList&             params,
@@ -168,15 +281,6 @@ public:
                               Epetra_SerialDenseMatrix*  elemat1
                               );
 
-
-private:
-
-    void CreateLinesTri(const int& nline,
-                        const int& nnode);
-
-    void CreateLinesQuad(const int& nline,
-                         const int& nnode);
-
     /*!
     \brief integrate shapefunction over surface element
 
@@ -186,14 +290,13 @@ private:
     \param lm (in)            : location vector of this element
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
-
-    virtual void IntegrateShapeFunction(
-                                    DRT::ELEMENTS::Fluid3Boundary*    ele,
-                                    ParameterList&                    params,
-                                    DRT::Discretization&              discretization,
-                                    vector<int>&                      lm,
-                                    Epetra_SerialDenseVector&         elevec1,
-                                    const std::vector<double>&        edispnp);
+  virtual void IntegrateShapeFunction(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1,
+      const std::vector<double>&        edispnp);
 
     /*!
       \brief Calculate node normals
@@ -203,13 +306,14 @@ private:
       \param elevec1 (out)      : Weighted element normal for assembly
       \param edispnp (in)       : Displacement-vector
     */
-    void ElementNodeNormal(
-                         DRT::ELEMENTS::Fluid3Boundary*   ele,
-                         ParameterList&                 params,
-                         DRT::Discretization&           discretization,
-                         vector<int>&                   lm,
-                         Epetra_SerialDenseVector&      elevec1,
-                         const std::vector<double>&     edispnp);
+  void ElementNodeNormal(
+      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      ParameterList&                 params,
+      DRT::Discretization&           discretization,
+      vector<int>&                   lm,
+      Epetra_SerialDenseVector&      elevec1,
+      const std::vector<double>&     edispnp);
+
     /*!
       \brief Calculate mean curvature H. Interpolate the results to achieve better
       results in the surface tension algorithm (c0 field -> c1 field).
@@ -218,15 +322,14 @@ private:
       \param edispnp  (in)      : Displacement-vector
       \param enormals (in)      : Node normals
     */
-    void ElementMeanCurvature(
-                              DRT::ELEMENTS::Fluid3Boundary*    ele,
-                              ParameterList&                    params,
-                              DRT::Discretization&              discretization,
-                              vector<int>&                      lm,
-                              Epetra_SerialDenseVector&         elevec1,
-                              const std::vector<double>&        edispnp,
-                              std::vector<double>&              enormals);
-
+  void ElementMeanCurvature(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1,
+      const std::vector<double>&        edispnp,
+      std::vector<double>&              enormals);
 
     /*!
       \brief Integrate surface tension
@@ -236,15 +339,15 @@ private:
       \param enormals  (in)     : Node normals
       \param curvature (in)     : Interpolated curvature
     */
-    void ElementSurfaceTension(
-                               DRT::ELEMENTS::Fluid3Boundary*   ele,
-                               ParameterList&                   params,
-                               DRT::Discretization&             discretization,
-                               vector<int>&                     lm,
-                               Epetra_SerialDenseVector&        elevec1,
-                               const std::vector<double>&       edispnp,
-                               std::vector<double>&             enormals,
-                               std::vector<double>&             ecurvature);
+  void ElementSurfaceTension(
+      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      ParameterList&                   params,
+      DRT::Discretization&             discretization,
+      vector<int>&                     lm,
+      Epetra_SerialDenseVector&        elevec1,
+      const std::vector<double>&       edispnp,
+      std::vector<double>&             enormals,
+      std::vector<double>&             ecurvature);
 
     /*!
     brief integrate elemental areas over a surface
@@ -252,11 +355,11 @@ private:
     \param params (in/out)    : ParameterList for communication between control routine
                                 and elements
     */
-    void AreaCaculation(DRT::ELEMENTS::Fluid3Boundary*    ele,
-                        ParameterList&                    params,
-                        DRT::Discretization&              discretization,
-                        vector<int>&                      lm);
-
+  void AreaCaculation(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm);
 
    /*!
     brief integrate elemental pressure over a surface
@@ -266,7 +369,7 @@ private:
     \param discretization (in): A reference to the underlying discretization
     \param lm (in)            : location vector of this element
     */
-    void IntegratedPressureParameterCalculation(
+  void IntegratedPressureParameterCalculation(
       DRT::ELEMENTS::Fluid3Boundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
@@ -280,12 +383,11 @@ private:
     \param discretization (in): A reference to the underlying discretization
     \param lm (in)            : location vector of this element
     */
-    void CenterOfMassCalculation(
+  void CenterOfMassCalculation(
       DRT::ELEMENTS::Fluid3Boundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm);
-
 
     /*!
     \brief calculate the velocity component of the traction
@@ -296,13 +398,12 @@ private:
     \param lm (in)            : location vector of this element
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
-    void CalcTractionVelocityComponent(
+  void CalcTractionVelocityComponent(
       DRT::ELEMENTS::Fluid3Boundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
       Epetra_SerialDenseVector&         elevec1);
-
 
     /*!
     \brief calculate the integral of the neumann inflow component
@@ -313,13 +414,12 @@ private:
     \param lm (in)            : location vector of this element
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
-     void ComputeNeumannUvIntegral(
-                     DRT::ELEMENTS::Fluid3Boundary*    ele,
-                     ParameterList&                    params,
-                     DRT::Discretization&              discretization,
-                     vector<int>&                      lm,
-                     Epetra_SerialDenseVector&         elevec1);
-
+  void ComputeNeumannUvIntegral(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1);
 
     /*!
      brief integrate elemental flow rates over a surface
@@ -329,12 +429,12 @@ private:
      \param discretization (in): A reference to the underlying discretization
      \param lm (in)            : location vector of this element
      */
-     void ComputeFlowRate(
-                     DRT::ELEMENTS::Fluid3Boundary*    ele,
-                     ParameterList&                    params,
-                     DRT::Discretization&              discretization,
-                     vector<int>&                      lm,
-                     Epetra_SerialDenseVector&         elevec1);
+  void ComputeFlowRate(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1);
 
     /*!
     \brief determine elemental flow rate and its derivatives wrt dofs
@@ -349,19 +449,17 @@ private:
     \param elevec1 (out)      : derivative of flowrates wrt velocities
     \param elevec2 (out)      : derivative of flowrate wrt displacements
     \param elevec3 (out)      : flowrate
-
     */
-    void FlowRateDeriv(
-                       DRT::ELEMENTS::Fluid3Boundary*   ele,
-                       ParameterList&                   params,
-                       DRT::Discretization&             discretization,
-                       vector<int>&                     lm,
-                       Epetra_SerialDenseMatrix&        elemat1,
-                       Epetra_SerialDenseMatrix&        elemat2,
-                       Epetra_SerialDenseVector&        elevec1,
-                       Epetra_SerialDenseVector&        elevec2,
-                       Epetra_SerialDenseVector&        elevec3);
-
+  void FlowRateDeriv(
+      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      ParameterList&                   params,
+      DRT::Discretization&             discretization,
+      vector<int>&                     lm,
+      Epetra_SerialDenseMatrix&        elemat1,
+      Epetra_SerialDenseMatrix&        elemat2,
+      Epetra_SerialDenseVector&        elevec1,
+      Epetra_SerialDenseVector&        elevec2,
+      Epetra_SerialDenseVector&        elevec3);
 
     /*!
     \brief apply impedance boundary condition (outlet pressures)
@@ -372,12 +470,12 @@ private:
     \param lm (in)            : location vector of this element
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
-    void ImpedanceIntegration(
-            DRT::ELEMENTS::Fluid3Boundary*    ele,
-            ParameterList&                    params,
-            DRT::Discretization&              discretization,
-            vector<int>&                      lm,
-            Epetra_SerialDenseVector&         elevec1);
+  void ImpedanceIntegration(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1);
 
     /*!
     \brief apply outflow boundary condition which is necessary for the conservative
@@ -390,7 +488,7 @@ private:
     \param elevec1 (out)      : vector to be filled by element.
 
     */
-    void ConservativeOutflowConsistency(
+  void ConservativeOutflowConsistency(
       DRT::ELEMENTS::Fluid3Boundary* ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
@@ -410,13 +508,60 @@ private:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
     */
-    void NeumannInflow(
+  void NeumannInflow(
       DRT::ELEMENTS::Fluid3Boundary*  ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
       vector<int>&               lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
+
+    /*!
+    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element.
+    \param elevec1 (out)      : vector to be filled by element.
+
+    */
+  void  MixHybDirichlet(
+      DRT::ELEMENTS::Fluid3Boundary*  surfele,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat,
+      Epetra_SerialDenseVector&       elevec);
+
+    /*!
+    \brief apply no penetration boundary condition
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                                the controling method does not epxect the element to fill
+                                this matrix.                          and elements
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+    */
+  void NoPenetration(
+      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      ParameterList&             params,
+      DRT::Discretization&       discretization,
+      vector<int>&               lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseMatrix&  elemat2,
+      Epetra_SerialDenseVector&  elevec1);
+
+private:
+
+  void CreateLinesTri(const int& nline,
+      const int& nnode);
+
+  void CreateLinesQuad(const int& nline,
+      const int& nnode);
 
     /*!
     \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
@@ -450,39 +595,7 @@ private:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
     */
-    void NoPenetration(
-      DRT::ELEMENTS::Fluid3Boundary*  ele,
-      ParameterList&             params,
-      DRT::Discretization&       discretization,
-      vector<int>&               lm,
-      Epetra_SerialDenseMatrix&  elemat1,
-      Epetra_SerialDenseMatrix&  elemat2,
-      Epetra_SerialDenseVector&  elevec1);
-
-    enum ActionType
-    {
-      none,
-      integrate_Shapefunction,
-      areacalc,
-      flowratecalc,
-      calc_flowrate,
-      flowratederiv,
-      Outletimpedance,
-      calc_node_normal,
-      calc_node_curvature,
-      calc_surface_tension,
-      enforce_weak_dbc,
-      mixed_hybrid_dbc,
-      conservative_outflow_bc,
-      calc_Neumann_inflow,
-      integ_pressure_calc,
-      center_of_mass_calc,
-      traction_velocity_component,
-      traction_Uv_integral_component,
-      no_penetration
-    };
-
-  //! evaluate shape functions/derivatives, metric tensor and
+      //! evaluate shape functions/derivatives, metric tensor and
   //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
   void EvalShapeFuncAtBouIntPoint(
       const DRT::UTILS::IntPointsAndWeights<bdrynsd_>& intpoints,  ///< integration points (in)
@@ -514,14 +627,14 @@ private:
     {
       // get dimensionless velocity
       const double up = normu/utau;
-
+      
       const double chi=0.4;
       const double B  =5.5;
 
       //      +
       // get y , a dimensionless boundary layer thickness
       const double yp = y*utau/visc;
-
+      
       /*
       // Evaluate Spaldings law of the wall
       //                                /                                                  \
@@ -548,7 +661,7 @@ private:
     {
       // get dimensionless velocity
       const double up = normu/utau;
-
+      
       const double chi=0.4;
       const double B  =5.5;
 
@@ -563,7 +676,7 @@ private:
       //                    +
       // get derivative of u  wrt u_tau
       const double duplus_dutau=-normu/(utau*utau);
-
+      
       return(dyplus_dutau-df_duplus*duplus_dutau);
     }
 
@@ -594,7 +707,7 @@ private:
       //                    +
       // get derivative of u  wrt u
       const double duplus_du=1.0/utau;
-
+      
       return(dyplus_du-df_duplus*duplus_du);
     }
 
@@ -634,7 +747,7 @@ private:
       //                                   +
       // get derivative of function f wrt u
       const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
-
+      
       return(dyplus_duplus-df_duplus);
     }
 
@@ -656,7 +769,7 @@ private:
   LINALG::Matrix<bdrynen_,1> funct_;
   //! array for shape function derivatives for boundary element
   LINALG::Matrix<bdrynsd_,bdrynen_> deriv_;
-  //! velocity vector at integration point
+  //! normal vector pointing out of the domain
   LINALG::Matrix<nsd_,1> unitnormal_;
   //! velocity vector at integration point
   LINALG::Matrix<nsd_,1> velint_;

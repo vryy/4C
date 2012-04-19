@@ -13,7 +13,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef GEO_UTILS_H_
 #define GEO_UTILS_H_
@@ -40,4 +39,3 @@ namespace GEO
 }
 
 #endif /* GEO_UTILS_H_ */
-#endif  // #ifdef CCADISCRET

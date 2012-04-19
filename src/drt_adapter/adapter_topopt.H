@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file adapter_fluid_topopt.H
 
-\brief 
+\brief topology optimization adapter
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -11,11 +11,20 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
+
 #ifndef ADAPTER_TOPOPT_H_
 #define ADAPTER_TOPOPT_H_
 
 
+#include <Teuchos_RCP.hpp>
+
+
 /// forward declarations
+namespace Teuchos
+{
+  class ParameterList;
+}
+
 namespace TOPOPT
 {
   class Optimizer;
