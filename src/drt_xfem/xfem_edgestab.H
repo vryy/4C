@@ -55,8 +55,7 @@ namespace XFEM
   class FluidWizard;
 
 /*!
-\brief this class is the basic TIMEINT class for the projection, adaption or
-       something else in XFEM-problems between consecutive time steps
+\brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
  */
 class XFEM_EdgeStab
 {
@@ -102,7 +101,7 @@ public:
 
   private:
 
-  //! get the cut side id for the face's element using the sorted node ids
+  //! get the cut side for face's element identified using the sorted node ids
   GEO::CUT::Side* GetCutSide(DRT::Element* faceele);
 
 

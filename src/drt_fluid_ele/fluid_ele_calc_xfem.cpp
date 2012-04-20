@@ -26,6 +26,7 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include "../linalg/linalg_utils.H"
 
+#include "fluid_ele_calc_stabilization.H"
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_calc_xfem.H"
@@ -377,8 +378,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     // get velocity at integration point of boundary dis
     si->eivel(cutdis,"ivelnp",cutla[0].lm_);
 
-    // get displacement of side
-    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+    // set displacement of side
+    si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
 
     // define interface force vector w.r.t side
     Epetra_SerialDenseVector iforce;
@@ -839,7 +840,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //-----------------------------------------------------------------------------------
 //TODO
   // element length
-  double h_k= 0.4/28.0;
+//  double h_k = meas_partial_volume / meas_surf;
+  LINALG::Matrix<1,1> dummy(true);
+  double h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+
 //    double h_k = meas_partial_volume/ meas_surface;
   if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
@@ -932,8 +936,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     // get velocity at integration point of boundary dis
     si->eivel(cutdis,"ivelnp",cutla[0].lm_);
 
-    // get displacement of side
-    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+    // set displacement of side
+    si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
 
     // define interface force vector w.r.t side
     Epetra_SerialDenseVector iforce;
@@ -1261,9 +1265,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring)
   {
-    if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
 
-    h_k = meas_partial_volume/meas_surf;
+    LINALG::Matrix<1,1> dummy(true);
+    h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
 
     stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
     stabfac_conv_scaling = nitsche_stab_conv / h_k;            // scaling factor for convecitve Nitsche stabilization
@@ -1385,11 +1389,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     // get velocity at integration point of boundary dis
     emb->emb_vel(alediscret,"velaf",alela[0].lm_);
 
-    // get displacement of embedded element
-    emb->addembdisp(alediscret,"dispnp",alela[0].lm_,emb_xyze);
+    // set displacement of embedded element
+    emb->addembdisp(alediscret,"dispnp",alela[0].lm_);
 
-    // get displacement of side
-    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+    // set displacement of side
+    si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
 
 
     // set the embedded element length dependent on side in case of Emb Embedded_Sided_Mortaring
@@ -1626,14 +1630,14 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   /*
   //      viscous_Nitsche-part, convective inflow part
   //                |                 |
-  //                    mu                                  /              \
+  //                    mu                                  /       _      \
   //  max( gamma_Nit * ----  , | u_h * n | )       *       |  u_h - u, v_h  |
   //                    h_k                                 \              /
    */
 
   // final stabilization factors
   stabfac      = max(stabfac_scaling, fabs(veln_normal));
-  stabfac_conv = 0.0;
+  stabfac_conv = 0.0; //stabfac_conv_scaling;
   //=================================================================================
 
   return;

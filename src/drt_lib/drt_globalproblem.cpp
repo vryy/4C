@@ -960,8 +960,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid_fsi:
   {
-    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
 
@@ -980,8 +980,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid:
   {
-    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
 
     AddDis(genprob.numff, fluiddis);
     if (xfluiddis!=Teuchos::null)

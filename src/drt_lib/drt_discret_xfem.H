@@ -150,7 +150,7 @@ public:
   \param comm (in): An epetra comm object associated with this discretization
   */
   DiscretizationXFEM(const string name, RCP<Epetra_Comm> comm)
-  :Discretization(name, comm) {}; // use base class constructor
+  :Discretization(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
   \brief Destructor
@@ -249,6 +249,10 @@ public:
                        bool createinternalfaces    = false
                        );
 
+  /*!
+  \brief Get flag indicating whether CreateInternalFacesExtension() has been called
+  */
+  virtual inline bool FilledExtension() const {return extension_filled_;}
 
   /*!
   \brief Get map associated with the distribution of the ownership of internal faces
@@ -326,6 +330,11 @@ public:
   }
 
   /*!
+  \brief Build internal faces extension
+  */
+  void CreateInternalFacesExtension();
+
+  /*!
   \brief Complete construction of a internal faces elements
   */
   void BuildInternalFaces();
@@ -366,11 +375,13 @@ public:
 
 protected:
 
-  RCP<Epetra_Map>                       intfacerowmap_;         // unique distribution of element ownerships
-  RCP<Epetra_Map>                       intfacecolmap_;         // distribution of elements including ghost elements
-  vector<DRT::Element*>                 intfacerowptr_;         // vector of pointers to row elements for faster access
-  vector<DRT::Element*>                 intfacecolptr_;         // vector of pointers to column elements for faster access
-  map<int,RCP<DRT::Element> >           faces_;                 // map of internal faces elements
+  bool                                  extension_filled_;      ///< flag indicating whether intfaces extension has been filled
+
+  RCP<Epetra_Map>                       intfacerowmap_;         ///< unique distribution of element ownerships
+  RCP<Epetra_Map>                       intfacecolmap_;         ///< distribution of elements including ghost elements
+  vector<DRT::Element*>                 intfacerowptr_;         ///< vector of pointers to row elements for faster access
+  vector<DRT::Element*>                 intfacecolptr_;         ///< vector of pointers to column elements for faster access
+  map<int,RCP<DRT::Element> >           faces_;                 ///< map of internal faces elements
 
 
 }; // class DiscretizationXFEM

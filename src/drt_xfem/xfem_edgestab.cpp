@@ -386,8 +386,8 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( const bool              
 
 
 /*----------------------------------------------------------------------*
- | get the cut side id for the face's element using the sorted node ids |
- |                                                         schott 04/12 |
+ | get the cut side for face's element identified using the sorted      |
+ | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
 GEO::CUT::Side* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
 {

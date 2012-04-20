@@ -30,6 +30,20 @@ namespace DRT
     namespace XFLUID
     {
 
+    /// Factory class that provides the creation of the Side implementation class (SideImpl) for XFEM interface coupling
+    /*!
+      This class is a factory class that creates templated Side implementation class (SideImpl).
+      Dependent on the template pairs between cut background element and cutting interface Side the SideImpl
+      is created, which provides the implementation of coupling matrices for different coupling strategies,
+      like Nitsche's method of Mixed/Stress/Hybrid method.
+
+      <h3>Usability</h3>
+
+      The calculations are done by the EvaluateXfemInterface...() methods that call this SideInterface factory class
+
+      \author schott
+      \date 04/12
+     */
       template<DRT::Element::DiscretizationType distype>
       class SideInterface
       {
@@ -73,8 +87,7 @@ namespace DRT
         virtual void addeidisp(
             const DRT::Discretization &  cutdis,       ///< cut discretization
             const std::string            state,        ///< state
-            const vector<int>&           lm,           ///< local map
-            Epetra_SerialDenseMatrix  &  side_xyze     ///< side node coordinates
+            const vector<int>&           lm            ///< local map
             ) = 0;
 
         //! extract/set side's interface velocity
@@ -127,30 +140,43 @@ namespace DRT
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
         virtual void NIT_buildCouplingMatrices(
-            Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
-            Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
-            bool &                        coupling,       // assemble coupling terms (yes/no)
-            bool &                        bg_mortaring,   // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-            LINALG::Matrix<nsd_,1> &      normal,         // normal vector
-            const double                  timefacfac,     // theta*dt
-            const double                  visceff_1,      // viscosity in background fluid
-            const double                  visceff_2,      // viscosity in embedded fluid
-            double &                      kappa1,         // mortaring weighting
-            double &                      kappa2,         // mortaring weighting
-            double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
-            double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
-            LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
-            LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
-            LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
-            double &                      press,          // bg p^n
-            LINALG::Matrix<nsd_,1> &      velint,         // bg u^n
-            LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP // Dirichlet velocity vector or prescribed jump vector
+            Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
+            Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
+            const bool &                        coupling,         ///< assemble coupling terms (yes/no)
+            const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+            const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
+            const double &                      timefacfac,       ///< theta*dt
+            const double &                      visceff_1,        ///< viscosity in background fluid
+            const double &                      visceff_2,        ///< viscosity in embedded fluid
+            const double &                      kappa1,           ///< mortaring weighting
+            const double &                      kappa2,           ///< mortaring weighting
+            const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
+            const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+            const LINALG::Matrix<nen_,1> &      funct,            ///< bg shape functions
+            const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
+            const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
+            const double &                      press,            ///< bg p^n
+            const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
+            const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP ///< Dirichlet velocity vector or prescribed jump vector
         ) = 0;
 
       };
 
 
+      /// Factory class that provides the creation of the embedded element implementation class (EmbCoupling) for XFEM interface coupling
+      /*!
+        This class is a factory class that creates templated Element implementation class (EmbImpl).
+        Dependent on the template pairs between cut background element and cutting element the EmbImpl
+        is created, which provides the implementation of coupling matrices for different coupling strategies,
+        like Nitsche's method.
 
+        <h3>Usability</h3>
+
+        The calculations are done by the EvaluateXfemInterface...() methods that call this EmbCoupling factory class
+
+        \author schott
+        \date 04/12
+       */
       template<DRT::Element::DiscretizationType distype>
       class EmbCoupling
       {
@@ -173,45 +199,48 @@ namespace DRT
 
         virtual ~EmbCoupling() {}
 
-        virtual void EvaluateEmb( LINALG::Matrix<nsd_,1> & xside ) = 0;
+        //! add embedded element displacements and set current element node coordinates
+        virtual void addembdisp(
+            const DRT::Discretization &  embdis,       ///< embedded discretization
+            const std::string            state,        ///< state
+            const vector<int>&           lm            ///< local map
+        ) = 0;
 
+        //! extract/set embedded element velocity
+        virtual void emb_vel(
+            const DRT::Discretization &  embdis,       ///< embedded discretization
+            const std::string            state,        ///< state
+            const vector<int>&           lm            ///< local map
+        ) = 0;
 
-        virtual void emb_vel(const DRT::Discretization &  cutdis,
-                           const std::string              state,
-                           const vector<int>&             lm
-                           ) = 0;
-
-
-        virtual void addembdisp(const DRT::Discretization &  cutdis,
-                               const std::string             state,
-                               const vector<int>&            lm,
-                               Epetra_SerialDenseMatrix  &   side_xyze
-                               ) = 0;
-
+        //! compute embedded element's element length
         virtual void element_length( double & hk_emb ) = 0;
 
+        //!  evaluate shape function, derivatives and transformation w.r.t embedded element at gaussian point
+        virtual void EvaluateEmb( LINALG::Matrix<nsd_,1> & xside ) = 0;
 
-        virtual void NIT2_buildCouplingMatrices(   Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
-                                                             Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
-                                                             bool &                        coupling,       // assemble coupling terms (yes/no)
-                                                             bool &                        bg_mortaring,   // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-                                                             LINALG::Matrix<nsd_,1> &      normal,         // normal vector
-                                                             const double                  timefacfac,     // theta*dt
-                                                             const double                  visceff_1,      // viscosity in background fluid
-                                                             const double                  visceff_2,      // viscosity in embedded fluid
-                                                             double &                      kappa1,         // mortaring weighting
-                                                             double &                      kappa2,         // mortaring weighting
-                                                             double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
-                                                             double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
-                                                             LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
-                                                             LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
-                                                             LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
-                                                             double &                      press,          // bg p^n
-                                                             LINALG::Matrix<nsd_,1> &      velint,          // bg u^n
-                                                             LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP // Dirichlet velocity vector or prescribed jump vector
-                                                             ) = 0;
+        //! build coupling matrices and assemble terms for two-sided mortaring Nitsche's (NIT2) method
+        virtual void NIT2_buildCouplingMatrices(
+            Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
+            Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
+            bool &                        coupling,       // assemble coupling terms (yes/no)
+            bool &                        bg_mortaring,   // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+            LINALG::Matrix<nsd_,1> &      normal,         // normal vector
+            const double                  timefacfac,     // theta*dt
+            const double                  visceff_1,      // viscosity in background fluid
+            const double                  visceff_2,      // viscosity in embedded fluid
+            double &                      kappa1,         // mortaring weighting
+            double &                      kappa2,         // mortaring weighting
+            double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
+            double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
+            LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
+            LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
+            LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
+            double &                      press,          // bg p^n
+            LINALG::Matrix<nsd_,1> &      velint,          // bg u^n
+            LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP // Dirichlet velocity vector or prescribed jump vector
+        ) = 0;
 
-        virtual void get_vel_WeakDBC (LINALG::Matrix<nsd_,1> & emb_velint) = 0;
 
       };
 

@@ -26,6 +26,38 @@ namespace DRT
 namespace ELEMENTS
 {
 
+/// Fluid element interface coupling implementation with XFEM
+/*!
+  This internal class keeps all the working arrays needed to
+  calculate the interface stabilization for XFEM with fluid elements.
+  The method ElementXfemInterfaceMSH() provides a clean and fast element implementation
+  for Mixed/Stress/Hybrid interface coupling.
+  The method ElementXfemInterfaceNIT() provides a clean and fast element implementation
+  for interface coupling using Nitsche's method (only the cut element sided mortaring
+  for xfluid and xfluidfluid applications).
+  The method ElementXfemInterfaceNIT2() provides a clean and fast element implementation
+  for interface coupling using Nitsche's method also for non-"cut element sided mortaring"
+  (can be used for embedded mortaring in case of Xfluidfluid).
+
+  <h3>Purpose</h3>
+
+  The fluid element will allocate exactly one object of this class for all
+  fluid elements with the same number of nodes in the mesh. This
+  allows us to use exactly matching working arrays (and keep them
+  around.)
+
+  The code is meant to be as clean as possible. This is the only way
+  to keep it fast. The number of working arrays has to be reduced to
+  a minimum so that the element fits into the cache. (There might be
+  room for improvements.)
+
+  <h3>Usability</h3>
+
+  The calculations are done by the EvaluateXfemInterface...() methods.
+
+  \author schott
+  \date 04/12
+*/
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcXFEM : public FluidEleCalc<distype>
 {
@@ -94,7 +126,7 @@ public:
         Epetra_SerialDenseMatrix&  Cuiui
       );
 
-
+    ///
     virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *              ele,            ///< fluid element
                                          DRT::Discretization &                dis,            ///< discretization
                                          const std::vector<int> &             lm,             ///< local map
@@ -102,6 +134,7 @@ public:
                                          const DRT::UTILS::GaussIntegration & intpoints       ///< integration points
       );
 
+    ///
     virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *     ele,                ///< fluid element
                                          DRT::Discretization &       dis,                ///< discretization
                                          const std::vector<int> &    lm,                 ///< local map
@@ -116,6 +149,7 @@ private:
         std::map<int, std::vector<Epetra_SerialDenseMatrix> >&  Cuiui_coupling    ///< Cuiui matrices for all cutting sides
     );
 
+    //! compute stabilization factors for Nitsche's method
     void NIT_ComputeStabfac(
         double &                 stabfac,              ///< stabilization factor 1
         double &                 stabfac_conv,         ///< stabilization factor 2

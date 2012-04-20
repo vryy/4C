@@ -198,7 +198,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                                              DRT::Discretization & cutdiscret,
                                                              DRT::Discretization & alediscret )
 {
-#ifdef D_FLUID3
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid" );
 
@@ -797,37 +796,35 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     }
 
-
-    // call edge stabilization
-    // REMARK: the current implementation of internal edges integration belongs to the elements
-    // at the moment each side is integrated twice
-    if(xfluid_.fluid_stab_type_ == "edge_based")
-    {
-      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
-
-      //------------------------------------------------------------
-      // loop over row faces
-
-      RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.bgdis_, true);
-
-      const int numrowintfaces = xdiscret->NumMyRowIntFaces();
-
-      // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
-      // and assembles into EpetraFECrs matrix
-      // this is baci-unusual but more efficient in all XFEM applications
-      for (int i=0; i<numrowintfaces; ++i)
-      {
-        DRT::Element* actface = xdiscret->lRowIntFace(i);
-
-        DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
-        if ( ele==NULL ) dserror( "expect FluidIntFace element" );
-
-        edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1());
-      }
-    }
-
   } // end of loop over bgdis
 
+  // call edge stabilization
+  // REMARK: the current implementation of internal edges integration belongs to the elements
+  // at the moment each side is integrated twice
+  if(xfluid_.fluid_stab_type_ == "edge_based")
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
+
+    //------------------------------------------------------------
+    // loop over row faces
+
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.bgdis_, true);
+
+    const int numrowintfaces = xdiscret->NumMyRowIntFaces();
+
+    // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
+    // and assembles into EpetraFECrs matrix
+    // this is baci-unusual but more efficient in all XFEM applications
+    for (int i=0; i<numrowintfaces; ++i)
+    {
+      DRT::Element* actface = xdiscret->lRowIntFace(i);
+
+      DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
+      if ( ele==NULL ) dserror( "expect FluidIntFace element" );
+
+      edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1());
+    }
+  }
 
   discret.ClearState();
 
@@ -920,35 +917,70 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     }
 
-    // call edge stabilization
-    // REMARK: the current implementation of internal edges integration belongs to the elements
-    // at the moment each side is integrated twice
-    if(xfluid_.fluid_stab_type_ == "edge_based")
+  } // end of loop over embedded discretization
+
+  // call edge stabilization
+  // REMARK: the current implementation of internal edges integration belongs to the elements
+  // at the moment each side is integrated twice
+  if(xfluid_.fluid_stab_type_ == "edge_based")
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
+
+    //------------------------------------------------------------
+    RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
+
+    //------------------------------------------------------------
+    const Epetra_Map* rmap = NULL;
+    const Epetra_Map* dmap = NULL;
+
+    RCP<Epetra_FECrsMatrix> sysmat_FE;
+    if (xfluid_.alesysmat_ != Teuchos::null)
     {
-      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
+      rmap = &(xfluid_.alesysmat_->OperatorRangeMap());
+      dmap = rmap;
+      sysmat_FE = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+    }
+    else dserror("alesysmat is NULL!");
 
-      //------------------------------------------------------------
-      // loop over row faces
+    RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
-      RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.embdis_, true);
+    //------------------------------------------------------------
+    // loop over row faces
 
-      const int numrowintfaces = xdiscret->NumMyRowIntFaces();
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.embdis_, true);
 
-      // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
-      // and assembles into EpetraFECrs matrix
-      // this is baci-unusual but more efficient in all XFEM applications
-      for (int i=0; i<numrowintfaces; ++i)
-      {
-        DRT::Element* actface = xdiscret->lRowIntFace(i);
+    const int numrowintfaces = xdiscret->NumMyRowIntFaces();
 
-        DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
-        if ( ele==NULL ) dserror( "expect FluidIntFace element" );
+    // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
+    // and assembles into EpetraFECrs matrix
+    // this is baci-unusual but more efficient in all XFEM applications
+    for (int i=0; i<numrowintfaces; ++i)
+    {
+      DRT::Element* actface = xdiscret->lRowIntFace(i);
 
-        edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.embdis_, ele, sysmat_, alestrategy.Systemvector1());
-      }
+      DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
+      if ( ele==NULL ) dserror( "expect FluidIntFace element" );
+
+      edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
     }
 
-  } // end of loop over embedded discretization
+    //------------------------------------------------------------
+    sysmat_linalg->Complete();
+
+    (xfluid_.alesysmat_)->Add(*sysmat_linalg, false, 1.0, 1.0);
+
+    //------------------------------------------------------------
+    // need to export ale_residual_col to systemvector1 (aleresidual_)
+    Epetra_Vector res_tmp(xfluid_.aleresidual_->Map(),false);
+    Epetra_Export exporter(ale_residual_col->Map(),res_tmp.Map());
+    int err2 = res_tmp.Export(*ale_residual_col,exporter,Add);
+    if (err2) dserror("Export using exporter returned err=%d",err2);
+    xfluid_.aleresidual_->Update(1.0,res_tmp,1.0);
+
+    //------------------------------------------------------------
+  }
+
+
   cutdiscret.ClearState();
   alediscret.ClearState();
 
@@ -965,9 +997,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                                                         (*rhC_ui_)[rhC_ui_->Map().LID(rhsdgid)];
     else dserror("cut dof not on ale discret available");
   }
-#else
-  dserror("D_FLUID3 required");
-#endif
+
 }
 
 
@@ -1907,7 +1937,20 @@ FLD::XFluidFluid::XFluidFluid(
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
-    bgdis_->FillComplete();
+   bgdis_->FillComplete();
+
+  //-------------------------------------------------------------------
+  // create internal faces extension for edge based stabilization
+  if(fluid_stab_type_ == "edge_based")
+  {
+    RCP<DRT::DiscretizationXFEM> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
+    actembdis->CreateInternalFacesExtension();
+    
+    RCP<DRT::DiscretizationXFEM> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(bgdis_, true);
+    actbgdis->CreateInternalFacesExtension();
+  }
+  //-------------------------------------------------------------------
+
 
 //   output_ = rcp(new IO::DiscretizationWriter(bgdis_));
 //   output_->WriteMesh(0,0.0);
@@ -4292,7 +4335,7 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
     // (re)allocate system matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
-    alesysmat_ = mat;
+//    alesysmat_ = mat;
   }
 
   // if we never build the matrix nothing will be done

@@ -99,9 +99,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   dofset_->MinGID(xfluid.minnumdofsets_); // set the minimal GID of xfem dis
   xfluid.discret_->ReplaceDofSet( dofset_, true );
 
-  RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid.discret_, true);
-
-  actdis->FillCompleteXFEM(true, true, true, true);
+  xfluid.discret_->FillComplete();
 
   //print all dofsets
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
@@ -1270,7 +1268,6 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
           bound_f << ",";
 
         bound_f << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
-//        bound_f << iforcenp(0) << "," <<  iforcenp(1) << "," << iforcenp(2);
       }
       bound_f << "};\n";
     }
@@ -1406,14 +1403,14 @@ FLD::XFluid::XFluid(
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
+    discret_->FillComplete();
+
+
+  // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
+  if(fluid_stab_type_ == "edge_based")
   {
-//    discret_->FillComplete();
-
-    RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
-    if (actdis == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
-
-    actdis->FillCompleteXFEM(true, true, true, true);
+    RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    actdis->CreateInternalFacesExtension();
   }
 
 
@@ -1447,30 +1444,10 @@ FLD::XFluid::XFluid(
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
-//  cout << *soliddis_ << endl;
-//  sleep(0.1);
-//  cout << *discret_ << endl;
-//  sleep(0.1);
-//  cout << *boundarydis_ << endl;
-//  sleep(0.1);
-
-  // get constant density variable for incompressible flow
-/*  {
-    ParameterList eleparams;
-    eleparams.set("action","get_density");
-    discret_->Evaluate(eleparams);
-    density_ = eleparams.get<double>("density");
-    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
-  }*/
 
   // -------------------------------------------------------------------
   // create output dofsets and prepare output
   // -------------------------------------------------------------------
-
-//  // create solid output object
-//  solid_output_ = rcp(new IO::DiscretizationWriter(soliddis_));
-//  solid_output_->WriteMesh(0,0.0);
-
 
   // store a dofset with the complete fluid unknowns
   dofset_out_ = rcp(new DRT::IndependentDofSet());
@@ -1481,11 +1458,6 @@ FLD::XFluid::XFluid(
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
-
-//  // create fluid output object
-//  fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
-//  fluid_output_->WriteMesh(0,0.0);
-
 
   // create interface/boundary output object
   boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
@@ -1507,14 +1479,9 @@ FLD::XFluid::XFluid(
 
   // get dofrowmap for solid discretization
   soliddofrowmap_ = soliddis_->DofRowMap();
-//
+
   solidvelnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-//  solidveln_  = LINALG::CreateVector(*soliddofrowmap_,true);
-//  solidvelnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
-//
   soliddispnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-//  soliddispn_  = LINALG::CreateVector(*soliddofrowmap_,true);
-//  soliddispnm_ = LINALG::CreateVector(*soliddofrowmap_,true);
 
 
   //--------------------------------------------------------
@@ -2896,6 +2863,10 @@ void FLD::XFluid::Output()
       }
     }
 
+    // cast to DiscretizationXFEM
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    if (xdiscret == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
 
 
     // output for Element and Node IDs
@@ -2955,36 +2926,28 @@ void FLD::XFluid::Output()
       };
       gmshfilecontent << "};\n";
     }
-    // EOS/GHOST-PENALTY stabilization output
+    if( xdiscret->FilledExtension() == true )     // EOS/GHOST-PENALTY stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "intern.faces Element->Id() \" {\n";
 
-      RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
-      if (actdis == Teuchos::null)
-        dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
-
-      for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+      for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
       {
-        const DRT::Element* actele = actdis->lRowIntFace(i);
+        const DRT::Element* actele = xdiscret->lRowIntFace(i);
         //                IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
         IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
       };
       gmshfilecontent << "};\n";
     }
-    if( (state_->EdgeStab()) != Teuchos::null ) // stabilization output
+    if( fluid_stab_type_ == "edge_based" ) // stabilization output
     {
-      RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_);
-      if (actdis == Teuchos::null)
-        dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
-
       {
         // draw internal faces elements with associated face's gid
         gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
 
-        for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+        for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
         {
-          const DRT::Element* actele = actdis->lRowIntFace(i);
+          const DRT::Element* actele = xdiscret->lRowIntFace(i);
           map<int,bool>::iterator it = (state_->EdgeStab()->GetGhostPenaltyMap()).find(actele->Id());
           if(it != state_->EdgeStab()->GetGhostPenaltyMap().end())
           {
@@ -2993,16 +2956,16 @@ void FLD::XFluid::Output()
                 actele,
                 gmshfilecontent);
           }
-        };
+        }
         gmshfilecontent << "};\n";
       }
       {
         // draw internal faces elements with associated face's gid
         gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
 
-        for (int i=0; i<actdis->NumMyRowIntFaces(); ++i)
+        for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
         {
-          const DRT::Element* actele = actdis->lRowIntFace(i);
+          const DRT::Element* actele = xdiscret->lRowIntFace(i);
           map<int,bool>::iterator it = (state_->EdgeStab()->GetEdgeBasedMap()).find(actele->Id());
           if(it != state_->EdgeStab()->GetEdgeBasedMap().end())
           {
@@ -3011,7 +2974,7 @@ void FLD::XFluid::Output()
                 actele,
                 gmshfilecontent);
           }
-        };
+        }
         gmshfilecontent << "};\n";
       }
     } // end stabilization output

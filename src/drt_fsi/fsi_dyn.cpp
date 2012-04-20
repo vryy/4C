@@ -140,14 +140,9 @@ void fluid_xfem2_drt()
   RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
   soliddis->FillComplete();
 
-//  RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
-//  actdis->FillComplete();
+  RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
+  actdis->FillComplete();
 
-  RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->Dis(genprob.numff,0));
-  if (actdis == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
-
-  actdis->FillCompleteXFEM(true, true, true, true);
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 

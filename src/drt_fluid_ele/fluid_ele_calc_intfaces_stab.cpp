@@ -2433,8 +2433,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
 //    gamma_p = 0.5 / 100.0;
 //    gamma_p = 1.0 / 100.0;
-    // each face has to be evaluated only once -> doubled stabfac
-    gamma_p = 1.0 / 100.0;
+    // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
+    gamma_p = 2.0 / 100.0;
 
 
     //scaling with h^2 (non-viscous case)
@@ -2509,8 +2509,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
   gamma_grad = 1.0;
 //  tau_grad = gamma_grad*kinvisc * density * p_hk_;
-  tau_grad = gamma_grad*0.00001;
-
+//  tau_grad = gamma_grad*0.0001;
+  tau_grad = gamma_grad*0.001*p_hk_;
+//  tau_grad = 0.0;
 
 
   return;

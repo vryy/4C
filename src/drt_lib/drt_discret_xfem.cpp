@@ -763,19 +763,14 @@ int DRT::DiscretizationXFEM::FillCompleteXFEM(bool assigndegreesoffreedom,
 
   if(createinternalfaces)
   {
-    TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::CreateInternalFaces" );
-
-    // create internal faces for stabilization along edges
-    BuildInternalFaces();
-
-    // (re)build map of internal faces
-    BuildIntFaceRowMap();
-    BuildIntFaceColMap();
-
+    CreateInternalFacesExtension();
   }
 
   return 0;
 }
+
+
+
 
 
 /*
@@ -908,6 +903,26 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 
 } // AssignGlobalIDs
+
+
+/*----------------------------------------------------------------------*
+ |  Build internal faces extension (public)                 schott 03/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::CreateInternalFacesExtension()
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::CreateInternalFaces" );
+
+  // create internal faces for stabilization along edges
+  BuildInternalFaces();
+
+  // (re)build map of internal faces
+  BuildIntFaceRowMap();
+  BuildIntFaceColMap();
+
+  extension_filled_ =  true;
+
+}
 
 
 /*----------------------------------------------------------------------*

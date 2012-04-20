@@ -64,6 +64,9 @@ namespace FLD
 {
   class XFluid;
 
+  /*!
+    ResultTest class for XFluid
+  */
   class XFluidResultTest2 : public DRT::ResultTest
   {
   public:
@@ -85,10 +88,8 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> velnp_;
   };
 
-
-  /// XFEM Fluid implementation (XFluid)
   /*!
-    This class holds the complete framework for XFEM-Fluid.
+    This class holds the Fluid implementation for XFEM
 
     \author schott
     \date 03/12
@@ -98,7 +99,6 @@ namespace FLD
     friend class XFluidResultTest2;
     friend class XFluidState;
 
-    /// XFEM Fluid State (XFluidState)
     /*!
       This class holds the state class for XFluid (XFluidState).
 
