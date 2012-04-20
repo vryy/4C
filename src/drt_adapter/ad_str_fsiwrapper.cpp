@@ -62,6 +62,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(Teucho
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp()
 {
+  // prestressing business
+  double time = 0.0;
+  double dt   = 0.0;
+  double pstime = -1.0;
+  const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  if (pstype != INPAR::STR::prestress_none)
+  {
+    time = GetTime();
+    dt = GetTimeStepSize();
+    pstime = sdyn.get<double>("PRESTRESSTIME");
+  }
+
   Teuchos::RCP<Epetra_Vector> idis;
 
   switch (predictor_)
@@ -70,7 +83,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   {
     // d(n)
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    idis  = interface_->ExtractFSICondVector(ExtractDispnp());
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+    {
+      idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(),true));
+    }
+    else
+    {
+      idis  = interface_->ExtractFSICondVector(ExtractDispn());
+    }
     break;
   }
   case 2:
@@ -80,6 +100,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   case 3:
   {
     // d(n)+dt*v(n)
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+      dserror("only constant interface predictor useful for prestressing");
+
     double dt = GetTimeStepSize();
 
     idis = interface_->ExtractFSICondVector(ExtractDispn());
@@ -92,6 +115,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   case 4:
   {
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+      dserror("only constant interface predictor useful for prestressing");
+
     double dt = GetTimeStepSize();
 
     idis = interface_->ExtractFSICondVector(ExtractDispn());
