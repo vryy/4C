@@ -3663,10 +3663,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for fluid problem",
       tuple<std::string>(
           "zero_field",
-          "field_by_function",
-          "disturbed_function_by_function",
-          "flame_vortex_interaction",
-          "beltrami_flow"),
+          "field_by_function"),
           tuple<int>(
               INPAR::TOPOPT::initadjointfield_zero_field,
               INPAR::TOPOPT::initadjointfield_field_by_function),
