@@ -1891,18 +1891,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Coupling strategy for (partitioned and monolithic) TSI solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","tsi_iterstagg",
+                              "COUPALGO","tsi_monolithic",
                               "Coupling strategies for TSI solvers",
                               tuple<std::string>(
                                 "tsi_oneway",
                                 "tsi_sequstagg",
                                 "tsi_iterstagg",
+                                "tsi_iterstagg_aitken",
+                                "tsi_iterstagg_aitkenirons",
                                 "tsi_monolithic"
                                 ),
                               tuple<int>(
                                 INPAR::TSI::OneWay,
                                 INPAR::TSI::SequStagg,
                                 INPAR::TSI::IterStagg,
+                                INPAR::TSI::IterStaggAitken,
+                                INPAR::TSI::IterStaggAitkenIrons,
                                 INPAR::TSI::Monolithic
                                 ),
                               &tsidyn);

@@ -37,6 +37,8 @@ namespace TSI
     OneWay,
     SequStagg,
     IterStagg,
+    IterStaggAitken,
+    IterStaggAitkenIrons,
     Monolithic
   };
 

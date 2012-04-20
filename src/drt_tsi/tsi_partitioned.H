@@ -145,6 +145,21 @@ namespace TSI
     //! temperature at time step (t_n) or (t_n+1)
     Teuchos::RCP<Epetra_Vector> temp_;
 
+    //! @name Aitken relaxation
+
+    //! difference of last two solutions
+    // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
+    Teuchos::RCP<Epetra_Vector>  del_;
+    //! difference of difference of last two pair of solutions
+    // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+    Teuchos::RCP<Epetra_Vector> delhist_;
+    //! relaxation factor of old iteration step i
+    double omegan_;
+    //! relaxation factor of current iteration step i+1
+    double omeganp_;
+
+    //@}
+
     //! we couple based on displacements
     bool displacementcoupling_;
     //! quasi-static solution of the mechancial equation
