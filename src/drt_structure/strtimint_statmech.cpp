@@ -175,11 +175,6 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   discret_->Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
-  /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
-   *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
-   *for synchrinisation of these random numbers in parallel computing*/
-  randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_) );
-
   return;
 }
 
@@ -1694,6 +1689,10 @@ void STR::TimIntStatMech::StatMechUpdate()
     // print to screen
     StatMechPrintUpdate(t_admin);
 
+    /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
+     *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
+     *for synchrinisation of these random numbers in parallel computing*/
+    randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_) );
     /*pay attention: for a constant predictor an incremental velocity update is necessary, which has been deleted out of the code in oder to simplify it*/
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
     statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));

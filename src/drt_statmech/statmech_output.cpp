@@ -1567,7 +1567,7 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
     // case: crosslinker
     if(thisele->Id()>basisnodes_)
-      radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
+      radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //default value according to diss. Tharmann
   }
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
