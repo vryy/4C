@@ -389,8 +389,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       {
         if (k==bgroup) continue; // broadcasting group does not copy to itself
         int color = MPI_UNDEFINED;
-        if (group->GroupId()==k || bgroup==group->GroupId())
-          color = 1;
+        if (group->GroupId()==k || bgroup==group->GroupId()) color = 1;
         MPI_Comm intercomm;
         Epetra_MpiComm* mpicomm = dynamic_cast<Epetra_MpiComm*>(gcomm.get());
         if (!mpicomm) dserror("dyncast failed");
@@ -404,17 +403,11 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
           icomm = Teuchos::null;
           MPI_Comm_free(&intercomm);
         }
-        fflush(stdout);
+        if (group->GroupId()==k) problem->SetDis(i,j,dis);
         gcomm->Barrier();
-      }
-
-
+      } // for (int k=0; k<group->NumGroups(); ++k)
     } // for (int j=0; j<numdis[i]; ++j)
   } // for (int i=0; i<numfield; ++i)
-
-  fflush(stdout);
-  gcomm->Barrier();
-  printf("gpid %d numfield %d numdis %d\n",gcomm->MyPID(),numfield,numdis[0]);
   return;
 }
 
@@ -431,7 +424,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
                                  Teuchos::RCP<Epetra_MpiComm> icomm)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
-#if 0
+
   vector<int> sbcaster(2,-1);
   vector<int> bcaster(2,-1);
   vector<int> sgsize(2,-1);
@@ -448,18 +441,23 @@ void COMM_UTILS::NPDuplicateDiscretization(
   }
   icomm->MaxAll(&sbcaster[0],&bcaster[0],2);
   icomm->MaxAll(&sgsize[0],&gsize[0],2);
-  printf("proc %d sgroup %d rgroup %d bcaster %d %d gsize %d %d\n",icomm->MyPID(),sgroup,rgroup,bcaster[0],bcaster[1],gsize[0],gsize[1]);
-#endif
+  //printf("proc %d sgroup %d rgroup %d bcaster %d %d gsize %d %d\n",icomm->MyPID(),sgroup,rgroup,bcaster[0],bcaster[1],gsize[0],gsize[1]);
 
   // create a common discretization that we then fill with all stuff from sender group
   string name = dis->Name();  
   string type = DRT::Problem::Instance()->SpatialApproximation();
   RCP<DRT::Discretization> commondis;
   if (type=="Nurbs")
+  {
     commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,icomm));
+    dserror("For Nurbs this method needs additional features!");
+  }
   else
+  {
     commondis = Teuchos::rcp(new DRT::Discretization(name,icomm));
+  }
 
+  // --------------------------------------
   // sender group fills commondis with elements and nodes and conditions
   // note that conditions are fully redundant
   map<int,vector<char> >        condmap;
@@ -507,6 +505,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     }
   } // if (group->GroupId()==sgroup)
   
+  // --------------------------------------
   // conditions have to be fully redundant, need to copy to all procs in intercomm
   {
     int nummyelements = (int)condmap.size();
@@ -522,7 +521,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     exporter.Export<DRT::Container>(condnamemap);
   }
 
-  // all rgroup procs loop and add condition
+  // all rgroup procs loop and add condition to their dis and to the commondis
   if (group->GroupId()==rgroup)
   {
     map<int,vector<char> >::iterator fool1 = condmap.begin();
@@ -531,11 +530,12 @@ void COMM_UTILS::NPDuplicateDiscretization(
     {
       const string* name = fool2->second->Get<string>("condname");
       commondis->UnPackCondition(rcp(&(fool1->second),false),*name);
+      dis->UnPackCondition(rcp(&(fool1->second),false),*name);
       ++fool2;
     }
   }
   
-  // finalize the commondis
+  //-------------------------------------- finalize the commondis
   {
     RCP<Epetra_Map> roweles = rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
     RCP<Epetra_Map> coleles;
@@ -550,13 +550,147 @@ void COMM_UTILS::NPDuplicateDiscretization(
     commondis->FillComplete(false,false,false);
   }
   
-  // move everything from sender group to receiver group
-  // build a target rowmap for nodes and elements
-  
-  
-  // receiving group build its own discretization
-    
+  //-------------------------------------- build a target rowmap for elements
+  vector<int> targetgids;
+  {
+    const Epetra_Map* elerowmap = commondis->ElementRowMap();
+    int nummyelements = elerowmap->NumMyElements();
+    targetgids.resize(nummyelements);
+    const int* myglobalelements = elerowmap->MyGlobalElements();
+    // receiver group keeps its own gids
+    if (group->GroupId()==rgroup)
+    {
+      for (int i=0; i<nummyelements; ++i)
+        targetgids[i] = myglobalelements[i];
+    }
+    else
+      targetgids.resize(0); // sender group wants to get rid of everything
 
+    // each proc of sender group broadcast its gids
+    // They are then distributed equally in the receiver group
+    for (int proc=0; proc<icomm->NumProc(); ++proc)
+    {
+      // check whether proc is a 'sender' at all
+      int willsend=0;
+      if (icomm->MyPID()==proc && group->GroupId()==sgroup) willsend=1;
+      icomm->Broadcast(&willsend,1,proc);
+      if (!willsend) continue; // proc is not a sender, goto next proc
+      
+      // proc send his nummyelements
+      int nrecv = nummyelements;
+      icomm->Broadcast(&nrecv,1,proc);
+      // allocate recv buffer
+      vector<int> recvbuff(nrecv,0);
+      if (icomm->MyPID()==proc)
+        for (int i=0; i<nrecv; ++i)
+          recvbuff[i] = myglobalelements[i];
+      icomm->Broadcast(&recvbuff[0],nrecv,proc);
+      // receivers share these gids equally
+      if (group->GroupId()==rgroup)
+      {
+        int myshare = nrecv / gsize[1];
+        int rest = nrecv % gsize[1];
+        //printf("sendproc %d proc %d have %d gids nrecv %d myshare %d rest %d\n",proc,icomm->MyPID(),(int)targetgids.size(),nrecv,myshare,rest); fflush(stdout);
+        for (int i=0; i<myshare; ++i)
+          targetgids.push_back(recvbuff[lcomm->MyPID()*myshare+i]);
+        if (lcomm->MyPID()==lcomm->NumProc()-1)
+          for (int i=0; i<rest; ++i)
+            targetgids.push_back(recvbuff[lcomm->NumProc()*myshare+i]);
+        //printf("sendproc %d proc %d have %d gids\n",proc,icomm->MyPID(),(int)targetgids.size()); fflush(stdout);
+      }
+    } // for (int proc=0; proc<icomm->NumProc(); ++proc)
+  }
+  Epetra_Map targetrowele(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);
+
+  // -------------------------------------- build target row map for nodes
+  {
+    const Epetra_Map* noderowmap = commondis->NodeRowMap();
+    int nummyelements = noderowmap->NumMyElements();
+    targetgids.resize(nummyelements);
+    const int* myglobalelements = noderowmap->MyGlobalElements();
+    // receiver group keeps its own gids
+    if (group->GroupId()==rgroup)
+    {
+      for (int i=0; i<nummyelements; ++i)
+        targetgids[i] = myglobalelements[i];
+    }
+    else
+      targetgids.resize(0); // sender group wants to get rid of everything
+
+    // each proc of sender group broadcast its gids
+    // They are then distributed equally in the receiver group
+    for (int proc=0; proc<icomm->NumProc(); ++proc)
+    {
+      // check whether proc is a 'sender' at all
+      int willsend=0;
+      if (icomm->MyPID()==proc && group->GroupId()==sgroup) willsend=1;
+      icomm->Broadcast(&willsend,1,proc);
+      if (!willsend) continue; // proc is not a sender, goto next proc
+      
+      // proc send his nummyelements
+      int nrecv = nummyelements;
+      icomm->Broadcast(&nrecv,1,proc);
+      // allocate recv buffer
+      vector<int> recvbuff(nrecv,0);
+      if (icomm->MyPID()==proc)
+        for (int i=0; i<nrecv; ++i)
+          recvbuff[i] = myglobalelements[i];
+      icomm->Broadcast(&recvbuff[0],nrecv,proc);
+      // receivers share these gids equally
+      if (group->GroupId()==rgroup)
+      {
+        int myshare = nrecv / gsize[1];
+        int rest = nrecv % gsize[1];
+        //printf("sendproc %d proc %d have %d gids nrecv %d myshare %d rest %d\n",proc,icomm->MyPID(),(int)targetgids.size(),nrecv,myshare,rest); fflush(stdout);
+        for (int i=0; i<myshare; ++i)
+          targetgids.push_back(recvbuff[lcomm->MyPID()*myshare+i]);
+        if (lcomm->MyPID()==lcomm->NumProc()-1)
+          for (int i=0; i<rest; ++i)
+            targetgids.push_back(recvbuff[lcomm->NumProc()*myshare+i]);
+        //printf("sendproc %d proc %d have %d gids\n",proc,icomm->MyPID(),(int)targetgids.size()); fflush(stdout);
+      }
+    } // for (int proc=0; proc<icomm->NumProc(); ++proc)
+  }  
+  Epetra_Map targetrownode(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);    
+
+  // -------------- perform export of elements and nodes
+  commondis->ExportRowElements(targetrowele);
+  commondis->ExportRowNodes(targetrownode);
+
+  //---------------loop elements and nodes and copy them to the rgroup discretization
+  if (group->GroupId()==rgroup)
+  {
+    for (int i=0; i<targetrowele.NumMyElements(); ++i)
+    {
+      DRT::Element* ele = commondis->gElement(targetrowele.GID(i));
+      RCP<DRT::Element> newele = rcp(ele->Clone());
+      newele->SetOwner(lcomm->MyPID());
+      dis->AddElement(newele);
+    }
+    for (int i=0; i<targetrownode.NumMyElements(); ++i)
+    {
+      DRT::Node* node = commondis->gNode(targetrownode.GID(i));
+      RCP<DRT::Node> newnode = rcp(node->Clone());
+      newnode->SetOwner(lcomm->MyPID());
+      dis->AddNode(newnode);
+    }
+  }
+
+  //------------------------------------------- complete the discretization on the rgroup
+  if (group->GroupId()==rgroup)
+  {
+    RCP<Epetra_Map> roweles = rcp(new Epetra_Map(-1,targetrowele.NumMyElements(),targetrowele.MyGlobalElements(),-1,*lcomm));
+    RCP<Epetra_Map> coleles;
+    RCP<Epetra_Map> rownodes;
+    RCP<Epetra_Map> colnodes;
+    DRT::UTILS::PartUsingParMetis(dis,roweles,rownodes,colnodes,lcomm,false);
+    dis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+    dis->ExportRowNodes(*rownodes);
+    dis->ExportRowElements(*roweles);
+    dis->ExportColumnNodes(*colnodes);
+    dis->ExportColumnElements(*coleles);
+    dis->FillComplete(true,true,true);
+  }
   icomm->Barrier();
   return;
 }
