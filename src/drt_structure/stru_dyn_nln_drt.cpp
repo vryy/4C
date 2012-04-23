@@ -47,6 +47,7 @@ Maintainer: Thomas Klöppel
 #include "str_mlmc.H"
 #endif
 
+#include "../drt_comm/comm_utils.H"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -84,7 +85,6 @@ void caldyn_drt()
   {
     // get input lists
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
