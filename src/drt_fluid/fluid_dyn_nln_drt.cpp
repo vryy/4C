@@ -139,7 +139,8 @@ void fluid_fluid_drt()
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
 
-  // copy  bgfluid to embfluid
+  // -------------------------------------------------------------------
+  // --------------- copy  bgfluid to embfluid
   const int numcolele = bgfluiddis->NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
@@ -154,9 +155,11 @@ void fluid_fluid_drt()
     }
   }
 
+
   embfluiddis->FillComplete();
 
-  //find MovingFluid's elements and nodes
+  // -------------------------------------------------------------------
+  // ---------------- find MovingFluid's elements and nodes
   map<int, DRT::Node*> MovingFluidNodemap;
   map<int, RCP< DRT::Element> > MovingFluidelemap;
   DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
@@ -172,21 +175,7 @@ void fluid_fluid_drt()
     MovingFluideleGIDs.push_back( it->first);
 
 
-  vector<int> NonMovingFluideleGIDs;
-  vector<int> NonMovingFluidNodeGIDs;
-  for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* bgele = bgfluiddis->lColElement(iele);
-    vector<int>::iterator eleiter = find(MovingFluideleGIDs.begin(), MovingFluideleGIDs.end(),bgele->Id() );
-    if (eleiter == MovingFluideleGIDs.end())
-    {
-      NonMovingFluideleGIDs.push_back(bgele->Id());
-      int numnode = bgele->NumNode();
-      for (int inode=0; inode <numnode; ++inode)
-        NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
-    }
-  }
-
+  // ----------------------------------------------------------------
   // copy the conditions to the embedded fluid discretization
   vector<string>          conditions_to_copy;
   conditions_to_copy.push_back("Dirichlet");
@@ -195,7 +184,7 @@ void fluid_fluid_drt()
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end(); ++conditername)
- {
+  {
      vector<DRT::Condition*> conds;
      bgfluiddis->GetCondition(*conditername, conds);
      for (unsigned i=0; i<conds.size(); ++i)
@@ -203,12 +192,15 @@ void fluid_fluid_drt()
        // We use the same nodal ids and therefore we can just copy the conditions.
        embfluiddis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
      }
-   }
+  }
 
+  // --------------------------------------------------------------------------
+  // ------------------ gather information for moving fluid -------------------
+
+  // Gather all informations from all processors
   //information how many processors work at all
   vector<int> allproc(embfluiddis->Comm().NumProc());
 
-  // Gather all informations from all processors
   vector<int> MovingFluideleGIDsall;
   vector<int> MovingFluidNodeGIDsall;
 
@@ -221,6 +213,25 @@ void fluid_fluid_drt()
   //gathers information of MovingFluidNodeGIDs of all processors
   LINALG::Gather<int>(MovingFluidNodeGIDs,MovingFluidNodeGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
 
+  // -------------------------------------------------------------------------------
+  // -------------- now build the nonmoving vectors from the gathered moving vectors
+  vector<int> NonMovingFluideleGIDs;
+  vector<int> NonMovingFluidNodeGIDs;
+  for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
+  {
+    DRT::Element* bgele = bgfluiddis->lColElement(iele);
+    vector<int>::iterator eleiter = find(MovingFluideleGIDsall.begin(), MovingFluideleGIDsall.end(),bgele->Id() );
+    if (eleiter == MovingFluideleGIDsall.end())
+    {
+      NonMovingFluideleGIDs.push_back(bgele->Id());
+      int numnode = bgele->NumNode();
+      for (int inode=0; inode <numnode; ++inode)
+        NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // ------------------ gather information for non moving fluid ---------------
   //information how many processors work at all
   vector<int> allprocbg(bgfluiddis->Comm().NumProc());
 
@@ -284,6 +295,7 @@ void fluid_fluid_drt()
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
   bgfluiddis->FillComplete();
+
 #endif
   //-------------------------------------------------------------------------
 
@@ -296,6 +308,8 @@ void fluid_fluid_drt()
 
   for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
     embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
+
+  embfluiddis->CheckFilledGlobally();
 
   // new dofset for embfluiddis which begins after bgfluiddis dofs
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
