@@ -19,6 +19,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_fluid_ele/fluid_ele_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_inpar/inpar_topopt.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -1371,75 +1372,95 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
   bodyforce_.Clear();
   bodyforce_old_.Clear();
 
-  if (fluidAdjoint3Parameter_->dissipation_)
+  if (fluidAdjoint3Parameter_->testcase_ == INPAR::TOPOPT::adjointtest_no)
   {
-    const double dissipation = fluidAdjoint3Parameter_->dissipation_fac_;
-
-    /* ------------------------------------------------------------------------ *
-     * 1) evaluate bodyforce at new time step                                   *
-     * ------------------------------------------------------------------------ */
-
-    // dissipation term due to reaction
-    bodyforce_.Update(2*dissipation*reacoeff_,fluidvelint_);
-
-    // dissipation term due to viscosity
-    if (is_higher_order_ele_)
+    if (fluidAdjoint3Parameter_->dissipation_)
     {
-      LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2(true);
-      fluidvelxy2.MultiplyNT(efluidvelnp,derxy2_);
+      const double dissipation = fluidAdjoint3Parameter_->dissipation_fac_;
 
-      LINALG::Matrix<nsd_,1> laplaceU(true);
-      for (int idim=0;idim<nsd_;++idim)
-      {
-        for (int jdim=0;jdim<nsd_;++jdim)
-          laplaceU(idim) += fluidvelxy2(idim,jdim);
-      }
+      /* ------------------------------------------------------------------------ *
+       * 1) evaluate bodyforce at new time step                                   *
+       * ------------------------------------------------------------------------ */
 
-      bodyforce_.Update(-dissipation*visc_,laplaceU,1.0);
-    }
-
-
-    /* ------------------------------------------------------------------------ *
-     * 2) evaluate bodyforce at old time step in instationary case              *
-     * ------------------------------------------------------------------------ */
-    if (not fluidAdjoint3Parameter_->is_stationary_)
-    {
-      bodyforce_old_.Update(2*dissipation*reacoeff_,fluidvelint_old_);
+      // dissipation term due to reaction
+      bodyforce_.Update(2*dissipation*reacoeff_,fluidvelint_);
 
       // dissipation term due to viscosity
       if (is_higher_order_ele_)
       {
-        LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2_old(true);
-        fluidvelxy2_old.MultiplyNT(efluidveln,derxy2_);
+        LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2(true);
+        fluidvelxy2.MultiplyNT(efluidvelnp,derxy2_);
 
-        LINALG::Matrix<nsd_,1> laplaceU_old(true);
+        LINALG::Matrix<nsd_,1> laplaceU(true);
         for (int idim=0;idim<nsd_;++idim)
         {
           for (int jdim=0;jdim<nsd_;++jdim)
-            laplaceU_old(idim) += fluidvelxy2_old(idim,jdim);
+            laplaceU(idim) += fluidvelxy2(idim,jdim);
         }
 
-        bodyforce_old_.Update(-dissipation*visc_,laplaceU_old,1.0);
+        bodyforce_.Update(-dissipation*visc_,laplaceU,1.0);
+      }
+
+
+      /* ------------------------------------------------------------------------ *
+       * 2) evaluate bodyforce at old time step in instationary case              *
+       * ------------------------------------------------------------------------ */
+      if (not fluidAdjoint3Parameter_->is_stationary_)
+      {
+        bodyforce_old_.Update(2*dissipation*reacoeff_,fluidvelint_old_);
+
+        // dissipation term due to viscosity
+        if (is_higher_order_ele_)
+        {
+          LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2_old(true);
+          fluidvelxy2_old.MultiplyNT(efluidveln,derxy2_);
+
+          LINALG::Matrix<nsd_,1> laplaceU_old(true);
+          for (int idim=0;idim<nsd_;++idim)
+          {
+            for (int jdim=0;jdim<nsd_;++jdim)
+              laplaceU_old(idim) += fluidvelxy2_old(idim,jdim);
+          }
+
+          bodyforce_old_.Update(-dissipation*visc_,laplaceU_old,1.0);
+        }
       }
     }
   }
+  else // special cases
+  {
+    LINALG::Matrix<nsd_,1> coords(true);
+    coords.Multiply(xyze_,funct_);
 
-
-  LINALG::Matrix<nsd_,1> coords(true);
-  coords.Multiply(xyze_,funct_);
-
-  LINALG::Matrix<nsd_,1> values(true);
-  // dens 2, visc 3
-  values(0) = 24998*coords(0)*coords(0) + 24994*coords(0)*coords(1) - 4*coords(1)*coords(1);
-  values(1) = -74978*coords(0)*coords(0) + 50004*coords(1)*coords(1) + 28*coords(0)*coords(1);
-  // quad vel, lin pres
-//  values(0) = 24999*coords(0)*coords(0) - 4*coords(0)*coords(1);
-//  values(1) = -74989*coords(0)*coords(0) + 50002*coords(1)*coords(1)
-//              + 12*coords(0)*coords(1);
-//  // lin vel, quad pres
-//  values(0) = 4*coords(1);
-//  values(1) = 24994*coords(0);
-  bodyforce_=values;
+    switch (fluidAdjoint3Parameter_->testcase_)
+    {
+    case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
+    {
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
+    {
+      bodyforce_(0) = 4*coords(1);
+      bodyforce_(1) = 24994*coords(0);
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
+    {
+      bodyforce_(0) = 24999*coords(0)*coords(0) - 4*coords(0)*coords(1);
+      bodyforce_(1) = -74989*coords(0)*coords(0) + 50002*coords(1)*coords(1)
+                      + 12*coords(0)*coords(1);
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
+    {
+      bodyforce_(0) = 24998*coords(0)*coords(0) + 24994*coords(0)*coords(1) - 4*coords(1)*coords(1);
+      bodyforce_(1) = -74978*coords(0)*coords(0) + 50004*coords(1)*coords(1) + 28*coords(0)*coords(1);
+      break;
+    }
+    default:
+      dserror("no dirichlet condition implemented for special test case");
+    }
+  }
 }
 
 
@@ -1454,12 +1475,38 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForce(
   contforce_ = 0.0;
   contforce_old_ = 0.0;
 
-  LINALG::Matrix<nsd_,1> coords(true);
-  coords.Multiply(xyze_,funct_);
-  // dens 2, visc 3
-  contforce_ = 2*coords(0) + 5*coords(1);
-  // quad vel, lin pres
-//  contforce_ = 2*coords(0) + 4*coords(1);
+  if (fluidAdjoint3Parameter_->testcase_ == INPAR::TOPOPT::adjointtest_no)
+  {
+    // TODO cont force due to objective ?!
+  }
+  else
+  {
+    LINALG::Matrix<nsd_,1> coords(true);
+    coords.Multiply(xyze_,funct_);
+
+    switch (fluidAdjoint3Parameter_->testcase_)
+    {
+    case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
+      break;
+    case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
+    {
+      contforce_ = 12.0;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
+    {
+      contforce_ = 2*coords(0) + 4*coords(1);
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
+    {
+      contforce_ = 2*coords(0) + 5*coords(1);
+      break;
+    }
+    default:
+      dserror("no dirichlet condition implemented for special test case");
+    }
+  }
 }
 
 

@@ -60,6 +60,16 @@ namespace INPAR
       initadjointfield_zero_field,
       initadjointfield_field_by_function
     };
+
+    /// type of initial fluid field
+    enum AdjointTestCases
+    {
+      adjointtest_no,
+      adjointtest_stat_const_vel_lin_pres,
+      adjointtest_stat_lin_vel_quad_pres,
+      adjointtest_stat_quad_vel_lin_pres,
+      adjointtest_stat_all_terms_all_constants
+    };
   }
 }
 #endif /* INPAR_TOPOPT_H_ */

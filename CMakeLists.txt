@@ -998,6 +998,7 @@ set(OBJS_DRT_TOPOPT
 )
 set(OBJS_DRT_TOPOPT_ADJOINT
   src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
+  src/drt_opti/topopt_fluidAdjointResulttest.cpp
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
@@ -2257,6 +2258,14 @@ baci_test(thickcant_hex 1 "")
 baci_test(thickcant_hex 2 "")
 baci_test(thickcant_tet4 1 "")
 baci_test(thickcant_tet4 2 "")
+baci_test(topopt_adjoint_channel_const_vel_lin_pres 1 "")
+baci_test(topopt_adjoint_channel_const_vel_lin_pres 2 "")
+baci_test(topopt_adjoint_channel_lin_vel_quad_pres 1 "")
+baci_test(topopt_adjoint_channel_lin_vel_quad_pres 2 "")
+baci_test(topopt_adjoint_channel_quad_vel_lin_pres_dens2_visc3 1 "")
+baci_test(topopt_adjoint_channel_quad_vel_lin_pres_dens2_visc3 2 "")
+baci_test(topopt_adjoint_channel_quad_vel_lin_pres 1 "")
+baci_test(topopt_adjoint_channel_quad_vel_lin_pres 2 "")
 baci_test(topopt_reaction_channel 1 "")
 baci_test(topopt_reaction_channel 2 "")
 baci_test(topopt_reaction_plate 1 "")

@@ -191,18 +191,16 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 //  // restart
 //  fluidadjointtimeparams->set ("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidadjointtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
+  fluidadjointtimeparams->set<int>("write solution every", prbdyn.get<int>("UPRES"));
 
-  // -----------evaluate error for test flows with analytical solutions
+  // ----------- initial field for test cases
   INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
-//  fluidadjointtimeparams->set<int>("eval err for analyt sol", initfield);
+
+  // ------------------------------------ special test case
+  fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointTestCases>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(adjointfdyn,"TESTCASE"));
 
   // ------------------------------------ potential Neumann inflow terms
   fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
-
-  //--------------------------------------analytical error evaluation
-  fluidadjointtimeparams->set<int>("calculate error",
-      Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
   // -----------------------sublist containing stabilization parameters
   fluidadjointtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");

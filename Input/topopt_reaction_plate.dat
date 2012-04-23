@@ -1,5 +1,17 @@
+//
+// Maintainer: Martin Winklmaier
+// winklmaier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
+//
+// necessary defines: CCADISCRET D_FLUID3 QHULL BINIO
+//
+==================================================================
+General Data File BACI
+==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+- stationary fluid example in the topopt frame
+- academical, two-dimensional test case for the reaction term due to optimization
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             2
 MATERIALS                       1
@@ -36,7 +48,7 @@ ALPHA_M                         1.0                             // 0.833333
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-10
+CONVTOL                         1e-12
 GRIDVEL                         1
 INITIALFIELD                    zero_field                      // field_by_function
 INITSTATITEMAX                  5

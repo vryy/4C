@@ -173,6 +173,9 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
   const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
   if (matloc == "integration_point") mat_gp_ = true;
   else                               mat_gp_ = false;
+
+  // set flag for test cases
+  testcase_ = params.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
 }
 
 void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( Teuchos::ParameterList& params )

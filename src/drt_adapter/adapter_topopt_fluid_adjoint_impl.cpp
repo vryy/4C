@@ -14,6 +14,7 @@ Maintainer: Martin Winklmaier
 
 #include "adapter_topopt_fluid_adjoint_impl.H"
 #include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
+#include "../drt_opti/topopt_fluidAdjointResulttest.H"
 #include "../drt_lib/drt_dserror.H"
 
 
@@ -99,9 +100,7 @@ const INPAR::FLUID::TimeIntegrationScheme ADAPTER::FluidAdjointImpl::TimIntSchem
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAdjointImpl::CreateFieldTest()
 {
-  dserror("not implemented until now");
-  return Teuchos::null;
-//  return Teuchos::rcp(new FLD::FluidResultTest(adjointTimeInt_));
+  return Teuchos::rcp(new TOPOPT::ADJOINT::FluidAdjointResultTest(adjointTimeInt_));
 }
 
 

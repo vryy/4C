@@ -19,6 +19,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_inpar/inpar_topopt.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 
@@ -170,172 +171,172 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
   *----------------------------------------------------------------------*/
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
-    // evaluate shape functions and their derivatives,
-    // compute unit normal vector and infinitesimal area element drs
-    // (evaluation of nurbs-specific stuff not activated here)
-    EvalShapeFuncAtBouIntPoint(iquad,ele->Id());
-
-    // get the required material information
-    Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
-
-    // get material parameters
-    // (evaluation always at integration point, in contrast to parent element)
-    GetMaterialParams(material);
-
-    // time factors
-    const double timefacfac = fac_*timefac;
-    const double timefacfacrhs = fac_*timefacrhs;
-
-    // evaluate state vectors on gauss point
-    velint_.Multiply(evelnp,funct_);
-    velint_old_.Multiply(eveln,funct_);
-
-    fluidvelint_.Multiply(efluidvelnp,funct_);
-    fluidvelint_old_.Multiply(efluidveln,funct_);
-
-    pressint_ = epren.Dot(funct_);
-    pressint_old_ = eprenp.Dot(funct_);
-
-    // manual setting for example
-    LINALG::Matrix<nsd_,1> coords(true);
-    coords.Multiply(xyze_,funct_);
-
-    LINALG::Matrix<nsd_,1> values(true);
-    // dens 2, visc 3
-    values(0) = 2*coords(0)*coords(0)*coords(0) + 6*coords(0)*coords(0)*coords(1)
-                + 4*coords(0)*coords(1)*coords(1) - 3*coords(1);
-    values(1) = - 6*coords(0)*coords(0)*coords(0) - 12*coords(0)*coords(0)*coords(1)
-                + 4*coords(0)*coords(1)*coords(1) + 8*coords(1)*coords(1)*coords(1)
-                - 15*coords(0);
-    // quadratic velocity, linear pressure, exact example
-//    values(0) = coords(0)*coords(0)*coords(0) + 2*coords(0)*coords(0)*coords(1) - 2*coords(1);
-//    values(1) = - 3*coords(0)*coords(0)*coords(0) + 4*coords(1)*coords(1)*coords(1)
-//                - 6*coords(0)*coords(0)*coords(1) + 2*coords(0)*coords(1)*coords(1)
-//                - 6*coords(0);
-    // quadratic exact example
-//    values(0) = 10.0 + 0.5*(125010.0*coords(0)*coords(0)
-//                          +175000.0*coords(1)*coords(1)
-//                          +100004.0*coords(0)*coords(1));
-//    values(1) = 3.0*coords(0)*coords(0) + 7.0*coords(0)*coords(01) + 5.0;
-    // basic example : alpha = 0, no convection, no diffusion
-//    values(0) = -9.0;
-//    values(1) = 0.0;
-    // most fully example
-//    values(0) = -12500*(coords(1)*coords(1)-coords(0)*coords(0)) + 2.0;
-//    values(1) = -coords(1);
-
-    LINALG::Matrix<nsd_,1> values_old(true); // TODO fill for testing
-
-    for (int jdim=0;jdim<nsd_;++jdim)
+    if (params.get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
     {
-      if((*onoff)[jdim])  // Is this dof activated
+//      // evaluate shape functions and their derivatives,
+//      // compute unit normal vector and infinitesimal area element drs
+//      EvalShapeFuncAtBouIntPoint(iquad,ele->Id());
+//
+//      // time factors
+//      const double timefacfac = fac_*timefac;
+//      const double timefacfacrhs = fac_*timefacrhs;
+//      // get the required material information
+//      Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+//
+//      // get material parameters
+//      // (evaluation always at integration point, in contrast to parent element)
+//      GetMaterialParams(material);
+//
+//
+//      // evaluate state vectors on gauss point
+//      velint_.Multiply(evelnp,funct_);
+//      velint_old_.Multiply(eveln,funct_);
+//
+//      fluidvelint_.Multiply(efluidvelnp,funct_);
+//      fluidvelint_old_.Multiply(efluidveln,funct_);
+//
+//      pressint_ = epren.Dot(funct_);
+//      pressint_old_ = eprenp.Dot(funct_);
+//
+//
+//      // convective boundary term
+//      for (int idim=0;idim<nsd_;++idim)
+//      {
+//        if((*onoff)[idim])  // Is this dof activated
+//        {
+//          // system matrix entry
+//          double value = 0.0;
+//
+//          for (int dim=0;dim<nsd_;++dim)
+//            value += fluidvelint_(dim)*unitnormal_(dim);
+//
+//          value*=timefacfac*dens_;
+//
+//          // right hand side at new time step
+//          for(int vi=0; vi < nen_; ++vi )
+//          {
+//            elevec(numdofpernode_*vi+idim,0) += funct_(vi)*value*velint_(idim);
+//          }
+//
+//          // right hand side at old time step
+//          if (not fluidAdjoint3Parameter_->is_stationary_)
+//          {
+//            value = 0.0;
+//
+//            for (int dim=0;dim<nsd_;++dim)
+//              value += fluidvelint_old_(dim)*unitnormal_(dim);
+//
+//            value*=timefacfacrhs;
+//
+//            for(int vi=0; vi < nen_; ++vi )
+//            {
+//              elevec(numdofpernode_*vi+idim,0) += funct_(vi)*value*velint_old_(idim);
+//            }
+//          }
+//        }  // if (*onoff)
+//      }
+//
+//
+//      // pressure boundary term
+//      for(int vi=0; vi < nen_; ++vi )
+//      {
+//        double value = timefacfac*funct_(vi);
+//
+//        for (int idim = 0; idim<nsd_;idim++)
+//        {
+//          if((*onoff)[idim])  // Is this dof activated
+//          {
+//            double functval = value*unitnormal_(idim);
+//
+//            elevec(numdofpernode_*vi+idim,0) -= functval*pressint_;
+//
+//            if (not fluidAdjoint3Parameter_->is_stationary_)
+//            {
+//              elevec(numdofpernode_*vi+idim,0) -= timefacfacrhs*funct_(vi)*unitnormal_(idim)*pressint_old_;
+//            }
+//          }
+//        }
+//      }
+    }
+    else // special cases
+    {
+      // evaluate shape functions and their derivatives,
+      // compute unit normal vector and infinitesimal area element drs
+      EvalShapeFuncAtBouIntPoint(iquad,ele->Id());
+
+      // time factors
+      const double timefacfac = fac_*timefac;
+      const double timefacfacrhs = fac_*timefacrhs;
+
+      INPAR::TOPOPT::AdjointTestCases testcase = params.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
+
+      LINALG::Matrix<nsd_,1> coords(true);
+      coords.Multiply(xyze_,funct_);
+
+      LINALG::Matrix<nsd_,1> values(true);
+      LINALG::Matrix<nsd_,1> values_old(true);
+
+      switch (testcase)
       {
-        const double functval = timefacfac*values(jdim);
+      case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
+      {
+        values(0) = -9.0;
+        values(1) = 0.0;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
+      {
+        values(0) = 10.0 + 0.5*(125010.0*coords(0)*coords(0)
+                                +175000.0*coords(1)*coords(1)
+                                +100004.0*coords(0)*coords(1));
+        values(1) = 3.0*coords(0)*coords(0) + 7.0*coords(0)*coords(1) + 5.0;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
+      {
+        values(0) = coords(0)*coords(0)*coords(0) + 2*coords(0)*coords(0)*coords(1) - 2*coords(1);
+        values(1) = - 3*coords(0)*coords(0)*coords(0) + 4*coords(1)*coords(1)*coords(1)
+                    - 6*coords(0)*coords(0)*coords(1) + 2*coords(0)*coords(1)*coords(1)
+                    - 6*coords(0);
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
+      {
+        values(0) = 2*coords(0)*coords(0)*coords(0) + 6*coords(0)*coords(0)*coords(1)
+                    + 4*coords(0)*coords(1)*coords(1) - 3*coords(1);
+        values(1) = - 6*coords(0)*coords(0)*coords(0) - 12*coords(0)*coords(0)*coords(1)
+                    + 4*coords(0)*coords(1)*coords(1) + 8*coords(1)*coords(1)*coords(1)
+                    - 15*coords(0);
+        break;
+      }
+      default:
+        dserror("no dirichlet condition implemented for special test case");
+      }
 
-        for (int vi=0;vi<nen_;++vi)
+
+      for (int jdim=0;jdim<nsd_;++jdim)
+      {
+        if((*onoff)[jdim])  // Is this dof activated
         {
-          elevec(vi*numdofpernode_+jdim) += funct_(vi)*functval;
-        }
+          const double functval = timefacfac*values(jdim);
 
-        if (not fluidAdjoint3Parameter_->is_stationary_)
-        {
-          const double functval_old = timefacfacrhs*values_old(jdim);
-
-          for(int vi=0; vi < nen_; ++vi )
+          for (int vi=0;vi<nen_;++vi)
           {
-            elevec(numdofpernode_*vi+jdim) += funct_(vi)*functval_old;
+            elevec(vi*numdofpernode_+jdim) += funct_(vi)*functval;
+          }
+
+          if (not fluidAdjoint3Parameter_->is_stationary_)
+          {
+            const double functval_old = timefacfacrhs*values_old(jdim);
+
+            for(int vi=0; vi < nen_; ++vi )
+            {
+              elevec(numdofpernode_*vi+jdim) += funct_(vi)*functval_old;
+            }
           }
         }
       }
     }
-    /* convective boundary term */
-    /*
-                     /                       \
-                    |   /  n     \            |
-            - rho * |  |  u  o n  | Dv ,   w  |
-                    |   \        /    (i)     |
-                     \                       /
-    */
-//    for (int idim=0;idim<nsd_;++idim)
-//    {
-//      if((*onoff)[idim])  // Is this dof activated
-//      {
-//        // system matrix entry
-//        double value = 0.0;
-//
-//        for (int dim=0;dim<nsd_;++dim)
-//          value += fluidvelint_(dim)*unitnormal_(dim);
-//
-//        value*=timefacfac*dens_;
-//
-//        for(int ui=0; ui < nen_; ++ui )
-//        {
-//          double functval = value*funct_(ui);
-//
-//          for (int vi=0;vi<nen_;vi++)
-//          {
-//            elemat(vi*numdofpernode_+idim,ui*numdofpernode_+idim) -= funct_(vi)*functval;
-//
-//          }
-//        }
-//
-//        // right hand side at new time step
-//        for(int vi=0; vi < nen_; ++vi )
-//        {
-//          elevec(numdofpernode_*vi+idim,0) += funct_(vi)*value*velint_(idim);
-//        }
-//
-//        // right hand side at old time step
-//        if (not fluidAdjoint3Parameter_->is_stationary_)
-//        {
-//          value = 0.0;
-//
-//          for (int dim=0;dim<nsd_;++dim)
-//            value += fluidvelint_old_(dim)*unitnormal_(dim);
-//
-//          value*=timefacfacrhs;
-//
-//          for(int vi=0; vi < nen_; ++vi )
-//          {
-//            elevec(numdofpernode_*vi+idim,0) += funct_(vi)*value*velint_old_(idim);
-//          }
-//        }
-//      }  // if (*onoff)
-//    }
-//
-//
-    /* pressure boundary term */
-    /*
-                     /          \
-                    |            |
-                  + |   Dq ,  w  |
-                    |            |
-                     \          /
-    */
-//    for(int vi=0; vi < nen_; ++vi )
-//    {
-//      double value = timefacfac*funct_(vi);
-//
-//      for (int idim = 0; idim<nsd_;idim++)
-//      {
-//        if((*onoff)[idim])  // Is this dof activated
-//        {
-//          double functval = value*unitnormal_(idim);
-//
-//          for (int ui=0;ui<nen_;ui++)
-//          {
-//            elemat(vi*numdofpernode_+idim,ui*numdofpernode_+idim) += functval*funct_(ui);
-//          }
-//
-//          elevec(numdofpernode_*vi+idim,0) -= functval*pressint_;
-//
-//          if (not fluidAdjoint3Parameter_->is_stationary_)
-//          {
-//            elevec(numdofpernode_*vi+idim,0) -= timefacfacrhs*funct_(vi)*unitnormal_(idim)*pressint_old_;
-//          }
-//        }
-//      }
-//    }
   }
 
   return 0;

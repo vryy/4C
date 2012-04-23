@@ -102,6 +102,8 @@ cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restart
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(topopt_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(topopt_->AdjointFluidField()->CreateFieldTest());
+
   DRT::Problem::Instance()->TestAll(comm);
 
   return;

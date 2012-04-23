@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_topopt.H"
 
 
 namespace DRT
@@ -108,6 +109,8 @@ public:
   //! timefacrhs = dt_ * (1-theta_div_)
   double timefacdivrhs_;
 
+  //! special test case
+  INPAR::TOPOPT::AdjointTestCases testcase_;
 private:
 
   // private constructor

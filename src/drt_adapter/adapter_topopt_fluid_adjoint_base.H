@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 
 
 #include <Teuchos_RCP.hpp>
+#include "adapter_topopt_fluid_adjoint.H"
 
 
 namespace Teuchos
@@ -26,8 +27,6 @@ namespace Teuchos
 
 namespace ADAPTER
 {
-  class FluidAdjoint;
-
   /// adapter for the coupling of the fluid adjoint algorithm in topology optimization
   /*!
 

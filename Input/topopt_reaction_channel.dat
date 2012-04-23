@@ -1,4 +1,17 @@
+//
+// Maintainer: Martin Winklmaier
+// winklmaier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
+//
+// necessary defines: CCADISCRET D_FLUID3 QHULL BINIO
+//
+==================================================================
+General Data File BACI
+==================================================================
 -----------------------------------------------------------------------TITLE
+- stationary fluid example in the topopt frame
+- academical, three-dimensional test case for the reaction term due to optimization
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        90
 NODES                           176

@@ -3664,13 +3664,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");
 
-  setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for fluid problem",
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for adjoint problem",
       tuple<std::string>(
           "zero_field",
           "field_by_function"),
           tuple<int>(
               INPAR::TOPOPT::initadjointfield_zero_field,
               INPAR::TOPOPT::initadjointfield_field_by_function),
+              &topoptadjointfluiddyn);
+
+  setStringToIntegralParameter<int>("TESTCASE","test_no","test case for adjoint problem",
+      tuple<std::string>(
+          "test_no",
+          "test_stat_const_vel_lin_pres",
+          "test_stat_lin_vel_quad_pres",
+          "test_stat_quad_vel_lin_pres",
+          "test_stat_all_terms_all_constants"),
+          tuple<int>(
+              INPAR::TOPOPT::adjointtest_no,
+              INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres,
+              INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres,
+              INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres,
+              INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants),
               &topoptadjointfluiddyn);
 
   IntParameter("INITFUNCNO",-1,"Function for initial field",&topoptadjointfluiddyn);

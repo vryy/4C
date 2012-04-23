@@ -372,6 +372,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SolveStationaryProblem()
       // set action for elements
       nbcparams.set("action"    ,"AdjointNeumannBoundaryCondition");
 
+      // set flag for test case
+      nbcparams.set("special test case",params_.get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
+
       // set fluid velocities of current and last time step
       RCP<Epetra_Vector> fluidvelnp = fluid_vels_->find(1)->second;
       discret_->SetState("fluidveln",fluidvelnp);
@@ -1008,43 +1011,61 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
 {
   DRT::Node* node = NULL;
 
-
-  const Epetra_Map* map = discret_->DofRowMap();
-  for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
+  if (params_.get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
   {
-    node = discret_->lRowNode(inode);
-    DRT::Condition* cond = node->GetCondition("Dirichlet");
-    if (cond==NULL) continue;
+    // TODO dbc due to objective function
+  }
+  else // special cases
+  {
+    INPAR::TOPOPT::AdjointTestCases testcase = params_.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
 
-    const vector<int> dofs = discret_->Dof(node);
-    vector<double> vel;
-    DRT::UTILS::ExtractMyValues(*velnp_,vel,dofs);
+    const Epetra_Map* map = discret_->DofRowMap();
+    for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
+    {
+      node = discret_->lRowNode(inode);
+      DRT::Condition* cond = node->GetCondition("Dirichlet");
+      if (cond==NULL) continue;
 
-    const int nsd = vel.size()-1;
-    double values[3] = {0.0}; // dimension is <= 3 so this is enough
+      const int nsd = DRT::Problem::Instance()->NDim();
+      double values[3] = {0.0}; // dimension is <= 3 so this is enough
 
-    // TODO here an appropriate if will come which is true if objective contains
-    LINALG::Matrix<2,1> coords(node->X());
-    // dens 2, visc 3
-    values[0] = coords(0)*coords(0) + coords(0)*coords(1);
-    values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
-    // quadratic velocity, linear pressure, exact example
-//    values[0] = coords(0)*coords(0);
-//    values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
-    // quadratic exact example
-//    values[0] = 5.0*coords(0) + 2.0*coords(1);
-//    values[1] = 3.0*coords(0) + 7.0*coords(1);
-    // basic example : alpha = 0
-//    values[0] = 1.0;
-//    values[1] = 0.0;
-//    // most fully example
-//    values[0] = coords(0);
-//    values[1] = -coords(1);
-    // TODO this is just a dummy example inserting zeros
+      LINALG::Matrix<2,1> coords(node->X());
 
-    int ldofs[3];
-    for (int idim=0;idim<nsd;idim++) ldofs[idim] = map->LID(dofs[idim]);
-    velnp_->ReplaceMyValues(nsd,(double*)values,(int*)ldofs);
+      switch (testcase)
+      {
+      case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
+      {
+        values[0] = 1.0;
+        values[1] = 0.0;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
+      {
+        values[0] = 5.0*coords(0) + 2.0*coords(1);
+        values[1] = 3.0*coords(0) + 7.0*coords(1);
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
+      {
+        values[0] = coords(0)*coords(0);
+        values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
+      {
+        values[0] = coords(0)*coords(0) + coords(0)*coords(1);
+        values[1] = 2*coords(1)*coords(1) - 3*coords(0)*coords(0);
+        break;
+      }
+      default:
+        dserror("no dirichlet condition implemented for special test case");
+      }
+
+      int ldofs[3];
+      const vector<int> dofs = discret_->Dof(node);
+      for (int idim=0;idim<nsd;idim++) ldofs[idim] = map->LID(dofs[idim]);
+      velnp_->ReplaceMyValues(nsd,(double*)values,(int*)ldofs);
+    }
   }
 }
 
@@ -1146,6 +1167,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter()
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+
+  // set flag for test cases
+  eleparams.set<INPAR::TOPOPT::AdjointTestCases>("special test case",params_.get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

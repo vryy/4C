@@ -1,0 +1,71 @@
+/*!------------------------------------------------------------------------------------------------*
+\file topopt_fluidAdjointResulttest.H
+
+\brief 
+
+<pre>
+Maintainer: Martin Winklmaier
+            winklmaier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
+
+#ifndef TOPOPT_FLUIDADJOINTRESULTTEST_H_
+#define TOPOPT_FLUIDADJOINTRESULTTEST_H_
+
+
+#include "../drt_lib/drt_resulttest.H"
+
+
+class Epetra_Vector;
+namespace DRT
+{
+class Discretization;
+}
+
+namespace TOPOPT
+{
+namespace ADJOINT
+{
+// forward declarations
+class ImplicitTimeInt;
+
+
+/*!
+\brief Fluid adjoint specific result test class
+
+\author winklmaier
+*/
+class FluidAdjointResultTest : public DRT::ResultTest
+{
+public:
+
+    /*!
+    \brief constructor
+    */
+    FluidAdjointResultTest(Teuchos::RCP<ImplicitTimeInt> adjointfluid);
+
+
+    /// our version of nodal value tests
+    /*!
+    Possible position flags are "velx", "vely", "velz" and
+    "pressure". With the obvious meaning.
+    */
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
+    /// return true if this is a fluid adjoint test
+    virtual bool Match(DRT::INPUT::LineDefinition& res);
+
+private:
+
+    /// pointer to fluid discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    /// pointer to unknown vector with values
+    Teuchos::RCP<Epetra_Vector>       mysol_;
+};
+}
+}
+
+#endif /* TOPOPT_FLUIDADJOINTRESULTTEST_H_ */
