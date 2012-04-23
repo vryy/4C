@@ -622,6 +622,19 @@ void DRT::Problem::ReadClonedMaterials(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
+{
+  /*---------------------------------------------- input of time curves */
+  timecurvemanager_.ReadInput(reader);
+  /*---------------------------------------- input of spatial functions */
+  functionmanager_.ReadInput(reader);
+  /*-------------------------------------- input of result descriptions */
+  resulttest_.ReadInput(reader);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 {
   Epetra_Time time(*reader.Comm());
@@ -631,12 +644,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
     std::cout.flush();
   }
 
-  /*---------------------------------------------- input of time curves */
-  timecurvemanager_.ReadInput(reader);
-  /*---------------------------------------- input of spatial functions */
-  functionmanager_.ReadInput(reader);
-  /*-------------------------------------- input of result descriptions */
-  resulttest_.ReadInput(reader);
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   const Teuchos::ParameterList& design = DesignDescriptionParams();
@@ -1357,6 +1364,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // we read nodes and elements for the desired fields as specified above
     nodereader.Read();
+  printf("proc %d Reached this point 1 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
 
     // care for special applications
     switch (ProblemType())
@@ -1373,8 +1381,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models)
+//  printf("proc %d Reached this point 2 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
       ReadMicroFields(reader);
 
+//  printf("proc %d Reached this point 3 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
       // Read in another discretization for MultiLevel Monte Carlo use
       ReadMultiLevelDiscretization(reader);
       break;
@@ -1546,7 +1556,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         // read conditions of microscale
         // -> note that no time curves and spatial functions can be read!
-
+        micro_problem->ReadTimeFunctionResult(micro_reader);
         micro_problem->ReadConditions(micro_reader);
 
         // At this point, everything for the microscale is read,
@@ -1710,6 +1720,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 
     // read conditions of other levels
     // -> note that no time curves and spatial functions can be read!
+    multilevel_problem->ReadTimeFunctionResult(multilevel_reader);
     multilevel_problem->ReadConditions(multilevel_reader);
 
     // At this point, everything for the other levels is read,

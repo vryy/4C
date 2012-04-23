@@ -202,6 +202,9 @@ public:
   /// input of conditions
   void ReadConditions(DRT::INPUT::DatFileReader& reader);
 
+  /// input of time curves, functions and result tests
+  void ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader);
+
   /// input of knots for isogeometric analysis
   void ReadKnots(DRT::INPUT::DatFileReader& reader);
 
