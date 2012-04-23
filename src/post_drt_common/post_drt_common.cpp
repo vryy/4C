@@ -666,7 +666,9 @@ void PostProblem::read_meshes()
       {
         // setup of parallel layout: create ghosting of already distributed nodes+elems
         if (currfield.discretization()->Comm().NumProc() != 1)
+        {
           currfield.discretization()->SetupGhostingWrongNameDoNotUse();
+        }
         else
           currfield.discretization()->FillComplete();
       }
