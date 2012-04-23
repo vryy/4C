@@ -46,6 +46,9 @@ void ntainp_ccadiscret(
 
   // input of materials
   problem->ReadMaterials(reader);
+  
+  // input of time curves, functions and result tests
+  problem->ReadTimeFunctionResult(reader);
 
   switch(npType)	
   {
@@ -70,6 +73,7 @@ void ntainp_ccadiscret(
     // group 0 only reads discretization etc
     if (group==0) 
     {
+      
       // input of fields
       problem->ReadFields(reader);
 
@@ -86,8 +90,6 @@ void ntainp_ccadiscret(
     }
     gcomm->Barrier();
     COMM_UTILS::BroadcastDiscretizations(0); // group 0 broadcasts the discretizations
-    
-    dserror("not completely implemented");
   break;
   default:
     dserror("nptype (nested parallelity type) not recognized");
@@ -105,7 +107,12 @@ void ntainp_ccadiscret(
     problem->WriteInputParameters();
 
   // before we destroy the reader we want to know about unused sections
-  reader.PrintUnknownSections();
+  if (npType==copy_dat_file)
+  {
+    if (group==0) reader.PrintUnknownSections();
+  }
+  else
+    reader.PrintUnknownSections();
 
   return;
 } // end of ntainp_ccadiscret()
