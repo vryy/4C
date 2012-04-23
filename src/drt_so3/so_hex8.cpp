@@ -389,8 +389,8 @@ void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
 {
   os << "So_hex8 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  //cout << endl;
+  //cout << data_;
   return;
 }
 
