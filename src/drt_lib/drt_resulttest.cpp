@@ -191,12 +191,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddNamedDouble("TOLERANCE")
     ;
 
-  DRT::INPUT::LineDefinition specialfluid;
-  specialfluid
-    .AddTag("FLUID")
-    .AddNamedInt("SPECIAL")
-    ;
-
   DRT::INPUT::LineDefinition ale;
   ale
     .AddTag("ALE")
@@ -266,7 +260,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid);
-  lines->Add(specialfluid);
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(scatra);
