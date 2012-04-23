@@ -65,6 +65,7 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
 
   // read and validate all condition definitions
   cout<<"...";
+  problem->ReadTimeFunctionResult(reader);
   problem->ReadConditions(reader);
 
   /* input of materials of cloned fields (if needed) */
