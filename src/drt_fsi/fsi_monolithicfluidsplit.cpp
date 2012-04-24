@@ -1117,7 +1117,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   lambda_->Update(1.0, *fgpre_, -ftiparam);
   lambda_->Update(-1.0, *icoupfa_->SlaveToMaster(fgialeddi), -1.0, *fgidui, 1.0);
   lambda_->Update(-1.0, *fggddg, -1.0, *icoupfa_->SlaveToMaster(fggaleddg), 1.0);
-  lambda_->Scale(1/(1.0-ftiparam)); // entire Lagrange multiplier is divided by (1.-fldtimintparam)
+  lambda_->Scale(1/(1.0-ftiparam)); // entire Lagrange multiplier is divided by (1.-ftiparam)
 
   return;
 }
