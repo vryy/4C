@@ -786,9 +786,6 @@ protected:
   //! @name flags and enums
   /*========================================================================*/
 
-  //! flag defining type of scalar transport problem
-  string prbtype_;
-
   //! flag for type of scalar transport problem
   INPAR::SCATRA::ScaTraType scatratype_;
 

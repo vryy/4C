@@ -85,7 +85,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   myrank_ (actdis->Comm().MyPID()),
   // splitter, // not initialized
   errfile_  (extraparams->get<FILE*>("err file")),
-  prbtype_  (extraparams->get<string>("problem type")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
@@ -104,11 +103,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   stepmax_  (params->get<int>("NUMSTEP")),
   // itemax_, // not initialized
   dta_      (params->get<double>("TIMESTEP")),
-  // dtele_, // not initialized
-  // dtsolve_, // not initialized
+  dtele_(0.0),
+  dtsolve_(0.0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   // numscal_, not initialized
-  // phixx, // all not initialized
+  // phi vectors, // all not initialized
   // vel_, // not initialized
   // many many not initialized
   cdvel_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
@@ -137,18 +136,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   //  allow the usage of a given user input)
   // additional exception: turbulent passive scalar transport: only for this case and loma
   // vectors and variables for turbulence models are provided
+  PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
-     ((prbtype_ != "elch") and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
+     ((prbtype != prb_elch) and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
   {
-    if (prbtype_ == "elch")              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
-    else if (prbtype_ == "combustion")   scatratype_ = INPAR::SCATRA::scatratype_levelset;
-    else if (prbtype_ == "loma")         scatratype_ = INPAR::SCATRA::scatratype_loma;
-    else if (prbtype_ == "scatra")       scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype_ == "gas_fsi")      scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype_ == "biofilm_fsi")  scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype_ == "thermo_fsi")   scatratype_ = INPAR::SCATRA::scatratype_loma;
+    if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+    else if (prbtype == prb_combust)   scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
+    else if (prbtype == prb_scatra)       scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
     else
-      dserror("Problemtype %s not supported", prbtype_.c_str());
+      dserror("Problemtype %s not supported", DRT::Problem::Instance()->ProblemName().c_str());
   }
 
   // -------------------------------------------------------------------
@@ -157,10 +157,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   switch(solvtype_)
   {
   case INPAR::SCATRA::solvertype_nonlinear:
-  {
-    incremental_ = true;
-  }
-  break;
   case INPAR::SCATRA::solvertype_linear_incremental:
   {
     incremental_ = true;

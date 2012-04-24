@@ -50,7 +50,7 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
      phinm_  = LINALG::CreateVector(*dofrowmap,true);
 
   // ELCH with natural convection
-  if (prbtype_ == "elch")
+  if (extraparams_->isSublist("ELCH CONTROL"))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {

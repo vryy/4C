@@ -1851,7 +1851,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
   // loads densification coefficients and the initial mean concentration
 
   // only required for ELCH with natural convection
-  if (prbtype_ == "elch")
+  if (extraparams_->isSublist("ELCH CONTROL"))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
