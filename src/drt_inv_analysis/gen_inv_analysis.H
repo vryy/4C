@@ -205,8 +205,11 @@ public:
   /// Calculate the new dof vector for comparison with the experimental data
   Epetra_SerialDenseVector CalcCvector(bool outputtofile);
 
-  ///
+  /// acual inverse analysis loop
   void Integrate();
+
+  /// acual inverse analysis loop (nested parallel version)
+  void NPIntegrate();
 
   /// Output of Inverse Analysis
   void PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p);

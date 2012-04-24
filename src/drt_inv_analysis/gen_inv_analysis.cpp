@@ -58,6 +58,7 @@ Maintainer: Michael Gee
 #include <ctime>
 #include <iostream>
 #include "../drt_lib/drt_discret.H"
+#include "../drt_comm/comm_utils.H"
 
 
 
@@ -230,11 +231,11 @@ steps 25 nnodes 5
 /* analyse */
 void STR::GenInvAnalysis::Integrate()
 {
-  int myrank = discret_->Comm().MyPID();
+  const int myrank  = discret_->Comm().MyPID();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
   int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
-//  output_->NewResultFile((numb_run_));
+
   // fitting loop
   do
   {
@@ -319,13 +320,126 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-//    if (error_>tol_ && numb_run_<max_itter)
-//      output_->NewResultFile(numb_run_);
+
   } while (error_>tol_ && numb_run_<max_itter);
 
 
   // print results to file
   if (!myrank) PrintFile();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* analyse */
+void STR::GenInvAnalysis::NPIntegrate()
+{
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int lmyrank  = lcomm->MyPID();
+  const int groupid = group->GroupId();
+  
+  // make some plausability checks:
+  // number of groups must be np_+1 to be in this control routine
+  // group 0 does the unpermuted solution
+  // groups 1 to np_ do the permuted versions
+
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+  int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
+
+  // fitting loop
+  do
+  {
+    if (!lmyrank)
+    {
+      cout << "#################################################################" << endl;
+      cout << "########################### making Jacobian matrix ##############" <<endl;
+      cout << "#################################################################" << endl;
+      printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n",nmp_,np_);
+    }
+
+    // pertubation of material parameter (should be relativ to the value that is perturbed)
+    vector<double> perturb(np_,0.0);
+    double alpha = iap.get<double>("INV_ALPHA");
+    double beta  = iap.get<double>("INV_BETA");
+    for (int i=0; i<np_; ++i)
+    {
+      perturb[i] = alpha + beta * p_[i];
+      if (!lmyrank) printf("perturbation[%d] %15.10e\n",i,perturb[i]);
+    }
+
+    // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
+    Epetra_SerialDenseMatrix cmatrix;
+    if (!lmyrank) cmatrix.Shape(nmp_,np_+1);
+
+    // loop over parameters to fit and build cmatrix
+    for (int i=0; i<np_+1;i++)
+    {
+      bool outputtofile = false;
+      // output only for last run
+      if (i==np_) outputtofile = true;
+
+      if (outputtofile)
+      {
+        // no parameters for newfile yet
+        if (newfiles)
+          output_->NewResultFile((numb_run_));
+        else
+          output_->OverwriteResultFile();
+
+        output_->WriteMesh(0,0.0);
+      }
+
+      // Multi-scale: if an inverse analysis is performed on the micro-level,
+      // the time and step need to be reset now. Furthermore, the result file
+      // needs to be opened.
+      MultiInvAnaInit();
+
+      if (!lmyrank)
+        cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<endl;
+      // make current set of material parameters
+      Epetra_SerialDenseVector p_cur = p_;
+      // perturb parameter i
+      if (i!= np_) p_cur[i] = p_[i] + perturb[i];
+
+      // put perturbed material parameters to material laws
+      SetParameters(p_cur);
+
+      // compute nonlinear problem and obtain computed displacements
+      // output at the last step
+      Epetra_SerialDenseVector cvector;
+      cvector = CalcCvector(outputtofile);
+
+      // copy displacements to sensitivity matrix
+      if (!lmyrank)
+        for (int j=0; j<nmp_;j++)
+          cmatrix(j,i) = cvector[j];
+
+      ParameterList p;
+      p.set("action","calc_struct_reset_discretization");
+      discret_->Evaluate(p,null,null,null,null,null);
+    }
+
+    discret_->Comm().Barrier();
+    if (!lmyrank)
+      CalcNewParameters(cmatrix,perturb);
+    discret_->Comm().Barrier();
+
+    // set new material parameters
+    SetParameters(p_);
+    numb_run_++;
+    discret_->Comm().Broadcast(&error_o_,1,0);
+    discret_->Comm().Broadcast(&error_,1,0);
+    discret_->Comm().Broadcast(&numb_run_,1,0);
+
+  } while (error_>tol_ && numb_run_<max_itter);
+
+
+  // print results to file
+  if (!lmyrank) PrintFile();
 
   return;
 }
