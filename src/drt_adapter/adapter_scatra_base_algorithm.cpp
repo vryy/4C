@@ -143,9 +143,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   Teuchos::RCP<Teuchos::ParameterList> extraparams
     = Teuchos::rcp(new Teuchos::ParameterList());
 
-  // ----problem type (type of scalar transport problem we want to solve)
-  extraparams->set<string>("problem type",DRT::Problem::Instance()->ProblemName());
-
   // ------------------------------pointer to the error file (for output)
   extraparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
