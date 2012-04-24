@@ -1364,8 +1364,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // we read nodes and elements for the desired fields as specified above
     nodereader.Read();
-  printf("proc %d Reached this point 1 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
 
+    NP_TYPE npType = DRT::Problem::Instance()->GetNPGroup()->NpType();
     // care for special applications
     switch (ProblemType())
     {
@@ -1374,19 +1374,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models in structure field)
-      ReadMicroFields(reader);
+      if (npType != copy_dat_file) ReadMicroFields(reader);
       break;
     }
     case prb_structure:
-    {
+    {      
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models)
-//  printf("proc %d Reached this point 2 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
-      ReadMicroFields(reader);
+      if (npType != copy_dat_file) ReadMicroFields(reader);
 
-//  printf("proc %d Reached this point 3 xxxxxxxxxxxxxxxxxxxxxx\n",reader.Comm()->MyPID()); fflush(stdout);
       // Read in another discretization for MultiLevel Monte Carlo use
-      ReadMultiLevelDiscretization(reader);
+      if (npType != copy_dat_file) ReadMultiLevelDiscretization(reader);
       break;
     }
     case prb_np_support:
