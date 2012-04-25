@@ -29,6 +29,9 @@ namespace DRT
 {
   class Discretization;
   class Element;
+  class PackBuffer;
+  class Exporter;
+  class Node;
 }
 
 namespace LINALG
@@ -70,55 +73,70 @@ public:
   }
 
 
-  // Create maps of bgfluid's nodes needed for time integration
+  /// Create maps of bgfluid's nodes needed for time integration
   void CreateBgNodeMaps(const Teuchos::RCP<DRT::Discretization> bgdis,
                         Teuchos::RCP<XFEM::FluidWizard>         wizard);
 
-  // Save the old state
+  /// Save the old state
   void SaveBgNodeMaps();
 
-
+  /// Save the old maps of bg nodes and create new map of bg nodes
   int SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
                                  Teuchos::RCP<XFEM::FluidWizard>   wizard);
 
-  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>        bgdis,
-                                            Teuchos::RCP<Epetra_Vector>           bgstatevn,
-                                            Teuchos::RCP<Epetra_Vector>           bgstatevnp,
-                                            Teuchos::RCP<Epetra_Vector>           embstatevn,
-                                            Teuchos::RCP<Epetra_Vector>           aledispn);
+  /// set values to background state vector
+  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                            Teuchos::RCP<Epetra_Vector>              bgstatevn,
+                                            Teuchos::RCP<Epetra_Vector>              bgstatevnp,
+                                            Teuchos::RCP<Epetra_Vector>              embstatevn,
+                                            Teuchos::RCP<Epetra_Vector>              aledispn);
 
-  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>        bgdis,
-                                          Teuchos::RCP<Epetra_Vector>           bgstatevn,
-                                          Teuchos::RCP<Epetra_Vector>           bgstatevnp,
-                                          Teuchos::RCP<Epetra_Vector>           embstatevn,
-                                          Teuchos::RCP<Epetra_Vector>           aledispn);
+  /// set values to background state vector. Do not do the projection if
+  /// ghost-values are available.
+  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                          Teuchos::RCP<Epetra_Vector>              bgstatevn,
+                                          Teuchos::RCP<Epetra_Vector>              bgstatevnp,
+                                          Teuchos::RCP<Epetra_Vector>              embstatevn,
+                                          Teuchos::RCP<Epetra_Vector>              aledispn);
 
-  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>        bgdis,
-                                         Teuchos::RCP<Epetra_Vector>           bgstatevn,
-                                         Teuchos::RCP<Epetra_Vector>           bgstatevnp,
-                                         Teuchos::RCP<Epetra_Vector>           embstatevn,
-                                         Teuchos::RCP<Epetra_Vector>           aledispn);
+  /// set values to background state vector. Always project values from
+  /// embedded discretization if no history values are available.
+  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                         Teuchos::RCP<Epetra_Vector>              bgstatevn,
+                                         Teuchos::RCP<Epetra_Vector>              bgstatevnp,
+                                         Teuchos::RCP<Epetra_Vector>              embstatevn,
+                                         Teuchos::RCP<Epetra_Vector>              aledispn);
 
-  void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>        bgdis,
-                            Teuchos::RCP<Epetra_Vector>    statevbg_n,
-                            Epetra_Vector                  statevemb_n,
-                            Teuchos::RCP<Epetra_Vector>    statevembnew_n,
-                            Teuchos::RCP<Epetra_Vector>    aledispnp,
-                            Teuchos::RCP<Epetra_Vector>    aledispnpoldstate);
+  void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                            Teuchos::RCP<Epetra_Vector>              statevbg_n,
+                            Teuchos::RCP<Epetra_Vector>              statevemb_n,
+                            Teuchos::RCP<Epetra_Vector>              statevembnew_n,
+                            Teuchos::RCP<Epetra_Vector>              aledispnp,
+                            Teuchos::RCP<Epetra_Vector>              aledispnpoldstate);
 
+  /// Write the values of node from bgstatevn to bgstatevnp
+  void WriteValuestoBgStateVector(const Teuchos::RCP<DRT::Discretization>   bgdis,
+                                  DRT::Node*                                bgnode,
+                                  std::vector<int>                          gdofs_n,
+                                  Teuchos::RCP<Epetra_Vector>               bgstatevnp,
+                                  Teuchos::RCP<Epetra_Vector>               bgstatevn);
+
+  ///  Check whether the unknown node lies in the patch-element.If yes fill the
+  ///  interpolatedvec and return true.
   bool ComputeSpacialToElementCoordAndProject(DRT::Element*                       pele,
                                               LINALG::Matrix<3,1>&                x,
                                               LINALG::Matrix<4,1>&                interpolatedvec,
-                                              Epetra_Vector                       embstate_n,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n,
                                               Teuchos::RCP<Epetra_Vector>         embeddeddisp,
                                               Teuchos::RCP<DRT::Discretization>   sourcedis);
 
   bool ComputeSpacialToElementCoordAndProject2(DRT::Element*                       pele,
                                                LINALG::Matrix<3,1>&                x,
                                                LINALG::Matrix<4,1>&                interpolatedvec,
-                                               Epetra_Vector                       embstate_n,
+                                               Teuchos::RCP<Epetra_Vector>         embstate_n,
                                                Teuchos::RCP<Epetra_Vector>         embeddeddisp,
                                                Teuchos::RCP<DRT::Discretization>   sourcedis);
+
 
   void GmshOutput(const Teuchos::RCP<DRT::Discretization>        bgdis);
 
@@ -132,14 +150,49 @@ public:
                                 Teuchos::RCP<Epetra_Vector>     initialvel);
 
 
+  /// Transfer data in the round robin communication pattern
+  void CommunicateNodes(const Teuchos::RCP<DRT::Discretization>    bgdis,
+                        std::vector<LINALG::Matrix<3,1> >        & bgnodes_coords,
+                        std::vector<LINALG::Matrix<4,1> >        & interpolated_vecs,
+                        std::vector<int>                         & bgnodeidwithnohistory,
+                        Teuchos::RCP<Epetra_Vector>                embstatevn,
+                        Teuchos::RCP<Epetra_Vector>                aledispn,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevnp,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevn);
+
+  /// receive a block in the round robin communication pattern
+  void ReceiveBlock(std::vector<char>  & rblock,
+                    DRT::Exporter      & exporter,
+                    MPI_Request        & request);
+
+  /// send a block in the round robin communication pattern
+  void SendBlock(std::vector<char>  & sblock,
+                 DRT::Exporter      & exporter,
+                 MPI_Request        & request );
+
+  /// pack values in the round robin communication pattern
+  void PackValues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
+                  std::vector<LINALG::Matrix<4,1> > & interpolatedvec,
+                  std::vector<int>                  & bgnodeidwithnohistory,
+                  std::vector<int>                  & NodeDone,
+                  std::vector<char>                 & sblock);
+
+
+  void FindEmbeleAndInterpolatevalues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
+                                      std::vector<LINALG::Matrix<4,1> > & interpolated_vecs,
+                                      std::vector<int>                  & NodeDone,
+                                      Teuchos::RCP<Epetra_Vector>         embstatevn,
+                                      Teuchos::RCP<Epetra_Vector>         aledispn);
+
+
 //  void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> &
 //  patchboxes);
 
   private:
 
-  Teuchos::RCP<DRT::Discretization> embdis_; // bg  discretization
+  Teuchos::RCP<DRT::Discretization> embdis_; // embedded  discretization
 
-  // maps needed for xfem time integration
+  /// maps needed for xfem time integration
   std::map<int, std::vector<int> > stdnoden_;
   std::map<int, std::vector<int> > stdnodenp_;
 
@@ -156,11 +209,16 @@ public:
 
   std::set<int> projectednodeids_;
 
+  // current processor id
+  int myrank_;
+
+  int numproc_;
+
   const Epetra_Map* currentbgdofmap_;
   const Epetra_Map* oldbgdofmap_;
 
   // if the status of nodes remains the same don't do any
-  // intrepolation from the embedded fluid
+  // interpolation from the embedded fluid
   bool samemaps_;
 
   enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;

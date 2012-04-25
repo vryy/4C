@@ -201,7 +201,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid" );
 
-
   sysmat_->Zero();
   xfluid_.alesysmat_->Zero();
 
@@ -230,6 +229,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   alediscret.SetState("accam",xfluid_.aleaccam_);
   alediscret.SetState("scaaf",xfluid_.alescaaf_);
   alediscret.SetState("scaam",xfluid_.alescaam_);
+
 
   if (xfluid_.alefluid_ or xfluid_.action_ == "coupling nitsche embedded sided" or
                             xfluid_.action_ == "coupling nitsche two sided")
@@ -286,7 +286,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     rhC_ui_= LINALG::CreateVector(*xfluid_.aledofrowmap_,true);
     rhC_ui_col= LINALG::CreateVector(*alediscret.DofColMap(),true);
   }
-
 
 
   DRT::Element::LocationArray la( 1 );
@@ -1945,7 +1944,7 @@ FLD::XFluidFluid::XFluidFluid(
   {
     RCP<DRT::DiscretizationXFEM> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
     actembdis->CreateInternalFacesExtension();
-    
+
     RCP<DRT::DiscretizationXFEM> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(bgdis_, true);
     actbgdis->CreateInternalFacesExtension();
   }
@@ -2556,7 +2555,7 @@ void FLD::XFluidFluid::NonlinearSolve()
     //          boundary conditions
     state_->fluidfluidincvel_->PutScalar(0.0);
 
-    // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat
+    // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat;
     state_->fluidfluidsysmat_->Zero();
     state_->fluidfluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
     state_->fluidfluidsysmat_->Add(*alesysmat_,false,1.0,1.0);
@@ -3043,17 +3042,31 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
         xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues or
         (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) )
     {
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnp_,disp);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,aleveln_,disp);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnm_,disp);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccn_,disp);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnp_,disp);
+      // export the vectors to the column distribution map
+      Teuchos::RCP<Epetra_Vector> alevelnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> alevelncol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> alevelnmcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aleaccncol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aleaccnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> aledispcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+
+      LINALG::Export(*alevelnp_,*alevelnpcol);
+      LINALG::Export(*aleveln_,*alevelncol);
+      LINALG::Export(*alevelnm_,*alevelnmcol);
+      LINALG::Export(*aleaccn_,*aleaccncol);
+      LINALG::Export(*aleaccnp_,*aleaccnpcol);
+      LINALG::Export(*disp,*aledispcol);
+
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnpcol,aledispcol);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,alevelncol,aledispcol);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnmcol,aledispcol);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccncol,aledispcol);
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnpcol,aledispcol);
 
 //       //enforce incompressibility
 //       xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
 //       // hier wizard in tn+1
 //       xfluidfluid_timeint_->EnforceIncompressibility(bgdis_,state_->wizard_,state_->velnp_);
-
 
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
@@ -3077,9 +3090,9 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
     // set the embedded state vectors to the new ale displacement
     // before updating the vectors of the old time step
     cout << "Interpolate the embedded state vectors ... " << endl;
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, *alevelnp_, alevelnp_, aledispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , *aleveln_ , aleveln_ , aledispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, *aleaccnp_, aleaccnp_, aledispnp_, disp);
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnp_, alevelnp_, aledispnp_, disp);
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , aleveln_ , aleveln_ , aledispnp_, disp);
+    xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnp_, aleaccnp_, aledispnp_, disp);
   }
 
 }//SetBgStateVectors()
