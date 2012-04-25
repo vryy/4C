@@ -421,7 +421,6 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
     if(np >0)
     {
       ReceiveBlock(rblock,exporter,request);
-      rblock=sblock;
 
       // Unpack info from the receive block from the last proc
       vector<LINALG::Matrix<3,1> > stuff_coord;
@@ -770,24 +769,24 @@ void XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector(const RCP<DRT:
                                                                   Teuchos::RCP<Epetra_Vector>      bgstatevnp,
                                                                   Teuchos::RCP<Epetra_Vector>      bgstatevn)
 {
-      int numsets = bgdis->NumDof(bgnode)/4;
+  int numsets = bgdis->NumDof(bgnode)/4;
 
-      if (numsets > 1)
-        cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+  if (numsets > 1)
+    cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
-      int offset = 0;
-      for (int set=0; set<numsets; set++)
-      {
-        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
-          (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[0])];
-        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
-          (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[1])];
-        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
-          (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[2])];
-        (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
-          (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[3])];
-        offset += 4;
-      }
+  int offset = 0;
+  for (int set=0; set<numsets; set++)
+  {
+    (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+0])] =
+      (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[0])];
+    (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+1])] =
+      (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[1])];
+    (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+2])] =
+      (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[2])];
+    (*bgstatevnp)[bgstatevnp->Map().LID(bgdis->Dof(bgnode)[offset+3])] =
+      (*bgstatevn)[bgstatevn->Map().LID(gdofs_n[3])];
+    offset += 4;
+  }
 
 }//XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector
 
