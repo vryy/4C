@@ -114,7 +114,20 @@ protected:
 
   //! @name Access methods for subclasses
 
-  /// interface velocity calculation given the interface displacements
+  /*! \brief Calculate interface velocity based on given interface displacements
+   *
+   *  Two options to transform the structural interface displacement into a fluid interface velocity:
+   *  - second order (cf. eq. (6.1.2) in [2])               --> set input parameter SECONDORDER = Yes
+   *  - fisrt order Backward Euler (cf. eq. (6.1.2) in [2]) --> set input parameter SECONDORDER = No
+   *
+   *  A derivation of these kinematic coupling conditions is given in chapter 6.2.3 in [1].
+   *
+   *  References:
+   *  - [1] C Foerster, Robust methods for fluid-structure interaction with stabilised finite elemtes,
+   *    PhD-Thesis, 2007
+   *  - [2] U Kuettler, Effiziente Loesungsverfahren fuer Fluid-Struktur-Interaktions-Probleme,
+   *    PhD-Thesis, 2009
+   */
   Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
 
   /// current interface displacements
