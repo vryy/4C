@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_fluid_topopt_algo.H
+\file ad_opt_fluid_algo.H
 
 \brief fluid - topology optimization adapter
 
@@ -12,13 +12,13 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_FLUID_TOPOPT_ALGO_H_
-#define ADAPTER_FLUID_TOPOPT_ALGO_H_
+#ifndef AD_OPT_FLUID_ALGO_H_
+#define AD_OPT_FLUID_ALGO_H_
 
 
 #include "ad_fld_base_algorithm.H"
-#include "adapter_topopt.H"
-#include "adapter_topopt_fluid_adjoint_base.H"
+#include "ad_opt.H"
+#include "ad_opt_fluid_adjoint_base.H"
 
 
 namespace ADAPTER

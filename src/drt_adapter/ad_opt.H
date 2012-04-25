@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_fluid_topopt.H
+\file ad_opt.H
 
 \brief topology optimization adapter
 
@@ -12,8 +12,8 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_TOPOPT_H_
-#define ADAPTER_TOPOPT_H_
+#ifndef AD_OPT_H_
+#define AD_OPT_H_
 
 
 #include <Teuchos_RCP.hpp>

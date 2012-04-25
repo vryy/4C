@@ -50,7 +50,7 @@ ALPHA_M                         1.0                             // 0.833333
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-12
+CONVTOL                         1e-10
 GRIDVEL                         1
 INITIALFIELD                    zero_field                      // field_by_function
 INITSTATITEMAX                  5

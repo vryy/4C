@@ -45,7 +45,7 @@ public:
     /*!
     \brief constructor
     */
-    FluidAdjointResultTest(Teuchos::RCP<ImplicitTimeInt> adjointfluid);
+    FluidAdjointResultTest(ImplicitTimeInt& adjointfluid);
 
 
     /// our version of nodal value tests
@@ -63,7 +63,7 @@ private:
     /// pointer to fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis_;
     /// pointer to unknown vector with values
-    Teuchos::RCP<Epetra_Vector>       mysol_;
+    const Teuchos::RCP<const Epetra_Vector>       mysol_;
 };
 }
 }

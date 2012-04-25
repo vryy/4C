@@ -23,10 +23,12 @@ Maintainer: Martin Winklmaier
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(Teuchos::RCP<ImplicitTimeInt> adjointfluid)
+TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(
+    ImplicitTimeInt& adjointfluid
+) : fluiddis_(adjointfluid.Discretization()),
+mysol_(adjointfluid.Velnp())
 {
-    fluiddis_= adjointfluid->Discretization();
-    mysol_   = adjointfluid->Velnp();
+      return;
 }
 
 

@@ -18,6 +18,7 @@ Maintainer: Martin Winklmaier
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_topopt.H"
+#include "topopt_fluidAdjoint_timeint.H"
 
 
 /// forward declarations
@@ -61,7 +62,7 @@ namespace ADJOINT
     \author winklmaier
     \date 02/12
  */
-class ImplicitTimeInt
+class ImplicitTimeInt : public FluidAdjointTimeInt
 {
 //  friend class FLD::FluidResultTest;
 
@@ -72,11 +73,11 @@ public:
   \brief Standard Constructor
 
   */
-  ImplicitTimeInt(Teuchos::RCP<DRT::Discretization>  actdis,
-                       LINALG::Solver&           solver,
-                       Teuchos::ParameterList&            params,
-                       IO::DiscretizationWriter& output,
-                       bool                      alefluid=false);
+  ImplicitTimeInt(
+      Teuchos::RCP<DRT::Discretization>       actdis,
+      Teuchos::RCP<LINALG::Solver>            solver,
+      Teuchos::RCP<Teuchos::ParameterList>    params,
+      Teuchos::RCP<IO::DiscretizationWriter>  output);
 
 
   /*!
@@ -139,7 +140,7 @@ public:
   \brief Access output object
 
   */
-  IO::DiscretizationWriter& DiscWriter()
+  Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
   {
     return output_;
   }
@@ -171,16 +172,15 @@ public:
   */
   void ReadRestart(int step);
 
-  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Residual() { return residual_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
 
   /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+  Teuchos::RCP<const LINALG::MapExtractor> DirichletMaps() { return dbcmaps_; }
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter(){ return velpressplitter_; };
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
@@ -188,73 +188,16 @@ public:
 
   double ResidualScaling() const;
 
-  double Dt() const { return dt_; }
-
-  double Time() const { return time_; }
-  int Step() const { return step_; }
-
-  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
-
-
-  /*!
-  \brief return type of time integration scheme
-
-  */
-  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
-
   /*!
   \brief set velocity field obtained by separate computation
 
   */
   void SetAdjointField(Teuchos::RCP<const Epetra_Vector> setvelnp);
 
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
 protected:
 
-  // don't want = operator and cctor
-  ImplicitTimeInt operator = (const ImplicitTimeInt& old);
-  ImplicitTimeInt (const ImplicitTimeInt& old);
-
-  /*!
-  \brief  increment time and step value
-
-  */
-  void IncrementTimeAndStep()
-  {
-    step_ += 1;
-    time_ -= dt_;
-  }
-
-
-  //! @name general algorithm parameters
-  //! fluid discretization
-  const Teuchos::RCP<DRT::Discretization>      discret_;
-  LINALG::Solver&               solver_;
-  Teuchos::ParameterList&       params_;
-  IO::DiscretizationWriter&     output_;
-
-  //! the processor ID from the communicator
-  int                           myrank_;
-
-  //@}
-
-  /// number of spatial dimensions
-  int numdim_;
-
-  //! @name time stepping variables
-  double  time_;        ///< physical time
-  int     step_;        ///< timestep
-  int     stepmax_;     ///< maximal number of timesteps
-  double  maxtime_;     ///< maximal physical computation time
-  //@}
-
-  /// time algorithm flag
-  INPAR::FLUID::TimeIntegrationScheme timealgo_;
-
-  //! @name restart variables
-  int uprestart_;
-  int upres_;
-  //@}
 
   //! @name time step size
   double dt_;
@@ -327,6 +270,10 @@ protected:
   Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
 private:
+
+  // don't want = operator and cctor
+  ImplicitTimeInt operator = (const ImplicitTimeInt& old);
+  ImplicitTimeInt (const ImplicitTimeInt& old);
 
   //! @name Set general parameter in class f3Parameter
   /*!

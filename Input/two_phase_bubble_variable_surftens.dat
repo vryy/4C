@@ -27,7 +27,6 @@ RESTARTEVRY                     10
 TIMEINT                         Stationary
 TIMESTEP                        1.0
 UPRES                           1
-GMSH_OUTPUT                     Yes
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
 LAMINAR_FLAMESPEED              1

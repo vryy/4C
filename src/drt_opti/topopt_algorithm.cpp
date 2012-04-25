@@ -13,10 +13,11 @@ Maintainer: Martin Winklmaier
 
 
 #include "topopt_algorithm.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include "../drt_adapter/adapter_topopt_fluid_adjoint.H"
+#include "topopt_fluidAdjoint_timeint.H"
 #include "../linalg/linalg_utils.H"
 #include "topopt_optimizer.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -210,7 +211,7 @@ void TOPOPT::Algorithm::PrepareAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoAdjointField()
 {
-  AdjointFluidField()->TimeLoop();
+  AdjointFluidField()->Integrate();
 }
 
 
@@ -283,7 +284,10 @@ void TOPOPT::Algorithm::UpdatePorosity()
  | protected: output                                                             winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::Output()
-{dserror("not implemented");
+{
+  dserror("This function is currently unused!\n"
+      "Output of subfields is written by their own output-functions!\n"
+      "Maybe, this will be used for optimization variable(s) or for overview");
   return;
 }
 

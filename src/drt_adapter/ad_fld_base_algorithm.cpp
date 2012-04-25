@@ -963,6 +963,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   fluidtimeparams->set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
   // flag for writing wall shear stress
   fluidtimeparams->set ("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
+  // flag for writing fluid field to gmsh
+  fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
 
   // ---------------------------------------------------- lift and drag
   fluidtimeparams->set<int>("liftdrag",DRT::INPUT::IntegralValue<int>(fdyn,"LIFTDRAG"));

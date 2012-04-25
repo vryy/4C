@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_topopt_fluid_adjoint_base.H
+\file ad_opt_fluid_adjoint_base.H
 
 \brief base adapter of adjoint fluid equations for topology optimization
 
@@ -12,12 +12,12 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
-#define ADAPTER_TOPOPT_FLUID_ADJOINT_BASE_H_
+#ifndef AD_OPT_FLUID_ADJOINT_BASE_H_
+#define AD_OPT_FLUID_ADJOINT_BASE_H_
 
 
 #include <Teuchos_RCP.hpp>
-#include "adapter_topopt_fluid_adjoint.H"
+#include "../drt_opti/topopt_fluidAdjoint_timeint.H"
 
 
 namespace Teuchos
@@ -25,6 +25,13 @@ namespace Teuchos
   class ParameterList;
 }
 
+namespace TOPOPT
+{
+  namespace ADJOINT
+  {
+    class FluidAdjointTimeInt;
+  }
+}
 namespace ADAPTER
 {
   /// adapter for the coupling of the fluid adjoint algorithm in topology optimization
@@ -51,14 +58,14 @@ namespace ADAPTER
     virtual void ReadRestart(int step);
 
     /// fluid adjoint field solver
-    Teuchos::RCP<FluidAdjoint> AdjointFluidField();
+    Teuchos::RCP<TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField(){return adjointTimeInt_;}
     /// return instance of fluid adjoint time integration class
-    const Teuchos::RCP<const FluidAdjoint> AdjointFluidField() const;
+    const Teuchos::RCP<const TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField() const{return adjointTimeInt_;}
 
   protected:
 
     /// adjoint fluid field
-    Teuchos::RCP<FluidAdjoint> adjoint_;
+    Teuchos::RCP<TOPOPT::ADJOINT::FluidAdjointTimeInt> adjointTimeInt_;
 
   private:
 

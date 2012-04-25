@@ -47,7 +47,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "fluid_meshtying.H"
 #include "drt_transfer_turb_inflow.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/adapter_topopt.H"
+#include "../drt_adapter/ad_opt.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_opti/topopt_optimizer.H"
 #include "fluid_utils_infnormscaling.H"
@@ -6115,43 +6115,42 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
  |  set initial field for porosity                                      |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
-		const INPAR::POROELAST::InitialField init,
+    const INPAR::POROELAST::InitialField init,
     const int startfuncno)
 {
-	cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<endl;
+  cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<endl;
 
   switch(init)
   {
   case INPAR::POROELAST::initfield_field_by_function:
   {
-	const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-	// loop all nodes on the processor
-	for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-	{
-	  // get the processor local node
-	  DRT::Node* lnode = discret_->lRowNode(lnodeid);
-	  // the set of degrees of freedom associated with the node
-	  std::vector<int> nodedofset = discret_->Dof(lnode);
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
-	  int numdofs = nodedofset.size();
-		double initialval
-		  = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL);
+      int numdofs = nodedofset.size();
+      double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL);
 
-		  // check whether there are invalid values of porosity
-		  if (initialval < EPS15) dserror("zero or negative initial porosity");
-		  if (initialval >= 1) dserror("initial porosity greater or equal than 1");
-	  for (int k=0;k< numdofs;++k)
-	  {
-		const int dofgid = nodedofset[k];
-		int doflid = dofrowmap->LID(dofgid);
-		// evaluate component k of spatial function
-		initporosityfield_->ReplaceMyValues(1,&initialval,&doflid);
+      // check whether there are invalid values of porosity
+      if (initialval < EPS15) dserror("zero or negative initial porosity");
+      if (initialval >= 1) dserror("initial porosity greater or equal than 1");
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+        // evaluate component k of spatial function
+        initporosityfield_->ReplaceMyValues(1,&initialval,&doflid);
 
-	  }
-	}
+      }
+    }
 
-	break;
+    break;
   }
   default:
     dserror("Unknown option for initial field: %d", init);

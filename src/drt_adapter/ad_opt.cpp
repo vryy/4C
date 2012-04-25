@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_fluid_topopt.cpp
+\file ad_opt.cpp
 
 \brief topology optimization adapter
 
@@ -12,7 +12,7 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "adapter_topopt.H"
+#include "ad_opt.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"

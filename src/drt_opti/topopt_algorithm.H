@@ -16,7 +16,7 @@ Maintainer: Martin Winklmaier
 #define TOPOPT_ALGORITHM_H_
 
 
-#include "../drt_adapter/adapter_fluid_topopt_algo.H"
+#include "../drt_adapter/ad_opt_fluid_algo.H"
 #include "../drt_inpar/inpar_topopt.H"
 
 

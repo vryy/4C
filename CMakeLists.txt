@@ -517,9 +517,11 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_poro.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
-  src/drt_adapter/adapter_fluid_topopt_algo.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
   src/drt_adapter/ad_fld_xfluid_fsi.cpp
+  src/drt_adapter/ad_opt.cpp
+  src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
+  src/drt_adapter/ad_opt_fluid_algo.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
@@ -534,9 +536,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_thermo_timint_expl.cpp
-  src/drt_adapter/adapter_topopt.cpp
-  src/drt_adapter/adapter_topopt_fluid_adjoint_base.cpp
-  src/drt_adapter/adapter_topopt_fluid_adjoint_impl.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp
@@ -999,6 +998,7 @@ set(OBJS_DRT_TOPOPT
 set(OBJS_DRT_TOPOPT_ADJOINT
   src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
   src/drt_opti/topopt_fluidAdjointResulttest.cpp
+  src/drt_opti/topopt_fluidAdjoint_timeint.cpp
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp

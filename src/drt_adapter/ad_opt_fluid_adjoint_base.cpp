@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file adapter_topopt_fluid_adjoint_base.cpp
+\file ad_opt_fluid_adjoint_base.cpp
 
 \brief base adapter of adjoint fluid equations for topology optimization
 
@@ -12,13 +12,13 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "adapter_topopt_fluid_adjoint_base.H"
-#include "adapter_topopt_fluid_adjoint_impl.H"
+#include "ad_opt_fluid_adjoint_base.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
 #include "../linalg/linalg_solver.H"
 
 
@@ -45,7 +45,7 @@ ADAPTER::TopOptFluidAdjointAlgorithm::~TopOptFluidAdjointAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::TopOptFluidAdjointAlgorithm::ReadRestart(int step)
 {
-  AdjointFluidField()->ReadRestart(step);
+  adjointTimeInt_->ReadRestart(step);
   return;
 }
 
@@ -82,8 +82,30 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+  RCP<IO::OutputControl> fluidoutput = DRT::Problem::Instance()->OutputControlFile();
+
+  // filename for adjoint equations
+  std::string filename = fluidoutput->FileName();
+  filename = filename + "_adjoint";
+
+  // output control for adjoint equations
+  // equal to output for fluid equations except for the filename
+  // and the - not necessary - input file name
+  Teuchos::RCP<IO::OutputControl> adjointoutput =
+      Teuchos::rcp(new IO::OutputControl(
+          actdis->Comm(),
+          DRT::Problem::Instance()->ProblemName(),
+          DRT::Problem::Instance()->SpatialApproximation(),
+          "unknown_and_unused_input_filename",
+          filename,
+          DRT::Problem::Instance()->NDim(),
+          DRT::Problem::Instance()->Restart(),
+          fluidoutput->FileSteps()
+      )
+  );
+
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis,adjointoutput));
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -189,9 +211,11 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // ----------------------------------------------- restart and output
 //  // restart
-//  fluidadjointtimeparams->set ("write restart every", prbdyn.get<int>("RESTARTEVRY"));
+  fluidadjointtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
   fluidadjointtimeparams->set<int>("write solution every", prbdyn.get<int>("UPRES"));
+  // flag for writing fluid field to gmsh
+  fluidadjointtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
 
   // ----------- initial field for test cases
   INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
@@ -224,7 +248,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
-    fluidadjointtimeparams->set<int>("time int algo",timeint);
+    fluidadjointtimeparams->set<int>              ("time int algo",timeint);
     // parameter theta for time-integration schemes
     fluidadjointtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // parameter theta for time-integration schemes
@@ -243,7 +267,12 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    adjoint_ = rcp(new ADAPTER::FluidAdjointImpl(actdis,solver,fluidadjointtimeparams,output));
+    adjointTimeInt_ = Teuchos::rcp(new TOPOPT::ADJOINT::ImplicitTimeInt(
+        actdis,
+        solver,
+        fluidadjointtimeparams,
+        output));
+
   }
   else
   {
@@ -259,25 +288,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     {
       startfuncno=-1;
     }
-    adjoint_->SetInitialAdjointField(initfield,startfuncno);
+    adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
   }
-  // TODO activate when output is working
-//  adjoint_->Output();
+  adjointTimeInt_->Output();
 
   return;
-}
-
-
-
-Teuchos::RCP<ADAPTER::FluidAdjoint> ADAPTER::TopOptFluidAdjointAlgorithm::AdjointFluidField()
-{
-  return adjoint_;
-}
-
-
-
-const Teuchos::RCP<const ADAPTER::FluidAdjoint> ADAPTER::TopOptFluidAdjointAlgorithm::AdjointFluidField() const
-{
-  return adjoint_;
 }
 
