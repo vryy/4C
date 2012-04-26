@@ -100,9 +100,6 @@ public:
   
 protected:
 
-  /// composed FSI operator
-  virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
-
   /// interface fluid operator
   virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag);
 
