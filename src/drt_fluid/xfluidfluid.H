@@ -156,7 +156,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>        rhC_ui_;
 
       // dof-row maps
-      const Epetra_Map* fluiddofrowmap_;
+      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
       Teuchos::RCP<Epetra_Map> fluidfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
@@ -243,6 +243,8 @@ namespace FLD
         bool                                          monolithicfluidfluidfsi = false
       );
 
+    ///  prepare embedded discretization for Nitsche-Coupling-Type Ale-Sided
+    void CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems

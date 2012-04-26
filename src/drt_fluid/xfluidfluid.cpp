@@ -88,7 +88,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,velpressplitter_);
 
-  fluiddofrowmap_ = xfluid.bgdis_->DofRowMap();
+  fluiddofrowmap_ = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
 
   // create an EpetraFECrs matrix that does communication for non-local rows and columns
   // * this enables to do the evaluate loop over just row elements instead of col elements
@@ -1833,7 +1833,8 @@ FLD::XFluidFluid::XFluidFluid(
     dserror("Empty XFEM-boundary discretization detected!");
   }
 
-  // create node and element distribution with elements and nodes ghosted on all processors
+  // create node and element distribution with boundarydis elements and nodes
+  // ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
   const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
 
@@ -1847,7 +1848,6 @@ FLD::XFluidFluid::XFluidFluid(
 
   boundarydis_->FillComplete();
 
-
   // make the dofset of boundarydis be a subset of the embedded dis
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
   embdis_->Redistribute(*(embdis_->NodeRowMap()), *newcolnodemap);
@@ -1857,64 +1857,9 @@ FLD::XFluidFluid::XFluidFluid(
 
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
 
-
-  // fill boundary_embedded_mapdmap between boundary element id and its corresponding embedded element id
-  if( coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring )
-  {
-    for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
-    {
-
-      // boundary element and its nodes
-      DRT::Element* bele = boundarydis_->lColElement(iele);
-      const int* inodes = bele->NodeIds();
-
-      bool bele_found = false;
-
-      // ask all conditioned embedded elements for this boundary element
-      for(int it=0; it< embdis_->NumMyColElements(); ++it)
-      {
-        DRT::Element* ele = embdis_->lColElement(it);
-        const int* elenodes = (ele)->NodeIds();
-
-        // assume the element has been found
-        bele_found = true;
-
-        // check all nodes of the boundary element
-        for(int inode=0; inode<bele->NumNode();  ++inode)
-        {
-          // boundary node
-          const int inode_ID = inodes[inode];
-
-          bool node_found = false;
-          for (int enode=0; enode<ele->NumNode(); ++enode)
-          {
-            const int enode_ID = elenodes[enode];
-
-            if(enode_ID == inode_ID)
-            {
-              node_found = true;
-              break; // breaks the element nodes loop
-            }
-          }
-          if(node_found==false) // this node is not contained in this element
-          {
-            bele_found = false; // element not the right one, if at least one boundary node is not found
-            break; // node not found
-          }
-        }
-
-        if(bele_found==true)
-        {
-          boundary_emb_gid_map_.insert(pair<int,int>(bele->Id(),ele->Id()));
-          break;
-        }
-
-      }
-
-      if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
-    }
-  }
-
+  // prepare embedded dis for Nitsche-Coupling-Type Ale-Sided
+  if ( coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring )
+    CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
 
   // store a dofset with the complete fluid unknowns
@@ -2049,6 +1994,139 @@ FLD::XFluidFluid::XFluidFluid(
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
                                                                               xfem_timeintapproach_,*params_));
 }
+
+// -------------------------------------------------------------------
+// prepare embedded discretization for Ale-sided-coupling
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
+{
+#ifdef PARALLEL
+
+  DRT::UTILS::ConditionSelector conds(*embdis_, "XFEMCoupling");
+  vector<int> embnode_outer;
+  vector<int> embele_outer;
+
+  // select all outer embedded nodes and elements
+  for (int  inode=0; inode<embdis_->NumMyRowNodes(); inode++)
+  {
+    DRT::Node* embnode = embdis_->lRowNode(inode);
+    if (conds.ContainsNode(embnode->Id()))
+    {
+      embnode_outer.push_back(embnode->Id());
+      const size_t numele = embnode->NumElement();
+      // get list of adjacent elements of this node
+      DRT::Element** adjeles = embnode->Elements();
+      int mypid =embdis_->Comm().MyPID();
+
+      for (size_t j=0; j<numele; ++j)
+      {
+        DRT::Element* adjele = adjeles[j];
+
+        // if the element belongs to this processor insert it
+        if (adjele->Owner() == mypid)
+          embele_outer.push_back(adjele->Id());
+
+      }
+    }
+  }
+
+  // embnode_outer and embele_outer on all processors
+  vector<int> embnode_outer_all;
+  vector<int> embele_outer_all;
+
+  // information how many processors work at all
+  vector<int> allproc(embdis_->Comm().NumProc());
+
+  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<embdis_->Comm().NumProc(); ++i) allproc[i] = i;
+
+  // gathers information of all processors
+  LINALG::Gather<int>(embnode_outer,embnode_outer_all,(int)embdis_->Comm().NumProc(),&allproc[0],embdis_->Comm());
+  LINALG::Gather<int>(embele_outer,embele_outer_all,(int)embdis_->Comm().NumProc(),&allproc[0],embdis_->Comm());
+
+  // combine the colmap of every processor with the embedded outer map
+  for (int  cnode=0; cnode<embdis_->NumMyColNodes(); cnode++)
+  {
+    DRT::Node* embnode = embdis_->lColNode(cnode);
+    embnode_outer_all.push_back(embnode->Id());
+  }
+  for (int  cele=0; cele<embdis_->NumMyColElements(); cele++)
+  {
+    DRT::Element* ele = embdis_->lColElement(cele);
+    embele_outer_all.push_back(ele->Id());
+  }
+
+  // create node and element distribution of outer layer elements and nodes
+  // of the embedded discretization ghosted on all processors
+  Teuchos::RCP<const Epetra_Map> embnodeoutermap = rcp(new Epetra_Map(-1, embnode_outer_all.size(), &embnode_outer_all[0], 0, embdis_->Comm()));
+  Teuchos::RCP<const Epetra_Map> embeleoutermap = rcp(new Epetra_Map(-1, embele_outer_all.size(), &embele_outer_all[0], 0, embdis_->Comm()));
+
+  const Epetra_Map embnodeoutercolmap = *LINALG::AllreduceOverlappingEMap(*embnodeoutermap);
+  const Epetra_Map embelemoutercolmap = *LINALG::AllreduceOverlappingEMap(*embeleoutermap);
+
+  // redistribute nodes and elements to column (ghost) map
+  embdis_->ExportColumnNodes(embnodeoutercolmap);
+  embdis_->ExportColumnElements(embelemoutercolmap);
+
+  embdis_->FillComplete();
+
+#endif
+
+  // fill boundary_embedded_mapdmap between boundary element id and its corresponding embedded element id
+  for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
+  {
+    // boundary element and its nodes
+    DRT::Element* bele = boundarydis_->lColElement(iele);
+    const int* inodes = bele->NodeIds();
+
+    bool bele_found = false;
+
+    // ask all conditioned embedded elements for this boundary element
+    for(int it=0; it< embdis_->NumMyColElements(); ++it)
+    {
+      DRT::Element* ele = embdis_->lColElement(it);
+      const int* elenodes = (ele)->NodeIds();
+
+      // assume the element has been founduntied
+      bele_found = true;
+
+      // check all nodes of the boundary element
+      for(int inode=0; inode<bele->NumNode();  ++inode)
+      {
+        // boundary node
+        const int inode_ID = inodes[inode];
+
+        bool node_found = false;
+        for (int enode=0; enode<ele->NumNode(); ++enode)
+        {
+          const int enode_ID = elenodes[enode];
+
+          if(enode_ID == inode_ID)
+          {
+            node_found = true;
+            break; // breaks the element nodes loop
+          }
+        }
+        if(node_found==false) // this node is not contained in this element
+        {
+          bele_found = false; // element not the right one, if at least one boundary node is not found
+          break; // node not found
+        }
+      }
+
+      if(bele_found==true)
+      {
+        boundary_emb_gid_map_.insert(pair<int,int>(bele->Id(),ele->Id()));
+        break;
+      }
+
+    }
+
+    if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
+  }
+
+}//FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -2179,7 +2257,7 @@ void FLD::XFluidFluid::TimeLoop()
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
   }
-}
+}//FLD::XFluidFluid::IntegrateFluidFluid()
 
 // -------------------------------------------------------------------
 //
@@ -2239,7 +2317,8 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     // -------------------------------------------------------------------
     Output();
   }
-}
+}// FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -2260,7 +2339,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
   //  Set time parameter for element call
   // -------------------------------------------------------------------
   SetElementTimeParameter();
-}
+}//FLD::XFluidFluid::PrepareTimeStep()
 
 // ----------------------------------------------------------------
 //
@@ -2284,7 +2363,7 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
   SetHistoryValues();
 
   SetDirichletNeumannBC();
-}
+}//FLD::XFluidFluid::PrepareNonlinearSolve()
 
 // ----------------------------------------------------------------
 //
@@ -2635,7 +2714,8 @@ void FLD::XFluidFluid::NonlinearSolve()
 
   if (alefluid_)
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
-}
+}//FLD::XFluidFluid::NonlinearSolve()
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -2833,7 +2913,7 @@ void FLD::XFluidFluid::UpdateGridv()
   // if the mesh velocity should have the same velocity like the embedded mesh
   //gridv_->Update(1.0,*alevelnp_,0.0);
   //aledispnp_->Update(1.0,*aledispn_,dta_,*alevelnp_,0.0);
-}
+}//FLD::XFluidFluid::UpdateGridv()
 
 // -------------------------------------------------------------------
 //
@@ -2846,7 +2926,8 @@ void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoa
   Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
   *(aledbcmaps_) = LINALG::MapExtractor(*(embdis_->DofRowMap()), condmerged);
   return;
-}
+}//FLD::XFluidFluid::AddDirichCond
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -3133,7 +3214,7 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
   }
 
   NonlinearSolve();
-}
+}//FLD::XFluidFluid::UpdateMonolithicFluidSolution()
 
 // -------------------------------------------------------------------
 //
@@ -3176,7 +3257,8 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
     embdis_->EvaluateNeumann(eleparams,*aleneumann_loads_);
     embdis_->ClearState();
   }
-}
+}//FLD::XFluidFluid::SetDirichletNeumannBC()
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -3199,7 +3281,8 @@ void FLD::XFluidFluid::SetHistoryValues()
                                                 timealgo_, dta_, theta_, state_->hist_);
   TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
                                                 timealgo_, dta_, theta_, alehist_);
-}
+}//FLD::XFluidFluid::SetHistoryValues()
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -3242,7 +3325,7 @@ void FLD::XFluidFluid::StatisticsAndOutput()
   //statisticsmanager_->DoOutput(output_,step_,eosfac);
 
   return;
-}
+}//FLD::XFluidFluid::StatisticsAndOutput()
 
 // -------------------------------------------------------------------
 //
@@ -3425,66 +3508,12 @@ void FLD::XFluidFluid::Output()
     //output_->WriteVector("velnp",state_->velnpoutput_);
     output_->WriteVector("velnp", outvec_fluid_);
 
-    // (hydrodynamic) pressure
-//    Teuchos::RCP<Epetra_Vector> pressureoutput = LINALG::CreateVector(*state_->outputpressuredofrowmap_,true);
-//     for (int iter=0; iter<pressureoutput->MyLength(); iter++)
-//     {
-//       int gid = pressureoutput->Map().GID(iter);
-//       if (pressureoutput->Map().MyGID(gid))
-//         (*pressureoutput)[pressureoutput->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)];
-//     }
-//    pressureoutput->Scale(density_);
-//     output_->WriteVector("pressure", pressureoutput);
-//  Teuchos::RCP<Epetra_Vector> pressure =  state_->velpressplitter_.ExtractCondVector(state_->velnpoutput_);
-
     // output (hydrodynamic) pressure for visualization
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
     output_->WriteVector("pressure", pressure);
 
-
-    //output_.WriteVector("residual", trueresidual_);
-
-//     //only perform stress calculation when output is needed
-//     if (writestresses_)
-//     {
-//       RCP<Epetra_Vector> traction = CalcStresses();
-//       output_.WriteVector("traction",traction);
-//       if (myrank_==0)
-//         cout<<"Writing stresses"<<endl;
-//       //only perform wall shear stress calculation when output is needed
-//       if (write_wall_shear_stresses_)
-//       {
-//         RCP<Epetra_Vector> wss = CalcWallShearStresses();
-//         output_.WriteVector("wss",wss);
-//       }
-//     }
-
-
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_->WriteElementData();
-
-//    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
-//     {
-//       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-//       output_.WriteVector("accnp",accnp_);
-//       output_.WriteVector("accn", accn_);
-//       output_.WriteVector("veln", veln_);
-//       output_.WriteVector("velnm",velnm_);
-
-//       if (alefluid_)
-//       {
-//         output_.WriteVector("dispn", dispn_);
-//         output_.WriteVector("dispnm",dispnm_);
-//       }
-
-//       // also write impedance bc information if required
-//       // Note: this method acts only if there is an impedance BC
-//       impedancebc_->WriteRestart(output_);
-
-//       Wk_optimization_->WriteRestart(output_);
-//     }
-
-//    vol_surf_flow_bc_->Output(output_);
 
   }
 
@@ -3507,106 +3536,8 @@ void FLD::XFluidFluid::Output()
 
     if (step_==upres_) emboutput_->WriteElementData();
   }
-//   // write restart also when uprestart_ is not a integer multiple of upres_
-//   else if (uprestart_ != 0 && step_%uprestart_ == 0)
-//   {
-//     // step number and time
-//     output_.NewStep(step_,time_);
 
-//     // velocity/pressure vector
-//     output_.WriteVector("velnp",velnp_);
-
-//     //output_.WriteVector("residual", trueresidual_);
-//     if (alefluid_)
-//     {
-//       output_.WriteVector("dispnp", dispnp_);
-//       output_.WriteVector("dispn", dispn_);
-//       output_.WriteVector("dispnm",dispnm_);
-//     }
-
-//     //only perform stress calculation when output is needed
-//     if (writestresses_)
-//     {
-//       RCP<Epetra_Vector> traction = CalcStresses();
-//       output_.WriteVector("traction",traction);
-//       //only perform wall shear stress calculation when output is needed
-//       if (write_wall_shear_stresses_)
-//       {
-//         RCP<Epetra_Vector> wss = CalcWallShearStresses();
-//         output_.WriteVector("wss",wss);
-//       }
-//     }
-
-//     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-//     output_.WriteVector("accnp",accnp_);
-//     output_.WriteVector("accn", accn_);
-//     output_.WriteVector("veln", veln_);
-//     output_.WriteVector("velnm",velnm_);
-
-//     // also write impedance bc information if required
-//     // Note: this method acts only if there is an impedance BC
-//     impedancebc_->WriteRestart(output_);
-
-//     Wk_optimization_->WriteRestart(output_);
-//     vol_surf_flow_bc_->Output(output_);
-//   }
-
-
-//#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
-
-// output ALE nodes and xspatial in current configuration - devaal 02.2011
-#ifdef PRINTALEDEFORMEDNODECOORDS
-
-    if (discret_->Comm().NumProc() != 1)
-  dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
-
-    cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
-    // does discret_ exist here?
-    //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
-
-    //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-    //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-    //dofrowmap_  = rcp(new discret_->DofRowMap());
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-    for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
-  {
-      int gid;
-      // get global id of a node
-      gid = noderowmap->GID(lid);
-      // get the node
-      DRT::Node * node = discret_->gNode(gid);
-      // get the coordinates of the node
-      const double * X = node->X();
-      // get degrees of freedom of a node
-      vector<int> gdofs = discret_->Dof(node);
-      //cout << "for node:" << *node << endl;
-      //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
-
-      // get displacements of a node
-      vector<double> mydisp (3,0.0);
-      for (int ldof = 0; ldof<3; ldof ++)
-      {
-        int displid = dofrowmap->LID(gdofs[ldof]);
-        //cout << "displacement local id - in the rowmap" << displid << endl;
-        mydisp[ldof] = (*dispnp_)[displid];
-        //make zero if it is too small
-        if (abs(mydisp[ldof]) < 0.00001)
-            {
-      mydisp[ldof] = 0.0;
-            }
-      }
-      // Export disp, X
-      double newX = mydisp[0]+X[0];
-      double newY = mydisp[1]+X[1];
-      double newZ = mydisp[2]+X[2];
-      //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
-      cout << gid << " " << newX << " " << newY << " " << newZ << endl;
-  }
-#endif //PRINTALEDEFORMEDNODECOORDS
-
-  return;
+   return;
 }// XFluidFluid::Output
 
 // -------------------------------------------------------------------
