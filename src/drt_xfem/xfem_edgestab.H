@@ -31,7 +31,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Fluid3;
+    class Fluid;
     class FluidIntFace;
   }
 }

@@ -1567,7 +1567,7 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
     if (patchelement == false) continue;
 
     Teuchos::RCP<MAT::Material> mat = actele->Material();
-    DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+    DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
     GEO::CUT::ElementHandle * e = wizard.GetElement( actele );
     Epetra_SerialDenseVector C_elevec;

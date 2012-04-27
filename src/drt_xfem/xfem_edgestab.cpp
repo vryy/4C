@@ -91,8 +91,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discre
 
 
   // get the parent fluid elements
-  DRT::ELEMENTS::Fluid3* p_master = faceele->ParentMasterElement();
-  DRT::ELEMENTS::Fluid3* p_slave  = faceele->ParentSlaveElement();
+  DRT::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
+  DRT::ELEMENTS::Fluid* p_slave  = faceele->ParentSlaveElement();
 
   // get corresponding element handles if available
   GEO::CUT::ElementHandle * p_master_handle   = wizard_->GetElement( p_master );

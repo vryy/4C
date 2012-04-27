@@ -225,7 +225,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   const DRT::ElementType & eot = ele->ElementType();
   bool is3d = false;
 #ifdef D_FLUID3
-  if ( eot==DRT::ELEMENTS::Fluid3Type::Instance() or
+  if ( eot==DRT::ELEMENTS::FluidType::Instance() or
        eot==DRT::ELEMENTS::Combust3Type::Instance() )
   {
     // number of space dimensions is always one less than the number of dof's,
